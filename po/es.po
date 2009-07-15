@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-19 08:14+0000\n"
-"PO-Revision-Date: 2009-06-19 11:03-0300\n"
+"POT-Creation-Date: 2009-07-15 10:32+0000\n"
+"PO-Revision-Date: 2009-07-15 09:58-0300\n"
 "Last-Translator: Héctor Daniel Cabrera <h.daniel.cabrera@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -47,7 +47,7 @@ msgstr "Falso"
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:237
-#: ../src/pk-polkit-action-lookup.c:228
+#: ../src/pk-polkit-action-lookup.c:256
 msgid "Role"
 msgstr "Rol"
 
@@ -61,7 +61,9 @@ msgid "(seconds)"
 msgstr "(segundos)"
 
 #. TRANSLATORS: this is The command line used to do the action
+#. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:246
+#: ../src/pk-polkit-action-lookup.c:270
 msgid "Command line"
 msgstr "Línea de comandos"
 
@@ -214,43 +216,63 @@ msgstr "Se necesita reiniciar el sistema debido a:"
 msgid "Session restart required:"
 msgstr "Se necesita reiniciar la sesión:"
 
-#. TRANSLATORS: a package requires the application to be restarted
+#. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:523
+msgid "System restart (security) required by:"
+msgstr "Reinicio del sistema (seguridad) solicitado por:"
+
+#. TRANSLATORS: a package requires the session to be restarted due to a security update
+#: ../client/pk-console.c:526
+msgid "Session restart (security) required:"
+msgstr "Reinicio de la sesión (seguridad) solicitado por:"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: ../client/pk-console.c:529
 msgid "Application restart required by:"
 msgstr "Se necesita reiniciar una aplicación debido a:"
 
-#. TRANSLATORS: a package needs to restart they system
-#: ../client/pk-console.c:578
+#. TRANSLATORS: a package needs to restart their system
+#: ../client/pk-console.c:584
 msgid "Please restart the computer to complete the update."
 msgstr "Reinicie el equipo para completar la actualización."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:581
+#: ../client/pk-console.c:587
 msgid "Please logout and login to complete the update."
 msgstr "Cierre la sesión y vuelva a entrar para completar la actualización."
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:584
+#: ../client/pk-console.c:590
 msgid "Please restart the application as it is being used."
 msgstr "Reinicie la aplicación que está usando."
 
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: ../client/pk-console.c:593
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Por favor, reinicie el equipo para completar la actualización, ya que se han instalado actualizaciones de seguridad importantes."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: ../client/pk-console.c:596
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Por favor, cierre la sesión y vuelva a registrarse para completar la actualización, ya que se han instalado actualizaciones de seguridad importantes."
+
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:711
+#: ../client/pk-console.c:723
 #, c-format
 msgid "The package %s is already installed"
 msgstr "El paquete %s ya está instalado"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:719
+#: ../client/pk-console.c:731
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "No se pudo instalar el paquete %s: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:744
-#: ../client/pk-console.c:767
-#: ../client/pk-console.c:863
-#: ../client/pk-console.c:980
+#: ../client/pk-console.c:756
+#: ../client/pk-console.c:779
+#: ../client/pk-console.c:875
+#: ../client/pk-console.c:992
 #: ../client/pk-tools-common.c:62
 #: ../client/pk-tools-common.c:81
 #: ../client/pk-tools-common.c:89
@@ -259,417 +281,421 @@ msgid "Internal error: %s"
 msgstr "Error interno: %s"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:752
-#: ../client/pk-console.c:1376
+#: ../client/pk-console.c:764
+#: ../client/pk-console.c:1388
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Esta herramienta no pudo instalar los paquetes: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:775
+#: ../client/pk-console.c:787
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "Esta herramienta no pudo instalar los archivos: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:831
+#: ../client/pk-console.c:843
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "Esta herramienta no pudo eliminar %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:854
-#: ../client/pk-console.c:892
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:866
+#: ../client/pk-console.c:904
+#: ../client/pk-console.c:937
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Esta herramienta no pudo eliminar los paquetes: %s"
 
 #. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:904
+#: ../client/pk-console.c:916
 msgid "The following packages have to be removed:"
 msgstr "Se eliminarán los siguientes paquetes:"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:911
+#: ../client/pk-console.c:923
 msgid "Proceed removing additional packages?"
 msgstr "¿Proceder con la eliminación de los paquetes adicionales?"
 
 #. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:916
+#: ../client/pk-console.c:928
 msgid "The package removal was canceled!"
 msgstr "Se canceló la eliminación de paquetes"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:969
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr "Esta herramienta no pudo descargar el paquete %s debido a que no se encontró"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:988
+#: ../client/pk-console.c:1000
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "Esta herramienta no pudo descargar los paquetes: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1015
-#: ../client/pk-console.c:1024
+#: ../client/pk-console.c:1027
+#: ../client/pk-console.c:1036
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Esta herramienta no pudo actualizar %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1046
-#: ../client/pk-console.c:1054
+#: ../client/pk-console.c:1058
+#: ../client/pk-console.c:1066
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Esta herramienta no pudo obtener los requerimientos de %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1076
-#: ../client/pk-console.c:1084
+#: ../client/pk-console.c:1088
+#: ../client/pk-console.c:1096
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "Esta herramienta no pudo obtener las dependencias de %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1106
-#: ../client/pk-console.c:1114
+#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1126
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Esta herramienta no pudo obtener los detalles del paquete %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1136
+#: ../client/pk-console.c:1148
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "Esta herramienta no pudo encontrar los archivos de %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1144
+#: ../client/pk-console.c:1156
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "Esta herramienta no pudo obtener la lista de archivos de %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1166
+#: ../client/pk-console.c:1178
 #, c-format
 msgid "File already exists: %s"
 msgstr "El archivo ya existe: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1171
-#: ../client/pk-console.c:1227
-#: ../client/pk-console.c:1302
+#: ../client/pk-console.c:1183
+#: ../client/pk-console.c:1239
+#: ../client/pk-console.c:1314
 msgid "Getting package list"
 msgstr "Obteniendo la lista de paquetes"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1177
-#: ../client/pk-console.c:1233
-#: ../client/pk-console.c:1308
+#: ../client/pk-console.c:1189
+#: ../client/pk-console.c:1245
+#: ../client/pk-console.c:1320
 #, c-format
 msgid "This tool could not get package list: %s"
 msgstr "Esta herramienta no pudo obtener la lista de paquetes: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1188
+#: ../client/pk-console.c:1200
 #, c-format
 msgid "Failed to save to disk"
 msgstr "Falló al guardar en el disco"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1222
-#: ../client/pk-console.c:1297
+#: ../client/pk-console.c:1234
+#: ../client/pk-console.c:1309
 #, c-format
 msgid "File does not exist: %s"
 msgstr "El archivo no existe: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1254
+#: ../client/pk-console.c:1266
 msgid "Packages to add"
 msgstr "Paquetes para añadir"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1262
+#: ../client/pk-console.c:1274
 msgid "Packages to remove"
 msgstr "Paquetes para eliminar"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1330
+#: ../client/pk-console.c:1342
 #, c-format
 msgid "No new packages need to be installed"
 msgstr "No hay paquetes nuevos para instalar"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1336
+#: ../client/pk-console.c:1348
 msgid "To install"
 msgstr "Para instalar"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1348
+#: ../client/pk-console.c:1360
 msgid "Searching for package: "
 msgstr "Buscando el paquete: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1352
+#: ../client/pk-console.c:1364
 msgid "not found."
 msgstr "no encontrado."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1363
+#: ../client/pk-console.c:1375
 #, c-format
 msgid "No packages can be found to install"
 msgstr "No se encontró ningún paquete para instalar"
 
 #. TRANSLATORS: installing new packages from package list
-#: ../client/pk-console.c:1369
+#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
+#: ../client/pk-console.c:1381
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:868
+#, c-format
 msgid "Installing packages"
 msgstr "Instalando paquetes"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1405
+#: ../client/pk-console.c:1417
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "Esta herramienta no pudo encontrar los detalles de actualización de %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1413
+#: ../client/pk-console.c:1425
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "Esta herramienta no pudo obtener los detalles de actualización de %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1444
+#: ../client/pk-console.c:1456
 msgid "Error:"
 msgstr "Error:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1458
+#: ../client/pk-console.c:1470
 msgid "Package description"
 msgstr "Descripción del paquete"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1474
+#: ../client/pk-console.c:1486
 msgid "Message:"
 msgstr "Mensaje:"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1502
+#: ../client/pk-console.c:1514
 msgid "Package files"
 msgstr "Archivos del paquete"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1510
+#: ../client/pk-console.c:1522
 msgid "No files"
 msgstr "No hay archivos"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1533
+#: ../client/pk-console.c:1545
 msgid "Repository signature required"
 msgstr "Se requiere la firma del repositorio"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1543
+#: ../client/pk-console.c:1555
 msgid "Do you accept this signature?"
 msgstr "¿Acepta esta firma?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1547
+#: ../client/pk-console.c:1559
 msgid "The signature was not accepted."
 msgstr "No se aceptó la firma."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1581
+#: ../client/pk-console.c:1593
 msgid "End user license agreement required"
 msgstr "Se requiere un acuerdo de licencia de usuario final"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1588
+#: ../client/pk-console.c:1600
 msgid "Do you agree to this license?"
 msgstr "¿Está de acuerdo con esta licencia?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1592
+#: ../client/pk-console.c:1604
 msgid "The license was refused."
 msgstr "Se rechazó la licencia."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1621
+#: ../client/pk-console.c:1633
 msgid "The daemon crashed mid-transaction!"
 msgstr "El demonio se colgó en medio de una transacción."
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1674
+#: ../client/pk-console.c:1686
 msgid "PackageKit Console Interface"
 msgstr "Interfaz de consola de PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1676
+#: ../client/pk-console.c:1688
 msgid "Subcommands:"
 msgstr "Subcomandos:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1768
+#: ../client/pk-console.c:1780
 #: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:125
 #: ../contrib/command-not-found/pk-command-not-found.c:521
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:532
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Mostrar información extra de depuración"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1771
+#: ../client/pk-console.c:1783
 #: ../client/pk-monitor.c:127
 msgid "Show the program version and exit"
 msgstr "Mostrar la versión del programa y salir"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1774
+#: ../client/pk-console.c:1786
 msgid "Set the filter, e.g. installed"
 msgstr "Establecer el filtro, ej. instalado"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1777
+#: ../client/pk-console.c:1789
 msgid "Exit without waiting for actions to complete"
 msgstr "Salir sin esperar que las acciones se completen"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1804
+#: ../client/pk-console.c:1816
 msgid "This tool could not connect to system DBUS."
 msgstr "Esta herramienta no se pudo conectar al DBUS del sistema."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1893
+#: ../client/pk-console.c:1905
 msgid "The filter specified was invalid"
 msgstr "El filtro especificado fue inválido"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1911
+#: ../client/pk-console.c:1923
 msgid "A search type is required, e.g. name"
 msgstr "Se necesita un tipo de búsqueda, por ejemplo, nombre"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1917
-#: ../client/pk-console.c:1925
-#: ../client/pk-console.c:1933
-#: ../client/pk-console.c:1941
+#: ../client/pk-console.c:1929
+#: ../client/pk-console.c:1937
+#: ../client/pk-console.c:1945
+#: ../client/pk-console.c:1953
 msgid "A search term is required"
 msgstr "Se necesita un término de búsqueda"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1947
+#: ../client/pk-console.c:1959
 msgid "Invalid search type"
 msgstr "Tipo de búsqueda inválido"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1953
+#: ../client/pk-console.c:1965
 msgid "A package name or filename to install is required"
 msgstr "Se requiere un nombre de paquete o nombre de archivo para instalar"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1961
+#: ../client/pk-console.c:1973
 msgid "A type, key_id and package_id are required"
 msgstr "Se necesita un tipo, key_id y package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1969
+#: ../client/pk-console.c:1981
 msgid "A package name to remove is required"
 msgstr "Necesita un nombre de paquete para eliminar"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1976
+#: ../client/pk-console.c:1988
 msgid "A destination directory and then the package names to download are required"
 msgstr "Se debe especificar el directorio destino y luego los nombres paquetes para descargar"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1982
+#: ../client/pk-console.c:1994
 msgid "Directory not found"
 msgstr "Directorio no encontrado"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1989
+#: ../client/pk-console.c:2001
 msgid "A licence identifier (eula-id) is required"
 msgstr "Se necesita un identificador de licencia (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1998
+#: ../client/pk-console.c:2010
 msgid "A transaction identifier (tid) is required"
 msgstr "Se necesita un identificador de transacción (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2014
+#: ../client/pk-console.c:2026
 msgid "A package name to resolve is required"
 msgstr "Se necesita un nombre de paquete para resolver"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2022
-#: ../client/pk-console.c:2030
+#: ../client/pk-console.c:2034
+#: ../client/pk-console.c:2042
 msgid "A repository name is required"
 msgstr "Se necesita un nombre de repositorio"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2038
+#: ../client/pk-console.c:2050
 msgid "A repo name, parameter and value are required"
 msgstr "Debe especificar un nombre de repositorio, parámetro y valor"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2051
+#: ../client/pk-console.c:2063
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Debe especificar una acción, por ejemplo, «update-system»"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2057
+#: ../client/pk-console.c:2069
 msgid "A correct role is required"
 msgstr "Se necesita un rol correcto"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2063
+#: ../client/pk-console.c:2075
 msgid "Failed to get the time since this action was last completed"
 msgstr "Falló al obtener la hora de la última vez que se completó esta acción"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2072
-#: ../client/pk-console.c:2083
-#: ../client/pk-console.c:2091
-#: ../client/pk-console.c:2107
-#: ../client/pk-console.c:2115
+#: ../client/pk-console.c:2084
+#: ../client/pk-console.c:2095
+#: ../client/pk-console.c:2103
+#: ../client/pk-console.c:2119
+#: ../client/pk-console.c:2127
 #: ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "Se necesita un nombre de paquete"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2099
+#: ../client/pk-console.c:2111
 msgid "A package provide string is required"
 msgstr "Se necesita la cadena de lo que proporciona el paquete"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2123
+#: ../client/pk-console.c:2135
 msgid "A list file name to create is required"
 msgstr "Se necesita un nombre de archivo de la lista"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2132
-#: ../client/pk-console.c:2141
+#: ../client/pk-console.c:2144
+#: ../client/pk-console.c:2153
 msgid "A list file to open is required"
 msgstr "Se necesita un archivo de lista para abrir"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2194
+#: ../client/pk-console.c:2206
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "La opción «%s» no está soportada"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2207
+#: ../client/pk-console.c:2219
 msgid "Incorrect privileges for this operation"
 msgstr "Privilegios incorrectos para esta operación"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2210
+#: ../client/pk-console.c:2222
 msgid "Command failed"
 msgstr "Falló el comando"
 
@@ -884,58 +910,242 @@ msgid "Please choose a package to install"
 msgstr "Elija un paquete para instalar"
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/src/contents.cpp:299
+#: ../contrib/browser-plugin/pk-plugin-install.c:461
 msgid "Getting package information..."
 msgstr "Extrayendo información del paquete..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/src/contents.cpp:305
+#: ../contrib/browser-plugin/pk-plugin-install.c:467
 #, c-format
 msgid "Run %s"
 msgstr "Ejecutar %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/src/contents.cpp:311
+#: ../contrib/browser-plugin/pk-plugin-install.c:473
 msgid "Installed version"
 msgstr "Versión instalada"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/src/contents.cpp:319
+#: ../contrib/browser-plugin/pk-plugin-install.c:481
 #, c-format
 msgid "Run version %s now"
 msgstr "Ejecutar la versión %s ahora"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/src/contents.cpp:325
+#: ../contrib/browser-plugin/pk-plugin-install.c:487
 msgid "Run now"
 msgstr "Ejecutar ahora"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/src/contents.cpp:331
+#: ../contrib/browser-plugin/pk-plugin-install.c:493
 #, c-format
 msgid "Update to version %s"
 msgstr "Actualizar a la versión %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/src/contents.cpp:337
+#: ../contrib/browser-plugin/pk-plugin-install.c:499
 #, c-format
 msgid "Install %s now"
 msgstr "Instalar %s ahora"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/src/contents.cpp:340
+#: ../contrib/browser-plugin/pk-plugin-install.c:502
 msgid "Version"
 msgstr "Versión"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/src/contents.cpp:345
+#: ../contrib/browser-plugin/pk-plugin-install.c:507
 msgid "No packages found for your system"
 msgstr "No se encontró ningún paquete para su sistema"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/src/contents.cpp:350
+#: ../contrib/browser-plugin/pk-plugin-install.c:512
 msgid "Installing..."
 msgstr "Instalando..."
+
+#. TRANSLATORS: we are starting to install the packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:186
+msgid "Starting install"
+msgstr "Iniciando la instalación"
+
+#. TRANSLATORS: we couldn't find the package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:379
+#, c-format
+msgid "Failed to find the package %s, or already installed: %s"
+msgstr "No se ha podido encontrar el paquete %s, o tal vez ya se encuentre instalado: %s"
+
+#. command line argument, simulate what would be done, but don't actually do it
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
+msgid "Don't actually install any packages, only simulate what would be installed"
+msgstr "No se instala ningún paquete realmente, solo se indica cuáles serían instalados"
+
+#. command line argument, do we skip packages that depend on the ones specified
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:538
+msgid "Do not install dependencies of the core packages"
+msgstr "No se instalan dependencias de los paquetes principales"
+
+#. command line argument, do we operate quietly
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:541
+msgid "Do not display information or progress"
+msgstr "No se muestra información ni progreso"
+
+#. TRANSLATORS: tool that gets called when the command is not found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+msgid "PackageKit Debuginfo Installer"
+msgstr "Instalador de depuración de errores de PackageKit"
+
+#. TRANSLATORS: the use needs to specify a list of package names on the command line
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:571
+#, c-format
+msgid "ERROR: Specify package names to install."
+msgstr "ERROR: Debe especificar los nombres de los paquetes a instalar."
+
+#. TRANSLATORS: we are getting the list of repositories
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:605
+#, c-format
+msgid "Getting sources list"
+msgstr "Obteniendo lista desde las fuentes"
+
+#. TRANSLATORS: all completed 100%
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:663
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:698
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:893
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:937
+#, c-format
+msgid "OK."
+msgstr "OK."
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:626
+#, c-format
+msgid "Found %i enabled and %i disabled sources."
+msgstr "Se han encontrado %i fuentes activas y %i fuentes deshabilitadas."
+
+#. TRANSLATORS: we're finding repositories that match out pattern
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
+#, c-format
+msgid "Finding debugging sources"
+msgstr "Buscando fuentes para depuración"
+
+#. TRANSLATORS: tell the user what we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:666
+#, c-format
+msgid "Found %i disabled debuginfo repos."
+msgstr "Se han encontrado %i repositorios deshabilitados para depuración."
+
+#. TRANSLATORS: we're now enabling all the debug sources we found
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:673
+#, c-format
+msgid "Enabling debugging sources"
+msgstr "Habilitando fuentes para depuración"
+
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:878
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:922
+msgid "FAILED."
+msgstr "FALLO."
+
+#. TRANSLATORS: tell the user how many we enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#, c-format
+msgid "Enabled %i debugging sources."
+msgstr "Se han habilitado %i fuentes para depuración."
+
+#. TRANSLATORS: we're now finding packages that match in all the repos
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:708
+#, c-format
+msgid "Finding debugging packages"
+msgstr "Buscando paquetes de depuración."
+
+#. TRANSLATORS: we couldn't find the package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:720
+#, c-format
+msgid "Failed to find the package %s: %s"
+msgstr "Falló al buscar el paquete %s: %s"
+
+#. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:743
+#, c-format
+msgid "Failed to find the debuginfo package %s: %s"
+msgstr "Fallo al buscar el paquete de depuración %s: %s"
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#, c-format
+msgid "Found no packages to install."
+msgstr "No se han encontrado paquetes para instalar."
+
+#. TRANSLATORS: tell the user we found some packages, and then list them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#, c-format
+msgid "Found %i packages:"
+msgstr "Se han encontrado %i paquetes:"
+
+#. TRANSLATORS: tell the user we are searching for deps
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:801
+#, c-format
+msgid "Finding packages that depend on these packages"
+msgstr "Buscando paquetes que dependan de esos paquetes."
+
+#. TRANSLATORS: could not install, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:814
+#, c-format
+msgid "Could not find dependant packages: %s"
+msgstr "No se han podido encontrar paquetes dependientes: %s"
+
+#. TRANSLATORS: tell the user we found some more packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
+#, c-format
+msgid "Found %i extra packages."
+msgstr "Se han encontrado %i paquetes extra."
+
+#. TRANSLATORS: tell the user we found some more packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:834
+#, c-format
+msgid "No extra packages required."
+msgstr "No son necesarios paquetes extra."
+
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#, c-format
+msgid "Found %i packages to install:"
+msgstr "Se han encontrado %i paquetes para instalar:"
+
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:856
+#, c-format
+msgid "Not installing packages in simulate mode"
+msgstr "No se instalan paquetes en modo de simulación"
+
+#. TRANSLATORS: coul dnot install, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:881
+#, c-format
+msgid "Could not install packages: %s"
+msgstr "No se han podido instalar paquetes: %s"
+
+#. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:913
+#, c-format
+msgid "Disabling sources previously enabled"
+msgstr "Deshabilitando fuentes previamente habilitadas"
+
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:925
+#, c-format
+msgid "Could not disable the debugging sources: %s"
+msgstr "No es posible deshabilitar las fuentes para depuración:%s"
+
+#. TRANSLATORS: we disabled all the debugging repos that we enabled before
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#, c-format
+msgid "Disabled %i debugging sources."
+msgstr "Se han deshabilitado %i fuentes para la depuración. "
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -949,91 +1159,154 @@ msgstr "Lista de paquetes de PackageKit"
 msgid "PackageKit Service Pack"
 msgstr "Paquete de servicio de PackageKit"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr "Aceptar EULA"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to accept a EULA"
 msgstr "Se necesita autenticación para aceptar una EULA"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Se necesita autenticación para cancelar una tarea que no inició usted"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "Se necesita autenticación para cambiar los parámetros de fuente de software"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid "Authentication is required to consider a key used for signing packages as trusted"
 msgstr "Se necesita autenticación para considerar una clave usada para firmar paquetes como confiable"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to install a signed package"
 msgstr "Se necesita autenticación para instalar un paquete firmado"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install an untrusted package"
 msgstr "Se necesita autenticación para instalar un paquete no confiable"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to refresh the system sources"
 msgstr "Se necesita autenticación para refrescar las fuentes del sistema"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to remove packages"
 msgstr "Se necesita autenticación para eliminar paquetes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to rollback a transaction"
 msgstr "Se necesita autenticación para deshacer una transacción"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to set the network proxy used for downloading packages"
 msgstr "Se necesita autenticación para cambiar el proxy de red usado para descargar paquetes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to update packages"
 msgstr "Se necesita autenticación para actualizar paquetes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:24
 msgid "Cancel foreign task"
 msgstr "Cancelar tarea externa"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software sources as this can be used to enable new updates or
+#. install different versions of software.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:30
 msgid "Change software source parameters"
 msgstr "Cambiar los parámetros de fuente de software"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:37
 msgid "Install signed package"
 msgstr "Instalar paquete firmado"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:44
 msgid "Install untrusted local file"
 msgstr "Instalar archivo local no-confiable"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:49
 msgid "Refresh system sources"
 msgstr "Refrescar las fuentes del sistema"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Remove package"
 msgstr "Eliminar paquete"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+#. SECURITY:
+#. - Normal users require admin authentication to rollback system state
+#. as this will change a large number of packages, and could expose the
+#. system to previously patched security vulnerabilities.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:65
 msgid "Rollback to a previous transaction"
 msgstr "Deshacer hasta una transacción anterior"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:70
 msgid "Set network proxy"
 msgstr "Establecer el proxy de la red"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+#. SECURITY:
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Trust a key used for signing packages"
 msgstr "Confiar en una llave usada para firmar paquetes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:22
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:85
 msgid "Update packages"
 msgstr "Actualizar paquetes"
 
@@ -1102,30 +1375,34 @@ msgstr "No se pudo conectar con el bus del sistema"
 msgid "Error trying to start:"
 msgstr "Error intentando iniciar:"
 
+#: ../src/pk-polkit-action-lookup.c:143
+msgid "To install debugging packages, extra sources need to be enabled"
+msgstr "Para poder instalar paquetes de depuración, es necesario habilitar nuevas fuentes"
+
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:128
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:156
+#: ../src/pk-polkit-action-lookup.c:175
 msgid "The software is not from a trusted source."
 msgstr "El software no proviene de una fuente confiable."
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:132
+#: ../src/pk-polkit-action-lookup.c:160
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "No actualice este paquete a menos que sepa con certeza que es seguro hacerlo."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:136
-#: ../src/pk-polkit-action-lookup.c:155
+#: ../src/pk-polkit-action-lookup.c:164
+#: ../src/pk-polkit-action-lookup.c:183
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr "Un software considerado maligno puede provocar diferentes clases de daño, por ejemplo, podría dañar su computadora. "
 
 #. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:151
+#: ../src/pk-polkit-action-lookup.c:179
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "No instale este paquete a menos que sepa con certeza que es seguro hacerlo."
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:235
+#: ../src/pk-polkit-action-lookup.c:263
 msgid "Only trusted"
 msgstr "Solo confiable"
 
@@ -1149,8 +1426,6 @@ msgstr "Solo confiable"
 #~ msgstr "Debe especificar el tipo de búsqueda, por ejemplo, nombre"
 #~ msgid "You need to specify a search term"
 #~ msgstr "Debe especificar un término de búsqueda"
-#~ msgid "You need to specify a package or file to install"
-#~ msgstr "Debe especificar un paquete o archivo a instalar"
 #~ msgid "You need to specify a package to remove"
 #~ msgstr "Debe especificar un paquete a eliminar"
 #~ msgid "You need to specify a package name to resolve"
@@ -1189,8 +1464,6 @@ msgstr "Solo confiable"
 #~ msgstr "No se pudo encontrar cuales paquetes requiere este paquete"
 #~ msgid "Could not find details for"
 #~ msgstr "No se pudieron obtener los detalles de "
-#~ msgid "Could not find a package match"
-#~ msgstr "No se pudo encontrar un paquete coincidente"
 
 #, fuzzy
 #~ msgid "Could not set database readonly"
