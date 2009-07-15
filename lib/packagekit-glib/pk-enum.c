@@ -87,6 +87,9 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
 	{PK_STATUS_ENUM_WAITING_FOR_LOCK,	"waiting-for-lock"},
 	{PK_STATUS_ENUM_WAITING_FOR_AUTH,	"waiting-for-auth"},
+	{PK_STATUS_ENUM_SCAN_PROCESS_LIST,	"scan-process-list"},
+	{PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES,	"check-executable-files"},
+	{PK_STATUS_ENUM_CHECK_LIBRARIES,	"check-libraries"},
 	{0, NULL}
 };
 
@@ -190,6 +193,8 @@ static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
 	{PK_RESTART_ENUM_SESSION,		"session"},
 	{PK_RESTART_ENUM_APPLICATION,		"application"},
+	{PK_RESTART_ENUM_SECURITY_SYSTEM,	"security-system"},
+	{PK_RESTART_ENUM_SECURITY_SESSION,	"security-session"},
 	{0, NULL}
 };
 

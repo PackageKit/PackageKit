@@ -39,6 +39,7 @@ void pk_common_test (EggTest *test);
 void pk_enum_test_list (EggTest *test);
 void pk_desktop_test (EggTest *test);
 void pk_client_test (EggTest *test);
+void pk_client_pool_test (EggTest *test);
 void pk_control_test (EggTest *test);
 void pk_task_list_test (EggTest *test);
 void pk_catalog_test (EggTest *test);
@@ -57,6 +58,7 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	egg_string_test (test);
+	pk_client_pool_test (test);
 	pk_obj_list_test (test);
 	pk_common_test (test);
 	pk_package_id_test (test);

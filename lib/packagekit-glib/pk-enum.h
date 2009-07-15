@@ -136,6 +136,9 @@ typedef enum {
 	PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,
 	PK_STATUS_ENUM_WAITING_FOR_LOCK,
 	PK_STATUS_ENUM_WAITING_FOR_AUTH,
+	PK_STATUS_ENUM_SCAN_PROCESS_LIST,
+	PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES,
+	PK_STATUS_ENUM_CHECK_LIBRARIES,
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
@@ -205,13 +208,15 @@ typedef enum {
 /**
  * PkRestartEnum:
  *
- * What restart we need to after a transaction
+ * What restart we need to after a transaction, ordered by severity
  **/
 typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
 	PK_RESTART_ENUM_SYSTEM,
+	PK_RESTART_ENUM_SECURITY_SESSION,	/* a library that is being used by this package has been updated for security */
+	PK_RESTART_ENUM_SECURITY_SYSTEM,
 	PK_RESTART_ENUM_UNKNOWN
 } PkRestartEnum;
 

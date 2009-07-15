@@ -61,7 +61,7 @@
 #include "pk-shared.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
-#include "pk-post-trans.h"
+#include "pk-transaction-extra.h"
 #include "pk-syslog.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
@@ -107,7 +107,7 @@ struct PkTransactionPrivate
 #endif
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy_pid;
-	PkPostTrans		*post_trans;
+	PkTransactionExtra		*transaction_extra;
 	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
@@ -115,6 +115,7 @@ struct PkTransactionPrivate
 	gchar			*tid;
 	gchar			*sender;
 	gchar			*cmdline;
+	GPtrArray		*require_restart_list;
 	PkPackageList		*package_list;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
@@ -183,6 +184,13 @@ enum {
 	PK_TRANSACTION_LAST_SIGNAL
 };
 
+enum
+{
+	PROP_0,
+	PROP_UID,
+	PROP_LAST
+};
+
 static guint	     signals [PK_TRANSACTION_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
@@ -233,6 +241,7 @@ pk_transaction_error_get_type (void)
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_PACK_INVALID, "PackInvalid"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED, "MimeTypeNotSupported"),
 			ENUM_ENTRY (PK_TRANSACTION_ERROR_INVALID_PROVIDE, "InvalidProvide"),
+			ENUM_ENTRY (PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID, "NumberOfPackagesInvalid"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkTransactionError", values);
@@ -609,7 +618,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			/* process file lists on these packages */
 			if (list->len > 0) {
 				package_ids = pk_package_ids_from_array (list);
-				pk_post_trans_check_running_process (transaction->priv->post_trans, package_ids);
+				pk_transaction_extra_check_running_process (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
@@ -641,7 +650,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			/* process file lists on these packages */
 			if (list->len > 0) {
 				package_ids = pk_package_ids_from_array (list);
-				pk_post_trans_check_desktop_files (transaction->priv->post_trans, package_ids);
+				pk_transaction_extra_check_desktop_files (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
@@ -663,15 +672,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* generate the package list */
 		ret = pk_conf_get_bool (transaction->priv->conf, "UpdatePackageList");
 		if (ret)
-			pk_post_trans_update_package_list (transaction->priv->post_trans);
+			pk_transaction_extra_update_package_list (transaction->priv->transaction_extra);
 
 		/* refresh the desktop icon cache */
 		ret = pk_conf_get_bool (transaction->priv->conf, "ScanDesktopFiles");
 		if (ret)
-			pk_post_trans_import_desktop_files (transaction->priv->post_trans);
+			pk_transaction_extra_import_desktop_files (transaction->priv->transaction_extra);
 
 		/* clear the firmware requests directory */
-		pk_post_trans_clear_firmware_requests (transaction->priv->post_trans);
+		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
 
 	/* if we did not send this, ensure the GUI has the right state */
@@ -957,11 +966,35 @@ static void
 pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *package_id, PkTransaction *transaction)
 {
 	const gchar *restart_text;
+	const gchar *package_id_tmp;
+	GPtrArray *list;
+	gboolean found = FALSE;
+	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	restart_text = pk_restart_enum_to_text (restart);
+
+	/* filter out duplicates */
+	list = transaction->priv->require_restart_list;
+	for (i=0; i<list->len; i++) {
+		package_id_tmp = g_ptr_array_index (list, i);
+		if (g_strcmp0 (package_id, package_id_tmp) == 0) {
+			found = TRUE;
+			break;
+		}
+	}
+
+	/* ignore */
+	if (found) {
+		egg_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
+		return;
+	}
+
+	/* add to duplicate list */
+	g_ptr_array_add (list, g_strdup (package_id));
+
 	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REQUIRE_RESTART], 0, restart_text, package_id);
 }
@@ -1034,16 +1067,106 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 }
 
 /**
+ * pk_transaction_pre_transaction_checks:
+ */
+static gboolean
+pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
+{
+	PkPackageList *updates;
+	const PkPackageObj *obj;
+	guint i;
+	guint j;
+	guint length;
+	gboolean ret = FALSE;
+	gchar *package_id;
+	gchar **package_ids_security = NULL;
+	GPtrArray *list = NULL;
+	const gchar *package_id_tmp;
+
+	/* only do this for update actions */
+	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    transaction->priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		egg_debug ("doing nothing, as not update or install");
+		goto out;
+	}
+
+	/* do we want to enable this codepath? */
+	ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+	if (!ret) {
+		egg_warning ("not checking for library restarts");
+		goto out;
+	}
+
+	/* do we have a cache */
+	updates = pk_cache_get_updates (transaction->priv->cache);
+	if (updates == NULL) {
+		egg_warning ("no updates cache");
+		goto out;
+	}
+
+	/* find security update packages */
+	list = g_ptr_array_new ();
+	length = pk_package_list_get_size (updates);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (updates, i);
+		if (obj->info == PK_INFO_ENUM_SECURITY) {
+			package_id = pk_package_id_to_string (obj->id);
+			egg_debug ("security update: %s", package_id);
+			g_ptr_array_add (list, package_id);
+		}
+	}
+
+	/* is a security update we are installing */
+	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		ret = FALSE;
+
+		/* do any of the packages we are updating match */
+		for (i=0; i < list->len; i++) {
+			package_id_tmp = g_ptr_array_index (list, i);
+			for (j=0; package_ids[j] != NULL; j++) {
+				if (g_strcmp0 (package_id_tmp, package_ids[j]) == 0) {
+					ret = TRUE;
+					break;
+				}
+			}
+		}
+
+		/* nothing matched */
+		if (!ret) {
+			egg_debug ("not installing a security update package");
+			goto out;
+		}
+	}
+
+	/* find files in security updates */
+	package_ids_security = pk_package_ids_from_array (list);
+	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids_security);
+out:
+	g_strfreev (package_ids_security);
+	if (list != NULL) {
+		g_ptr_array_foreach (list, (GFunc) g_free, NULL);
+		g_ptr_array_free (list, TRUE);
+	}
+	return ret;
+}
+
+/**
  * pk_transaction_set_running:
  */
 G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
+	gboolean ret;
 	PkBackendDesc *desc;
 	PkStore *store;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* reset the require-restart list */
+	g_ptr_array_foreach (transaction->priv->require_restart_list, (GFunc) g_free, NULL);
+	g_ptr_array_set_size (transaction->priv->require_restart_list, 0);
 
 	/* prepare for use; the transaction list ensures this is safe */
 	pk_backend_reset (transaction->priv->backend);
@@ -1062,6 +1185,13 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
 	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
+
+	/* do any pre transaction checks */
+	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids);
+
+	/* might have to reset again if we used the backend */
+	if (ret)
+		pk_backend_reset (transaction->priv->backend);
 
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
@@ -1557,9 +1687,15 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	result = polkit_authority_check_authorization_finish (transaction->priv->authority, res, &error);
 	transaction->priv->waiting_for_auth = FALSE;
 
-	/* failed */
+	/* failed, maybe session authentication agent isn't running */
 	if (result == NULL) {
 		egg_warning ("failed to check for auth: %s", error->message);
+
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+						"failed to check for auth: maybe session authentication agent isn't running?");
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 		g_error_free (error);
 		goto out;
 	}
@@ -1992,6 +2128,8 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	gchar *package_ids_temp;
 	gchar *directory = NULL;
 	gint retval;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2013,6 +2151,17 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
 		goto out;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
 	}
 
 	/* check package_ids */
@@ -2139,6 +2288,8 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2167,6 +2318,17 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2213,6 +2375,8 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2234,6 +2398,17 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -2327,6 +2502,8 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2348,6 +2525,17 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -2564,6 +2752,8 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2592,6 +2782,17 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	/* check the filter */
 	ret = pk_transaction_filter_check (filter, &error);
 	if (!ret) {
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -2680,6 +2881,8 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2701,6 +2904,17 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3003,6 +3217,8 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3024,6 +3240,17 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3203,6 +3430,8 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3224,6 +3453,17 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -3389,6 +3629,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	gchar *packages_temp;
 	guint i;
 	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3422,8 +3663,18 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 		return;
 	}
 
-	/* check for sanity */
+	/* check for length sanity */
 	length = g_strv_length (packages);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumItemsToResolve");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Too many items to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check each package for sanity */
 	for (i=0; i<length; i++) {
 		ret = pk_strvalidate (packages[i]);
 		if (!ret) {
@@ -3843,6 +4094,8 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	gboolean ret;
 	GError *error;
 	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3864,6 +4117,17 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
 		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
 	}
@@ -4032,6 +4296,26 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 }
 
 /**
+ * pk_transaction_get_property:
+ **/
+static void
+pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkTransaction *transaction;
+
+	transaction = PK_TRANSACTION (object);
+
+	switch (prop_id) {
+	case PROP_UID:
+		g_value_set_uint (value, transaction->priv->uid);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_transaction_class_init:
  * @klass: The PkTransactionClass
  **/
@@ -4041,6 +4325,15 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = pk_transaction_dispose;
 	object_class->finalize = pk_transaction_finalize;
+	object_class->get_property = pk_transaction_get_property;
+
+	g_object_class_install_property (object_class,
+					 PROP_UID,
+					 g_param_spec_uint ("uid",
+							    "UID",
+							    "User ID that created the transaction",
+							    0, G_MAXUINT, 0,
+							    G_PARAM_READABLE));
 
 	signals [PK_TRANSACTION_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
@@ -4198,6 +4491,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->elapsed = 0;
 	transaction->priv->remaining = 0;
+	transaction->priv->require_restart_list = g_ptr_array_new ();
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
@@ -4211,11 +4505,13 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cancellable = g_cancellable_new ();
 #endif
 
-	transaction->priv->post_trans = pk_post_trans_new ();
-	g_signal_connect (transaction->priv->post_trans, "status-changed",
+	transaction->priv->transaction_extra = pk_transaction_extra_new ();
+	g_signal_connect (transaction->priv->transaction_extra, "status-changed",
 			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	g_signal_connect (transaction->priv->post_trans, "progress-changed",
+	g_signal_connect (transaction->priv->transaction_extra, "progress-changed",
 			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+	g_signal_connect (transaction->priv->transaction_extra, "require-restart",
+			  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",
@@ -4286,6 +4582,9 @@ pk_transaction_finalize (GObject *object)
 		g_object_unref (transaction->priv->subject);
 #endif
 
+	g_ptr_array_foreach (transaction->priv->require_restart_list, (GFunc) g_free, NULL);
+	g_ptr_array_free (transaction->priv->require_restart_list, TRUE);
+
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->locale);
 	g_free (transaction->priv->cached_package_id);
@@ -4312,7 +4611,7 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->proxy_pid);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->syslog);
-	g_object_unref (transaction->priv->post_trans);
+	g_object_unref (transaction->priv->transaction_extra);
 #ifdef USE_SECURITY_POLKIT
 //	g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);

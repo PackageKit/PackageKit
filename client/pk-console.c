@@ -518,6 +518,12 @@ pk_console_require_restart_cb (PkClient *client, const PkRequireRestartObj *obj,
 	} else if (obj->restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted */
 		g_print ("%s %s-%s.%s\n", _("Session restart required:"), obj->id->name, obj->id->version, obj->id->arch);
+	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
+		/* TRANSLATORS: a package requires the system to be restarted due to a security update*/
+		g_print ("%s %s-%s.%s\n", _("System restart (security) required by:"), obj->id->name, obj->id->version, obj->id->arch);
+	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SESSION) {
+		/* TRANSLATORS: a package requires the session to be restarted due to a security update */
+		g_print ("%s %s-%s.%s\n", _("Session restart (security) required:"), obj->id->name, obj->id->version, obj->id->arch);
 	} else if (obj->restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s-%s.%s\n", _("Application restart required by:"), obj->id->name, obj->id->version, obj->id->arch);
@@ -574,7 +580,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
 	if (restart == PK_RESTART_ENUM_SYSTEM) {
-		/* TRANSLATORS: a package needs to restart they system */
+		/* TRANSLATORS: a package needs to restart their system */
 		g_print ("%s\n", _("Please restart the computer to complete the update."));
 	} else if (restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package needs to restart the session */
@@ -582,6 +588,12 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package needs to restart the application */
 		g_print ("%s\n", _("Please restart the application as it is being used."));
+	} else if (restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
+		/* TRANSLATORS: a package needs to restart their system (due to security) */
+		g_print ("%s\n", _("Please restart the computer to complete the update as important security updates have been installed."));
+	} else if (restart == PK_RESTART_ENUM_SECURITY_SESSION) {
+		/* TRANSLATORS: a package needs to restart the session (due to security) */
+		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 
 	/* need to handle retry with only_trusted=FALSE */

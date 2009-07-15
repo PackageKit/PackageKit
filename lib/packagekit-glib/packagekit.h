@@ -29,6 +29,7 @@
 #include <packagekit-glib/pk-catalog.h>
 #include <packagekit-glib/pk-category-obj.h>
 #include <packagekit-glib/pk-client.h>
+#include <packagekit-glib/pk-client-pool.h>
 #include <packagekit-glib/pk-common.h>
 #include <packagekit-glib/pk-connection.h>
 #include <packagekit-glib/pk-control.h>

@@ -116,6 +116,15 @@ UpdatePackageList=true
 # default=true
 UpdateCheckProcesses=true
 
+# Check for shared libraries that are in use, that are replaced by packages
+# that are marked as security updates.
+#
+# NOTE: Don't enable this for backends that are slow doing GetFiles() on
+# installed files.
+#
+# default=true
+CheckSharedLibrariesInUse=true
+
 # Check for updates in testing repositories when we check for updates
 #
 # NOTE: Don't enable this if you do not want testing updates to be checked
@@ -159,4 +168,49 @@ StateChangedTimeoutPriority=5
 #
 # default=600
 StateChangedTimeoutNormal=600
+
+# The maximum number of requests a given user is able to request and queue
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is doing many requests to the daemon in a
+# short period of time.
+#
+# default=100
+SimultaneousTransactionsForUid=100
+
+# The maximum number of items that can be resolved in one method
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is trying to resolve a large number of
+# packages in one method.
+#
+# default=10
+MaximumItemsToResolve=10
+
+# The maximum number of packages that can be processed in one method
+#
+# Setting this lower decreases the risk of a local denial of service, but may
+# cause errors if the desktop client is trying to do a large transaction.
+#
+# default=2500
+MaximumPackagesToProcess=2500
+
+# How long the transaction is valid before it's destroyed, in seconds
+#
+# The client only has a finite amount of time to use the object, else it is
+# destroyed. Setting this longer will allow malicious clients to queue up large
+# number of authentication requests, but setting this shorter will reduce the
+# amount of time the user has to authenticate.
+#
+# default=30
+TransactionCreateCommitTimeout=30
+
+# How long the transaction should be queriable after it is finished, in seconds
+#
+# Give the client a few seconds to still query the transaction after it has
+# finished by keeping it on the bus. Setting this larger allows clients to query
+# the transaction without accessing the database, but increases memory usage.
+#
+# default=5
+TransactionKeepFinishedTimeout=5
 

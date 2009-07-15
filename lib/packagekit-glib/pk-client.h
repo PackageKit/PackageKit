@@ -152,11 +152,11 @@ struct _PkClientClass
 							 PkMediaTypeEnum type,
 							 const gchar	*media_id,
 							 const gchar	*media_text);
+	void		(* destroy)			(PkClient	*client);
 	/* Padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
-	void (*_pk_reserved4) (void);
 };
 
 GQuark		 pk_client_error_quark			(void);

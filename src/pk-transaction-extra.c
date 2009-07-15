@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -34,82 +34,95 @@
 
 #include "egg-debug.h"
 
-#include "pk-post-trans.h"
+#include "pk-transaction-extra.h"
 #include "pk-shared.h"
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
+#include "pk-lsof.h"
 
-#define PK_POST_TRANS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_POST_TRANS, PkPostTransPrivate))
+#define PK_POST_TRANS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_POST_TRANS, PkTransactionExtraPrivate))
 
-struct PkPostTransPrivate
+struct PkTransactionExtraPrivate
 {
 	sqlite3			*db;
 	PkBackend		*backend;
 	GMainLoop		*loop;
 	PkObjList		*running_exec_list;
 	PkPackageList		*list;
+	PkLsof			*lsof;
 	guint			 finished_id;
 	guint			 package_id;
 	GHashTable		*hash;
+	GPtrArray		*files_list;
 };
 
 enum {
 	PK_POST_TRANS_STATUS_CHANGED,
 	PK_POST_TRANS_PROGRESS_CHANGED,
+	PK_POST_TRANS_REQUIRE_RESTART,
 	PK_POST_TRANS_LAST_SIGNAL
 };
 
 static guint signals [PK_POST_TRANS_LAST_SIGNAL] = { 0 };
-G_DEFINE_TYPE (PkPostTrans, pk_post_trans, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkTransactionExtra, pk_transaction_extra, G_TYPE_OBJECT)
 
 /**
- * pk_post_trans_finished_cb:
+ * pk_transaction_extra_finished_cb:
  **/
 static void
-pk_post_trans_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkPostTrans *post)
+pk_transaction_extra_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransactionExtra *post)
 {
 	if (g_main_loop_is_running (post->priv->loop))
 		g_main_loop_quit (post->priv->loop);
 }
 
 /**
- * pk_post_trans_package_cb:
+ * pk_transaction_extra_package_cb:
  **/
 static void
-pk_post_trans_package_cb (PkBackend *backend, const PkPackageObj *obj, PkPostTrans *post)
+pk_transaction_extra_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransactionExtra *post)
 {
 	pk_obj_list_add (PK_OBJ_LIST(post->priv->list), obj);
 }
 
 /**
- * pk_post_trans_set_status_changed:
+ * pk_transaction_extra_set_require_restart:
  **/
 static void
-pk_post_trans_set_status_changed (PkPostTrans *post, PkStatusEnum status)
+pk_transaction_extra_set_require_restart (PkTransactionExtra *post, PkRestartEnum restart, const gchar *package_id)
+{
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	g_signal_emit (post, signals [PK_POST_TRANS_REQUIRE_RESTART], 0, restart, package_id);
+}
+
+/**
+ * pk_transaction_extra_set_status_changed:
+ **/
+static void
+pk_transaction_extra_set_status_changed (PkTransactionExtra *post, PkStatusEnum status)
 {
 	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (post, signals [PK_POST_TRANS_STATUS_CHANGED], 0, status);
 }
 
 /**
- * pk_post_trans_set_progress_changed:
+ * pk_transaction_extra_set_progress_changed:
  **/
 static void
-pk_post_trans_set_progress_changed (PkPostTrans *post, guint percentage)
+pk_transaction_extra_set_progress_changed (PkTransactionExtra *post, guint percentage)
 {
 	egg_debug ("emiting progress-changed %i", percentage);
 	g_signal_emit (post, signals [PK_POST_TRANS_PROGRESS_CHANGED], 0, percentage, 0, 0, 0);
 }
 
 /**
- * pk_post_trans_import_desktop_files_get_package:
+ * pk_transaction_extra_get_installed_package_for_file:
  **/
-static gchar *
-pk_post_trans_import_desktop_files_get_package (PkPostTrans *post, const gchar *filename)
+static const PkPackageObj *
+pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *post, const gchar *filename)
 {
 	guint size;
-	gchar *name = NULL;
-	const PkPackageObj *obj;
+	const PkPackageObj *obj = NULL;
 	PkStore *store;
 
 	/* use PK to find the correct package */
@@ -136,19 +149,15 @@ pk_post_trans_import_desktop_files_get_package (PkPostTrans *post, const gchar *
 		egg_warning ("cannot get obj");
 		goto out;
 	}
-
-	/* strip the name */
-	name = g_strdup (obj->id->name);
-
 out:
-	return name;
+	return obj;
 }
 
 /**
- * pk_post_trans_string_list_new:
+ * pk_transaction_extra_string_list_new:
  **/
 static PkObjList *
-pk_post_trans_string_list_new ()
+pk_transaction_extra_string_list_new ()
 {
 	PkObjList *list;
 	list = pk_obj_list_new ();
@@ -161,10 +170,10 @@ pk_post_trans_string_list_new ()
 }
 
 /**
- * pk_post_trans_get_filename_md5:
+ * pk_transaction_extra_get_filename_md5:
  **/
 static gchar *
-pk_post_trans_get_filename_md5 (const gchar *filename)
+pk_transaction_extra_get_filename_md5 (const gchar *filename)
 {
 	gchar *md5 = NULL;
 	gchar *data = NULL;
@@ -193,10 +202,10 @@ out:
 }
 
 /**
- * pk_post_trans_sqlite_remove_filename:
+ * pk_transaction_extra_sqlite_remove_filename:
  **/
 static gint
-pk_post_trans_sqlite_remove_filename (PkPostTrans *post, const gchar *filename)
+pk_transaction_extra_sqlite_remove_filename (PkTransactionExtra *post, const gchar *filename)
 {
 	gchar *statement;
 	gint rc;
@@ -208,10 +217,10 @@ pk_post_trans_sqlite_remove_filename (PkPostTrans *post, const gchar *filename)
 }
 
 /**
- * pk_post_trans_sqlite_add_filename_details:
+ * pk_transaction_extra_sqlite_add_filename_details:
  **/
 static gint
-pk_post_trans_sqlite_add_filename_details (PkPostTrans *post, const gchar *filename, const gchar *package, const gchar *md5)
+pk_transaction_extra_sqlite_add_filename_details (PkTransactionExtra *post, const gchar *filename, const gchar *package, const gchar *md5)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
@@ -263,30 +272,31 @@ out:
 }
 
 /**
- * pk_post_trans_sqlite_add_filename:
+ * pk_transaction_extra_sqlite_add_filename:
  **/
 static gint
-pk_post_trans_sqlite_add_filename (PkPostTrans *post, const gchar *filename, const gchar *md5_opt)
+pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *post, const gchar *filename, const gchar *md5_opt)
 {
 	gchar *md5 = NULL;
 	gchar *package = NULL;
 	gint rc = -1;
+	const PkPackageObj *obj;
 
 	/* if we've got it, use old data */
 	if (md5_opt != NULL)
 		md5 = g_strdup (md5_opt);
 	else
-		md5 = pk_post_trans_get_filename_md5 (filename);
+		md5 = pk_transaction_extra_get_filename_md5 (filename);
 
 	/* resolve */
-	package = pk_post_trans_import_desktop_files_get_package (post, filename);
-	if (package == NULL) {
+	obj = pk_transaction_extra_get_installed_package_for_file (post, filename);
+	if (obj == NULL) {
 		egg_warning ("failed to get list");
 		goto out;
 	}
 
 	/* add */
-	rc = pk_post_trans_sqlite_add_filename_details (post, filename, package, md5);
+	rc = pk_transaction_extra_sqlite_add_filename_details (post, filename, obj->id->name, md5);
 out:
 	g_free (md5);
 	g_free (package);
@@ -294,12 +304,12 @@ out:
 }
 
 /**
- * pk_post_trans_sqlite_cache_rescan_cb:
+ * pk_transaction_extra_sqlite_cache_rescan_cb:
  **/
 static gint
-pk_post_trans_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+pk_transaction_extra_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	PkPostTrans *post = PK_POST_TRANS (data);
+	PkTransactionExtra *post = PK_POST_TRANS (data);
 	const gchar *filename = NULL;
 	const gchar *md5 = NULL;
 	gchar *md5_calc = NULL;
@@ -320,10 +330,10 @@ pk_post_trans_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar
 	}
 
 	/* get md5 */
-	md5_calc = pk_post_trans_get_filename_md5 (filename);
+	md5_calc = pk_transaction_extra_get_filename_md5 (filename);
 	if (md5_calc == NULL) {
 		egg_debug ("remove of %s as no longer found", filename);
-		pk_post_trans_sqlite_remove_filename (post, filename);
+		pk_transaction_extra_sqlite_remove_filename (post, filename);
 		goto out;
 	}
 
@@ -333,7 +343,7 @@ pk_post_trans_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv, gchar
 	/* check md5 is same */
 	if (g_strcmp0 (md5, md5_calc) != 0) {
 		egg_debug ("add of %s as md5 invalid (%s vs %s)", filename, md5, md5_calc);
-		pk_post_trans_sqlite_add_filename (post, filename, md5_calc);
+		pk_transaction_extra_sqlite_add_filename (post, filename, md5_calc);
 	}
 
 	egg_debug ("existing filename %s valid, md5=%s", filename, md5);
@@ -343,10 +353,10 @@ out:
 }
 
 /**
- * pk_post_trans_import_desktop_files:
+ * pk_transaction_extra_import_desktop_files:
  **/
 gboolean
-pk_post_trans_import_desktop_files (PkPostTrans *post)
+pk_transaction_extra_import_desktop_files (PkTransactionExtra *post)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
@@ -370,15 +380,15 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 
 	/* use a local backend instance */
 	pk_backend_reset (post->priv->backend);
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 
 	/* reset hash */
 	g_hash_table_remove_all (post->priv->hash);
-	pk_post_trans_set_progress_changed (post, 101);
+	pk_transaction_extra_set_progress_changed (post, 101);
 
 	/* first go through the existing data, and look for modifications and removals */
 	statement = g_strdup ("SELECT filename, md5 FROM cache");
-	rc = sqlite3_exec (post->priv->db, statement, pk_post_trans_sqlite_cache_rescan_cb, post, &error_msg);
+	rc = sqlite3_exec (post->priv->db, statement, pk_transaction_extra_sqlite_cache_rescan_cb, post, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
@@ -411,28 +421,28 @@ pk_post_trans_import_desktop_files (PkPostTrans *post)
 	g_dir_close (dir);
 
 	step = 100.0f / array->len;
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
 
 	/* process files in an array */
 	for (i=0; i<array->len; i++) {
-		pk_post_trans_set_progress_changed (post, i * step);
+		pk_transaction_extra_set_progress_changed (post, i * step);
 		path = g_ptr_array_index (array, i);
-		pk_post_trans_sqlite_add_filename (post, path, NULL);
+		pk_transaction_extra_sqlite_add_filename (post, path, NULL);
 	}
 	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 
 out:
-	pk_post_trans_set_progress_changed (post, 100);
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_FINISHED);
+	pk_transaction_extra_set_progress_changed (post, 100);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_FINISHED);
 	return TRUE;
 }
 
 /**
- * pk_post_trans_update_package_list:
+ * pk_transaction_extra_update_package_list:
  **/
 gboolean
-pk_post_trans_update_package_list (PkPostTrans *post)
+pk_transaction_extra_update_package_list (PkTransactionExtra *post)
 {
 	gboolean ret;
 
@@ -449,8 +459,8 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	pk_obj_list_clear (PK_OBJ_LIST(post->priv->list));
 
 	/* update UI */
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-	pk_post_trans_set_progress_changed (post, 101);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+	pk_transaction_extra_set_progress_changed (post, 101);
 
 	/* get the new package list */
 	pk_backend_reset (post->priv->backend);
@@ -461,7 +471,7 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 	g_main_loop_run (post->priv->loop);
 
 	/* update UI */
-	pk_post_trans_set_progress_changed (post, 90);
+	pk_transaction_extra_set_progress_changed (post, 90);
 
 	/* convert to a file */
 	ret = pk_obj_list_to_file (PK_OBJ_LIST(post->priv->list), PK_SYSTEM_PACKAGE_LIST_FILENAME);
@@ -469,17 +479,17 @@ pk_post_trans_update_package_list (PkPostTrans *post)
 		egg_warning ("failed to save to file");
 
 	/* update UI */
-	pk_post_trans_set_progress_changed (post, 100);
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_FINISHED);
+	pk_transaction_extra_set_progress_changed (post, 100);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_FINISHED);
 
 	return ret;
 }
 
 /**
- * pk_post_trans_clear_firmware_requests:
+ * pk_transaction_extra_clear_firmware_requests:
  **/
 gboolean
-pk_post_trans_clear_firmware_requests (PkPostTrans *post)
+pk_transaction_extra_clear_firmware_requests (PkTransactionExtra *post)
 {
 	gboolean ret;
 	gchar *filename;
@@ -498,11 +508,11 @@ pk_post_trans_clear_firmware_requests (PkPostTrans *post)
 
 
 /**
- * pk_post_trans_update_files_check_running_cb:
+ * pk_transaction_extra_update_files_check_running_cb:
  **/
 static void
-pk_post_trans_update_files_check_running_cb (PkBackend *backend, const gchar *package_id,
-					     const gchar *filelist, PkPostTrans *post)
+pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gchar *package_id,
+					     const gchar *filelist, PkTransactionExtra *post)
 {
 	guint i;
 	guint len;
@@ -564,10 +574,10 @@ out:
 #endif
 
 /**
- * pk_post_trans_update_process_list:
+ * pk_transaction_extra_update_process_list:
  **/
 static gboolean
-pk_post_trans_update_process_list (PkPostTrans *post)
+pk_transaction_extra_update_process_list (PkTransactionExtra *post)
 {
 	GDir *dir;
 	const gchar *name;
@@ -596,11 +606,20 @@ pk_post_trans_update_process_list (PkPostTrans *post)
 		if (!ret)
 			goto out;
 
-		/* is run by our UID */
-		uid = atoi (contents);
+		/* parse UID */
+		ret = egg_strtouint (contents, &uid);
+		if (!ret) {
+			egg_warning ("failed to parse uid: '%s'", contents);
+			goto out;
+		}
 
-		/* get the exec for the pid */
-		pid = atoi (name);
+		/* parse PID */
+		ret = egg_strtoint (name, &pid);
+		if (!ret) {
+			egg_warning ("failed to parse pid: '%s'", name);
+			goto out;
+		}
+
 #ifdef USE_SECURITY_POLKIT
 		exec = dkp_post_trans_get_cmdline (pid);
 		if (exec == NULL)
@@ -625,13 +644,13 @@ out:
 }
 
 /**
- * pk_post_trans_check_running_process:
+ * pk_transaction_extra_check_running_process:
  **/
 gboolean
-pk_post_trans_check_running_process (PkPostTrans *post, gchar **package_ids)
+pk_transaction_extra_check_running_process (PkTransactionExtra *post, gchar **package_ids)
 {
 	PkStore *store;
-	guint signal_files;
+	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
 
@@ -640,14 +659,14 @@ pk_post_trans_check_running_process (PkPostTrans *post, gchar **package_ids)
 		return FALSE;
 	}
 
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-	pk_post_trans_set_progress_changed (post, 101);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
+	pk_transaction_extra_set_progress_changed (post, 101);
 
 	store = pk_backend_get_store (post->priv->backend);
-	pk_post_trans_update_process_list (post);
+	pk_transaction_extra_update_process_list (post);
 
 	signal_files = g_signal_connect (post->priv->backend, "files",
-					 G_CALLBACK (pk_post_trans_update_files_check_running_cb), post);
+					 G_CALLBACK (pk_transaction_extra_update_files_check_running_cb), post);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (post->priv->backend);
@@ -658,16 +677,16 @@ pk_post_trans_check_running_process (PkPostTrans *post, gchar **package_ids)
 	g_main_loop_run (post->priv->loop);
 
 	g_signal_handler_disconnect (post->priv->backend, signal_files);
-	pk_post_trans_set_progress_changed (post, 100);
+	pk_transaction_extra_set_progress_changed (post, 100);
 	return TRUE;
 }
 
 /**
- * pk_post_trans_update_files_check_desktop_cb:
+ * pk_transaction_extra_update_files_check_desktop_cb:
  **/
 static void
-pk_post_trans_update_files_check_desktop_cb (PkBackend *backend, const gchar *package_id,
-					     const gchar *filelist, PkPostTrans *post)
+pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gchar *package_id,
+					     const gchar *filelist, PkTransactionExtra *post)
 {
 	guint i;
 	guint len;
@@ -695,8 +714,8 @@ pk_post_trans_update_files_check_desktop_cb (PkBackend *backend, const gchar *pa
 			continue;
 
 		egg_debug ("adding filename %s", files[i]);
-		md5 = pk_post_trans_get_filename_md5 (files[i]);
-		pk_post_trans_sqlite_add_filename_details (post, files[i], package[0], md5);
+		md5 = pk_transaction_extra_get_filename_md5 (files[i]);
+		pk_transaction_extra_sqlite_add_filename_details (post, files[i], package[0], md5);
 		g_free (md5);
 	}
 	g_strfreev (files);
@@ -705,13 +724,13 @@ pk_post_trans_update_files_check_desktop_cb (PkBackend *backend, const gchar *pa
 }
 
 /**
- * pk_post_trans_check_desktop_files:
+ * pk_transaction_extra_check_desktop_files:
  **/
 gboolean
-pk_post_trans_check_desktop_files (PkPostTrans *post, gchar **package_ids)
+pk_transaction_extra_check_desktop_files (PkTransactionExtra *post, gchar **package_ids)
 {
 	PkStore *store;
-	guint signal_files;
+	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
 
@@ -720,12 +739,12 @@ pk_post_trans_check_desktop_files (PkPostTrans *post, gchar **package_ids)
 		return FALSE;
 	}
 
-	pk_post_trans_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
-	pk_post_trans_set_progress_changed (post, 101);
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_APPLICATIONS);
+	pk_transaction_extra_set_progress_changed (post, 101);
 
 	store = pk_backend_get_store (post->priv->backend);
 	signal_files = g_signal_connect (post->priv->backend, "files",
-					 G_CALLBACK (pk_post_trans_update_files_check_desktop_cb), post);
+					 G_CALLBACK (pk_transaction_extra_update_files_check_desktop_cb), post);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (post->priv->backend);
@@ -736,17 +755,279 @@ pk_post_trans_check_desktop_files (PkPostTrans *post, gchar **package_ids)
 	g_main_loop_run (post->priv->loop);
 
 	g_signal_handler_disconnect (post->priv->backend, signal_files);
-	pk_post_trans_set_progress_changed (post, 100);
+	pk_transaction_extra_set_progress_changed (post, 100);
 	return TRUE;
 }
 
 /**
- * pk_post_trans_finalize:
+ * pk_transaction_extra_files_check_library_restart_cb:
  **/
 static void
-pk_post_trans_finalize (GObject *object)
+pk_transaction_extra_files_check_library_restart_cb (PkBackend *backend, const gchar *package_id,
+					      const gchar *filelist, PkTransactionExtra *post)
 {
-	PkPostTrans *post;
+	guint i;
+	guint len;
+	gchar **files = NULL;
+
+	files = g_strsplit (filelist, ";", 0);
+
+	/* check each file to see if it's a system shared library */
+	len = g_strv_length (files);
+	for (i=0; i<len; i++) {
+		/* not a system library */
+		if (strstr (files[i], "/lib") == NULL)
+			continue;
+
+		/* not a shared object */
+		if (strstr (files[i], ".so") == NULL)
+			continue;
+
+		/* add as it matches the criteria */
+		egg_debug ("adding filename %s", files[i]);
+		g_ptr_array_add (post->priv->files_list, g_strdup (files[i]));
+	}
+}
+
+/**
+ * pk_transaction_extra_get_cmdline:
+ **/
+static gchar *
+pk_transaction_extra_get_cmdline (PkTransactionExtra *post, guint pid)
+{
+	gboolean ret;
+	gchar *filename = NULL;
+	gchar *cmdline = NULL;
+	GError *error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_free (filename);
+	return cmdline;
+}
+
+/**
+ * pk_transaction_extra_get_uid:
+ **/
+static gint
+pk_transaction_extra_get_uid (PkTransactionExtra *post, guint pid)
+{
+	gboolean ret;
+	gint uid = -1;
+	gchar *filename = NULL;
+	gchar *uid_text = NULL;
+	GError *error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/loginuid", pid);
+	ret = g_file_get_contents (filename, &uid_text, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to get cmdline: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* convert from text */
+	ret = egg_strtoint (uid_text, &uid);
+	if (!ret) {
+		egg_warning ("failed to parse uid: '%s'", uid_text);
+		goto out;
+	}
+out:
+	g_free (filename);
+	g_free (uid_text);
+	return uid;
+}
+
+/**
+ * pk_transaction_extra_check_library_restart_emit:
+ **/
+static gboolean
+pk_transaction_extra_check_library_restart_emit (PkTransactionExtra *post, GPtrArray *pids)
+{
+	gint uid;
+	guint i;
+	guint pid;
+	gchar *filename;
+	gchar *cmdline;
+	gchar *cmdline_full;
+	gchar *package_id;
+	GPtrArray *files_session;
+	GPtrArray *files_system;
+	const PkPackageObj *obj;
+
+	/* create arrays */
+	files_session = g_ptr_array_new ();
+	files_system = g_ptr_array_new ();
+
+	/* find the package name of each pid */
+	for (i=0; i<pids->len; i++) {
+		pid = GPOINTER_TO_INT (g_ptr_array_index (pids, i));
+
+		/* get user */
+		uid = pk_transaction_extra_get_uid (post, pid);
+		if (uid < 0)
+			continue;
+
+		/* get command line */
+		cmdline = pk_transaction_extra_get_cmdline (post, pid);
+		if (cmdline == NULL)
+			continue;
+
+		/* prepend path if it does not already exist */
+		if (cmdline[0] == '/')
+			cmdline_full = g_strdup (cmdline);
+		else
+			cmdline_full = g_strdup_printf ("/usr/bin/%s", cmdline);
+
+		egg_warning ("pid=%i: %s (%i)", pid, cmdline_full, uid);
+		if (uid < 500)
+			g_ptr_array_add (files_system, cmdline_full);
+		else
+			g_ptr_array_add (files_session, cmdline_full);
+		g_free (cmdline);
+	}
+
+	/* we found nothing */
+	if (files_system->len == 0 && files_session->len == 0) {
+		egg_warning ("no pids could be resolved");
+		goto out;
+	}
+
+	/* process all session restarts */
+	for (i=0; i<files_session->len; i++) {
+		filename = g_ptr_array_index (files_session, i);
+
+		obj = pk_transaction_extra_get_installed_package_for_file (post, filename);
+		if (obj == NULL) {
+			egg_warning ("failed to find package for %s", filename);
+			continue;
+		}
+
+		package_id = pk_package_id_to_string (obj->id);
+		pk_transaction_extra_set_require_restart (post, PK_RESTART_ENUM_SECURITY_SESSION, package_id);
+		g_free (package_id);
+	}
+
+	/* process all system restarts */
+	for (i=0; i<files_system->len; i++) {
+		filename = g_ptr_array_index (files_system, i);
+
+		obj = pk_transaction_extra_get_installed_package_for_file (post, filename);
+		if (obj == NULL) {
+			egg_warning ("failed to find package for %s", filename);
+			continue;
+		}
+
+		package_id = pk_package_id_to_string (obj->id);
+		pk_transaction_extra_set_require_restart (post, PK_RESTART_ENUM_SECURITY_SYSTEM, package_id);
+		g_free (package_id);
+	}
+
+out:
+	g_ptr_array_foreach (files_session, (GFunc) g_free, NULL);
+	g_ptr_array_foreach (files_system, (GFunc) g_free, NULL);
+	g_ptr_array_free (files_session, TRUE);
+	g_ptr_array_free (files_system, TRUE);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_extra_check_library_restart:
+ **/
+gboolean
+pk_transaction_extra_check_library_restart (PkTransactionExtra *post, gchar **package_ids)
+{
+	PkStore *store;
+	guint signal_files = 0;
+	gboolean ret = TRUE;
+	gchar **files = NULL;
+	GPtrArray *pids;
+
+	g_return_val_if_fail (PK_IS_POST_TRANS (post), FALSE);
+
+	if (post->priv->backend->desc->get_files == NULL) {
+		egg_debug ("cannot get files");
+		return FALSE;
+	}
+
+	/* reset */
+	g_ptr_array_foreach (post->priv->files_list, (GFunc) g_free, NULL);
+	g_ptr_array_set_size (post->priv->files_list, 0);
+
+	/* set status */
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
+	pk_transaction_extra_set_progress_changed (post, 101);
+
+	/* get list from lsof */
+	ret = pk_lsof_refresh (post->priv->lsof);
+	if (!ret) {
+		egg_warning ("failed to refresh");
+		goto out;
+	}
+
+	/* set status */
+	pk_transaction_extra_set_status_changed (post, PK_STATUS_ENUM_CHECK_LIBRARIES);
+
+	store = pk_backend_get_store (post->priv->backend);
+	signal_files = g_signal_connect (post->priv->backend, "files",
+					 G_CALLBACK (pk_transaction_extra_files_check_library_restart_cb), post);
+
+	/* get all the files touched in the packages we just updated */
+	pk_backend_reset (post->priv->backend);
+	pk_store_set_strv (store, "package_ids", package_ids);
+	post->priv->backend->desc->get_files (post->priv->backend, package_ids);
+
+	/* wait for finished */
+	g_main_loop_run (post->priv->loop);
+
+	/* nothing to do */
+	if (post->priv->files_list->len == 0) {
+		egg_warning ("no files");
+		goto out;
+	}
+
+	/* get the list of PIDs */
+	files = pk_ptr_array_to_strv (post->priv->files_list);
+	pids = pk_lsof_get_pids_for_filenames (post->priv->lsof, files);
+
+	/* nothing depends on these libraries */
+	if (pids == NULL) {
+		egg_warning ("failed to get process list");
+		goto out;
+	}
+
+	/* nothing depends on these libraries */
+	if (pids->len == 0) {
+		egg_warning ("no processes depend on these libraries");
+		goto out;
+	}
+
+	/* emit */
+	pk_transaction_extra_check_library_restart_emit (post, pids);
+	g_ptr_array_free (pids, TRUE);
+out:
+	pk_transaction_extra_set_progress_changed (post, 100);
+	if (signal_files > 0)
+		g_signal_handler_disconnect (post->priv->backend, signal_files);
+	g_strfreev (files);
+	return ret;
+}
+
+/**
+ * pk_transaction_extra_finalize:
+ **/
+static void
+pk_transaction_extra_finalize (GObject *object)
+{
+	PkTransactionExtra *post;
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_POST_TRANS (object));
@@ -760,22 +1041,25 @@ pk_post_trans_finalize (GObject *object)
 	g_main_loop_unref (post->priv->loop);
 	sqlite3_close (post->priv->db);
 	g_hash_table_unref (post->priv->hash);
+	g_ptr_array_foreach (post->priv->files_list, (GFunc) g_free, NULL);
+	g_ptr_array_free (post->priv->files_list, TRUE);
 
 	g_object_unref (post->priv->backend);
+	g_object_unref (post->priv->lsof);
 	g_object_unref (post->priv->list);
 	g_object_unref (post->priv->running_exec_list);
 
-	G_OBJECT_CLASS (pk_post_trans_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_transaction_extra_parent_class)->finalize (object);
 }
 
 /**
- * pk_post_trans_class_init:
+ * pk_transaction_extra_class_init:
  **/
 static void
-pk_post_trans_class_init (PkPostTransClass *klass)
+pk_transaction_extra_class_init (PkTransactionExtraClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_post_trans_finalize;
+	object_class->finalize = pk_transaction_extra_finalize;
 	signals [PK_POST_TRANS_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -786,18 +1070,23 @@ pk_post_trans_class_init (PkPostTransClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
-	g_type_class_add_private (klass, sizeof (PkPostTransPrivate));
+	signals [PK_POST_TRANS_REQUIRE_RESTART] =
+		g_signal_new ("require-restart",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	g_type_class_add_private (klass, sizeof (PkTransactionExtraPrivate));
 }
 
 /**
- * pk_post_trans_init:
+ * pk_transaction_extra_init:
  *
  * initializes the post_trans class. NOTE: We expect post_trans objects
  * to *NOT* be removed or added during the session.
  * We only control the first post_trans object if there are more than one.
  **/
 static void
-pk_post_trans_init (PkPostTrans *post)
+pk_transaction_extra_init (PkTransactionExtra *post)
 {
 	gboolean ret;
 	const gchar *statement;
@@ -805,19 +1094,21 @@ pk_post_trans_init (PkPostTrans *post)
 	gint rc;
 
 	post->priv = PK_POST_TRANS_GET_PRIVATE (post);
-	post->priv->running_exec_list = pk_post_trans_string_list_new ();
+	post->priv->running_exec_list = pk_transaction_extra_string_list_new ();
 	post->priv->loop = g_main_loop_new (NULL, FALSE);
 	post->priv->list = pk_package_list_new ();
 	post->priv->backend = pk_backend_new ();
+	post->priv->lsof = pk_lsof_new ();
 	post->priv->db = NULL;
 	post->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	post->priv->files_list = g_ptr_array_new ();
 
 	post->priv->finished_id =
 		g_signal_connect (post->priv->backend, "finished",
-				  G_CALLBACK (pk_post_trans_finished_cb), post);
+				  G_CALLBACK (pk_transaction_extra_finished_cb), post);
 	post->priv->package_id =
 		g_signal_connect (post->priv->backend, "package",
-				  G_CALLBACK (pk_post_trans_package_cb), post);
+				  G_CALLBACK (pk_transaction_extra_package_cb), post);
 
 	/* check if exists */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
@@ -851,13 +1142,13 @@ pk_post_trans_init (PkPostTrans *post)
 }
 
 /**
- * pk_post_trans_new:
+ * pk_transaction_extra_new:
  * Return value: A new post_trans class instance.
  **/
-PkPostTrans *
-pk_post_trans_new (void)
+PkTransactionExtra *
+pk_transaction_extra_new (void)
 {
-	PkPostTrans *post;
+	PkTransactionExtra *post;
 	post = g_object_new (PK_TYPE_POST_TRANS, NULL);
 	return PK_POST_TRANS (post);
 }
@@ -871,14 +1162,14 @@ pk_post_trans_new (void)
 void
 egg_test_post_trans (EggTest *test)
 {
-	PkPostTrans *post;
+	PkTransactionExtra *post;
 
-	if (!egg_test_start (test, "PkPostTrans"))
+	if (!egg_test_start (test, "PkTransactionExtra"))
 		return;
 
 	/************************************************************/
 	egg_test_title (test, "get an instance");
-	post = pk_post_trans_new ();
+	post = pk_transaction_extra_new ();
 	egg_test_assert (test, post != NULL);
 
 	g_object_unref (post);
