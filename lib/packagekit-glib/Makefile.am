@@ -51,6 +51,7 @@ libpackagekit_glib_include_HEADERS =				\
 	pk-bitfield.h						\
 	pk-common.h						\
 	pk-client.h						\
+	pk-client-pool.h					\
 	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
@@ -102,6 +103,8 @@ libpackagekit_glib_la_SOURCES =					\
 	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-client-pool.c					\
+	pk-client-pool.h					\
 	pk-catalog.c						\
 	pk-catalog.h						\
 	pk-control.c						\
