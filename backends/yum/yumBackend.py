@@ -1568,6 +1568,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
         except yum.Errors.PackageSackError:
             pass
+        except yum.Errors.RepoError, e:
+            pass
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
