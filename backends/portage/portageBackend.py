@@ -821,34 +821,58 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_updates(self, filters):
         # NOTES:
-        # portage prefer not to update _ALL_ packages so we will only list updated
-        # packages in world or system
+        # portage prefer not to update _ALL_ packages
+        # so we will only list updated packages in world, system or security
+        # TODO: downgrade ?
+        # TODO: more than one updates for the same package ?
 
-        # TODO: filters ?
-        # TODO: INFO
+        # UPDATE TYPES:
+        # - blocked: wait for feedbacks
+        # - low: TODO: --newuse
+        # - normal: default
+        # - important: none atm
+        # - security: from @security
+
+        # FILTERS:
+        # - installed: try to update non-installed packages and call me ;)
+        # - free: TODO
+        # - newest: TODO
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
         # best way to get that ?
-        settings, trees, mtimedb = _emerge.load_emerge_config()
-        rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
-                portage._sets.load_default_config(self.portage_settings, trees["/"]))
+        settings, trees, _ = _emerge.actions.load_emerge_config()
+        root_config = trees[self.portage_settings["ROOT"]]["root_config"]
 
+        security_updates = []
         cp_to_check = []
+        cpv_list = []
+
+        for atom in portage.sets.base.InternalPackageSet(
+                initial_atoms=root_config.setconfig.getSetAtoms("security")):
+            security_updates.append(atom.cpv)
 
         # get system and world sets
-        for s in ("system", "world"):
-            set = portage._sets.base.InternalPackageSet(
-                    initial_atoms=rootconfig.setconfig.getSetAtoms(s))
-            for cp in set:
-                cp_to_check.append(cp)
+        for s in ["system", "world"]:
+            set = portage.sets.base.InternalPackageSet(
+                    initial_atoms=root_config.setconfig.getSetAtoms(s))
+            for atom in set:
+                cp_to_check.append(atom.cp)
 
         # check if bestmatch is installed
         for cp in cp_to_check:
             best_cpv = portage.portdb.xmatch("bestmatch-visible", cp)
             if not self.vardb.cpv_exists(best_cpv):
-                self.package(best_cpv, INFO_NORMAL)
+                cpv_list.append(best_cpv)
+
+        # security updates
+        for cpv in security_updates:
+            self.package(cpv, INFO_SECURITY)
+        # regular updates
+        for cpv in cpv_list:
+            self.package(cpv, INFO_NORMAL)
 
     def install_packages(self, only_trusted, pkgs):
         self.status(STATUS_RUNNING)
