@@ -92,6 +92,7 @@ pk_client_pool_remove (PkClientPool *pool, PkClient *client)
 	guint i;
 
 	g_return_val_if_fail (PK_IS_CLIENT_POOL (pool), FALSE);
+	g_return_val_if_fail (client != NULL, FALSE);
 
 	egg_debug ("client %p removed from pool", client);
 	ret = g_ptr_array_remove (pool->priv->client_array, client);
@@ -187,7 +188,9 @@ out:
 static void
 pk_client_pool_free_obj (PkClientPoolObj *obj)
 {
-	g_object_unref (obj->object);
+	/* only unref the object if it is valid */
+	if (obj->object != NULL)
+		g_object_unref (obj->object);
 	g_free (obj->signal_name);
 	g_free (obj);
 }
@@ -208,6 +211,9 @@ pk_client_pool_disconnect (PkClientPool *pool, const gchar *signal_name)
 	PkClient *client;
 	PkClientPoolObj *obj;
 	guint i;
+
+	g_return_val_if_fail (PK_IS_CLIENT_POOL (pool), FALSE);
+	g_return_val_if_fail (signal_name != NULL, FALSE);
 
 	/* find signal name */
 	obj = pk_client_pool_find_obj (pool, signal_name);
@@ -253,6 +259,7 @@ pk_client_pool_connect (PkClientPool *pool, const gchar *signal_name, GCallback 
 	gboolean ret = TRUE;
 
 	g_return_val_if_fail (PK_IS_CLIENT_POOL (pool), FALSE);
+	g_return_val_if_fail (signal_name != NULL, FALSE);
 
 	/* check if signal has already been added */
 	obj = pk_client_pool_find_obj (pool, signal_name);
@@ -274,7 +281,10 @@ pk_client_pool_connect (PkClientPool *pool, const gchar *signal_name, GCallback 
 	obj = g_new0 (PkClientPoolObj, 1);
 	obj->signal_name = g_strdup (signal_name);
 	obj->c_handler = c_handler;
-	obj->object = g_object_ref (object);
+	obj->object = NULL;
+	/* only ref the object if it is valid */
+	if (object != NULL)
+		obj->object = g_object_ref (object);
 	g_ptr_array_add (pool->priv->obj_array, obj);
 out:
 	return ret;
