@@ -506,8 +506,14 @@ pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 		g_main_loop_quit (client->priv->loop);
 	}
 
+	/* ref in case we unref the PkClient in ::destroy */
+	g_object_ref (client);
+
 	egg_debug ("emit destroy %s", client->priv->tid);
 	g_signal_emit (client, signals [PK_CLIENT_DESTROY], 0);
+
+	/* unref what we previously ref'd */
+	g_object_unref (client);
 }
 
 /**
@@ -520,8 +526,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* ref in case we unref the PkClient in ::finished --
-	 * see https://bugzilla.novell.com/show_bug.cgi?id=390929 for rationale */
+	/* ref in case we unref the PkClient in ::finished */
 	g_object_ref (client);
 
 	/* stop the timeout timer if running */
@@ -4405,7 +4410,7 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_DESTROY] =
 		g_signal_new ("destroy",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, finished),
+			      G_STRUCT_OFFSET (PkClientClass, destroy),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
