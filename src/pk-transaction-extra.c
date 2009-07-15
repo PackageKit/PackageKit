@@ -606,11 +606,20 @@ pk_transaction_extra_update_process_list (PkTransactionExtra *post)
 		if (!ret)
 			goto out;
 
-		/* is run by our UID */
-		uid = atoi (contents);
+		/* parse UID */
+		ret = egg_strtouint (contents, &uid);
+		if (!ret) {
+			egg_warning ("failed to parse uid: '%s'", contents);
+			goto out;
+		}
 
-		/* get the exec for the pid */
-		pid = atoi (name);
+		/* parse PID */
+		ret = egg_strtoint (name, &pid);
+		if (!ret) {
+			egg_warning ("failed to parse pid: '%s'", name);
+			goto out;
+		}
+
 #ifdef USE_SECURITY_POLKIT
 		exec = dkp_post_trans_get_cmdline (pid);
 		if (exec == NULL)
@@ -826,7 +835,11 @@ pk_transaction_extra_get_uid (PkTransactionExtra *post, guint pid)
 	}
 
 	/* convert from text */
-	uid = atoi (uid_text);
+	ret = egg_strtoint (uid_text, &uid);
+	if (!ret) {
+		egg_warning ("failed to parse uid: '%s'", uid_text);
+		goto out;
+	}
 out:
 	g_free (filename);
 	g_free (uid_text);

@@ -28,6 +28,7 @@
 #include <glib.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
 
 #include "pk-lsof.h"
 
@@ -175,7 +176,14 @@ pk_lsof_refresh (PkLsof *lsof)
 		value = &lines[i][1];
 		switch (mode) {
 		case 'p':
-			pid = atoi (value);
+
+			/* parse PID */
+			ret = egg_strtoint (value, &pid);
+			if (!ret) {
+				egg_warning ("failed to parse pid: '%s'", value);
+				pid = -1;
+				goto out;
+			}
 			break;
 		case 'f':
 			type = pk_lsof_type_from_text (value);
@@ -183,6 +191,10 @@ pk_lsof_refresh (PkLsof *lsof)
 		case 'n':
 			if (type == PK_LSOF_TYPE_DEL ||
 			    type == PK_LSOF_TYPE_MEM) {
+
+				/* no valid pid found */
+				if (pid == -1)
+					break;
 
 				/* not a system library */
 				if (strstr (value, "/lib/") == NULL)
@@ -202,6 +214,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			break;
 		}
 	}
+	ret = TRUE;
 out:
 	g_strfreev (lines);
 	g_free (stdout);

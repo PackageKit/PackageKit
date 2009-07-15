@@ -85,7 +85,7 @@ egg_strnumber (const gchar *text)
 /**
  * egg_strtoint:
  * @text: The text the convert
- * @value: The return numeric return value, or 0 if invalid.
+ * @value: The return numeric return value
  *
  * Converts a string into a signed integer value in a safe way.
  *
@@ -94,21 +94,29 @@ egg_strnumber (const gchar *text)
 gboolean
 egg_strtoint (const gchar *text, gint *value)
 {
-	gboolean ret;
-	ret = egg_strnumber (text);
-	if (!ret) {
-		*value = 0;
+	gchar *endptr = NULL;
+	gint64 value_raw;
+
+	/* parse */
+	value_raw = g_ascii_strtoll (text, &endptr, 10);
+
+	/* parsing error */
+	if (endptr == text)
 		return FALSE;
-	}
-	/* ITS4: ignore, we've already checked for validity */
-	*value = atoi (text);
+
+	/* out of range */
+	if (value_raw > G_MAXINT || value_raw < G_MININT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (gint) value_raw;
 	return TRUE;
 }
 
 /**
  * egg_strtouint:
  * @text: The text the convert
- * @value: The return numeric return value, or 0 if invalid.
+ * @value: The return numeric return value
  *
  * Converts a string into a unsigned integer value in a safe way.
  *
@@ -117,14 +125,22 @@ egg_strtoint (const gchar *text, gint *value)
 gboolean
 egg_strtouint (const gchar *text, guint *value)
 {
-	gboolean ret;
-	gint temp;
-	ret = egg_strtoint (text, &temp);
-	if (ret == FALSE || temp < 0) {
-		*value = 0;
+	gchar *endptr = NULL;
+	guint64 value_raw;
+
+	/* parse */
+	value_raw = g_ascii_strtoull (text, &endptr, 10);
+
+	/* parsing error */
+	if (endptr == text)
 		return FALSE;
-	}
-	*value = (guint) temp;
+
+	/* out of range */
+	if (value_raw > G_MAXINT)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (guint) value_raw;
 	return TRUE;
 }
 
@@ -513,7 +529,7 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "don't convert invalid number");
 	ret = egg_strtoint ("dave", &value);
-	if (ret == FALSE && value == 0)
+	if (!ret)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "value is %i", value);
@@ -529,7 +545,7 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "convert invalid uint number");
 	ret = egg_strtouint ("-234", &uvalue);
-	if (ret == FALSE && uvalue == 0)
+	if (ret == FALSE)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "value is %i", uvalue);
