@@ -1687,9 +1687,15 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	result = polkit_authority_check_authorization_finish (transaction->priv->authority, res, &error);
 	transaction->priv->waiting_for_auth = FALSE;
 
-	/* failed */
+	/* failed, maybe session authentication agent isn't running */
 	if (result == NULL) {
 		egg_warning ("failed to check for auth: %s", error->message);
+
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+						"failed to check for auth: maybe session authentication agent isn't running?");
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 		g_error_free (error);
 		goto out;
 	}
