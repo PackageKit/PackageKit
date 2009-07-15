@@ -135,18 +135,6 @@ Using em sizes rather than points is probably a good idea to help with the
 font size issue, but it doesn't completely resolve it since the text of the
 plugin will be sized based on the system font size, not on the web pages font.
 
-License and Copyright
-=====================
-
-You may distribute the code under the terms of the Mozilla Public License 1.1,
-GNU General Public License Version 2 or later (the "GPL"), or the
-GNU Lesser General Public License Version 2.1 or later (the "LGPL"). See the
-source files for details and for copyright information.
-
-The plugin infrastructure (The sdk/ directory and much of src/plugin.cpp
-and src/plugin.h) is derived from the Mozilla plugin SDK; other code under
-src/ is new code written by Red Hat, Inc.
-
 Owen Taylor <otaylor@redhat.com>
 July 24, 2008
 
