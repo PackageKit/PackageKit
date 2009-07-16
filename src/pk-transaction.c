@@ -63,6 +63,7 @@
 #include "pk-notify.h"
 #include "pk-transaction-extra.h"
 #include "pk-syslog.h"
+#include "pk-dbus.h"
 
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
@@ -100,13 +101,12 @@ struct PkTransactionPrivate
 	PkCache			*cache;
 	PkConf			*conf;
 	PkNotify		*notify;
+	PkDbus			*dbus;
 #ifdef USE_SECURITY_POLKIT
 	PolkitAuthority		*authority;
 	PolkitSubject		*subject;
 	GCancellable		*cancellable;
 #endif
-	DBusGConnection		*connection;
-	DBusGProxy		*proxy_pid;
 	PkTransactionExtra	*transaction_extra;
 	PkSyslog		*syslog;
 
@@ -1386,101 +1386,6 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 }
 
 /**
- * pk_transaction_get_uid:
- **/
-static guint
-pk_transaction_get_uid (PkTransaction *transaction, const gchar *sender)
-{
-	guint uid;
-	DBusError error;
-	DBusConnection *con;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), G_MAXUINT);
-	g_return_val_if_fail (sender != NULL, G_MAXUINT);
-
-	dbus_error_init (&error);
-	con = dbus_g_connection_get_connection (transaction->priv->connection);
-	uid = dbus_bus_get_unix_user (con, sender, &error);
-	if (dbus_error_is_set (&error)) {
-		egg_warning ("Could not get uid for connection: %s %s", error.name, error.message);
-		uid = G_MAXUINT;
-		goto out;
-	}
-out:
-	return uid;
-}
-
-#ifdef USE_SECURITY_POLKIT
-/**
- * pk_transaction_get_pid:
- **/
-static guint
-pk_transaction_get_pid (PkTransaction *transaction, PolkitSubject *subject)
-{
-	guint pid = G_MAXUINT;
-	gboolean ret;
-	gchar *sender = NULL;
-	GError *error = NULL;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), G_MAXUINT);
-	g_return_val_if_fail (transaction->priv->proxy_pid != NULL, G_MAXUINT);
-	g_return_val_if_fail (subject != NULL, G_MAXUINT);
-
-	/* this comes back as 'system-bus-name::1.127' */
-	sender = polkit_subject_to_string (subject);
-
-	/* get pid from DBus (quite slow) */
-	ret = dbus_g_proxy_call (transaction->priv->proxy_pid, "GetConnectionUnixProcessID", &error,
-				 G_TYPE_STRING, sender+16,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &pid,
-				 G_TYPE_INVALID);
-	if (!ret) {
-		egg_warning ("failed to get pid: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	g_free (sender);
-	return pid;
-}
-
-/**
- * pk_transaction_get_cmdline:
- **/
-static gchar *
-pk_transaction_get_cmdline (PkTransaction *transaction, PolkitSubject *subject)
-{
-	gboolean ret;
-	gchar *filename = NULL;
-	gchar *cmdline = NULL;
-	GError *error = NULL;
-	guint pid;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (subject != NULL, NULL);
-
-	/* get pid */
-	pid = pk_transaction_get_pid (transaction, subject);
-	if (pid == G_MAXUINT) {
-		egg_warning ("failed to get PID");
-		goto out;
-	}
-
-	/* get command line from proc */
-	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
-	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
-	if (!ret) {
-		egg_warning ("failed to get cmdline: %s", error->message);
-		g_error_free (error);
-	}
-out:
-	g_free (filename);
-	return cmdline;
-}
-#endif
-
-/**
  * pk_transaction_set_sender:
  */
 gboolean
@@ -1497,9 +1402,9 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	/* we get the UID for all callers as we need to know when to cancel */
 #ifdef USE_SECURITY_POLKIT
 	transaction->priv->subject = polkit_system_bus_name_new (sender);
-	transaction->priv->cmdline = pk_transaction_get_cmdline (transaction, transaction->priv->subject);
+	transaction->priv->cmdline = pk_dbus_get_cmdline (transaction->priv->dbus, sender);
 #endif
-	transaction->priv->uid = pk_transaction_get_uid (transaction, sender);
+	transaction->priv->uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 
 	return TRUE;
 }
@@ -2084,7 +1989,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* get the UID of the caller */
 	sender = dbus_g_method_get_sender (context);
-	uid = pk_transaction_get_uid (transaction, sender);
+	uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 	g_free (sender);
 
 	/* check we got a valid value */
@@ -4466,8 +4371,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
-	GError *error = NULL;
-
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
@@ -4514,6 +4417,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->package_list = pk_package_list_new ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->syslog = pk_syslog_new ();
+	transaction->priv->dbus = pk_dbus_new ();
 #ifdef USE_SECURITY_POLKIT
 	transaction->priv->authority = polkit_authority_get ();
 	transaction->priv->cancellable = g_cancellable_new ();
@@ -4534,17 +4438,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->monitor = egg_dbus_monitor_new ();
 	g_signal_connect (transaction->priv->monitor, "connection-changed",
 			  G_CALLBACK (pk_transaction_caller_active_changed_cb), transaction);
-
-	/* connect to DBus so we can get the pid */
-	transaction->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
-	transaction->priv->proxy_pid = dbus_g_proxy_new_for_name_owner (transaction->priv->connection,
-									"org.freedesktop.DBus",
-									"/org/freedesktop/DBus/Bus",
-									"org.freedesktop.DBus", &error);
-	if (transaction->priv->proxy_pid == NULL) {
-		egg_warning ("cannot connect to DBus: %s", error->message);
-		g_error_free (error);
-	}
 }
 
 /**
@@ -4615,6 +4508,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cmdline);
 
 	g_object_unref (transaction->priv->conf);
+	g_object_unref (transaction->priv->dbus);
 	g_object_unref (transaction->priv->cache);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
@@ -4622,7 +4516,6 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
-	g_object_unref (transaction->priv->proxy_pid);
 	g_object_unref (transaction->priv->notify);
 	g_object_unref (transaction->priv->syslog);
 	g_object_unref (transaction->priv->transaction_extra);

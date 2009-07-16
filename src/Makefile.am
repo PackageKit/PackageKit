@@ -54,6 +54,8 @@ shared_SOURCES =					\
 	pk-marshal.h					\
 	pk-lsof.c					\
 	pk-lsof.h					\
+	pk-dbus.c					\
+	pk-dbus.h					\
 	pk-transaction.c				\
 	pk-transaction.h				\
 	pk-transaction-extra.c				\
