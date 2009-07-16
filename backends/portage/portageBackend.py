@@ -58,6 +58,7 @@ from itertools import izip
 # manage slots
 # remove percentage(None) if percentage is used
 # change how newest is working ?
+# change has_key to foo in dict
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -323,7 +324,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return db.getcontents().keys()
 
-    def get_newer_cpv(self, cpv_list, installed):
+    def cmp_cpv(self, cpv1, cpv2):
+        '''
+        returns 1 if cpv1 > cpv2
+        returns 0 if cpv1 = cpv2
+        returns -1 if cpv1 < cpv2
+        '''
+        return portage.pkgcmp(portage.pkgsplit(cpv1), portage.pkgsplit(cpv2))
+
+    def get_newest_cpv(self, cpv_list, installed):
         newer = ""
 
         # get the first cpv following the installed rule
@@ -337,8 +346,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for cpv in cpv_list:
             if self.is_installed(cpv) == installed:
-                if portage.pkgcmp(portage.pkgsplit(cpv), \
-                        portage.pkgsplit(newer)) == 1:
+                if self.cmp_cpv(cpv, never) == 1:
                     newer = cpv
 
         return newer
@@ -353,6 +361,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             return dict(izip(keys, aux_get(cpv, keys)))
         else:
             return aux_get(cpv, keys)
+
+    def get_cpv_slotted(self, cpv_list):
+        cpv_dict = {}
+
+        for cpv in cpv_list:
+            slot = self.get_metadata(cpv, ["SLOT"])[0]
+            if not cpv_dict.has_key(slot):
+                cpv_dict[slot] = [cpv]
+            else:
+                cpv_dict[slot].append(cpv)
+
+        return cpv_dict
 
     def filter_free(self, cpv_list, fltlist):
         if len(cpv_list) == 0:
@@ -392,28 +412,22 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             # we have one package per slot, so it's the newest
             return cpv_list
 
-        cpv_dict = {}
-
-        for cpv in cpv_list:
-            slot = self.get_metadata(cpv, ["SLOT"])[0]
-            if not cpv_dict.has_key(slot):
-                cpv_dict[slot] = [cpv]
-            else:
-                cpv_dict[slot].append(cpv)
+        cpv_dict = self.get_cpv_slotted(cpv_list)
 
         # slots are sorted (dict), revert them to have newest slots first
         slots = cpv_dict.keys()
         slots.reverse()
+
         # empty cpv_list, cpv are now in cpv_dict and cpv_list gonna be repop
         cpv_list = []
 
         for k in slots:
             # if not_intalled on, no need to check for newest installed
             if FILTER_NOT_INSTALLED not in fltlist:
-                newest_installed = self.get_newer_cpv(cpv_dict[k], True)
+                newest_installed = self.get_newest_cpv(cpv_dict[k], True)
                 if newest_installed != "":
                     cpv_list.append(newest_installed)
-            newest_available = self.get_newer_cpv(cpv_dict[k], False)
+            newest_available = self.get_newest_cpv(cpv_dict[k], False)
             if newest_available != "":
                 cpv_list.append(newest_available)
 
@@ -864,7 +878,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # portage prefer not to update _ALL_ packages
         # so we will only list updated packages in world, system or security
         # TODO: downgrade ?
-        # TODO: more than one updates for the same package ?
+        # FIXME: security updates on libs doesn't work
 
         # UPDATE TYPES:
         # - blocked: wait for feedbacks
@@ -875,44 +889,91 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # FILTERS:
         # - installed: try to update non-installed packages and call me ;)
-        # - free: TODO
-        # - newest: TODO
+        # - free: ok
+        # - newest: ok
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
-        # best way to get that ?
+        fltlist = filters.split(';')
+
         settings, trees, _ = _emerge.actions.load_emerge_config()
         root_config = trees[self.portage_settings["ROOT"]]["root_config"]
 
-        security_updates = []
-        cp_to_check = []
-        cpv_list = []
+        update_candidates = []
+        cpv_updates = {}
 
-        for atom in portage.sets.base.InternalPackageSet(
-                initial_atoms=root_config.setconfig.getSetAtoms("security")):
-            security_updates.append(atom.cpv)
-
-        # get system and world sets
+        # get system and world packages
         for s in ["system", "world"]:
             set = portage.sets.base.InternalPackageSet(
                     initial_atoms=root_config.setconfig.getSetAtoms(s))
             for atom in set:
-                cp_to_check.append(atom.cp)
+                update_candidates.append(atom.cp)
 
-        # check if bestmatch is installed
-        for cp in cp_to_check:
-            best_cpv = portage.portdb.xmatch("bestmatch-visible", cp)
-            if not self.vardb.cpv_exists(best_cpv):
-                cpv_list.append(best_cpv)
+        # check if a candidate can be updated
+        for cp in update_candidates:
+            cpv_list_inst = self.vardb.match(cp)
+            cpv_list_avai = portage.portdb.match(cp)
 
-        # security updates
-        for cpv in security_updates:
-            self.package(cpv, INFO_SECURITY)
-        # regular updates
-        for cpv in cpv_list:
-            self.package(cpv, INFO_NORMAL)
+            cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
+            cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
+
+            dict_entry = {}
+
+            # candidate slots are installed slots
+            slots = cpv_dict_inst.keys()
+            slots.reverse()
+
+            for s in slots:
+                cpv_list_updates = []
+                cpv_inst = cpv_dict_inst[s][0] # only one install per slot
+                cpv_list_avai = cpv_dict_avai[s]
+                cpv_list_avai.reverse()
+
+                for cpv in cpv_list_avai:
+                    if self.cmp_cpv(cpv_inst, cpv) == -1:
+                        cpv_list_updates.append(cpv)
+                    else: # because the list is sorted
+                        break
+
+                # no update for this slot
+                if len(cpv_list_updates) == 0:
+                    break
+
+                cpv_list_updates = self.filter_free(cpv_list_updates, fltlist)
+
+                if len(cpv_list_updates) == 0:
+                    break
+
+                if FILTER_NEWEST in fltlist:
+                    best_cpv = portage.best(cpv_list_updates)
+                    cpv_list_updates = [best_cpv]
+
+                dict_entry[s] = cpv_list_updates
+
+            if len(dict_entry) != 0:
+                cpv_updates[cp] = dict_entry
+
+        # get security updates
+        for atom in portage.sets.base.InternalPackageSet(
+                initial_atoms=root_config.setconfig.getSetAtoms("security")):
+            # send update message and remove atom from cpv_updates
+            if atom.cp in cpv_updates:
+                slot = self.get_metadata(atom.cpv, ["SLOT"])[0]
+                if slot in cpv_updates[atom.cp]:
+                    tmp_cpv_list = cpv_updates[atom.cp][slot][:]
+                    for cpv in tmp_cpv_list:
+                        if self.cmp_cpv(cpv, atom.cpv) >= 0:
+                            # cpv is a security update and removed from list
+                            cpv_updates[atom.cp][slot].remove(cpv)
+                            self.package(cpv, INFO_SECURITY)
+
+        # normal updates
+        for cp in cpv_updates:
+            for slot in cpv_updates[cp]:
+                for cpv in cpv_updates[cp][slot]:
+                    self.package(cpv, INFO_NORMAL)
 
     def install_packages(self, only_trusted, pkgs):
         self.status(STATUS_RUNNING)
