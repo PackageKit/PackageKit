@@ -112,31 +112,37 @@ struct _PkClientPrivate
 	GError			*error;
 };
 
-typedef enum {
-	PK_CLIENT_DETAILS,
-	PK_CLIENT_ERROR_CODE,
-	PK_CLIENT_FILES,
-	PK_CLIENT_FINISHED,
-	PK_CLIENT_PACKAGE,
-	PK_CLIENT_PROGRESS_CHANGED,
-	PK_CLIENT_REQUIRE_RESTART,
-	PK_CLIENT_MESSAGE,
-	PK_CLIENT_TRANSACTION,
-	PK_CLIENT_DISTRO_UPGRADE,
-	PK_CLIENT_STATUS_CHANGED,
-	PK_CLIENT_UPDATE_DETAIL,
-	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
-	PK_CLIENT_EULA_REQUIRED,
-	PK_CLIENT_CALLER_ACTIVE_CHANGED,
-	PK_CLIENT_REPO_DETAIL,
-	PK_CLIENT_ALLOW_CANCEL,
-	PK_CLIENT_CATEGORY,
-	PK_CLIENT_DESTROY,
-	PK_CLIENT_MEDIA_CHANGE_REQUIRED,
-	PK_CLIENT_LAST_SIGNAL
-} PkSignals;
+enum {
+	SIGNAL_DETAILS,
+	SIGNAL_ERROR_CODE,
+	SIGNAL_FILES,
+	SIGNAL_FINISHED,
+	SIGNAL_PACKAGE,
+	SIGNAL_PROGRESS_CHANGED,
+	SIGNAL_REQUIRE_RESTART,
+	SIGNAL_MESSAGE,
+	SIGNAL_TRANSACTION,
+	SIGNAL_DISTRO_UPGRADE,
+	SIGNAL_STATUS_CHANGED,
+	SIGNAL_UPDATE_DETAIL,
+	SIGNAL_REPO_SIGNATURE_REQUIRED,
+	SIGNAL_EULA_REQUIRED,
+	SIGNAL_CALLER_ACTIVE_CHANGED,
+	SIGNAL_REPO_DETAIL,
+	SIGNAL_ALLOW_CANCEL,
+	SIGNAL_CATEGORY,
+	SIGNAL_DESTROY,
+	SIGNAL_MEDIA_CHANGE_REQUIRED,
+	SIGNAL_LAST
+};
 
-static guint signals [PK_CLIENT_LAST_SIGNAL] = { 0 };
+enum {
+	PROP_0,
+	PROP_ROLE,
+	PROP_LAST,
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
@@ -510,7 +516,7 @@ pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 	g_object_ref (client);
 
 	egg_debug ("emit destroy %s", client->priv->tid);
-	g_signal_emit (client, signals [PK_CLIENT_DESTROY], 0);
+	g_signal_emit (client, signals [SIGNAL_DESTROY], 0);
 
 	/* unref what we previously ref'd */
 	g_object_unref (client);
@@ -545,7 +551,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	 * in the ::Finished() handler */
 	client->priv->is_finishing = TRUE;
 
-	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit_enum, runtime);
+	g_signal_emit (client, signals [SIGNAL_FINISHED], 0, exit_enum, runtime);
 
 	/* done callback */
 	client->priv->is_finishing = FALSE;
@@ -572,7 +578,7 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	egg_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
-	g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
+	g_signal_emit (client , signals [SIGNAL_PROGRESS_CHANGED], 0,
 		       percentage, subpercentage, elapsed, remaining);
 }
 
@@ -583,7 +589,7 @@ static void
 pk_client_change_status (PkClient *client, PkStatusEnum status)
 {
 	egg_debug ("emit status-changed %s", pk_status_enum_to_text (status));
-	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
+	g_signal_emit (client , signals [SIGNAL_STATUS_CHANGED], 0, status);
 	client->priv->last_status = status;
 }
 
@@ -622,7 +628,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	obj = pk_package_obj_new (info, id, summary);
 
 	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
-	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, obj);
+	g_signal_emit (client , signals [SIGNAL_PACKAGE], 0, obj);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
@@ -647,7 +653,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 	obj = pk_transaction_obj_new_from_data (old_tid, timespec, succeeded, role, duration, data, uid, cmdline);
 	egg_debug ("emitting transaction %s, %s, %i, %s, %ims, %s, %i, %s", old_tid, timespec,
 		  succeeded, role_text, duration, data, uid, cmdline);
-	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, obj);
+	g_signal_emit (client, signals [SIGNAL_TRANSACTION], 0, obj);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
@@ -670,7 +676,7 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 	type = pk_update_state_enum_from_text (type_text);
 	obj = pk_distro_upgrade_obj_new_from_data  (type, name, summary);
 	egg_debug ("emitting distro_upgrade %s, %s, %s", type_text, name, summary);
-	g_signal_emit (client, signals [PK_CLIENT_DISTRO_UPGRADE], 0, obj);
+	g_signal_emit (client, signals [SIGNAL_DISTRO_UPGRADE], 0, obj);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
@@ -713,7 +719,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 						     bugzilla_url, cve_url, restart,
 						     update_text, changelog, state,
 						     issued, updated);
-	g_signal_emit (client, signals [PK_CLIENT_UPDATE_DETAIL], 0, detail);
+	g_signal_emit (client, signals [SIGNAL_UPDATE_DETAIL], 0, detail);
 
 	if (issued != NULL)
 		g_date_free (issued);
@@ -737,7 +743,7 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 	egg_debug ("emit category %s, %s, %s, %s, %s", parent_id, cat_id, name, summary, icon);
 
 	category = pk_category_obj_new_from_data (parent_id, cat_id, name, summary, icon);
-	g_signal_emit (client, signals [PK_CLIENT_CATEGORY], 0, category);
+	g_signal_emit (client, signals [SIGNAL_CATEGORY], 0, category);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous)
@@ -767,7 +773,7 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 		  package_id, license, group_text, description, url, (long int) size);
 
 	details = pk_details_obj_new_from_data (id, license, group, description, url, size);
-	g_signal_emit (client, signals [PK_CLIENT_DETAILS], 0, details);
+	g_signal_emit (client, signals [SIGNAL_DETAILS], 0, details);
 
 	pk_package_id_free (id);
 	pk_details_obj_free (details);
@@ -808,7 +814,7 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	egg_debug ("emit files %s, <lots of files>", package_id);
-	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
+	g_signal_emit (client , signals [SIGNAL_FILES], 0, package_id, filelist);
 
 	/* we are a callback from DownloadPackages */
 	if (client->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
@@ -835,7 +841,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
-	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
+	g_signal_emit (client, signals [SIGNAL_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 }
 
@@ -851,7 +857,7 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 	egg_debug ("emit eula-required %s, %s, %s, %s",
 		  eula_id, package_id, vendor_name, license_agreement);
 
-	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
+	g_signal_emit (client, signals [SIGNAL_EULA_REQUIRED], 0,
 		       eula_id, package_id, vendor_name, license_agreement);
 }
 
@@ -871,7 +877,7 @@ pk_client_media_change_required_cb (DBusGProxy *proxy,
 	media_type = pk_media_type_enum_from_text (media_type_text);
 	egg_debug ("emit media-change-required %s, %s, %s",
 		   media_type_text, media_id, media_text);
-	g_signal_emit (client, signals [PK_CLIENT_MEDIA_CHANGE_REQUIRED], 0,
+	g_signal_emit (client, signals [SIGNAL_MEDIA_CHANGE_REQUIRED], 0,
 		       media_type, media_id, media_text);
 }
 
@@ -885,7 +891,7 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	egg_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
-	g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_signal_emit (client, signals [SIGNAL_REPO_DETAIL], 0, repo_id, description, enabled);
 }
 
 /**
@@ -902,7 +908,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 
 	code = pk_error_enum_from_text (code_text);
 	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), details);
-	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
+	g_signal_emit (client , signals [SIGNAL_ERROR_CODE], 0, code, details);
 }
 
 /**
@@ -914,7 +920,7 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClient *c
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	egg_debug ("emit allow-cancel %i", allow_cancel);
-	g_signal_emit (client , signals [PK_CLIENT_ALLOW_CANCEL], 0, allow_cancel);
+	g_signal_emit (client , signals [SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
 }
 
 /**
@@ -972,7 +978,7 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	egg_debug ("emit caller-active-changed %i", is_active);
-	g_signal_emit (client , signals [PK_CLIENT_CALLER_ACTIVE_CHANGED], 0, is_active);
+	g_signal_emit (client , signals [SIGNAL_CALLER_ACTIVE_CHANGED], 0, is_active);
 }
 
 /**
@@ -998,7 +1004,7 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 		pk_obj_list_add (client->priv->require_restart_list, obj);
 
 	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
-	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, obj);
+	g_signal_emit (client , signals [SIGNAL_REQUIRE_RESTART], 0, obj);
 	if (restart > client->priv->require_restart) {
 		client->priv->require_restart = restart;
 		egg_debug ("restart status now %s", pk_restart_enum_to_text (restart));
@@ -1018,7 +1024,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 
 	message = pk_message_enum_from_text (message_text);
 	egg_debug ("emit message %i, %s", message, details);
-	g_signal_emit (client , signals [PK_CLIENT_MESSAGE], 0, message, details);
+	g_signal_emit (client , signals [SIGNAL_MESSAGE], 0, message, details);
 }
 
 /**
@@ -1306,7 +1312,7 @@ pk_client_transaction_timeout_cb (PkClient *client)
 
 	/* emit signal */
 	egg_debug ("emit error-code %i, %s", PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
-	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
+	g_signal_emit (client , signals [SIGNAL_ERROR_CODE], 0, PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
 
 	/* set used */
 	client->priv->timeout_id = 0;
@@ -4098,14 +4104,56 @@ out:
 }
 
 /**
+ * pk_client_get_property:
+ **/
+static void
+pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkClient *client;
+	client = PK_CLIENT (object);
+	switch (prop_id) {
+	case PROP_ROLE:
+		g_value_set_uint (value, client->priv->role);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_client_set_property:
+ **/
+static void
+pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	switch (prop_id) {
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_client_class_init:
  **/
 static void
 pk_client_class_init (PkClientClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->finalize = pk_client_finalize;
+	object_class->get_property = pk_client_get_property;
+	object_class->set_property = pk_client_set_property;
+
+	/**
+	 * PkClient:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
 	 * PkClient::status-changed:
@@ -4115,7 +4163,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::status-changed signal is emitted when the transaction status
 	 * has changed.
 	 **/
-	signals [PK_CLIENT_STATUS_CHANGED] =
+	signals [SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, status_changed),
@@ -4132,7 +4180,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::progress-changed signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
 	 **/
-	signals [PK_CLIENT_PROGRESS_CHANGED] =
+	signals [SIGNAL_PROGRESS_CHANGED] =
 		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, progress_changed),
@@ -4147,7 +4195,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::package signal is emitted when the update list may have
 	 * changed and the client program may have to update some UI.
 	 **/
-	signals [PK_CLIENT_PACKAGE] =
+	signals [SIGNAL_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, package),
@@ -4161,7 +4209,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::transaction is emitted when the method GetOldTransactions() is
 	 * called, and the values are being replayed from a database.
 	 **/
-	signals [PK_CLIENT_TRANSACTION] =
+	signals [SIGNAL_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, transaction),
@@ -4175,7 +4223,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::distro_upgrade signal is emitted when the method GetDistroUpgrades() is
 	 * called, and the upgrade options are being sent.
 	 **/
-	signals [PK_CLIENT_DISTRO_UPGRADE] =
+	signals [SIGNAL_DISTRO_UPGRADE] =
 		g_signal_new ("distro-upgrade",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, distro_upgrade),
@@ -4189,7 +4237,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::update-detail signal is emitted when GetUpdateDetail() is
 	 * called on a set of package_id's.
 	 **/
-	signals [PK_CLIENT_UPDATE_DETAIL] =
+	signals [SIGNAL_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, update_detail),
@@ -4202,7 +4250,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
-	signals [PK_CLIENT_DETAILS] =
+	signals [SIGNAL_DETAILS] =
 		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, details),
@@ -4215,7 +4263,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * The ::files signal is emitted when the method GetFiles() is used.
 	 **/
-	signals [PK_CLIENT_FILES] =
+	signals [SIGNAL_FILES] =
 		g_signal_new ("files",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, files),
@@ -4236,7 +4284,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::repo-signature-required signal is emitted when the transaction
 	 * needs to fail for a signature prompt.
 	 **/
-	signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED] =
+	signals [SIGNAL_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, repo_signature_required),
@@ -4253,7 +4301,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * The ::eula signal is emitted when the transaction needs to fail for a EULA prompt.
 	 **/
-	signals [PK_CLIENT_EULA_REQUIRED] =
+	signals [SIGNAL_EULA_REQUIRED] =
 		g_signal_new ("eula-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, eula_required),
@@ -4272,7 +4320,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * This can only happen once in a transaction.
 	 **/
-	signals [PK_CLIENT_MEDIA_CHANGE_REQUIRED] =
+	signals [SIGNAL_MEDIA_CHANGE_REQUIRED] =
 		g_signal_new ("media-change-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, media_change_required),
@@ -4289,7 +4337,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::repo-detail signal is emitted when the method GetRepos() is
 	 * called.
 	 **/
-	signals [PK_CLIENT_REPO_DETAIL] =
+	signals [SIGNAL_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, repo_detail),
@@ -4306,7 +4354,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * This can only happen once in a transaction.
 	 **/
-	signals [PK_CLIENT_ERROR_CODE] =
+	signals [SIGNAL_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, error_code),
@@ -4320,7 +4368,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::require-restart signal is emitted when the transaction
 	 * requires a application or session restart.
 	 **/
-	signals [PK_CLIENT_REQUIRE_RESTART] =
+	signals [SIGNAL_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, require_restart),
@@ -4335,7 +4383,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::message signal is emitted when the transaction wants to tell
 	 * the user something.
 	 **/
-	signals [PK_CLIENT_MESSAGE] =
+	signals [SIGNAL_MESSAGE] =
 		g_signal_new ("message",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, message),
@@ -4352,7 +4400,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * You probably want to enable and disable cancel buttons according to
 	 * this value.
 	 **/
-	signals [PK_CLIENT_ALLOW_CANCEL] =
+	signals [SIGNAL_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, allow_cancel),
@@ -4366,7 +4414,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::caller-active-changed signal is emitted when the client that
 	 * issued the dbus method is exited.
 	 **/
-	signals [PK_CLIENT_CALLER_ACTIVE_CHANGED] =
+	signals [SIGNAL_CALLER_ACTIVE_CHANGED] =
 		g_signal_new ("caller-active-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, caller_active_changed),
@@ -4379,7 +4427,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * The ::category signal is emitted when GetCategories() is called.
 	 **/
-	signals [PK_CLIENT_CATEGORY] =
+	signals [SIGNAL_CATEGORY] =
 		g_signal_new ("category",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, category),
@@ -4393,7 +4441,7 @@ pk_client_class_init (PkClientClass *klass)
 	 *
 	 * The ::finished signal is emitted when the transaction is complete.
 	 **/
-	signals [PK_CLIENT_FINISHED] =
+	signals [SIGNAL_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, finished),
@@ -4407,7 +4455,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * The ::destroy signal is emitted when the transaction has been
 	 * destroyed and is no longer available for use.
 	 **/
-	signals [PK_CLIENT_DESTROY] =
+	signals [SIGNAL_DESTROY] =
 		g_signal_new ("destroy",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, destroy),
