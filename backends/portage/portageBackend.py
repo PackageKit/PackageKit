@@ -55,10 +55,7 @@ from itertools import izip
 
 # TODO:
 # ERRORS with messages ?
-# manage slots
 # remove percentage(None) if percentage is used
-# change how newest is working ?
-# change has_key to foo in dict
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -242,7 +239,7 @@ def get_group(cp):
     ''' Return the group of the package
     Argument could be cp or cpv. '''
     category = portage.catsplit(cp)[0]
-    if CATEGORY_GROUP_MAP.has_key(category):
+    if category in CATEGORY_GROUP_MAP:
         return CATEGORY_GROUP_MAP[category]
 
     # TODO: add message ?
@@ -367,7 +364,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for cpv in cpv_list:
             slot = self.get_metadata(cpv, ["SLOT"])[0]
-            if not cpv_dict.has_key(slot):
+            if slot not in cpv_dict:
                 cpv_dict[slot] = [cpv]
             else:
                 cpv_dict[slot].append(cpv)
