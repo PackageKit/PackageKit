@@ -875,10 +875,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_updates(self, filters):
         # NOTES:
-        # portage prefer not to update _ALL_ packages
-        # so we will only list updated packages in world, system or security
-        # TODO: downgrade ?
-        # FIXME: security updates on libs doesn't work
+        # because of a lot of things related to Gentoo,
+        # only world and system packages are can be listed as updates
+        # _except_ for security updates
 
         # UPDATE TYPES:
         # - blocked: wait for feedbacks
@@ -903,6 +902,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         update_candidates = []
         cpv_updates = {}
+        cpv_downgra = {}
 
         # get system and world packages
         for s in ["system", "world"]:
@@ -919,7 +919,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
             cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
 
-            dict_entry = {}
+            dict_upda = {}
+            dict_down = {}
 
             # candidate slots are installed slots
             slots = cpv_dict_inst.keys()
@@ -928,10 +929,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             for s in slots:
                 cpv_list_updates = []
                 cpv_inst = cpv_dict_inst[s][0] # only one install per slot
-                cpv_list_avai = cpv_dict_avai[s]
-                cpv_list_avai.reverse()
 
-                for cpv in cpv_list_avai:
+                # the slot can be outdated (not in the tree)
+                if s not in cpv_dict_avai:
+                    break
+
+                tmp_list_avai = cpv_dict_avai[s]
+                tmp_list_avai.reverse()
+
+                for cpv in tmp_list_avai:
                     if self.cmp_cpv(cpv_inst, cpv) == -1:
                         cpv_list_updates.append(cpv)
                     else: # because the list is sorted
@@ -939,7 +945,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
                 # no update for this slot
                 if len(cpv_list_updates) == 0:
-                    break
+                    if [cpv_inst] == portage.portdb.visible([cpv_inst]):
+                        break # really no update
+                    else:
+                        # that's actually a downgrade or even worst
+                        if len(tmp_list_avai) == 0:
+                            break # this package is not known in the tree...
+                        else:
+                            dict_down[s] = [tmp_list_avai.pop()]
 
                 cpv_list_updates = self.filter_free(cpv_list_updates, fltlist)
 
@@ -950,10 +963,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     best_cpv = portage.best(cpv_list_updates)
                     cpv_list_updates = [best_cpv]
 
-                dict_entry[s] = cpv_list_updates
+                dict_upda[s] = cpv_list_updates
 
-            if len(dict_entry) != 0:
-                cpv_updates[cp] = dict_entry
+            if len(dict_upda) != 0:
+                cpv_updates[cp] = dict_upda
+            if len(dict_down) != 0:
+                cpv_downgra[cp] = dict_down
 
         # get security updates
         for atom in portage.sets.base.InternalPackageSet(
@@ -968,6 +983,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                             # cpv is a security update and removed from list
                             cpv_updates[atom.cp][slot].remove(cpv)
                             self.package(cpv, INFO_SECURITY)
+            else: # update also non-world and non-system packages if security
+                self.package(atom.cpv, INFO_SECURITY)
+
+        # downgrades
+        for cp in cpv_downgra:
+            for slot in cpv_downgra[cp]:
+                for cpv in cpv_downgra[cp][slot]:
+                    self.package(cpv, INFO_IMPORTANT)
 
         # normal updates
         for cp in cpv_updates:
