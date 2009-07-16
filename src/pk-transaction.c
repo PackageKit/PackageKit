@@ -1681,22 +1681,35 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 {
 	PolkitAuthorizationResult *result;
 	gboolean ret;
+	gchar *message;
 	GError *error = NULL;
 
 	/* finish the call */
 	result = polkit_authority_check_authorization_finish (transaction->priv->authority, res, &error);
 	transaction->priv->waiting_for_auth = FALSE;
 
-	/* failed, maybe session authentication agent isn't running */
+	/* failed because the request was cancelled */
+	ret = g_cancellable_is_cancelled (transaction->priv->cancellable);
+	if (!ret) {
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "The authentication was cancelled due to a timeout.");
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* failed, maybe polkit is messed up? */
 	if (result == NULL) {
 		egg_warning ("failed to check for auth: %s", error->message);
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
-						"failed to check for auth: maybe session authentication agent isn't running?");
+		message = g_strdup_printf ("failed to check for authentication: %s", error->message);
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, message);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 		g_error_free (error);
+		g_free (message);
 		goto out;
 	}
 
@@ -1705,7 +1718,8 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "failed to obtain auth");
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+						"failed to obtain authentication");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", transaction->priv->uid);
