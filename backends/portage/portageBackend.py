@@ -47,7 +47,6 @@ from itertools import izip
 # Package IDs description:
 # CAT/PN;PV;KEYWORD;[REPOSITORY|installed]
 # Last field must be "installed" if installed. Otherwise it's the repo name
-# TODO: KEYWORD ? (arch or ~arch) with update, it will work ?
 #
 # Naming convention:
 # cpv: category package version, the standard representation of what packagekit
@@ -77,7 +76,7 @@ CATEGORY_GROUP_MAP = {
         "app-laptop" : GROUP_OTHER,
         "app-misc" : GROUP_OTHER,
         "app-mobilephone" : GROUP_OTHER,
-        "app-office" : GROUP_OFFICE,
+        "app-office" : GROUP_OFFICE, # DONE
         "app-pda" : GROUP_OTHER,
         "app-portage" : GROUP_OTHER,
         "app-shells" : GROUP_OTHER,
@@ -139,14 +138,13 @@ CATEGORY_GROUP_MAP = {
         "mail-filter" : GROUP_OTHER, # TODO: from there
         "mail-mta" : GROUP_OTHER,
         "media-fonts" : GROUP_FONTS, # DONE (only this one)
-        "media-gfx" : GROUP_OTHER,
+        "media-gfx" : GROUP_GRAPHICS, # DONE
         "media-libs" : GROUP_OTHER,
         "media-plugins" : GROUP_OTHER,
         "media-radio" : GROUP_OTHER,
         "media-sound" : GROUP_OTHER,
         "media-tv" : GROUP_OTHER,
         "media-video" : GROUP_OTHER,
-        "metadata" : GROUP_OTHER,
         "net-analyzer" : GROUP_OTHER,
         "net-dialup" : GROUP_OTHER,
         "net-dns" : GROUP_OTHER,
@@ -168,10 +166,9 @@ CATEGORY_GROUP_MAP = {
         "net-wireless" : GROUP_OTHER,
         "net-zope" : GROUP_OTHER,
         "perl-core" : GROUP_OTHER,
-        "profiles" : GROUP_OTHER,
-        "rox-base" : GROUP_OTHER,
-        "rox-extra" : GROUP_OTHER,
-        "sci-astronomy" : GROUP_SCIENCE, # DONE from there
+        "rox-base" : GROUP_DESKTOP_OTHER, #DONE from there
+        "rox-extra" : GROUP_DESKTOP_OTHER,
+        "sci-astronomy" : GROUP_SCIENCE,
         "sci-biology" : GROUP_SCIENCE,
         "sci-calculators" : GROUP_SCIENCE,
         "sci-chemistry" : GROUP_SCIENCE,
@@ -182,8 +179,8 @@ CATEGORY_GROUP_MAP = {
         "sci-misc" : GROUP_SCIENCE,
         "sci-physics" : GROUP_SCIENCE,
         "sci-visualization" : GROUP_SCIENCE,
-        "sec-policy" : GROUP_OTHER, # TODO: from there
-        "sys-apps" : GROUP_OTHER,
+        "sec-policy" : GROUP_SECURITY,
+        "sys-apps" : GROUP_OTHER,   # TODO: from there
         "sys-auth" : GROUP_OTHER,
         "sys-block" : GROUP_OTHER,
         "sys-boot" : GROUP_OTHER,
@@ -193,7 +190,7 @@ CATEGORY_GROUP_MAP = {
         "sys-fs" : GROUP_OTHER,
         "sys-kernel" : GROUP_OTHER,
         "sys-libs" : GROUP_OTHER,
-        "sys-power" : GROUP_OTHER,
+        "sys-power" : GROUP_POWER_MANAGEMENT, # DONE
         "sys-process" : GROUP_OTHER,
         "virtual" : GROUP_OTHER, # TODO: what to do ?
         "www-apache" : GROUP_OTHER,
