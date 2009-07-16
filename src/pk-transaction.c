@@ -1595,7 +1595,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 
 	/* failed because the request was cancelled */
 	ret = g_cancellable_is_cancelled (transaction->priv->cancellable);
-	if (!ret) {
+	if (ret) {
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "The authentication was cancelled due to a timeout.");
