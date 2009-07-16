@@ -107,7 +107,7 @@ struct PkTransactionPrivate
 #endif
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy_pid;
-	PkTransactionExtra		*transaction_extra;
+	PkTransactionExtra	*transaction_extra;
 	PkSyslog		*syslog;
 
 	/* needed for gui coldplugging */
