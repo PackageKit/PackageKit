@@ -172,13 +172,19 @@ pk_font_not_found (PangoLanguage *language)
 
 	/* convert to language */
 	lang = pango_language_to_string (language);
+	if (lang == NULL || lang[0] == '\0') {
+		g_warning ("failed to convert language to string");
+		goto out;
+	}
 
 	/* create the font tag used in as a package provides */
 	pat = FcPatternCreate ();
 	FcPatternAddString (pat, FC_LANG, (FcChar8 *) lang);
 	tag = (gchar *) FcNameUnparse (pat);
-	if (tag == NULL)
+	if (tag == NULL || tag[0] == '\0') {
+		g_warning ("failed to create font tag: %s", lang);
 		goto out;
+	}
 
 	/* add to array for processing in idle callback */
 	queue_install_fonts_tag (tag);
