@@ -1600,7 +1600,6 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, "The authentication was cancelled due to a timeout.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
-		g_error_free (error);
 		goto out;
 	}
 
