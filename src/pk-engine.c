@@ -648,12 +648,12 @@ out:
 void
 pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp, DBusGMethodInvocation *context)
 {
+	guint len;
+	GError *error = NULL;
 #ifdef USE_SECURITY_POLKIT
 	gchar *sender = NULL;
 	PolkitSubject *subject;
 	PolkitDetails *details;
-	GError *error = NULL;
-	guint len;
 #else
 	gboolean ret;
 #endif
