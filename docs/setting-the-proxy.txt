@@ -1,0 +1,55 @@
+Setting the proxy:
+
+The packagekitd daemon sets the network proxy for the packaging backend so that
+packages can be downloaded when on a corporate or managed network.
+
+If the system-wide ProxyHTTP or ProxyFTP are set in PackageKit.conf then these
+are used by default. If these keys are blank or not present then the session
+proxy can be used. The session proxies are the values that are set in the
+network proxy configuration.
+
+The session proxy is read by a session process that is started at login time,
+and then relayed to PackageKit. In GNOME, this is done by the gpk-update-icon
+process, which reads the settings from GConf, and executes SetProxy on
+org.freedesktop.PackageKit.
+
+Note: this method is on the main interface, not a transaction interface. The
+rationale for this is that every client using PackageKit should not have to
+read and set the proxy at the start of each and every transaction, as this
+would make each transaction slower to startup, and also require each client to
+read and track the session proxy configuration.
+
+To avoid this overhead, each session can register the proxy with the daemon
+once, and then the daemon can remember the user identifier and the session that
+it came from, and store this data in a database. When each transaction method
+is executed, the uid and session that executed the call are used to lookup the
+proxy settings and this is passed to the backend. This also allows the daemon to
+have to correct proxy settings if the daemon times out (as it is designed to do)
+and is restarted by a client application using DBus system activation.
+
+Implementation considerations;
+
+The PID and session should be be cached in PkDbus as these will be used on each transaction.
+
+Security considerations:
+The HTTP and FTP proxies that are sent by the session may contain embedded
+usernames and passwords. Whilst these are sent in plain text over the system
+DBus (TODO), the database should not be readable by a user as this could be used
+to discover proxy server passwords.
+
+The matching of UID and session to proxies assumes that the user cannot modify
+the login UID, and cannot spoof a session in ConsoleKit. If a user were able to
+change the apparent UID, then this would allow them to use proxy settings set
+from another user. This is manifested when a graphical application is run using
+sudo (which you should never do, but I digress) and different proxy settings may
+be used from the user settings. It also allows applications run using sudo to
+use the proxy specified by root, which may be different.
+
+We save the UID and session to a database to get the proxy state for each
+transaction. If the user is able to create a large number of different sessions
+then this will add many entries to the database. Some rate-limiting could be
+added to ConsoleKit or PackageKit to solve this, but has not been done at this
+time.
+
+TODO: need to check for injected SQL in the proxy data before we add freeform text.
+
