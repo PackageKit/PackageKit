@@ -37,6 +37,7 @@ struct PkDbusPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy_pid;
+	DBusGProxy		*proxy_session;
 };
 
 static gpointer pk_dbus_object = NULL;
@@ -95,7 +96,8 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
 	/* get pid from DBus (quite slow) */
-	ret = dbus_g_proxy_call (dbus->priv->proxy_pid, "GetConnectionUnixProcessID", &error,
+	ret = dbus_g_proxy_call (dbus->priv->proxy_pid,
+				 "GetConnectionUnixProcessID", &error,
 				 G_TYPE_STRING, sender,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &pid,
@@ -161,8 +163,36 @@ out:
 gchar *
 pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 {
+	gboolean ret;
+	gchar *session = NULL;
+	GError *error = NULL;
+	guint pid;
+
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
-	return NULL;
+	g_return_val_if_fail (sender != NULL, NULL);
+
+	/* get pid */
+	pid = pk_dbus_get_pid (dbus, sender);
+	if (pid == G_MAXUINT) {
+		egg_warning ("failed to get PID");
+		goto out;
+	}
+
+	/* get session from ConsoleKit (quite slow) */
+	ret = dbus_g_proxy_call (dbus->priv->proxy_session,
+				 "GetSessionForUnixProcess", &error,
+				 G_TYPE_UINT, pid,
+				 G_TYPE_INVALID,
+				 DBUS_TYPE_G_OBJECT_PATH, &session,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to get session for %i: %s", pid, error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+out:
+	return session;
 }
 
 /**
@@ -178,6 +208,7 @@ pk_dbus_finalize (GObject *object)
 	dbus = PK_DBUS (object);
 
 	g_object_unref (dbus->priv->proxy_pid);
+	g_object_unref (dbus->priv->proxy_session);
 
 	G_OBJECT_CLASS (pk_dbus_parent_class)->finalize (object);
 }
@@ -207,13 +238,27 @@ pk_dbus_init (PkDbus *dbus)
 	GError *error = NULL;
 	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 
-	/* connect to DBus so we can get the pid */
+	/* use the bus to get the uid */
 	dbus->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
-	dbus->priv->proxy_pid = dbus_g_proxy_new_for_name_owner (dbus->priv->connection,
-								   "org.freedesktop.DBus",
-								   "/org/freedesktop/DBus/Bus",
-								   "org.freedesktop.DBus", &error);
+
+	/* connect to DBus so we can get the pid */
+	dbus->priv->proxy_pid =
+		dbus_g_proxy_new_for_name_owner (dbus->priv->connection,
+						 "org.freedesktop.DBus",
+						 "/org/freedesktop/DBus/Bus",
+						 "org.freedesktop.DBus", &error);
 	if (dbus->priv->proxy_pid == NULL) {
+		egg_warning ("cannot connect to DBus: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* use ConsoleKit to get the session */
+	dbus->priv->proxy_session =
+		dbus_g_proxy_new_for_name_owner (dbus->priv->connection,
+						 "org.freedesktop.ConsoleKit",
+						 "/org/freedesktop/ConsoleKit/Manager",
+						 "org.freedesktop.ConsoleKit.Manager", &error);
+	if (dbus->priv->proxy_session == NULL) {
 		egg_warning ("cannot connect to DBus: %s", error->message);
 		g_error_free (error);
 	}
