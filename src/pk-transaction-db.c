@@ -82,6 +82,12 @@ typedef struct {
 	gchar *cmdline;
 } PkTransactionDbItem;
 
+typedef struct {
+	gchar		*proxy_http;
+	gchar		*proxy_ftp;
+	gboolean	set;
+} PkTransactionDbProxyItem;
+
 /**
  * pk_transaction_db_item_clear:
  **/
@@ -576,11 +582,6 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 	return tid;
 }
 
-typedef struct {
-	gchar	*proxy_http;
-	gchar	*proxy_ftp;
-} PkTransactionDbProxyItem;
-
 /**
  * pk_transaction_sqlite_proxy_cb:
  **/
@@ -595,8 +596,10 @@ pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		if (egg_strequal (col_name[i], "proxy_http")) {
 			item->proxy_http = g_strdup (argv[i]);
+			item->set = TRUE;
 		} else if (egg_strequal (col_name[i], "proxy_ftp")) {
 			item->proxy_ftp = g_strdup (argv[i]);
+			item->set = TRUE;
 		} else {
 			egg_warning ("%s = %s\n", col_name[i], argv[i]);
 		}
@@ -627,7 +630,7 @@ pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
  *
  * Retrieves the proxy information from the database.
  *
- * Return value: %TRUE for success
+ * Return value: %TRUE if we matched a proxy
  **/
 gboolean
 pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
@@ -652,6 +655,12 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	/* nothing matched */
+	if (!item->set) {
+		egg_debug ("no data");
 		goto out;
 	}
 
@@ -695,14 +704,8 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* check for previous entries */
 	ret = pk_transaction_db_get_proxy (tdb, uid, session, &proxy_http_tmp, &proxy_ftp_tmp);
-	if (!ret) {
-		egg_warning ("failed to get previous proxies");
-		goto out;
-	}
-
-	/* any data */
-	if (proxy_http_tmp != NULL || proxy_ftp_tmp != NULL) {
-		egg_debug ("updated proxy for uid:%i and session:%s", uid, session);
+	if (ret) {
+		egg_debug ("updated proxy %s, %s for uid:%i and session:%s", proxy_http, proxy_ftp, uid, session);
 
 		/* prepare statement */
 		rc = sqlite3_prepare_v2 (tdb->priv->db,
@@ -730,7 +733,7 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* insert new entry */
 	timespec = pk_iso8601_present ();
-	egg_debug ("set proxy for uid:%i and session:%s", uid, session);
+	egg_debug ("set proxy %s, %s for uid:%i and session:%s", proxy_http, proxy_ftp, uid, session);
 
 	/* prepare statement */
 	rc = sqlite3_prepare_v2 (tdb->priv->db,
