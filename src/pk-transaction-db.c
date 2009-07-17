@@ -576,6 +576,166 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 	return tid;
 }
 
+typedef struct {
+	gchar	*proxy_http;
+	gchar	*proxy_ftp;
+} PkTransactionDbProxyItem;
+
+/**
+ * pk_transaction_sqlite_proxy_cb:
+ **/
+static gint
+pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkTransactionDbProxyItem *item = (PkTransactionDbProxyItem *) data;
+	gint i;
+
+	g_return_val_if_fail (item != NULL, 0);
+
+	for (i=0; i<argc; i++) {
+		if (egg_strequal (col_name[i], "proxy_http")) {
+			item->proxy_http = g_strdup (argv[i]);
+		} else if (egg_strequal (col_name[i], "proxy_ftp")) {
+			item->proxy_ftp = g_strdup (argv[i]);
+		} else {
+			egg_warning ("%s = %s\n", col_name[i], argv[i]);
+		}
+	}
+	return 0;
+}
+
+/**
+ * pk_transaction_db_proxy_item_free:
+ **/
+static void
+pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->proxy_http);
+	g_free (item->proxy_ftp);
+	g_free (item);
+}
+
+/**
+ * pk_transaction_db_get_proxy:
+ * @tdb: the #PkTransactionDb instance
+ * @uid: the user ID of the user
+ * @session: the ConsoleKit session
+ * @proxy_http: the HTTP proxy
+ * @proxy_ftp: the FTP proxy
+ *
+ * Retrieves the proxy information from the database.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
+			     gchar **proxy_http, gchar **proxy_ftp)
+{
+	gchar *error_msg = NULL;
+	gchar *statement;
+	gboolean ret = FALSE;
+	gint rc;
+	PkTransactionDbProxyItem *item;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
+	g_return_val_if_fail (proxy_http != NULL, FALSE);
+	g_return_val_if_fail (proxy_ftp != NULL, FALSE);
+
+	/* get existing data */
+	item = g_new0 (PkTransactionDbProxyItem, 1);
+	statement = g_strdup_printf ("SELECT proxy_http, proxy_ftp FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
+				     uid, session);
+	rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_proxy_cb, item, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	/* copy data */
+	*proxy_http = g_strdup (item->proxy_http);
+	*proxy_ftp = g_strdup (item->proxy_ftp);
+
+	/* success, even if we got no data */
+	ret = TRUE;
+out:
+	pk_transaction_db_proxy_item_free (item);
+	g_free (statement);
+	return ret;
+}
+
+/**
+ * pk_transaction_db_set_proxy:
+ * @tdb: the #PkTransactionDb instance
+ * @uid: the user ID of the user
+ * @session: the ConsoleKit session
+ * @proxy_http: the HTTP proxy
+ * @proxy_ftp: the FTP proxy
+ *
+ * Saves the proxy information to the database.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
+			     const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	gchar *error_msg = NULL;
+	gchar *statement = NULL;
+	gchar *timespec = NULL;
+	gchar *proxy_http_tmp = NULL;
+	gchar *proxy_ftp_tmp = NULL;
+	gboolean ret = FALSE;
+	gint rc;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
+
+	/* check for previous entries */
+	ret = pk_transaction_db_get_proxy (tdb, uid, session, &proxy_http_tmp, &proxy_ftp_tmp);
+	if (!ret) {
+		egg_warning ("failed to get previous proxies");
+		goto out;
+	}
+
+	/* any data */
+	if (proxy_http_tmp != NULL || proxy_ftp_tmp != NULL) {
+		statement = g_strdup_printf ("UPDATE proxy SET proxy_http = '%s', proxy_ftp = '%s' WHERE uid = '%i' AND session = '%s'",
+					     proxy_http, proxy_ftp, uid, session);
+		egg_debug ("updated proxy for uid:%i and session:%s", uid, session);
+		rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+		if (rc != SQLITE_OK) {
+			egg_warning ("SQL error: %s", error_msg);
+			sqlite3_free (error_msg);
+			goto out;
+		}
+		goto out;
+	}
+
+	/* insert new entry */
+	timespec = pk_iso8601_present ();
+	statement = g_strdup_printf ("INSERT INTO proxy (created, uid, session, proxy_http, proxy_ftp) VALUES ('%s', '%i', '%s', '%s', '%s')",
+				     timespec, uid, session, proxy_http, proxy_ftp);
+	egg_debug ("set proxy for uid:%i and session:%s", uid, session);
+	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	ret = TRUE;
+out:
+	g_free (timespec);
+	g_free (statement);
+	g_free (proxy_http_tmp);
+	g_free (proxy_ftp_tmp);
+	return ret;
+}
+
 /**
  * pk_transaction_db_class_init:
  * @klass: The PkTransactionDbClass
@@ -707,6 +867,14 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		}
 		egg_debug ("job count is now at %i", tdb->priv->job_count);
 	}
+
+	/* session proxy saving (since 0.5.1) */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM proxy LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("adding table proxy: %s", error_msg);
+		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_ftp TEXT, uid INTEGER, session TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	}
 }
 
 /**
@@ -761,6 +929,8 @@ pk_transaction_db_test (EggTest *test)
 	gchar *tid;
 	gboolean ret;
 	guint ms;
+	gchar *proxy_http = NULL;
+	gchar *proxy_ftp = NULL;
 
 	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
@@ -845,6 +1015,45 @@ pk_transaction_db_test (EggTest *test)
 	else
 		egg_test_failed (test, "failed to get correct time, %i", value);
 
+	/************************************************************
+	 ****************          PROXIES         ******************
+	 ************************************************************/
+	egg_test_title (test, "can we set the proxies");
+	ret = pk_transaction_db_set_proxy (db, 500, "session1", "127.0.0.1:80", "127.0.0.1:21");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "can we set the proxies (overwrite)");
+	ret = pk_transaction_db_set_proxy (db, 500, "session1", "127.0.0.1:8000", "127.0.0.1:21");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "can we get the proxies (non-existant user)");
+	ret = pk_transaction_db_get_proxy (db, 501, "session1", &proxy_http, &proxy_ftp);
+	if (proxy_http == NULL && proxy_ftp == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct proxies, %s and %s", proxy_http, proxy_ftp);
+
+	/************************************************************/
+	egg_test_title (test, "can we get the proxies (non-existant session)");
+	ret = pk_transaction_db_get_proxy (db, 500, "session2", &proxy_http, &proxy_ftp);
+	if (proxy_http == NULL && proxy_ftp == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct proxies, %s and %s", proxy_http, proxy_ftp);
+
+	/************************************************************/
+	egg_test_title (test, "can we get the proxies (match)");
+	ret = pk_transaction_db_get_proxy (db, 500, "session1", &proxy_http, &proxy_ftp);
+	if (g_strcmp0 (proxy_http, "127.0.0.1:8000") == 0 &&
+	    g_strcmp0 (proxy_ftp, "127.0.0.1:21") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct proxies, %s and %s", proxy_http, proxy_ftp);
+
+	g_free (proxy_http);
+	g_free (proxy_ftp);
 	g_object_unref (db);
 	egg_test_end (test);
 }

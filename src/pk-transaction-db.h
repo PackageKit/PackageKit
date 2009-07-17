@@ -77,6 +77,16 @@ guint		 pk_transaction_db_action_time_since	(PkTransactionDb	*tdb,
 							 PkRoleEnum		 role);
 gchar		*pk_transaction_db_generate_id		(PkTransactionDb	*tdb)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_transaction_db_get_proxy		(PkTransactionDb	*tdb,
+							 guint			 uid,
+							 const gchar		*session,
+							 gchar			**proxy_http,
+							 gchar			**proxy_ftp);
+gboolean	 pk_transaction_db_set_proxy		(PkTransactionDb	*tdb,
+							 guint			 uid,
+							 const gchar		*session,
+							 const gchar		*proxy_http,
+							 const gchar		*proxy_ftp);
 
 G_END_DECLS
 
