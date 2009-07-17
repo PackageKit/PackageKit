@@ -893,7 +893,7 @@ pk_transaction_list_test_get_item (PkTransactionList *tlist)
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create PkTransaction instance */
-	pk_transaction_list_create (tlist, tid, ":0");
+	pk_transaction_list_create (tlist, tid, ":0", NULL);
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	g_free (tid);
 
@@ -948,7 +948,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "create a transaction object");
-	ret = pk_transaction_list_create (tlist, tid, ":0");
+	ret = pk_transaction_list_create (tlist, tid, ":0", NULL);
 	if (ret)
 		egg_test_success (test, "created transaction %s", tid);
 	else
@@ -992,7 +992,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "add again the same tid (should fail)");
-	ret = pk_transaction_list_create (tlist, tid, ":0");
+	ret = pk_transaction_list_create (tlist, tid, ":0", NULL);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
@@ -1020,7 +1020,7 @@ pk_transaction_list_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "create another item");
-	ret = pk_transaction_list_create (tlist, tid, ":0");
+	ret = pk_transaction_list_create (tlist, tid, ":0", NULL);
 	if (ret)
 		egg_test_success (test, "created transaction %s", tid);
 	else
