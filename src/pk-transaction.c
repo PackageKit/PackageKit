@@ -1154,10 +1154,50 @@ out:
 /**
  * pk_transaction_set_running:
  */
+static gboolean
+pk_transaction_set_proxy (PkTransaction *transaction, GError **error)
+{
+	gboolean ret = FALSE;
+	gchar *session = NULL;
+	gchar *proxy_http = NULL;
+	gchar *proxy_ftp = NULL;
+
+	/* get session */
+	session = pk_dbus_get_session (transaction->priv->dbus, transaction->priv->sender);
+	if (session == NULL) {
+		*error = g_error_new (1, 0, "failed to get the session");
+		goto out;
+	}
+
+	/* get from database */
+	ret = pk_transaction_db_get_proxy (transaction->priv->transaction_db, transaction->priv->uid, session, &proxy_http, &proxy_ftp);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to get the proxy from the database");
+		goto out;
+	}
+
+	/* try to set the new proxy */
+	ret = pk_backend_set_proxy (transaction->priv->backend, proxy_http, proxy_ftp);
+	if (!ret) {
+		*error = g_error_new (1, 0, "failed to set the proxy");
+		goto out;
+	}
+	egg_debug ("using http_proxy=%s, ftp_proxy=%s for %i:%s", proxy_http, proxy_ftp, transaction->priv->uid, session);
+out:
+	g_free (proxy_http);
+	g_free (proxy_ftp);
+	g_free (session);
+	return ret;
+}
+
+/**
+ * pk_transaction_set_running:
+ */
 G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
 	gboolean ret;
+	GError *error = NULL;
 	PkBackendDesc *desc;
 	PkStore *store;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
@@ -1185,6 +1225,13 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
 	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
+
+	/* set proxy */
+	ret = pk_transaction_set_proxy (transaction, &error);
+	if (!ret) {
+		egg_warning ("failed to set the proxy: %s", error->message);
+		g_error_free (error);
+	}
 
 	/* do any pre transaction checks */
 	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids);
