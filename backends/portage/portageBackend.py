@@ -47,7 +47,6 @@ from itertools import izip
 # Package IDs description:
 # CAT/PN;PV;KEYWORD;[REPOSITORY|installed]
 # Last field must be "installed" if installed. Otherwise it's the repo name
-# TODO: KEYWORD ? (arch or ~arch) with update, it will work ?
 #
 # Naming convention:
 # cpv: category package version, the standard representation of what packagekit
@@ -55,10 +54,7 @@ from itertools import izip
 
 # TODO:
 # ERRORS with messages ?
-# manage slots
 # remove percentage(None) if percentage is used
-# change how newest is working ?
-# change has_key to foo in dict
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -80,7 +76,7 @@ CATEGORY_GROUP_MAP = {
         "app-laptop" : GROUP_OTHER,
         "app-misc" : GROUP_OTHER,
         "app-mobilephone" : GROUP_OTHER,
-        "app-office" : GROUP_OFFICE,
+        "app-office" : GROUP_OFFICE, # DONE
         "app-pda" : GROUP_OTHER,
         "app-portage" : GROUP_OTHER,
         "app-shells" : GROUP_OTHER,
@@ -142,14 +138,13 @@ CATEGORY_GROUP_MAP = {
         "mail-filter" : GROUP_OTHER, # TODO: from there
         "mail-mta" : GROUP_OTHER,
         "media-fonts" : GROUP_FONTS, # DONE (only this one)
-        "media-gfx" : GROUP_OTHER,
+        "media-gfx" : GROUP_GRAPHICS, # DONE
         "media-libs" : GROUP_OTHER,
         "media-plugins" : GROUP_OTHER,
         "media-radio" : GROUP_OTHER,
         "media-sound" : GROUP_OTHER,
         "media-tv" : GROUP_OTHER,
         "media-video" : GROUP_OTHER,
-        "metadata" : GROUP_OTHER,
         "net-analyzer" : GROUP_OTHER,
         "net-dialup" : GROUP_OTHER,
         "net-dns" : GROUP_OTHER,
@@ -171,10 +166,9 @@ CATEGORY_GROUP_MAP = {
         "net-wireless" : GROUP_OTHER,
         "net-zope" : GROUP_OTHER,
         "perl-core" : GROUP_OTHER,
-        "profiles" : GROUP_OTHER,
-        "rox-base" : GROUP_OTHER,
-        "rox-extra" : GROUP_OTHER,
-        "sci-astronomy" : GROUP_SCIENCE, # DONE from there
+        "rox-base" : GROUP_DESKTOP_OTHER, #DONE from there
+        "rox-extra" : GROUP_DESKTOP_OTHER,
+        "sci-astronomy" : GROUP_SCIENCE,
         "sci-biology" : GROUP_SCIENCE,
         "sci-calculators" : GROUP_SCIENCE,
         "sci-chemistry" : GROUP_SCIENCE,
@@ -185,8 +179,8 @@ CATEGORY_GROUP_MAP = {
         "sci-misc" : GROUP_SCIENCE,
         "sci-physics" : GROUP_SCIENCE,
         "sci-visualization" : GROUP_SCIENCE,
-        "sec-policy" : GROUP_OTHER, # TODO: from there
-        "sys-apps" : GROUP_OTHER,
+        "sec-policy" : GROUP_SECURITY,
+        "sys-apps" : GROUP_OTHER,   # TODO: from there
         "sys-auth" : GROUP_OTHER,
         "sys-block" : GROUP_OTHER,
         "sys-boot" : GROUP_OTHER,
@@ -196,7 +190,7 @@ CATEGORY_GROUP_MAP = {
         "sys-fs" : GROUP_OTHER,
         "sys-kernel" : GROUP_OTHER,
         "sys-libs" : GROUP_OTHER,
-        "sys-power" : GROUP_OTHER,
+        "sys-power" : GROUP_POWER_MANAGEMENT, # DONE
         "sys-process" : GROUP_OTHER,
         "virtual" : GROUP_OTHER, # TODO: what to do ?
         "www-apache" : GROUP_OTHER,
@@ -242,7 +236,7 @@ def get_group(cp):
     ''' Return the group of the package
     Argument could be cp or cpv. '''
     category = portage.catsplit(cp)[0]
-    if CATEGORY_GROUP_MAP.has_key(category):
+    if category in CATEGORY_GROUP_MAP:
         return CATEGORY_GROUP_MAP[category]
 
     # TODO: add message ?
@@ -367,7 +361,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for cpv in cpv_list:
             slot = self.get_metadata(cpv, ["SLOT"])[0]
-            if not cpv_dict.has_key(slot):
+            if slot not in cpv_dict:
                 cpv_dict[slot] = [cpv]
             else:
                 cpv_dict[slot].append(cpv)
@@ -875,10 +869,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_updates(self, filters):
         # NOTES:
-        # portage prefer not to update _ALL_ packages
-        # so we will only list updated packages in world, system or security
-        # TODO: downgrade ?
-        # FIXME: security updates on libs doesn't work
+        # because of a lot of things related to Gentoo,
+        # only world and system packages are can be listed as updates
+        # _except_ for security updates
 
         # UPDATE TYPES:
         # - blocked: wait for feedbacks
@@ -903,6 +896,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         update_candidates = []
         cpv_updates = {}
+        cpv_downgra = {}
 
         # get system and world packages
         for s in ["system", "world"]:
@@ -919,7 +913,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
             cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
 
-            dict_entry = {}
+            dict_upda = {}
+            dict_down = {}
 
             # candidate slots are installed slots
             slots = cpv_dict_inst.keys()
@@ -928,10 +923,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             for s in slots:
                 cpv_list_updates = []
                 cpv_inst = cpv_dict_inst[s][0] # only one install per slot
-                cpv_list_avai = cpv_dict_avai[s]
-                cpv_list_avai.reverse()
 
-                for cpv in cpv_list_avai:
+                # the slot can be outdated (not in the tree)
+                if s not in cpv_dict_avai:
+                    break
+
+                tmp_list_avai = cpv_dict_avai[s]
+                tmp_list_avai.reverse()
+
+                for cpv in tmp_list_avai:
                     if self.cmp_cpv(cpv_inst, cpv) == -1:
                         cpv_list_updates.append(cpv)
                     else: # because the list is sorted
@@ -939,7 +939,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
                 # no update for this slot
                 if len(cpv_list_updates) == 0:
-                    break
+                    if [cpv_inst] == portage.portdb.visible([cpv_inst]):
+                        break # really no update
+                    else:
+                        # that's actually a downgrade or even worst
+                        if len(tmp_list_avai) == 0:
+                            break # this package is not known in the tree...
+                        else:
+                            dict_down[s] = [tmp_list_avai.pop()]
 
                 cpv_list_updates = self.filter_free(cpv_list_updates, fltlist)
 
@@ -950,10 +957,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     best_cpv = portage.best(cpv_list_updates)
                     cpv_list_updates = [best_cpv]
 
-                dict_entry[s] = cpv_list_updates
+                dict_upda[s] = cpv_list_updates
 
-            if len(dict_entry) != 0:
-                cpv_updates[cp] = dict_entry
+            if len(dict_upda) != 0:
+                cpv_updates[cp] = dict_upda
+            if len(dict_down) != 0:
+                cpv_downgra[cp] = dict_down
 
         # get security updates
         for atom in portage.sets.base.InternalPackageSet(
@@ -968,6 +977,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                             # cpv is a security update and removed from list
                             cpv_updates[atom.cp][slot].remove(cpv)
                             self.package(cpv, INFO_SECURITY)
+            else: # update also non-world and non-system packages if security
+                self.package(atom.cpv, INFO_SECURITY)
+
+        # downgrades
+        for cp in cpv_downgra:
+            for slot in cpv_downgra[cp]:
+                for cpv in cpv_downgra[cp][slot]:
+                    self.package(cpv, INFO_IMPORTANT)
 
         # normal updates
         for cp in cpv_updates:
