@@ -27,29 +27,3 @@ proxy settings and this is passed to the backend. This also allows the daemon to
 have to correct proxy settings if the daemon times out (as it is designed to do)
 and is restarted by a client application using DBus system activation.
 
-Implementation considerations;
-
-The PID and session should be be cached in PkDbus as these will be used on each transaction.
-
-Security considerations:
-The HTTP and FTP proxies that are sent by the session may contain embedded
-usernames and passwords. Whilst these are sent in plain text over the system
-DBus (TODO), the database should not be readable by a user as this could be used
-to discover proxy server passwords.
-
-The matching of UID and session to proxies assumes that the user cannot modify
-the login UID, and cannot spoof a session in ConsoleKit. If a user were able to
-change the apparent UID, then this would allow them to use proxy settings set
-from another user. This is manifested when a graphical application is run using
-sudo (which you should never do, but I digress) and different proxy settings may
-be used from the user settings. It also allows applications run using sudo to
-use the proxy specified by root, which may be different.
-
-We save the UID and session to a database to get the proxy state for each
-transaction. If the user is able to create a large number of different sessions
-then this will add many entries to the database. Some rate-limiting could be
-added to ConsoleKit or PackageKit to solve this, but has not been done at this
-time.
-
-TODO: need to check for injected SQL in the proxy data before we add freeform text.
-

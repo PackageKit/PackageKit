@@ -683,13 +683,12 @@ gboolean
 pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
 			     const gchar *proxy_http, const gchar *proxy_ftp)
 {
-	gchar *error_msg = NULL;
-	gchar *statement = NULL;
 	gchar *timespec = NULL;
 	gchar *proxy_http_tmp = NULL;
 	gchar *proxy_ftp_tmp = NULL;
 	gboolean ret = FALSE;
 	gint rc;
+	sqlite3_stmt *statement = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
@@ -703,13 +702,27 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* any data */
 	if (proxy_http_tmp != NULL || proxy_ftp_tmp != NULL) {
-		statement = g_strdup_printf ("UPDATE proxy SET proxy_http = '%s', proxy_ftp = '%s' WHERE uid = '%i' AND session = '%s'",
-					     proxy_http, proxy_ftp, uid, session);
 		egg_debug ("updated proxy for uid:%i and session:%s", uid, session);
-		rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+
+		/* prepare statement */
+		rc = sqlite3_prepare_v2 (tdb->priv->db,
+					 "UPDATE proxy SET proxy_http = ?, proxy_ftp = ? WHERE uid = ? AND session = ?",
+					 -1, &statement, NULL);
 		if (rc != SQLITE_OK) {
-			egg_warning ("SQL error: %s", error_msg);
-			sqlite3_free (error_msg);
+			egg_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->priv->db));
+			goto out;
+		}
+
+		/* bind data, so that the freeform proxy text cannot be used to inject SQL */
+		sqlite3_bind_text (statement, 1, proxy_http, -1, SQLITE_STATIC);
+		sqlite3_bind_text (statement, 2, proxy_ftp, -1, SQLITE_STATIC);
+		sqlite3_bind_int (statement, 3, uid);
+		sqlite3_bind_text (statement, 4, session, -1, SQLITE_STATIC);
+
+		/* execute statement */
+		rc = sqlite3_step (statement);
+		if (rc != SQLITE_DONE) {
+			egg_warning ("failed to execute statement: %s", sqlite3_errmsg (tdb->priv->db));
 			goto out;
 		}
 		goto out;
@@ -717,20 +730,36 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* insert new entry */
 	timespec = pk_iso8601_present ();
-	statement = g_strdup_printf ("INSERT INTO proxy (created, uid, session, proxy_http, proxy_ftp) VALUES ('%s', '%i', '%s', '%s', '%s')",
-				     timespec, uid, session, proxy_http, proxy_ftp);
 	egg_debug ("set proxy for uid:%i and session:%s", uid, session);
-	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+
+	/* prepare statement */
+	rc = sqlite3_prepare_v2 (tdb->priv->db,
+				 "INSERT INTO proxy (created, uid, session, proxy_http, proxy_ftp) VALUES (?, ?, ?, ?, ?)",
+				 -1, &statement, NULL);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s", error_msg);
-		sqlite3_free (error_msg);
+		egg_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->priv->db));
+		goto out;
+	}
+
+	/* bind data, so that the freeform proxy text cannot be used to inject SQL */
+	sqlite3_bind_text (statement, 1, timespec, -1, SQLITE_STATIC);
+	sqlite3_bind_int (statement, 2, uid);
+	sqlite3_bind_text (statement, 3, session, -1, SQLITE_STATIC);
+	sqlite3_bind_text (statement, 4, proxy_http, -1, SQLITE_STATIC);
+	sqlite3_bind_text (statement, 5, proxy_ftp, -1, SQLITE_STATIC);
+
+	/* execute statement */
+	rc = sqlite3_step (statement);
+	if (rc != SQLITE_DONE) {
+		egg_warning ("failed to execute statement: %s", sqlite3_errmsg (tdb->priv->db));
 		goto out;
 	}
 
 	ret = TRUE;
 out:
+	if (statement != NULL)
+		sqlite3_finalize (statement);
 	g_free (timespec);
-	g_free (statement);
 	g_free (proxy_http_tmp);
 	g_free (proxy_ftp_tmp);
 	return ret;

@@ -91,3 +91,22 @@ Possible attack vectors:
  (MaximumPackagesToProcess) for each method, and also limiting the total length
  of the data.
 
+ * The HTTP and FTP proxies that are sent by the session may contain embedded
+ usernames and passwords. Whilst these are sent in plain text over the system
+ D-Bus (FIXME?), the database is not be readable by users (mode 0640).
+
+ * The matching of UID and session to proxies assumes that the user cannot
+ modify the login UID, and cannot spoof a session in ConsoleKit. If a user were
+ able to change the apparent UID, then this would allow them to use proxy
+ settings set from another user.
+ This is manifested when a graphical application is run using sudo (which you
+ should never do, but I digress) and different proxy settings may be used from
+ the user settings. It also allows applications run using sudo to use the proxy
+ specified by root, which may be different.
+
+ * We save the UID and session to a database to get the proxy state for each
+ transaction. If the user is able to create a large number of different sessions
+ then this will add many entries to the database. Some rate-limiting could be
+ added to ConsoleKit or PackageKit to solve this, but has not been done at this
+ time.
+
