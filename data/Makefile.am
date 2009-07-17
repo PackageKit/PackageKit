@@ -35,6 +35,12 @@ database_DATA =						\
 	transactions.db					\
 	$(NULL)
 
+install-data-hook:
+	@for file in $(database_DATA); do \
+		echo "Remove global read access for: $(DESTDIR)$(PK_DB_DIR)/$$file"; \
+		chmod o-r $(DESTDIR)$(PK_DB_DIR)/$$file; \
+	done
+
 EXTRA_DIST =						\
 	org.freedesktop.PackageKit.conf.in		\
 	$(servicemain_in_files)				\
