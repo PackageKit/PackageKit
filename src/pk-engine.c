@@ -59,6 +59,7 @@
 #include "pk-notify.h"
 #include "pk-file-monitor.h"
 #include "pk-conf.h"
+#include "pk-dbus.h"
 
 static void     pk_engine_finalize	(GObject       *object);
 
@@ -77,6 +78,7 @@ struct PkEnginePrivate
 	PkNetwork		*network;
 	PkNotify		*notify;
 	PkConf			*conf;
+	PkDbus			*dbus;
 	PkFileMonitor		*file_monitor_conf;
 	PkFileMonitor		*file_monitor_binary;
 	PkBitfield		 actions;
@@ -624,13 +626,30 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	gchar *sender = NULL;
 	PolkitSubject *subject;
 	PolkitDetails *details;
+	GError *error = NULL;
+	guint len;
 #else
 	gboolean ret;
-	GError *error = NULL;
 #endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	egg_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
+
+	/* check length of http */
+	len = egg_strlen (proxy_http, 1024);
+	if (len == 1024) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "http proxy was too long");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check length of ftp */
+	len = egg_strlen (proxy_ftp, 1024);
+	if (len == 1024) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "ftp proxy was too long");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* save these so we can set them after the auth success */
 	egg_debug ("potentially changing http proxy from %s to %s", engine->priv->proxy_http, proxy_http);
@@ -883,6 +902,9 @@ pk_engine_init (PkEngine *engine)
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->cache = pk_cache_new ();
 
+	/* we need the uid and the session for the proxy setting mechanism */
+	engine->priv->dbus = pk_dbus_new ();
+
 	/* we need to be able to clear this */
 	engine->priv->timeout_priority_id = 0;
 	engine->priv->timeout_normal_id = 0;
@@ -986,6 +1008,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
 	g_object_unref (engine->priv->conf);
+	g_object_unref (engine->priv->dbus);
 	g_free (engine->priv->mime_types);
 	g_free (engine->priv->proxy_http);
 	g_free (engine->priv->proxy_ftp);
