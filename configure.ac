@@ -233,18 +233,27 @@ fi
 AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - libarchive
+dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_CHECK_HEADERS(archive.h,
-		 HAVE_ARCHIVE_H="yes",
-		 HAVE_ARCHIVE_H="no")
-if test "x$HAVE_ARCHIVE_H" = "xyes"; then
-		AC_DEFINE(HAVE_ARCHIVE_H)
-		ARCHIVE_LIBS=-larchive
-		AC_SUBST(ARCHIVE_LIBS)
+AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--enable-service-packs],
+							[Enable Service Packs]), enable_servicepacks=$enableval)
+if test x$enable_servicepacks != xno; then
+	AC_CHECK_HEADERS(archive.h,
+			 HAVE_ARCHIVE_H="yes",
+			 HAVE_ARCHIVE_H="no")
+	if test "x$HAVE_ARCHIVE_H" = "xyes"; then
+			AC_DEFINE(HAVE_ARCHIVE_H)
+			ARCHIVE_LIBS=-larchive
+			AC_SUBST(ARCHIVE_LIBS)
+	else
+		if test x$enable_servicepacks = xyes; then
+			AC_MSG_ERROR([Service Packs support need libarchive])
+		fi
+	fi
 else
-		AC_MSG_WARN([Cannot find archive.h. Service packs cannot be created or checked.])
+	HAVE_ARCHIVE_H="no"
 fi
+
 AM_CONDITIONAL(HAVE_ARCHIVE_H, test x$HAVE_ARCHIVE_H = xyes)
 
 dnl ---------------------------------------------------------------------------
@@ -268,12 +277,20 @@ AC_PATH_PROG([MOC], [moc-qt4])
 networking_apis="unix"
 
 dnl ---------------------------------------------------------------------------
-dnl - Is NetworkManager available?
+dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
-	networking_apis="${networking_apis},NetworkManager"
-	AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
+AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--enable-networkmanager],
+							[Enable NetworkManager]), enable_networkmanager=$enableval)
+if test x$enable_networkmanager != xno; then
+	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
+	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
+		networking_apis="${networking_apis},NetworkManager"
+		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
+	else
+		if test x$enable_networkmanager = xyes; then
+			AC_MSG_ERROR([NetworkManager enabled but not found])
+		fi
+	fi
 else
 	PK_BUILD_NETWORKMANAGER=no
 fi
@@ -283,12 +300,20 @@ AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
 dnl ---------------------------------------------------------------------------
-dnl - Is ConnMan available?
+dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
-if test "x$PK_BUILD_CONNMAN" = "xyes"; then
-	networking_apis="${networking_apis},ConnMan"
-	AC_DEFINE(PK_BUILD_CONNMAN, 1, [define if Connection Manager is installed])
+AC_ARG_ENABLE(connman, AC_HELP_STRING([--enable-connman],
+							[Enable ConnMan]), enable_connman=$enableval)
+if test x$enable_connman != xno; then
+	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
+	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
+		networking_apis="${networking_apis},ConnMan"
+		AC_DEFINE(PK_BUILD_CONNMAN, 1, [define if Connection Manager is installed])
+	else
+		if test x$enable_connman = xyes; then
+			AC_MSG_ERROR([Connman enabled but not found])
+		fi
+	fi
 else
 	PK_BUILD_CONNMAN=no
 fi
