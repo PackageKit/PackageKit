@@ -55,6 +55,7 @@ from itertools import izip
 # TODO:
 # ERRORS with messages ?
 # remove percentage(None) if percentage is used
+# protection against signal when installing/removing
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -87,7 +88,7 @@ CATEGORY_GROUP_MAP = {
         "dev-cpp" : GROUP_PROGRAMMING,
         "dev-db" : GROUP_PROGRAMMING,
         "dev-dotnet" : GROUP_PROGRAMMING,
-        "dev-embedded" : GROUP_PROGRAMMING,,
+        "dev-embedded" : GROUP_PROGRAMMING,
         "dev-games" : GROUP_PROGRAMMING,
         "dev-haskell" : GROUP_PROGRAMMING,
         "dev-java" : GROUP_PROGRAMMING,
