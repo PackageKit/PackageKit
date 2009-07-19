@@ -1075,59 +1075,69 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def remove_packages(self, allowdep, pkgs):
         # can't use allowdep: never removing dep
-        # TODO: filters ?
+
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
 
+        cpv_list = []
+        packages = []
+
+        myopts = {} # TODO: --nodeps ?
+        #myopts['--nodeps'] = True
+        spinner = ""
+        favorites = []
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        spinner = _emerge.stdout_spinner.stdout_spinner()
+        root_config = trees[self.portage_settings["ROOT"]]["root_config"]
+
+        # create cpv_list
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
                 continue
 
-            # is package installed
-            if not self.vardb.match(cpv):
+            if not self.is_installed(cpv):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                         "Package %s is not installed" % pkg)
                 continue
 
-            myopts = {} # TODO: --nodepends ?
-            spinner = ""
-            favorites = []
-            settings, trees, mtimedb = _emerge.load_emerge_config()
-            spinner = _emerge.stdout_spinner()
-            rootconfig = _emerge.RootConfig(self.portage_settings, trees["/"],
-                    portage._sets.load_default_config(self.portage_settings, trees["/"])
-                    )
+            cpv_list.append(cpv)
 
-            if "resume" in mtimedb and \
-            "mergelist" in mtimedb["resume"] and \
-            len(mtimedb["resume"]["mergelist"]) > 1:
-                mtimedb["resume_backup"] = mtimedb["resume"]
-                del mtimedb["resume"]
-                mtimedb.commit()
-
-            mtimedb["resume"] = {}
-            mtimedb["resume"]["myopts"] = myopts.copy()
-            mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
-
-            db_keys = list(portage.portdb._aux_cache_keys)
-            metadata = self.get_metadata(cpv, db_keys)
-            package = _emerge.Package(
+        # create packages list
+        db_keys = list(portage.portdb._aux_cache_keys)
+        for cpv in cpv_list:
+            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+            package = _emerge.Package.Package(
                     type_name="ebuild",
                     built=True,
                     installed=True,
-                    root_config=rootconfig,
+                    root_config=root_config,
                     cpv=cpv,
                     metadata=metadata,
                     operation="uninstall")
+            packages.append(package)
+        del db_keys
 
-            mergetask = _emerge.Scheduler(settings,
-                    trees, mtimedb, myopts, spinner, [package], favorites, package)
-            mergetask.merge()
+        # now, we can remove
+        if "resume" in mtimedb and \
+        "mergelist" in mtimedb["resume"] and \
+        len(mtimedb["resume"]["mergelist"]) > 1:
+            mtimedb["resume_backup"] = mtimedb["resume"]
+            del mtimedb["resume"]
+            mtimedb.commit()
+
+        mtimedb["resume"] = {}
+        mtimedb["resume"]["myopts"] = myopts.copy()
+        mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
+
+        mergetask = _emerge.Scheduler.Scheduler(settings,
+                trees, mtimedb, myopts, spinner,
+                packages, favorites, None)
+        mergetask.merge()
 
     def repo_enable(self, repoid, enable):
         # NOTES: use layman API >= 1.2.3
