@@ -73,7 +73,7 @@ manpage.1: manpage.xml
           <option>0</option>
         </term>
         <listitem>
-          <para>Success, at least one package was installed</para>
+          <para>Success</para>
         </listitem>
       </varlistentry>
       <varlistentry>
