@@ -1074,6 +1074,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, pkgs):
+        # TODO: add a message or an error with allowdep
         # can't use allowdep: never removing dep
 
         self.status(STATUS_RUNNING)
@@ -1083,12 +1084,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         cpv_list = []
         packages = []
 
-        myopts = {} # TODO: --nodeps ?
-        #myopts['--nodeps'] = True
-        spinner = ""
-        favorites = []
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        spinner = _emerge.stdout_spinner.stdout_spinner()
         root_config = trees[self.portage_settings["ROOT"]]["root_config"]
 
         # create cpv_list
@@ -1123,21 +1119,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         del db_keys
 
         # now, we can remove
-        if "resume" in mtimedb and \
-        "mergelist" in mtimedb["resume"] and \
-        len(mtimedb["resume"]["mergelist"]) > 1:
-            mtimedb["resume_backup"] = mtimedb["resume"]
-            del mtimedb["resume"]
-            mtimedb.commit()
-
-        mtimedb["resume"] = {}
-        mtimedb["resume"]["myopts"] = myopts.copy()
-        mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
-
-        mergetask = _emerge.Scheduler.Scheduler(settings,
-                trees, mtimedb, myopts, spinner,
-                packages, favorites, None)
-        mergetask.merge()
+        try:
+            self.block_output()
+            mergetask = _emerge.Scheduler.Scheduler(settings,
+                    trees, mtimedb, mergelist=packages, myopts={},
+                    spinner=None, favorites=[], digraph=None)
+            mergetask.merge()
+        finally:
+            self.unblock_output()
 
     def repo_enable(self, repoid, enable):
         # NOTES: use layman API >= 1.2.3
