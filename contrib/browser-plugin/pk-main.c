@@ -32,13 +32,11 @@
 #include <dlfcn.h>
 
 #include "pk-main.h"
-#include "pk-store.h"
 #include "pk-plugin.h"
 #include "pk-plugin-install.h"
 
 static NPNetscapeFuncs *npnfuncs = NULL;
 static void *module_handle = NULL;
-static PkStore *store = NULL;
 
 #ifndef HIBYTE
 #define HIBYTE(x) ((((uint32_t)(x)) & 0xff00) >> 8)
@@ -78,7 +76,7 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	g_print ("FN:%s FC:%s LN:%i\n\t%s\n", file, func, line, buffer);
+	g_print ("FN:%s FC:%s LN:%i\n!!\t%s\n", file, func, line, buffer);
 
 	g_free(buffer);
 }
@@ -173,7 +171,7 @@ pk_main_newp (NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, 
 	}
 
 	/* add to list */
-	pk_store_add_plugin (store, instance, plugin);
+	instance->pdata = plugin;
 
 	npnfuncs->setvalue (instance, NPPVpluginWindowBool, (void *) FALSE);
 
@@ -186,20 +184,10 @@ pk_main_newp (NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, 
 static NPError
 pk_main_destroy (NPP instance, NPSavedData **save)
 {
-	gboolean ret;
-	PkPlugin *plugin;
+	PkPlugin *plugin = PK_PLUGIN (instance->pdata);
 
 	pk_debug ("pk_main_destroy [%p]", instance);
-
-	/* remove from list */
-	ret = pk_store_remove_plugin (store, instance);
-	if (!ret)
-		return NPERR_GENERIC_ERROR;
-
-	/* find plugin */
-	plugin = pk_store_lookup_plugin (store, instance);
-	if (plugin == NULL)
-		return NPERR_GENERIC_ERROR;
+	g_object_unref (plugin);
 
 	/* free content instance */
 	g_signal_handlers_disconnect_by_func (plugin, G_CALLBACK (pk_main_refresh_cb), instance);
@@ -232,7 +220,7 @@ pk_main_handle_event (NPP instance, void *event)
 	pk_debug ("pk_main_handle_event [%p]", instance);
 
 	/* find plugin */
-	plugin = pk_store_lookup_plugin (store, instance);
+	plugin = PK_PLUGIN (instance->pdata);
 	if (plugin == NULL)
 		return NPERR_GENERIC_ERROR;
 
@@ -309,13 +297,20 @@ pk_main_set_window (NPP instance, NPWindow* pNPWindow)
 	}
 
 	/* find plugin */
-	plugin = pk_store_lookup_plugin (store, instance);
-	if (plugin == NULL) {
-		pk_warning ("NULL plugin");
+	plugin = PK_PLUGIN (instance->pdata);
+	if (plugin == NULL)
 		return NPERR_GENERIC_ERROR;
-	}
 
+	/* type */
+	pk_debug ("type=%i (NPWindowTypeWindow=%i, NPWindowTypeDrawable=%i)",
+		  pNPWindow->type, NPWindowTypeWindow, NPWindowTypeDrawable);
+
+	/* do we have a callback struct (WebKit doesn't send this) */
 	ws_info = (NPSetWindowCallbackStruct *) pNPWindow->ws_info;
+	if (ws_info == NULL) {
+		pk_debug ("no callback struct");
+		goto out;
+	}
 
 	/* no visual yet */
 	if (ws_info->visual == NULL) {
@@ -422,8 +417,6 @@ NP_Initialize (NPNetscapeFuncs *npnf, NPPluginFuncs *nppfuncs)
 	if (module_handle != NULL)
 		return NPERR_NO_ERROR;
 
-	store = pk_store_new ();
-
 	/* if libpackagekit get unloaded, bad stuff happens */
 	pk_main_make_module_resident ();
 
@@ -444,8 +437,6 @@ NPError
 NP_Shutdown ()
 {
 	pk_debug ("NP_Shutdown");
-
-	g_object_unref (store);
 	return NPERR_NO_ERROR;
 }
 

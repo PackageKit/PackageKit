@@ -17,8 +17,6 @@ packagekit_plugin_la_LIBADD =			\
 	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
 packagekit_plugin_la_SOURCES =			\
-	pk-store.c				\
-	pk-store.h				\
 	pk-plugin.c				\
 	pk-plugin.h				\
 	pk-plugin-install.c			\
