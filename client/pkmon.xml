@@ -66,6 +66,27 @@ manpage.1: manpage.xml
     </para>
   </refsect1>
   <refsect1>
+    <title>Return values</title>
+    <variablelist>
+      <varlistentry>
+        <term>
+          <option>0</option>
+        </term>
+        <listitem>
+          <para>Success, at least one package was installed</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>1</option>
+        </term>
+        <listitem>
+          <para>Failed with miscellaneous internal error.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
     <title>SEE ALSO</title>
     <para>pkcon (1).</para>
     <para>

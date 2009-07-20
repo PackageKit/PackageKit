@@ -133,7 +133,7 @@ manpage.1: manpage.xml
           <option>1</option>
         </term>
         <listitem>
-          <para>Miscellaneous internal errors.</para>
+          <para>Failed with miscellaneous internal error.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -157,7 +157,7 @@ manpage.1: manpage.xml
           <option>5</option>
         </term>
         <listitem>
-          <para>Nothing to do.</para>
+          <para>Failed as nothing to do.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

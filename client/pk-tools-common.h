@@ -25,6 +25,21 @@
 #include <glib/gi18n.h>
 #include <packagekit-glib/packagekit.h>
 
+/* Reserved exit codes:
+ * 1		miscellaneous errors, such as "divide by zero"
+ * 2		misuse of shell builtins
+ * 126		command invoked cannot execute
+ * 127		"command not found"
+ * 128		invalid argument to exit
+ * 128+n	fatal error signal "n"
+ * 130		script terminated by Control-C
+ * 255		exit status out of range
+ */
+#define	PK_EXIT_CODE_SUCCESS		0
+#define	PK_EXIT_CODE_FAILED		1
+#define	PK_EXIT_CODE_SYNTAX_INVALID	3
+#define	PK_EXIT_CODE_FILE_NOT_FOUND	4
+
 guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
 gboolean	 pk_console_get_prompt			(const gchar	*question,

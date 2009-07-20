@@ -1773,6 +1773,7 @@ main (int argc, char *argv[])
 	gchar *text;
 	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
+	gint retval = PK_EXIT_CODE_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -1834,12 +1835,13 @@ main (int argc, char *argv[])
 
 	if (program_version) {
 		g_print (VERSION "\n");
-		return 0;
+		goto out_last;
 	}
 
 	if (argc < 2) {
 		g_print ("%s", options_help);
-		return 1;
+		retval = PK_EXIT_CODE_SYNTAX_INVALID;
+		goto out_last;
 	}
 
 	loop = g_main_loop_new (NULL, FALSE);
@@ -1903,6 +1905,7 @@ main (int argc, char *argv[])
 		if (filters == 0) {
 			/* TRANSLATORS: The user specified an incorrect filter */
 			error = g_error_new (1, 0, "%s: %s", _("The filter specified was invalid"), filter);
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 	}
@@ -1921,12 +1924,14 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: a search type can be name, details, file, etc */
 			error = g_error_new (1, 0, "%s", _("A search type is required, e.g. name"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 
 		} else if (strcmp (value, "name") == 0) {
 			if (details == NULL) {
 				/* TRANSLATORS: the user needs to provide a search term */
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
+				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
 			ret = pk_client_search_name (client_primary, filters, details, &error);
@@ -1935,6 +1940,7 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				/* TRANSLATORS: the user needs to provide a search term */
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
+				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
 			ret = pk_client_search_details (client_primary, filters, details, &error);
@@ -1943,6 +1949,7 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				/* TRANSLATORS: the user needs to provide a search term */
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
+				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
 			ret = pk_client_search_group (client_primary, filters, details, &error);
@@ -1951,6 +1958,7 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				/* TRANSLATORS: the user needs to provide a search term */
 				error = g_error_new (1, 0, "%s", _("A search term is required"));
+				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
 			ret = pk_client_search_file (client_primary, filters, details, &error);
@@ -1963,6 +1971,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: the user did not specify what they wanted to install */
 			error = g_error_new (1, 0, "%s", _("A package name or filename to install is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_install_stuff (client_primary, argv, &error);
@@ -1971,6 +1980,7 @@ main (int argc, char *argv[])
 		if (value == NULL || details == NULL || parameter == NULL) {
 			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
 			error = g_error_new (1, 0, "%s", _("A type, key_id and package_id are required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_install_signature (client_primary, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
@@ -1979,19 +1989,22 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: the user did not specify what they wanted to remove */
 			error = g_error_new (1, 0, "%s", _("A package name to remove is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_remove_packages (client_primary, argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
 			/* TRANSLATORS: the user did not specify anything about what to download or where */
-			error = g_error_new (1, 0, "%s", _("A destination directory and then the package names to download are required"));
+			error = g_error_new (1, 0, "%s", _("A destination directory and the package names to download are required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = g_file_test (value, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR);
 		if (!ret) {
 			/* TRANSLATORS: the directory does not exist, so we can't continue */
 			error = g_error_new (1, 0, "%s: %s", _("Directory not found"), value);
+			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
 		ret = pk_console_download_packages (client_primary, argv, value, &error);
@@ -1999,6 +2012,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
 			error = g_error_new (1, 0, "%s", _("A licence identifier (eula-id) is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_accept_eula (client_primary, value, &error);
@@ -2008,6 +2022,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
 			error = g_error_new (1, 0, "%s", _("A transaction identifier (tid) is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_rollback (client_primary, value, &error);
@@ -2024,6 +2039,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not specify a package name */
 			error = g_error_new (1, 0, "%s", _("A package name to resolve is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_resolve (client_primary, filters, argv+2, &error);
@@ -2032,6 +2048,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not specify a repository (software source) name */
 			error = g_error_new (1, 0, "%s", _("A repository name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_repo_enable (client_primary, value, TRUE, &error);
@@ -2040,6 +2057,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not specify a repository (software source) name */
 			error = g_error_new (1, 0, "%s", _("A repository name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_repo_enable (client_primary, value, FALSE, &error);
@@ -2048,6 +2066,7 @@ main (int argc, char *argv[])
 		if (value == NULL || details == NULL || parameter == NULL) {
 			/* TRANSLATORS: The user didn't provide any data */
 			error = g_error_new (1, 0, "%s", _("A repo name, parameter and value are required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_repo_set_data (client_primary, value, details, parameter, &error);
@@ -2061,18 +2080,21 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify what action to use */
 			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-system' is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		role = pk_role_enum_from_text (value);
 		if (role == PK_ROLE_ENUM_UNKNOWN) {
 			/* TRANSLATORS: The user specified an invalid action */
 			error = g_error_new (1, 0, "%s", _("A correct role is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
 		if (!ret) {
 			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
 			error = g_error_new (1, 0, "%s", _("Failed to get the time since this action was last completed"));
+			retval = PK_EXIT_CODE_FAILED;
 			goto out;
 		}
 		g_print ("time since %s is %is\n", value, time_ms);
@@ -2082,6 +2104,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_get_depends (client_primary, filters, value, &error);
@@ -2093,6 +2116,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_get_update_detail (client_primary, value, &error);
@@ -2101,6 +2125,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_get_requires (client_primary, filters, value, &error);
@@ -2109,6 +2134,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it */
 			error = g_error_new (1, 0, "%s", _("A package provide string is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_client_what_provides (client_primary, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
@@ -2117,6 +2143,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_get_details (client_primary, value, &error);
@@ -2125,6 +2152,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (1, 0, "%s", _("A package name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_get_files (client_primary, value, &error);
@@ -2133,6 +2161,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify a filename to create as a list */
 			error = g_error_new (1, 0, "%s", _("A list file name to create is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_list_create (client_primary, value, &error);
@@ -2142,6 +2171,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify a filename to open as a list */
 			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_list_diff (client_primary, value, &error);
@@ -2151,6 +2181,7 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify a filename to open as a list */
 			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		ret = pk_console_list_install (client_primary, value, &error);
@@ -2222,6 +2253,8 @@ out:
 			g_print ("%s:  %s\n", _("Command failed"), error->message);
 			g_error_free (error);
 		}
+		if (retval == PK_EXIT_CODE_SUCCESS)
+			retval = PK_EXIT_CODE_FAILED;
 	}
 
 	g_free (options_help);
@@ -2231,8 +2264,8 @@ out:
 	g_object_unref (client_primary);
 	g_object_unref (client_sync);
 	g_object_unref (client_secondary);
-
-	return 0;
+out_last:
+	return retval;
 }
 
 /***************************************************************************

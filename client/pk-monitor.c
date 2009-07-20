@@ -32,6 +32,8 @@
 
 #include "egg-debug.h"
 
+#include "pk-tools-common.h"
+
 static PkControl *control = NULL;
 static gboolean verbose = FALSE;
 
@@ -119,6 +121,7 @@ main (int argc, char *argv[])
 	gboolean program_version = FALSE;
 	gchar *state;
 	GOptionContext *context;
+	gint retval = PK_EXIT_CODE_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -147,7 +150,7 @@ main (int argc, char *argv[])
 
 	if (program_version) {
 		g_print (VERSION "\n");
-		return 0;
+		goto out;
 	}
 
 	egg_debug_init (verbose);
@@ -174,17 +177,19 @@ main (int argc, char *argv[])
 	g_signal_connect (tlist, "status-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
 
-
 	egg_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
-	if (!ret)
-		g_error ("cannot refresh transaction list");
+	if (!ret) {
+		g_print ("%s\n", _("Cannot show the list of transactions"));
+		retval = PK_EXIT_CODE_FAILED;
+		goto out;
+	}
 	pk_task_list_print (tlist);
 
 	/* only print state when verbose */
 	if (verbose) {
 		state = pk_control_get_daemon_state (control, NULL);
-		g_print ("%s", state);
+		g_print ("%s\n", state);
 		g_free (state);
 	}
 
@@ -194,6 +199,6 @@ main (int argc, char *argv[])
 	g_object_unref (control);
 	g_object_unref (tlist);
 	g_object_unref (pconnection);
-
-	return 0;
+out:
+	return retval;
 }
