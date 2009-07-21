@@ -393,7 +393,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def remove_packages(self, allowdep, package_ids):
+    def remove_packages(self, allowdep, autoremove, package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
@@ -570,9 +570,10 @@ class PackageKitBaseBackend:
             self.refresh_cache(force)
             self.finished()
         elif cmd == 'remove-packages':
-            allowdeps = args[0]
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
-            self.remove_packages(allowdeps, package_ids)
+            allowdeps = _text_to_bool(args[0])
+            autoremove = _text_to_bool(args[1])
+            package_ids = args[2].split(PACKAGE_IDS_DELIM)
+            self.remove_packages(allowdeps, autoremove, package_ids)
             self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]
