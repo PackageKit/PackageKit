@@ -299,8 +299,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_text (package_ids);
-	/* FIXME: Use autoremove */
-	pk_backend_spawn_helper (spawn, BACKEND("remove-packages"), pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND("remove-packages"), pk_backend_bool_to_text (allow_deps), pk_backend_bool_to_text (autoremove), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 

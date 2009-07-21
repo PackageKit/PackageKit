@@ -1907,11 +1907,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def remove_packages(self, allowdep, package_ids):
+    def remove_packages(self, allowdep, autoremove, package_ids):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
+        # TODO: use autoremove
         try:
             self._check_init()
         except PkError, e:
@@ -1945,7 +1946,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The package %s is not installed" % pkg.name)
         if txmbrs:
             try:
-                if allowdep != 'yes':
+                if not allowdep:
                     self._runYumTransaction(allow_remove_deps=False)
                 else:
                     self._runYumTransaction(allow_remove_deps=True)

@@ -788,10 +788,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     @unlock_cache_afterwards
-    def remove_packages(self, allowdeps, ids):
+    def remove_packages(self, allowdeps, autoremove, ids):
         """
         Implement the {backend}-remove functionality
         """
+        # TODO: use autoremove
         pklog.info("Removing package(s): id %s" % ids)
         if not self._lock_cache(): return
         self.status(STATUS_REMOVE)

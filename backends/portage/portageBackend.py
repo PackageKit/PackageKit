@@ -1073,7 +1073,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.unblock_output()
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
-    def remove_packages(self, allowdep, pkgs):
+    def remove_packages(self, allowdep, autoremove, pkgs):
         # TODO: add a message or an error with allowdep
         # can't use allowdep: never removing dep
 
