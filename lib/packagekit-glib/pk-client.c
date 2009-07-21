@@ -91,7 +91,7 @@ struct _PkClientPrivate
 	PkConnection		*pconnection;
 	gulong			 pconnection_signal_id;
 	PkRestartEnum		 require_restart;
-	PkStatusEnum		 last_status;
+	PkStatusEnum		 status;
 	PkRoleEnum		 role;
 	gboolean		 cached_force;
 	gboolean		 cached_allow_deps;
@@ -139,6 +139,7 @@ enum {
 enum {
 	PROP_0,
 	PROP_ROLE,
+	PROP_STATUS,
 	PROP_LAST,
 };
 
@@ -590,7 +591,7 @@ pk_client_change_status (PkClient *client, PkStatusEnum status)
 {
 	egg_debug ("emit status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (client , signals [SIGNAL_STATUS_CHANGED], 0, status);
-	client->priv->last_status = status;
+	client->priv->status = status;
 }
 
 /**
@@ -1035,6 +1036,12 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
  *
  * Gets the status of a transaction.
  * A transaction has one roles in it's lifetime, but many values of status.
+ *
+ * Reading the property "status" is quicker than contacting the daemon, but this
+ * only works when the transaction was created by the application, and not when
+ * using pk_client_set_tid() in a client program.
+ *
+ * TODO: deprecate
  *
  * Return value: %TRUE if we found the status successfully
  **/
@@ -3908,7 +3915,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	/* clear enough data of the client to allow us to requeue */
 	g_free (client->priv->tid);
 	client->priv->tid = NULL;
-	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 
 	/* clear package list */
@@ -4115,6 +4122,9 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_ROLE:
 		g_value_set_uint (value, client->priv->role);
 		break;
+	case PROP_STATUS:
+		g_value_set_uint (value, client->priv->status);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4154,6 +4164,14 @@ pk_client_class_init (PkClientClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
+	/**
+	 * PkClient:status:
+	 */
+	pspec = g_param_spec_uint ("status", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
 	/**
 	 * PkClient::status-changed:
@@ -4602,7 +4620,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_package_ids = NULL;
 	client->priv->cached_directory = NULL;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
-	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->timeout = -1;
@@ -4631,7 +4649,7 @@ pk_client_init (PkClient *client)
 	client->priv->loop = g_main_loop_new (NULL, FALSE);
 	client->priv->use_buffer = FALSE;
 	client->priv->synchronous = FALSE;
-	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
