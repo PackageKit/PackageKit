@@ -298,10 +298,11 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.percentage(100)
 
-    def remove_packages(self, deps, package_ids):
+    def remove_packages(self, allowdeps, autoremove, package_ids):
         """ Removes given package from system"""
         self.allow_cancel(False)
         self.percentage(None)
+        # TODO: use autoremove
 
         package = self.get_package_from_id(package_ids[0])[0]
 

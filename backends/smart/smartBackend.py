@@ -226,7 +226,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def remove_packages(self, allow_deps, packageids):
+    def remove_packages(self, allow_deps, autoremove, packageids):
+        # TODO: use autoremove
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)

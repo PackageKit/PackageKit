@@ -254,8 +254,8 @@ AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--enable-service-packs],
-							[Enable Service Packs]), enable_servicepacks=$enableval)
+AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--disable-service-packs],
+							[Disable Service Packs support]), enable_servicepacks=$enableval)
 if test x$enable_servicepacks != xno; then
 	AC_CHECK_HEADERS(archive.h,
 			 HAVE_ARCHIVE_H="yes",
@@ -298,8 +298,9 @@ networking_apis="unix"
 dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--enable-networkmanager],
-							[Enable NetworkManager]), enable_networkmanager=$enableval)
+AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
+							[Disable NetworkManager support]),
+							enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
 	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
@@ -321,8 +322,8 @@ AC_SUBST(LIBNM_LIBS)
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(connman, AC_HELP_STRING([--enable-connman],
-							[Enable ConnMan]), enable_connman=$enableval)
+AC_ARG_ENABLE(connman, AC_HELP_STRING([--disable-connman],
+							[Disable ConnMan support]), enable_connman=$enableval)
 if test x$enable_connman != xno; then
 	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
 	if test "x$PK_BUILD_CONNMAN" = "xyes"; then

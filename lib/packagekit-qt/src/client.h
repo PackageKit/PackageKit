@@ -394,6 +394,7 @@ public:
 		MessageCouldNotFindPackage,
 		MessageConfigFilesChanged,
 		MessagePackageAlreadyInstalled,
+		MessageAutoremoveIgnored,
 		UnknownMessageType
 	} MessageType;
 

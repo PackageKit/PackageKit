@@ -610,10 +610,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         
     @ExceptionHandler
-    def remove_packages(self, allowDeps, package_ids):
+    def remove_packages(self, allowDeps, autoremove, package_ids):
         '''
         Implement the {backend}-remove-packages functionality
         '''
+        # TODO: use autoremove
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
