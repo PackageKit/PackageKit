@@ -1074,7 +1074,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, autoremove, pkgs):
-        # TODO: add a message or an error with allowdep
+        # TODO: implement allowdep
         # can't use allowdep: never removing dep
 
         self.status(STATUS_RUNNING)
@@ -1102,6 +1102,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 continue
 
             cpv_list.append(cpv)
+
+        # backend do not implement autoremove
+        if autoremove:
+            self.message(MESSAGE_AUTOREMOVE_IGNORED,
+                    "Portage backend do not implement autoremove option")
 
         # create packages list
         db_keys = list(portage.portdb._aux_cache_keys)
