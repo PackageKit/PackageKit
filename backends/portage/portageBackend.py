@@ -1403,8 +1403,50 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(100)
 
     def update_packages(self, only_trusted, pkgs):
-        # TODO: add some checks ?
-        self.install_packages(only_trusted, pkgs)
+        # TODO: manage only_trusted
+        # TODO: manage errors
+        # TODO: manage config file updates
+
+        self.status(STATUS_RUNNING)
+        self.allow_cancel(True)
+        self.percentage(None)
+
+        cpv_list = []
+
+        for pkg in pkgs:
+            cpv = id_to_cpv(pkg)
+
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
+                continue
+
+            cpv_list.append('=' + cpv)
+
+        # creating update depgraph
+        myopts = {}
+        favorites = []
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
+
+        depgraph = _emerge.depgraph.depgraph(settings, trees,
+                myopts, myparams, None)
+        retval, favorites = depgraph.select_files(cpv_list)
+        if not retval:
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
+            return
+
+        try:
+            self.block_output()
+            # compiling/installing
+            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
+                    myopts, None, depgraph.altlist(),
+                    favorites, depgraph.schedulerGraph())
+            mergetask.merge()
+        finally:
+            self.unblock_output()
 
     def update_system(self, only_trusted):
         # TODO: only_trusted
