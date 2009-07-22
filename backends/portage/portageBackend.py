@@ -1090,8 +1090,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, autoremove, pkgs):
-        # TODO: system packages should prompt an error or a warning
-
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
@@ -1099,9 +1097,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         cpv_list = []
         packages = []
         required_packages = []
+        system_packages = []
 
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         root_config = trees[self.portage_settings["ROOT"]]["root_config"]
+
+        # get system packages
+        set = portage.sets.base.InternalPackageSet(
+                initial_atoms=root_config.setconfig.getSetAtoms("system"))
+        for atom in set:
+            system_packages.append(atom.cp)
 
         # create cpv_list
         for pkg in pkgs:
@@ -1115,6 +1120,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             if not self.is_installed(cpv):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                         "Package %s is not installed" % pkg)
+                continue
+
+            # stop removal if a package is in the system set
+            if portage.pkgsplit(cpv)[0] in system_packages:
+                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                        "Package %s is a system package. If you really want to remove it, please use portage" % pkg)
                 continue
 
             cpv_list.append(cpv)
