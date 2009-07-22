@@ -1090,8 +1090,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, autoremove, pkgs):
-        # TODO: implement allowdep
-        # can't use allowdep: never removing dep
+        # TODO: system packages should prompt an error or a warning
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1099,6 +1098,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         cpv_list = []
         packages = []
+        required_packages = []
 
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         root_config = trees[self.portage_settings["ROOT"]]["root_config"]
@@ -1124,7 +1124,29 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.message(MESSAGE_AUTOREMOVE_IGNORED,
                     "Portage backend do not implement autoremove option")
 
-        # create packages list
+        # get packages needing candidates for removal
+        required_packages = self.get_packages_required(cpv_list,
+                settings, trees, recursive=True)
+
+        # if there are required packages, allowdep must be on
+        if required_packages and not allowdep:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                    "Could not perform remove operation has packages are needed by other packages")
+            return
+
+        # first, we add required packages
+        for p in required_packages:
+            package = _emerge.Package.Package(
+                    type_name=p.type_name,
+                    built=p.built,
+                    installed=p.installed,
+                    root_config=p.root_config,
+                    cpv=p.cpv,
+                    metadata=p.metadata,
+                    operation='uninstall')
+            packages.append(package)
+
+        # and now, packages we want really to remove
         db_keys = list(portage.portdb._aux_cache_keys)
         for cpv in cpv_list:
             metadata = self.get_metadata(cpv, db_keys, in_dict=True)
