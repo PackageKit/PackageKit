@@ -820,7 +820,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     _add_children_to_list(cpv_list, node)
                 else:
                     for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                        cpv_list.append(n)
+                        if not isinstance(n, _emerge.SetArg.SetArg):
+                            cpv_list.append(n)
 
         # now we can change cpv_list to a real cpv list
         tmp_list = cpv_list[:]
