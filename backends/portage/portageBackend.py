@@ -525,6 +525,57 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return get_package_id(package, version, ' '.join(keywords), repo)
 
+    def get_packages_required(self, cpv_input, settings, trees, recursive):
+        '''
+        Get a list of cpv, portage settings and tree and recursive parameter
+        And returns the list of packages required for cpv list
+        '''
+        # TODO: should see if some cpv in the input list is not a dep of another
+        packages_list = []
+
+        myopts = {}
+        myopts["--selective"] = True
+        myopts["--deep"] = True
+
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "remove")
+        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
+                myparams, None)
+
+        # TODO: atm, using FILTER_INSTALLED because it's quicker
+        # and we don't want to manage non-installed packages
+        for cp in self.get_all_cp([FILTER_INSTALLED]):
+            for cpv in self.get_all_cpv(cp, [FILTER_INSTALLED]):
+                depgraph._dynamic_config._dep_stack.append(
+                        _emerge.Dependency.Dependency(
+                            atom=portage.dep.Atom('=' + cpv),
+                            root=portage.settings["ROOT"], parent=None))
+
+        if not depgraph._complete_graph():
+            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
+            return
+
+        def _add_children_to_list(packages_list, node):
+            for n in depgraph._dynamic_config.digraph.parent_nodes(node):
+                if n not in packages_list \
+                        and not isinstance(n, _emerge.SetArg.SetArg):
+                    packages_list.append(n)
+                    _add_children_to_list(packages_list, n)
+
+        for node in depgraph._dynamic_config.digraph.__iter__():
+            if isinstance(node, _emerge.SetArg.SetArg):
+                continue
+            if node.cpv in cpv_input:
+                if recursive:
+                    _add_children_to_list(packages_list, node)
+                else:
+                    for n in \
+                            depgraph._dynamic_config.digraph.parent_nodes(node):
+                        if not isinstance(n, _emerge.SetArg.SetArg):
+                            packages_list.append(n)
+
+        return packages_list
+
     def package(self, cpv, info=None):
         desc = self.get_metadata(cpv, ["DESCRIPTION"])[0]
         if not info:
@@ -783,52 +834,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
             cpv_input.append(cpv)
 
-        myopts = {}
-        myopts["--selective"] = True
-        myopts["--deep"] = True
-        # TODO: keep remove ?
         settings, trees, _ = _emerge.actions.load_emerge_config()
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "remove")
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
-                myparams, None)
+        packages_list = self.get_packages_required(cpv_input,
+                settings, trees, recursive)
 
-        # TODO: atm, using FILTER_INSTALLED because it's quicker
-        # and we don't want to manage non-installed packages
-        for cp in self.get_all_cp([FILTER_INSTALLED]):
-            for cpv in self.get_all_cpv(cpv, [FILTER_INSTALLED]):
-                depgraph._dynamic_config._dep_stack.append(
-                        _emerge.Dependency.Dependency(atom=portage.dep.Atom('=' + cpv),
-                            root=portage.settings["ROOT"], parent=None))
-
-        if not depgraph._complete_graph():
-            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
-            return
-
-        def _add_children_to_list(cpv_list, node):
-            for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                if n not in cpv_list and not isinstance(n, _emerge.SetArg.SetArg):
-                    cpv_list.append(n)
-                    _add_children_to_list(cpv_list, n)
-
-        for node in depgraph._dynamic_config.digraph.__iter__():
-            if isinstance(node, _emerge.SetArg.SetArg):
-                continue
-            if node.cpv in cpv_input:
-                if recursive:
-                    _add_children_to_list(cpv_list, node)
-                else:
-                    for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                        if not isinstance(n, _emerge.SetArg.SetArg):
-                            cpv_list.append(n)
-
-        # now we can change cpv_list to a real cpv list
-        tmp_list = cpv_list[:]
+        # now we can populate cpv_list
         cpv_list = []
-        for x in tmp_list:
-            cpv_list.append(x[2])
-        del tmp_list
+        for p in packages_list:
+            cpv_list.append(p.cpv)
+        del packages_list
 
         # free filter
         cpv_list = self.filter_free(cpv_list, fltlist)
