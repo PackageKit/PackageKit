@@ -1450,6 +1450,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def update_system(self, only_trusted):
         # TODO: only_trusted
+
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
@@ -1465,12 +1466,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         spinner = ""
         favorites = []
-        settings, trees, mtimedb = _emerge.load_emerge_config()
-        myparams = _emerge.create_depgraph_params(myopts, "")
-        spinner = _emerge.stdout_spinner()
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(myopts, "")
+        spinner = _emerge.stdout_spinner.stdout_spinner()
 
-        depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
-        retval, favorites = depgraph.select_files(["system", "world"])
+        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts, myparams, spinner)
+        retval, favorites = depgraph.select_files(["@system", "@world"])
         if not retval:
             self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
             return
@@ -1486,7 +1487,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         mtimedb["resume"]["myopts"] = myopts.copy()
         mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
-        mergetask = _emerge.Scheduler(settings, trees, mtimedb,
+        mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
                 myopts, spinner, depgraph.altlist(),
                 favorites, depgraph.schedulerGraph())
         mergetask.merge()
