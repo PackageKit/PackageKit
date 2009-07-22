@@ -1010,54 +1010,59 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.package(cpv, INFO_NORMAL)
 
     def install_packages(self, only_trusted, pkgs):
+        # NOTES:
+        # can't install an already installed packages
+        # even if it happens to be needed in Gentoo but probably not this API
+
+        # TODO: manage only_trusted
+        # TODO: manage errors
+        # TODO: manage config file updates
+
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True) # TODO: sure ?
+        self.allow_cancel(True)
         self.percentage(None)
 
-        # FIXME: use only_trusted
+        cpv_list = []
 
         for pkg in pkgs:
-            # check for installed is not mandatory as there are a lot of reason
-            # to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
-            # TODO: keep a final position
             cpv = id_to_cpv(pkg)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
                 continue
 
-            # inits
-            myopts = {} # TODO: --nodepends ?
-            spinner = ""
-            favorites = []
-            settings, trees, mtimedb = _emerge.load_emerge_config()
-            myparams = _emerge.create_depgraph_params(myopts, "")
-            spinner = _emerge.stdout_spinner()
-
-            depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
-            retval, favorites = depgraph.select_files(["="+cpv])
-            if not retval:
-                self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+            if self.is_installed(cpv):
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                        "Package %s is already installed" % pkg)
                 continue
 
-            if "resume" in mtimedb and \
-            "mergelist" in mtimedb["resume"] and \
-            len(mtimedb["resume"]["mergelist"]) > 1:
-                mtimedb["resume_backup"] = mtimedb["resume"]
-                del mtimedb["resume"]
-                mtimedb.commit()
+            cpv_list.append('=' + cpv)
 
-            mtimedb["resume"] = {}
-            mtimedb["resume"]["myopts"] = myopts.copy()
-            mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
+        # creating installation depgraph
+        myopts = {}
+        favorites = []
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
 
-            # TODO: check for writing access before calling merge ?
+        depgraph = _emerge.depgraph.depgraph(settings, trees,
+                myopts, myparams, None)
+        retval, favorites = depgraph.select_files(cpv_list)
+        if not retval:
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
+            return
 
-            mergetask = _emerge.Scheduler(settings, trees, mtimedb,
-                    myopts, spinner, depgraph.altlist(),
+        try:
+            self.block_output()
+            # compiling/installing
+            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
+                    myopts, None, depgraph.altlist(),
                     favorites, depgraph.schedulerGraph())
             mergetask.merge()
+        finally:
+            self.unblock_output()
 
     def refresh_cache(self, force):
         # NOTES: can't manage progress even if it could be better
