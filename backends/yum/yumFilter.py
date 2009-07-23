@@ -32,8 +32,11 @@ class YumFilter(PackagekitFilter):
     def __init__(self, fltlist="none"):
         PackagekitFilter.__init__(self, fltlist)
         basearch = rpmUtils.arch.getBaseArch()
-        # TODO: cope with i386, i486, i686 etc..
-        self.basearch_list = (basearch)
+        if basearch == 'i386':
+            self.basearch_list = ['i386', 'i486', 'i586', 'i686']
+        else:
+            self.basearch_list = (basearch)
+        self.basearch_list.append('noarch')
 
     def _is_main_package(self, repo):
         if repo.endswith('-debuginfo'):
