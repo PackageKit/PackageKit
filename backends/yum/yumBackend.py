@@ -1511,19 +1511,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             self.yumbase.conf.gpgcheck = 0
 
-        for package in package_ids:
-            grp = self._is_meta_package(package)
+        for package_id in package_ids:
+            grp = self._is_meta_package(package_id)
             if grp:
                 if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "This Group %s is already installed" % grp.groupid, exit=False)
                     return
                 try:
                     txmbr = self.yumbase.selectGroup(grp.groupid)
+                    if not txmbr:
+                        self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)));
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 if pkg and not inst:
                     txmbr = self.yumbase.install(po=pkg)
                     txmbrs.extend(txmbr)
