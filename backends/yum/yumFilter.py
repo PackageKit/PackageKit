@@ -89,7 +89,7 @@ class YumFilter(PackagekitFilter):
         for pkg, state in pkglist:
             # only key on name and not arch
             inst = self._pkg_is_installed(pkg)
-            key = (pkg.name, inst)
+            key = (pkg.name, pkg.arch, inst)
 
             # we've already come across this package
             if key in newest:
