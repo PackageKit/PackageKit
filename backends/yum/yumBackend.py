@@ -178,6 +178,13 @@ def _format_msgs(msgs):
     text = text.replace(" (installed)", "")
     return text
 
+def _get_cmdline_for_pid(pid):
+    if not pid:
+        return "invalid"
+    cmdlines = open("/proc/%d/cmdline" % pid).read().split('\0')
+    cmdline = " ".join(cmdlines).strip(' ')
+    return cmdline
+
 class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     # Packages there require a reboot
@@ -266,6 +273,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
+        cmdline = None
         while not self.isLocked():
             try: # Try to lock yum
                 self.yumbase.doLock(YUM_PID_FILE)
@@ -274,10 +282,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.LockError, e:
                 self.allow_cancel(True)
                 self.status(STATUS_WAITING_FOR_LOCK)
+
+                # get the command line of the other thing
+                if not cmdline:
+                    cmdline = _get_cmdline_for_pid(e.pid)
+
+                # wait a little time, and try again
                 time.sleep(2)
                 retries += 1
+
+                # give up, and print process information
                 if retries > 100:
-                    self.error(ERROR_CANNOT_GET_LOCK, 'Yum is locked by another application. details: %s' % _to_unicode(e))
+                    msg = "The other process has the command line '%s' (PID %i)" % (cmdline, e.pid)
+                    self.error(ERROR_CANNOT_GET_LOCK, "Yum is locked by another application. %s" % msg)
 
     def unLock(self):
         ''' Unlock Yum'''
