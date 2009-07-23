@@ -1014,7 +1014,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # can't install an already installed packages
         # even if it happens to be needed in Gentoo but probably not this API
 
-        # TODO: manage only_trusted
         # TODO: manage errors
         # TODO: manage config file updates
 
@@ -1038,6 +1037,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 continue
 
             cpv_list.append('=' + cpv)
+
+        # only_trusted isn't supported
+        # but better to show it after important errors
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
 
         # creating installation depgraph
         myopts = {}
@@ -1403,7 +1409,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(100)
 
     def update_packages(self, only_trusted, pkgs):
-        # TODO: manage only_trusted
         # TODO: manage errors
         # TODO: manage config file updates
 
@@ -1422,6 +1427,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 continue
 
             cpv_list.append('=' + cpv)
+
+        # only_trusted isn't supported
+        # but better to show it after important errors
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
 
         # creating update depgraph
         myopts = {}
@@ -1449,11 +1461,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.unblock_output()
 
     def update_system(self, only_trusted):
-        # TODO: only_trusted
-
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
+
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
 
         # inits
         myopts = {}
