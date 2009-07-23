@@ -1233,6 +1233,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
+                    # unselect what we previously selected
+                    try:
+                        self.yumbase.deselectGroup(grp.groupid)
+                    except Exception, e:
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkg, inst = self._findPackage(package_id)
                 # This simulates the addition of the package
