@@ -35,7 +35,7 @@ class YumFilter(PackagekitFilter):
         if basearch == 'i386':
             self.basearch_list = ['i386', 'i486', 'i586', 'i686']
         else:
-            self.basearch_list = (basearch)
+            self.basearch_list = [basearch]
         self.basearch_list.append('noarch')
 
     def _is_main_package(self, repo):
