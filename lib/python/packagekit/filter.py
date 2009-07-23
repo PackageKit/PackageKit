@@ -68,6 +68,9 @@ class PackagekitFilter(object, PackagekitPackage):
             elif flt in (FILTER_FREE, FILTER_NOT_FREE):
                 if not self._do_free_filtering(flt, pkg):
                     return False
+            elif flt in (FILTER_ARCH, FILTER_NOT_ARCH):
+                if not self._do_arch_filtering(flt, pkg):
+                    return False
         return True
 
     def post_process(self):
@@ -119,6 +122,13 @@ class PackagekitFilter(object, PackagekitPackage):
         '''
         return True
 
+    def _pkg_is_arch(self, pkg):
+        '''
+        Return if the package is the same architecture as the machine.
+        Needed to be implemented in a sub class
+        '''
+        return True
+
     def _do_installed_filtering(self, flt, pkg):
         is_installed = self._pkg_is_installed(pkg)
         if flt == FILTER_INSTALLED:
@@ -150,4 +160,12 @@ class PackagekitFilter(object, PackagekitPackage):
         else:
             want_free = False
         return is_free == want_free
+
+    def _do_arch_filtering(self, flt, pkg):
+        is_arch = self._pkg_is_arch(pkg)
+        if flt == FILTER_ARCH:
+            want_arch = True
+        else:
+            want_arch = False
+        return is_arch == want_arch
 
