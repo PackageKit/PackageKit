@@ -122,6 +122,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_BASENAME,
 		PK_FILTER_ENUM_FREE,
 		PK_FILTER_ENUM_NEWEST,
+		PK_FILTER_ENUM_ARCH,
 		-1);
 }
 

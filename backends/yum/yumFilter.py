@@ -29,6 +29,12 @@ GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
 class YumFilter(PackagekitFilter):
 
+    def __init__(self, fltlist="none"):
+        PackagekitFilter.__init__(self, fltlist)
+        basearch = rpmUtils.arch.getBaseArch()
+        # TODO: cope with i386, i486, i686 etc..
+        self.basearch_list = (basearch)
+
     def _is_main_package(self, repo):
         if repo.endswith('-debuginfo'):
             return False
@@ -155,6 +161,14 @@ class YumFilter(PackagekitFilter):
             reqname = req[0]
             if GUI_KEYS.search(reqname):
                 return True
+        return False
+
+    def _pkg_is_arch(self, pkg):
+        '''
+        Return if the package is native arch.
+        '''
+        if pkg.arch in self.basearch_list:
+            return True
         return False
 
     def _pkg_is_free(self, pkg):
