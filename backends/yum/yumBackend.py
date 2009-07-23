@@ -287,6 +287,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if not cmdline:
                     cmdline = _get_cmdline_for_pid(e.pid)
 
+                # if it's us, kill it as it's from another instance where the daemon crashed
+                if cmdline.find("yumBackend.py") != -1:
+                    self.message(MESSAGE_BACKEND_ERROR, "killing pid %i, as old instance" % e.pid)
+                    os.kill(e.pid, signal.SIGQUIT)
+
                 # wait a little time, and try again
                 time.sleep(2)
                 retries += 1
