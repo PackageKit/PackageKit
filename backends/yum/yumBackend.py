@@ -1534,7 +1534,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed", exit=False)
+            self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED, "The packages are already all installed", exit=False)
 
     def _checkForNewer(self, po):
         pkgs = None
