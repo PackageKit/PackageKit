@@ -1518,6 +1518,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "This Group %s is already installed" % grp.groupid, exit=False)
                     return
                 try:
+                    # I'm not sure why we have to deselectGroup() before we selectGroup(), but if we don't
+                    # then selectGroup returns no packages. I've already made sure that any selectGroup
+                    # invokations do deselectGroup, so I'm not sure what's going on...
+                    self.yumbase.deselectGroup(grp.groupid)
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                     if not txmbr:
                         self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)));
