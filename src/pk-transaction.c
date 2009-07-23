@@ -1656,7 +1656,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-		message = g_strdup_printf ("failed to check for authentication: %s", error->message);
+		message = g_strdup_printf ("Failed to check for authentication: %s", error->message);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED, message);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 		g_error_free (error);
@@ -1670,7 +1670,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
-						"failed to obtain authentication");
+						"Failed to obtain authentication.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", transaction->priv->uid);

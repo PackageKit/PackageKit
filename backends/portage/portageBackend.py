@@ -525,6 +525,57 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         return get_package_id(package, version, ' '.join(keywords), repo)
 
+    def get_packages_required(self, cpv_input, settings, trees, recursive):
+        '''
+        Get a list of cpv, portage settings and tree and recursive parameter
+        And returns the list of packages required for cpv list
+        '''
+        # TODO: should see if some cpv in the input list is not a dep of another
+        packages_list = []
+
+        myopts = {}
+        myopts["--selective"] = True
+        myopts["--deep"] = True
+
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "remove")
+        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
+                myparams, None)
+
+        # TODO: atm, using FILTER_INSTALLED because it's quicker
+        # and we don't want to manage non-installed packages
+        for cp in self.get_all_cp([FILTER_INSTALLED]):
+            for cpv in self.get_all_cpv(cp, [FILTER_INSTALLED]):
+                depgraph._dynamic_config._dep_stack.append(
+                        _emerge.Dependency.Dependency(
+                            atom=portage.dep.Atom('=' + cpv),
+                            root=portage.settings["ROOT"], parent=None))
+
+        if not depgraph._complete_graph():
+            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
+            return
+
+        def _add_children_to_list(packages_list, node):
+            for n in depgraph._dynamic_config.digraph.parent_nodes(node):
+                if n not in packages_list \
+                        and not isinstance(n, _emerge.SetArg.SetArg):
+                    packages_list.append(n)
+                    _add_children_to_list(packages_list, n)
+
+        for node in depgraph._dynamic_config.digraph.__iter__():
+            if isinstance(node, _emerge.SetArg.SetArg):
+                continue
+            if node.cpv in cpv_input:
+                if recursive:
+                    _add_children_to_list(packages_list, node)
+                else:
+                    for n in \
+                            depgraph._dynamic_config.digraph.parent_nodes(node):
+                        if not isinstance(n, _emerge.SetArg.SetArg):
+                            packages_list.append(n)
+
+        return packages_list
+
     def package(self, cpv, info=None):
         desc = self.get_metadata(cpv, ["DESCRIPTION"])[0]
         if not info:
@@ -783,52 +834,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
             cpv_input.append(cpv)
 
-        myopts = {}
-        myopts["--selective"] = True
-        myopts["--deep"] = True
-        # TODO: keep remove ?
         settings, trees, _ = _emerge.actions.load_emerge_config()
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "remove")
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
-                myparams, None)
+        packages_list = self.get_packages_required(cpv_input,
+                settings, trees, recursive)
 
-        # TODO: atm, using FILTER_INSTALLED because it's quicker
-        # and we don't want to manage non-installed packages
-        for cp in self.get_all_cp([FILTER_INSTALLED]):
-            for cpv in self.get_all_cpv(cpv, [FILTER_INSTALLED]):
-                depgraph._dynamic_config._dep_stack.append(
-                        _emerge.Dependency.Dependency(atom=portage.dep.Atom('=' + cpv),
-                            root=portage.settings["ROOT"], parent=None))
-
-        if not depgraph._complete_graph():
-            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
-            return
-
-        def _add_children_to_list(cpv_list, node):
-            for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                if n not in cpv_list and not isinstance(n, _emerge.SetArg.SetArg):
-                    cpv_list.append(n)
-                    _add_children_to_list(cpv_list, n)
-
-        for node in depgraph._dynamic_config.digraph.__iter__():
-            if isinstance(node, _emerge.SetArg.SetArg):
-                continue
-            if node.cpv in cpv_input:
-                if recursive:
-                    _add_children_to_list(cpv_list, node)
-                else:
-                    for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                        if not isinstance(n, _emerge.SetArg.SetArg):
-                            cpv_list.append(n)
-
-        # now we can change cpv_list to a real cpv list
-        tmp_list = cpv_list[:]
+        # now we can populate cpv_list
         cpv_list = []
-        for x in tmp_list:
-            cpv_list.append(x[2])
-        del tmp_list
+        for p in packages_list:
+            cpv_list.append(p.cpv)
+        del packages_list
 
         # free filter
         cpv_list = self.filter_free(cpv_list, fltlist)
@@ -995,54 +1010,65 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.package(cpv, INFO_NORMAL)
 
     def install_packages(self, only_trusted, pkgs):
+        # NOTES:
+        # can't install an already installed packages
+        # even if it happens to be needed in Gentoo but probably not this API
+
+        # TODO: manage errors
+        # TODO: manage config file updates
+
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True) # TODO: sure ?
+        self.allow_cancel(True)
         self.percentage(None)
 
-        # FIXME: use only_trusted
+        cpv_list = []
 
         for pkg in pkgs:
-            # check for installed is not mandatory as there are a lot of reason
-            # to re-install a package (USE/{LD,C}FLAGS change for example) (or live)
-            # TODO: keep a final position
             cpv = id_to_cpv(pkg)
 
-            # is cpv valid
-            if not portage.portdb.cpv_exists(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
                 continue
 
-            # inits
-            myopts = {} # TODO: --nodepends ?
-            spinner = ""
-            favorites = []
-            settings, trees, mtimedb = _emerge.load_emerge_config()
-            myparams = _emerge.create_depgraph_params(myopts, "")
-            spinner = _emerge.stdout_spinner()
-
-            depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
-            retval, favorites = depgraph.select_files(["="+cpv])
-            if not retval:
-                self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+            if self.is_installed(cpv):
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                        "Package %s is already installed" % pkg)
                 continue
 
-            if "resume" in mtimedb and \
-            "mergelist" in mtimedb["resume"] and \
-            len(mtimedb["resume"]["mergelist"]) > 1:
-                mtimedb["resume_backup"] = mtimedb["resume"]
-                del mtimedb["resume"]
-                mtimedb.commit()
+            cpv_list.append('=' + cpv)
 
-            mtimedb["resume"] = {}
-            mtimedb["resume"]["myopts"] = myopts.copy()
-            mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
+        # only_trusted isn't supported
+        # but better to show it after important errors
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
 
-            # TODO: check for writing access before calling merge ?
+        # creating installation depgraph
+        myopts = {}
+        favorites = []
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
 
-            mergetask = _emerge.Scheduler(settings, trees, mtimedb,
-                    myopts, spinner, depgraph.altlist(),
+        depgraph = _emerge.depgraph.depgraph(settings, trees,
+                myopts, myparams, None)
+        retval, favorites = depgraph.select_files(cpv_list)
+        if not retval:
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
+            return
+
+        try:
+            self.block_output()
+            # compiling/installing
+            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
+                    myopts, None, depgraph.altlist(),
                     favorites, depgraph.schedulerGraph())
             mergetask.merge()
+        finally:
+            self.unblock_output()
 
     def refresh_cache(self, force):
         # NOTES: can't manage progress even if it could be better
@@ -1075,18 +1101,23 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, autoremove, pkgs):
-        # TODO: implement allowdep
-        # can't use allowdep: never removing dep
-
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
 
         cpv_list = []
         packages = []
+        required_packages = []
+        system_packages = []
 
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         root_config = trees[self.portage_settings["ROOT"]]["root_config"]
+
+        # get system packages
+        set = portage.sets.base.InternalPackageSet(
+                initial_atoms=root_config.setconfig.getSetAtoms("system"))
+        for atom in set:
+            system_packages.append(atom.cp)
 
         # create cpv_list
         for pkg in pkgs:
@@ -1102,6 +1133,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         "Package %s is not installed" % pkg)
                 continue
 
+            # stop removal if a package is in the system set
+            if portage.pkgsplit(cpv)[0] in system_packages:
+                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                        "Package %s is a system package. If you really want to remove it, please use portage" % pkg)
+                continue
+
             cpv_list.append(cpv)
 
         # backend do not implement autoremove
@@ -1109,7 +1146,29 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.message(MESSAGE_AUTOREMOVE_IGNORED,
                     "Portage backend do not implement autoremove option")
 
-        # create packages list
+        # get packages needing candidates for removal
+        required_packages = self.get_packages_required(cpv_list,
+                settings, trees, recursive=True)
+
+        # if there are required packages, allowdep must be on
+        if required_packages and not allowdep:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                    "Could not perform remove operation has packages are needed by other packages")
+            return
+
+        # first, we add required packages
+        for p in required_packages:
+            package = _emerge.Package.Package(
+                    type_name=p.type_name,
+                    built=p.built,
+                    installed=p.installed,
+                    root_config=p.root_config,
+                    cpv=p.cpv,
+                    metadata=p.metadata,
+                    operation='uninstall')
+            packages.append(package)
+
+        # and now, packages we want really to remove
         db_keys = list(portage.portdb._aux_cache_keys)
         for cpv in cpv_list:
             metadata = self.get_metadata(cpv, db_keys, in_dict=True)
@@ -1350,14 +1409,66 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(100)
 
     def update_packages(self, only_trusted, pkgs):
-        # TODO: add some checks ?
-        self.install_packages(only_trusted, pkgs)
+        # TODO: manage errors
+        # TODO: manage config file updates
 
-    def update_system(self, only_trusted):
-        # TODO: only_trusted
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
+
+        cpv_list = []
+
+        for pkg in pkgs:
+            cpv = id_to_cpv(pkg)
+
+            if not self.is_cpv_valid(cpv):
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                        "Package %s was not found" % pkg)
+                continue
+
+            cpv_list.append('=' + cpv)
+
+        # only_trusted isn't supported
+        # but better to show it after important errors
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
+
+        # creating update depgraph
+        myopts = {}
+        favorites = []
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
+
+        depgraph = _emerge.depgraph.depgraph(settings, trees,
+                myopts, myparams, None)
+        retval, favorites = depgraph.select_files(cpv_list)
+        if not retval:
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
+            return
+
+        try:
+            self.block_output()
+            # compiling/installing
+            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
+                    myopts, None, depgraph.altlist(),
+                    favorites, depgraph.schedulerGraph())
+            mergetask.merge()
+        finally:
+            self.unblock_output()
+
+    def update_system(self, only_trusted):
+        self.status(STATUS_RUNNING)
+        self.allow_cancel(True)
+        self.percentage(None)
+
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE,
+                    "Portage backend does not support GPG signature")
+            return
 
         # inits
         myopts = {}
@@ -1370,12 +1481,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         spinner = ""
         favorites = []
-        settings, trees, mtimedb = _emerge.load_emerge_config()
-        myparams = _emerge.create_depgraph_params(myopts, "")
-        spinner = _emerge.stdout_spinner()
+        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(myopts, "")
+        spinner = _emerge.stdout_spinner.stdout_spinner()
 
-        depgraph = _emerge.depgraph(settings, trees, myopts, myparams, spinner)
-        retval, favorites = depgraph.select_files(["system", "world"])
+        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts, myparams, spinner)
+        retval, favorites = depgraph.select_files(["@system", "@world"])
         if not retval:
             self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
             return
@@ -1391,7 +1502,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         mtimedb["resume"]["myopts"] = myopts.copy()
         mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
 
-        mergetask = _emerge.Scheduler(settings, trees, mtimedb,
+        mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
                 myopts, spinner, depgraph.altlist(),
                 favorites, depgraph.schedulerGraph())
         mergetask.merge()

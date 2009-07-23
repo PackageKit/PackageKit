@@ -29,6 +29,15 @@ GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
 class YumFilter(PackagekitFilter):
 
+    def __init__(self, fltlist="none"):
+        PackagekitFilter.__init__(self, fltlist)
+        basearch = rpmUtils.arch.getBaseArch()
+        if basearch == 'i386':
+            self.basearch_list = ['i386', 'i486', 'i586', 'i686']
+        else:
+            self.basearch_list = [basearch]
+        self.basearch_list.append('noarch')
+
     def _is_main_package(self, repo):
         if repo.endswith('-debuginfo'):
             return False
@@ -89,7 +98,7 @@ class YumFilter(PackagekitFilter):
         for pkg, state in pkglist:
             # only key on name and not arch
             inst = self._pkg_is_installed(pkg)
-            key = (pkg.name, inst)
+            key = (pkg.name, pkg.arch, inst)
 
             # we've already come across this package
             if key in newest:
@@ -155,6 +164,14 @@ class YumFilter(PackagekitFilter):
             reqname = req[0]
             if GUI_KEYS.search(reqname):
                 return True
+        return False
+
+    def _pkg_is_arch(self, pkg):
+        '''
+        Return if the package is native arch.
+        '''
+        if pkg.arch in self.basearch_list:
+            return True
         return False
 
     def _pkg_is_free(self, pkg):
