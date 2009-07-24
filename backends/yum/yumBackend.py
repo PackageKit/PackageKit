@@ -1224,6 +1224,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
+                    # unselect what we previously selected
+                    try:
+                        self.yumbase.deselectGroup(grp.groupid)
+                    except Exception, e:
+                        self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
                 pkg, inst = self._findPackage(package_id)
                 # This simulates the addition of the package
@@ -1506,19 +1511,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             self.yumbase.conf.gpgcheck = 0
 
-        for package in package_ids:
-            grp = self._is_meta_package(package)
+        for package_id in package_ids:
+            grp = self._is_meta_package(package_id)
             if grp:
                 if grp.installed:
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "This Group %s is already installed" % grp.groupid, exit=False)
                     return
                 try:
+                    # I'm not sure why we have to deselectGroup() before we selectGroup(), but if we don't
+                    # then selectGroup returns no packages. I've already made sure that any selectGroup
+                    # invokations do deselectGroup, so I'm not sure what's going on...
+                    self.yumbase.deselectGroup(grp.groupid)
                     txmbr = self.yumbase.selectGroup(grp.groupid)
+                    if not txmbr:
+                        self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)));
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 if pkg and not inst:
                     txmbr = self.yumbase.install(po=pkg)
                     txmbrs.extend(txmbr)
@@ -1538,7 +1549,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The packages failed to be installed", exit=False)
+            self.error(ERROR_ALL_PACKAGES_ALREADY_INSTALLED, "The packages are already all installed", exit=False)
 
     def _checkForNewer(self, po):
         pkgs = None
