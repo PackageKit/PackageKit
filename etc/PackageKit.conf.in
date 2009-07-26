@@ -202,8 +202,8 @@ MaximumPackagesToProcess=2500
 # number of authentication requests, but setting this shorter will reduce the
 # amount of time the user has to authenticate.
 #
-# default=30
-TransactionCreateCommitTimeout=30
+# default=300
+TransactionCreateCommitTimeout=300
 
 # How long the transaction should be queriable after it is finished, in seconds
 #
