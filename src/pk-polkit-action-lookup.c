@@ -235,6 +235,43 @@ out:
 }
 
 /**
+ * pk_action_lookup_package_ids_to_string:
+ **/
+static gchar *
+pk_action_lookup_package_ids_to_string (gchar **package_ids)
+{
+	PkPackageId *id;
+	GPtrArray *array = NULL;
+	gchar **names = NULL;
+	gchar *names_str = NULL;
+	guint i;
+
+	/* invalid */
+	if (package_ids == NULL)
+		goto out;
+
+	/* create array of name-version */
+	array = g_ptr_array_new ();
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = pk_package_id_new_from_string (package_ids[i]);
+		names_str = g_strdup_printf ("%s-%s", id->name, id->version);
+		g_ptr_array_add (array, names_str);
+		pk_package_id_free (id);
+	}
+
+	/* create string */
+	names = pk_ptr_array_to_strv (array);
+	names_str = g_strjoinv (", ", names);
+out:
+	if (array != NULL) {
+		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+		g_ptr_array_free (array, TRUE);
+	}
+	g_strfreev (names);
+	return names_str;
+}
+
+/**
  * pk_action_lookup_get_details:
  **/
 static PolkitDetails *
@@ -242,6 +279,10 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 			      PolkitDetails *action_details, PolkitActionDescription *action_description)
 {
 	const gchar *str;
+	const gchar *title;
+	gchar **package_ids;
+	gchar *text;
+	guint len;
 	PolkitDetails *details;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
@@ -263,11 +304,26 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 		polkit_details_insert (details, _("Only trusted"), str);
 	}
 
-	/* only-trusted */
+	/* command line */
 	str = polkit_details_lookup (action_details, "cmdline");
 	if (str != NULL) {
 		/* TRANSLATORS: the command line of the thing that wants the authentication */
 		polkit_details_insert (details, _("Command line"), str);
+	}
+
+	/* packages */
+	str = polkit_details_lookup (action_details, "package_ids");
+	if (str != NULL) {
+		package_ids = pk_package_ids_from_text (str);
+		text = pk_action_lookup_package_ids_to_string (package_ids);
+		len = g_strv_length (package_ids);
+
+		/* TRANSLATORS: title, the names of the packages that the method is processing */
+		title = ngettext ("Package", "Packages", len);
+		polkit_details_insert (details, title, text);
+
+		g_strfreev (package_ids);
+		g_free (text);
 	}
 
 	return details;

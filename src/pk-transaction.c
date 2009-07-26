@@ -129,7 +129,6 @@ struct PkTransactionPrivate
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
-	gchar			*cached_full_path;
 	gchar			**cached_full_paths;
 	PkBitfield		 cached_filters;
 	gchar			*cached_search;
@@ -1314,7 +1313,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_store_set_strv (store, "full_paths", priv->cached_full_paths);
 	pk_store_set_string (store, "package_id", priv->cached_package_id);
 	pk_store_set_string (store, "transaction_id", priv->cached_transaction_id);
-	pk_store_set_string (store, "full_path", priv->cached_full_path);
 	pk_store_set_string (store, "search", priv->cached_search);
 	pk_store_set_string (store, "repo_id", priv->cached_repo_id);
 	pk_store_set_string (store, "key_id", priv->cached_key_id);
@@ -1777,6 +1775,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	PolkitDetails *details;
 	const gchar *action_id;
 	gboolean ret = FALSE;
+	gchar *package_ids = NULL;
 
 	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
@@ -1810,6 +1809,16 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	details = polkit_details_new ();
 	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
 	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+
+	/* do we have package details? */
+	if (transaction->priv->cached_package_id != NULL)
+		package_ids = g_strdup (transaction->priv->cached_package_id);
+	else if (transaction->priv->cached_package_ids != NULL)
+		package_ids = pk_package_ids_to_text (transaction->priv->cached_package_ids);
+
+	/* save optional stuff */
+	if (package_ids != NULL)
+		polkit_details_insert (details, "package_ids", package_ids);
 	if (transaction->priv->cmdline != NULL)
 		polkit_details_insert (details, "cmdline", transaction->priv->cmdline);
 
@@ -1829,6 +1838,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	/* assume success, as this is async */
 	ret = TRUE;
 out:
+	g_free (package_ids);
 	return ret;
 }
 
@@ -4432,7 +4442,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_package_id = NULL;
 	transaction->priv->cached_package_ids = NULL;
 	transaction->priv->cached_transaction_id = NULL;
-	transaction->priv->cached_full_path = NULL;
 	transaction->priv->cached_full_paths = NULL;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
 	transaction->priv->cached_search = NULL;
