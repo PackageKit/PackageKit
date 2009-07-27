@@ -48,6 +48,7 @@ typedef struct {
 	PkCnfPolicy	 single_install;
 	PkCnfPolicy	 multiple_install;
 	gboolean	 software_source_search;
+	gchar		**locations;
 } PkCnfPolicyConfig;
 
 /**
@@ -334,8 +335,8 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
  *
  * Find software we could install
  **/
-static GPtrArray *
-pk_cnf_find_available (const gchar *cmd)
+static gboolean
+pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 {
 	PkClient *client;
 	PkControl *control;
@@ -343,7 +344,6 @@ pk_cnf_find_available (const gchar *cmd)
 	PkBitfield roles;
 	PkBitfield filters;
 	gboolean ret;
-	GPtrArray *array;
 	guint i, len;
 	PkPackageList *list = NULL;
 	const PkPackageObj *obj;
@@ -354,7 +354,6 @@ pk_cnf_find_available (const gchar *cmd)
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	roles = pk_control_get_actions (control, NULL);
-	array = g_ptr_array_new ();
 
 	/* can we search the repos */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
@@ -362,8 +361,17 @@ pk_cnf_find_available (const gchar *cmd)
 		goto out;
 	}
 
+	/* reset instance */
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		/* TRANSLATORS: we failed to reset the client, this shouldn't happen */
+		egg_warning ("%s: %s", _("Failed to reset client"), error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* do search */
-	path = g_strdup_printf ("/usr/bin/%s", cmd);
+	path = g_build_filename (prefix, cmd, NULL);
 	egg_debug ("searching for %s", path);
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 	ret = pk_client_search_file (client, filters, path, &error);
@@ -378,6 +386,7 @@ pk_cnf_find_available (const gchar *cmd)
 	list = pk_client_get_package_list (client);
 	if (list == NULL) {
 		egg_warning ("failed to get list");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -399,7 +408,7 @@ out:
 	g_object_unref (client);
 	g_free (path);
 
-	return array;
+	return ret;
 }
 
 /**
@@ -445,13 +454,17 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 /**
  * pk_cnf_get_config:
  **/
-static gboolean
-pk_cnf_get_config (PkCnfPolicyConfig *config)
+static PkCnfPolicyConfig *
+pk_cnf_get_config (void)
 {
 	GKeyFile *file;
 	gchar *path;
 	gboolean ret;
 	GError *error = NULL;
+	PkCnfPolicyConfig *config;
+
+	/* create */
+	config = g_new0 (PkCnfPolicyConfig, 1);
 
 	/* set defaults if the conf file is not found */
 	config->single_match = PK_CNF_POLICY_UNKNOWN;
@@ -459,6 +472,7 @@ pk_cnf_get_config (PkCnfPolicyConfig *config)
 	config->single_install = PK_CNF_POLICY_UNKNOWN;
 	config->multiple_install = PK_CNF_POLICY_UNKNOWN;
 	config->software_source_search = FALSE;
+	config->locations = NULL;
 
 	/* load file */
 	file = g_key_file_new ();
@@ -476,10 +490,17 @@ pk_cnf_get_config (PkCnfPolicyConfig *config)
 	config->single_install = pk_cnf_get_policy_from_file (file, "SingleInstall");
 	config->multiple_install = pk_cnf_get_policy_from_file (file, "MultipleInstall");
 	config->software_source_search = g_key_file_get_boolean (file, "CommandNotFound", "SoftwareSourceSearch", NULL);
+	config->locations = g_key_file_get_string_list (file, "CommandNotFound", "SearchLocations", NULL, NULL);
+
+	/* fallback */
+	if (config->locations == NULL) {
+		egg_warning ("not found SearchLocations, using fallback");
+		config->locations = g_strsplit ("/usr/bin;/usr/sbin", ";", -1);
+	}
 out:
 	g_free (path);
 	g_key_file_free (file);
-	return ret;
+	return config;
 }
 
 /**
@@ -510,7 +531,7 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	GPtrArray *array = NULL;
 	GPtrArray *available = NULL;
-	PkCnfPolicyConfig config;
+	PkCnfPolicyConfig *config = NULL;
 	guint i;
 	guint len;
 	gchar *text;
@@ -546,7 +567,7 @@ main (int argc, char *argv[])
 		goto out;
 
 	/* get policy config */
-	pk_cnf_get_config (&config);
+	config = pk_cnf_get_config ();
 
 	/* get length */
 	len = egg_strlen (argv[1], 1024);
@@ -562,16 +583,16 @@ main (int argc, char *argv[])
 	/* one exact possibility */
 	if (array->len == 1) {
 		possible = g_ptr_array_index (array, 0);
-		if (config.single_match == PK_CNF_POLICY_WARN) {
+		if (config->single_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: tell the user what we think the command is */
 			g_print ("%s '%s'\n", _("Similar command is:"), possible);
 
 		/* run */
-		} else if (config.single_match == PK_CNF_POLICY_RUN) {
+		} else if (config->single_match == PK_CNF_POLICY_RUN) {
 			pk_cnf_spawn_command (possible);
 
 		/* ask */
-		} else if (config.single_match == PK_CNF_POLICY_ASK) {
+		} else if (config->single_match == PK_CNF_POLICY_ASK) {
 			/* TRANSLATORS: Ask the user if we should run the similar command */
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
@@ -583,7 +604,7 @@ main (int argc, char *argv[])
 
 	/* multiple choice */
 	} else if (array->len > 1) {
-		if (config.multiple_match == PK_CNF_POLICY_WARN) {
+		if (config->multiple_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: show the user a list of commands that they could have meant */
 			g_print ("%s:\n", _("Similar commands are:"));
 			for (i=0; i<array->len; i++) {
@@ -592,7 +613,7 @@ main (int argc, char *argv[])
 			}
 
 		/* ask */
-		} else if (config.multiple_match == PK_CNF_POLICY_ASK) {
+		} else if (config->multiple_match == PK_CNF_POLICY_ASK) {
 			/* TRANSLATORS: show the user a list of commands we could run */
 			g_print ("%s:\n", _("Similar commands are:"));
 			for (i=0; i<array->len; i++) {
@@ -610,16 +631,20 @@ main (int argc, char *argv[])
 		goto out;
 
 	/* only search using PackageKit if configured to do so */
-	} else if (config.software_source_search) {
-		available = pk_cnf_find_available (argv[1]);
+	} else if (config->software_source_search) {
+		available = g_ptr_array_new ();
+		pk_cnf_find_available (available, "/usr/bin", argv[1]);
+		pk_cnf_find_available (available, "/usr/sbin", argv[1]);
+		pk_cnf_find_available (available, "/bin", argv[1]);
+		pk_cnf_find_available (available, "/sbin", argv[1]);
 		if (available->len == 1) {
 			possible = g_ptr_array_index (available, 0);
-			if (config.single_install == PK_CNF_POLICY_WARN) {
+			if (config->single_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: tell the user what package provides the command */
 				g_print ("%s '%s'\n", _("The package providing this file is:"), possible);
 
 			/* ask */
-			} else if (config.single_install == PK_CNF_POLICY_ASK) {
+			} else if (config->single_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: as the user if we want to install a package to provide the command */
 				text = g_strdup_printf (_("Install package '%s' to provide command '%s'?"), possible, argv[1]);
 				ret = pk_console_get_prompt (text, FALSE);
@@ -633,14 +658,14 @@ main (int argc, char *argv[])
 				}
 
 			/* install */
-			} else if (config.single_install == PK_CNF_POLICY_INSTALL) {
+			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				text = g_strdup_printf ("pkcon install %s", possible);
 				pk_cnf_spawn_command (text);
 				g_free (text);
 			}
 			goto out;
 		} else if (available->len > 1) {
-			if (config.multiple_install == PK_CNF_POLICY_WARN) {
+			if (config->multiple_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: Show the user a list of packages that provide this command */
 				g_print ("%s:\n", _("Packages providing this file are:"));
 				for (i=0; i<available->len; i++) {
@@ -649,7 +674,7 @@ main (int argc, char *argv[])
 				}
 
 			/* ask */
-			} else if (config.multiple_install == PK_CNF_POLICY_ASK) {
+			} else if (config->multiple_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: Show the user a list of packages that they can install to provide this command */
 				g_print ("%s:\n", _("Suitable packages are:"));
 				for (i=0; i<available->len; i++) {
@@ -676,6 +701,10 @@ main (int argc, char *argv[])
 	g_print ("\n");
 
 out:
+	if (config != NULL) {
+		g_strfreev (config->locations);
+		g_free (config);
+	}
 	if (array != NULL) {
 		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 		g_ptr_array_free (array, TRUE);
