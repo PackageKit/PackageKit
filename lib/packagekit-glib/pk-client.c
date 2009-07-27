@@ -63,7 +63,8 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-static void     pk_client_finalize	(GObject       *object);
+static void     pk_client_finalize		(GObject	*object);
+static gboolean	pk_client_disconnect_proxy	(PkClient	*client);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
 
@@ -3923,6 +3924,9 @@ pk_client_requeue (PkClient *client, GError **error)
 	pk_obj_list_clear (client->priv->category_list);
 	pk_obj_list_clear (client->priv->distro_upgrade_list);
 	pk_obj_list_clear (client->priv->transaction_list);
+
+	/* don't exit from the loop when the first tid times out */
+	pk_client_disconnect_proxy (client);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
