@@ -170,6 +170,7 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	gboolean ret = TRUE;
 	gchar **package_ids;
 	GError *error_local = NULL;
+	PkExitEnum exit;
 
 	/* mush back into a char** */
 	package_ids = pk_package_ids_from_array (array);
@@ -188,9 +189,26 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	/* enable this repo */
 	ret = pk_client_install_packages (priv->client, TRUE, package_ids, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
+		/* need to handle retry with only_trusted=FALSE */
+		g_object_get (priv->client, "exit", &exit, NULL);
+		if (exit == PK_EXIT_ENUM_NEED_UNTRUSTED) {
+			egg_debug ("need to handle untrusted");
+
+			/* retry new action with untrusted */
+			pk_client_set_only_trusted (priv->client, FALSE);
+			g_clear_error (&error_local);
+			ret = pk_client_requeue (priv->client, &error_local);
+			if (!ret) {
+				*error = g_error_new (1, 0, "failed to requeue transaction: %s", error_local->message);
+				g_error_free (error_local);
+				goto out;
+			}
+		} else {
+			*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
+			g_error_free (error_local);
+			egg_error ("moo: %s", error_local->message);
+			goto out;
+		}
 	}
 
 	/* end progressbar output */
@@ -400,10 +418,10 @@ out:
 }
 
 /**
- * pk_console_progress_changed_cb:
+ * pk_debuginfo_install_progress_changed_cb:
  **/
 static void
-pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
+pk_debuginfo_install_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
 				guint elapsed, guint remaining, PkDebuginfoInstallPrivate *priv)
 {
 	PkRoleEnum role;
@@ -457,10 +475,10 @@ pk_strpad (const gchar *data, guint length)
 }
 
 /**
- * pk_console_package_cb:
+ * pk_debuginfo_install_package_cb:
  **/
 static void
-pk_console_package_cb (PkClient *client, const PkPackageObj *obj, PkDebuginfoInstallPrivate *priv)
+pk_debuginfo_install_package_cb (PkClient *client, const PkPackageObj *obj, PkDebuginfoInstallPrivate *priv)
 {
 	PkRoleEnum role;
 	gchar *package = NULL;
@@ -586,8 +604,8 @@ main (int argc, char *argv[])
 	/* create #PkClient */
 	priv->client = pk_client_new ();
 	g_signal_connect (priv->client, "repo-detail", G_CALLBACK (pk_debuginfo_install_repo_details_cb), priv);
-	g_signal_connect (priv->client, "progress-changed", G_CALLBACK (pk_console_progress_changed_cb), priv);
-	g_signal_connect (priv->client, "package", G_CALLBACK (pk_console_package_cb), priv);
+	g_signal_connect (priv->client, "progress-changed", G_CALLBACK (pk_debuginfo_install_progress_changed_cb), priv);
+	g_signal_connect (priv->client, "package", G_CALLBACK (pk_debuginfo_install_package_cb), priv);
 	pk_client_set_synchronous (priv->client, TRUE, NULL);
 	pk_client_set_use_buffer (priv->client, TRUE, NULL);
 
@@ -877,7 +895,7 @@ not_found:
 			/* TRANSLATORS: operation was not successful */
 			g_print ("%s ", _("FAILED."));
 		}
-		/* TRANSLATORS: coul dnot install, detailed error follows */
+		/* TRANSLATORS: could not install, detailed error follows */
 		g_print (_("Could not install packages: %s"), error->message);
 		g_print ("\n");
 		g_error_free (error);
