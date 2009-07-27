@@ -3918,6 +3918,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	client->priv->tid = NULL;
 	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
+	g_clear_error (&client->priv->error);
 
 	/* clear package list */
 	pk_obj_list_clear (PK_OBJ_LIST(client->priv->package_list));
