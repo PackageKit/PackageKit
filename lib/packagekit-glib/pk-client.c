@@ -110,6 +110,7 @@ struct _PkClientPrivate
 	PkBitfield		 cached_filters;
 	gint			 timeout;
 	guint			 timeout_id;
+	PkExitEnum		 exit;
 	GError			*error;
 };
 
@@ -141,6 +142,7 @@ enum {
 	PROP_0,
 	PROP_ROLE,
 	PROP_STATUS,
+	PROP_EXIT,
 	PROP_LAST,
 };
 
@@ -530,8 +532,6 @@ pk_client_destroy_cb (DBusGProxy *proxy, PkClient *client)
 static void
 pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClient *client)
 {
-	PkExitEnum exit_enum;
-
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* ref in case we unref the PkClient in ::finished */
@@ -543,7 +543,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 		client->priv->timeout_id = 0;
 	}
 
-	exit_enum = pk_exit_enum_from_text (exit_text);
+	client->priv->exit = pk_exit_enum_from_text (exit_text);
 	egg_debug ("emit finished %s, %i", exit_text, runtime);
 
 	/* only this instance is finished, and do it before the signal so we can reset */
@@ -553,14 +553,14 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	 * in the ::Finished() handler */
 	client->priv->is_finishing = TRUE;
 
-	g_signal_emit (client, signals [SIGNAL_FINISHED], 0, exit_enum, runtime);
+	g_signal_emit (client, signals [SIGNAL_FINISHED], 0, client->priv->exit, runtime);
 
 	/* done callback */
 	client->priv->is_finishing = FALSE;
 
 	/* exit our private loop */
 	if (client->priv->synchronous) {
-		if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		if (client->priv->exit != PK_EXIT_ENUM_SUCCESS)
 			client->priv->error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
 							   "failed: %s", exit_text);
 		g_main_loop_quit (client->priv->loop);
@@ -4130,6 +4130,9 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_STATUS:
 		g_value_set_uint (value, client->priv->status);
 		break;
+	case PROP_EXIT:
+		g_value_set_uint (value, client->priv->exit);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4177,6 +4180,14 @@ pk_client_class_init (PkClientClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
+
+	/**
+	 * PkClient:exit:
+	 */
+	pspec = g_param_spec_uint ("exit", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_EXIT, pspec);
 
 	/**
 	 * PkClient::status-changed:
@@ -4657,6 +4668,7 @@ pk_client_init (PkClient *client)
 	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
+	client->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->is_finishing = FALSE;
 	client->priv->package_list = pk_package_list_new ();
