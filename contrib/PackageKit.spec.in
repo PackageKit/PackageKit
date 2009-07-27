@@ -365,7 +365,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files debuginfo-install
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libexecdir}/pk-debuginfo-install
+%{_bindir}/pk-debuginfo-install
 %{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin
