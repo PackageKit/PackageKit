@@ -331,6 +331,41 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 }
 
 /**
+ * pk_cnf_status_changed_cb:
+ **/
+static void
+pk_cnf_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer data)
+{
+	const gchar *text = NULL;
+
+	switch (status) {
+	case PK_STATUS_ENUM_DOWNLOAD_REPOSITORY:
+		/* TRANSLATORS: downloading repo data so we can search */
+		text = _("Downloading details about the software sources.");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_FILELIST:
+		/* TRANSLATORS: downloading file lists so we can search */
+		text = _("Downloading filelists (this may take some time to complete).");
+		break;
+	case PK_STATUS_ENUM_WAITING_FOR_LOCK:
+		/* TRANSLATORS: waiting for native lock */
+		text = _("Waiting for package manager lock.");
+		break;
+	case PK_STATUS_ENUM_LOADING_CACHE:
+		/* TRANSLATORS: loading package cache so we can search */
+		text = _("Loading list of packages.");
+		break;
+	default:
+		/* no need to print */
+		text = NULL;
+	}
+
+	/* print to screen, still one line */
+	if (text != NULL)
+		g_print ("\n * %s.. ", text);
+}
+
+/**
  * pk_cnf_find_available:
  *
  * Find software we could install
@@ -353,6 +388,9 @@ pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 	client = pk_client_new ();
 	pk_client_set_synchronous (client, TRUE, NULL);
 	pk_client_set_use_buffer (client, TRUE, NULL);
+	g_signal_connect (client, "status-changed",
+			  G_CALLBACK (pk_cnf_status_changed_cb), NULL);
+
 	roles = pk_control_get_actions (control, NULL);
 
 	/* can we search the repos */
