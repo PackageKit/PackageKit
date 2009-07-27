@@ -23,6 +23,9 @@
 
 #include <string.h>
 #include <locale.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <packagekit-glib/packagekit.h>
@@ -50,6 +53,8 @@ typedef struct {
 	gboolean	 software_source_search;
 	gchar		**locations;
 } PkCnfPolicyConfig;
+
+static PkClient *client = NULL;
 
 /**
  * pk_cnf_find_alternatives_swizzle:
@@ -334,7 +339,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
  * pk_cnf_status_changed_cb:
  **/
 static void
-pk_cnf_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer data)
+pk_cnf_status_changed_cb (PkClient *client_, PkStatusEnum status, gpointer data)
 {
 	const gchar *text = NULL;
 
@@ -373,7 +378,6 @@ pk_cnf_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer data)
 static gboolean
 pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 {
-	PkClient *client;
 	PkControl *control;
 	GError *error = NULL;
 	PkBitfield roles;
@@ -390,21 +394,13 @@ pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	g_signal_connect (client, "status-changed",
 			  G_CALLBACK (pk_cnf_status_changed_cb), NULL);
+	g_object_add_weak_pointer (G_OBJECT (client), (gpointer) &client);
 
 	roles = pk_control_get_actions (control, NULL);
 
 	/* can we search the repos */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
 		egg_warning ("cannot search file");
-		goto out;
-	}
-
-	/* reset instance */
-	ret = pk_client_reset (client, &error);
-	if (!ret) {
-		/* TRANSLATORS: we failed to reset the client, this shouldn't happen */
-		egg_warning ("%s: %s", _("Failed to reset client"), error->message);
-		g_error_free (error);
 		goto out;
 	}
 
@@ -559,6 +555,40 @@ pk_cnf_spawn_command (const gchar *exec)
 }
 
 /**
+ * pk_cnf_sigint_handler:
+ **/
+static void
+pk_cnf_sigint_handler (int sig)
+{
+	PkRoleEnum role;
+	gboolean ret;
+	GError *error = NULL;
+	egg_debug ("Handling SIGINT");
+
+	/* restore default ASAP, as the cancel might hang */
+	signal (SIGINT, SIG_DFL);
+
+	/* nothing in progress */
+	if (client == NULL)
+		goto out;
+
+	/* hopefully, cancel client */
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role != PK_ROLE_ENUM_UNKNOWN) {
+		ret = pk_client_cancel (client, &error);
+		if (!ret) {
+			egg_warning ("failed to cancel client: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
+out:
+	/* kill ourselves */
+	egg_debug ("Retrying SIGINT");
+	kill (getpid (), SIGINT);
+}
+
+/**
  * main:
  **/
 int
@@ -603,6 +633,9 @@ main (int argc, char *argv[])
 	/* no input */
 	if (argv[1] == NULL)
 		goto out;
+
+	/* do stuff on ctrl-c */
+	signal (SIGINT, pk_cnf_sigint_handler);
 
 	/* get policy config */
 	config = pk_cnf_get_config ();
