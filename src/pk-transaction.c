@@ -1116,6 +1116,12 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 		}
 	}
 
+	/* nothing to scan for */
+	if (list->len == 0) {
+		egg_debug ("no security updates");
+		goto out;
+	}
+
 	/* is a security update we are installing */
 	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		ret = FALSE;
