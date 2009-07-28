@@ -745,7 +745,7 @@ main (int argc, char *argv[])
 		/* add to array to install */
 		if (package_id != NULL) {
 			egg_debug ("going to try to install: %s", package_id);
-			g_ptr_array_add (package_ids_recognised, g_strdup (package_id));
+			g_ptr_array_add (package_ids_recognised, package_id);
 		} else {
 			goto not_found;
 		}
