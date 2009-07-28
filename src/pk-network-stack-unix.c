@@ -58,6 +58,60 @@ G_DEFINE_TYPE (PkNetworkStackUnix, pk_network_stack_unix, PK_TYPE_NETWORK_STACK)
 #define PK_NETWORK_PROC_ROUTE	"/proc/net/route"
 
 /**
+ * pk_network_stack_unix_is_valid:
+ **/
+static gboolean
+pk_network_stack_unix_is_valid (const gchar *line)
+{
+	gchar **sections = NULL;
+	gboolean online = FALSE;
+	guint number_sections;
+
+	/* empty line */
+	if (egg_strzero (line))
+		goto out;
+
+	/* tab delimited */
+	sections = g_strsplit (line, "\t", 0);
+	if (sections == NULL) {
+		egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+		goto out;
+	}
+
+	/* is header? */
+	if (egg_strequal (sections[0], "Iface"))
+		goto out;
+
+	/* is loopback? */
+	if (egg_strequal (sections[0], "lo"))
+		goto out;
+
+	/* is correct parameters? */
+	number_sections = g_strv_length (sections);
+	if (number_sections != 11) {
+		egg_warning ("invalid line '%s' (%i)", line, number_sections);
+		goto out;
+	}
+
+	/* is destination zero (default route)? */
+	if (egg_strequal (sections[1], "00000000")) {
+		egg_debug ("destination %s is valid", sections[0]);
+		online = TRUE;
+		goto out;
+	}
+
+	/* is gateway nonzero? */
+	if (!egg_strequal (sections[2], "00000000")) {
+		egg_debug ("interface %s is valid", sections[0]);
+		online = TRUE;
+		goto out;
+	}
+out:
+	g_strfreev (sections);
+	return online;
+}
+
+/**
  * pk_network_stack_unix_get_state:
  **/
 static PkNetworkEnum
@@ -66,12 +120,11 @@ pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 	gchar *contents = NULL;
 	gboolean ret;
 	GError *error = NULL;
-	gchar **lines;
-	gchar **sections;
+	gchar **lines = NULL;
 	guint number_lines;
-	guint number_sections;
 	guint i;
 	gboolean online = FALSE;
+	PkNetworkEnum state = PK_NETWORK_ENUM_ONLINE;
 
 	/* hack, because netlink is teh suck */
 	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
@@ -79,73 +132,37 @@ pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 		egg_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
 		g_error_free (error);
 		/* no idea whatsoever! */
-		return PK_NETWORK_ENUM_ONLINE;
+		goto out;
 	}
 
 	/* something insane */
 	if (contents == NULL) {
 		egg_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
-		return PK_NETWORK_ENUM_ONLINE;
+		goto out;
 	}
 
 	/* one line per interface */
 	lines = g_strsplit (contents, "\n", 0);
 	if (lines == NULL) {
 		egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
-		return PK_NETWORK_ENUM_ONLINE;
+		goto out;
 	}
 
 	number_lines = g_strv_length (lines);
 	for (i=0; i<number_lines; i++) {
-		/* empty line */
-		if (egg_strzero (lines[i])) {
-			continue;
-		}
 
-		/* tab delimited */
-		sections = g_strsplit (lines[i], "\t", 0);
-		if (sections == NULL) {
-			egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
-			continue;
-		}
-
-		/* is header? */
-		if (egg_strequal (sections[0], "Iface")) {
-			continue;
-		}
-
-		/* is loopback? */
-		if (egg_strequal (sections[0], "lo")) {
-			continue;
-		}
-
-		/* is correct parameters? */
-		number_sections = g_strv_length (sections);
-		if (number_sections != 11) {
-			egg_warning ("invalid line '%s' (%i)", lines[i], number_sections);
-			continue;
-		}
-
-		/* is destination zero (default route)? */
-		if (egg_strequal (sections[1], "00000000")) {
-			egg_debug ("destination %s is valid", sections[0]);
+		/* is valid interface */
+		ret = pk_network_stack_unix_is_valid (lines[i]);
+		if (ret)
 			online = TRUE;
-		}
-
-		/* is gateway nonzero? */
-		if (!egg_strequal (sections[2], "00000000")) {
-			egg_debug ("interface %s is valid", sections[0]);
-			online = TRUE;
-		}
-		g_strfreev (sections);
 	}
+
+	if (!online)
+		state = PK_NETWORK_ENUM_OFFLINE;
+out:
+	g_free (contents);
 	g_strfreev (lines);
-
-	if (online) {
-		return PK_NETWORK_ENUM_ONLINE;
-	}
-
-	return PK_NETWORK_ENUM_OFFLINE;
+	return state;
 }
 
 /**
