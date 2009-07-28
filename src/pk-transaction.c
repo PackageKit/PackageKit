@@ -657,6 +657,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		}
 	}
 
+	/* look for library restarts */
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {
+		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+		if (ret) {
+			/* now emit what we found ealier */
+			pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra);
+		}
+	}
+
 	/* signals we are not allowed to send from the second phase post transaction */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
@@ -1149,7 +1158,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* find files in security updates */
 	package_ids_security = pk_package_ids_from_array (list);
-	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids_security);
+	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
 out:
 	g_strfreev (package_ids_security);
 	if (list != NULL) {

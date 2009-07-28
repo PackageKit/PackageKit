@@ -56,7 +56,8 @@ gboolean	 pk_transaction_extra_check_running_process	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
 gboolean	 pk_transaction_extra_check_desktop_files	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
-gboolean	 pk_transaction_extra_check_library_restart	(PkTransactionExtra	*extra,
+gboolean	 pk_transaction_extra_check_library_restart	(PkTransactionExtra	*extra);
+gboolean	 pk_transaction_extra_check_library_restart_pre	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
 
 G_END_DECLS

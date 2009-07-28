@@ -54,6 +54,7 @@ struct PkTransactionExtraPrivate
 	guint			 package_id;
 	GHashTable		*hash;
 	GPtrArray		*files_list;
+	GPtrArray		*pids;
 };
 
 enum {
@@ -849,10 +850,10 @@ out:
 }
 
 /**
- * pk_transaction_extra_check_library_restart_emit:
+ * pk_transaction_extra_check_library_restart:
  **/
-static gboolean
-pk_transaction_extra_check_library_restart_emit (PkTransactionExtra *extra, GPtrArray *pids)
+gboolean
+pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 {
 	gint uid;
 	guint i;
@@ -864,10 +865,21 @@ pk_transaction_extra_check_library_restart_emit (PkTransactionExtra *extra, GPtr
 	GPtrArray *files_session;
 	GPtrArray *files_system;
 	const PkPackageObj *obj;
+	GPtrArray *pids;
+
+	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
 	/* create arrays */
 	files_session = g_ptr_array_new ();
 	files_system = g_ptr_array_new ();
+
+	/* get local array */
+	pids = extra->priv->pids;
+	if (pids == NULL)
+		goto out;
+
+	/* set status */
+	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_LIBRARIES);
 
 	/* find the package name of each pid */
 	for (i=0; i<pids->len; i++) {
@@ -942,7 +954,7 @@ out:
 }
 
 /**
- * pk_transaction_extra_check_library_restart:
+ * pk_transaction_extra_check_library_restart_pre:
  * @package_ids: the list of security updates
  *
  * This function does the following things:
@@ -954,13 +966,12 @@ out:
  *  6) For each package, emit a RequireRestart of the correct type (according to the UID)
  **/
 gboolean
-pk_transaction_extra_check_library_restart (PkTransactionExtra *extra, gchar **package_ids)
+pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar **package_ids)
 {
 	PkStore *store;
 	guint signal_files = 0;
 	gboolean ret = TRUE;
 	gchar **files = NULL;
-	GPtrArray *pids;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
@@ -972,6 +983,11 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra, gchar **p
 	/* reset */
 	g_ptr_array_foreach (extra->priv->files_list, (GFunc) g_free, NULL);
 	g_ptr_array_set_size (extra->priv->files_list, 0);
+
+	if (extra->priv->pids != NULL) {
+		g_ptr_array_free (extra->priv->pids, TRUE);
+		extra->priv->pids = NULL;
+	}
 
 	/* set status */
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_SCAN_PROCESS_LIST);
@@ -1007,23 +1023,21 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra, gchar **p
 
 	/* get the list of PIDs */
 	files = pk_ptr_array_to_strv (extra->priv->files_list);
-	pids = pk_lsof_get_pids_for_filenames (extra->priv->lsof, files);
+	extra->priv->pids = pk_lsof_get_pids_for_filenames (extra->priv->lsof, files);
 
 	/* nothing depends on these libraries */
-	if (pids == NULL) {
+	if (extra->priv->pids == NULL) {
 		egg_warning ("failed to get process list");
 		goto out;
 	}
 
 	/* nothing depends on these libraries */
-	if (pids->len == 0) {
+	if (extra->priv->pids->len == 0) {
 		egg_warning ("no processes depend on these libraries");
 		goto out;
 	}
 
-	/* emit */
-	pk_transaction_extra_check_library_restart_emit (extra, pids);
-	g_ptr_array_free (pids, TRUE);
+	/* don't emit until we've run the transaction and it's success */
 out:
 	pk_transaction_extra_set_progress_changed (extra, 100);
 	if (signal_files > 0)
@@ -1047,6 +1061,8 @@ pk_transaction_extra_finalize (GObject *object)
 	g_signal_handler_disconnect (extra->priv->backend, extra->priv->finished_id);
 	g_signal_handler_disconnect (extra->priv->backend, extra->priv->package_id);
 
+	if (extra->priv->pids != NULL)
+		g_ptr_array_free (extra->priv->pids, TRUE);
 	if (g_main_loop_is_running (extra->priv->loop))
 		g_main_loop_quit (extra->priv->loop);
 	g_main_loop_unref (extra->priv->loop);
@@ -1111,6 +1127,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
 	extra->priv->db = NULL;
+	extra->priv->pids = NULL;
 	extra->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	extra->priv->files_list = g_ptr_array_new ();
 
