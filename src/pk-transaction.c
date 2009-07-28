@@ -1067,6 +1067,9 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 /**
  * pk_transaction_pre_transaction_checks:
+ * @package_ids: the list of packages to process
+ *
+ * This function does any pre-transaction checks
  */
 static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)

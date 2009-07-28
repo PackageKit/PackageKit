@@ -941,6 +941,15 @@ out:
 
 /**
  * pk_transaction_extra_check_library_restart:
+ * @package_ids: the list of security updates
+ *
+ * This function does the following things:
+ *  1) Refreshes the list of open files
+ *  2) Gets the list of library files from the security updates
+ *  3) Gets a list of pids that are using the libraries
+ *  4) The list of pids are converted to a list of files
+ *  5) The list of files is converted to a list of packages
+ *  6) For each package, emit a RequireRestart of the correct type (according to the UID)
  **/
 gboolean
 pk_transaction_extra_check_library_restart (PkTransactionExtra *extra, gchar **package_ids)
