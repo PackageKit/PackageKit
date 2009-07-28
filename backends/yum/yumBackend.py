@@ -15,20 +15,26 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-# Copyright (C) 2007-2008
+# Copyright (C) 2007-2009
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Seth Vidal <skvidal@fedoraproject.org>
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
 #    Robin Norwood <rnorwood@redhat.com>
 #    Richard Hughes <richard@hughsie.com>
+#
+#    MediaGrabber:
+#    Based on the logic of pirut by Jeremy Katz <katzj@redhat.com>
+#    Rewritten by Muayyad Alsadi <alsadi@ojuba.org>
 
 # imports
 from packagekit.backend import *
 from packagekit.progress import *
+from packagekit.enums import *
 from packagekit.package import PackagekitPackage
 import yum
 from urlgrabber.progress import BaseMeter, format_number
+from urlgrabber.grabber import URLGrabber, URLGrabError
 from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
@@ -52,6 +58,7 @@ import ConfigParser
 
 from yumFilter import *
 from yumComps import *
+from yumMediaManager import MediaManager
 
 # Global vars
 yumbase = None
@@ -2805,6 +2812,7 @@ class PackageKitYumBase(yum.YumBase):
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
+        self.mediagrabber = self.MediaGrabber
         # Setup Repo GPG support callbacks
         try:
             self.repos.confirm_func = self._repo_gpg_confirm
@@ -2815,6 +2823,103 @@ class PackageKitYumBase(yum.YumBase):
                 raise PkError(ERROR_FAILED_INITIALIZATION, _format_str(traceback.format_exc()))
             else:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+    def MediaGrabber(self, *args, **kwargs):
+        """
+        Handle physical media.
+
+        This module can be summarized like this:
+        For all media:
+        - Lock it
+        - If not mounted: mount it
+        - If it's the wanted media: break
+        - If no media found: ask the user to insert it and loop again
+        ....
+        Release the media
+        """
+        media_id = kwargs["mediaid"]
+        disc_number = kwargs["discnum"]
+        name = kwargs["name"]
+        discs_s = ''
+        found = False
+
+        manager = MediaManager()
+        media = None
+        found = False
+
+        # loop over and over, retry because the user might insert disc #2 when we need disc #5
+        while 1:
+            # check for the needed media in every media provided by yumMediaManager
+            for media in manager:
+                # mnt now holds the mount point
+                mnt = media.acquire()
+                found = False
+
+                # if not mounted skip this media for this loop
+                if not mnt:
+                    continue
+
+                # load ".discinfo" from the media and parse it
+                if os.path.exists("%s/.discinfo" %(mnt,)):
+                    f = open("%s/.discinfo" %(mnt,), "r")
+                    lines = f.readlines()
+                    f.close()
+                    theid = lines[0].strip()
+                    discs_s = lines[3].strip()
+
+                    # if discs_s == ALL then no need to match disc number
+                    if discs_s != 'ALL':
+                        discs = map(lambda x: int(x), discs_s.split(","))
+                        samenum = disc_number in discs
+                    else:
+                        samenum = True
+
+                    # if the media is different or of different number skip it and loop over
+                    if media_id != theid or not samenum:
+                        continue
+
+                    # the actual copying is done by URLGrabber
+                    ug = URLGrabber(checkfunc = kwargs["checkfunc"])
+                    try:
+                        ug.urlgrab("%s/%s" %(mnt, kwargs["relative"]),
+                                   kwargs["local"], text=kwargs["text"],
+                                   range=kwargs["range"], copy_local=1)
+                    except (IOError, URLGrabError):
+                        pass
+                    else:
+                        found = True
+
+                # if we found it end the for loop
+                if found:
+                    break
+
+            # if we found it end the while loop
+            if found:
+                break
+
+            # construct human readable media_text
+            if disc_number:
+                media_text = "%s #%d" % (name, disc_number)
+            else:
+                media_text = name
+
+            # see http://lists.freedesktop.org/archives/packagekit/2009-May/004808.html
+            # and http://cgit.freedesktop.org/packagekit/commit/?id=79e8736197b552a5ce206a712cd3b6c80cf2e86d
+            self.backend.media_change_required(MEDIA_TYPE_DISC, name, media_text)
+            self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
+                               "Insert media labeled '%s' or disable media repos" % media_text,
+                               exit = False)
+            break
+
+        # if we got a media object destruct it to release the media (which will unmount and unlock if needed)
+        if media:
+            del media
+
+        # I guess we come here when the user in PK clicks cancel
+        if not found:
+            # yumRepo will catch this
+            raise yum.Errors.MediaError, "The disc was not inserted"
+        return kwargs["local"]
 
     def _repo_gpg_confirm(self, keyData):
         """ Confirm Repo GPG signature import """
