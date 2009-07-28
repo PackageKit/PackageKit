@@ -1470,42 +1470,34 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     "Portage backend does not support GPG signature")
             return
 
-        # inits
         myopts = {}
-        myopts.pop("--deep", None)
-        myopts.pop("--newuse", None)
-        myopts.pop("--update", None)
         myopts["--deep"] = True
         myopts["--newuse"] = True
         myopts["--update"] = True
 
-        spinner = ""
-        favorites = []
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(myopts, "")
-        spinner = _emerge.stdout_spinner.stdout_spinner()
+        myparams = _emerge.create_depgraph_params.create_depgraph_params(
+                myopts, "")
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts, myparams, spinner)
-        retval, favorites = depgraph.select_files(["@system", "@world"])
+        # creating list of ebuilds needed for the system update
+        # using backtrack_depgraph to prevent errors
+        retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
+                settings, trees, myopts, myparams, "",
+                ["@system", "@world"], None)
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR, "Wasn't able to get dependency graph")
+            self.error(ERROR_INTERNAL_ERROR,
+                    "Wasn't able to get dependency graph")
             return
 
-        if "resume" in mtimedb and \
-        "mergelist" in mtimedb["resume"] and \
-        len(mtimedb["resume"]["mergelist"]) > 1:
-            mtimedb["resume_backup"] = mtimedb["resume"]
-            del mtimedb["resume"]
-            mtimedb.commit()
-
-        mtimedb["resume"] = {}
-        mtimedb["resume"]["myopts"] = myopts.copy()
-        mtimedb["resume"]["favorites"] = [str(x) for x in favorites]
-
-        mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                myopts, spinner, depgraph.altlist(),
-                favorites, depgraph.schedulerGraph())
-        mergetask.merge()
+        try:
+            self.block_output()
+            # compiling/installing
+            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
+                    myopts, None, depgraph.altlist(),
+                    None, depgraph.schedulerGraph())
+            mergetask.merge()
+        finally:
+            self.unblock_output()
 
 def main():
     backend = PackageKitPortageBackend("") #'', lock=True)
