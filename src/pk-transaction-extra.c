@@ -595,6 +595,7 @@ pk_transaction_extra_update_process_list (PkTransactionExtra *extra)
 	pk_obj_list_clear (PK_OBJ_LIST(extra->priv->running_exec_list));
 	while (name != NULL) {
 		contents = NULL;
+		exec = NULL;
 		uid_file = g_build_filename ("/proc", name, "loginuid", NULL);
 
 		/* is a process file */
@@ -635,6 +636,7 @@ pk_transaction_extra_update_process_list (PkTransactionExtra *extra)
 		egg_debug ("uid=%i, pid=%i, exec=%s", uid, pid, exec);
 		pk_obj_list_add (PK_OBJ_LIST(extra->priv->running_exec_list), exec);
 out:
+		g_free (exec);
 		g_free (uid_file);
 		g_free (contents);
 		name = g_dir_read_name (dir);
