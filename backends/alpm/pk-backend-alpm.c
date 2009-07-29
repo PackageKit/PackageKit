@@ -89,13 +89,13 @@ pkg_from_package_id_str (const gchar *package_id_str)
 	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id_str);
 
 	/* do all this fancy stuff */
-	if (egg_strequal (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data (pkg_id)))
+	if (g_strcmp0 (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data(pkg_id)) == 0)
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
 		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
 			repo = alpm_list_getdata (iterator);
-			if (egg_strequal (alpm_db_get_name (repo), pk_package_id_get_data (pkg_id)))
+			if (g_strcmp0 (alpm_db_get_name(repo), pk_package_id_get_data(pkg_id)) == 0)
 				break;
 		}
 	}
@@ -250,7 +250,7 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 	int trans_percent;
 
 	if (g_str_has_suffix (filename, ALPM_PKG_EXT)) {
-		if (!egg_strequal (filename, current_file)) {
+		if (g_strcmp0 (filename, current_file) != 0) {
 			alpm_list_t *repos;
 			alpm_list_t *packages;
 			pmpkg_t *current_pkg = NULL;
@@ -499,7 +499,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 			}
 
 			/* if we are not looking at the options section, register a db */
-			if (!egg_strequal (section, "options"))
+			if (g_strcmp0 (section, "options") != 0)
 				db = alpm_db_register_sync (section);
 		} else {
 			/* directive */
@@ -520,15 +520,15 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 				return 1;
 			}
 
-			if (ptr == NULL && egg_strequal (section, "options")) {
+			if (ptr == NULL && g_strcmp0 (section, "options") == 0) {
 				/* directives without settings, all in [options] */
-				if (egg_strequal (key, "NoPassiveFTP")) {
+				if (g_strcmp0 (key, "NoPassiveFTP") == 0) {
 					alpm_option_set_nopassiveftp (1);
 					egg_debug ("config: nopassiveftp");
-				} else if (egg_strequal (key, "UseSyslog")) {
+				} else if (g_strcmp0 (key, "UseSyslog") == 0) {
 					alpm_option_set_usesyslog (1);
 					egg_debug ("config: usesyslog");
-				} else if (egg_strequal (key, "UseDelta")) {
+				} else if (g_strcmp0 (key, "UseDelta") == 0) {
 					alpm_option_set_usedelta (1);
 					egg_debug ("config: usedelta");
 				} else {
@@ -537,45 +537,45 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 				}
 			} else {
 				/* directives with settings */
-				if (egg_strequal (key, "Include")) {
+				if (g_strcmp0 (key, "Include") == 0) {
 					egg_debug ("config: including %s", ptr);
 					parse_config(ptr, section, db);
 					/* Ignore include failures... assume non-critical */
-				} else if (egg_strequal (section, "options")) {
-					if (egg_strequal (key, "NoUpgrade")) {
+				} else if (g_strcmp0 (section, "options") == 0) {
+					if (g_strcmp0 (key, "NoUpgrade") == 0) {
 						set_repeating_option (ptr, "NoUpgrade", alpm_option_add_noupgrade);
-					} else if (egg_strequal (key, "NoExtract")) {
+					} else if (g_strcmp0 (key, "NoExtract") == 0) {
 						set_repeating_option (ptr, "NoExtract", alpm_option_add_noextract);
-					} else if (egg_strequal (key, "IgnorePkg")) {
+					} else if (g_strcmp0 (key, "IgnorePkg") == 0) {
 						set_repeating_option (ptr, "IgnorePkg", alpm_option_add_ignorepkg);
-					} else if (egg_strequal (key, "IgnoreGroup")) {
+					} else if (g_strcmp0 (key, "IgnoreGroup") == 0) {
 						set_repeating_option (ptr, "IgnoreGroup", alpm_option_add_ignoregrp);
-					} else if (egg_strequal (key, "HoldPkg")) {
+					} else if (g_strcmp0 (key, "HoldPkg") == 0) {
 						set_repeating_option (ptr, "HoldPkg", alpm_option_add_holdpkg);
-					} else if (egg_strequal (key, "SyncFirst")) {
+					} else if (g_strcmp0 (key, "SyncFirst") == 0) {
 						set_repeating_option (ptr, "SyncFirst", option_add_syncfirst);
-					} else if (egg_strequal (key, "DBPath")) {
+					} else if (g_strcmp0 (key, "DBPath") == 0) {
 						alpm_option_set_dbpath (ptr);
-					} else if (egg_strequal (key, "CacheDir")) {
+					} else if (g_strcmp0 (key, "CacheDir") == 0) {
 						if (alpm_option_add_cachedir(ptr) != 0) {
 							egg_error ("problem adding cachedir '%s' (%s)", ptr, alpm_strerrorlast ());
 							return 1;
 						}
 						egg_debug ("config: cachedir: %s", ptr);
-					} else if (egg_strequal (key, "RootDir")) {
+					} else if (g_strcmp0 (key, "RootDir") == 0) {
 						alpm_option_set_root (ptr);
 						egg_debug ("config: rootdir: %s", ptr);
-					} else if (egg_strequal (key, "LogFile")) {
+					} else if (g_strcmp0 (key, "LogFile") == 0) {
 						alpm_option_set_logfile (ptr);
 						egg_debug ("config: logfile: %s", ptr);
-					} else if (egg_strequal (key, "XferCommand")) {
+					} else if (g_strcmp0 (key, "XferCommand") == 0) {
 						alpm_option_set_xfercommand (ptr);
 						egg_debug ("config: xfercommand: %s", ptr);
 					} else {
 						egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 						return 1;
 					}
-				} else if (egg_strequal (key, "Server")) {
+				} else if (g_strcmp0 (key, "Server") == 0) {
 					/* let's attempt a replacement for the current repo */
 					char *server = strreplace (ptr, "$repo", section);
 
@@ -1004,7 +1004,7 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 				match = TRUE;
 				break;
 			case PK_ALPM_SEARCH_TYPE_RESOLVE:
-				match = egg_strequal (alpm_pkg_get_name (pkg), needle);
+				match = (g_strcmp0 (alpm_pkg_get_name(pkg), needle) == 0);
 				break;
 			case PK_ALPM_SEARCH_TYPE_NAME:
 				match = strstr (alpm_pkg_get_name (pkg), needle) != NULL;
@@ -1024,14 +1024,14 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 					gchar *group = (gchar *) g_hash_table_lookup (group_map, (char *) alpm_list_getdata (groups));
 					if (group == NULL)
 						group = (gchar *) "other";
-					match = egg_strequal (group, needle);
+					match = (g_strcmp0 (group, needle) == 0);
 				}
 				break;
 			case PK_ALPM_SEARCH_TYPE_PROVIDES:
 				match = FALSE;
 				/* iterate provides */
 				for (provides = alpm_pkg_get_provides (pkg); provides && !match; provides = alpm_list_next (provides))
-					match = egg_strequal (needle, alpm_list_getdata (provides));
+					match = (g_strcmp0 (needle, alpm_list_getdata(provides)) == 0);
 				break;
 			default:
 				match = FALSE;

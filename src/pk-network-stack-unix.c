@@ -79,11 +79,11 @@ pk_network_stack_unix_is_valid (const gchar *line)
 	}
 
 	/* is header? */
-	if (egg_strequal (sections[0], "Iface"))
+	if (g_strcmp0 (sections[0], "Iface") == 0)
 		goto out;
 
 	/* is loopback? */
-	if (egg_strequal (sections[0], "lo"))
+	if (g_strcmp0 (sections[0], "lo") == 0)
 		goto out;
 
 	/* is correct parameters? */
@@ -94,14 +94,14 @@ pk_network_stack_unix_is_valid (const gchar *line)
 	}
 
 	/* is destination zero (default route)? */
-	if (egg_strequal (sections[1], "00000000")) {
+	if (g_strcmp0 (sections[1], "00000000") == 0) {
 		egg_debug ("destination %s is valid", sections[0]);
 		online = TRUE;
 		goto out;
 	}
 
 	/* is gateway nonzero? */
-	if (!egg_strequal (sections[2], "00000000")) {
+	if (g_strcmp0 (sections[2], "00000000") != 0) {
 		egg_debug ("interface %s is valid", sections[0]);
 		online = TRUE;
 		goto out;

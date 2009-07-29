@@ -380,7 +380,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
-	if (egg_strequal (reason, "resume"))
+	if (g_strcmp0 (reason, "resume") == 0)
 		is_priority = FALSE;
 
 	/* are we normal, and already scheduled normal? */

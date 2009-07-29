@@ -366,12 +366,12 @@ pk_desktop_test (EggTest *test)
 	package = pk_desktop_get_package_for_file (desktop, "/usr/share/applications/gpk-update-viewer.desktop", NULL);
 
 	/* dummy, not yum */
-	if (egg_strequal (package, "vips-doc")) {
+	if (g_strcmp0 (package, "vips-doc") == 0) {
 		egg_test_success (test, "created db with dummy, skipping remaining tests");
 		goto out;
 	}
 
-	if (egg_strequal (package, "gnome-packagekit"))
+	if (g_strcmp0 (package, "gnome-packagekit") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "package was: %s", package);

@@ -2308,7 +2308,7 @@ pk_backend_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
-	if (egg_strequal(text, "dummy"))
+	if (g_strcmp0 (text, "dummy") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid name %s", text);

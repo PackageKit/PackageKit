@@ -3408,7 +3408,7 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files_
 	for (i=0; i<length; i++) {
 		file = pk_resolve_local_path (files[i]);
 		/* only replace if different */
-		if (!egg_strequal (file, files[i])) {
+		if (g_strcmp0 (file, files[i]) != 0) {
 			egg_debug ("resolved %s to %s", files[i], file);
 			/* replace */
 			g_free (files[i]);
@@ -4949,7 +4949,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "test resolve /etc/hosts");
 	file = pk_resolve_local_path ("/etc/hosts");
-	if (file != NULL && egg_strequal (file, "/etc/hosts"))
+	if (file != NULL && g_strcmp0 (file, "/etc/hosts") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got: %s", file);
@@ -4958,7 +4958,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "test resolve /etc/../etc/hosts");
 	file = pk_resolve_local_path ("/etc/../etc/hosts");
-	if (file != NULL && egg_strequal (file, "/etc/hosts"))
+	if (file != NULL && g_strcmp0 (file, "/etc/hosts") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got: %s", file);

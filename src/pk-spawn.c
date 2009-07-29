@@ -473,7 +473,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	 *  - argv[0] (executable name is the same)
 	 *  - all of envp are the same (proxy and locale settings) */
 	if (spawn->priv->stdin_fd != -1) {
-		if (!egg_strequal (spawn->priv->last_argv0, argv[0])) {
+		if (g_strcmp0 (spawn->priv->last_argv0, argv[0]) != 0) {
 			egg_debug ("argv did not match, not reusing");
 		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
 			egg_debug ("envp did not match, not reusing");

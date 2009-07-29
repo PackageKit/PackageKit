@@ -419,7 +419,7 @@ pk_package_list_test (EggTest *test)
 	egg_test_title (test, "make sure argv is correct");
 	argv = pk_package_list_to_strv (plist);
 	if (argv != NULL &&
-	    egg_strequal (argv[0], "gnome;1.23;i386;data") &&
+	    g_strcmp0 (argv[0], "gnome;1.23;i386;data") == 0 &&
 	    argv[1] == NULL)
 		egg_test_success (test, NULL);
 	else
@@ -446,7 +446,7 @@ pk_package_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "add entry");
 	text = pk_obj_list_to_string (PK_OBJ_LIST(plist));
-	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
+	if (g_strcmp0 (text, "installed\tgnome;1.23;i386;data\tGNOME!") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "get string incorrect '%s'", text);
@@ -493,9 +493,9 @@ pk_package_list_test (EggTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
-	    egg_strequal (r1_text, "def;1.23;i386;data") &&
-	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
+	if (g_strcmp0 (r0_text, "abc;1.23;i386;data") == 0 &&
+	    g_strcmp0 (r1_text, "def;1.23;i386;data") == 0 &&
+	    g_strcmp0 (r2_text, "ghi;1.23;i386;data") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);
@@ -509,9 +509,9 @@ pk_package_list_test (EggTest *test)
 	r0 = pk_package_list_get_obj (plist, 0);
 	r1 = pk_package_list_get_obj (plist, 1);
 	r2 = pk_package_list_get_obj (plist, 2);
-	if (egg_strequal (r0->summary, "aed") &&
-	    egg_strequal (r1->summary, "fed") &&
-	    egg_strequal (r2->summary, "zed"))
+	if (g_strcmp0 (r0->summary, "aed") == 0 &&
+	    g_strcmp0 (r1->summary, "fed") == 0 &&
+	    g_strcmp0 (r2->summary, "zed") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
@@ -555,9 +555,9 @@ pk_package_list_test (EggTest *test)
 	r0_text = pk_package_id_to_string (r0->id);
 	r1_text = pk_package_id_to_string (r1->id);
 	r2_text = pk_package_id_to_string (r2->id);
-	if (egg_strequal (r0_text, "abc;1.23;i386;data") &&
-	    egg_strequal (r1_text, "def;1.23;i386;data") &&
-	    egg_strequal (r2_text, "ghi;1.23;i386;data"))
+	if (g_strcmp0 (r0_text, "abc;1.23;i386;data") == 0 &&
+	    g_strcmp0 (r1_text, "def;1.23;i386;data") == 0 &&
+	    g_strcmp0 (r2_text, "ghi;1.23;i386;data") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "could not sort: %s,%s,%s", r0_text, r1_text, r2_text);

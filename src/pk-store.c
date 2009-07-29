@@ -418,7 +418,7 @@ pk_store_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get a blank string");
 	data_string = pk_store_get_string (store, "dave2");
-	if (egg_strequal (data_string, ""))
+	if (g_strcmp0 (data_string, "") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "data was %s", data_string);
@@ -457,7 +457,7 @@ pk_store_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get a string");
 	data_string = pk_store_get_string (store, "dave");
-	if (egg_strequal (data_string, "ania"))
+	if (g_strcmp0 (data_string, "ania") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "data was %s", data_string);

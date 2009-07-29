@@ -104,7 +104,7 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		tmptid = pk_transaction_get_tid (item->transaction);
-		if (egg_strequal (tmptid, tid))
+		if (g_strcmp0 (tmptid, tid) == 0)
 			return item;
 	}
 	return NULL;
@@ -958,7 +958,7 @@ pk_transaction_list_test (EggTest *test)
 	egg_test_title (test, "make sure we get the right object back");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
-	    egg_strequal (item->tid, tid) &&
+	    (g_strcmp0 (item->tid, tid) == 0) &&
 	    item->transaction != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -1045,7 +1045,7 @@ pk_transaction_list_test (EggTest *test)
 	egg_test_title (test, "get from db");
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL &&
-	    egg_strequal (item->tid, tid) &&
+	    (g_strcmp0 (item->tid, tid) == 0) &&
 	    item->transaction != NULL)
 		egg_test_success (test, NULL);
 	else

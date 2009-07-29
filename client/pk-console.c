@@ -2287,7 +2287,7 @@ egg_test_console (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "pad smaller");
 	text_safe = pk_strpad ("richard", 10);
-	if (egg_strequal (text_safe, "richard   "))
+	if (g_strcmp0 (text_safe, "richard   ") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the padd '%s'", text_safe);
@@ -2296,7 +2296,7 @@ egg_test_console (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "pad NULL");
 	text_safe = pk_strpad (NULL, 10);
-	if (egg_strequal (text_safe, "          "))
+	if (g_strcmp0 (text_safe, "          ") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the padd '%s'", text_safe);
@@ -2305,7 +2305,7 @@ egg_test_console (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "pad nothing");
 	text_safe = pk_strpad ("", 10);
-	if (egg_strequal (text_safe, "          "))
+	if (g_strcmp0 (text_safe, "          ") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the padd '%s'", text_safe);
@@ -2314,7 +2314,7 @@ egg_test_console (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "pad over");
 	text_safe = pk_strpad ("richardhughes", 10);
-	if (egg_strequal (text_safe, "richardhughes"))
+	if (g_strcmp0 (text_safe, "richardhughes") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the padd '%s'", text_safe);
@@ -2323,7 +2323,7 @@ egg_test_console (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "pad zero");
 	text_safe = pk_strpad ("rich", 0);
-	if (egg_strequal (text_safe, "rich"))
+	if (g_strcmp0 (text_safe, "rich") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the padd '%s'", text_safe);

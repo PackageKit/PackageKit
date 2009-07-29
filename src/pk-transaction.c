@@ -1911,7 +1911,7 @@ pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation 
 
 	/* check is the same as the sender that did GetTid */
 	sender = dbus_g_method_get_sender (context);
-	ret = egg_strequal (transaction->priv->sender, sender);
+	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 				      "sender does not match (%s vs %s)", sender, transaction->priv->sender);
@@ -4644,7 +4644,7 @@ egg_test_transaction (EggTest *test)
 #ifdef USE_SECURITY_POLKIT
 	egg_test_title (test, "map valid role to action");
 	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
+	if (g_strcmp0 (action, "org.freedesktop.packagekit.system-update") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get correct action '%s'", action);

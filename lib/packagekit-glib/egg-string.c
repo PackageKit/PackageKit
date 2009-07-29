@@ -46,43 +46,6 @@
 #include "egg-string.h"
 
 /**
- * egg_strnumber:
- * @text: The text the validate
- *
- * Tests a string to see if it is a number. Both positive and negative numbers
- * are allowed.
- *
- * Return value: %TRUE if the string represents a numeric value
- **/
-gboolean
-egg_strnumber (const gchar *text)
-{
-	guint i;
-	guint length;
-
-	/* check explicitly */
-	if (egg_strzero (text))
-		return FALSE;
-
-	/* max length is 10 */
-	length = egg_strlen (text, 10);
-	if (length == 10) {
-		egg_warning ("input too long: %s", text);
-		return FALSE;
-	}
-
-	for (i=0; i<length; i++) {
-		if (i == 0 && text[i] == '-') {
-			/* negative sign */
-		} else if (g_ascii_isdigit (text[i]) == FALSE) {
-			egg_warning ("not a number '%c' in text!", text[i]);
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-/**
  * egg_strtoint:
  * @text: The text the convert
  * @value: The return numeric return value
@@ -201,24 +164,6 @@ egg_strlen (const gchar *text, guint len)
 }
 
 /**
- * egg_strequal:
- * @id1: the first item of text to test
- * @id2: the second item of text to test
- *
- * This function is a much safer way of doing strcmp as it checks for
- * NULL first, and returns boolean TRUE, not zero for success.
- *
- * Return value: %TRUE if the string are both non-%NULL and the same.
- **/
-gboolean
-egg_strequal (const gchar *id1, const gchar *id2)
-{
-	if (id1 == NULL || id2 == NULL)
-		return FALSE;
-	return (strcmp (id1, id2) == 0);
-}
-
-/**
  * egg_strvequal:
  * @id1: the first item of text to test
  * @id2: the second item of text to test
@@ -250,7 +195,7 @@ egg_strvequal (gchar **id1, gchar **id2)
 
 	/* text equal each one */
 	for (i=0; i<length1; i++) {
-		if (!egg_strequal (id1[i], id2[i]))
+		if (g_strcmp0 (id1[i], id2[i]) != 0)
 			return FALSE;
 	}
 
@@ -306,23 +251,6 @@ egg_string_test (EggTest *test)
 
 	if (!egg_test_start (test, "EggString"))
 		return;
-
-	/************************************************************
-	 ****************       String equal       ******************
-	 ************************************************************/
-	egg_test_title (test, "egg_strequal same argument");
-	temp = "dave";
-	if (egg_strequal (temp, temp))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect ret when both same");
-
-	/************************************************************/
-	egg_test_title (test, "egg_strequal both const");
-	if (egg_strequal ("dave", "dave"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect ret when both same");
 
 	/************************************************************
 	 ****************    String array equal    ******************
@@ -397,12 +325,12 @@ egg_string_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "id strcmp pass");
-	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
+	ret = (g_strcmp0 ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora") == 0);
 	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "id strcmp fail");
-	ret = egg_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
+	ret = (g_strcmp0 ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora") == 0);
 	egg_test_assert (test, !ret);
 
 	/************************************************************
@@ -436,7 +364,7 @@ egg_string_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "replace start");
 	text_safe = egg_strreplace ("richard\nhughes", "r", "e");
-	if (egg_strequal (text_safe, "eichaed\nhughes"))
+	if (g_strcmp0 (text_safe, "eichaed\nhughes") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
@@ -445,7 +373,7 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "replace none");
 	text_safe = egg_strreplace ("richard\nhughes", "dave", "e");
-	if (egg_strequal (text_safe, "richard\nhughes"))
+	if (g_strcmp0 (text_safe, "richard\nhughes") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
@@ -454,7 +382,7 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "replace end");
 	text_safe = egg_strreplace ("richard\nhughes", "s", "e");
-	if (egg_strequal (text_safe, "richard\nhughee"))
+	if (g_strcmp0 (text_safe, "richard\nhughee") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
@@ -463,58 +391,11 @@ egg_string_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "replace unicode");
 	text_safe = egg_strreplace ("richard\n- hughes", "\n- ", "\n• ");
-	if (egg_strequal (text_safe, "richard\n• hughes"))
+	if (g_strcmp0 (text_safe, "richard\n• hughes") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed the replace '%s'", text_safe);
 	g_free (text_safe);
-
-	/************************************************************
-	 **************       Check for numbers      ****************
-	 ************************************************************/
-	egg_test_title (test, "check number valid");
-	ret = egg_strnumber ("123");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number valid");
-	ret = egg_strnumber ("-123");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number zero");
-	ret = egg_strnumber ("0");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number oversize");
-	ret = egg_strnumber ("123456891234");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number NULL");
-	ret = egg_strnumber (NULL);
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number blank");
-	ret = egg_strnumber ("");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number not negative");
-	ret = egg_strnumber ("503-");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number positive");
-	ret = egg_strnumber ("+503");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "check number random chars");
-	ret = egg_strnumber ("dave");
-	egg_test_assert (test, !ret);
 
 	/************************************************************
 	 **************        Convert numbers       ****************

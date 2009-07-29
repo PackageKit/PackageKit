@@ -1018,7 +1018,7 @@ pk_enum_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file"))
+	if (g_strcmp0 (string, "search-file") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
@@ -1034,7 +1034,7 @@ pk_enum_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file"))
+	if (g_strcmp0 (string, "search-file") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
