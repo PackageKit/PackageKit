@@ -97,6 +97,10 @@ egg_strtoint (const gchar *text, gint *value)
 	gchar *endptr = NULL;
 	gint64 value_raw;
 
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
+
 	/* parse */
 	value_raw = g_ascii_strtoll (text, &endptr, 10);
 
@@ -127,6 +131,10 @@ egg_strtouint (const gchar *text, guint *value)
 {
 	gchar *endptr = NULL;
 	guint64 value_raw;
+
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
 
 	/* parse */
 	value_raw = g_ascii_strtoull (text, &endptr, 10);
@@ -533,6 +541,14 @@ egg_string_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "value is %i", value);
+
+	/************************************************************/
+	egg_test_title (test, "convert NULL to a number");
+	ret = egg_strtouint (NULL, &uvalue);
+	if (!ret)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "value is %i", uvalue);
 
 	/************************************************************/
 	egg_test_title (test, "convert valid uint number");
