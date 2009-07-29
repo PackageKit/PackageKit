@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,6 +22,7 @@ This is a module for dealing with removable media
 NOTE: releasing (unmounting and unlocking) is done when media is destructed
 """
 
+
 class MediaDevice(object):
     """
     You should just use acquire() to get the mount point (the implementation is
@@ -39,6 +39,10 @@ class MediaDevice(object):
         raise NotImplemented
 
     def __del__(self):
+        """
+        destruct the object, unmount and unlock if needed.
+        no need to re-implement this method when you derive from this class.
+        """
         if self._unmount_needed:
             self.unmount()
         if self._unlocked_needed:
@@ -54,25 +58,42 @@ class MediaDevice(object):
         raise NotImplemented
 
     def get_mount_point(self):
+        """return the mount point or None if not mounted"""
         raise NotImplemented
 
     def lock(self):
+        """return True if lock is successfully acquired."""
         raise NotImplemented
 
     def unlock(self):
+        """return True if it was able to release the lock successfully."""
         raise NotImplemented
 
     def mount(self):
+        """
+        mount the device and return the mount point.
+        If it's already mounted, just return the mount point.
+        """
         raise NotImplemented
 
     def unmount(self):
+        """unmount the device and return True."""
         raise NotImplemented
 
+    # no need to re-implement the following methods when you derive from this class
     def acquire(self):
-        raise NotImplemented
+        """
+        return the mount point, lock and mount the device if needed
+        """
+        self.lock()
+        return self.mount()
 
     def release(self):
-        raise NotImplemented
+        """
+        unmount and release lock. no need to call this method, just destruct the object.
+        """
+        self.unlock()
+        return self.unmount()
 
 class MediaManager (object):
     """Just iterate over an instance of this class to get MediaDevice objects"""

@@ -2843,7 +2843,12 @@ class PackageKitYumBase(yum.YumBase):
         discs_s = ''
         found = False
 
-        manager = MediaManager()
+        try:
+            manager = MediaManager()
+        except NotImplemented:
+            # yumRepo will catch this
+            raise yum.Errors.MediaError, "media handling is not implemented"
+
         media = None
         found = False
 
