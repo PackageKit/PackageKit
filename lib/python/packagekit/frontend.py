@@ -49,12 +49,16 @@ class PackageKit(PackageKitDbusInterface):
         return dbus.Interface(bus.get_object('org.freedesktop.PackageKit', self.tid()), interface)
 
     def job_id(func):
+        """
+        Decorator for the dbus calls.
+        Append async=True to the args if you want the call to be asynchronous.
+        """
         def wrapper(*args, **kwargs):
             self = args[0]
             jid = polkit_auth_wrapper(func, *args)
             if jid == -1:
                 raise PackageKitTransactionFailure
-            elif jid == None:
+            elif not 'async' in kwargs.keys() and jid == None:
                 self.run()
             else:
                 return jid
@@ -301,12 +305,12 @@ class PackageKit(PackageKitDbusInterface):
 
     @dbusException
     @job_id
-    def Resolve(self, package_name, filter="none"):
+    def Resolve(self, package_names, filter="none"):
         """
-        Finds a package with the given name, and gives back a Package that matches that name exactly
+        Finds a packages with the given names, and gives back a Package that matches those names exactly
         (not yet supported in yum backend, and maybe others)
         """
-        return self.get_iface().Resolve(filter, package_name)
+        return self.get_iface().Resolve(filter, package_names)
 
     @dbusException
     @job_id
