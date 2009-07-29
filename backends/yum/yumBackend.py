@@ -1417,6 +1417,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             bump = (95/len(self.yumbase.repos.listEnabled()))/2
 
             for repo in self.yumbase.repos.listEnabled():
+                # is physical media
+                if repo.mediaid:
+                    continue
                 repo.metadata_expire = 0
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
                 pct += bump
@@ -2479,12 +2482,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # we don't care about freshest data
         elif lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
+                # is physical media
+                if repo.mediaid:
+                    continue
                 repo.metadata_expire = 60 * 60 * 24  # 24 hours
                 repo.mdpolicy = "group:all"
 
         # default
         else:
             for repo in self.yumbase.repos.listEnabled():
+                # is physical media
+                if repo.mediaid:
+                    continue
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
                 repo.mdpolicy = "group:primary"
 
