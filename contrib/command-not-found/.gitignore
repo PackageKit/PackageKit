@@ -2,4 +2,5 @@
 .libs
 *.o
 pk-command-not-found
+PackageKit.sh
 

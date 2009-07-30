@@ -7,6 +7,6 @@
 # (at your option) any later version.
 
 command_not_found_handle () {
-	/usr/libexec/pk-command-not-found $1 || return 127
+	@LIBEXECDIR@/pk-command-not-found $1 || return 127
 }
 
