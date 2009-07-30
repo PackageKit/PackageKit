@@ -1407,6 +1407,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # Setup categories/groups
             try:
                 self.yumbase.doGroupSetup()
+            except yum.Errors.GroupsError, e:
+                pass
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             #we might have a rounding error
