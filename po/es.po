@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-23 14:41+0000\n"
-"PO-Revision-Date: 2009-07-23 15:11-0300\n"
+"POT-Creation-Date: 2009-07-30 08:45+0000\n"
+"PO-Revision-Date: 2009-07-30 10:02-0300\n"
 "Last-Translator: Héctor Daniel Cabrera <h.daniel.cabrera@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -47,7 +47,7 @@ msgstr "Falso"
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:237
-#: ../src/pk-polkit-action-lookup.c:256
+#: ../src/pk-polkit-action-lookup.c:297
 msgid "Role"
 msgstr "Rol"
 
@@ -63,7 +63,7 @@ msgstr "(segundos)"
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:246
-#: ../src/pk-polkit-action-lookup.c:270
+#: ../src/pk-polkit-action-lookup.c:311
 msgid "Command line"
 msgstr "Línea de comandos"
 
@@ -138,9 +138,14 @@ msgid "Details about the update:"
 msgstr "Detalles acerca de la actualización:"
 
 #. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:341
+#: ../src/pk-polkit-action-lookup.c:322
+#, fuzzy
 msgid "Package"
-msgstr "Paquete"
+msgid_plural "Packages"
+msgstr[0] "Paquete"
+msgstr[1] "Paquete"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:344
@@ -448,7 +453,7 @@ msgstr "No se encontró ningún paquete para instalar"
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #: ../client/pk-console.c:1381
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:868
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
 #, c-format
 msgid "Installing packages"
 msgstr "Instalando paquetes"
@@ -540,8 +545,8 @@ msgstr "Subcomandos:"
 #: ../client/pk-console.c:1781
 #: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:128
-#: ../contrib/command-not-found/pk-command-not-found.c:521
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:532
+#: ../contrib/command-not-found/pk-command-not-found.c:610
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Mostrar información extra de depuración"
@@ -844,72 +849,92 @@ msgstr "Elija el paquete correcto: "
 msgid "Please enter a number from 1 to %i: "
 msgstr "Introduzca un número de 1 a %i: "
 
+#. TRANSLATORS: downloading repo data so we can search
+#: ../contrib/command-not-found/pk-command-not-found.c:349
+msgid "Downloading details about the software sources."
+msgstr "Descargando detalles acerca de las fuentes de software"
+
+#. TRANSLATORS: downloading file lists so we can search
+#: ../contrib/command-not-found/pk-command-not-found.c:353
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Descargando listas de archivo (esto podría tardar un tiempo en completarse)."
+
+#. TRANSLATORS: waiting for native lock
+#: ../contrib/command-not-found/pk-command-not-found.c:357
+msgid "Waiting for package manager lock."
+msgstr "Esperando bloqueo del administrador de paquetes."
+
+#. TRANSLATORS: loading package cache so we can search
+#: ../contrib/command-not-found/pk-command-not-found.c:361
+msgid "Loading list of packages."
+msgstr "Cargando listas de paquetes"
+
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:372
+#: ../contrib/command-not-found/pk-command-not-found.c:414
 msgid "Failed to search for file"
 msgstr "Falló al buscar el archivo"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:496
+#: ../contrib/command-not-found/pk-command-not-found.c:551
 msgid "Failed to launch:"
 msgstr "Falló al iniciar:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:537
+#: ../contrib/command-not-found/pk-command-not-found.c:626
 msgid "PackageKit Command Not Found"
 msgstr "No se encontró el comando PackageKit"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:560
+#: ../contrib/command-not-found/pk-command-not-found.c:652
 msgid "Command not found."
 msgstr "Comando no encontrado."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:567
+#: ../contrib/command-not-found/pk-command-not-found.c:659
 msgid "Similar command is:"
 msgstr "Un comando similar es:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:576
+#: ../contrib/command-not-found/pk-command-not-found.c:668
 msgid "Run similar command:"
 msgstr "Ejecutar un comando similar:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:588
-#: ../contrib/command-not-found/pk-command-not-found.c:597
+#: ../contrib/command-not-found/pk-command-not-found.c:680
+#: ../contrib/command-not-found/pk-command-not-found.c:689
 msgid "Similar commands are:"
 msgstr "Los comandos similares son:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:604
+#: ../contrib/command-not-found/pk-command-not-found.c:696
 msgid "Please choose a command to run"
 msgstr "Elija un comando para ejecutar"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:619
+#: ../contrib/command-not-found/pk-command-not-found.c:715
 msgid "The package providing this file is:"
 msgstr "El paquete que proporciona este archivo es:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:624
+#: ../contrib/command-not-found/pk-command-not-found.c:720
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "¿Instalar el paquete «%s» para proporcionar el comando «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:645
+#: ../contrib/command-not-found/pk-command-not-found.c:741
 msgid "Packages providing this file are:"
 msgstr "Los paquetes que proporcionan este archivo son:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:654
+#: ../contrib/command-not-found/pk-command-not-found.c:750
 msgid "Suitable packages are:"
 msgstr "Los posibles paquetes son:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:662
+#: ../contrib/command-not-found/pk-command-not-found.c:758
 msgid "Please choose a package to install"
 msgstr "Elija un paquete para instalar"
 
@@ -968,185 +993,185 @@ msgid "Installing..."
 msgstr "Instalando..."
 
 #. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:186
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
 msgid "Starting install"
 msgstr "Iniciando la instalación"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:379
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "No se ha podido encontrar el paquete %s, o tal vez ya se encuentre instalado: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
 msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "No se instala ningún paquete realmente, solo se indica cuáles serían instalados"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:538
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 msgid "Do not install dependencies of the core packages"
 msgstr "No se instalan dependencias de los paquetes principales"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:541
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
 msgid "Do not display information or progress"
 msgstr "No se muestra información ni progreso"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
 msgid "PackageKit Debuginfo Installer"
 msgstr "Instalador de depuración de errores de PackageKit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:571
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ERROR: Debe especificar los nombres de los paquetes a instalar."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:605
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
 #, c-format
 msgid "Getting sources list"
 msgstr "Obteniendo lista desde las fuentes"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:663
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:698
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:893
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:937
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:626
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Se han encontrado %i fuentes activas y %i fuentes deshabilitadas."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Buscando fuentes para depuración"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:666
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Se han encontrado %i repositorios deshabilitados para depuración."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:673
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Habilitando fuentes para depuración"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:767
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:878
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:922
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
 msgid "FAILED."
 msgstr "FALLO."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Se han habilitado %i fuentes para depuración."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:708
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Buscando paquetes de depuración."
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:720
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Falló al buscar el paquete %s: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:743
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Fallo al buscar el paquete de depuración %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
 #, c-format
 msgid "Found no packages to install."
 msgstr "No se han encontrado paquetes para instalar."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
 #, c-format
 msgid "Found %i packages:"
 msgstr "Se han encontrado %i paquetes:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:801
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Buscando paquetes que dependan de esos paquetes."
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:814
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "No se han podido encontrar paquetes dependientes: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Se han encontrado %i paquetes extra."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:834
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
 #, c-format
 msgid "No extra packages required."
 msgstr "No son necesarios paquetes extra."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Se han encontrado %i paquetes para instalar:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:856
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "No se instalan paquetes en modo de simulación"
 
-#. TRANSLATORS: coul dnot install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:881
+#. TRANSLATORS: could not install, detailed error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "No se han podido instalar paquetes: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:913
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Deshabilitando fuentes previamente habilitadas"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:925
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "No es posible deshabilitar las fuentes para depuración:%s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Se han deshabilitado %i fuentes para la depuración. "
@@ -1375,7 +1400,7 @@ msgid "Cannot connect to the system bus"
 msgstr "No se pudo conectar con el bus del sistema"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
-#: ../src/pk-main.c:331
+#: ../src/pk-main.c:334
 msgid "Error trying to start:"
 msgstr "Error intentando iniciar:"
 
@@ -1406,7 +1431,7 @@ msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "No instale este paquete a menos que sepa con certeza que es seguro hacerlo."
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:263
+#: ../src/pk-polkit-action-lookup.c:304
 msgid "Only trusted"
 msgstr "Solo confiable"
 
