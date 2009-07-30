@@ -1018,7 +1018,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # TODO: manage config file updates
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(None)
 
         cpv_list = []
@@ -1075,7 +1075,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # TODO: do not wait for exception, check timestamp
         # TODO: message if overlay repo has changed (layman)
         self.status(STATUS_REFRESH_CACHE)
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(None)
 
         myopts = {'--quiet': True}
@@ -1095,14 +1095,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             for o in installed_layman_db.overlays.keys():
                 installed_layman_db.sync(o, True)
             _emerge.actions.action_sync(settings, trees, mtimedb, myopts, "")
+        finally:
             self.unblock_output()
         except:
-            self.unblock_output()
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, allowdep, autoremove, pkgs):
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(None)
 
         cpv_list = []
@@ -1413,7 +1413,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         # TODO: manage config file updates
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(None)
 
         cpv_list = []
@@ -1462,7 +1462,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def update_system(self, only_trusted):
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(None)
 
         if only_trusted:
