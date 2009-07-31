@@ -101,7 +101,7 @@ class MediaDeviceOS(MediaDevice):
         if mnt!=None: return mnt
         # do the actual mounting
         mnt=mkdtemp(prefix='MediaRepo')
-        r=os.system('mount "%s" "%s"' % (self.__d, mnt))
+        r=os.system('mount -t udf,iso9660 "%s" "%s"' % (self.__d, mnt))
         if r:
             try: os.rmdir(mnt)
             except OSError: pass
