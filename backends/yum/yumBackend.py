@@ -2510,6 +2510,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # should we suggest yum-complete-transaction?
+        unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)
+        if unfinished:
+            raise PkError(ERROR_FAILED_INITIALIZATION, 'There are unfinished transactions remaining. Please run yum-complete-transaction as root.')
+
         # default to 100% unless method overrides
         self.yumbase.conf.throttle = "90%"
 
