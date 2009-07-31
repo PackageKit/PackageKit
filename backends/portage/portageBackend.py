@@ -1095,10 +1095,10 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             for o in installed_layman_db.overlays.keys():
                 installed_layman_db.sync(o, True)
             _emerge.actions.action_sync(settings, trees, mtimedb, myopts, "")
-        finally:
-            self.unblock_output()
         except:
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
+        finally:
+            self.unblock_output()
 
     def remove_packages(self, allowdep, autoremove, pkgs):
         self.status(STATUS_RUNNING)
