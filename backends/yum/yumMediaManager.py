@@ -35,7 +35,7 @@ class MediaDevice(object):
         media_id argument is the implementation-specific id, provided by MediaManager.
         """
         self._unmount_needed = False
-        self._unlocked_needed = False
+        self._unlock_needed = False
         raise NotImplemented
 
     def __del__(self):
@@ -45,7 +45,7 @@ class MediaDevice(object):
         """
         if self._unmount_needed:
             self.unmount()
-        if self._unlocked_needed:
+        if self._unlock_needed:
             self.unlock()
 
     def is_removable(self):
