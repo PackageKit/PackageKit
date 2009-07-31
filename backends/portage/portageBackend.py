@@ -56,6 +56,7 @@ from itertools import izip
 # ERRORS with messages ?
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
+# lock ?
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -269,13 +270,21 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
 
-        self.portage_settings = portage.config()
+        self.psettings = portage.config()
         self.vardb = portage.db[portage.settings["ROOT"]]["vartree"].dbapi
         #self.portdb = portage.db[portage.settings["ROOT"]]["porttree"].dbapi
 
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
         self.orig_err = None
+
+        # do not log with mod_echo
+        #def filter_echo(x): return x != 'echo'
+
+        #elogs = self.psettings["PORTAGE_ELOG_SYSTEM"].split()
+        #print elogs
+        #elogs = filter(filter_echo, elogs)
+        #print elogs
 
         if lock:
             self.doLock()
@@ -310,7 +319,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
         db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                self.portage_settings, treetype="vartree",
+                self.psettings, treetype="vartree",
                 vartree=self.vardb)
 
         contents = db.getcontents()
@@ -375,7 +384,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         def _has_validLicense(cpv):
             metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
-            return not self.portage_settings._getMissingLicenses(cpv, metadata)
+            return not self.psettings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
             free_licenses = "@FSF-APPROVED"
@@ -383,16 +392,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 licenses = "-* " + free_licenses
             else:
                 licenses = "* -" + free_licenses
-            backup_license = self.portage_settings["ACCEPT_LICENSE"]
-            self.portage_settings["ACCEPT_LICENSE"] = licenses
-            self.portage_settings.backup_changes("ACCEPT_LICENSE")
-            self.portage_settings.regenerate()
+            backup_license = self.psettings["ACCEPT_LICENSE"]
+            self.psettings["ACCEPT_LICENSE"] = licenses
+            self.psettings.backup_changes("ACCEPT_LICENSE")
+            self.psettings.regenerate()
 
             cpv_list = filter(_has_validLicense, cpv_list)
 
-            self.portage_settings["ACCEPT_LICENSE"] = backup_license
-            self.portage_settings.backup_changes("ACCEPT_LICENSE")
-            self.portage_settings.regenerate()
+            self.psettings["ACCEPT_LICENSE"] = backup_license
+            self.psettings.backup_changes("ACCEPT_LICENSE")
+            self.psettings.regenerate()
 
         return cpv_list
 
@@ -493,7 +502,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                 ["KEYWORDS", "repository", "SLOT"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.portage_settings["ACCEPT_KEYWORDS"].split()
+        sys_keywords = self.psettings["ACCEPT_KEYWORDS"].split()
         keywords = []
 
         for x in sys_keywords:
@@ -502,7 +511,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # if no keywords, check in package.keywords
         if not keywords:
-            key_dict = self.portage_settings.pkeywordsdict.get(portage.dep_getkey(cpv))
+            key_dict = self.psettings.pkeywordsdict.get(portage.dep_getkey(cpv))
             if key_dict:
                 for _, keys in key_dict.iteritems():
                     for x in keys:
@@ -909,7 +918,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
 
         settings, trees, _ = _emerge.actions.load_emerge_config()
-        root_config = trees[self.portage_settings["ROOT"]]["root_config"]
+        root_config = trees[self.psettings["ROOT"]]["root_config"]
 
         update_candidates = []
         cpv_updates = {}
@@ -1111,7 +1120,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         system_packages = []
 
         settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        root_config = trees[self.portage_settings["ROOT"]]["root_config"]
+        root_config = trees[self.psettings["ROOT"]]["root_config"]
 
         # get system packages
         set = portage.sets.base.InternalPackageSet(
