@@ -23,7 +23,7 @@ This module is inteded to be a proof of concept and it is not supposed to be use
 
 it's used like this
 
-    from yumMediaManager import MediaManager
+    from yumMediaManagerHAL import MediaManagerHAL as MediaManager
     manager = MediaManager()
     media, found = None, False
     for media in manager:
@@ -63,9 +63,8 @@ class MediaDeviceHAL(MediaDevice):
         media_id argument is the implementation-specific id in our case it's udi in hal, 
         it's provided by MediaManager.
         """
-        MediaDevice.__init__(self, media_id)
-        self.__unmount_needed = False
-        self.__unlocked_needed = False
+        self._unmount_needed = False
+        self._unlock_needed = False
         self.__uid = media_id
         self.__dev = bus.get_object("org.freedesktop.Hal", media_id)
         storage_uid = self.__dev.GetPropertyString('block.storage_device', dbus_interface = interface)
@@ -95,7 +94,7 @@ class MediaDeviceHAL(MediaDevice):
         # FIXME: it does not work, it returns None instead of True
         r = self.__dev.Lock('needed by Package Manager', dbus_interface = interface) != False
         # print r
-        self.__unlocked_needed |= bool(r)
+        self._unlock_needed |= bool(r)
         return r
 
     def unlock(self):
@@ -130,7 +129,7 @@ class MediaDeviceHAL(MediaDevice):
         if r != 0:
             return None
 
-        self.__unmount_needed = True
+        self._unmount_needed = True
         return self.get_mount_point() # return Mount point
 
     def unmount(self):
@@ -148,7 +147,6 @@ class MediaDeviceHAL(MediaDevice):
 class MediaManagerHAL(MediaManager):
     """Just iterate over an instance of this class to get MediaDevice objects"""
     def __init__(self):
-        MediaManager.__init__(self)
         self.__dev = bus.get_object("org.freedesktop.Hal", "/org/freedesktop/Hal/Manager")
 
     def __close_tray_and_be_ready(self):
@@ -163,7 +161,7 @@ class MediaManagerHAL(MediaManager):
         self.__close_tray_and_be_ready()
         # use volume.disc to restrict that to optical discs
         for i in self.__dev.FindDeviceByCapability('volume', dbus_interface = 'org.freedesktop.Hal.Manager'):
-            o = MediaDevice(i)
+            o = MediaDeviceHAL(i)
             if o.is_removable():
                 yield o
 
