@@ -120,8 +120,12 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	const gchar *cmdline;
 	const gchar *role_text;
 	const gchar *only_trusted_text;
+	const gchar *str;
+	const gchar *text;
 	gchar *message = NULL;
+	gchar **package_ids = NULL;
 	GString *string;
+	guint len = 1;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
 		goto out;
@@ -148,6 +152,14 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	if (only_trusted)
 		goto out;
 
+	/* find out the number of packages so we pluralize corectly */
+	str = polkit_details_lookup (details, "package_ids");
+	if (str != NULL) {
+		package_ids = pk_package_ids_from_text (str);
+		len = g_strv_length (package_ids);
+		g_strfreev (package_ids);
+	}
+
 	/* UpdatePackages */
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		string = g_string_new ("");
@@ -157,7 +169,11 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 		g_string_append (string, "\n");
 
 		/* TRANSLATORS: user has to trust provider -- I know, this sucks */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Do not update this package unless you are sure it is safe to do so.")));
+		text = g_dngettext (GETTEXT_PACKAGE,
+				    N_("Do not update this package unless you are sure it is safe to do so."),
+				    N_("Do not update these packages unless you are sure it is safe to do so."),
+				    len);
+		g_string_append (string, text);
 		g_string_append (string, "\n\n");
 
 		/* TRANSLATORS: warn the user that all bets are off */
@@ -176,7 +192,11 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 		g_string_append (string, "\n");
 
 		/* TRANSLATORS: user has to trust provider -- I know, this sucks */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Do not install this package unless you are sure it is safe to do so.")));
+		text = g_dngettext (GETTEXT_PACKAGE,
+				    N_("Do not install this package unless you are sure it is safe to do so."),
+				    N_("Do not install these packages unless you are sure it is safe to do so."),
+				    len);
+		g_string_append (string, text);
 		g_string_append (string, "\n\n");
 
 		/* TRANSLATORS: warn the user that all bets are off */
