@@ -495,6 +495,12 @@ dnl - Able to build pm-utils script functionality
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(pm_utils, AS_HELP_STRING([--enable-pm-utils],[Build pm-utils script functionality]),
 	      build_pm_utils=$enableval,build_pm_utils=yes)
+if test x$build_pm_utils = xyes; then
+	PKG_CHECK_MODULES(PM_UTILS, pm-utils,
+	                  build_pm_utils=yes, build_pm_utils=no)
+else
+	build_pm_utils=no
+fi
 AM_CONDITIONAL(PK_BUILD_PM_UTILS, test $build_pm_utils = "yes")
 
 dnl ---------------------------------------------------------------------------
