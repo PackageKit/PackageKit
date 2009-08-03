@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-28 08:41+0000\n"
-"PO-Revision-Date: 2009-07-28 16:11+0200\n"
+"POT-Creation-Date: 2009-08-03 14:45+0000\n"
+"PO-Revision-Date: 2009-08-03 20:42+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -41,7 +41,7 @@ msgstr "Fałsz"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:297
+#: ../client/pk-console.c:237 ../src/pk-polkit-action-lookup.c:331
 msgid "Role"
 msgstr "Rola"
 
@@ -56,7 +56,7 @@ msgstr "(sekundy)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:246 ../src/pk-polkit-action-lookup.c:311
+#: ../client/pk-console.c:246 ../src/pk-polkit-action-lookup.c:345
 msgid "Command line"
 msgstr "Wiersz poleceń"
 
@@ -131,7 +131,7 @@ msgstr "Szczegóły aktualizacji:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:341 ../src/pk-polkit-action-lookup.c:322
+#: ../client/pk-console.c:341 ../src/pk-polkit-action-lookup.c:356
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Pakiet"
@@ -1403,40 +1403,55 @@ msgid "Cannot connect to the system bus"
 msgstr "Nie można połączyć się z magistralą systemową"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
-#: ../src/pk-main.c:331
+#: ../src/pk-main.c:334
 msgid "Error trying to start:"
 msgstr "Błąd podczas próbowania uruchomienia:"
 
-#: ../src/pk-polkit-action-lookup.c:143
+#: ../src/pk-polkit-action-lookup.c:147
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "Aby zainstalować pakiety debugowania, należy włączyć dodatkowe źródła"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:156 ../src/pk-polkit-action-lookup.c:175
+#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:191
 msgid "The software is not from a trusted source."
 msgstr "Oprogramowanie nie jest z zaufanego źródła."
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:160
+#: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr ""
 "Nie należy aktualizować tego pakietu, jeśli nie ma się pewności, że to "
 "bezpieczne."
 
+#: ../src/pk-polkit-action-lookup.c:174
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr ""
+"Nie należy aktualizować tych pakietów, jeśli nie ma się pewności, że to "
+"bezpieczne."
+
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:164 ../src/pk-polkit-action-lookup.c:183
+#: ../src/pk-polkit-action-lookup.c:180 ../src/pk-polkit-action-lookup.c:203
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr ""
 "Złośliwe oprogramowanie może uszkodzić komputer lub spowodować inne szkody."
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:179
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
 "Nie należy instalować tego pakietu, jeśli nie ma się pewności, że to "
 "bezpieczne."
 
+#: ../src/pk-polkit-action-lookup.c:197
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr ""
+"Nie należy instalować tych pakietów, jeśli nie ma się pewności, że to "
+"bezpieczne."
+
+#. TRANSLATORS: too many packages to list each one
+#: ../src/pk-polkit-action-lookup.c:278
+msgid "Many packages"
+msgstr "Wiele pakietów"
+
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:304
+#: ../src/pk-polkit-action-lookup.c:338
 msgid "Only trusted"
 msgstr "Tylko zaufane"
