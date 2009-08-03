@@ -265,16 +265,30 @@ pk_action_lookup_package_ids_to_string (gchar **package_ids)
 	gchar **names = NULL;
 	gchar *names_str = NULL;
 	guint i;
+	guint len;
 
 	/* invalid */
 	if (package_ids == NULL)
 		goto out;
 
+	/* we show different data for different numbers of packages */
+	len = g_strv_length (package_ids);
+	if (len > 5) {
+		/* TRANSLATORS: too many packages to list each one */
+		names_str = g_strdup (N_("Many packages"));
+		goto out;
+	}
+
 	/* create array of name-version */
 	array = g_ptr_array_new ();
 	for (i=0; package_ids[i] != NULL; i++) {
 		id = pk_package_id_new_from_string (package_ids[i]);
-		names_str = g_strdup_printf ("%s-%s", id->name, id->version);
+		if (len == 1)
+			names_str = g_strdup_printf ("%s-%s (%s)", id->name, id->version, id->data);
+		else if (len <= 3)
+			names_str = g_strdup_printf ("%s-%s", id->name, id->version);
+		else
+			names_str = g_strdup (id->name);
 		g_ptr_array_add (array, names_str);
 		pk_package_id_free (id);
 	}
