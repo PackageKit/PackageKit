@@ -51,6 +51,7 @@ BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: qt4-devel
 BuildRequires: cppunit-devel
 BuildRequires: pango-devel
+BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 #BuildRequires: gtk-sharp2-devel
 #BuildRequires: mono-core
