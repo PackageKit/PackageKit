@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-30 08:45+0000\n"
-"PO-Revision-Date: 2009-07-30 10:02-0300\n"
+"POT-Creation-Date: 2009-08-03 14:45+0000\n"
+"PO-Revision-Date: 2009-08-03 11:51-0300\n"
 "Last-Translator: Héctor Daniel Cabrera <h.daniel.cabrera@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -47,7 +47,7 @@ msgstr "Falso"
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:237
-#: ../src/pk-polkit-action-lookup.c:297
+#: ../src/pk-polkit-action-lookup.c:331
 msgid "Role"
 msgstr "Rol"
 
@@ -63,7 +63,7 @@ msgstr "(segundos)"
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:246
-#: ../src/pk-polkit-action-lookup.c:311
+#: ../src/pk-polkit-action-lookup.c:345
 msgid "Command line"
 msgstr "Línea de comandos"
 
@@ -140,7 +140,7 @@ msgstr "Detalles acerca de la actualización:"
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:341
-#: ../src/pk-polkit-action-lookup.c:322
+#: ../src/pk-polkit-action-lookup.c:356
 #, fuzzy
 msgid "Package"
 msgid_plural "Packages"
@@ -1404,34 +1404,45 @@ msgstr "No se pudo conectar con el bus del sistema"
 msgid "Error trying to start:"
 msgstr "Error intentando iniciar:"
 
-#: ../src/pk-polkit-action-lookup.c:143
+#: ../src/pk-polkit-action-lookup.c:147
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "Para poder instalar paquetes de depuración, es necesario habilitar nuevas fuentes"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:156
-#: ../src/pk-polkit-action-lookup.c:175
+#: ../src/pk-polkit-action-lookup.c:168
+#: ../src/pk-polkit-action-lookup.c:191
 msgid "The software is not from a trusted source."
 msgstr "El software no proviene de una fuente confiable."
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:160
+#: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "No actualice este paquete a menos que sepa con certeza que es seguro hacerlo."
 
+#: ../src/pk-polkit-action-lookup.c:174
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "No actualice estos paquete a menos que sepa con certeza que es seguro hacerlo."
+
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:164
-#: ../src/pk-polkit-action-lookup.c:183
+#: ../src/pk-polkit-action-lookup.c:180
+#: ../src/pk-polkit-action-lookup.c:203
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr "Un software considerado maligno puede provocar diferentes clases de daño, por ejemplo, podría dañar su computadora. "
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:179
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "No instale este paquete a menos que sepa con certeza que es seguro hacerlo."
 
+#: ../src/pk-polkit-action-lookup.c:197
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "No instale estos paquete a menos que sepa con certeza que es seguro hacerlo."
+
+#. TRANSLATORS: too many packages to list each one
+#: ../src/pk-polkit-action-lookup.c:278
+msgid "Many packages"
+msgstr "Varios paquetes"
+
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:304
+#: ../src/pk-polkit-action-lookup.c:338
 msgid "Only trusted"
 msgstr "Solo confiable"
 
