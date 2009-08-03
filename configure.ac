@@ -236,6 +236,8 @@ if test x$enable_managed = xyes; then
 	AC_SUBST(GLIBSHARP_CFLAGS)
 	AC_SUBST(GLIBSHARP_LIBS)
 
+	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
+
 	AC_PATH_PROG(MCS, mcs)
 	CS="C#"
 	if test ! -x "$MCS"; then
