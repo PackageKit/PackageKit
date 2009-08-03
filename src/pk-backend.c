@@ -2369,7 +2369,7 @@ pk_backend_test (EggTest *test)
 	if (number_packages == 1)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "wrong number of pacakges: %s", number_packages);
+		egg_test_failed (test, "wrong number of packages: %i", number_packages);
 
 	/* reset */
 	pk_backend_reset (backend);
