@@ -220,6 +220,16 @@ if test x$enable_qt = xyes; then
 	PKG_CHECK_MODULES(CPPUNIT, cppunit)
 	AC_SUBST(CPPUNIT_CFLAGS)
 	AC_SUBST(CPPUNIT_LIBS)
+
+	# look for MOC
+	AC_PATH_PROG(MOC, moc-qt4)
+	if test ! -x "$MOC"; then
+		AC_PATH_PROG(MOC, moc)
+		if test ! -x "$MOC"; then
+			AC_MSG_ERROR([MOC hasn't been found])
+		fi	
+	if 
+
 	build_qt=yes
 else
 	build_qt=no
@@ -283,11 +293,6 @@ dnl ---------------------------------------------------------------------------
 AC_CHECK_HEADERS([execinfo.h])
 AC_CHECK_FUNCS(clearenv)
 AC_PATH_PROG(GMSGFMT, msgfmt, msgfmt)
-
-dnl ---------------------------------------------------------------------------
-dnl - moc (for packagekit-qt)
-dnl ---------------------------------------------------------------------------
-AC_PATH_PROG([MOC], [moc-qt4])
 
 # unix networking stack always available
 networking_apis="unix"
