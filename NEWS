@@ -1,3 +1,104 @@
+Version 0.5.1
+~~~~~~~~~~~~~
+Released: 2009-08-03
+
+Notes
+ - We've done some initial security review on this release, and the PackageKit
+   architecture in general. We've made a few small changes, but it all looked
+   pretty good overall. Certainly nothing to worry about.
+   See http://cgit.freedesktop.org/packagekit/plain/docs/security.txt
+ - This is the first release of PackageKit where multiple users with different
+   proxy servers is supported. Proxy server support was pretty broken before.
+   See http://cgit.freedesktop.org/packagekit/plain/docs/setting-the-proxy.txt
+ - We now detect security updates to shared libraries in use.
+ - Lots of bugfixes and a few new configure options
+
+Translations
+ - Updated translation for Malayalam (anipeter)
+ - Updated translation for Brazilian Portuguese (igor)
+ - Updated translation for Danish (kristho)
+ - Updated translation for Spanish (logan)
+ - Updated translation for German (nazgul)
+ - Updated translation for Polish (raven)
+ - Updated translation for Swedish (yeager)
+ - Updated translation for Hungarian (zoltanh721)
+
+New Features
+ - Check for pm-utils installation if pm-utils option is enabled (Mounir Lamouri)
+ - Adding 'strict' option to configure to add -Werror (auto-enabled in repo) (Mounir Lamouri)
+ - Add networkmanager, connman and service-packs options to prevent auto-magic deps (Mounir Lamouri)
+ - Add functionality to detect when shared libraries are being used that are updated in a security update (Richard Hughes)
+ - Limit the maximum number of requests a given user is able to request and queue (Richard Hughes)
+ - Limit the number of packages that can be processed by the daemon in one method call (Richard Hughes)
+ - Add a security document after some initial review (Richard Hughes)
+ - glib: Add a PkClientPool object to better manage async clients (Richard Hughes)
+ - Add uid and session to proxy mapping in the database (Richard Hughes)
+ - Add a document explaining how we map the proxy internally (Richard Hughes)
+ - Add arch filtering to the generic python filter helper (Richard Hughes)
+ - debuginfo-install: handle untrusted packages (Richard Hughes)
+ - Detect when the PolicyKit authentication was timed out, and show this as a message to the user (Richard Hughes)
+ - cnf: Search other directories that commands can be found in, not just /usr/bin (Richard Hughes)
+ - cnf: Show status rather than just hanging for a long time without any output (Richard Hughes)
+ - cnf: Handle SIGINT in command-not-found (Richard Hughes)
+ - glib: expose the some new properties on the PkClient object (Richard Hughes)
+
+Bugfixes
+ - Change remove-packages python backend function to get autoremove value (Mounir Lamouri)
+ - Fixed the python frontend to comply with the correct DBUS signatures and signals (Thomas Liu)
+ - Use the configured libexec dir, don't hardcode it (Vincent Untz)
+ - Prevent duplicate require-restart signal from being sent from the daemon (Richard Hughes)
+ - Rewrite the browser plugin in C, to fix several issues and add functionality (Richard Hughes)
+ - glib: Fix the signal type for destroy, and protect against unref in the handler (Richard Hughes)
+ - Remove all instances of atoi, it's just not secure (Richard Hughes)
+ - Send an ErrorCode when the authentication agent fails to be contacted (Richard Hughes)
+ - Ensure we set the correct proxy for the transaction according to the uid and session. Fixes rh#491859 (Richard Hughes)
+ - Fix the exit codes for pkcon and pkmon, and document them. Fixes fd#22819 (Richard Hughes)
+ - gstreamer-plugin: check for invalid codecs and don't send if all are invalid (Richard Hughes)
+ - Don't emit the RequireRestart security signals until the transaction completes with success. Fixes rh#513856 (Richard Hughes)
+ - Fix a couple of small memory leaks in PkTransactionExtra and PkNetworkStackUnix(Richard Hughes)
+ - gtk-module: check for zero length data from FcNameUnparse to mitigate fd#22792 (Richard Hughes)
+ - Ensure the transaction database is not world readable (Richard Hughes)
+ - Add the package name in the authentication details (Richard Hughes)
+ - glib: don't exit from the loop when the first tid times out, and we're requeued (Richard Hughes)
+ - glib: clear the saved error from the first client if we are requeueing a second (Richard Hughes)
+
+Backends
+ - apt: A backwards running progress is reported as not available progress information (Sebastian Heinlein)
+ - dummy: Add to the file list for the new lsof functionality testing (Richard Hughes)
+ - portage: Improve get_depends and move it to trunk version of portage (Mounir Lamouri)
+ - portage: get-depends filtering output (Mounir Lamouri)
+ - portage: Improve get-updates with security updates (Mounir Lamouri)
+ - portage: Update the category/group map (Mounir Lamouri)
+ - portage: Explicitely let portage backend accept sigkill (Mounir Lamouri)
+ - portage: Cleaning, fixing not-found-error, misc (Mounir Lamouri)
+ - portage: Clean remove-packages after portage fixes (Mounir Lamouri)
+ - portage: Show a message if try to use remove-packages with autoremove=True (Mounir Lamouri)
+ - portage: Fix a small bug in get-requires (Mounir Lamouri)
+ - portage: Create get_packages_required and use it for get_requires (Mounir Lamouri)
+ - portage: Remove-packages now removes alse required packages (Mounir Lamouri)
+ - portage: Remove-packages breaks if a candidate is in the system set (Mounir Lamouri)
+ - portage: Improve install-packages to let install many packages and filter output (Mounir Lamouri)
+ - portage: Manage only_trusted (show error) for {install,update}-packages and update-system (Mounir Lamouri)
+ - portage: Update-system prevents failures and block outputs (Mounir Lamouri)
+ - portage: Don't allow_cancel functions that will affect system even if cancelled (Mounir Lamouri)
+ - yum: Add the start of MediaManager code for external media handling (Muayyad Alsadi)
+ - yum: Add some fixes to the MediaManager code (Muayyad Alsadi)
+ - yum: Add a HAL implementation of MediaManager (Muayyad Alsadi)
+ - yum: Ignore physical media when refreshing (Muayyad Alsadi)
+ - yum: Add a GIO MediaManager implementation (Muayyad Alsadi)
+ - yum: Add a linux native MediaManager implementation (Muayyad Alsadi)
+ - yum: Add some more comps group mapping entries (Richard Hughes)
+ - yum: Remove the preupgrade code, as we now depend on this package (Richard Hughes)
+ - yum: Ignore another error in checkForNewer. Fixes rh#510874 (Richard Hughes)
+ - yum: When we're waiting for a crashed instance of ourselves, kill the process with SIGQUIT (Richard Hughes)
+ - yum: Add arch filtering support (Richard Hughes)
+ - yum: Unselect groups we previously selected when we get package deps (Richard Hughes)
+ - yum: Ensure selectGroup() returns a list of packages by forcing deselectGroup() (Richard Hughes)
+ - yum: When we fail to get the lock, print the process information in the error details. Fixes rh#513376 (Richard Hughes)
+ - yum: Package arch should be taken into account for newest filtering. Fixes rh#472876 (Richard Hughes)
+ - yum: Ignore another exception from yum about having no groups. Fixes rh#514708 (Richard Hughes)
+ - yum: Abort initialisation with an error if unfinished transactions are pending. Fixes rh#513557 (Richard Hughes)
+
 Version 0.5.0
 ~~~~~~~~~~~~~
 Released: 2009-07-06
