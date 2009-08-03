@@ -1,3 +1,88 @@
+Version 0.4.9
+~~~~~~~~~~~~~
+Released: 2009-08-03
+
+Notes:
+ - All patches are backports from master.
+ - The 0.5.x split was done half-way through this release.
+
+Translations:
+ - Updated translation for Spanish (aloriel)
+ - Updated translation for Tamil (ifelix)
+ - Updated translation for Telugu (kkrothap)
+ - Updated translation for Danish (kristho)
+ - Updated translation for Portuguese (ruigo)
+ - Updated translation for Marathi (sandeeps)
+ - Updated translation for Gujarati (swkothar)
+
+New Features:
+ - PkTransaction checks if the given path in search-file is valid (Mounir Lamouri)
+ - Throw an error if SearchGroup search term contains spaces (Mounir Lamouri)
+ - Add ConnMan networking stack support (Peter J Zhu)
+ - Rewrite the networking stack GObjects to derive from a common PkNetworkStack object (Richard Hughes)
+ - Enable nice build output on automake1.11 (Richard Hughes)
+ - Make GIO a hard build dependency and remove the conditional code (Richard Hughes)
+ - Enable the warning GSEAL_ENABLE and fix up build failures (Richard Hughes)
+
+Bugfixes:
+ - Fix reading freed-memory as author when GetBackendDetail is called with a NULL name parameter (Daniel Elstner)
+ - Add missing header to fix compile on FreeBSD (Jared D. McNeill)
+ - Don't use BASHisms on FreeBSD (Jared D. McNeill)
+ - Never return FALSE from StateHasChanged(). Fixes rh#483164 (Richard Hughes)
+ - Reject files passed to InstallFiles() that are not supported by the backend (Richard Hughes)
+ - Fix up the session example to not use depricated (and now removed) API (Richard Hughes)
+ - Convert non-ASCII text to unicode for spawned backends. Fixes rh#504377 (Richard Hughes)
+ - Add subclasses to our registered mime-types. Fixes rh#504137 (Richard Hughes)
+ - To fix make snapshot and giant paths, use ustar-type tarballs (Richard Hughes)
+ - glib: Quit the synchronous loop if we get destroyed, to avoid hanging forever (Richard Hughes)
+ - pkcon: Quit the synchronous loop if we get destroyed, to avoid hanging forever (Richard Hughes)
+ - Fix a small memory leak in PkNetworkStackUnix (Richard Hughes)
+
+Backends:
+ - apt: Ignore obsolete but not purged packages (James Westby)
+ - apt: Downloading the package changelog was merged into python-apt (Sebastian Heinlein)
+ - apt: Show the installed size for installed packages instead of the package size (Sebastian Heinlein)
+ - apt: A backwards running progress (mostly the case during cache updates) is reported as not available progress information (Sebastian Heinlein)
+ - aptcc: Fix missing include (Sebastian Heinlein)
+ - portage: update groups/filters list (Mounir Lamouri)
+ - portage: not yet working install-packages function (Mounir Lamouri)
+ - portage: working install-packages function (Mounir Lamouri)
+ - portage: add search-group function with a beginning table conversion from gentoo's category to packagekit's groups (Mounir Lamouri)
+ - portage: working but version of remove-package (Mounir Lamouri)
+ - portage: add get-requires function (Mounir Lamouri)
+ - portage: add search-details, minor changes (comments, ...) (Mounir Lamouri)
+ - portage: removing download-packages and fixing bugs in get-depends, get-requires and remove-packages (Mounir Lamouri)
+ - portage: update install-packages, cleaning and world list compatibility (Mounir Lamouri)
+ - portage: add group in get-details, add installed info in packageid and keywords info (Mounir Lamouri)
+ - portage: get-details do not prompt size when pacakge is installed (Mounir Lamouri)
+ - portage: add refresh_cache function (Mounir Lamouri)
+ - yum: Ignore physical media when refreshing (Muayyad Alsadi)
+ - yum: We support application/x-servicepack, so advertise it (Richard Hughes)
+ - yum: Download the ChangeLog data when we get the update list. Fixes rh#499590 (Richard Hughes)
+ - yum: be more descriptive why we didn't have a package cache (Richard Hughes)
+ - yum: Format the package_id before showing it in the error detail (Richard Hughes)
+ - yum: Correct an error enum for a missing group (Richard Hughes)
+ - yum: use the new update-not-found error enum for missing updates (Richard Hughes)
+ - yum: convert the present distro version to int to avoid always returning with no results from GetDistroUpgrades() (Richard Hughes)
+ - yum: don't hardcode network access to install or update packages. Fixes rh#506110 (Richard Hughes)
+ - yum: use a float for present_version as rawhide is 11.90. Fixes rh#506649 (Richard Hughes)
+ - yum: Don't check ts_state when getting the restart-required signal (Richard Hughes)
+ - yum: Provide restart-required data for all the packages, not just the first update in the list (Richard Hughes)
+ - yum: do newest filtering when the list isn't ordered (Richard Hughes)
+ - yum: Ignore another exception from yum about having no groups. Fixes rh#514708 (Richard Hughes)
+ - yum: unselect groups we previously selected when we get package deps (Richard Hughes)
+ - yum: use a better error enum when all packages are already installed (Richard Hughes)
+ - yum: Ensure selectGroup() returns a list of packages by forcing deselectGroup() (Richard Hughes)
+ - yum: When we fail to get the lock, print the process information in the error details. Fixes rh#513376 (Richard Hughes)
+ - yum: When we're waiting for a crashed instance of ourselves, kill the process with SIGQUIT (Richard Hughes)
+ - yum: Ignore another error in checkForNewer. Fixes rh#510874 (Richard Hughes)
+ - yum: remove the preupgrade code, as we now depend on this package (Richard Hughes)
+ - yum: Add some more comps group mapping entries (Richard Hughes)
+ - yum: don't do unconditional NEWEST filtering on resolve (Richard Hughes)
+ - yum: remove custom hacking in Resolve(), and treat like precise search (Richard Hughes)
+ - yum: Impliment newest filtering according to the spec, which removes duplicates from the GUI tools (Richard Hughes)
+ - yum: Package arch should be taken into account for newest filtering. Fixes rh#472876 (Richard Hughes)
+
 Version 0.4.8
 ~~~~~~~~~~~~~
 Released: 2009-06-01

@@ -10,8 +10,8 @@ git shortlog PACKAGEKIT_0_4_8.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.4.8"
-git tag -a -f -m "Release 0.4.8" PACKAGEKIT_0_4_8
+git commit -a -m "Release version 0.4.9"
+git tag -a -f -m "Release 0.4.9" PACKAGEKIT_0_4_9
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
