@@ -227,9 +227,8 @@ if test x$enable_qt = xyes; then
 		AC_PATH_PROG(MOC, moc)
 		if test ! -x "$MOC"; then
 			AC_MSG_ERROR([MOC hasn't been found])
-		fi	
-	if 
-
+		fi
+	fi
 	build_qt=yes
 else
 	build_qt=no
