@@ -217,10 +217,6 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTXML_CFLAGS)
 	AC_SUBST(QTXML_LIBS)
 
-	PKG_CHECK_MODULES(CPPUNIT, cppunit)
-	AC_SUBST(CPPUNIT_CFLAGS)
-	AC_SUBST(CPPUNIT_LIBS)
-
 	# look for MOC
 	AC_PATH_PROG(MOC, moc-qt4)
 	if test ! -x "$MOC"; then
@@ -390,6 +386,13 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
+
+	# packagekit-qt needs cppunit for tests
+	if test x$build_qt = xyes; then
+		PKG_CHECK_MODULES(CPPUNIT, cppunit)
+		AC_SUBST(CPPUNIT_CFLAGS)
+		AC_SUBST(CPPUNIT_LIBS)
+	fi
 fi
 
 dnl ---------------------------------------------------------------------------
