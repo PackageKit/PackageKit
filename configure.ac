@@ -344,12 +344,20 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
-dnl - Is xsltproc available?
+dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_PATH_PROG(XSLTPROC, xsltproc, no)
-if test "$XSLTPROC" = "no" ; then
-	AC_MSG_WARN([xsltproc not found, will not be able to build man documentation])
+AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
+							[Disable man pages generation]), enable_man_pages=$enableval)
+if test x$enable_man_pages != xno; then
+	AC_PATH_PROG(XSLTPROC, xsltproc, no)
+	if test x$enable_man_pages = xyes; then
+		if test "$XSLTPROC" = "no" ; then
+			AC_MSG_ERROR([xsltproc not found, it's needod to build man pages])
+		fi
 	fi
+else
+	XSLTPROC=no
+fi
 AM_CONDITIONAL(HAVE_XSLTPROC, [test "$XSLTPROC" != "no"])
 
 dnl ---------------------------------------------------------------------------
@@ -566,32 +574,6 @@ else
 fi
 AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
-
-dnl ---------------------------------------------------------------------------
-dnl - DocBook Documentation
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(docbook-docs, [  --enable-docbook-docs   build documentation (requires xmlto)],enable_docbook_docs=$enableval,enable_docbook_docs=auto)
-AC_PATH_PROG(XMLTO, xmlto, no)
-AC_MSG_CHECKING([whether to build DocBook documentation])
-if test x$XMLTO = xno ; then
-	have_docbook=no
-else
-	have_docbook=yes
-fi
-if test x$enable_docbook_docs = xauto ; then
-	if test x$have_docbook = xno ; then
-		enable_docbook_docs=no
-	else
-		enable_docbook_docs=yes
-	fi
-fi
-if test x$enable_docbook_docs = xyes; then
-	if test x$have_docbook = xno; then
-		AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
-	fi
-fi
-AM_CONDITIONAL(DOCBOOK_DOCS_ENABLED, test x$enable_docbook_docs = xyes)
-AC_MSG_RESULT(yes)
 
 dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of security framework
