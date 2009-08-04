@@ -241,6 +241,7 @@ if test x$enable_managed = xyes; then
 	AC_SUBST(GLIBSHARP_CFLAGS)
 	AC_SUBST(GLIBSHARP_LIBS)
 
+	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
 	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
 
 	AC_PATH_PROG(MCS, mcs)
