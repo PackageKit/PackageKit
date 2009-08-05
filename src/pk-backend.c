@@ -875,7 +875,17 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* check against the old one */
 	id = pk_package_id_new_from_string (package_id);
+	if (id == NULL) {
+		egg_warning ("Failed to parse package_id: '%s'", package_id);
+		ret = FALSE;
+		goto out;
+	}
 	obj = pk_package_obj_new (info, id, summary_safe);
+	if (obj == NULL) {
+		egg_warning ("Failed to create object summary: '%s'", summary_safe);
+		ret = FALSE;
+		goto out;
+	}
 	ret = pk_package_obj_equal (obj, backend->priv->last_package);
 	if (ret) {
 		egg_debug ("skipping duplicate %s", package_id);
@@ -941,11 +951,12 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  PkUpdateStateEnum state, const gchar *issued_text,
 			  const gchar *updated_text)
 {
-	gchar *update_text_safe;
-	PkUpdateDetailObj *detail;
-	PkPackageId *id;
-	GDate *issued;
-	GDate *updated;
+	gchar *update_text_safe = NULL;
+	PkUpdateDetailObj *detail = NULL;
+	PkPackageId *id = NULL;
+	GDate *issued = NULL;
+	GDate *updated = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -954,7 +965,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: update_detail %s", package_id);
-		return FALSE;
+		goto out;
 	}
 
 	/* convert dates */
@@ -964,14 +975,28 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	/* form PkUpdateDetailObj struct */
+	/* form PkPackageId struct */
 	id = pk_package_id_new_from_string (package_id);
+	if (id == NULL) {
+		egg_warning ("Failed to parse package_id: '%s'", package_id);
+		goto out;
+	}
+
+	/* form PkUpdateDetailObj struct */
 	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
 						     bugzilla_url, cve_url, restart,
 						     update_text_safe, changelog,
 						     state, issued, updated);
+	if (detail == NULL) {
+		egg_warning ("Failed to parse detail object");
+		goto out;
+	}
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
 
+	/* we parsed okay */
+	ret = TRUE;
+
+out:
 	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
@@ -979,7 +1004,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		g_date_free (issued);
 	if (updated != NULL)
 		g_date_free (updated);
-	return TRUE;
+	return ret;
 }
 
 /**
@@ -1135,9 +1160,10 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		    const gchar *license, PkGroupEnum group,
 		    const gchar *description, const gchar *url, gulong size)
 {
-	gchar *description_safe;
-	PkDetailsObj *details;
-	PkPackageId *id;
+	gchar *description_safe = NULL;
+	PkDetailsObj *details = NULL;
+	PkPackageId *id = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1146,20 +1172,35 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: details %s", package_id);
-		return FALSE;
+		goto out;
 	}
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
+	/* form PkPackageId struct */
 	id = pk_package_id_new_from_string (package_id);
+	if (id == NULL) {
+		egg_warning ("Failed to parse package_id: '%s'", package_id);
+		goto out;
+	}
+
+	/* form PkDetailsObj struct */
 	details = pk_details_obj_new_from_data (id, license, group, description_safe, url, size);
+	if (details == NULL) {
+		egg_warning ("Failed to parse details object");
+		goto out;
+	}
 	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0, details);
 
+	/* we parsed okay */
+	ret = TRUE;
+
+out:
 	pk_package_id_free (id);
 	pk_details_obj_free (details);
 	g_free (description_safe);
-	return TRUE;
+	return ret;
 }
 
 /**
