@@ -336,6 +336,11 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
+dnl - Check if ConsoleKit is installed, otherwise, warn the user at the end
+dnl ---------------------------------------------------------------------------
+AC_PATH_PROG(CONSOLEKIT_DAEMON, console-kit-daemon, [], [/usr/sbin$PATH_SEPARATOR/sbin$PATH_SEPARATOR$PATH])
+
+dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
@@ -843,6 +848,14 @@ echo "
         Default backend:           ${with_default_backend}
 "
 
+if test ! -x "$CONSOLEKIT_DAEMON"; then
+	echo "**********************************************************************"
+	echo "** ConsoleKit doesn't look to be installed (it's a running dependency)"
+	echo "** You will be able to run PackageKit without ConsoleKit"
+	echo "** but it is not supported nor recommended."
+	echo "**********************************************************************"
+	echo ""
+fi
 
 
 # warn that dummy is basically broken
