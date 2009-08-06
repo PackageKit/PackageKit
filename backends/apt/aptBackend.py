@@ -782,7 +782,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         self._check_init(prange=(0,5))
         try:
-            self._cache.upgrade(distUpgrade=False)
+            self._cache.upgrade(distUpgrade=True)
         except:
             self._cache.clear()
             self.error(ERROR_DEP_RESOLUTION_FAILED,
