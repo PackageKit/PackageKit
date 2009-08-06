@@ -744,7 +744,7 @@ main (int argc, char *argv[])
 		} else if (available->len > 1) {
 			if (config->multiple_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: Show the user a list of packages that provide this command */
-				g_print ("%s:\n", _("Packages providing this file are:"));
+				g_print ("%s\n", _("Packages providing this file are:"));
 				for (i=0; i<available->len; i++) {
 					possible = g_ptr_array_index (available, i);
 					g_print ("'%s'\n", possible);
