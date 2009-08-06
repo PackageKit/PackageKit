@@ -650,10 +650,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
-        self._cache.upgrade(False)
-        updates = filter(lambda p: self._cache[p].isUpgradable,
-                         self._cache.keys())
+        self._cache.upgrade(distUpgrade=True)
+        updates = [pkg.name for pkg in self._cache if pkg.isUpgradable]
         for pkg in self._cache.getChanges():
+            if not (pkg.markedUpgrade and pkg.isUpgradable):
+                continue
             updates.remove(pkg.name)
             info = INFO_NORMAL
             archive = pkg.candidateOrigin[0].archive
