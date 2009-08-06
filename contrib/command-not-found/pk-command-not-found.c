@@ -382,7 +382,7 @@ pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 	GError *error = NULL;
 	PkBitfield roles;
 	PkBitfield filters;
-	gboolean ret;
+	gboolean ret = FALSE;
 	guint i, len;
 	PkPackageList *list = NULL;
 	const PkPackageObj *obj;
@@ -396,7 +396,13 @@ pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 			  G_CALLBACK (pk_cnf_status_changed_cb), NULL);
 	g_object_add_weak_pointer (G_OBJECT (client), (gpointer) &client);
 
-	roles = pk_control_get_actions (control, NULL);
+	/* get what we support */
+	roles = pk_control_get_actions (control, &error);
+	if (roles == 0) {
+		egg_warning ("Failed to contact PackageKit: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* can we search the repos */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
