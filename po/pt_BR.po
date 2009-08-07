@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-29 14:46+0000\n"
-"PO-Revision-Date: 2009-07-29 15:37-0300\n"
+"POT-Creation-Date: 2009-08-07 19:47+0000\n"
+"PO-Revision-Date: 2009-08-07 17:21-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +48,7 @@ msgstr "Falso"
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:237
-#: ../src/pk-polkit-action-lookup.c:297
+#: ../src/pk-polkit-action-lookup.c:331
 msgid "Role"
 msgstr "Modo"
 
@@ -64,7 +64,7 @@ msgstr "(segundos)"
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:246
-#: ../src/pk-polkit-action-lookup.c:311
+#: ../src/pk-polkit-action-lookup.c:345
 msgid "Command line"
 msgstr "Linha de comando"
 
@@ -141,7 +141,7 @@ msgstr "Detalhes sobre a atualização:"
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:341
-#: ../src/pk-polkit-action-lookup.c:322
+#: ../src/pk-polkit-action-lookup.c:356
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Pacote"
@@ -545,7 +545,7 @@ msgstr "Subcomandos:"
 #: ../client/pk-console.c:1781
 #: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:128
-#: ../contrib/command-not-found/pk-command-not-found.c:610
+#: ../contrib/command-not-found/pk-command-not-found.c:616
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
@@ -870,71 +870,71 @@ msgid "Loading list of packages."
 msgstr "Baixando lista de pacotes."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:414
+#: ../contrib/command-not-found/pk-command-not-found.c:420
 msgid "Failed to search for file"
 msgstr "Falha ao pesquisar pelo arquivo"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:551
+#: ../contrib/command-not-found/pk-command-not-found.c:557
 msgid "Failed to launch:"
 msgstr "Falha ao executar:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:626
+#: ../contrib/command-not-found/pk-command-not-found.c:632
 msgid "PackageKit Command Not Found"
 msgstr "Comando do PackageKit não localizado"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:652
+#: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Command not found."
 msgstr "Comando não localizado."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:659
+#: ../contrib/command-not-found/pk-command-not-found.c:665
 msgid "Similar command is:"
 msgstr "O comando similar é:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:668
+#: ../contrib/command-not-found/pk-command-not-found.c:674
 msgid "Run similar command:"
 msgstr "Executar comando similar:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:680
-#: ../contrib/command-not-found/pk-command-not-found.c:689
+#: ../contrib/command-not-found/pk-command-not-found.c:686
+#: ../contrib/command-not-found/pk-command-not-found.c:695
 msgid "Similar commands are:"
 msgstr "Os comandos similares são:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:696
+#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "Please choose a command to run"
 msgstr "Por favor, escolha um comando a ser executado"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:715
+#: ../contrib/command-not-found/pk-command-not-found.c:721
 msgid "The package providing this file is:"
 msgstr "O pacote que fornece esse arquivo é:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:720
+#: ../contrib/command-not-found/pk-command-not-found.c:726
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Instalar pacote \"%s\" para fornecer o comando \"%s\"?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Packages providing this file are:"
 msgstr "Os pacotes que fornecem esse arquivo são:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:750
+#: ../contrib/command-not-found/pk-command-not-found.c:756
 msgid "Suitable packages are:"
 msgstr "Os pacotes apropriados são:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:758
+#: ../contrib/command-not-found/pk-command-not-found.c:764
 msgid "Please choose a package to install"
 msgstr "Por favor, escolha um pacote a ser instalado"
 
@@ -1404,34 +1404,45 @@ msgstr "Não foi possível conectar ao barramento do sistema"
 msgid "Error trying to start:"
 msgstr "Erro ao tentar iniciar:"
 
-#: ../src/pk-polkit-action-lookup.c:143
+#: ../src/pk-polkit-action-lookup.c:147
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "Fontes extras precisam ser habilitadas para a instalação dos pacotes de depuração"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:156
-#: ../src/pk-polkit-action-lookup.c:175
+#: ../src/pk-polkit-action-lookup.c:168
+#: ../src/pk-polkit-action-lookup.c:191
 msgid "The software is not from a trusted source."
 msgstr "O programa não vem de uma fonte confiável."
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:160
+#: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Não atualize este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
+#: ../src/pk-polkit-action-lookup.c:174
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
+
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:164
-#: ../src/pk-polkit-action-lookup.c:183
+#: ../src/pk-polkit-action-lookup.c:180
+#: ../src/pk-polkit-action-lookup.c:203
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr "Programas maliciosos podem danificar o seu computador ou causar outros prejuízos."
 
-#. TRANSLATORS: user has to trust provider -- I know, this sucks
-#: ../src/pk-polkit-action-lookup.c:179
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
+#: ../src/pk-polkit-action-lookup.c:197
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
+
+#. TRANSLATORS: too many packages to list each one
+#: ../src/pk-polkit-action-lookup.c:278
+msgid "Many packages"
+msgstr "Muitos pacotes"
+
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:304
+#: ../src/pk-polkit-action-lookup.c:338
 msgid "Only trusted"
 msgstr "Somente confiáveis"
 
