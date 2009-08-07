@@ -607,7 +607,6 @@ msgstr "É necessário um nome de pacote para remover"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1999
-#, fuzzy
 msgid "A destination directory and the package names to download are required"
 msgstr "São necessários uma directoria de destino assim como os nomes dos pacotes a transferir"
 
@@ -848,12 +847,12 @@ msgstr "Por favor insira um número de 1 a %i: "
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:349
 msgid "Downloading details about the software sources."
-msgstr ""
+msgstr "A descarregar detalhes acerca das fontes do software."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:353
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "A descarregar lista de ficheiros (isto pode demorar algum tempo para concluir)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:357
@@ -995,42 +994,41 @@ msgstr "A Iniciar instalação"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "O pacote %s já está instalado"
+msgstr "Não foi possível encontrar o pacote %s, ou já está instalado: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
 msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr ""
+msgstr "Não instala realmente nenhum pacote, apenas simula o que seria instalado."
 
 #. command line argument, do we skip packages that depend on the ones specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 msgid "Do not install dependencies of the core packages"
-msgstr ""
+msgstr "Não instala dependências dos pacotes principais."
 
 #. command line argument, do we operate quietly
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
 msgid "Do not display information or progress"
-msgstr ""
+msgstr "Não apresenta informação ou progresso"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
-#, fuzzy
 msgid "PackageKit Debuginfo Installer"
-msgstr "O instalador vai agora terminar..."
+msgstr "Instalador de Dados de Depuração do PackageKit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: Specify package names to install."
-msgstr "Não existem pacotes novos para instalar"
+msgstr "ERRO: Especifique nomes de pacotes para instalar."
 
 #. TRANSLATORS: we are getting the list of repositories
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
-#, fuzzy, c-format
+#, c-format
 msgid "Getting sources list"
-msgstr "A obter a lista de ficheiros"
+msgstr "A obter a lista de fontes"
 
 #. TRANSLATORS: all completed 100%
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
@@ -1048,25 +1046,25 @@ msgstr "OK."
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr ""
+msgstr "foram encontradas %i fontes activas e %i desactivadas."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
-#, fuzzy, c-format
+#, c-format
 msgid "Finding debugging sources"
-msgstr "Origens de dicionário encontradas"
+msgstr "A procurar fontes de depuração"
 
 #. TRANSLATORS: tell the user what we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
 #, c-format
 msgid "Found %i disabled debuginfo repos."
-msgstr ""
+msgstr "Foram encontrados %i repositórios desactivados de dados de depuração."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
-#, fuzzy, c-format
+#, c-format
 msgid "Enabling debugging sources"
-msgstr "Origens de dicionário encontradas"
+msgstr "A activar fontes de depuração"
 
 #. TRANSLATORS: operation was not successful
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
@@ -1079,99 +1077,99 @@ msgstr "FALHOU."
 
 #. TRANSLATORS: tell the user how many we enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
-#, fuzzy, c-format
+#, c-format
 msgid "Enabled %i debugging sources."
-msgstr "Origens de dicionário encontradas"
+msgstr "Activadas %i fontes de depuração."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
-#, fuzzy, c-format
+#, c-format
 msgid "Finding debugging packages"
-msgstr "Apresentar todos os pacotes"
+msgstr "A procurar pacotes de depuração"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find the package %s: %s"
-msgstr "Não foi possível encontrar o programa seleccionado."
+msgstr "Não foi possível encontrar o pacote %s: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find the debuginfo package %s: %s"
-msgstr "Não foi possível encontrar o programa seleccionado."
+msgstr "Não foi possível encontrar o pacote de dados de depuração %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
-#, fuzzy, c-format
+#, c-format
 msgid "Found no packages to install."
-msgstr "não foram indicados pacotes para instalar"
+msgstr "Não foram encontrados pacotes para instalar."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
-#, fuzzy, c-format
+#, c-format
 msgid "Found %i packages:"
-msgstr "%s de %s pacotes completos"
+msgstr "Encontrados %i pacotes:"
 
 #. TRANSLATORS: tell the user we are searching for deps
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
 #, c-format
 msgid "Finding packages that depend on these packages"
-msgstr ""
+msgstr "Procura pacotes que dependem destes pacotes"
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find dependant packages: %s"
-msgstr "Não foi possível encontrar o ficheiro %1. A ignorar..."
+msgstr "Não foi possível encontrar pacotes de dependências: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
-#, fuzzy, c-format
+#, c-format
 msgid "Found %i extra packages."
-msgstr "Incluir os pacotes extra"
+msgstr "Encontrados %i pacotes extra."
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
-#, fuzzy, c-format
+#, c-format
 msgid "No extra packages required."
-msgstr "não foram indicados pacotes para apagar"
+msgstr "Não são necessários pacotes extra."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
-#, fuzzy, c-format
+#, c-format
 msgid "Found %i packages to install:"
-msgstr "Instalar no Disco Rígido"
+msgstr "Encontrados %i pacotes para instalar:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#, fuzzy, c-format
+#, c-format
 msgid "Not installing packages in simulate mode"
-msgstr "A instalar pacotes"
+msgstr "No modo de simulação não se instalam pacotes"
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
-#, fuzzy, c-format
+#, c-format
 msgid "Could not install packages: %s"
-msgstr "Incapaz de instalar o motor de tema"
+msgstr "Não foi possível instalar pacotes: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "Disabling sources previously enabled"
-msgstr ""
+msgstr "A desactivar fontes previamente activas"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
-#, fuzzy, c-format
+#, c-format
 msgid "Could not disable the debugging sources: %s"
-msgstr "Não foi possível localizar a linha de comandos de depuração '%1'."
+msgstr "Não foi possível desactivar as fontes de dados de depuração: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
-#, fuzzy, c-format
+#, c-format
 msgid "Disabled %i debugging sources."
-msgstr "Origens de dicionário encontradas"
+msgstr "Desactivadas %i fontes de depuração."
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -1402,37 +1400,36 @@ msgid "Error trying to start:"
 msgstr "Erro ao tentar iniciar:"
 
 #: ../src/pk-polkit-action-lookup.c:147
-#, fuzzy
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Não existem pacotes novos para instalar"
+msgstr "Para instalar pacotes de depuração, fontes extra precisam de ser activadas"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:168
 #: ../src/pk-polkit-action-lookup.c:191
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "O software não é de uma origem de confiança."
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Não actualize este pacote a não ser que tenha a certeza que é seguro fazê-lo."
 
 #: ../src/pk-polkit-action-lookup.c:174
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Não actualize estes pacotes a não ser que tenha a certeza que é seguro fazê-lo."
 
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:180
 #: ../src/pk-polkit-action-lookup.c:203
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
+msgstr "Software malicioso pode danificar o seu computador ou causar outros danos."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Não instale este pacote a não ser que tenha a certeza que é seguro fazê-lo."
 
 #: ../src/pk-polkit-action-lookup.c:197
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Não instale estes pacotes a não ser que tenha a certeza que é seguro fazê-lo."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:278
