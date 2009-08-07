@@ -618,7 +618,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,opkg,pisi,portage,razor,smart,urpmi,yum,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
