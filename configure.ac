@@ -415,6 +415,7 @@ if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
 			  mozilla-plugin	\
 			  gio-unix-2.0		\
+			  nspr \
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0	\
