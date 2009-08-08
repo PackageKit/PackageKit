@@ -1,6 +1,7 @@
 
 NULL =
 
+if SECURITY_TYPE_POLKIT
 polkit_policydir = $(datadir)/polkit-1/actions
 dist_polkit_policy_DATA =					\
 	org.freedesktop.packagekit.policy			\
@@ -12,6 +13,7 @@ dist_polkit_policy_DATA =					\
 
 EXTRA_DIST = org.freedesktop.packagekit.policy.in
 DISTCLEANFILES = org.freedesktop.packagekit.policy
+endif
 
 clean-local :
 	rm -f *~
