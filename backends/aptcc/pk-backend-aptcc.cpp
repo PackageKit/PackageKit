@@ -433,7 +433,7 @@ backend_update_system_thread (PkBackend *backend)
  * backend_update_system:
  */
 static void
-backend_update_system (PkBackend *backend)
+backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
