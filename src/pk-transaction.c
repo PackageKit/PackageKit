@@ -352,6 +352,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	/* could the update list have changed? */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
