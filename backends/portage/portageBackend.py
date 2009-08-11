@@ -572,7 +572,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         Get a list of cpv, portage settings and tree and recursive parameter
         And returns the list of packages required for cpv list
         '''
-        # TODO: should see if some cpv in the input list is not a dep of another
         packages_list = []
 
         myopts = {}
@@ -616,7 +615,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                         if not isinstance(n, _emerge.SetArg.SetArg):
                             packages_list.append(n)
 
-        return packages_list
+        # remove cpv_input that may be added to the list
+        def filter_cpv_input(x): return x.cpv not in cpv_input
+        return filter(filter_cpv_input, packages_list)
 
     def package(self, cpv, info=None):
         desc = self.get_metadata(cpv, ["DESCRIPTION"])[0]
