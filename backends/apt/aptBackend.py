@@ -1041,7 +1041,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             pkgs.append(pkg.name[:])
             try:
-                pkg.markUpgrade()
+                # Actually should be fixed in python-apt
+                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
+                pkg.markInstall(True, True, auto)
             except:
                 self._open_cache(prange=(90,100))
                 self.error(ERROR_UNKNOWN,
