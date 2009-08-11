@@ -1039,6 +1039,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % id)
                 return
+            if not pkg.isInstalled:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,
+                           "%s isn't installed" % pkg.name)
+                return
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
             auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
