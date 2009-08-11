@@ -1048,6 +1048,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_UNKNOWN,
                            "%s could not be queued for update" % pkg.name)
                 return
+        # Error out if the updates would require the removal of already
+        # installed packages
+        if self._cache._depcache.DelCount:
+            deleted = [pkg.name for pkg in self._cache.getChanges() if \
+                       pkg.markedDelete]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the update: "
+                       "%s" % " ".join(deleted))
+            return
         if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.percentage(100)
