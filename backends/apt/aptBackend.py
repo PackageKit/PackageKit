@@ -1130,6 +1130,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         self._check_init(prange=(0,10))
         pkgs=[]
+        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1141,14 +1142,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s is already installed" % pkg.name)
                 return
             pkgs.append(pkg.name[:])
-            try:
-                pkg.markInstall()
-            except Exception, e:
-                self._open_cache(prange=(90,100))
-                self.error(ERROR_UNKNOWN,
-                           "%s could not be queued for "
-                           "installation: %s" % (pkg.name,e))
-                return
+            pkg.markInstall(True, True, True)
+        ac.release()
+        # Error out if the installation would require the removal of already
+        # installed packages
+        if self._cache._depcache.DelCount:
+            deleted = [pkg.name for pkg in self._cache.getChanges() if \
+                       pkg.markedDelete]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the update: "
+                       "%s" % " ".join(deleted))
+            return
         if not self._commit_changes(): return False
         self._open_cache(prange=(90,100))
         self.percentage(100)
