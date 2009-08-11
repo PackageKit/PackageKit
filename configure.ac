@@ -152,7 +152,6 @@ LIBNM_GLIB_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.92
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
-QTGUI_REQUIRED=4.4.0
 QTSQL_REQUIRED=4.4.0
 QTXML_REQUIRED=4.4.0
 
@@ -187,7 +186,7 @@ AC_SUBST(DBUS_LIBS)
 
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
- gio-unix-2.0 >= $DBUS_REQUIRED)
+ gio-unix-2.0 >= $GIO_REQUIRED)
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
 
@@ -205,10 +204,6 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTDBUS_CFLAGS)
 	AC_SUBST(QTDBUS_LIBS)
 
-	PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
-	AC_SUBST(QTGUI_CFLAGS)
-	AC_SUBST(QTGUI_LIBS)
-
 	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
 	AC_SUBST(QTSQL_CFLAGS)
 	AC_SUBST(QTSQL_LIBS)
@@ -217,19 +212,14 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTXML_CFLAGS)
 	AC_SUBST(QTXML_LIBS)
 
-	PKG_CHECK_MODULES(CPPUNIT, cppunit)
-	AC_SUBST(CPPUNIT_CFLAGS)
-	AC_SUBST(CPPUNIT_LIBS)
-
 	# look for MOC
 	AC_PATH_PROG(MOC, moc-qt4)
 	if test ! -x "$MOC"; then
 		AC_PATH_PROG(MOC, moc)
 		if test ! -x "$MOC"; then
 			AC_MSG_ERROR([MOC hasn't been found])
-		fi	
-	if 
-
+		fi
+	fi
 	build_qt=yes
 else
 	build_qt=no
@@ -246,6 +236,7 @@ if test x$enable_managed = xyes; then
 	AC_SUBST(GLIBSHARP_CFLAGS)
 	AC_SUBST(GLIBSHARP_LIBS)
 
+	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
 	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
 
 	AC_PATH_PROG(MCS, mcs)
@@ -345,12 +336,25 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
-dnl - Is xsltproc available?
+dnl - Check if ConsoleKit is installed, otherwise, warn the user at the end
 dnl ---------------------------------------------------------------------------
-AC_PATH_PROG(XSLTPROC, xsltproc, no)
-if test "$XSLTPROC" = "no" ; then
-	AC_MSG_WARN([xsltproc not found, will not be able to build man documentation])
+AC_PATH_PROG(CONSOLEKIT_DAEMON, console-kit-daemon, [], [/usr/sbin$PATH_SEPARATOR/sbin$PATH_SEPARATOR$PATH])
+
+dnl ---------------------------------------------------------------------------
+dnl - Generate man pages ? (default enabled)
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
+							[Disable man pages generation]), enable_man_pages=$enableval)
+if test x$enable_man_pages != xno; then
+	AC_PATH_PROG(XSLTPROC, xsltproc, no)
+	if test x$enable_man_pages = xyes; then
+		if test "$XSLTPROC" = "no" ; then
+			AC_MSG_ERROR([xsltproc not found, it's needod to build man pages])
+		fi
 	fi
+else
+	XSLTPROC=no
+fi
 AM_CONDITIONAL(HAVE_XSLTPROC, [test "$XSLTPROC" != "no"])
 
 dnl ---------------------------------------------------------------------------
@@ -383,6 +387,13 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
+
+	# packagekit-qt needs cppunit for tests
+	if test x$build_qt = xyes; then
+		PKG_CHECK_MODULES(CPPUNIT, cppunit)
+		AC_SUBST(CPPUNIT_CFLAGS)
+		AC_SUBST(CPPUNIT_LIBS)
+	fi
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -404,6 +415,7 @@ if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
 			  mozilla-plugin	\
 			  gio-unix-2.0		\
+			  nspr \
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0	\
@@ -569,32 +581,6 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 dnl ---------------------------------------------------------------------------
-dnl - DocBook Documentation
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(docbook-docs, [  --enable-docbook-docs   build documentation (requires xmlto)],enable_docbook_docs=$enableval,enable_docbook_docs=auto)
-AC_PATH_PROG(XMLTO, xmlto, no)
-AC_MSG_CHECKING([whether to build DocBook documentation])
-if test x$XMLTO = xno ; then
-	have_docbook=no
-else
-	have_docbook=yes
-fi
-if test x$enable_docbook_docs = xauto ; then
-	if test x$have_docbook = xno ; then
-		enable_docbook_docs=no
-	else
-		enable_docbook_docs=yes
-	fi
-fi
-if test x$enable_docbook_docs = xyes; then
-	if test x$have_docbook = xno; then
-		AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
-	fi
-fi
-AM_CONDITIONAL(DOCBOOK_DOCS_ENABLED, test x$enable_docbook_docs = xyes)
-AC_MSG_RESULT(yes)
-
-dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of security framework
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([security_framework],
@@ -633,7 +619,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,opkg,pisi,portage,razor,smart,urpmi,yum,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -863,6 +849,14 @@ echo "
         Default backend:           ${with_default_backend}
 "
 
+if test ! -x "$CONSOLEKIT_DAEMON"; then
+	echo "**********************************************************************"
+	echo "** ConsoleKit doesn't look to be installed (it's a running dependency)"
+	echo "** You will be able to run PackageKit without ConsoleKit"
+	echo "** but it is not supported nor recommended."
+	echo "**********************************************************************"
+	echo ""
+fi
 
 
 # warn that dummy is basically broken

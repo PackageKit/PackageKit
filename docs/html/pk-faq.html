@@ -354,8 +354,8 @@ except dbus.DBusException, e:
     sys.exit()
 try:
     proxy = bus.get_object('org.freedesktop.PackageKit', '/org/freedesktop/PackageKit')
-    iface = dbus.Interface(proxy, 'org.freedesktop.PackageKit')
-    iface.InstallPackageName('openoffice-clipart')
+    iface = dbus.Interface(proxy, 'org.freedesktop.PackageKit.Modify')
+    iface.InstallPackageNames(0, ["openoffice-clipart", "openoffice-clipart-extras"], "show-confirm-search,hide-finished")
 except dbus.DBusException, e:
     print 'Unable to use PackageKit: %s' % str(e)
 </pre>

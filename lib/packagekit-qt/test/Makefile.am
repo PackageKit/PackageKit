@@ -3,7 +3,6 @@ include ${top_srcdir}/moc.mk
 NULL =
 
 INCLUDES =						\
-	$(QTGUI_CFLAGS)					\
 	$(QTCORE_CFLAGS)				\
 	$(QTDBUS_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
@@ -36,7 +35,6 @@ $(pk_self_test_OBJECTS) :				\
 	$(NULL)
 
 pk_self_test_LDADD =					\
-	$(QTGUI_LIBS)					\
 	$(QTCORE_LIBS)					\
 	$(QTDBUS_LIBS)					\
 	$(POLKIT_LIBS)					\

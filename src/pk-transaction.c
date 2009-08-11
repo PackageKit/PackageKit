@@ -352,6 +352,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	/* could the update list have changed? */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -3103,7 +3104,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	GError *error;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
-	gchar *content_type;
+	gchar *content_type = NULL;
 	guint length;
 	guint i;
 
@@ -3120,7 +3121,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check if the sender is the same */
@@ -3128,7 +3129,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	if (!ret) {
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check all files exists and are valid */
@@ -3142,7 +3143,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 					     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* get content type */
@@ -3152,18 +3153,17 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 					     "Failed to get content type for file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* supported content type? */
 		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		g_free (content_type);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					     "MIME type not supported %s", full_paths[i]);
+					     "MIME type '%s' not supported %s", content_type, full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* valid */
@@ -3177,7 +3177,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 				pk_transaction_release_tid (transaction);
 				pk_transaction_dbus_return_error (context, error);
 				g_error_free (error_local);
-				return;
+				goto out;
 			}
 		}
 	}
@@ -3187,7 +3187,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3197,6 +3197,8 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
+out:
+	g_free (content_type);
 	return;
 }
 

@@ -2322,7 +2322,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
             # add link to bohdi if available
             if notice['update_id']:
-                href = "https://admin.fedoraproject.org/updates/%s" % notice['update_id']
+                releasever = self.yumbase.conf.yumvar['releasever']
+                href = "https://admin.fedoraproject.org/updates/F%s/%s" % (releasever, notice['update_id'])
                 title = "%s Update %s" % (notice['release'], notice['update_id'])
                 urls['vendor'].append("%s;%s" % (href, title))
 

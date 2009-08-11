@@ -12,7 +12,7 @@ To regenerate, just run:
 > make api
 
 Note: this require gapi2-parser, ususally found in the gtk-sharp-2.0 or gtk-gapi
-package. This dependency is NOT checked at configure time.
+package.
 
 Massaging the raw api, customizing generated sources
 ----------------------------------------------------
@@ -23,7 +23,7 @@ directory.
 If you modify the PackageKit.metadata file, packagekit-api.xml will be regenerated
 before generating the code.
 
-Note: this require gapi2-fixup ang gapi2-codegen, not checked at configure time
+Note: this require gapi2-fixup ang gapi2-codegen.
 
 Building
 --------

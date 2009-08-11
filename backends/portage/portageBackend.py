@@ -363,6 +363,42 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             return aux_get(cpv, keys)
 
+    def get_size(self, cpv):
+        '''
+        Returns the installed size if the package is installed.
+        Otherwise, the size of files needed to be downloaded.
+        If some required files have been downloaded,
+        only the remaining size will be considered.
+        '''
+        size = 0
+        if self.is_installed(cpv):
+            size = self.get_metadata(cpv, ["SIZE"])[0]
+            if size == '':
+                size = 0
+            else:
+                size = int(size)
+        else:
+            settings, trees, _ = _emerge.actions.load_emerge_config()
+            root_config = trees[self.psettings["ROOT"]]["root_config"]
+            db_keys = list(portage.portdb._aux_cache_keys)
+            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+
+            package = _emerge.Package.Package(
+                    type_name="ebuild",
+                    built=False,
+                    installed=False,
+                    root_config=root_config,
+                    cpv=cpv,
+                    metadata=metadata,
+                    operation="uninstall")
+
+            fetch_file = portage.portdb.getfetchsizes(package[2],
+                    package.use.enabled)
+            for f in fetch_file:
+                size += fetch_file[f]
+
+        return size
+
     def get_cpv_slotted(self, cpv_list):
         cpv_dict = {}
 
@@ -694,20 +730,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         nb_pkg = float(len(pkgs))
         pkg_processed = 0.0
 
-        def get_size(cpv):
-            # should return package size if not installed
-            # or 0 if installed
-            if self.is_installed(cpv):
-                return 0
-            ebuild = portage.portdb.findname(cpv)
-            if not ebuild: # should probably not happen
-                return 0
-            dir = os.path.dirname(ebuild)
-            manifest = portage.manifest.Manifest(dir,
-                    portage.settings["DISTDIR"])
-            uris = portage.portdb.getFetchMap(cpv)
-            return manifest.getDistfilesSize(uris)
-
         for pkg in pkgs:
             cpv = id_to_cpv(pkg)
 
@@ -720,7 +742,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                     ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
 
             self.details(self.cpv_to_id(cpv), license, get_group(cpv),
-                    desc, homepage, get_size(cpv))
+                    desc, homepage, self.get_size(cpv))
 
             pkg_processed += 100.0
             self.percentage(int(pkg_processed/nb_pkg))
