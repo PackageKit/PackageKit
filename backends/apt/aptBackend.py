@@ -1032,6 +1032,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         self._check_init(prange=(0,10))
         pkgs=[]
+        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1039,15 +1040,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s isn't available" % id)
                 return
             pkgs.append(pkg.name[:])
-            try:
-                # Actually should be fixed in python-apt
-                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-                pkg.markInstall(True, True, auto)
-            except:
-                self._open_cache(prange=(90,100))
-                self.error(ERROR_UNKNOWN,
-                           "%s could not be queued for update" % pkg.name)
-                return
+            # Actually should be fixed in python-apt
+            auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
+            pkg.markInstall(True, True, auto)
+        ac.release()
         # Error out if the updates would require the removal of already
         # installed packages
         if self._cache._depcache.DelCount:
