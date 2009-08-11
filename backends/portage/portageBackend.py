@@ -263,7 +263,7 @@ def is_repository_enabled(layman_db, repo_name):
         return True
     return False
 
-class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
+class PackageKitPortageBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, sigquit)
