@@ -620,7 +620,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def get_updates(self, filters):
         """
-        Implement the {backend}-get-update functionality
+        Implement the {backend}-get-update functionality.
+
+        Only report updates which can be installed safely: Which can depend
+        on the installation of additional packages but which don't require
+        the removal of already installed packages or block any other update.
         """
         def succeeds_security_update(pkg):
             """
@@ -650,13 +654,39 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
-        self._cache.upgrade(distUpgrade=True)
-        updates = [pkg.name for pkg in self._cache if pkg.isUpgradable]
-        for pkg in self._cache.getChanges():
-            if not (pkg.markedUpgrade and pkg.isUpgradable):
+        # Start with a safe upgrade
+        self._cache.upgrade()
+        upgrades_safe = self._cache.getChanges()
+        # Search for upgrades which are not already part of the safe upgrade
+        # but would only require the installation of additional packages
+        upgrades_additional = []
+        for pkg in self._cache:
+            if not pkg.isUpgradable:
                 continue
-            updates.remove(pkg.name)
+            pklog.debug("Checking upgrade of %s" % pkg.name)
+            if not pkg in upgrades_safe:
+                # Check if the upgrade would require the removal of an already
+                # installed package. If this is the case it will be skipped
+                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
+                pkg.markInstall(True, True, auto)
+                if self._cache._depcache.DelCount or \
+                   self._cache._depcache.BrokenCount:
+                    # The update is broken
+                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
+                    # Reset the cache to a state where all safe and additional
+                    # packages are marked for installation
+                    ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+                    self._cache.clear()
+                    self._cache.upgrade()
+                    for upd in upgrades_additional:
+                        auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
+                        upd.markInstall(True, True, auto)
+                    ac.release()
+                    continue
+            # The update can be safely installed
+            upgrades_additional.append(pkg)
             info = INFO_NORMAL
+            # Detect the nature of the upgrade (e.g. security, enhancement)
             archive = pkg.candidateOrigin[0].archive
             origin = pkg.candidateOrigin[0].origin
             trusted = pkg.candidateOrigin[0].trusted
@@ -666,8 +696,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     label == "Debian-Security":
                     info = INFO_SECURITY
                 elif succeeds_security_update(pkg):
-                    pklog.debug("Update of %s succeeds a security "
-                                "update. Raising its priority." % pkg.name)
+                    pklog.debug("Update of %s succeeds a security update. "
+                                "Raising its priority." % pkg.name)
                     info = INFO_SECURITY
                 elif archive.endswith("-backports"):
                     info = INFO_ENHANCEMENT
@@ -676,9 +706,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if origin in ["Backports.org archive"] and trusted == True:
                 info = INFO_ENHANCEMENT
             self._emit_package(pkg, info, force_candidate=True)
-        # Report packages that are upgradable but cannot be upgraded
-        for missed in updates:
-            self._emit_package(self._cache[missed], INFO_BLOCKED)
         self._cache.clear()
 
     def get_update_detail(self, pkg_ids):
