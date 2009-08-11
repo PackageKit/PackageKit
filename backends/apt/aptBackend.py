@@ -1039,10 +1039,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % id)
                 return
-            if not pkg.isUpgradable:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                           "Package %s is already up-to-date" % pkg.name)
-                return
             pkgs.append(pkg.name[:])
             try:
                 pkg.markUpgrade()
