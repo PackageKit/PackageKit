@@ -657,9 +657,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Start with a safe upgrade
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        for upgrade in upgrades_safe:
+            resolver.Clear(upgrade._pkg)
+            resolver.Protect(upgrade._pkg)
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
-        upgrades_additional = []
         for pkg in self._cache:
             if not pkg.isUpgradable:
                 continue
@@ -667,24 +670,22 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not pkg in upgrades_safe:
                 # Check if the upgrade would require the removal of an already
                 # installed package. If this is the case it will be skipped
-                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-                pkg.markInstall(False, True, auto)
-                if self._cache._depcache.DelCount or \
-                   self._cache._depcache.BrokenCount:
-                    # The update is broken
+                resolver.Clear(pkg._pkg)
+                resolver.Protect(pkg._pkg)
+                resolver.InstallProtect()
+                try:
+                    resolver.Resolve(True)
+                except:
                     self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    # Reset the cache to a state where all safe and additional
-                    # packages are marked for installation
-                    ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+                    resolver.Clear(pkg._pkg)
                     self._cache.clear()
-                    self._cache.upgrade()
-                    for upd in upgrades_additional:
-                        auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
-                        upd.markInstall(False, True, auto)
-                    ac.release()
+                    continue
+                if self._cache._depcache.DelCount:
+                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
+                    resolver.Clear(pkg._pkg)
+                    self._cache.clear()
                     continue
             # The update can be safely installed
-            upgrades_additional.append(pkg)
             info = INFO_NORMAL
             # Detect the nature of the upgrade (e.g. security, enhancement)
             archive = pkg.candidateOrigin[0].archive
@@ -805,35 +806,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,5))
-        # Perform a safe upgrade
+        # Start with protecting all safe upgrades
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        for upgrade in upgrades_safe:
+            resolver.Clear(upgrade._pkg)
+            resolver.Protect(upgrade._pkg)
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
-        upgrades_additional = []
         for pkg in self._cache:
-            if not pkg.isUpgradable:
+            if not pkg.isUpgradable or pkg in upgrades_safe:
                 continue
             pklog.debug("Checking upgrade of %s" % pkg.name)
-            if not pkg in upgrades_safe:
-                # Check if the upgrade would require the removal of an already
-                # installed package. If this is the case it will be skipped
-                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-                pkg.markInstall(False, True, auto)
-                if self._cache._depcache.DelCount or \
-                   self._cache._depcache.BrokenCount:
-                    # Reset the cache to a state where all safe and additional
-                    # packages are marked for installation
-                    ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
-                    self._cache.clear()
-                    self._cache.upgrade()
-                    for upd in upgrades_additional:
-                        auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
-                        upd.markInstall(False, True, auto)
-                    ac.release()
-                    continue
-            # The update can be safely installed
-            upgrades_additional.append(pkg)
+            resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
+            resolver.InstallProtect()
+            try:
+                resolver.Resolve(True)
+            except:
+                resolver.Clear(pkg._pkg)
+                self._cache.clear()
+                continue
+            if self._cache._depcache.DelCount:
+                resolver.Clear(pkg._pkg)
+                self._cache.clear()
+                continue
+        resolver.InstallProtect()
+        resolver.Resolve(True)
         if not self._commit_changes(): return False
 
     @unlock_cache_afterwards
