@@ -805,15 +805,37 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,5))
-        try:
-            self._cache.upgrade(distUpgrade=False)
-        except:
-            self._cache.clear()
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "Failed to upgrade the system.")
-            return
+        # Perform a safe upgrade
+        self._cache.upgrade()
+        upgrades_safe = self._cache.getChanges()
+        # Search for upgrades which are not already part of the safe upgrade
+        # but would only require the installation of additional packages
+        upgrades_additional = []
+        for pkg in self._cache:
+            if not pkg.isUpgradable:
+                continue
+            pklog.debug("Checking upgrade of %s" % pkg.name)
+            if not pkg in upgrades_safe:
+                # Check if the upgrade would require the removal of an already
+                # installed package. If this is the case it will be skipped
+                #FIXME: Should use the resolver to protect safe upgrades
+                auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
+                pkg.markInstall(True, True, auto)
+                if self._cache._depcache.DelCount or \
+                   self._cache._depcache.BrokenCount:
+                    # Reset the cache to a state where all safe and additional
+                    # packages are marked for installation
+                    ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+                    self._cache.clear()
+                    self._cache.upgrade()
+                    for upd in upgrades_additional:
+                        auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
+                        upd.markInstall(True, True, auto)
+                    ac.release()
+                    continue
+            # The update can be safely installed
+            upgrades_additional.append(pkg)
         if not self._commit_changes(): return False
-        self.percentage(100)
 
     @unlock_cache_afterwards
     def remove_packages(self, allowdeps, autoremove, ids):
