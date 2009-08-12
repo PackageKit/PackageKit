@@ -668,7 +668,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 # Check if the upgrade would require the removal of an already
                 # installed package. If this is the case it will be skipped
                 auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-                pkg.markInstall(True, True, auto)
+                pkg.markInstall(False, True, auto)
                 if self._cache._depcache.DelCount or \
                    self._cache._depcache.BrokenCount:
                     # The update is broken
@@ -680,7 +680,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     self._cache.upgrade()
                     for upd in upgrades_additional:
                         auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
-                        upd.markInstall(True, True, auto)
+                        upd.markInstall(False, True, auto)
                     ac.release()
                     continue
             # The update can be safely installed
@@ -818,9 +818,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not pkg in upgrades_safe:
                 # Check if the upgrade would require the removal of an already
                 # installed package. If this is the case it will be skipped
-                #FIXME: Should use the resolver to protect safe upgrades
                 auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-                pkg.markInstall(True, True, auto)
+                pkg.markInstall(False, True, auto)
                 if self._cache._depcache.DelCount or \
                    self._cache._depcache.BrokenCount:
                     # Reset the cache to a state where all safe and additional
@@ -830,7 +829,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     self._cache.upgrade()
                     for upd in upgrades_additional:
                         auto = self._cache._depcache.IsAutoInstalled(upd._pkg)
-                        upd.markInstall(True, True, auto)
+                        upd.markInstall(False, True, auto)
                     ac.release()
                     continue
             # The update can be safely installed
