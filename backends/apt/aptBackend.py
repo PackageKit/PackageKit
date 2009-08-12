@@ -828,6 +828,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         self._check_init(prange=(0,10))
         pkgs=[]
+        action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -838,17 +840,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
                 return
-            pkgs.append(pkg.name[:])
             if pkg._pkg.Essential == True:
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                            "Package %s cannot be removed." % pkg.name)
                 return
-            try:
-                pkg.markDelete()
-            except:
-                self._open_cache(prange=(90,99))
-                self.error(ERROR_UNKNOWN, "Removal of %s failed" % pkg.name)
-                return
+            pkgs.append(pkg.name[:])
+            pkg.markDelete(False, False)
+            resolver.Clear(pkg._pkg)
+            resolver.Remove(pkg._pkg)
+        try:
+            resolver.Resolve()
+        except SystemError, error:
+            broken = [pkg.name for pkg in self._cache if \
+                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages would break and so block the "
+                       "removal: %s" % " ".join(broken))
+            return
+        action_group.release()
+        # Error out if the installation would the installation or upgrade of
+        # other packages
+        if self._cache._depcache.InstCount:
+            installed = [pkg.name for pkg in self._cache.getChanges() if \
+                         pkg.markedInstall or pkg.markedUpgrade]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages would have to upgraded or "
+                       "installed and so block the removal: "
+                       "%s" % " ".join(installed))
+            return
         if not self._commit_changes(fetch_range=(10,10),
                                     install_range=(10,90)):
             return False
