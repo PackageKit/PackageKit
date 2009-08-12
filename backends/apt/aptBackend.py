@@ -1614,10 +1614,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pass
         self._open_cache(prange)
 
+    def _check_trusted(self):
+        """Emit a message if untrusted packages would be installed."""
+        untrusted = [pkg.name for pkg in self._cache \
+                     if (pkg.markedInstall or pkg.markedUpgrade) and \
+                         not pkg.candidate.origins[0].trusted]
+        if untrusted:
+            self.message(MESSAGE_UNTRUSTED_PACKAGE, " ".join(untrusted))
+
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
         Commit changes to the cache and handle errors
         """
+        self._check_trusted()
         try:
             self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
                                PackageKitInstallProgress(self, install_range))
