@@ -1073,7 +1073,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         pkgs=[]
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
-        resolve = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
