@@ -1033,6 +1033,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         pkgs=[]
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+        resolve = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1046,7 +1047,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
             auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
-            pkg.markInstall(True, True, auto)
+            pkg.markInstall(False, True, auto)
+            resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
+        try:
+            resolver.Resolve(True)
+        except SystemError, error:
+            broken = [pkg.name for pkg in self._cache if \
+                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the installation: "
+                       "%s" % " ".join(broken))
+            return
         ac.release()
         # Error out if the updates would require the removal of already
         # installed packages
@@ -1131,6 +1143,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         pkgs=[]
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1142,7 +1155,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s is already installed" % pkg.name)
                 return
             pkgs.append(pkg.name[:])
-            pkg.markInstall(True, True, True)
+            pkg.markInstall(False, True, True)
+            resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
+        try:
+            resolver.Resolve(True)
+        except SystemError, error:
+            broken = [pkg.name for pkg in self._cache if \
+                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the installation: "
+                       "%s" % " ".join(broken))
+            return
         ac.release()
         # Error out if the installation would require the removal of already
         # installed packages
