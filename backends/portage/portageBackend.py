@@ -56,7 +56,6 @@ from itertools import izip
 # ERRORS with messages ?
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
-# lock ?
 
 # Map Gentoo categories to the PackageKit group name space
 CATEGORY_GROUP_MAP = {
@@ -264,9 +263,9 @@ def is_repository_enabled(layman_db, repo_name):
         return True
     return False
 
-class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
+class PackageKitPortageBackend(PackageKitBaseBackend):
 
-    def __init__(self, args, lock=True):
+    def __init__(self, args):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
 
@@ -279,15 +278,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         self.orig_err = None
 
         # do not log with mod_echo
-        #def filter_echo(x): return x != 'echo'
+        '''
+        def filter_echo(x): return x != 'echo'
 
-        #elogs = self.psettings["PORTAGE_ELOG_SYSTEM"].split()
-        #print elogs
-        #elogs = filter(filter_echo, elogs)
-        #print elogs
-
-        if lock:
-            self.doLock()
+        elogs = self.psettings["PORTAGE_ELOG_SYSTEM"].split()
+        elogs = filter(filter_echo, elogs)
+        self.psettings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        '''
 
     # TODO: should be removed when using non-verbose function API
     def block_output(self):
@@ -575,7 +572,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         Get a list of cpv, portage settings and tree and recursive parameter
         And returns the list of packages required for cpv list
         '''
-        # TODO: should see if some cpv in the input list is not a dep of another
         packages_list = []
 
         myopts = {}
@@ -619,7 +615,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
                         if not isinstance(n, _emerge.SetArg.SetArg):
                             packages_list.append(n)
 
-        return packages_list
+        # remove cpv_input that may be added to the list
+        def filter_cpv_input(x): return x.cpv not in cpv_input
+        return filter(filter_cpv_input, packages_list)
 
     def package(self, cpv, info=None):
         desc = self.get_metadata(cpv, ["DESCRIPTION"])[0]
@@ -1083,6 +1081,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
+        # do not log with mod_echo
+        '''
+        def filter_echo(x): return x != 'echo'
+
+        elogs = settings["PORTAGE_ELOG_SYSTEM"].split()
+        elogs = filter(filter_echo, elogs)
+        settings.unlock()
+        settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        settings.backup_changes("PORTAGE_ELOG_SYSTEM")
+        settings.regenerate()
+        '''
+
         depgraph = _emerge.depgraph.depgraph(settings, trees,
                 myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
@@ -1531,7 +1541,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend, PackagekitPackage):
             self.unblock_output()
 
 def main():
-    backend = PackageKitPortageBackend("") #'', lock=True)
+    backend = PackageKitPortageBackend("")
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":

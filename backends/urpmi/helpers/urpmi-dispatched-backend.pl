@@ -123,8 +123,8 @@ sub get_depends {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, @{$args}[0]);
-  my $recursive_option = @{$args}[1] eq "yes" ? 1 : 0;
-  my @packageidstab = split(/&/, @{$args}[2]);
+  my @packageidstab = split(/&/, @{$args}[1]);
+  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
   
   pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
   
@@ -278,8 +278,8 @@ sub get_requires {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, @{$args}[0]);
-  my $recursive_option = @{$args}[1] eq "yes" ? 1 : 0;
-  my @packageidstab = split(/&/, @{$args}[2]);
+  my @packageidstab = split(/&/, @{$args}[1]);
+  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
   
   my @pkgnames;
   foreach (@packageidstab) {
