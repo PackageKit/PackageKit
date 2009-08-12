@@ -655,6 +655,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         # Start with a safe upgrade
+        self.status(STATUS_DEP_RESOLVE)
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
@@ -810,6 +811,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         self._check_init(prange=(0,5))
         # Start with protecting all safe upgrades
+        self.status(STATUS_DEP_RESOLVE)
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
@@ -850,6 +852,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
+        self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
         action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
@@ -1071,6 +1074,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
+        self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
@@ -1181,6 +1185,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
+        self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
