@@ -446,7 +446,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         # Check for required restarts
         if os.path.exists("/var/run/reboot-required") and \
            os.path.getmtime("/var/run/reboot-required") > self.start_time:
-            self._backend.RequireRestart(RESTART_SYSTEM, "")
+            self._backend.require_restart(RESTART_SYSTEM, "")
 
 
 class PackageKitDpkgInstallProgress(DpkgInstallProgress,
