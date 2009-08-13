@@ -1416,7 +1416,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-get-requires functionality
         """
         pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
-        recursive = text_to_bool(rescursive_text)
+        recursive = text_to_bool(recursive_text)
         #FIXME: recursive is not yet implemented
         if recursive == True:
             pklog.warn("Recursive dependencies are not implemented")
