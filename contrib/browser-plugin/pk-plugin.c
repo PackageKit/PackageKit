@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include <glib-object.h>
+#include <gtk/gtk.h>
 
 #include "pk-main.h"
 #include "pk-plugin.h"
@@ -37,6 +38,8 @@ struct PkPluginPrivate
 	guint			 height;
 	Display			*display;
 	Visual			*visual;
+	Window			 window;
+	GdkWindow		*gdk_window;
 	GHashTable		*data;
 };
 
@@ -54,6 +57,8 @@ enum {
 	PROP_DISPLAY,
 	PROP_VISUAL,
 	PROP_STARTED,
+	PROP_WINDOW,
+	PROP_GDKWINDOW,
 	PROP_LAST,
 };
 
@@ -262,6 +267,12 @@ pk_plugin_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_STARTED:
 		g_value_set_boolean (value, plugin->priv->started);
 		break;
+	case PROP_WINDOW:
+		g_value_set_ulong (value, plugin->priv->window);
+		break;
+	case PROP_GDKWINDOW:
+		g_value_set_pointer (value, plugin->priv->gdk_window);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -296,6 +307,12 @@ pk_plugin_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 		break;
 	case PROP_STARTED:
 		plugin->priv->started = g_value_get_boolean (value);
+		break;
+	case PROP_WINDOW:
+		plugin->priv->window = g_value_get_ulong (value);
+		break;
+	case PROP_GDKWINDOW:
+		plugin->priv->gdk_window = g_value_get_pointer (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -369,6 +386,15 @@ pk_plugin_class_init (PkPluginClass *klass)
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STARTED, pspec);
 
+	pspec = g_param_spec_ulong ("window", NULL, NULL,
+				    0, G_MAXULONG, 0,
+				    G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_WINDOW, pspec);
+
+	pspec = g_param_spec_pointer ("gdk-window", NULL, NULL,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_GDKWINDOW, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkPluginPrivate));
 }
 
@@ -386,6 +412,8 @@ pk_plugin_init (PkPlugin *plugin)
 	plugin->priv->height = 0;
 	plugin->priv->display = NULL;
 	plugin->priv->visual = NULL;
+	plugin->priv->window = 0;
+	plugin->priv->gdk_window = NULL;
 	plugin->priv->data = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
