@@ -347,7 +347,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         for cpv in cpv_list:
             if self.is_installed(cpv) == installed:
-                if self.cmp_cpv(cpv, never) == 1:
+                if self.cmp_cpv(cpv, newer) == 1:
                     newer = cpv
 
         return newer
