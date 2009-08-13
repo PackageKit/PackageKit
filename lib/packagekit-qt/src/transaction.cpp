@@ -42,6 +42,7 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 
 	connect(d->p, SIGNAL(AllowCancel(bool)), this, SIGNAL(allowCancelChanged(bool)));
 	connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)), this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
+	connect(d->p, SIGNAL(Destroy()), d, SLOT(destroy()));
 	connect(d->p, SIGNAL(Details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)), d, SLOT(details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)));
 	connect(d->p, SIGNAL(DistroUpgrade(const QString&, const QString&, const QString&)), d, SLOT(distroUpgrade(const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(ErrorCode(const QString&, const QString&)), d, SLOT(errorCode(const QString&, const QString&)));
@@ -77,6 +78,7 @@ Transaction::Transaction(const QString& tid, const QString& timespec, bool succe
 	d->uid = uid;
 	d->cmdline = cmdline;
 	d->client = parent;
+	d->error = Client::NoError;
 }
 
 Transaction::~Transaction()
@@ -87,6 +89,11 @@ Transaction::~Transaction()
 QString Transaction::tid() const
 {
 	return d->tid;
+}
+
+Client::DaemonError Transaction::error () const
+{
+	return d->error;
 }
 
 bool Transaction::allowCancel()
@@ -101,16 +108,9 @@ bool Transaction::callerActive()
 
 void Transaction::cancel()
 {
-	if (!d->p->Cancel().isValid ()) {
-#if 0
-		// Cancel failed, maybe it's not our transaction and we need authorization
-		if(!PolkitClient::instance()->getAuth(AUTH_CANCEL_FOREIGN)) {
-			// FIXME : should warn somehow here
-			qDebug () << "Authorization to cancel foreign failed";
-			return;
-		}
-#endif
-		d->p->Cancel();
+	QDBusReply<void> r = d->p->Cancel ();
+	if (!r.isValid ()) {
+		d->error = Util::errorFromString (r.error ().message ());
 	}
 }
 

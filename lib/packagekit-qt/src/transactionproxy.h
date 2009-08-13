@@ -180,10 +180,10 @@ public Q_SLOTS: // METHODS
         return callWithArgumentList(QDBus::Block, QLatin1String("InstallFiles"), argumentList);
     }
 
-    inline QDBusReply<void> InstallPackages(const QStringList &package_ids)
+    inline QDBusReply<void> InstallPackages(bool only_trusted, const QStringList &package_ids)
     {
         QList<QVariant> argumentList;
-        argumentList << qVariantFromValue(package_ids);
+        argumentList << qVariantFromValue (only_trusted) << qVariantFromValue(package_ids);
         return callWithArgumentList(QDBus::Block, QLatin1String("InstallPackages"), argumentList);
     }
 
@@ -277,16 +277,17 @@ public Q_SLOTS: // METHODS
         return callWithArgumentList(QDBus::Block, QLatin1String("SetLocale"), argumentList);
     }
 
-    inline QDBusReply<void> UpdatePackages(const QStringList &package_ids)
+    inline QDBusReply<void> UpdatePackages(bool only_trusted, const QStringList &package_ids)
     {
         QList<QVariant> argumentList;
-        argumentList << qVariantFromValue(package_ids);
+        argumentList << qVariantFromValue (only_trusted) << qVariantFromValue(package_ids);
         return callWithArgumentList(QDBus::Block, QLatin1String("UpdatePackages"), argumentList);
     }
 
-    inline QDBusReply<void> UpdateSystem()
+    inline QDBusReply<void> UpdateSystem(bool only_trusted)
     {
         QList<QVariant> argumentList;
+		argumentList << qVariantFromValue (only_trusted);
         return callWithArgumentList(QDBus::Block, QLatin1String("UpdateSystem"), argumentList);
     }
 
