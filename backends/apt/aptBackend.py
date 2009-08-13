@@ -868,6 +868,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgs.append(pkg.name[:])
             pkg.markDelete(False, False)
             resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
             resolver.Remove(pkg._pkg)
         try:
             resolver.Resolve()
@@ -1437,6 +1438,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             pkgs.append(pkg)
             resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
             resolver.Remove(pkg._pkg)
         resolver.InstallProtect()
         try:
