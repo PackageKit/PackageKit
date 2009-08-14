@@ -536,8 +536,8 @@ public:
 	 * \sa Transaction::package
 	 *
 	 */
-	Transaction* getDepends(const QList<Package*>& packages, Filters filters = NoFilter, bool recursive = true);
-	Transaction* getDepends(Package* package, Filters filters = NoFilter, bool recursive = true);
+	Transaction* getDepends(const QList<Package*>& packages, Filters filters, bool recursive);
+	Transaction* getDepends(Package* package, Filters filters , bool recursive);
 
 	/**
 	 * Gets more details about the given \p packages
@@ -580,8 +580,8 @@ public:
 	 * The search can be limited using the \p filters parameter. The recursive flag is used to tell
 	 * if the package manager should also search for the package requiring the resulting packages.
 	 */
-	Transaction* getRequires(const QList<Package*>& packages, Filters filters = NoFilter, bool recursive = true);
-	Transaction* getRequires(Package* package, Filters filters = NoFilter, bool recursive = true);
+	Transaction* getRequires(const QList<Package*>& packages, Filters filters, bool recursive);
+	Transaction* getRequires(Package* package, Filters filters, bool recursive);
 
 	/**
 	 * Retrieves more details about the update for the given \p packages
@@ -633,11 +633,11 @@ public:
 	 * \brief Removes the given \p packages
 	 *
 	 * \p allow_deps if the package manager has the right to remove other packages which depend on the
-	 * pacakges to be removed. \p autoremove tells the package manager to remove all the package which
+	 * packages to be removed. \p autoremove tells the package manager to remove all the package which
 	 * won't be needed anymore after the packages are uninstalled.
 	 */
-	Transaction* removePackages(const QList<Package*>& packages, bool allow_deps = false, bool autoremove = false);
-	Transaction* removePackage(Package* p, bool allow_deps = false, bool autoremove = false);
+	Transaction* removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove);
+	Transaction* removePackage(Package* p, bool allow_deps, bool autoremove);
 
 	/**
 	 * Activates or disables a repository
