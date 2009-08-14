@@ -1251,7 +1251,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
             if not deb.check():
-                self.error(ERROR_UNKNOWN, deb._failureString)
+                self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failure_string)
                 return
             (install, remove, unauthenticated) = deb.required_changes
             pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
