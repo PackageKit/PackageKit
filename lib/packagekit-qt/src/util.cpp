@@ -44,3 +44,31 @@ QString Util::filtersToString(const QFlags<PackageKit::Client::Filter>& flags)
 	return flagStrings.join(";");
 }
 
+Client::DaemonError Util::errorFromString (QString errorName)
+{
+		if (errorName.startsWith ("org.freedesktop.packagekit.")) {
+			return Client::ErrorFailedAuth;
+		}
+
+		errorName.replace ("org.freedesktop.PackageKit.Transaction.", "");
+
+		if (errorName.startsWith ("PermissionDenied") || errorName.startsWith ("RefusedByPolicy")) {
+			return Client::ErrorFailedAuth;
+		}
+
+		if (errorName.startsWith ("PackageIdInvalid") || errorName.startsWith ("SearchInvalid") || errorName.startsWith ("FilterInvalid") || errorName.startsWith ("InvalidProvide") || errorName.startsWith ("InputInvalid")) {
+			return Client::ErrorInvalidInput;
+		}
+
+		if (errorName.startsWith ("PackInvalid") || errorName.startsWith ("NoSuchFile") || errorName.startsWith ("NoSuchDirectory")) {
+			return Client::ErrorInvalidFile;
+		}
+
+		if (errorName.startsWith ("NotSupported")) {
+			return Client::ErrorFunctionNotSupported;
+		}
+
+		return Client::ErrorFailed;
+}
+
+

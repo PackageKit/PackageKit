@@ -22,6 +22,7 @@
 #define CLIENT_H
 
 #include <QtCore>
+#include <QDBusReply>
 
 namespace PackageKit {
 
@@ -262,7 +263,7 @@ public:
 	/**
 	 * Sets a proxy to be used for all the network operations
 	 */
-	void setProxy(const QString& http_proxy, const QString& ftp_proxy);
+	bool setProxy(const QString& http_proxy, const QString& ftp_proxy);
 
 	/**
 	 * \brief Tells the daemon that the system state has changed, to make it reload its cache
@@ -444,11 +445,25 @@ public:
 
 	/**
 	 * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
+	 *
+	 * \sa Client::error
+	 * \sa Transaction::error
 	 */
 	typedef enum {
-		DaemonUnreachable,
-		UnkownDaemonError
+		NoError = 0,
+		ErrorFailed,
+		ErrorFailedAuth,
+		ErrorNoTid,
+		ErrorAlreadyTid,
+		ErrorRoleUnkown,
+		ErrorCannotStartDaemon,
+		ErrorInvalidInput,
+		ErrorInvalidFile,
+		ErrorFunctionNotSupported,
+		ErrorDaemonUnreachable,
+		UnkownError
 	} DaemonError;
+
 	/**
 	 * Returns the last daemon error that was caught
 	 */
@@ -596,9 +611,11 @@ public:
 
 	/**
 	 * Install the given \p packages
+	 *
+	 * \p only_trusted indicates if we should allow installation of untrusted packages (requires a different authorization)
 	 */
-	Transaction* installPackages(const QList<Package*>& packages);
-	Transaction* installPackage(Package* p);
+	Transaction* installPackages(bool only_trusted, const QList<Package*>& packages);
+	Transaction* installPackage(bool only_trusted, Package* p);
 
 	/**
 	 * \brief Installs a signature
@@ -686,13 +703,15 @@ public:
 	/**
 	 * Update the given \p packages
 	 */
-	Transaction* updatePackages(const QList<Package*>& packages);
-	Transaction* updatePackage(Package* package);
+	Transaction* updatePackages(bool only_trusted, const QList<Package*>& packages);
+	Transaction* updatePackage(bool only_trusted, Package* package);
 
 	/**
 	 * Updates the whole system
+	 *
+	 * \p only_trusted indicates if this transaction is only allowed to install trusted packages
 	 */
-	Transaction* updateSystem();
+	Transaction* updateSystem(bool only_trusted);
 
 	/**
 	 * Searchs for a package providing a file/a mimetype
@@ -701,16 +720,9 @@ public:
 
 Q_SIGNALS:
 	/**
-	 * \brief Emitted when PolicyKit doesn't grant the necessary permissions to the user
-	 *
-	 * \p action is the PolicyKit name of the action
+	 * Emitted when the PackageKit daemon sends an error
 	 */
-	void authError(const QString& action);
-
-	/**
-	 * Emitted when the PackageKit daemon is not reachable anymore
-	 */
-	void daemonError(PackageKit::Client::DaemonError e);
+	void error(PackageKit::Client::DaemonError e);
 
 	/**
 	 * Emitted when the daemon's locked state changes
@@ -749,6 +761,10 @@ private:
 	static Client* m_instance;
 	friend class ClientPrivate;
 	ClientPrivate* d;
+
+	void setLastError (DaemonError e);
+	void setTransactionError (Transaction* t, DaemonError e);
+	template<class T> DaemonError daemonErrorFromDBusReply (QDBusReply<T> e);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Actions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)

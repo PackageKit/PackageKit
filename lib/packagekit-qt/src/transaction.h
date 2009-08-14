@@ -50,6 +50,7 @@ class TransactionPrivate;
 class Transaction : public QObject
 {
 	Q_OBJECT
+	Q_ENUMS(TransactionError)
 	Q_ENUMS(Status)
 	Q_ENUMS(ExitStatus)
 	Q_ENUMS(MediaType)
@@ -68,6 +69,14 @@ public:
 	 * \return the TID of the current transaction
 	 */
 	QString tid() const;
+
+
+	/**
+	 * \brief Returns the error status of the Transaction
+	 *
+	 * \return A value from TransactionError describing the state of the transaction
+	 */
+	Client::DaemonError error () const;
 
 	/**
 	 * Indicates weither you can cancel the transaction or not
@@ -284,6 +293,12 @@ Q_SIGNALS:
 	 * \sa Client::getDetails
 	 */
 	void details(PackageKit::Package* package);
+
+	/**
+	 * Sent when the transaction has been destroyed and is
+	 * no longer available for use.
+	 */
+	void destroy ();
 
 	/**
 	 * Emitted when a distribution upgrade is available
