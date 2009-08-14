@@ -25,7 +25,6 @@
 
 #include "common.h"
 #include "daemonproxy.h"
-#include "polkitclient.h"
 #include "transaction.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"

@@ -24,7 +24,6 @@
 #include "package.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
-#include "polkitclient.h"
 #include "util.h"
 
 using namespace PackageKit;
