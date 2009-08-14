@@ -819,7 +819,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # 'gentoo' is a dummy repo
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
 
-        if FILTER_DEVELOPMENT in fltlist:
+        if FILTER_NOT_DEVELOPMENT not in fltlist:
             for o in available_layman_db.overlays.keys():
                 if available_layman_db.overlays[o].is_official() \
                         and available_layman_db.overlays[o].is_supported():
