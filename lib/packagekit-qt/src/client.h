@@ -764,7 +764,6 @@ private:
 
 	void setLastError (DaemonError e);
 	void setTransactionError (Transaction* t, DaemonError e);
-	template<class T> DaemonError daemonErrorFromDBusReply (QDBusReply<T> e);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Actions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)

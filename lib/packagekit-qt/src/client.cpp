@@ -53,6 +53,10 @@ using namespace PackageKit;
 
 Client* Client::m_instance = 0;
 
+template<class T> Client::DaemonError daemonErrorFromDBusReply (QDBusReply<T> e) {
+	return Util::errorFromString (e.error ().name ());
+}
+
 Client* Client::instance()
 {
 	if(!m_instance)
@@ -437,8 +441,5 @@ void Client::setTransactionError (Transaction* t, DaemonError e)
 	t->d->error = e;
 }
 
-template<class T> Client::DaemonError daemonErrorFromDBusReply (QDBusReply<T> e) {
-	return Util::errorFromString (e.error ().name ());
-}
 #include "client.moc"
 
