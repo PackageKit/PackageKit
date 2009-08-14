@@ -1406,6 +1406,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 if (is_full_path and key == f) \
                 or (not is_full_path and searchre.search(f)):
                     self.package(cpv)
+                    break
 
             cpv_processed += 100.0
             self.percentage(int(cpv_processed/nb_cpv))
