@@ -1435,22 +1435,51 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def search_name(self, filters, keys):
-        # NOTES: searching in package name, excluding category
-        # TODO: search for cat/pkg if '/' is found
+        # searching for all keys in package name
+        # also filtering by categories if categery is specified in a key
+        # keys contain more than one category name, no results can be found
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
+
+        categories = []
+        keys_list = keys.split(' ')
+        for k in keys_list[:]:
+            if "/" in k:
+                cat, cp = portage.catsplit(k)
+                categories.append(cat)
+                keys_list[keys_list.index(k)] = cp
+
+        category_filter = None
+        if len(categories) > 1:
+            # nothing will be found because we have two cat/pkg
+            # with a AND operator search
+            return
+        elif len(categories) == 1:
+            category_filter = categories[0]
+
+        # do not use get_search_list because of this category feature
+        search_list = []
+        for k in keys_list:
+            # not done entirely by pk-transaction
+            k = re.escape(k)
+            search_list.append(re.compile(k, re.IGNORECASE))
 
         fltlist = filters.split(';')
         cp_list = self.get_all_cp(fltlist)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
-        search_list = get_search_list(keys)
 
         for cp in cp_list:
-            # pkg name has to correspond to _every_ keys
-            pkg_name = portage.catsplit(cp)[1]
+            if category_filter:
+                cat, pkg_name = portage.catsplit(cp)
+                if cat != category_filter:
+                    continue
+            else:
+                pkg_name = portage.catsplit(cp)[1]
             found = True
+
+            # pkg name has to correspond to _every_ keys
             for s in search_list:
                 if not s.search(pkg_name):
                     found = False
