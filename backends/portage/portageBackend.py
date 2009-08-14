@@ -823,8 +823,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             for o in available_layman_db.overlays.keys():
                 if available_layman_db.overlays[o].is_official() \
                         and available_layman_db.overlays[o].is_supported():
-                    self.repo_detail(o,
-                            available_layman_db.overlays[o].description,
+                    self.repo_detail(o, o,
                             is_repository_enabled(installed_layman_db, o))
 
     def get_requires(self, filters, pkgs, recursive):
