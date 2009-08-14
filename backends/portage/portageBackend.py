@@ -263,15 +263,35 @@ def is_repository_enabled(layman_db, repo_name):
         return True
     return False
 
+class PortageBridge():
+    '''
+    Bridge to portage/emerge settings and variabales to help using them
+    and be sure they are always up-to-date.
+    '''
+
+    def __init__(self):
+        self.settings = None
+        self.trees = None
+        self.mtimedb = None
+        self.vardb = None
+        self.portdb = None
+
+        self.update()
+
+    def update(self):
+        self.settings, self.trees, self.mtimedb = \
+                _emerge.actions.load_emerge_config()
+        self.vardb = self.trees[self.settings['ROOT']]['vartree'].dbapi
+        self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
+
+
 class PackageKitPortageBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
 
-        self.psettings = portage.config()
-        self.vardb = portage.db[portage.settings["ROOT"]]["vartree"].dbapi
-        #self.portdb = portage.db[portage.settings["ROOT"]]["porttree"].dbapi
+        self.pvar = PortageBridge()
 
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
@@ -281,9 +301,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         '''
         def filter_echo(x): return x != 'echo'
 
-        elogs = self.psettings["PORTAGE_ELOG_SYSTEM"].split()
+        elogs = self.pvar.settings["PORTAGE_ELOG_SYSTEM"].split()
         elogs = filter(filter_echo, elogs)
-        self.psettings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        self.pvar.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
         '''
 
     # TODO: should be removed when using non-verbose function API
@@ -300,7 +320,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         sys.stderr = self.orig_err
 
     def is_installed(self, cpv):
-        if self.vardb.cpv_exists(cpv):
+        if self.pvar.vardb.cpv_exists(cpv):
             return True
         return False
 
@@ -308,16 +328,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         if self.is_installed(cpv):
             # actually if is_installed return True that means cpv is in db
             return True
-        elif portage.portdb.cpv_exists(cpv):
+        elif self.pvar.portdb.cpv_exists(cpv):
             return True
 
         return False
 
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
-        db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                self.psettings, treetype="vartree",
-                vartree=self.vardb)
+        db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
+                self.pvar.settings, treetype="vartree",
+                vartree=self.pvar.vardb)
 
         contents = db.getcontents()
         if not contents:
@@ -354,9 +374,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
     def get_metadata(self, cpv, keys, in_dict = False):
         if self.is_installed(cpv):
-            aux_get = self.vardb.aux_get
+            aux_get = self.pvar.vardb.aux_get
         else:
-            aux_get = portage.portdb.aux_get
+            aux_get = self.pvar.portdb.aux_get
 
         if in_dict:
             return dict(izip(keys, aux_get(cpv, keys)))
@@ -378,9 +398,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             else:
                 size = int(size)
         else:
-            settings, trees, _ = _emerge.actions.load_emerge_config()
-            root_config = trees[self.psettings["ROOT"]]["root_config"]
-            db_keys = list(portage.portdb._aux_cache_keys)
+            root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
+            db_keys = list(self.pvar.portdb._aux_cache_keys)
             metadata = self.get_metadata(cpv, db_keys, in_dict=True)
 
             package = _emerge.Package.Package(
@@ -392,7 +411,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     metadata=metadata,
                     operation="uninstall")
 
-            fetch_file = portage.portdb.getfetchsizes(package[2],
+            fetch_file = self.pvar.portdb.getfetchsizes(package[2],
                     package.use.enabled)
             for f in fetch_file:
                 size += fetch_file[f]
@@ -417,24 +436,27 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         def _has_validLicense(cpv):
             metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
-            return not self.psettings._getMissingLicenses(cpv, metadata)
+            return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
             free_licenses = "@FSF-APPROVED"
             if FILTER_FREE in fltlist:
                 licenses = "-* " + free_licenses
-            else:
+            elif FILTER_NOT_FREE in fltlist:
                 licenses = "* -" + free_licenses
-            backup_license = self.psettings["ACCEPT_LICENSE"]
-            self.psettings["ACCEPT_LICENSE"] = licenses
-            self.psettings.backup_changes("ACCEPT_LICENSE")
-            self.psettings.regenerate()
+            backup_license = self.pvar.settings["ACCEPT_LICENSE"]
+
+            self.pvar.settings.unlock()
+            self.pvar.settings["ACCEPT_LICENSE"] = licenses
+            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
+            self.pvar.settings.regenerate()
 
             cpv_list = filter(_has_validLicense, cpv_list)
 
-            self.psettings["ACCEPT_LICENSE"] = backup_license
-            self.psettings.backup_changes("ACCEPT_LICENSE")
-            self.psettings.regenerate()
+            self.pvar.settings["ACCEPT_LICENSE"] = backup_license
+            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
+            self.pvar.settings.regenerate()
+            self.pvar.settings.lock()
 
         return cpv_list
 
@@ -481,13 +503,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cp_list = []
 
         if FILTER_INSTALLED in fltlist:
-            cp_list = self.vardb.cp_all()
+            cp_list = self.pvar.vardb.cp_all()
         elif FILTER_NOT_INSTALLED in fltlist:
-            cp_list = portage.portdb.cp_all()
+            cp_list = self.pvar.portdb.cp_all()
         else:
             # need installed packages first
-            cp_list = self.vardb.cp_all()
-            for cp in portage.portdb.cp_all():
+            cp_list = self.pvar.vardb.cp_all()
+            for cp in self.pvar.portdb.cp_all():
                 if cp not in cp_list:
                     cp_list.append(cp)
 
@@ -506,14 +528,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # populate cpv_list taking care of installed filter
         if FILTER_INSTALLED in fltlist:
-            cpv_list = self.vardb.match(cp)
+            cpv_list = self.pvar.vardb.match(cp)
         elif FILTER_NOT_INSTALLED in fltlist:
-            for cpv in portage.portdb.match(cp):
+            for cpv in self.pvar.portdb.match(cp):
                 if not self.is_installed(cpv):
                     cpv_list.append(cpv)
         else:
-            cpv_list = self.vardb.match(cp)
-            for cpv in portage.portdb.match(cp):
+            cpv_list = self.pvar.vardb.match(cp)
+            for cpv in self.pvar.portdb.match(cp):
                 if cpv not in cpv_list:
                     cpv_list.append(cpv)
 
@@ -535,7 +557,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 ["KEYWORDS", "repository", "SLOT"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.psettings["ACCEPT_KEYWORDS"].split()
+        sys_keywords = self.pvar.settings["ACCEPT_KEYWORDS"].split()
         keywords = []
 
         for x in sys_keywords:
@@ -544,7 +566,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # if no keywords, check in package.keywords
         if not keywords:
-            key_dict = self.psettings.pkeywordsdict.get(portage.dep_getkey(cpv))
+            key_dict = self.pvar.settings.pkeywordsdict.get(
+                    portage.dep_getkey(cpv))
             if key_dict:
                 for _, keys in key_dict.iteritems():
                     for x in keys:
@@ -567,10 +590,10 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return get_package_id(package, version, ' '.join(keywords), repo)
 
-    def get_packages_required(self, cpv_input, settings, trees, recursive):
+    def get_packages_required(self, cpv_input, recursive):
         '''
-        Get a list of cpv, portage settings and tree and recursive parameter
-        And returns the list of packages required for cpv list
+        Get a list of cpv and recursive parameter.
+        Returns the list of packages required for cpv list.
         '''
         packages_list = []
 
@@ -580,8 +603,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "remove")
-        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
-                myparams, None)
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
 
         # TODO: atm, using FILTER_INSTALLED because it's quicker
         # and we don't want to manage non-installed packages
@@ -590,7 +613,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 depgraph._dynamic_config._dep_stack.append(
                         _emerge.Dependency.Dependency(
                             atom=portage.dep.Atom('=' + cpv),
-                            root=portage.settings["ROOT"], parent=None))
+                            root=self.pvar.settings["ROOT"], parent=None))
 
         if not depgraph._complete_graph():
             self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
@@ -657,12 +680,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myopts = {}
         myopts["--selective"] = True
         myopts["--deep"] = True
-        settings, trees, _ = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
         depgraph = _emerge.depgraph.depgraph(
-                settings, trees, myopts, myparams, None)
+                self.pvar.settings, self.pvar.trees, myopts, myparams, None)
         retval, fav = depgraph.select_files(cpv_input)
 
         if not retval:
@@ -862,10 +884,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
             cpv_input.append(cpv)
 
-        settings, trees, _ = _emerge.actions.load_emerge_config()
-
-        packages_list = self.get_packages_required(cpv_input,
-                settings, trees, recursive)
+        packages_list = self.get_packages_required(cpv_input, recursive)
 
         # now we can populate cpv_list
         cpv_list = []
@@ -897,10 +916,10 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
             cpv = id_to_cpv(pkg)
 
-            if not portage.portdb.cpv_exists(cpv):
+            if not self.pvar.portdb.cpv_exists(cpv):
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
 
-            for cpv in self.vardb.match(portage.pkgsplit(cpv)[0]):
+            for cpv in self.pvar.vardb.match(portage.pkgsplit(cpv)[0]):
                 updates.append(cpv)
             updates = "&".join(updates)
 
@@ -936,8 +955,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
 
-        settings, trees, _ = _emerge.actions.load_emerge_config()
-        root_config = trees[self.psettings["ROOT"]]["root_config"]
+        root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
 
         update_candidates = []
         cpv_updates = {}
@@ -952,8 +970,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # check if a candidate can be updated
         for cp in update_candidates:
-            cpv_list_inst = self.vardb.match(cp)
-            cpv_list_avai = portage.portdb.match(cp)
+            cpv_list_inst = self.pvar.vardb.match(cp)
+            cpv_list_avai = self.pvar.portdb.match(cp)
 
             cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
             cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
@@ -984,7 +1002,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
                 # no update for this slot
                 if len(cpv_list_updates) == 0:
-                    if [cpv_inst] == portage.portdb.visible([cpv_inst]):
+                    if [cpv_inst] == self.pvar.portdb.visible([cpv_inst]):
                         break # really no update
                     else:
                         # that's actually a downgrade or even worst
@@ -1076,7 +1094,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # creating installation depgraph
         myopts = {}
         favorites = []
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
@@ -1092,8 +1109,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         settings.regenerate()
         '''
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees,
-                myopts, myparams, None)
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
             self.error(ERROR_INTERNAL_ERROR,
@@ -1103,9 +1120,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    favorites, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
@@ -1119,14 +1136,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         myopts = {'--quiet': True}
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
 
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
 
         if force:
             timestamp_path = os.path.join(
-                    settings["PORTDIR"], "metadata", "timestamp.chk")
+                    self.pvar.settings["PORTDIR"], "metadata", "timestamp.chk")
             if os.access(timestamp_path, os.F_OK):
                 os.remove(timestamp_path)
 
@@ -1134,7 +1150,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             self.block_output()
             for o in installed_layman_db.overlays.keys():
                 installed_layman_db.sync(o, True)
-            _emerge.actions.action_sync(settings, trees, mtimedb, myopts, "")
+            _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
+                    self.pvar.mtimedb, myopts, "")
         except:
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
         finally:
@@ -1150,8 +1167,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         required_packages = []
         system_packages = []
 
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        root_config = trees[self.psettings["ROOT"]]["root_config"]
+        root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
 
         # get system packages
         set = portage.sets.base.InternalPackageSet(
@@ -1187,8 +1203,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "Portage backend do not implement autoremove option")
 
         # get packages needing candidates for removal
-        required_packages = self.get_packages_required(cpv_list,
-                settings, trees, recursive=True)
+        required_packages = self.get_packages_required(cpv_list, recursive=True)
 
         # if there are required packages, allowdep must be on
         if required_packages and not allowdep:
@@ -1209,7 +1224,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             packages.append(package)
 
         # and now, packages we want really to remove
-        db_keys = list(portage.portdb._aux_cache_keys)
+        db_keys = list(self.pvar.portdb._aux_cache_keys)
         for cpv in cpv_list:
             metadata = self.get_metadata(cpv, db_keys, in_dict=True)
             package = _emerge.Package.Package(
@@ -1226,9 +1241,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # now, we can remove
         try:
             self.block_output()
-            mergetask = _emerge.Scheduler.Scheduler(settings,
-                    trees, mtimedb, mergelist=packages, myopts={},
-                    spinner=None, favorites=[], digraph=None)
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, mergelist=packages,
+                    myopts={}, spinner=None, favorites=[], digraph=None)
             mergetask.merge()
         finally:
             self.unblock_output()
@@ -1372,7 +1387,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "search-file isn't available with ~installed filter")
             return
 
-        cpv_list = self.vardb.cpv_all()
+        cpv_list = self.pvar.vardb.cpv_all()
         nb_cpv = 0.0
         cpv_processed = 0.0
         is_full_path = True
@@ -1478,12 +1493,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # creating update depgraph
         myopts = {}
         favorites = []
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees,
-                myopts, myparams, None)
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
             self.error(ERROR_INTERNAL_ERROR,
@@ -1493,9 +1507,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    favorites, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
@@ -1515,14 +1529,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myopts["--newuse"] = True
         myopts["--update"] = True
 
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
         # creating list of ebuilds needed for the system update
         # using backtrack_depgraph to prevent errors
         retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
-                settings, trees, myopts, myparams, "",
+                self.pvar.settings, self.pvar.trees, myopts, myparams, "",
                 ["@system", "@world"], None)
         if not retval:
             self.error(ERROR_INTERNAL_ERROR,
@@ -1532,9 +1545,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    None, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), None, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
