@@ -218,21 +218,6 @@ CATEGORY_GROUP_MAP = {
 def sigquit(signum, frame):
     sys.exit(1)
 
-def id_to_cpv(pkgid):
-    '''
-    Transform the package id (packagekit) to a cpv (portage)
-    '''
-    # TODO: raise error if ret[0] doesn't contain a '/'
-    ret = split_package_id(pkgid)
-
-    if len(ret) < 4:
-        raise "id_to_cpv: package id not valid"
-
-    # remove slot info from version field
-    version = ret[1].split(':')[0]
-
-    return ret[0] + "-" + version
-
 def get_group(cp):
     ''' Return the group of the package
     Argument could be cp or cpv. '''
@@ -561,6 +546,24 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return cpv_list
 
+    def id_to_cpv(self, pkgid):
+        '''
+        Transform the package id (packagekit) to a cpv (portage)
+        '''
+        ret = split_package_id(pkgid)
+
+        if len(ret) < 4:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                    "The package id %s does not contain 4 fields" % pkgid)
+        if '/' not in ret[0]:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                    "The first field of the package id must contain a category")
+
+        # remove slot info from version field
+        version = ret[1].split(':')[0]
+
+        return ret[0] + "-" + version
+
     def cpv_to_id(self, cpv):
         '''
         Transform the cpv (portage) to a package id (packagekit)
@@ -683,7 +686,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkg)
@@ -767,7 +770,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         pkg_processed = 0.0
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -804,7 +807,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         pkg_processed = 0.0
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -894,7 +897,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             return
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -937,7 +940,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             bugzilla_url = ""
             cve_url = ""
 
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.pvar.portdb.cpv_exists(cpv):
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
@@ -1093,7 +1096,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -1200,7 +1203,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # create cpv_list
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -1531,7 +1534,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_UPDATE_NOT_FOUND,
