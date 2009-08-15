@@ -326,6 +326,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return False
 
+    def get_real_license_str(self, cpv, metadata):
+        # use conditionals info (w/ USE) in LICENSE and remove ||
+        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
+        license = set(portage.flatten(portage.dep.use_reduce(
+            portage.dep.paren_reduce(metadata["LICENSE"]),
+            uselist=ebuild_settings.get("USE", "").split())))
+        license.discard('||')
+        license = ' '.join(license)
+
+        return license
+
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
         db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
@@ -782,14 +793,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             metadata = self.get_metadata(cpv,
                     ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT"],
                     in_dict=True)
-
-            # use conditionals info in LICENSE and remove ||
-            ebuild_settings = self.get_ebuild_settings(cpv, metadata)
-            license = set(portage.flatten(portage.dep.use_reduce(
-                portage.dep.paren_reduce(metadata["LICENSE"]),
-                uselist=ebuild_settings.get("USE", "").split())))
-            license.discard('||')
-            license = ' '.join(license)
+            license = self.get_real_license_str(cpv, metadata)
 
             self.details(self.cpv_to_id(cpv), license, get_group(cpv),
                     metadata["DESCRIPTION"], metadata["HOMEPAGE"],
@@ -1374,12 +1378,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             # and newest filter could be alterated
             for cpv in self.get_all_cpv(cp, fltlist, filter_newest=False):
                 match = True
-                details = self.get_metadata(cpv,
-                        ["DESCRIPTION", "HOMEPAGE","LICENSE","repository"])
+                metadata =  self.get_metadata(cpv,
+                        ["DESCRIPTION", "HOMEPAGE", "IUSE",
+                            "LICENSE", "repository", "SLOT"],
+                        in_dict=True)
+                # update LICENSE to correspond to system settings
+                metadata["LICENSE"] = self.get_real_license_str(cpv, metadata)
                 for s in search_list:
                     found = False
-                    for x in details:
-                        if s.search(x):
+                    for x in metadata:
+                        if s.search(metadata[x]):
                             found = True
                             break
                     if not found:
