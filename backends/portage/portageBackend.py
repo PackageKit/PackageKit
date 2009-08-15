@@ -306,6 +306,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.pvar.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
         '''
 
+    def get_ebuild_settings(self, cpv, metadata):
+        settings = portage.config(clone=self.pvar.settings)
+        settings.setcpv(cpv, mydb=metadata)
+
+        return settings
+
     # TODO: should be removed when using non-verbose function API
     def block_output(self):
         null_out = open('/dev/null', 'w')
@@ -372,11 +378,20 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return newer
 
-    def get_metadata(self, cpv, keys, in_dict = False):
+    def get_metadata(self, cpv, keys, in_dict = False, add_cache_keys = False):
+        '''
+        This function returns required metadata.
+        If in_dict is True, metadata is returned in a dict object.
+        If add_cache_keys is True, cached keys are added to keys in parameter.
+        '''
         if self.is_installed(cpv):
             aux_get = self.pvar.vardb.aux_get
+            if add_cache_keys:
+                keys.extend(list(self.pvar.vardb._aux_cache_keys))
         else:
             aux_get = self.pvar.portdb.aux_get
+            if add_cache_keys:
+                keys.extend(list(self.pvar.portdb._aux_cache_keys))
 
         if in_dict:
             return dict(izip(keys, aux_get(cpv, keys)))
@@ -399,8 +414,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 size = int(size)
         else:
             root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
-            db_keys = list(self.pvar.portdb._aux_cache_keys)
-            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+            metadata = self.get_metadata(cpv, ["IUSE", "SLOT"], in_dict=True)
 
             package = _emerge.Package.Package(
                     type_name="ebuild",
@@ -408,8 +422,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     installed=False,
                     root_config=root_config,
                     cpv=cpv,
-                    metadata=metadata,
-                    operation="uninstall")
+                    metadata=metadata)
 
             fetch_file = self.pvar.portdb.getfetchsizes(package[2],
                     package.use.enabled)
@@ -761,11 +774,21 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                         "Package %s was not found" % pkg)
                 continue
 
-            homepage, desc, license = self.get_metadata(cpv,
-                    ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
+            metadata = self.get_metadata(cpv,
+                    ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT"],
+                    in_dict=True)
+
+            # use conditionals info in LICENSE and remove ||
+            ebuild_settings = self.get_ebuild_settings(cpv, metadata)
+            license = set(portage.flatten(portage.dep.use_reduce(
+                portage.dep.paren_reduce(metadata["LICENSE"]),
+                uselist=ebuild_settings.get("USE", "").split())))
+            license.discard('||')
+            license = ' '.join(license)
 
             self.details(self.cpv_to_id(cpv), license, get_group(cpv),
-                    desc, homepage, self.get_size(cpv))
+                    metadata["DESCRIPTION"], metadata["HOMEPAGE"],
+                    self.get_size(cpv))
 
             pkg_processed += 100.0
             self.percentage(int(pkg_processed/nb_pkg))
@@ -1224,9 +1247,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             packages.append(package)
 
         # and now, packages we want really to remove
-        db_keys = list(self.pvar.portdb._aux_cache_keys)
         for cpv in cpv_list:
-            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+            metadata = self.get_metadata(cpv, [],
+                    in_dict=True, add_cache_keys=True)
             package = _emerge.Package.Package(
                     type_name="ebuild",
                     built=True,
@@ -1236,7 +1259,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     metadata=metadata,
                     operation="uninstall")
             packages.append(package)
-        del db_keys
 
         # need to define favorites to remove packages from world set
         favorites = []
