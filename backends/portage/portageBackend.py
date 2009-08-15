@@ -260,6 +260,7 @@ class PortageBridge():
         self.mtimedb = None
         self.vardb = None
         self.portdb = None
+        self.root_config = None
 
         self.update()
 
@@ -268,6 +269,7 @@ class PortageBridge():
                 _emerge.actions.load_emerge_config()
         self.vardb = self.trees[self.settings['ROOT']]['vartree'].dbapi
         self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
+        self.root_config = self.trees[self.settings['ROOT']]['root_config']
 
 
 class PackageKitPortageBackend(PackageKitBaseBackend):
@@ -398,14 +400,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             else:
                 size = int(size)
         else:
-            root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
+            self
             metadata = self.get_metadata(cpv, ["IUSE", "SLOT"], in_dict=True)
 
             package = _emerge.Package.Package(
                     type_name="ebuild",
                     built=False,
                     installed=False,
-                    root_config=root_config,
+                    root_config=self.pvar.root_config,
                     cpv=cpv,
                     metadata=metadata)
 
@@ -981,8 +983,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
 
-        root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
-
         update_candidates = []
         cpv_updates = {}
         cpv_downgra = {}
@@ -990,7 +990,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # get system and world packages
         for s in ["system", "world"]:
             set = portage.sets.base.InternalPackageSet(
-                    initial_atoms=root_config.setconfig.getSetAtoms(s))
+                    initial_atoms=self.pvar.root_config.setconfig.getSetAtoms(s))
             for atom in set:
                 update_candidates.append(atom.cp)
 
@@ -1055,7 +1055,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # get security updates
         for atom in portage.sets.base.InternalPackageSet(
-                initial_atoms=root_config.setconfig.getSetAtoms("security")):
+                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("security")):
             # send update message and remove atom from cpv_updates
             if atom.cp in cpv_updates:
                 slot = self.get_metadata(atom.cpv, ["SLOT"])[0]
@@ -1193,11 +1193,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         required_packages = []
         system_packages = []
 
-        root_config = self.pvar.trees[self.pvar.settings["ROOT"]]["root_config"]
-
         # get system packages
         set = portage.sets.base.InternalPackageSet(
-                initial_atoms=root_config.setconfig.getSetAtoms("system"))
+                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
         for atom in set:
             system_packages.append(atom.cp)
 
@@ -1257,7 +1255,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     type_name="ebuild",
                     built=True,
                     installed=True,
-                    root_config=root_config,
+                    root_config=self.pvar.root_config,
                     cpv=cpv,
                     metadata=metadata,
                     operation="uninstall")
