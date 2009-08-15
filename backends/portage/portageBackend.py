@@ -1238,12 +1238,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             packages.append(package)
         del db_keys
 
+        # need to define favorites to remove packages from world set
+        favorites = []
+        for p in packages:
+            favorites.append('=' + p.cpv)
+
         # now, we can remove
         try:
             self.block_output()
             mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
                     self.pvar.trees, self.pvar.mtimedb, mergelist=packages,
-                    myopts={}, spinner=None, favorites=[], digraph=None)
+                    myopts={}, spinner=None, favorites=favorites, digraph=None)
             mergetask.merge()
         finally:
             self.unblock_output()
