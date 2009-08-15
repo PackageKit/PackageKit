@@ -34,7 +34,8 @@
 		Transaction* t = d->createNewTransaction(); \
 		if (!t) {                                   \
 			setLastError (ErrorDaemonUnreachable);  \
-			return NULL;                            \
+			setTransactionError (t, ErrorDaemonUnreachable); \
+			return t;                            \
 		}                                           \
 
 #define CHECK_TRANSACTION                                          \
