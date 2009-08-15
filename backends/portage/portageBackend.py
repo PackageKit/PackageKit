@@ -271,6 +271,11 @@ class PortageBridge():
         self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
         self.root_config = self.trees[self.settings['ROOT']]['root_config']
 
+        self.settings.unlock()
+        self.settings["ACCEPT_PROPERTIES"] = "-interactive"
+        self.settings.backup_changes("ACCEPT_PROPERTIES")
+        self.settings.regenerate()
+        self.settings.lock()
 
 class PackageKitPortageBackend(PackageKitBaseBackend):
 
