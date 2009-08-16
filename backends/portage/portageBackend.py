@@ -342,6 +342,17 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return license
 
+    def send_configuration_file_message(self):
+        result = list(portage.util.find_updated_config_files(
+            self.pvar.settings['ROOT'],
+            self.pvar.settings.get('CONFIG_PROTECT', '').split()))
+
+        if result:
+            message = "Some configuration files need updating."
+            message += ";You should use Gentoo's tools to update them (dispatch-conf)"
+            message += ";If you can't do that, ask your system administrator."
+            self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
+
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
         db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
@@ -1162,6 +1173,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         finally:
             self.unblock_output()
 
+        self.send_configuration_file_message()
+
     def refresh_cache(self, force):
         # NOTES: can't manage progress even if it could be better
         # TODO: do not wait for exception, check timestamp
@@ -1585,6 +1598,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         finally:
             self.unblock_output()
 
+        self.send_configuration_file_message()
+
     def update_system(self, only_trusted):
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
@@ -1622,6 +1637,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        self.send_configuration_file_message()
 
 def main():
     backend = PackageKitPortageBackend("")
