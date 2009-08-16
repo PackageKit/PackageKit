@@ -1208,6 +1208,24 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         self.status(STATUS_INSTALL)
 
+        # 
+        '''
+        def default_listener(mysettings, key, logentries, fulltext):
+            print 'BEGIN LISTENER'
+            print logentries
+            print fulltext
+            for phases in logentries:
+                # actually, we don't care about phases
+                for entries in phases:
+                    # we want to show all messages except INFO
+                    if entries == 'INFO':
+                        break
+                    if entries == 'LOG':
+                        for message in entries:
+
+        portage.elog.add_listener(default_listener)
+        '''
+
         try:
             self.block_output()
             # compiling/installing
