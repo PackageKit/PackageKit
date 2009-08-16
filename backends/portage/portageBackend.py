@@ -353,6 +353,45 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             message += ";If you can't do that, ask your system administrator."
             self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
 
+    def get_restricted_fetch_files(self, cpv, metadata):
+        '''
+        This function checks files in SRC_URI and look if they are in DESTDIR.
+        Missing files are returned. If there is no issue, None is returned.
+        We don't care about digest but only about existance of files.
+
+        NOTES:
+        - we are assuming the package has RESTRICT='fetch'
+          be sure to call this function only in this case.
+        - we are not using fetch_check because it's not returning missing files
+          so this function is a simplist fetch_check
+        '''
+        missing_files = []
+        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
+
+        files = self.pvar.portdb.getFetchMap(cpv,
+                ebuild_settings['USE'].split())
+
+        for f in files:
+            file_path = os.path.join(ebuild_settings["DISTDIR"], f)
+            if not os.access(file_path, os.F_OK):
+                missing_files.append([file_path, files[f]])
+
+        if len(missing_files) > 0:
+            return missing_files
+
+        return None
+
+    def check_fetch_restrict(self, packages_list):
+        for p in packages_list:
+            if 'fetch' in p.metadata['RESTRICT']:
+                files = self.get_restricted_fetch_files(p.cpv, p.metadata)
+                if files:
+                    message = "Package %s can't download some files." % p.cpv
+                    message += ";Please, download manually the followonig file(s):"
+                    for x in files:
+                        message += ";- %s then copy it to %s" % (' '.join(x[1]), x[0])
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, message)
+
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
         db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
@@ -1163,6 +1202,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "Wasn't able to get dependency graph")
             return
 
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
+
         try:
             self.block_output()
             # compiling/installing
@@ -1588,6 +1630,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "Wasn't able to get dependency graph")
             return
 
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
+
         try:
             self.block_output()
             # compiling/installing
@@ -1627,6 +1672,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR,
                     "Wasn't able to get dependency graph")
             return
+
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
 
         try:
             self.block_output()
