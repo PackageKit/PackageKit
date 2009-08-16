@@ -53,7 +53,6 @@ from itertools import izip
 #   names a package (an ebuild for portage)
 
 # TODO:
-# ERRORS with messages ?
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
 
@@ -772,7 +771,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         retval, fav = depgraph.select_files(cpv_input)
 
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
 
@@ -1200,7 +1199,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
 
@@ -1632,7 +1631,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
 
