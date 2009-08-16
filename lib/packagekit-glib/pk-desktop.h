@@ -49,7 +49,11 @@ G_BEGIN_DECLS
  *
  * The default location for the desktop files
  */
+#ifndef __FreeBSD__
 #define PK_DESKTOP_DEFAULT_APPLICATION_DIR	"/usr/share/applications"
+#else
+#define PK_DESKTOP_DEFAULT_APPLICATION_DIR	"/usr/local/share/applications"
+#endif
 
 typedef struct _PkDesktopPrivate	PkDesktopPrivate;
 typedef struct _PkDesktop		PkDesktop;
