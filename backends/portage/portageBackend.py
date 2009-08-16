@@ -1194,6 +1194,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         settings.regenerate()
         '''
 
+        self.status(STATUS_DEP_RESOLVE)
+
         depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
                 self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
@@ -1204,6 +1206,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # check fetch restrict, can stop the function via error signal
         self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
 
         try:
             self.block_output()
@@ -1239,7 +1243,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         try:
             self.block_output()
             for o in installed_layman_db.overlays.keys():
-                installed_layman_db.sync(o, True)
+                installed_layman_db.sync(o, quiet=True)
             _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
                     self.pvar.mtimedb, myopts, "")
         except:
@@ -1622,6 +1626,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
+        self.status(STATUS_DEP_RESOLVE)
+
         depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
                 self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
@@ -1632,6 +1638,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # check fetch restrict, can stop the function via error signal
         self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
 
         try:
             self.block_output()
@@ -1663,6 +1671,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
+        self.status(STATUS_DEP_RESOLVE)
+
         # creating list of ebuilds needed for the system update
         # using backtrack_depgraph to prevent errors
         retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
@@ -1675,6 +1685,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # check fetch restrict, can stop the function via error signal
         self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
 
         try:
             self.block_output()
