@@ -43,6 +43,36 @@
     </property>
 
     <!--*****************************************************************************************-->
+    <method name="CanAuthorize">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Allows a client to find out if it would be allowed to authorize an action.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="action_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The action ID, e.g. <doc:tt>org.freedesktop.packagekit.system-network-proxy-configure</doc:tt>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="result" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The result, either <doc:tt>yes</doc:tt>, <doc:tt>no</doc:tt> or <doc:tt>interactive</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="GetActions">
       <doc:doc>
         <doc:description>

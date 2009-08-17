@@ -61,6 +61,7 @@ typedef enum
 	PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 	PK_ENGINE_ERROR_NOT_SUPPORTED,
 	PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID,
+	PK_ENGINE_ERROR_CANNOT_CHECK_AUTH,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
@@ -113,6 +114,9 @@ gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
 void		 pk_engine_set_proxy			(PkEngine	*engine,
 							 const gchar	*proxy_http,
 							 const gchar	*proxy_ftp,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_can_authorize		(PkEngine	*engine,
+							 const gchar	*action_id,
 							 DBusGMethodInvocation *context);
 
 G_END_DECLS

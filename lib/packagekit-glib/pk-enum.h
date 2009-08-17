@@ -566,6 +566,18 @@ typedef enum {
 	PK_MEDIA_TYPE_ENUM_UNKNOWN
 } PkMediaTypeEnum;
 
+/**
+ * PkAuthorizeEnum:
+ *
+ * The authorization result
+ **/
+typedef enum {
+	PK_AUTHORIZE_ENUM_YES,
+	PK_AUTHORIZE_ENUM_NO,
+	PK_AUTHORIZE_ENUM_INTERACTIVE,
+	PK_AUTHORIZE_ENUM_UNKNOWN
+} PkAuthorizeEnum;
+
 /* general */
 guint		 pk_enum_find_value			(const PkEnumMatch *table,
 							 const gchar	*string)
@@ -621,6 +633,9 @@ const gchar	*pk_distro_upgrade_enum_to_text		(PkDistroUpgradeEnum upgrade);
 
 PkMediaTypeEnum  pk_media_type_enum_from_text		(const gchar	*media_type);
 const gchar	*pk_media_type_enum_to_text		(PkMediaTypeEnum media_type);
+
+PkAuthorizeEnum  pk_authorize_type_enum_from_text	(const gchar	*auth_type);
+const gchar	*pk_authorize_type_enum_to_text		(PkAuthorizeEnum auth_type);
 
 G_END_DECLS
 

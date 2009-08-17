@@ -489,6 +489,14 @@ static const PkEnumMatch enum_media_type[] = {
 	{0, NULL}
 };
 
+static const PkEnumMatch enum_authorize_type[] = {
+	{PK_AUTHORIZE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_AUTHORIZE_ENUM_YES,			"yes"},
+	{PK_AUTHORIZE_ENUM_NO,			"no"},
+	{PK_AUTHORIZE_ENUM_INTERACTIVE,		"interactive"},
+	{0, NULL}
+};
+
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values
@@ -974,7 +982,8 @@ pk_license_enum_to_text (PkLicenseEnum license)
  *
  * Return value: the enumerated constant value, e.g. PK_MEDIA_TYPE_ENUM_CD
  **/
-PkMediaTypeEnum pk_media_type_enum_from_text (const gchar *media_type)
+PkMediaTypeEnum
+pk_media_type_enum_from_text (const gchar *media_type)
 {
 	return pk_enum_find_value (enum_media_type, media_type);
 }
@@ -987,9 +996,38 @@ PkMediaTypeEnum pk_media_type_enum_from_text (const gchar *media_type)
  *
  * Return value: the enumerated constant value, e.g. "dvd"
  **/
-const gchar* pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
+const gchar *
+pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
 {
 	return pk_enum_find_string (enum_media_type, media_type);
+}
+
+/**
+ * pk_authorize_type_enum_from_text:
+ * @code: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_AUTHORIZE_ENUM_YES
+ **/
+PkAuthorizeEnum
+pk_authorize_type_enum_from_text (const gchar *authorize_type)
+{
+	return pk_enum_find_value (enum_authorize_type, authorize_type);
+}
+
+/**
+ * pk_authorize_type_enum_to_text:
+ * @code: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "yes"
+ **/
+const gchar *
+pk_authorize_type_enum_to_text (PkAuthorizeEnum authorize_type)
+{
+	return pk_enum_find_string (enum_authorize_type, authorize_type);
 }
 
 /***************************************************************************
