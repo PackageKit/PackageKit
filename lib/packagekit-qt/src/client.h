@@ -376,6 +376,7 @@ public:
 		ErrorCannotGetFilelist,
 		ErrorCannotGetRequires,
 		ErrorCannotDisableRepository,
+		ErrorRestrictedDownload,
 		UnknownErrorType
 	} ErrorType;
 
