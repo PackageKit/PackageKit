@@ -215,7 +215,8 @@ pk_inhibit_finalize (GObject *object)
 	}
 	/* no need to free the data in the array */
 	g_ptr_array_free (inhibit->priv->array, TRUE);
-	g_object_unref (inhibit->priv->proxy);
+	if (inhibit->priv->proxy != NULL)
+		g_object_unref (inhibit->priv->proxy);
 
 	G_OBJECT_CLASS (pk_inhibit_parent_class)->finalize (object);
 }

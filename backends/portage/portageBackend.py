@@ -53,7 +53,6 @@ from itertools import izip
 #   names a package (an ebuild for portage)
 
 # TODO:
-# ERRORS with messages ?
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
 
@@ -218,21 +217,6 @@ CATEGORY_GROUP_MAP = {
 def sigquit(signum, frame):
     sys.exit(1)
 
-def id_to_cpv(pkgid):
-    '''
-    Transform the package id (packagekit) to a cpv (portage)
-    '''
-    # TODO: raise error if ret[0] doesn't contain a '/'
-    ret = split_package_id(pkgid)
-
-    if len(ret) < 4:
-        raise "id_to_cpv: package id not valid"
-
-    # remove slot info from version field
-    version = ret[1].split(':')[0]
-
-    return ret[0] + "-" + version
-
 def get_group(cp):
     ''' Return the group of the package
     Argument could be cp or cpv. '''
@@ -263,15 +247,42 @@ def is_repository_enabled(layman_db, repo_name):
         return True
     return False
 
+class PortageBridge():
+    '''
+    Bridge to portage/emerge settings and variabales to help using them
+    and be sure they are always up-to-date.
+    '''
+
+    def __init__(self):
+        self.settings = None
+        self.trees = None
+        self.mtimedb = None
+        self.vardb = None
+        self.portdb = None
+        self.root_config = None
+
+        self.update()
+
+    def update(self):
+        self.settings, self.trees, self.mtimedb = \
+                _emerge.actions.load_emerge_config()
+        self.vardb = self.trees[self.settings['ROOT']]['vartree'].dbapi
+        self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
+        self.root_config = self.trees[self.settings['ROOT']]['root_config']
+
+        self.settings.unlock()
+        self.settings["ACCEPT_PROPERTIES"] = "-interactive"
+        self.settings.backup_changes("ACCEPT_PROPERTIES")
+        self.settings.regenerate()
+        self.settings.lock()
+
 class PackageKitPortageBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self, args)
 
-        self.psettings = portage.config()
-        self.vardb = portage.db[portage.settings["ROOT"]]["vartree"].dbapi
-        #self.portdb = portage.db[portage.settings["ROOT"]]["porttree"].dbapi
+        self.pvar = PortageBridge()
 
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
@@ -281,10 +292,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         '''
         def filter_echo(x): return x != 'echo'
 
-        elogs = self.psettings["PORTAGE_ELOG_SYSTEM"].split()
+        elogs = self.pvar.settings["PORTAGE_ELOG_SYSTEM"].split()
         elogs = filter(filter_echo, elogs)
-        self.psettings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        self.pvar.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
         '''
+
+    def get_ebuild_settings(self, cpv, metadata):
+        settings = portage.config(clone=self.pvar.settings)
+        settings.setcpv(cpv, mydb=metadata)
+
+        return settings
 
     # TODO: should be removed when using non-verbose function API
     def block_output(self):
@@ -300,7 +317,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         sys.stderr = self.orig_err
 
     def is_installed(self, cpv):
-        if self.vardb.cpv_exists(cpv):
+        if self.pvar.vardb.cpv_exists(cpv):
             return True
         return False
 
@@ -308,16 +325,77 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         if self.is_installed(cpv):
             # actually if is_installed return True that means cpv is in db
             return True
-        elif portage.portdb.cpv_exists(cpv):
+        elif self.pvar.portdb.cpv_exists(cpv):
             return True
 
         return False
 
+    def get_real_license_str(self, cpv, metadata):
+        # use conditionals info (w/ USE) in LICENSE and remove ||
+        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
+        license = set(portage.flatten(portage.dep.use_reduce(
+            portage.dep.paren_reduce(metadata["LICENSE"]),
+            uselist=ebuild_settings.get("USE", "").split())))
+        license.discard('||')
+        license = ' '.join(license)
+
+        return license
+
+    def send_configuration_file_message(self):
+        result = list(portage.util.find_updated_config_files(
+            self.pvar.settings['ROOT'],
+            self.pvar.settings.get('CONFIG_PROTECT', '').split()))
+
+        if result:
+            message = "Some configuration files need updating."
+            message += ";You should use Gentoo's tools to update them (dispatch-conf)"
+            message += ";If you can't do that, ask your system administrator."
+            self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
+
+    def get_restricted_fetch_files(self, cpv, metadata):
+        '''
+        This function checks files in SRC_URI and look if they are in DESTDIR.
+        Missing files are returned. If there is no issue, None is returned.
+        We don't care about digest but only about existance of files.
+
+        NOTES:
+        - we are assuming the package has RESTRICT='fetch'
+          be sure to call this function only in this case.
+        - we are not using fetch_check because it's not returning missing files
+          so this function is a simplist fetch_check
+        '''
+        missing_files = []
+        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
+
+        files = self.pvar.portdb.getFetchMap(cpv,
+                ebuild_settings['USE'].split())
+
+        for f in files:
+            file_path = os.path.join(ebuild_settings["DISTDIR"], f)
+            if not os.access(file_path, os.F_OK):
+                missing_files.append([file_path, files[f]])
+
+        if len(missing_files) > 0:
+            return missing_files
+
+        return None
+
+    def check_fetch_restrict(self, packages_list):
+        for p in packages_list:
+            if 'fetch' in p.metadata['RESTRICT']:
+                files = self.get_restricted_fetch_files(p.cpv, p.metadata)
+                if files:
+                    message = "Package %s can't download some files." % p.cpv
+                    message += ";Please, download manually the followonig file(s):"
+                    for x in files:
+                        message += ";- %s then copy it to %s" % (' '.join(x[1]), x[0])
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, message)
+
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
-        db = portage.dblink(cat, pv, portage.settings["ROOT"],
-                self.psettings, treetype="vartree",
-                vartree=self.vardb)
+        db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
+                self.pvar.settings, treetype="vartree",
+                vartree=self.pvar.vardb)
 
         contents = db.getcontents()
         if not contents:
@@ -347,16 +425,25 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         for cpv in cpv_list:
             if self.is_installed(cpv) == installed:
-                if self.cmp_cpv(cpv, never) == 1:
+                if self.cmp_cpv(cpv, newer) == 1:
                     newer = cpv
 
         return newer
 
-    def get_metadata(self, cpv, keys, in_dict = False):
+    def get_metadata(self, cpv, keys, in_dict = False, add_cache_keys = False):
+        '''
+        This function returns required metadata.
+        If in_dict is True, metadata is returned in a dict object.
+        If add_cache_keys is True, cached keys are added to keys in parameter.
+        '''
         if self.is_installed(cpv):
-            aux_get = self.vardb.aux_get
+            aux_get = self.pvar.vardb.aux_get
+            if add_cache_keys:
+                keys.extend(list(self.pvar.vardb._aux_cache_keys))
         else:
-            aux_get = portage.portdb.aux_get
+            aux_get = self.pvar.portdb.aux_get
+            if add_cache_keys:
+                keys.extend(list(self.pvar.portdb._aux_cache_keys))
 
         if in_dict:
             return dict(izip(keys, aux_get(cpv, keys)))
@@ -378,21 +465,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             else:
                 size = int(size)
         else:
-            settings, trees, _ = _emerge.actions.load_emerge_config()
-            root_config = trees[self.psettings["ROOT"]]["root_config"]
-            db_keys = list(portage.portdb._aux_cache_keys)
-            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+            self
+            metadata = self.get_metadata(cpv, ["IUSE", "SLOT"], in_dict=True)
 
             package = _emerge.Package.Package(
                     type_name="ebuild",
                     built=False,
                     installed=False,
-                    root_config=root_config,
+                    root_config=self.pvar.root_config,
                     cpv=cpv,
-                    metadata=metadata,
-                    operation="uninstall")
+                    metadata=metadata)
 
-            fetch_file = portage.portdb.getfetchsizes(package[2],
+            fetch_file = self.pvar.portdb.getfetchsizes(package[2],
                     package.use.enabled)
             for f in fetch_file:
                 size += fetch_file[f]
@@ -417,24 +501,27 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         def _has_validLicense(cpv):
             metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
-            return not self.psettings._getMissingLicenses(cpv, metadata)
+            return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
         if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
             free_licenses = "@FSF-APPROVED"
             if FILTER_FREE in fltlist:
                 licenses = "-* " + free_licenses
-            else:
+            elif FILTER_NOT_FREE in fltlist:
                 licenses = "* -" + free_licenses
-            backup_license = self.psettings["ACCEPT_LICENSE"]
-            self.psettings["ACCEPT_LICENSE"] = licenses
-            self.psettings.backup_changes("ACCEPT_LICENSE")
-            self.psettings.regenerate()
+            backup_license = self.pvar.settings["ACCEPT_LICENSE"]
+
+            self.pvar.settings.unlock()
+            self.pvar.settings["ACCEPT_LICENSE"] = licenses
+            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
+            self.pvar.settings.regenerate()
 
             cpv_list = filter(_has_validLicense, cpv_list)
 
-            self.psettings["ACCEPT_LICENSE"] = backup_license
-            self.psettings.backup_changes("ACCEPT_LICENSE")
-            self.psettings.regenerate()
+            self.pvar.settings["ACCEPT_LICENSE"] = backup_license
+            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
+            self.pvar.settings.regenerate()
+            self.pvar.settings.lock()
 
         return cpv_list
 
@@ -481,13 +568,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cp_list = []
 
         if FILTER_INSTALLED in fltlist:
-            cp_list = self.vardb.cp_all()
+            cp_list = self.pvar.vardb.cp_all()
         elif FILTER_NOT_INSTALLED in fltlist:
-            cp_list = portage.portdb.cp_all()
+            cp_list = self.pvar.portdb.cp_all()
         else:
             # need installed packages first
-            cp_list = self.vardb.cp_all()
-            for cp in portage.portdb.cp_all():
+            cp_list = self.pvar.vardb.cp_all()
+            for cp in self.pvar.portdb.cp_all():
                 if cp not in cp_list:
                     cp_list.append(cp)
 
@@ -506,14 +593,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # populate cpv_list taking care of installed filter
         if FILTER_INSTALLED in fltlist:
-            cpv_list = self.vardb.match(cp)
+            cpv_list = self.pvar.vardb.match(cp)
         elif FILTER_NOT_INSTALLED in fltlist:
-            for cpv in portage.portdb.match(cp):
+            for cpv in self.pvar.portdb.match(cp):
                 if not self.is_installed(cpv):
                     cpv_list.append(cpv)
         else:
-            cpv_list = self.vardb.match(cp)
-            for cpv in portage.portdb.match(cp):
+            cpv_list = self.pvar.vardb.match(cp)
+            for cpv in self.pvar.portdb.match(cp):
                 if cpv not in cpv_list:
                     cpv_list.append(cpv)
 
@@ -526,6 +613,24 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return cpv_list
 
+    def id_to_cpv(self, pkgid):
+        '''
+        Transform the package id (packagekit) to a cpv (portage)
+        '''
+        ret = split_package_id(pkgid)
+
+        if len(ret) < 4:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                    "The package id %s does not contain 4 fields" % pkgid)
+        if '/' not in ret[0]:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                    "The first field of the package id must contain a category")
+
+        # remove slot info from version field
+        version = ret[1].split(':')[0]
+
+        return ret[0] + "-" + version
+
     def cpv_to_id(self, cpv):
         '''
         Transform the cpv (portage) to a package id (packagekit)
@@ -535,7 +640,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 ["KEYWORDS", "repository", "SLOT"])
 
         pkg_keywords = pkg_keywords.split()
-        sys_keywords = self.psettings["ACCEPT_KEYWORDS"].split()
+        sys_keywords = self.pvar.settings["ACCEPT_KEYWORDS"].split()
         keywords = []
 
         for x in sys_keywords:
@@ -544,7 +649,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # if no keywords, check in package.keywords
         if not keywords:
-            key_dict = self.psettings.pkeywordsdict.get(portage.dep_getkey(cpv))
+            key_dict = self.pvar.settings.pkeywordsdict.get(
+                    portage.dep_getkey(cpv))
             if key_dict:
                 for _, keys in key_dict.iteritems():
                     for x in keys:
@@ -567,10 +673,10 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         return get_package_id(package, version, ' '.join(keywords), repo)
 
-    def get_packages_required(self, cpv_input, settings, trees, recursive):
+    def get_packages_required(self, cpv_input, recursive):
         '''
-        Get a list of cpv, portage settings and tree and recursive parameter
-        And returns the list of packages required for cpv list
+        Get a list of cpv and recursive parameter.
+        Returns the list of packages required for cpv list.
         '''
         packages_list = []
 
@@ -580,8 +686,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "remove")
-        depgraph = _emerge.depgraph.depgraph(settings, trees, myopts,
-                myparams, None)
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
 
         # TODO: atm, using FILTER_INSTALLED because it's quicker
         # and we don't want to manage non-installed packages
@@ -590,7 +696,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 depgraph._dynamic_config._dep_stack.append(
                         _emerge.Dependency.Dependency(
                             atom=portage.dep.Atom('=' + cpv),
-                            root=portage.settings["ROOT"], parent=None))
+                            root=self.pvar.settings["ROOT"], parent=None))
 
         if not depgraph._complete_graph():
             self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
@@ -647,7 +753,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkg)
@@ -657,16 +763,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myopts = {}
         myopts["--selective"] = True
         myopts["--deep"] = True
-        settings, trees, _ = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
         depgraph = _emerge.depgraph.depgraph(
-                settings, trees, myopts, myparams, None)
+                self.pvar.settings, self.pvar.trees, myopts, myparams, None)
         retval, fav = depgraph.select_files(cpv_input)
 
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
 
@@ -732,18 +837,21 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         pkg_processed = 0.0
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                         "Package %s was not found" % pkg)
                 continue
 
-            homepage, desc, license = self.get_metadata(cpv,
-                    ["HOMEPAGE", "DESCRIPTION", "LICENSE"])
+            metadata = self.get_metadata(cpv,
+                    ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT"],
+                    in_dict=True)
+            license = self.get_real_license_str(cpv, metadata)
 
             self.details(self.cpv_to_id(cpv), license, get_group(cpv),
-                    desc, homepage, self.get_size(cpv))
+                    metadata["DESCRIPTION"], metadata["HOMEPAGE"],
+                    self.get_size(cpv))
 
             pkg_processed += 100.0
             self.percentage(int(pkg_processed/nb_pkg))
@@ -759,7 +867,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         pkg_processed = 0.0
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -819,12 +927,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # 'gentoo' is a dummy repo
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
 
-        if FILTER_DEVELOPMENT in fltlist:
+        if FILTER_NOT_DEVELOPMENT not in fltlist:
             for o in available_layman_db.overlays.keys():
                 if available_layman_db.overlays[o].is_official() \
                         and available_layman_db.overlays[o].is_supported():
-                    self.repo_detail(o,
-                            available_layman_db.overlays[o].description,
+                    self.repo_detail(o, o,
                             is_repository_enabled(installed_layman_db, o))
 
     def get_requires(self, filters, pkgs, recursive):
@@ -850,7 +957,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             return
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -863,10 +970,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
             cpv_input.append(cpv)
 
-        settings, trees, _ = _emerge.actions.load_emerge_config()
-
-        packages_list = self.get_packages_required(cpv_input,
-                settings, trees, recursive)
+        packages_list = self.get_packages_required(cpv_input, recursive)
 
         # now we can populate cpv_list
         cpv_list = []
@@ -896,12 +1000,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             bugzilla_url = ""
             cve_url = ""
 
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
-            if not portage.portdb.cpv_exists(cpv):
+            if not self.pvar.portdb.cpv_exists(cpv):
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
 
-            for cpv in self.vardb.match(portage.pkgsplit(cpv)[0]):
+            for cpv in self.pvar.vardb.match(portage.pkgsplit(cpv)[0]):
                 updates.append(cpv)
             updates = "&".join(updates)
 
@@ -937,9 +1041,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
 
-        settings, trees, _ = _emerge.actions.load_emerge_config()
-        root_config = trees[self.psettings["ROOT"]]["root_config"]
-
         update_candidates = []
         cpv_updates = {}
         cpv_downgra = {}
@@ -947,14 +1048,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # get system and world packages
         for s in ["system", "world"]:
             set = portage.sets.base.InternalPackageSet(
-                    initial_atoms=root_config.setconfig.getSetAtoms(s))
+                    initial_atoms=self.pvar.root_config.setconfig.getSetAtoms(s))
             for atom in set:
                 update_candidates.append(atom.cp)
 
         # check if a candidate can be updated
         for cp in update_candidates:
-            cpv_list_inst = self.vardb.match(cp)
-            cpv_list_avai = portage.portdb.match(cp)
+            cpv_list_inst = self.pvar.vardb.match(cp)
+            cpv_list_avai = self.pvar.portdb.match(cp)
 
             cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
             cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
@@ -985,7 +1086,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
                 # no update for this slot
                 if len(cpv_list_updates) == 0:
-                    if [cpv_inst] == portage.portdb.visible([cpv_inst]):
+                    if [cpv_inst] == self.pvar.portdb.visible([cpv_inst]):
                         break # really no update
                     else:
                         # that's actually a downgrade or even worst
@@ -1012,7 +1113,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # get security updates
         for atom in portage.sets.base.InternalPackageSet(
-                initial_atoms=root_config.setconfig.getSetAtoms("security")):
+                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("security")):
             # send update message and remove atom from cpv_updates
             if atom.cp in cpv_updates:
                 slot = self.get_metadata(atom.cpv, ["SLOT"])[0]
@@ -1053,7 +1154,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -1077,7 +1178,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # creating installation depgraph
         myopts = {}
         favorites = []
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
@@ -1093,23 +1193,50 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         settings.regenerate()
         '''
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees,
-                myopts, myparams, None)
+        self.status(STATUS_DEP_RESOLVE)
+
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
+
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
+
+        # 
+        '''
+        def default_listener(mysettings, key, logentries, fulltext):
+            print 'BEGIN LISTENER'
+            print logentries
+            print fulltext
+            for phases in logentries:
+                # actually, we don't care about phases
+                for entries in phases:
+                    # we want to show all messages except INFO
+                    if entries == 'INFO':
+                        break
+                    if entries == 'LOG':
+                        for message in entries:
+
+        portage.elog.add_listener(default_listener)
+        '''
 
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    favorites, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        self.send_configuration_file_message()
 
     def refresh_cache(self, force):
         # NOTES: can't manage progress even if it could be better
@@ -1120,22 +1247,22 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         myopts = {'--quiet': True}
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
 
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
 
         if force:
             timestamp_path = os.path.join(
-                    settings["PORTDIR"], "metadata", "timestamp.chk")
+                    self.pvar.settings["PORTDIR"], "metadata", "timestamp.chk")
             if os.access(timestamp_path, os.F_OK):
                 os.remove(timestamp_path)
 
         try:
             self.block_output()
             for o in installed_layman_db.overlays.keys():
-                installed_layman_db.sync(o, True)
-            _emerge.actions.action_sync(settings, trees, mtimedb, myopts, "")
+                installed_layman_db.sync(o, quiet=True)
+            _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
+                    self.pvar.mtimedb, myopts, "")
         except:
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
         finally:
@@ -1151,18 +1278,15 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         required_packages = []
         system_packages = []
 
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
-        root_config = trees[self.psettings["ROOT"]]["root_config"]
-
         # get system packages
         set = portage.sets.base.InternalPackageSet(
-                initial_atoms=root_config.setconfig.getSetAtoms("system"))
+                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
         for atom in set:
             system_packages.append(atom.cp)
 
         # create cpv_list
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -1188,8 +1312,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "Portage backend do not implement autoremove option")
 
         # get packages needing candidates for removal
-        required_packages = self.get_packages_required(cpv_list,
-                settings, trees, recursive=True)
+        required_packages = self.get_packages_required(cpv_list, recursive=True)
 
         # if there are required packages, allowdep must be on
         if required_packages and not allowdep:
@@ -1210,26 +1333,30 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             packages.append(package)
 
         # and now, packages we want really to remove
-        db_keys = list(portage.portdb._aux_cache_keys)
         for cpv in cpv_list:
-            metadata = self.get_metadata(cpv, db_keys, in_dict=True)
+            metadata = self.get_metadata(cpv, [],
+                    in_dict=True, add_cache_keys=True)
             package = _emerge.Package.Package(
                     type_name="ebuild",
                     built=True,
                     installed=True,
-                    root_config=root_config,
+                    root_config=self.pvar.root_config,
                     cpv=cpv,
                     metadata=metadata,
                     operation="uninstall")
             packages.append(package)
-        del db_keys
+
+        # need to define favorites to remove packages from world set
+        favorites = []
+        for p in packages:
+            favorites.append('=' + p.cpv)
 
         # now, we can remove
         try:
             self.block_output()
-            mergetask = _emerge.Scheduler.Scheduler(settings,
-                    trees, mtimedb, mergelist=packages, myopts={},
-                    spinner=None, favorites=[], digraph=None)
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, mergelist=packages,
+                    myopts={}, spinner=None, favorites=favorites, digraph=None)
             mergetask.merge()
         finally:
             self.unblock_output()
@@ -1332,12 +1459,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             # and newest filter could be alterated
             for cpv in self.get_all_cpv(cp, fltlist, filter_newest=False):
                 match = True
-                details = self.get_metadata(cpv,
-                        ["DESCRIPTION", "HOMEPAGE","LICENSE","repository"])
+                metadata =  self.get_metadata(cpv,
+                        ["DESCRIPTION", "HOMEPAGE", "IUSE",
+                            "LICENSE", "repository", "SLOT"],
+                        in_dict=True)
+                # update LICENSE to correspond to system settings
+                metadata["LICENSE"] = self.get_real_license_str(cpv, metadata)
                 for s in search_list:
                     found = False
-                    for x in details:
-                        if s.search(x):
+                    for x in metadata:
+                        if s.search(metadata[x]):
                             found = True
                             break
                     if not found:
@@ -1373,7 +1504,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     "search-file isn't available with ~installed filter")
             return
 
-        cpv_list = self.vardb.cpv_all()
+        cpv_list = self.pvar.vardb.cpv_all()
         nb_cpv = 0.0
         cpv_processed = 0.0
         is_full_path = True
@@ -1392,6 +1523,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 if (is_full_path and key == f) \
                 or (not is_full_path and searchre.search(f)):
                     self.package(cpv)
+                    break
 
             cpv_processed += 100.0
             self.percentage(int(cpv_processed/nb_cpv))
@@ -1420,22 +1552,51 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def search_name(self, filters, keys):
-        # NOTES: searching in package name, excluding category
-        # TODO: search for cat/pkg if '/' is found
+        # searching for all keys in package name
+        # also filtering by categories if categery is specified in a key
+        # keys contain more than one category name, no results can be found
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
+
+        categories = []
+        keys_list = keys.split(' ')
+        for k in keys_list[:]:
+            if "/" in k:
+                cat, cp = portage.catsplit(k)
+                categories.append(cat)
+                keys_list[keys_list.index(k)] = cp
+
+        category_filter = None
+        if len(categories) > 1:
+            # nothing will be found because we have two cat/pkg
+            # with a AND operator search
+            return
+        elif len(categories) == 1:
+            category_filter = categories[0]
+
+        # do not use get_search_list because of this category feature
+        search_list = []
+        for k in keys_list:
+            # not done entirely by pk-transaction
+            k = re.escape(k)
+            search_list.append(re.compile(k, re.IGNORECASE))
 
         fltlist = filters.split(';')
         cp_list = self.get_all_cp(fltlist)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
-        search_list = get_search_list(keys)
 
         for cp in cp_list:
-            # pkg name has to correspond to _every_ keys
-            pkg_name = portage.catsplit(cp)[1]
+            if category_filter:
+                cat, pkg_name = portage.catsplit(cp)
+                if cat != category_filter:
+                    continue
+            else:
+                pkg_name = portage.catsplit(cp)[1]
             found = True
+
+            # pkg name has to correspond to _every_ keys
             for s in search_list:
                 if not s.search(pkg_name):
                     found = False
@@ -1460,7 +1621,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         cpv_list = []
 
         for pkg in pkgs:
-            cpv = id_to_cpv(pkg)
+            cpv = self.id_to_cpv(pkg)
 
             if not self.is_cpv_valid(cpv):
                 self.error(ERROR_UPDATE_NOT_FOUND,
@@ -1479,27 +1640,35 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # creating update depgraph
         myopts = {}
         favorites = []
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
 
-        depgraph = _emerge.depgraph.depgraph(settings, trees,
-                myopts, myparams, None)
+        self.status(STATUS_DEP_RESOLVE)
+
+        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
+                self.pvar.trees, myopts, myparams, None)
         retval, favorites = depgraph.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
                     "Wasn't able to get dependency graph")
             return
+
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
 
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    favorites, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        self.send_configuration_file_message()
 
     def update_system(self, only_trusted):
         self.status(STATUS_RUNNING)
@@ -1516,29 +1685,37 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         myopts["--newuse"] = True
         myopts["--update"] = True
 
-        settings, trees, mtimedb = _emerge.actions.load_emerge_config()
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
+
+        self.status(STATUS_DEP_RESOLVE)
 
         # creating list of ebuilds needed for the system update
         # using backtrack_depgraph to prevent errors
         retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
-                settings, trees, myopts, myparams, "",
+                self.pvar.settings, self.pvar.trees, myopts, myparams, "",
                 ["@system", "@world"], None)
         if not retval:
             self.error(ERROR_INTERNAL_ERROR,
                     "Wasn't able to get dependency graph")
             return
 
+        # check fetch restrict, can stop the function via error signal
+        self.check_fetch_restrict(depgraph.altlist())
+
+        self.status(STATUS_INSTALL)
+
         try:
             self.block_output()
             # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(settings, trees, mtimedb,
-                    myopts, None, depgraph.altlist(),
-                    None, depgraph.schedulerGraph())
+            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
+                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
+                    depgraph.altlist(), None, depgraph.schedulerGraph())
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        self.send_configuration_file_message()
 
 def main():
     backend = PackageKitPortageBackend("")

@@ -6,7 +6,6 @@ INCLUDES = \
 	$(QTCORE_CFLAGS)					\
 	$(QTDBUS_CFLAGS)					\
 	$(QTSQL_CFLAGS)						\
-	$(POLKIT_CFLAGS)					\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
 METASOURCES = AUTO
@@ -29,7 +28,6 @@ $(libpackagekit_qt_la_OBJECTS) :				\
 	clientprivate.moc					\
 	daemonproxy.moc						\
 	package.moc						\
-	polkitclient.moc					\
 	transaction.moc						\
 	transactionprivate.moc					\
 	transactionproxy.moc					\
@@ -52,8 +50,6 @@ libpackagekit_qt_la_SOURCES =					\
 	transactionproxy.cpp					\
 	package.h						\
 	package.cpp						\
-	polkitclient.h						\
-	polkitclient.cpp					\
 	util.h							\
 	util.cpp						\
 	$(NULL)
@@ -62,7 +58,6 @@ libpackagekit_qt_la_LIBADD =					\
 	$(QTCORE_LIBS)						\
 	$(QTDBUS_LIBS)						\
 	$(QTSQL_LIBS)						\
-	$(POLKIT_LIBS)						\
 	$(NULL)
 
 libpackagekit_qt_la_CFLAGS =					\

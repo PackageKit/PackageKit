@@ -54,6 +54,8 @@ public:
 	// Used for getDetails
 	QHash<QString, Package*> packageMap;
 
+	Client::DaemonError error;
+
 public slots:
 	void details(const QString& pid, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size);
 	void distroUpgrade(const QString& type, const QString& name, const QString& description);

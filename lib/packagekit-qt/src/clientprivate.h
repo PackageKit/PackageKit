@@ -49,7 +49,7 @@ public:
 	// Get a tid, creates a new transaction and sets it up (ie call SetLocale)
 	Transaction* createNewTransaction();
 
-	Client::DaemonError lastError;
+	Client::DaemonError error;
 
 public slots:
 	// org.freedesktop.PackageKit
