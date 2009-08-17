@@ -392,7 +392,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     message += ";Please, download manually the followonig file(s):"
                     for x in files:
                         message += ";- %s then copy it to %s" % (' '.join(x[1]), x[0])
-                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, message)
+                    self.error(ERROR_RESTRICTED_DOWNLOAD, message)
 
     def elog_listener(self, settings, key, logentries, fulltext):
         '''
