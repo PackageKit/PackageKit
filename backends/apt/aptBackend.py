@@ -868,6 +868,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgs.append(pkg.name[:])
             pkg.markDelete(False, False)
             resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
             resolver.Remove(pkg._pkg)
         try:
             resolver.Resolve()
@@ -1371,21 +1372,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         # Mark all packages for installation
         pkgs = []
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % id)
                 return
-            try:
-                pkg.markInstall()
-            except Exception, e:
-                #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
-                #       missing dependecies
-                self.error(ERROR_DEP_RESOLUTION_FAILED,
-                           "Dependecies for %s cannot be satisfied: %s" % e)
-                return
             pkgs.append(pkg)
+            resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
+        resolver.InstallProtect()
+        try:
+            resolver.Resolve()
+        except Exception, e:
+            #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
+            #       missing dependecies
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "Dependecies for %s cannot be satisfied: %s" % e)
+            return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
             if p in pkgs: continue
@@ -1418,9 +1423,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
+        # Mark all packages for removal
+        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         pkgs = []
-
-        # Mark all packages for installation
         for id in ids:
             pkg = self._find_package_by_id(id)
             if pkg == None:
@@ -1432,14 +1437,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s cannot be removed." % pkg.name)
                 return
             pkgs.append(pkg)
-            try:
-                pkg.markDelete()
-            except Exception, e:
-                #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
-                #       missing dependecies
-                self.error(ERROR_DEP_RESOLUTION_FAILED,
-                           "Error removing %s: %s" % (pkg.name, e))
-                return
+            resolver.Clear(pkg._pkg)
+            resolver.Protect(pkg._pkg)
+            resolver.Remove(pkg._pkg)
+        resolver.InstallProtect()
+        try:
+            resolver.Resolve()
+        except Exception, e:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "Error removing %s: %s" % (pkg.name, e))
+            return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
             if p.markedDelete:
