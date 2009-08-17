@@ -114,6 +114,9 @@ void		 pk_engine_set_proxy			(PkEngine	*engine,
 							 const gchar	*proxy_http,
 							 const gchar	*proxy_ftp,
 							 DBusGMethodInvocation *context);
+void		 pk_engine_can_authorize		(PkEngine	*engine,
+							 const gchar	*action_id,
+							 DBusGMethodInvocation *context);
 
 G_END_DECLS
 

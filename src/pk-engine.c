@@ -737,6 +737,94 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 }
 
 /**
+ * pk_engine_can_authorize:
+ **/
+static PkAuthorizeEnum
+pk_engine_can_authorize_action_id (PkEngine *engine, const gchar *action_id, DBusGMethodInvocation *context, GError **error)
+{
+#ifdef USE_SECURITY_POLKIT
+	gboolean ret;
+	gchar *sender = NULL;
+	PkAuthorizeEnum authorize;
+	PolkitAuthorizationResult *res;
+	PolkitSubject *subject;
+
+	/* check subject */
+	sender = dbus_g_method_get_sender (context);
+	subject = polkit_system_bus_name_new (sender);
+
+	/* check authorization (okay being sync as there's no blocking on the user) */
+	res = polkit_authority_check_authorization_sync (engine->priv->authority, subject, action_id,
+							 NULL, POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE, NULL, error);
+	if (res == NULL) {
+		authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
+		goto out;
+	}
+
+	/* already yes */
+	ret = polkit_authorization_result_get_is_authorized (res);
+	if (ret) {
+		authorize = PK_AUTHORIZE_ENUM_YES;
+		goto out;
+	}
+
+	/* could be yes with user input */
+	ret = polkit_authorization_result_get_is_challenge (res);
+	if (ret) {
+		authorize = PK_AUTHORIZE_ENUM_INTERACTIVE;
+		goto out;
+	}
+
+	/* fall back to not letting user authenticate */
+	authorize = PK_AUTHORIZE_ENUM_NO;
+out:
+	if (res != NULL)
+		g_object_unref (res);
+	g_object_unref (subject);
+	g_free (sender);
+	return authorize;
+#else
+	return AUTORIZE_RESULT_YES;
+#endif
+}
+
+/**
+ * pk_engine_can_authorize:
+ **/
+void
+pk_engine_can_authorize (PkEngine *engine, const gchar *action_id, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	PkAuthorizeEnum result_enum;
+	GError *error;
+	GError *error_local = NULL;
+
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check is an action id */
+	ret = g_str_has_prefix (action_id, "org.freedesktop.packagekit.");
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+				     "action_id '%s' has the wrong prefix", action_id);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* can we do this action? */
+	result_enum = pk_engine_can_authorize_action_id (engine, action_id, context, &error_local);
+	if (result_enum == PK_AUTHORIZE_ENUM_UNKNOWN) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+				     "failed to check authorisation %s: %s", action_id, error_local->message);
+		g_error_free (error_local);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* all okay */
+	dbus_g_method_return (context, pk_authorize_type_enum_to_text (result_enum));
+}
+
+/**
  * pk_engine_get_property:
  **/
 static void
