@@ -421,6 +421,8 @@ public:
 		RestartApplication,
 		RestartSession,
 		RestartSystem,
+		RestartSecuritySession,
+		RestartSecuritySystem,
 		UnknownRestartType
 	} RestartType;
 
