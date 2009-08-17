@@ -547,6 +547,56 @@ pk_control_get_time_since_action (PkControl *control, PkRoleEnum role, guint *se
 }
 
 /**
+ * pk_control_can_authorize:
+ * @control: a valid #PkControl instance
+ * @action_id: the action ID, e.g. "org.freedesktop.packagekit.system-update"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We may want to know before we run a method if we are going to be denied,
+ * accepted or challenged for authentication.
+ *
+ * Return value: the %PkAuthorizeEnum or %PK_AUTHORIZE_ENUM_UNKNOWN if the method failed
+ */
+PkAuthorizeEnum
+pk_control_can_authorize (PkControl *control, const gchar *action_id, GError **error)
+{
+	gboolean ret = FALSE;
+	GError *error_local = NULL;
+	gchar *authorize = NULL;
+	PkAuthorizeEnum retval = PK_AUTHORIZE_ENUM_UNKNOWN;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_AUTHORIZE_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, PK_AUTHORIZE_ENUM_UNKNOWN);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "CanAuthorize", &error_local,
+				 G_TYPE_STRING, action_id,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &authorize,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("CanAuthorize failed :%s", error_local->message);
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* convert to enum */
+	retval = pk_authorize_type_enum_from_text (authorize);
+	if (retval == PK_AUTHORIZE_ENUM_UNKNOWN) {
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "unexpected return value");
+		goto out;
+	}
+out:
+	g_free (authorize);
+	return retval;
+}
+
+/**
  * pk_control_set_locale:
  * @error: a %GError to put the error code and message in, or %NULL
  **/
@@ -1202,6 +1252,7 @@ pk_control_test (EggTest *test)
 	PkControl *control;
 	PkConnection *connection;
 	guint version;
+	PkAuthorizeEnum authorize;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
@@ -1234,6 +1285,26 @@ pk_control_test (EggTest *test)
 	egg_test_title (test, "version micro");
 	g_object_get (control, "version-micro", &version, NULL);
 	egg_test_assert (test, (version == PK_MICRO_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "can authorize invalid prefix");
+	authorize = pk_control_can_authorize (control, "org.freedesktop.devicekit.power.system-update", NULL);
+	egg_test_assert (test, (authorize == PK_AUTHORIZE_ENUM_UNKNOWN));
+
+	/************************************************************/
+	egg_test_title (test, "can authorize unknown method");
+	authorize = pk_control_can_authorize (control, "org.freedesktop.packagekit.system-x-update", NULL);
+	egg_test_assert (test, (authorize == PK_AUTHORIZE_ENUM_UNKNOWN));
+
+	/************************************************************/
+	egg_test_title (test, "can authorize yes method");
+	authorize = pk_control_can_authorize (control, "org.freedesktop.packagekit.system-sources-refresh", NULL);
+	egg_test_assert (test, (authorize == PK_AUTHORIZE_ENUM_YES));
+
+	/************************************************************/
+	egg_test_title (test, "can authorize interactive method");
+	authorize = pk_control_can_authorize (control, "org.freedesktop.packagekit.system-rollback", NULL);
+	egg_test_assert (test, (authorize == PK_AUTHORIZE_ENUM_INTERACTIVE));
 
 	g_object_unref (control);
 out:
