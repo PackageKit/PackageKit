@@ -153,6 +153,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "CannotAllocateTid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_CHECK_AUTH, "CannotCheckAuth"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -804,7 +805,7 @@ pk_engine_can_authorize (PkEngine *engine, const gchar *action_id, DBusGMethodIn
 	/* check is an action id */
 	ret = g_str_has_prefix (action_id, "org.freedesktop.packagekit.");
 	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_CHECK_AUTH,
 				     "action_id '%s' has the wrong prefix", action_id);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -813,7 +814,7 @@ pk_engine_can_authorize (PkEngine *engine, const gchar *action_id, DBusGMethodIn
 	/* can we do this action? */
 	result_enum = pk_engine_can_authorize_action_id (engine, action_id, context, &error_local);
 	if (result_enum == PK_AUTHORIZE_ENUM_UNKNOWN) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_CHECK_AUTH,
 				     "failed to check authorisation %s: %s", action_id, error_local->message);
 		g_error_free (error_local);
 		dbus_g_method_return_error (context, error);
