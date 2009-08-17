@@ -184,6 +184,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_GET_FILELIST, "cannot-get-filelist"},
 	{PK_ERROR_ENUM_CANNOT_GET_REQUIRES, "cannot-get-requires"},
 	{PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY, "cannot-disable-repository"},
+	{PK_ERROR_ENUM_RESTRICTED_DOWNLOAD, "restricted-download"},
 	{0, NULL}
 };
 
