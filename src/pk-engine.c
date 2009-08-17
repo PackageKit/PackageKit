@@ -785,7 +785,7 @@ out:
 	g_free (sender);
 	return authorize;
 #else
-	return AUTORIZE_RESULT_YES;
+	return PK_AUTHORIZE_ENUM_YES;
 #endif
 }
 
