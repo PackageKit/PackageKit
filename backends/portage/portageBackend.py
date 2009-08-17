@@ -284,6 +284,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         self.pvar = PortageBridge()
 
+        # TODO: atm, this stack keep tracks of elog messages
+        self._elog_messages = []
+
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
         self.orig_err = None
@@ -390,6 +393,41 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     for x in files:
                         message += ";- %s then copy it to %s" % (' '.join(x[1]), x[0])
                     self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, message)
+
+    def elog_listener(self, settings, key, logentries, fulltext):
+        '''
+        This is a listener for elog.
+        It's called each time elog is emitting log messages (at end of process).
+        We are not using settings and fulltext but they are used by other
+        listeners so we have to keep them as arguments.
+        '''
+        message = "Messages for package %s:;" % str(key)
+
+        # building the message
+        for phases in logentries:
+            # actually, we don't care about phases
+            for entries in logentries[phases]:
+                type = entries[0]
+                messages = entries[1]
+
+                # TODO: portage.elog.filtering is using upper() should we ?
+                if type == 'LOG':
+                    message += ";Information messages:"
+                elif type == 'WARN':
+                    message += ";Warning messages:"
+                elif type == 'ERROR':
+                    message += ";Error messages:"
+                elif type == 'QA':
+                    message += ";QA messages:"
+                else:
+                    continue
+
+                for msg in messages:
+                    msg = msg.replace('\n', '')
+                    message += "; " + msg
+
+        # add the message to the stack
+        self._elog_messages.append(message)
 
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
@@ -1209,22 +1247,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.status(STATUS_INSTALL)
 
         # 
-        '''
-        def default_listener(mysettings, key, logentries, fulltext):
-            print 'BEGIN LISTENER'
-            print logentries
-            print fulltext
-            for phases in logentries:
-                # actually, we don't care about phases
-                for entries in phases:
-                    # we want to show all messages except INFO
-                    if entries == 'INFO':
-                        break
-                    if entries == 'LOG':
-                        for message in entries:
-
-        portage.elog.add_listener(default_listener)
-        '''
+        portage.elog.add_listener(self.elog_listener)
 
         try:
             self.block_output()
@@ -1235,6 +1258,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        portage.elog.remove_listener(self.elog_listener)
+        for msg in self._elog_messages:
+            # TODO: use specific message ?
+            self.message(MESSAGE_UNKNOWN, msg)
+        self._elog_messages = []
 
         self.send_configuration_file_message()
 
