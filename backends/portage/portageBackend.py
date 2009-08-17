@@ -1246,7 +1246,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         self.status(STATUS_INSTALL)
 
-        # 
+        # get elog messages
         portage.elog.add_listener(self.elog_listener)
 
         try:
@@ -1259,6 +1259,7 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         finally:
             self.unblock_output()
 
+        # show elog messages and clean
         portage.elog.remove_listener(self.elog_listener)
         for msg in self._elog_messages:
             # TODO: use specific message ?
@@ -1380,6 +1381,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         for p in packages:
             favorites.append('=' + p.cpv)
 
+        # get elog messages
+        portage.elog.add_listener(self.elog_listener)
+
         # now, we can remove
         try:
             self.block_output()
@@ -1389,6 +1393,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        # show elog messages and clean
+        portage.elog.remove_listener(self.elog_listener)
+        for msg in self._elog_messages:
+            # TODO: use specific message ?
+            self.message(MESSAGE_UNKNOWN, msg)
+        self._elog_messages = []
 
     def repo_enable(self, repoid, enable):
         # NOTES: use layman API >= 1.2.3
@@ -1687,6 +1698,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         self.status(STATUS_INSTALL)
 
+        # get elog messages
+        portage.elog.add_listener(self.elog_listener)
+
         try:
             self.block_output()
             # compiling/installing
@@ -1696,6 +1710,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        # show elog messages and clean
+        portage.elog.remove_listener(self.elog_listener)
+        for msg in self._elog_messages:
+            # TODO: use specific message ?
+            self.message(MESSAGE_UNKNOWN, msg)
+        self._elog_messages = []
 
         self.send_configuration_file_message()
 
@@ -1734,6 +1755,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         self.status(STATUS_INSTALL)
 
+        # get elog messages
+        portage.elog.add_listener(self.elog_listener)
+
         try:
             self.block_output()
             # compiling/installing
@@ -1743,6 +1767,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask.merge()
         finally:
             self.unblock_output()
+
+        # show elog messages and clean
+        portage.elog.remove_listener(self.elog_listener)
+        for msg in self._elog_messages:
+            # TODO: use specific message ?
+            self.message(MESSAGE_UNKNOWN, msg)
+        self._elog_messages = []
 
         self.send_configuration_file_message()
 
