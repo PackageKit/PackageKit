@@ -9,14 +9,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-03 14:45+0000\n"
-"PO-Revision-Date: 2009-08-03 11:51-0300\n"
-"Last-Translator: Héctor Daniel Cabrera <h.daniel.cabrera@gmail.com>\n"
+"POT-Creation-Date: 2009-08-18 08:39+0000\n"
+"PO-Revision-Date: 2009-08-18 11:26-0300\n"
+"Last-Translator: Domingo Becker <domingobecker@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Spanish\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:231
@@ -141,11 +142,10 @@ msgstr "Detalles acerca de la actualización:"
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:341
 #: ../src/pk-polkit-action-lookup.c:356
-#, fuzzy
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Paquete"
-msgstr[1] "Paquete"
+msgstr[1] "Paquetes"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:344
@@ -545,7 +545,7 @@ msgstr "Subcomandos:"
 #: ../client/pk-console.c:1781
 #: ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:128
-#: ../contrib/command-not-found/pk-command-not-found.c:610
+#: ../contrib/command-not-found/pk-command-not-found.c:616
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
@@ -870,71 +870,71 @@ msgid "Loading list of packages."
 msgstr "Cargando listas de paquetes"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:414
+#: ../contrib/command-not-found/pk-command-not-found.c:420
 msgid "Failed to search for file"
 msgstr "Falló al buscar el archivo"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:551
+#: ../contrib/command-not-found/pk-command-not-found.c:557
 msgid "Failed to launch:"
 msgstr "Falló al iniciar:"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:626
+#: ../contrib/command-not-found/pk-command-not-found.c:632
 msgid "PackageKit Command Not Found"
 msgstr "No se encontró el comando PackageKit"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:652
+#: ../contrib/command-not-found/pk-command-not-found.c:658
 msgid "Command not found."
 msgstr "Comando no encontrado."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:659
+#: ../contrib/command-not-found/pk-command-not-found.c:665
 msgid "Similar command is:"
 msgstr "Un comando similar es:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:668
+#: ../contrib/command-not-found/pk-command-not-found.c:674
 msgid "Run similar command:"
 msgstr "Ejecutar un comando similar:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:680
-#: ../contrib/command-not-found/pk-command-not-found.c:689
+#: ../contrib/command-not-found/pk-command-not-found.c:686
+#: ../contrib/command-not-found/pk-command-not-found.c:695
 msgid "Similar commands are:"
 msgstr "Los comandos similares son:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:696
+#: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "Please choose a command to run"
 msgstr "Elija un comando para ejecutar"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:715
+#: ../contrib/command-not-found/pk-command-not-found.c:721
 msgid "The package providing this file is:"
 msgstr "El paquete que proporciona este archivo es:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:720
+#: ../contrib/command-not-found/pk-command-not-found.c:726
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "¿Instalar el paquete «%s» para proporcionar el comando «%s»?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:741
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Packages providing this file are:"
 msgstr "Los paquetes que proporcionan este archivo son:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:750
+#: ../contrib/command-not-found/pk-command-not-found.c:756
 msgid "Suitable packages are:"
 msgstr "Los posibles paquetes son:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:758
+#: ../contrib/command-not-found/pk-command-not-found.c:764
 msgid "Please choose a package to install"
 msgstr "Elija un paquete para instalar"
 
