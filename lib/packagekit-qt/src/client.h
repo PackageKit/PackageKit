@@ -377,6 +377,9 @@ public:
 		ErrorCannotGetRequires,
 		ErrorCannotDisableRepository,
 		ErrorRestrictedDownload,
+		ErrorPackageFailedToConfigure,
+		ErrorPackageFailedToBuild,
+		ErrorPackageFailedToInstall,
 		UnknownErrorType
 	} ErrorType;
 

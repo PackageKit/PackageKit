@@ -185,6 +185,9 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_GET_REQUIRES, "cannot-get-requires"},
 	{PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY, "cannot-disable-repository"},
 	{PK_ERROR_ENUM_RESTRICTED_DOWNLOAD, "restricted-download"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_CONFIGURE, "package-failed-to-configure"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_BUILD, "package-failed-to-build"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "package-failed-to-install"},
 	{0, NULL}
 };
 
