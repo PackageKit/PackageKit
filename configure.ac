@@ -258,7 +258,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--disable-service-packs],
-							[Disable Service Packs support]), enable_servicepacks=$enableval)
+		[Disable Service Packs support]), enable_servicepacks=$enableval)
 if test x$enable_servicepacks != xno; then
 	AC_CHECK_HEADERS(archive.h,
 			 HAVE_ARCHIVE_H="yes",
@@ -292,8 +292,8 @@ dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
-							[Disable NetworkManager support]),
-							enable_networkmanager=$enableval)
+		[Disable NetworkManager support]),
+		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
 	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
@@ -316,7 +316,7 @@ dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(connman, AC_HELP_STRING([--disable-connman],
-							[Disable ConnMan support]), enable_connman=$enableval)
+		[Disable ConnMan support]), enable_connman=$enableval)
 if test x$enable_connman != xno; then
 	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
 	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
@@ -344,7 +344,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
-							[Disable man pages generation]), enable_man_pages=$enableval)
+		[Disable man pages generation]), enable_man_pages=$enableval)
 if test x$enable_man_pages != xno; then
 	AC_PATH_PROG(XSLTPROC, xsltproc, no)
 	if test x$enable_man_pages = xyes; then
