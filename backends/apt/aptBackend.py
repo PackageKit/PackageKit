@@ -562,11 +562,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     self._emit_visible_package(filters, self._cache[pkg_name])
         else:
             pklog.debug("Performing apt cache based search")
-            for p in self._cache._dict.values():
-                needle = search.strip().lower()
-                haystack = p.description.lower()
-                if p.name.find(needle) >= 0 or haystack.find(needle) >= 0:
-                    self._emit_visible_package(filters, r)
+            needle = search.strip().lower()
+            for pkg in self._cache:
+                if not pkg.candidate:
+                    continue
+                haystack = pkg.rawDescription.lower()
+                if needle in pkg.name or needle in haystack:
+                    self._emit_visible_package(filters, pkg)
 
     def get_distro_upgrades(self):
         """
