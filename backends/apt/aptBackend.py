@@ -347,8 +347,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
 
     def mediaChange(self, medium, drive):
         #FIXME: Perhaps use hal to show a nicer drive name
-        self._backend.media_change_required(MEDIA_TYPE_CD_OR_DVD, medium,
-                                            drive)
+        self._backend.media_change_required(MEDIA_TYPE_DISC, medium, drive)
         # FIXME: We cannot call sys.exit() here. APT module would procduce
         #        a backend error message otherwise. This way the backend
         #        sends another error message in the FetchFailedError handling
