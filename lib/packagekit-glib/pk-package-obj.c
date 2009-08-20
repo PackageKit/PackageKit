@@ -267,7 +267,7 @@ pk_package_obj_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "check to string");
 	text = pk_package_obj_to_string (obj1);
-	if (egg_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!"))
+	if (g_strcmp0 (text, "installed\tgnome;1.23;i386;data\tGNOME!") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s", text);
@@ -277,7 +277,7 @@ pk_package_obj_test (EggTest *test)
 	obj3 = pk_package_obj_from_string (text);
 	if (obj3->info == PK_INFO_ENUM_INSTALLED &&
 	    pk_package_id_equal (obj3->id, obj1->id) &&
-	    egg_strequal (obj3->summary, "GNOME!"))
+	    g_strcmp0 (obj3->summary, "GNOME!") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got incorrect data %s,%s,%s",

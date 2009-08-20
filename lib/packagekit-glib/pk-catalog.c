@@ -143,11 +143,11 @@ pk_catalog_process_type (PkCatalog *catalog)
 	pk_catalog_process_type_part (catalog, array, catalog->priv->distro_id);
 
 	/* find mode */
-	if (egg_strequal (catalog->priv->type, "InstallPackages")) {
+	if (g_strcmp0 (catalog->priv->type, "InstallPackages") == 0) {
 		mode = PK_CATALOG_PROGRESS_PACKAGES;
-	} else if (egg_strequal (catalog->priv->type, "InstallFiles")) {
+	} else if (g_strcmp0 (catalog->priv->type, "InstallFiles") == 0) {
 		mode = PK_CATALOG_PROGRESS_FILES;
-	} else if (egg_strequal (catalog->priv->type, "InstallProvides")) {
+	} else if (g_strcmp0 (catalog->priv->type, "InstallProvides") == 0) {
 		mode = PK_CATALOG_PROGRESS_PROVIDES;
 	}
 

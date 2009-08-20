@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [5])
-m4_define([pk_micro_version], [1])
+m4_define([pk_micro_version], [2])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -35,7 +35,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=12
-LT_REVISION=0
+LT_REVISION=1
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -152,7 +152,6 @@ LIBNM_GLIB_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.92
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
-QTGUI_REQUIRED=4.4.0
 QTSQL_REQUIRED=4.4.0
 QTXML_REQUIRED=4.4.0
 
@@ -187,7 +186,7 @@ AC_SUBST(DBUS_LIBS)
 
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
- gio-unix-2.0 >= $DBUS_REQUIRED)
+ gio-unix-2.0 >= $GIO_REQUIRED)
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
 
@@ -205,10 +204,6 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTDBUS_CFLAGS)
 	AC_SUBST(QTDBUS_LIBS)
 
-	PKG_CHECK_MODULES(QTGUI, QtGui >= $QTGUI_REQUIRED)
-	AC_SUBST(QTGUI_CFLAGS)
-	AC_SUBST(QTGUI_LIBS)
-
 	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
 	AC_SUBST(QTSQL_CFLAGS)
 	AC_SUBST(QTSQL_LIBS)
@@ -217,9 +212,14 @@ if test x$enable_qt = xyes; then
 	AC_SUBST(QTXML_CFLAGS)
 	AC_SUBST(QTXML_LIBS)
 
-	PKG_CHECK_MODULES(CPPUNIT, cppunit)
-	AC_SUBST(CPPUNIT_CFLAGS)
-	AC_SUBST(CPPUNIT_LIBS)
+	# look for MOC
+	AC_PATH_PROG(MOC, moc-qt4)
+	if test ! -x "$MOC"; then
+		AC_PATH_PROG(MOC, moc)
+		if test ! -x "$MOC"; then
+			AC_MSG_ERROR([MOC hasn't been found])
+		fi
+	fi
 	build_qt=yes
 else
 	build_qt=no
@@ -235,6 +235,9 @@ if test x$enable_managed = xyes; then
 	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
 	AC_SUBST(GLIBSHARP_CFLAGS)
 	AC_SUBST(GLIBSHARP_LIBS)
+
+	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
+	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
 
 	AC_PATH_PROG(MCS, mcs)
 	CS="C#"
@@ -255,7 +258,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--disable-service-packs],
-							[Disable Service Packs support]), enable_servicepacks=$enableval)
+		[Disable Service Packs support]), enable_servicepacks=$enableval)
 if test x$enable_servicepacks != xno; then
 	AC_CHECK_HEADERS(archive.h,
 			 HAVE_ARCHIVE_H="yes",
@@ -282,16 +285,6 @@ AC_CHECK_HEADERS([execinfo.h])
 AC_CHECK_FUNCS(clearenv)
 AC_PATH_PROG(GMSGFMT, msgfmt, msgfmt)
 
-dnl ---------------------------------------------------------------------------
-dnl - xsltproc
-dnl ---------------------------------------------------------------------------
-AC_PATH_PROG([XSLTPROC], [xsltproc])
-
-dnl ---------------------------------------------------------------------------
-dnl - moc (for packagekit-qt)
-dnl ---------------------------------------------------------------------------
-AC_PATH_PROG([MOC], [moc-qt4])
-
 # unix networking stack always available
 networking_apis="unix"
 
@@ -299,8 +292,8 @@ dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
-							[Disable NetworkManager support]),
-							enable_networkmanager=$enableval)
+		[Disable NetworkManager support]),
+		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
 	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
@@ -323,7 +316,7 @@ dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(connman, AC_HELP_STRING([--disable-connman],
-							[Disable ConnMan support]), enable_connman=$enableval)
+		[Disable ConnMan support]), enable_connman=$enableval)
 if test x$enable_connman != xno; then
 	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
 	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
@@ -343,12 +336,25 @@ AC_SUBST(CONNMAN_CFLAGS)
 AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
-dnl - Is xsltproc available?
+dnl - Check if ConsoleKit is installed, otherwise, warn the user at the end
 dnl ---------------------------------------------------------------------------
-AC_PATH_PROG(XSLTPROC, xsltproc, no)
-if test "$XSLTPROC" = "no" ; then
-	AC_MSG_WARN([xsltproc not found, will not be able to build man documentation])
+AC_PATH_PROG(CONSOLEKIT_DAEMON, console-kit-daemon, [], [/usr/sbin$PATH_SEPARATOR/sbin$PATH_SEPARATOR$PATH])
+
+dnl ---------------------------------------------------------------------------
+dnl - Generate man pages ? (default enabled)
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
+		[Disable man pages generation]), enable_man_pages=$enableval)
+if test x$enable_man_pages != xno; then
+	AC_PATH_PROG(XSLTPROC, xsltproc, no)
+	if test x$enable_man_pages = xyes; then
+		if test "$XSLTPROC" = "no" ; then
+			AC_MSG_ERROR([xsltproc not found, it's needod to build man pages])
+		fi
 	fi
+else
+	XSLTPROC=no
+fi
 AM_CONDITIONAL(HAVE_XSLTPROC, [test "$XSLTPROC" != "no"])
 
 dnl ---------------------------------------------------------------------------
@@ -381,6 +387,13 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(EGG_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(EGG_BUILD_TESTS,1,[Build test code])
+
+	# packagekit-qt needs cppunit for tests
+	if test x$build_qt = xyes; then
+		PKG_CHECK_MODULES(CPPUNIT, cppunit)
+		AC_SUBST(CPPUNIT_CFLAGS)
+		AC_SUBST(CPPUNIT_LIBS)
+	fi
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -402,6 +415,7 @@ if test x$enable_browser_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_BROWSER_PLUGIN,	\
 			  mozilla-plugin	\
 			  gio-unix-2.0		\
+			  nspr \
 			  cairo			\
 			  pango			\
 			  gtk+-2.0 >= 2.14.0	\
@@ -491,10 +505,29 @@ AC_ARG_ENABLE(debuginfo-install, AS_HELP_STRING([--enable-debuginfo-install],[Bu
 AM_CONDITIONAL(PK_BUILD_DEBUGINFO_INSTALL, test $build_debuginfo_install = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to use device rebind functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(device-rebind, AS_HELP_STRING([--enable-device-rebind],[Build device rebind functionality]),
+	      build_device_rebind=$enableval,build_device_rebind=yes)
+if test x$build_device_rebind = xyes; then
+	PKG_CHECK_MODULES(GUDEV, gudev-1.0,
+			  build_device_rebind=yes, build_device_rebind=no)
+else
+	build_device_rebind=no
+fi
+AM_CONDITIONAL(PK_BUILD_DEVICE_REBIND, test $build_device_rebind = "yes")
+
+dnl ---------------------------------------------------------------------------
 dnl - Able to build pm-utils script functionality
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(pm_utils, AS_HELP_STRING([--enable-pm-utils],[Build pm-utils script functionality]),
 	      build_pm_utils=$enableval,build_pm_utils=yes)
+if test x$build_pm_utils = xyes; then
+	PKG_CHECK_MODULES(PM_UTILS, pm-utils,
+	                  build_pm_utils=yes, build_pm_utils=no)
+else
+	build_pm_utils=no
+fi
 AM_CONDITIONAL(PK_BUILD_PM_UTILS, test $build_pm_utils = "yes")
 
 dnl ---------------------------------------------------------------------------
@@ -515,6 +548,7 @@ AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enabl
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
+AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
 AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),enable_razor=$enableval,enable_razor=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
@@ -532,6 +566,7 @@ AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
@@ -559,32 +594,6 @@ else
 fi
 AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
-
-dnl ---------------------------------------------------------------------------
-dnl - DocBook Documentation
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(docbook-docs, [  --enable-docbook-docs   build documentation (requires xmlto)],enable_docbook_docs=$enableval,enable_docbook_docs=auto)
-AC_PATH_PROG(XMLTO, xmlto, no)
-AC_MSG_CHECKING([whether to build DocBook documentation])
-if test x$XMLTO = xno ; then
-	have_docbook=no
-else
-	have_docbook=yes
-fi
-if test x$enable_docbook_docs = xauto ; then
-	if test x$have_docbook = xno ; then
-		enable_docbook_docs=no
-	else
-		enable_docbook_docs=yes
-	fi
-fi
-if test x$enable_docbook_docs = xyes; then
-	if test x$have_docbook = xno; then
-		AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
-	fi
-fi
-AM_CONDITIONAL(DOCBOOK_DOCS_ENABLED, test x$enable_docbook_docs = xyes)
-AC_MSG_RESULT(yes)
 
 dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of security framework
@@ -625,7 +634,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,razor,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,opkg,pisi,portage,ports,razor,smart,urpmi,yum,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -652,6 +661,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=zypp
 	elif test -f /usr/bin/emerge ; then
 		with_default_backend=portage
+	elif test -f /usr/local/sbin/portupgrade ; then
+		with_default_backend=ports
 	else
 		with_default_backend=dummy
 	fi
@@ -765,6 +776,7 @@ contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
+contrib/device-rebind/Makefile
 contrib/pm-utils/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
@@ -788,6 +800,8 @@ backends/yum/Makefile
 backends/pisi/Makefile
 backends/poldek/Makefile
 backends/portage/Makefile
+backends/ports/Makefile
+backends/ports/ruby_packagekit/Makefile
 backends/zypp/Makefile
 data/Makefile
 data/org.freedesktop.PackageKit.conf
@@ -831,6 +845,7 @@ echo "
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
+        device-rebind:             ${build_device_rebind}
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
@@ -848,6 +863,7 @@ echo "
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
+        Ports backend:             ${enable_ports}
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
@@ -855,6 +871,14 @@ echo "
         Default backend:           ${with_default_backend}
 "
 
+if test ! -x "$CONSOLEKIT_DAEMON"; then
+	echo "**********************************************************************"
+	echo "** ConsoleKit doesn't look to be installed (it's a running dependency)"
+	echo "** You will be able to run PackageKit without ConsoleKit"
+	echo "** but it is not supported nor recommended."
+	echo "**********************************************************************"
+	echo ""
+fi
 
 
 # warn that dummy is basically broken

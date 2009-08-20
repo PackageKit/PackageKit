@@ -120,8 +120,12 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	const gchar *cmdline;
 	const gchar *role_text;
 	const gchar *only_trusted_text;
+	const gchar *str;
+	const gchar *text;
 	gchar *message = NULL;
+	gchar **package_ids = NULL;
 	GString *string;
+	guint len = 1;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
 		goto out;
@@ -148,6 +152,14 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	if (only_trusted)
 		goto out;
 
+	/* find out the number of packages so we pluralize corectly */
+	str = polkit_details_lookup (details, "package_ids");
+	if (str != NULL) {
+		package_ids = pk_package_ids_from_text (str);
+		len = g_strv_length (package_ids);
+		g_strfreev (package_ids);
+	}
+
 	/* UpdatePackages */
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		string = g_string_new ("");
@@ -157,11 +169,11 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 		g_string_append (string, "\n");
 
 		/* TRANSLATORS: user has to trust provider -- I know, this sucks */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Do not update this package unless you are sure it is safe to do so.")));
-		g_string_append (string, "\n\n");
-
-		/* TRANSLATORS: warn the user that all bets are off */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Malicious software can damage your computer or cause other harm.")));
+		text = g_dngettext (GETTEXT_PACKAGE,
+				    N_("Do not update this package unless you are sure it is safe to do so."),
+				    N_("Do not update these packages unless you are sure it is safe to do so."),
+				    len);
+		g_string_append (string, text);
 
 		message = g_string_free (string, FALSE);
 		goto out;
@@ -176,7 +188,11 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 		g_string_append (string, "\n");
 
 		/* TRANSLATORS: user has to trust provider -- I know, this sucks */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Do not install this package unless you are sure it is safe to do so.")));
+		text = g_dngettext (GETTEXT_PACKAGE,
+				    N_("Do not install this package unless you are sure it is safe to do so."),
+				    N_("Do not install these packages unless you are sure it is safe to do so."),
+				    len);
+		g_string_append (string, text);
 		g_string_append (string, "\n\n");
 
 		/* TRANSLATORS: warn the user that all bets are off */
@@ -235,6 +251,57 @@ out:
 }
 
 /**
+ * pk_action_lookup_package_ids_to_string:
+ **/
+static gchar *
+pk_action_lookup_package_ids_to_string (gchar **package_ids)
+{
+	PkPackageId *id;
+	GPtrArray *array = NULL;
+	gchar **names = NULL;
+	gchar *names_str = NULL;
+	guint i;
+	guint len;
+
+	/* invalid */
+	if (package_ids == NULL)
+		goto out;
+
+	/* we show different data for different numbers of packages */
+	len = g_strv_length (package_ids);
+	if (len > 5) {
+		/* TRANSLATORS: too many packages to list each one */
+		names_str = g_strdup (N_("Many packages"));
+		goto out;
+	}
+
+	/* create array of name-version */
+	array = g_ptr_array_new ();
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = pk_package_id_new_from_string (package_ids[i]);
+		if (len == 1)
+			names_str = g_strdup_printf ("%s-%s (%s)", id->name, id->version, id->data);
+		else if (len <= 3)
+			names_str = g_strdup_printf ("%s-%s", id->name, id->version);
+		else
+			names_str = g_strdup (id->name);
+		g_ptr_array_add (array, names_str);
+		pk_package_id_free (id);
+	}
+
+	/* create string */
+	names = pk_ptr_array_to_strv (array);
+	names_str = g_strjoinv (", ", names);
+out:
+	if (array != NULL) {
+		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+		g_ptr_array_free (array, TRUE);
+	}
+	g_strfreev (names);
+	return names_str;
+}
+
+/**
  * pk_action_lookup_get_details:
  **/
 static PolkitDetails *
@@ -242,6 +309,10 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 			      PolkitDetails *action_details, PolkitActionDescription *action_description)
 {
 	const gchar *str;
+	const gchar *title;
+	gchar **package_ids;
+	gchar *text;
+	guint len;
 	PolkitDetails *details;
 
 	if (!g_str_has_prefix (action_id, "org.freedesktop.packagekit."))
@@ -263,11 +334,26 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 		polkit_details_insert (details, _("Only trusted"), str);
 	}
 
-	/* only-trusted */
+	/* command line */
 	str = polkit_details_lookup (action_details, "cmdline");
 	if (str != NULL) {
 		/* TRANSLATORS: the command line of the thing that wants the authentication */
 		polkit_details_insert (details, _("Command line"), str);
+	}
+
+	/* packages */
+	str = polkit_details_lookup (action_details, "package_ids");
+	if (str != NULL) {
+		package_ids = pk_package_ids_from_text (str);
+		text = pk_action_lookup_package_ids_to_string (package_ids);
+		len = g_strv_length (package_ids);
+
+		/* TRANSLATORS: title, the names of the packages that the method is processing */
+		title = ngettext ("Package", "Packages", len);
+		polkit_details_insert (details, title, text);
+
+		g_strfreev (package_ids);
+		g_free (text);
 	}
 
 	return details;

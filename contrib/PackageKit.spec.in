@@ -51,6 +51,7 @@ BuildRequires: gstreamer-plugins-base-devel
 BuildRequires: qt4-devel
 BuildRequires: cppunit-devel
 BuildRequires: pango-devel
+BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 #BuildRequires: gtk-sharp2-devel
 #BuildRequires: mono-core
@@ -365,7 +366,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files debuginfo-install
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libexecdir}/pk-debuginfo-install
+%{_bindir}/pk-debuginfo-install
 %{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin

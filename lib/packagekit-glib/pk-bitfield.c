@@ -336,7 +336,7 @@ pk_bitfield_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (none)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
-	if (egg_strequal (text, "none"))
+	if (g_strcmp0 (text, "none") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "text was %s", text);
@@ -363,7 +363,7 @@ pk_bitfield_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (single)");
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
-	if (egg_strequal (text, "~devel"))
+	if (g_strcmp0 (text, "~devel") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "text was %s", text);
@@ -374,7 +374,7 @@ pk_bitfield_test (EggTest *test)
 	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 					   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
-	if (egg_strequal (text, "~devel;gui;newest"))
+	if (g_strcmp0 (text, "~devel;gui;newest") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "text was %s", text);
@@ -414,7 +414,7 @@ pk_bitfield_test (EggTest *test)
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (egg_strequal (text, "gui;~free;newest"))
+	if (g_strcmp0 (text, "gui;~free;newest") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "text was %s", text);
@@ -442,7 +442,7 @@ pk_bitfield_test (EggTest *test)
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_text (filter);
-	if (egg_strequal (text, "none"))
+	if (g_strcmp0 (text, "none") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "text was %s", text);
@@ -485,7 +485,7 @@ pk_bitfield_test (EggTest *test)
 	egg_test_title (test, "group bitfield to text (unknown)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, -1);
 	text = pk_group_bitfield_to_text (values);
-	if (egg_strequal (text, "unknown"))
+	if (g_strcmp0 (text, "unknown") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
@@ -495,7 +495,7 @@ pk_bitfield_test (EggTest *test)
 	egg_test_title (test, "group bitfield to text (first and last)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, PK_GROUP_ENUM_UNKNOWN, -1);
 	text = pk_group_bitfield_to_text (values);
-	if (egg_strequal (text, "accessibility;unknown"))
+	if (g_strcmp0 (text, "accessibility;unknown") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
@@ -505,7 +505,7 @@ pk_bitfield_test (EggTest *test)
 	egg_test_title (test, "group bitfield to text (random)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_REPOS, -1);
 	text = pk_group_bitfield_to_text (values);
-	if (egg_strequal (text, "repos;unknown"))
+	if (g_strcmp0 (text, "repos;unknown") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);

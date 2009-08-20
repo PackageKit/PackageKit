@@ -122,7 +122,7 @@ backend_resolve_thread (PkBackend *backend)
 					    RAZOR_DETAIL_SUMMARY, &summary,
 					    RAZOR_DETAIL_LAST)) {
 		for (i=0; i<length; i++) {
-			if (egg_strequal (name, package_ids[i])) {
+			if (g_strcmp0 (name, package_ids[i]) == 0) {
 				pk_razor_emit_package (backend, name, version, arch, summary);
 			}
 		}
@@ -171,7 +171,7 @@ backend_get_details_thread (PkBackend *backend)
 		for (i=0; i<length; i++) {
 			/* TODO: we should cache this */
 			id = pk_package_id_new_from_string (package_ids[i]);
-			if (egg_strequal (name, id->name)) {
+			if (g_strcmp0 (name, id->name) == 0) {
 				package_id = pk_package_id_build (name, version, arch, "installed");
 				razor_package_get_details (set, package,
 							   RAZOR_DETAIL_SUMMARY, &summary,
@@ -216,7 +216,7 @@ backend_resolve_package_id (const PkPackageId *id)
 					    RAZOR_DETAIL_VERSION, &version,
 					    RAZOR_DETAIL_ARCH, &arch,
 					    RAZOR_DETAIL_LAST)) {
-		if (egg_strequal (name, id->name)) {
+		if (g_strcmp0 (name, id->name) == 0) {
 			package_retval = package;
 			break;
 		}

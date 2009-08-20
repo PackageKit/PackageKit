@@ -27,11 +27,11 @@
 #include <dbus/dbus-glib.h>
 
 typedef struct {
-	GstStructure *structure;
-	char *type_name;
-	char *codec_name;
-	char *app_name;
-} codec_info;
+	GstStructure	*structure;
+	gchar		*type_name;
+	gchar		*codec_name;
+	gchar		*app_name;
+} PkGstCodecInfo;
 
 enum {
 	FIELD_VERSION = 0,
@@ -43,57 +43,47 @@ enum {
 /**
  * pk_gst_parse_codec:
  **/
-static codec_info *
-pk_gst_parse_codec (const char *codec)
+static PkGstCodecInfo *
+pk_gst_parse_codec (const gchar *codec)
 {
-	char **split;
+	gchar **split = NULL;
+	gchar **ss = NULL;
 	GstStructure *s;
-	char *type_name, *caps;
-	codec_info *info;
+	gchar *type_name = NULL;
+	gchar *caps = NULL;
+	PkGstCodecInfo *info = NULL;
 
 	split = g_strsplit (codec, "|", -1);
 	if (split == NULL || g_strv_length (split) != 5) {
 		g_message ("PackageKit: not a GStreamer codec line");
-		g_strfreev (split);
-		return NULL;
+		goto out;
 	}
-	if (strcmp (split[0], "gstreamer") != 0 ||
-	    strcmp (split[1], "0.10") != 0) {
+	if (g_strcmp0 (split[0], "gstreamer") != 0 ||
+	    g_strcmp0 (split[1], "0.10") != 0) {
 		g_message ("PackageKit: not for GStreamer 0.10");
-		g_strfreev (split);
-		return NULL;
+		goto out;
 	}
 
 	if (g_str_has_prefix (split[4], "uri") != FALSE) {
-		char **ss;
-
+		/* split uri */
 		ss = g_strsplit (split[4], " ", 2);
 
-		info = g_new0 (codec_info, 1);
+		info = g_new0 (PkGstCodecInfo, 1);
 		info->app_name = g_strdup (split[2]);
 		info->codec_name = g_strdup (split[3]);
 		info->type_name = g_strdup (ss[0]);
-		g_strfreev (ss);
-		g_strfreev (split);
-
-		return info;
+		goto out;
 	}
 
-	{
-		char **ss;
-		ss = g_strsplit (split[4], "-", 2);
-		type_name = g_strdup (ss[0]);
-		caps = g_strdup (ss[1]);
-		g_strfreev (ss);
-	}
+	/* split */
+	ss = g_strsplit (split[4], "-", 2);
+	type_name = g_strdup (ss[0]);
+	caps = g_strdup (ss[1]);
 
 	s = gst_structure_from_string (caps, NULL);
 	if (s == NULL) {
 		g_message ("PackageKit: failed to parse caps: %s", caps);
-		g_strfreev (split);
-		g_free (caps);
-		g_free (type_name);
-		return NULL;
+		goto out;
 	}
 
 	/* remove fields that are almost always just MIN-MAX of some sort
@@ -108,13 +98,17 @@ pk_gst_parse_codec (const char *codec)
 	gst_structure_remove_field (s, "clock-rate");
 	gst_structure_remove_field (s, "bitrate");
 
-	info = g_new0 (codec_info, 1);
+	info = g_new0 (PkGstCodecInfo, 1);
 	info->app_name = g_strdup (split[2]);
 	info->codec_name = g_strdup (split[3]);
 	info->type_name = type_name;
 	info->structure = s;
-	g_strfreev (split);
 
+out:
+	g_free (caps);
+	g_free (type_name);
+	g_strfreev (ss);
+	g_strfreev (split);
 	return info;
 }
 
@@ -122,17 +116,16 @@ pk_gst_parse_codec (const char *codec)
  * pk_gst_field_get_type:
  **/
 static int
-pk_gst_field_get_type (const char *field_name)
+pk_gst_field_get_type (const gchar *field_name)
 {
-	if (strstr (field_name, "version") != NULL)
+	if (g_strrstr (field_name, "version") != NULL)
 		return FIELD_VERSION;
-	if (strcmp (field_name, "layer") == 0)
+	if (g_strcmp0 (field_name, "layer") == 0)
 		return FIELD_LAYER;
-	if (strcmp (field_name, "systemstream") == 0)
+	if (g_strcmp0 (field_name, "systemstream") == 0)
 		return FIELD_SYSTEMSTREAM;
-	if (strcmp (field_name, "variant") == 0)
+	if (g_strcmp0 (field_name, "variant") == 0)
 		return FIELD_VARIANT;
-
 	return -1;
 }
 
@@ -140,7 +133,7 @@ pk_gst_field_get_type (const char *field_name)
  * pk_gst_fields_type_compare:
  **/
 static gint
-pk_gst_fields_type_compare (const char *a, const char *b)
+pk_gst_fields_type_compare (const gchar *a, const gchar *b)
 {
 	gint a_type, b_type;
 
@@ -156,7 +149,7 @@ pk_gst_fields_type_compare (const char *a, const char *b)
 /**
  * pk_gst_structure_to_provide:
  **/
-static char *
+static gchar *
 pk_gst_structure_to_provide (GstStructure *s)
 {
 	GString *string;
@@ -167,11 +160,11 @@ pk_gst_structure_to_provide (GstStructure *s)
 	fields = NULL;
 
 	for (i = 0; i < num_fields; i++) {
-		const char *field_name;
+		const gchar *field_name;
 
 		field_name = gst_structure_nth_field_name (s, i);
 		if (pk_gst_field_get_type (field_name) < 0) {
-			//g_message ("PackageKit: ignoring field named %s", field_name);
+			g_message ("PackageKit: ignoring field named %s", field_name);
 			continue;
 		}
 
@@ -180,13 +173,13 @@ pk_gst_structure_to_provide (GstStructure *s)
 
 	string = g_string_new("");
 	for (l = fields; l != NULL; l = l->next) {
-		char *field_name;
+		gchar *field_name;
 		GType type;
 
 		field_name = l->data;
 
 		type = gst_structure_get_field_type (s, field_name);
-		//g_message ("PackageKit: field is: %s, type: %s", field_name, g_type_name (type));
+		g_message ("PackageKit: field is: %s, type: %s", field_name, g_type_name (type));
 
 		if (type == G_TYPE_INT) {
 			int value;
@@ -199,7 +192,7 @@ pk_gst_structure_to_provide (GstStructure *s)
 			gst_structure_get_boolean (s, field_name, &value);
 			g_string_append_printf (string, "(%s=%s)", field_name, value ? "true" : "false");
 		} else if (type == G_TYPE_STRING) {
-			const char *value;
+			const gchar *value;
 
 			value = gst_structure_get_string (s, field_name);
 			g_string_append_printf (string, "(%s=%s)", field_name, value);
@@ -219,7 +212,7 @@ pk_gst_structure_to_provide (GstStructure *s)
  * pk_gst_codec_free:
  **/
 static void
-pk_gst_codec_free (codec_info *codec)
+pk_gst_codec_free (PkGstCodecInfo *codec)
 {
 	if (codec->structure)
 		gst_structure_free (codec->structure);
@@ -249,13 +242,13 @@ pk_gst_get_arch_suffix (void)
 	}
 
 	/* 32 bit machines */
-	if (strcmp (buf.machine, "i386") == 0 ||
-	    strcmp (buf.machine, "i586") == 0 ||
-	    strcmp (buf.machine, "i686") == 0)
+	if (g_strcmp0 (buf.machine, "i386") == 0 ||
+	    g_strcmp0 (buf.machine, "i586") == 0 ||
+	    g_strcmp0 (buf.machine, "i686") == 0)
 		goto out;
 
 	/* 64 bit machines */
-	if (strcmp (buf.machine, "x86_64") == 0) {
+	if (g_strcmp0 (buf.machine, "x86_64") == 0) {
 		suffix = "()(64bit)";
 		goto out;
 	}
@@ -270,7 +263,7 @@ out:
  * main:
  **/
 int
-main (int argc, char **argv)
+main (int argc, gchar **argv)
 {
 	DBusGConnection *connection;
 	DBusGProxy *proxy = NULL;
@@ -284,6 +277,8 @@ main (int argc, char **argv)
 	gint retval = GST_INSTALL_PLUGINS_ERROR;
 	const gchar *suffix;
 	gchar **resources = NULL;
+	GPtrArray *array = NULL;
+	gchar *resource;
 
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
@@ -333,18 +328,19 @@ main (int argc, char **argv)
 	/* use a ()(64bit) suffix for 64 bit */
 	suffix = pk_gst_get_arch_suffix ();
 
+	array = g_ptr_array_new ();
 	len = g_strv_length (codecs);
 	resources = g_new0 (gchar*, len+1);
 
 	/* process argv */
 	for (i=0; i<len; i++) {
-		codec_info *info;
-		char *s;
-		char *type;
+		PkGstCodecInfo *info;
+		gchar *s;
+		gchar *type;
 
 		info = pk_gst_parse_codec (codecs[i]);
 		if (info == NULL) {
-			g_print ("skipping %s\n", codecs[i]);
+			g_message ("skipping %s", codecs[i]);
 			continue;
 		}
 		g_message ("PackageKit: Codec nice name: %s", info->codec_name);
@@ -360,11 +356,22 @@ main (int argc, char **argv)
 		}
 
 		/* "encode" */
-		resources[i] = g_strdup_printf ("%s|%s", info->codec_name, type);
+		resource = g_strdup_printf ("%s|%s", info->codec_name, type);
+		g_ptr_array_add (array, resource);
 
 		/* free codec structure */
 		pk_gst_codec_free (info);
 	}
+
+	/* nothing parsed */
+	if (array->len == 0) {
+		g_message ("no codec lines could be parsed");
+		goto out;
+	}
+
+	/* convert to a GStrv */
+	resources = (gchar **) g_ptr_array_free (array, FALSE);
+	array = NULL;
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
@@ -392,6 +399,10 @@ main (int argc, char **argv)
 	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
+	if (array != NULL) {
+		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
+		g_ptr_array_free (array, TRUE);
+	}
 	g_strfreev (resources);
 	if (proxy != NULL)
 		g_object_unref (proxy);

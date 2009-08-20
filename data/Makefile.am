@@ -19,7 +19,7 @@ mime_in_files = 					\
 	$(NULL)						
 mime_DATA = $(mime_in_files:.xml.in=.xml)
 
-dbusdir = ${SYSCONFDIR}/dbus-1/system.d
+dbusdir = ${DBUS_SYS_DIR}
 dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf			\
 	$(NULL)

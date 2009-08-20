@@ -129,6 +129,26 @@ public:
 
 	static QString filtersToString(const QFlags<PackageKit::Client::Filter>& flags);
 
+	/*
+	 * Describes the different errors that might happen on the bus
+	 *
+	 * \sa Client::error
+	 * \sa Transaction::error
+	 */
+	typedef enum {
+		NoError = 0,
+		ErrorFailed,
+		ErrorFailedAuth,
+		ErrorNoTid,
+		ErrorAlreadyTid,
+		ErrorRoleUnkown,
+		ErrorCannotStartDaemon,
+		ErrorInvalidInput,
+		ErrorInvalidFile,
+		ErrorNotSupported
+	} TransactionError;
+
+	static Client::DaemonError errorFromString (QString errorName);
 
 };
 

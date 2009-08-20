@@ -284,9 +284,12 @@ main (int argc, char *argv[])
 	env_pk_console = g_getenv (EGG_CONSOLE);
 	env_pk_logging = g_getenv (EGG_LOGGING);
 	clearenv ();
-	g_setenv (EGG_VERBOSE, env_pk_verbose, FALSE);
-	g_setenv (EGG_CONSOLE, env_pk_console, FALSE);
-	g_setenv (EGG_LOGGING, env_pk_logging, FALSE);
+	if (env_pk_verbose != NULL)
+		g_setenv (EGG_VERBOSE, env_pk_verbose, FALSE);
+	if (env_pk_console != NULL)
+		g_setenv (EGG_CONSOLE, env_pk_console, FALSE);
+	if (env_pk_logging != NULL)
+		g_setenv (EGG_LOGGING, env_pk_logging, FALSE);
 #endif
 
 	/* get values from the config file */

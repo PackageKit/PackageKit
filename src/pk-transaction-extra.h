@@ -49,14 +49,15 @@ typedef struct
 GType		 pk_transaction_extra_get_type			(void);
 PkTransactionExtra	*pk_transaction_extra_new		(void);
 
-gboolean	 pk_transaction_extra_clear_firmware_requests	(PkTransactionExtra	*post);
-gboolean	 pk_transaction_extra_update_package_list	(PkTransactionExtra	*post);
-gboolean	 pk_transaction_extra_import_desktop_files	(PkTransactionExtra	*post);
-gboolean	 pk_transaction_extra_check_running_process	(PkTransactionExtra	*post,
+gboolean	 pk_transaction_extra_clear_firmware_requests	(PkTransactionExtra	*extra);
+gboolean	 pk_transaction_extra_update_package_list	(PkTransactionExtra	*extra);
+gboolean	 pk_transaction_extra_import_desktop_files	(PkTransactionExtra	*extra);
+gboolean	 pk_transaction_extra_check_running_process	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
-gboolean	 pk_transaction_extra_check_desktop_files	(PkTransactionExtra	*post,
+gboolean	 pk_transaction_extra_check_desktop_files	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
-gboolean	 pk_transaction_extra_check_library_restart	(PkTransactionExtra	*post,
+gboolean	 pk_transaction_extra_check_library_restart	(PkTransactionExtra	*extra);
+gboolean	 pk_transaction_extra_check_library_restart_pre	(PkTransactionExtra	*extra,
 								 gchar			**package_ids);
 
 G_END_DECLS

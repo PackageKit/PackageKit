@@ -324,10 +324,10 @@ pk_package_id_free (PkPackageId *id)
 static gboolean
 pk_arch_base_ix86 (const gchar *arch)
 {
-	if (egg_strequal (arch, "i386") ||
-	    egg_strequal (arch, "i486") ||
-	    egg_strequal (arch, "i586") ||
-	    egg_strequal (arch, "i686"))
+	if (g_strcmp0 (arch, "i386") == 0 ||
+	    g_strcmp0 (arch, "i486") == 0 ||
+	    g_strcmp0 (arch, "i586") == 0 ||
+	    g_strcmp0 (arch, "i686") == 0)
 		return TRUE;
 	return FALSE;
 }
@@ -344,7 +344,7 @@ pk_arch_base_ix86 (const gchar *arch)
 static gboolean
 pk_arch_fuzzy_equal (const gchar *arch1, const gchar *arch2)
 {
-	if (egg_strequal (arch1, arch2))
+	if (g_strcmp0 (arch1, arch2) == 0)
 		return TRUE;
 	if (pk_arch_base_ix86 (arch1) && pk_arch_base_ix86 (arch2))
 		return TRUE;
@@ -363,8 +363,8 @@ pk_arch_fuzzy_equal (const gchar *arch1, const gchar *arch2)
 gboolean
 pk_package_id_equal_fuzzy_arch (const PkPackageId *id1, const PkPackageId *id2)
 {
-	if (egg_strequal (id1->name, id2->name) &&
-	    egg_strequal (id1->version, id2->version) &&
+	if (g_strcmp0 (id1->name, id2->name) == 0 &&
+	    g_strcmp0 (id1->version, id2->version) == 0 &&
 	    pk_arch_fuzzy_equal (id1->arch, id2->arch))
 		return TRUE;
 	return FALSE;
@@ -382,9 +382,9 @@ pk_package_id_equal_fuzzy_arch (const PkPackageId *id1, const PkPackageId *id2)
 gboolean
 pk_package_id_equal (const PkPackageId *id1, const PkPackageId *id2)
 {
-	if (egg_strequal (id1->name, id2->name) &&
-	    egg_strequal (id1->version, id2->version) &&
-	    egg_strequal (id1->arch, id2->arch))
+	if (g_strcmp0 (id1->name, id2->name) == 0 &&
+	    g_strcmp0 (id1->version, id2->version) == 0 &&
+	    g_strcmp0 (id1->arch, id2->arch) == 0)
 		return TRUE;
 	return FALSE;
 }
@@ -419,7 +419,7 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 		return FALSE;
 	}
 	if (compare == parts) {
-		return egg_strequal (id1, id2);
+		return (g_strcmp0 (id1, id2) == 0);
 	}
 
 	/* split, NULL will be returned if error */
@@ -438,7 +438,7 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 
 	/* only compare preceeding sections */
 	for (i=0; i<compare; i++) {
-		if (egg_strequal (sections1[i], sections2[i]) == FALSE) {
+		if (g_strcmp0 (sections1[i], sections2[i]) != 0) {
 			goto out;
 		}
 	}
@@ -490,7 +490,7 @@ pk_package_id_test (EggTest *test)
 
 	egg_test_title (test, "id build valid");
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
-	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
+	if (g_strcmp0 (text, "moo;0.0.1;i386;fedora") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
@@ -498,7 +498,7 @@ pk_package_id_test (EggTest *test)
 
 	egg_test_title (test, "id build partial");
 	text = pk_package_id_build ("moo", NULL, NULL, NULL);
-	if (egg_strequal (text, "moo;;;"))
+	if (g_strcmp0 (text, "moo;;;") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got '%s', expected '%s'", text, "moo;;;");
@@ -545,10 +545,10 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "parse package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
 	if (id != NULL &&
-	    egg_strequal (id->name, "moo") &&
-	    egg_strequal (id->arch, "i386") &&
-	    egg_strequal (id->data, "fedora") &&
-	    egg_strequal (id->version, "0.0.1"))
+	    g_strcmp0 (id->name, "moo") == 0 &&
+	    g_strcmp0 (id->arch, "i386") == 0 &&
+	    g_strcmp0 (id->data, "fedora") == 0 &&
+	    g_strcmp0 (id->version, "0.0.1") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
@@ -564,7 +564,7 @@ pk_package_id_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "test id building with valid data");
 	text = pk_package_id_to_string (id2);
-	if (egg_strequal (text, "moo;0.0.1;i386;fedora"))
+	if (g_strcmp0 (text, "moo;0.0.1;i386;fedora") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "package_id is '%s'", text);
@@ -576,7 +576,7 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test id building with partial data");
 	id = pk_package_id_new_from_string ("moo;;;");
 	text = pk_package_id_to_string (id);
-	if (egg_strequal (text, "moo;;;"))
+	if (g_strcmp0 (text, "moo;;;") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "package_id is '%s', should be '%s'", text, "moo;;;");
@@ -587,8 +587,8 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "parse short package_id from string");
 	id = pk_package_id_new_from_string ("moo;0.0.1;;");
 	if (id != NULL &&
-	    egg_strequal (id->name, "moo") &&
-	    egg_strequal (id->version, "0.0.1") &&
+	    (g_strcmp0 (id->name, "moo") == 0) &&
+	    (g_strcmp0 (id->version, "0.0.1") == 0) &&
 	    id->data == NULL &&
 	    id->arch == NULL)
 		egg_test_success (test, NULL);
@@ -630,7 +630,7 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test pass 1");
 	array = pk_strsplit ("foo", 1);
 	if (array != NULL &&
-	    egg_strequal (array[0], "foo"))
+	    g_strcmp0 (array[0], "foo") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s", array[0]);
@@ -640,8 +640,8 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test pass 2");
 	array = pk_strsplit ("foo;moo", 2);
 	if (array != NULL &&
-	    egg_strequal (array[0], "foo") &&
-	    egg_strequal (array[1], "moo"))
+	    g_strcmp0 (array[0], "foo") == 0 &&
+	    g_strcmp0 (array[1], "moo") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s, %s", array[0], array[1]);
@@ -651,9 +651,9 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test pass 3");
 	array = pk_strsplit ("foo;moo;bar", 3);
 	if (array != NULL &&
-	    egg_strequal (array[0], "foo") &&
-	    egg_strequal (array[1], "moo") &&
-	    egg_strequal (array[2], "bar"))
+	    g_strcmp0 (array[0], "foo") == 0 &&
+	    g_strcmp0 (array[1], "moo") == 0 &&
+	    g_strcmp0 (array[2], "bar") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
@@ -663,10 +663,10 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test on real packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
 	if (array != NULL &&
-	    egg_strequal (array[0], "kde-i18n-csb") &&
-	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
-	    egg_strequal (array[2], "all") &&
-	    egg_strequal (array[3], ""))
+	    g_strcmp0 (array[0], "kde-i18n-csb") == 0 &&
+	    g_strcmp0 (array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
+	    g_strcmp0 (array[2], "all") == 0 &&
+	    g_strcmp0 (array[3], "") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
@@ -676,10 +676,10 @@ pk_package_id_test (EggTest *test)
 	egg_test_title (test, "test on short packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
 	if (array != NULL &&
-	    egg_strequal (array[0], "kde-i18n-csb") &&
-	    egg_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
-	    egg_strequal (array[2], "") &&
-	    egg_strequal (array[3], ""))
+	    g_strcmp0 (array[0], "kde-i18n-csb") == 0 &&
+	    g_strcmp0 (array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
+	    g_strcmp0 (array[2], "") == 0 &&
+	    g_strcmp0 (array[3], "") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);

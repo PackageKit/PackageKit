@@ -3,6 +3,7 @@ dist_helper_DATA = 			\
 	yum-comps-groups.conf		\
 	yumBackend.py			\
 	yumComps.py			\
+	yumMediaManager.py		\
 	yumFilter.py
 
 plugindir = $(PK_PLUGIN_DIR)

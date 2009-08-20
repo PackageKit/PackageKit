@@ -171,6 +171,12 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
 
+	/* no ConsoleKit? */
+	if (dbus->priv->proxy_session == NULL) {
+		egg_warning ("no ConsoleKit, so cannot get session");
+		goto out;
+	}
+
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
@@ -208,7 +214,8 @@ pk_dbus_finalize (GObject *object)
 	dbus = PK_DBUS (object);
 
 	g_object_unref (dbus->priv->proxy_pid);
-	g_object_unref (dbus->priv->proxy_session);
+	if (dbus->priv->proxy_session != NULL)
+		g_object_unref (dbus->priv->proxy_session);
 
 	G_OBJECT_CLASS (pk_dbus_parent_class)->finalize (object);
 }

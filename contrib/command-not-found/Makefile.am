@@ -40,6 +40,12 @@ pk_command_not_found_CFLAGS =				\
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh
 
+PackageKit.sh: PackageKit.sh.in Makefile
+	sed -e s!\@LIBEXECDIR\@!$(libexecdir)! < $< > $@
+
 confdir = $(PK_CONF_DIR)
 dist_conf_DATA = CommandNotFound.conf
 
+EXTRA_DIST = PackageKit.sh.in
+
+CLEANFILES = PackageKit.sh

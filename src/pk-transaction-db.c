@@ -140,7 +140,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (egg_strequal (col, "succeeded")) {
+		if (g_strcmp0 (col, "succeeded") == 0) {
 			ret = egg_strtouint (value, &temp);
 			if (!ret)
 				egg_warning ("failed to parse succeeded: %s", value);
@@ -152,26 +152,26 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (egg_strequal (col, "role")) {
+		} else if (g_strcmp0 (col, "role") == 0) {
 			if (value != NULL)
 				item.role = pk_role_enum_from_text (value);
-		} else if (egg_strequal (col, "transaction_id")) {
+		} else if (g_strcmp0 (col, "transaction_id") == 0) {
 			if (value != NULL)
 				item.tid = g_strdup (value);
-		} else if (egg_strequal (col, "timespec")) {
+		} else if (g_strcmp0 (col, "timespec") == 0) {
 			if (value != NULL)
 				item.timespec = g_strdup (value);
-		} else if (egg_strequal (col, "cmdline")) {
+		} else if (g_strcmp0 (col, "cmdline") == 0) {
 			if (value != NULL)
 				item.cmdline = g_strdup (value);
-		} else if (egg_strequal (col, "data")) {
+		} else if (g_strcmp0 (col, "data") == 0) {
 			if (value != NULL)
 				item.data = g_strdup (value);
-		} else if (egg_strequal (col, "uid")) {
+		} else if (g_strcmp0 (col, "uid") == 0) {
 			ret = egg_strtouint (value, &temp);
 			if (ret)
 				item.uid = temp;
-		} else if (egg_strequal (col, "duration")) {
+		} else if (g_strcmp0 (col, "duration") == 0) {
 			ret = egg_strtouint (value, &item.duration);
 			if (!ret) {
 				egg_warning ("failed to parse duration: %s", value);
@@ -236,7 +236,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (egg_strequal (col, "timespec"))
+		if (g_strcmp0 (col, "timespec") == 0)
 			*timespec = g_strdup (value);
 		else
 			egg_warning ("%s = %s\n", col, value);
@@ -594,10 +594,10 @@ pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col
 	g_return_val_if_fail (item != NULL, 0);
 
 	for (i=0; i<argc; i++) {
-		if (egg_strequal (col_name[i], "proxy_http")) {
+		if (g_strcmp0 (col_name[i], "proxy_http") == 0) {
 			item->proxy_http = g_strdup (argv[i]);
 			item->set = TRUE;
-		} else if (egg_strequal (col_name[i], "proxy_ftp")) {
+		} else if (g_strcmp0 (col_name[i], "proxy_ftp") == 0) {
 			item->proxy_ftp = g_strdup (argv[i]);
 			item->set = TRUE;
 		} else {

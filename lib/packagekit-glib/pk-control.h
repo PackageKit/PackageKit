@@ -120,6 +120,9 @@ gboolean	 pk_control_get_time_since_action	(PkControl	*control,
 							 GError		**error);
 gboolean	 pk_control_transaction_list_print	(PkControl	*control);
 const gchar	**pk_control_transaction_list_get	(PkControl	*control);
+PkAuthorizeEnum	 pk_control_can_authorize		(PkControl	*control,
+							 const gchar	*action_id,
+							 GError		**error);
 
 G_END_DECLS
 

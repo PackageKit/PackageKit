@@ -138,7 +138,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (egg_strequal (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora")) {
+	if (g_strcmp0 (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora") == 0) {
 		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 				    "scribus-clipart;1.3.4-1.fc8;i386;fedora", "Clipart for scribus");
 	} else {
@@ -166,25 +166,25 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
 		package_id = package_ids[i];
-		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
 			pk_backend_details (backend, "powertop;1.8-1.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 					    "PowerTOP is a tool that finds the software component(s) that make your "
 					    "computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
-		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
 			pk_backend_details (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 					    "The kernel package contains the Linux kernel (vmlinuz), the core of any "
 					    "Linux operating system.  The kernel handles the basic functions of the "
 					    "operating system: memory allocation, process allocation, device input "
 					    "and output, etc.", "http://www.kernel.org", 33*1024*1024);
-		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
 			pk_backend_details (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 					    "GtkHTML2 (sometimes called libgtkhtml) is a widget for displaying html "
 					    "pages.", "http://live.gnome.org/gtkhtml", 133*1024);
-		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
+		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
 			pk_backend_details (backend, "vino;2.24.2.fc9;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 					    "Vino is a VNC server for GNOME. It allows remote users to "
 					    "connect to a running GNOME session using VNC.", "http://live.gnome.org/powertop", 3*1024*1024);
-		} else if (egg_strequal (package_id, "gnome-power-manager;2.6.19;i386;fedora")) {
+		} else if (g_strcmp0 (package_id, "gnome-power-manager;2.6.19;i386;fedora") == 0) {
 			pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 					    "GNOME Power Manager uses the information and facilities provided by HAL "
 					    "displaying icons and handling user callbacks in an interactive GNOME session.\n"
@@ -238,11 +238,11 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
 		package_id = package_ids[i];
-		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora"))
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0)
 			pk_backend_files (backend, package_id, "/usr/share/man/man1/boo;/usr/bin/xchat-gnome");
-		else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed"))
+		else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
-		else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora"))
+		else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
 			pk_backend_files (backend, package_id, "/usr/share/man/man1;/usr/bin/ck-xinit-session;/lib/libselinux.so.1");
 		else
 			pk_backend_files (backend, package_id, "/usr/share/gnome-power-manager;/usr/bin/ck-xinit-session");
@@ -299,14 +299,14 @@ backend_get_update_detail_timeout (gpointer data)
 	len = g_strv_length (_package_ids);
 	for (i=0; i<len; i++) {
 		package_id = _package_ids[i];
-		if (egg_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "powertop;1.7-1.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
 						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
-		} else if (egg_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
 						  PK_PACKAGE_IDS_DELIM
@@ -320,7 +320,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "* This should fix many driver bugs when using nouveau\n"
 						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
 						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
-		} else if (egg_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
 						  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
@@ -332,7 +332,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "- and that new thing",
 						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
 
-		} else if (egg_strequal (package_id, "vino;2.24.2.fc9;i386;fedora")) {
+		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "vino;2.24.1.fc9;i386;fedora", "",
 						  "", "", NULL, PK_RESTART_ENUM_NONE,
@@ -460,7 +460,7 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 
 	/* FIXME: support only_trusted */
 
-	if (egg_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
 		if (_use_gpg && !_has_signature) {
 			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
@@ -529,7 +529,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    /* egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") && */
-	    egg_strequal (key_id, "BB7576AC")) {
+	    g_strcmp0 (key_id, "BB7576AC") == 0) {
 		egg_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
 	} else {
@@ -612,19 +612,19 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	/* each one has a different detail for testing */
 	len = g_strv_length (packages);
 	for (i=0; i<len; i++) {
-		if (egg_strequal (packages[i], "vips-doc"))
+		if (g_strcmp0 (packages[i], "vips-doc") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
-		else if (egg_strequal (packages[i], "glib2"))
+		else if (g_strcmp0 (packages[i], "glib2") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "glib2;2.14.0;i386;fedora", "The GLib library");
-		else if (egg_strequal (packages[i], "powertop"))
+		else if (g_strcmp0 (packages[i], "powertop") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-		else if (egg_strequal (packages[i], "kernel"))
+		else if (g_strcmp0 (packages[i], "kernel") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 					    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
-		else if (egg_strequal (packages[i], "gtkhtml2"))
+		else if (g_strcmp0 (packages[i], "gtkhtml2") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	}
@@ -663,7 +663,7 @@ static void
 backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
 	/* allow testing error condition */
-	if (egg_strequal (transaction_id, "/397_eeecadad_data")) {
+	if (g_strcmp0 (transaction_id, "/397_eeecadad_data") == 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "invalid transaction_id");
 		pk_backend_finished (backend);
 		return;
@@ -747,7 +747,7 @@ backend_search_name_timeout (gpointer data)
 	locale = pk_backend_get_locale (backend);
 
 	egg_debug ("locale is %s", locale);
-	if (!egg_strequal (locale, "en_GB.utf8")) {
+	if (g_strcmp0 (locale, "en_GB.utf8") != 0) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "evince;0.9.3-5.fc8;i386;installed",
 				    "PDF Dokument Ƥrŏgrȃɱ");
@@ -1027,16 +1027,16 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
-	if (egg_strequal (rid, "local")) {
+	if (g_strcmp0 (rid, "local") == 0) {
 		egg_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
-	} else if (egg_strequal (rid, "development")) {
+	} else if (g_strcmp0 (rid, "development") == 0) {
 		egg_debug ("devel repo: %i", enabled);
 		_repo_enabled_devel = enabled;
-	} else if (egg_strequal (rid, "fedora")) {
+	} else if (g_strcmp0 (rid, "fedora") == 0) {
 		egg_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
-	} else if (egg_strequal (rid, "livna-development")) {
+	} else if (g_strcmp0 (rid, "livna-development") == 0) {
 		egg_debug ("livna repo: %i", enabled);
 		_repo_enabled_livna = enabled;
 	} else {
@@ -1077,11 +1077,11 @@ backend_what_provides_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
-		if (egg_strequal (_search, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)")) {
+		if (g_strcmp0 (_search, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;available",
 					    "GStreamer streaming media framework \"bad\" plug-ins");
-		} else if (egg_strequal (_search, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)")) {
+		} else if (g_strcmp0 (_search, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
 					    "MPEG demuxer for GStreamer");

@@ -150,7 +150,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	}
 
 	/* check the types we support */
-	if (!egg_strequal (type, "update") && !egg_strequal (type, "install")) {
+	if (g_strcmp0 (type, "update") != 0 && g_strcmp0 (type, "install") != 0) {
 		*error = g_error_new (1, 0, "does not have correct type key: %s", type);
 		ret = FALSE;
 		goto out;
@@ -160,7 +160,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	distro_id_us = pk_get_distro_id ();
 
 	/* do we match? */
-	ret = egg_strequal (distro_id_us, distro_id);
+	ret = (g_strcmp0 (distro_id_us, distro_id) == 0);
 	if (!ret)
 		*error = g_error_new (1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
@@ -366,7 +366,7 @@ pk_service_pack_check_valid (PkServicePack *pack, GError **error)
 	/* find the file, and check the metadata */
 	while ((filename_entry = g_dir_read_name (dir))) {
 		metafile = g_build_filename (directory, filename_entry, NULL);
-		if (egg_strequal (filename_entry, "metadata.conf")) {
+		if (g_strcmp0 (filename_entry, "metadata.conf") == 0) {
 			ret = pk_service_pack_check_metadata_file (metafile, &error_local);
 			if (!ret) {
 				*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE,

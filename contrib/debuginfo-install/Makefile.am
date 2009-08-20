@@ -30,7 +30,7 @@ INCLUDES =						\
 
 PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
 
-libexec_PROGRAMS = pk-debuginfo-install
+bin_PROGRAMS = pk-debuginfo-install
 
 pk_debuginfo_install_SOURCES =				\
 	egg-debug.c					\

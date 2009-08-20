@@ -184,6 +184,10 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_GET_FILELIST, "cannot-get-filelist"},
 	{PK_ERROR_ENUM_CANNOT_GET_REQUIRES, "cannot-get-requires"},
 	{PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY, "cannot-disable-repository"},
+	{PK_ERROR_ENUM_RESTRICTED_DOWNLOAD, "restricted-download"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_CONFIGURE, "package-failed-to-configure"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_BUILD, "package-failed-to-build"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "package-failed-to-install"},
 	{0, NULL}
 };
 
@@ -485,6 +489,14 @@ static const PkEnumMatch enum_media_type[] = {
 	{PK_MEDIA_TYPE_ENUM_CD,			"cd"},
 	{PK_MEDIA_TYPE_ENUM_DVD,		"dvd"},
 	{PK_MEDIA_TYPE_ENUM_DISC,		"disc"},
+	{0, NULL}
+};
+
+static const PkEnumMatch enum_authorize_type[] = {
+	{PK_AUTHORIZE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_AUTHORIZE_ENUM_YES,			"yes"},
+	{PK_AUTHORIZE_ENUM_NO,			"no"},
+	{PK_AUTHORIZE_ENUM_INTERACTIVE,		"interactive"},
 	{0, NULL}
 };
 
@@ -973,7 +985,8 @@ pk_license_enum_to_text (PkLicenseEnum license)
  *
  * Return value: the enumerated constant value, e.g. PK_MEDIA_TYPE_ENUM_CD
  **/
-PkMediaTypeEnum pk_media_type_enum_from_text (const gchar *media_type)
+PkMediaTypeEnum
+pk_media_type_enum_from_text (const gchar *media_type)
 {
 	return pk_enum_find_value (enum_media_type, media_type);
 }
@@ -986,9 +999,38 @@ PkMediaTypeEnum pk_media_type_enum_from_text (const gchar *media_type)
  *
  * Return value: the enumerated constant value, e.g. "dvd"
  **/
-const gchar* pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
+const gchar *
+pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
 {
 	return pk_enum_find_string (enum_media_type, media_type);
+}
+
+/**
+ * pk_authorize_type_enum_from_text:
+ * @code: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_AUTHORIZE_ENUM_YES
+ **/
+PkAuthorizeEnum
+pk_authorize_type_enum_from_text (const gchar *authorize_type)
+{
+	return pk_enum_find_value (enum_authorize_type, authorize_type);
+}
+
+/**
+ * pk_authorize_type_enum_to_text:
+ * @code: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "yes"
+ **/
+const gchar *
+pk_authorize_type_enum_to_text (PkAuthorizeEnum authorize_type)
+{
+	return pk_enum_find_string (enum_authorize_type, authorize_type);
 }
 
 /***************************************************************************
@@ -1018,7 +1060,7 @@ pk_enum_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file"))
+	if (g_strcmp0 (string, "search-file") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);
@@ -1034,7 +1076,7 @@ pk_enum_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (egg_strequal (string, "search-file"))
+	if (g_strcmp0 (string, "search-file") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, NULL);

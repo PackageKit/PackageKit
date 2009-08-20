@@ -36,6 +36,10 @@ if PK_BUILD_PM_UTILS
 SUBDIRS += pm-utils
 endif
 
+if PK_BUILD_DEVICE_REBIND
+SUBDIRS += device-rebind
+endif
+
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d
 dist_bashcompletion_DATA = pk-completion.bash
 

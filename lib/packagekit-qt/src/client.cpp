@@ -25,15 +25,37 @@
 
 #include "common.h"
 #include "daemonproxy.h"
-#include "polkitclient.h"
 #include "transaction.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
 #include "util.h"
 
+#define CREATE_NEW_TRANSACTION                      \
+		Transaction* t = d->createNewTransaction(); \
+		if (!t) {                                   \
+			setLastError (ErrorDaemonUnreachable);  \
+			setTransactionError (t, ErrorDaemonUnreachable); \
+			return t;                            \
+		}                                           \
+
+#define CHECK_TRANSACTION                                          \
+		if (!r.isValid ()) {                                       \
+			setTransactionError (t, daemonErrorFromDBusReply (r)); \
+		}                                                          \
+
+#define RUN_TRANSACTION(blurb) \
+		CREATE_NEW_TRANSACTION \
+		QDBusReply<void> r = t->d->p->blurb;        \
+		CHECK_TRANSACTION      \
+		return t;              \
+
 using namespace PackageKit;
 
 Client* Client::m_instance = 0;
+
+template<class T> Client::DaemonError daemonErrorFromDBusReply (QDBusReply<T> e) {
+	return Util::errorFromString (e.error ().name ());
+}
 
 Client* Client::instance()
 {
@@ -49,6 +71,8 @@ Client::Client(QObject* parent) : QObject(parent)
 
 	d->daemon = new DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
 	d->locale = QString();
+
+	d->error = NoError;
 
 	connect(d->daemon, SIGNAL(Locked(bool)), this, SIGNAL(locked(bool)));
 	connect(d->daemon, SIGNAL(NetworkStateChanged(const QString&)), d, SLOT(networkStateChanged(const QString&)));
@@ -151,16 +175,15 @@ void Client::setLocale(const QString& locale)
 	d->locale = locale;
 }
 
-void Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
+bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_NETWORK_PROXY_CONFIGURE)) {
-		emit authError(AUTH_SYSTEM_NETWORK_PROXY_CONFIGURE);
-		return;
+	QDBusReply<void> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
+	if (!r.isValid ()) {
+		setLastError (daemonErrorFromDBusReply (r));
+		return false;
+	} else {
+		return true;
 	}
-#endif
-
-	d->daemon->SetProxy(http_proxy, ftp_proxy);
 }
 
 void Client::stateHasChanged(const QString& reason)
@@ -175,42 +198,19 @@ void Client::suggestDaemonQuit()
 
 Client::DaemonError Client::getLastError ()
 {
-	return d->lastError;
+	return d->error;
 }
 
 ////// Transaction functions
 
 Transaction* Client::acceptEula(EulaInfo info)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_EULA_ACCEPT)) {
-		emit authError(AUTH_PACKAGE_EULA_ACCEPT);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->AcceptEula(info.id);
-
-	return t;
+	RUN_TRANSACTION(AcceptEula(info.id))
 }
 
 Transaction* Client::downloadPackages(const QList<Package*>& packages)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->DownloadPackages(Util::packageListToPids(packages));
-
-	return t;
+	RUN_TRANSACTION(DownloadPackages(Util::packageListToPids(packages)))
 }
 
 Transaction* Client::downloadPackage(Package* package)
@@ -220,15 +220,7 @@ Transaction* Client::downloadPackage(Package* package)
 
 Transaction* Client::getDepends(const QList<Package*>& packages, Filters filters, bool recursive)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive);
-
-	return t;
+	RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
 Transaction* Client::getDepends(Package* package, Filters filters, bool recursive)
@@ -238,17 +230,15 @@ Transaction* Client::getDepends(Package* package, Filters filters, bool recursiv
 
 Transaction* Client::getDetails(const QList<Package*>& packages)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
+	CREATE_NEW_TRANSACTION
 
 	foreach(Package* p, packages) {
 		t->d->packageMap.insert(p->id(), p);
 	}
 
-	t->d->p->GetDetails(Util::packageListToPids(packages));
+	QDBusReply<void> r = t->d->p->GetDetails(Util::packageListToPids(packages));
+
+	CHECK_TRANSACTION
 
 	return t;
 }
@@ -260,15 +250,7 @@ Transaction* Client::getDetails(Package* package)
 
 Transaction* Client::getFiles(const QList<Package*>& packages)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetFiles(Util::packageListToPids(packages));
-
-	return t;
+	RUN_TRANSACTION(GetFiles(Util::packageListToPids(packages)))
 }
 
 Transaction* Client::getFiles(Package* package)
@@ -278,54 +260,22 @@ Transaction* Client::getFiles(Package* package)
 
 Transaction* Client::getOldTransactions(uint number)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetOldTransactions(number);
-
-	return t;
+	RUN_TRANSACTION(GetOldTransactions(number))
 }
 
 Transaction* Client::getPackages(Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetPackages(Util::filtersToString(filters));
-
-	return t;
+	RUN_TRANSACTION(GetPackages(Util::filtersToString(filters)))
 }
 
 Transaction* Client::getRepoList(Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetRepoList(Util::filtersToString(filters));
-
-	return t;
+	RUN_TRANSACTION(GetRepoList(Util::filtersToString(filters)))
 }
 
 Transaction* Client::getRequires(const QList<Package*>& packages, Filters filters, bool recursive)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive);
-
-	return t;
+	RUN_TRANSACTION(GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
 Transaction* Client::getRequires(Package* package, Filters filters, bool recursive)
@@ -335,15 +285,7 @@ Transaction* Client::getRequires(Package* package, Filters filters, bool recursi
 
 Transaction* Client::getUpdateDetail(const QList<Package*>& packages)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetUpdateDetail(Util::packageListToPids(packages));
-
-	return t;
+	RUN_TRANSACTION(GetUpdateDetail(Util::packageListToPids(packages)))
 }
 
 Transaction* Client::getUpdateDetail(Package* package)
@@ -353,49 +295,17 @@ Transaction* Client::getUpdateDetail(Package* package)
 
 Transaction* Client::getUpdates(Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetUpdates(Util::filtersToString(filters));
-
-	return t;
+	RUN_TRANSACTION(GetUpdates(Util::filtersToString(filters)))
 }
 
 Transaction* Client::getDistroUpgrades()
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->GetDistroUpgrades();
-
-	return t;
+	RUN_TRANSACTION(GetDistroUpgrades())
 }
 
 Transaction* Client::installFiles(const QStringList& files, bool only_trusted)
 {
-	QString polkitAction = only_trusted ? AUTH_PACKAGE_INSTALL : AUTH_PACKAGE_INSTALL_UNTRUSTED;
-#if 0
-	if(!PolkitClient::instance()->getAuth(polkitAction)) {
-		emit authError(polkitAction);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->InstallFiles(only_trusted, files);
-
-	return t;
+	RUN_TRANSACTION(InstallFiles(only_trusted, files))
 }
 
 Transaction* Client::installFile(const QString& file, bool only_trusted)
@@ -403,89 +313,29 @@ Transaction* Client::installFile(const QString& file, bool only_trusted)
 	return installFiles(QStringList() << file, only_trusted);
 }
 
-Transaction* Client::installPackages(const QList<Package*>& packages)
+Transaction* Client::installPackages(bool only_trusted, const QList<Package*>& packages)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_INSTALL)) {
-		emit authError(AUTH_PACKAGE_INSTALL);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->InstallPackages(Util::packageListToPids(packages));
-
-	return t;
+	RUN_TRANSACTION(InstallPackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::installPackage(Package* p)
+Transaction* Client::installPackage(bool only_trusted, Package* p)
 {
-	return installPackages(QList<Package*>() << p);
+	return installPackages(only_trusted, QList<Package*>() << p);
 }
 
 Transaction* Client::installSignature(SignatureType type, const QString& key_id, Package* p)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_TRUST_SIGNING_KEY)) {
-		emit authError(AUTH_SYSTEM_TRUST_SIGNING_KEY);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->InstallSignature(Util::enumToString<Client>(type, "SignatureType", "Signature"), key_id, p->id());
-
-	return t;
+	RUN_TRANSACTION(InstallSignature(Util::enumToString<Client>(type, "SignatureType", "Signature"), key_id, p->id()))
 }
 
 Transaction* Client::refreshCache(bool force)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_REFRESH)) {
-		emit authError(AUTH_SYSTEM_SOURCES_REFRESH);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->RefreshCache(force);
-
-	return t;
+	RUN_TRANSACTION(RefreshCache(force))
 }
 
 Transaction* Client::removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_PACKAGE_REMOVE)) {
-		emit authError(AUTH_PACKAGE_REMOVE);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove);
-
-	return t;
+	RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove))
 }
 
 Transaction* Client::removePackage(Package* p, bool allow_deps, bool autoremove)
@@ -495,55 +345,17 @@ Transaction* Client::removePackage(Package* p, bool allow_deps, bool autoremove)
 
 Transaction* Client::repoEnable(const QString& repo_id, bool enable)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_CONFIGURE)) {
-		emit authError(AUTH_SYSTEM_SOURCES_CONFIGURE);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->RepoEnable(repo_id, enable);
-
-	return t;
+	RUN_TRANSACTION(RepoEnable(repo_id, enable))
 }
 
 Transaction* Client::repoSetData(const QString& repo_id, const QString& parameter, const QString& value)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_SOURCES_CONFIGURE)) {
-		emit authError(AUTH_SYSTEM_SOURCES_CONFIGURE);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->RepoSetData(repo_id, parameter, value);
-
-	return t;
+	RUN_TRANSACTION(RepoSetData(repo_id, parameter, value))
 }
 
 Transaction* Client::resolve(const QStringList& packageNames, Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->Resolve(Util::filtersToString(filters), packageNames);
-
-	return t;
+	RUN_TRANSACTION(Resolve(Util::filtersToString(filters), packageNames))
 }
 
 Transaction* Client::resolve(const QString& packageName, Filters filters)
@@ -553,74 +365,27 @@ Transaction* Client::resolve(const QString& packageName, Filters filters)
 
 Transaction* Client::rollback(Transaction* oldtrans)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_ROLLBACK)) {
-		emit authError(AUTH_SYSTEM_ROLLBACK);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->Rollback(oldtrans->tid());
-
-	return t;
+	RUN_TRANSACTION(Rollback(oldtrans->tid()))
 }
 
 Transaction* Client::searchFile(const QString& search, Filters filters)
 {
-        Transaction* t = d->createNewTransaction();
-		if (!t) {
-			emit daemonError(DaemonUnreachable);
-			return NULL;
-		}
-
-        t->d->p->SearchFile(Util::filtersToString(filters), search);
-
-        return t;
+	RUN_TRANSACTION(SearchFile(Util::filtersToString(filters), search))
 }
 
 Transaction* Client::searchDetails(const QString& search, Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->SearchDetails(Util::filtersToString(filters), search);
-
-	return t;
+	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))
 }
 
 Transaction* Client::searchGroup(Client::Group group, Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group", "Group"));
-
-	return t;
+	RUN_TRANSACTION(SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group", "Group")))
 }
 
 Transaction* Client::searchName(const QString& search, Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->SearchName(Util::filtersToString(filters), search);
-
-	return t;
+	RUN_TRANSACTION(SearchName(Util::filtersToString(filters), search))
 }
 
 Package* Client::searchFromDesktopFile(const QString& path)
@@ -645,63 +410,35 @@ Package* Client::searchFromDesktopFile(const QString& path)
 
 }
 
-Transaction* Client::updatePackages(const QList<Package*>& packages)
+Transaction* Client::updatePackages(bool only_trusted, const QList<Package*>& packages)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_UPDATE)) {
-		emit authError(AUTH_SYSTEM_UPDATE);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
-
-	t->d->p->UpdatePackages(Util::packageListToPids(packages));
-
-	return t;
+	RUN_TRANSACTION(UpdatePackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::updatePackage(Package* package)
+Transaction* Client::updatePackage(bool only_trusted, Package* package)
 {
-	return updatePackages(QList<Package*>() << package);
+	return updatePackages(only_trusted, QList<Package*>() << package);
 }
 
-Transaction* Client::updateSystem()
+Transaction* Client::updateSystem(bool only_trusted)
 {
-#if 0
-	if(!PolkitClient::instance()->getAuth(AUTH_SYSTEM_UPDATE)) {
-		emit authError(AUTH_SYSTEM_UPDATE);
-		return NULL;
-	}
-#endif
-
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		d->lastError = DaemonUnreachable;
-		return NULL;
-	}
-
-	t->d->p->UpdateSystem();
-
-	return t;
+	RUN_TRANSACTION(UpdateSystem(only_trusted))
 }
 
 Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filters filters)
 {
-	Transaction* t = d->createNewTransaction();
-	if (!t) {
-		emit daemonError(DaemonUnreachable);
-		return NULL;
-	}
+	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search))
+}
 
-	t->d->p->WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search);
+void Client::setLastError (DaemonError e)
+{
+	d->error = e;
+	emit error (e);
+}
 
-	return t;
+void Client::setTransactionError (Transaction* t, DaemonError e)
+{
+	t->d->error = e;
 }
 
 #include "client.moc"

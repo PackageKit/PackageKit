@@ -17,9 +17,11 @@
 # Copyright (C) 2007
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Tom Parker <palfrey@tevp.net>
+#    Thomas Liu <tliu@redhat.com>
 #    Robin Norwood <rnorwood@redhat.com>
 
 import dbus
+import os
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
 from enums import PackageKitEnum
@@ -30,6 +32,7 @@ from pkexceptions import PackageKitBackendFailure
 
 class PackageKit(PackageKitDbusInterface):
     def __init__(self):
+        self.loop = gobject.MainLoop()
         PackageKitDbusInterface.__init__(self,
                          'org.freedesktop.PackageKit',
                          'org.freedesktop.PackageKit',
@@ -37,125 +40,212 @@ class PackageKit(PackageKitDbusInterface):
 
     def tid(self):
         return self.pk_iface.GetTid()
+    
+    def get_iface(self):
+        DBusGMainLoop(set_as_default=True)
+        interface = 'org.freedesktop.PackageKit.Transaction'
+        bus = dbus.SystemBus()
+        bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member', dbus_interface=interface)
+        return dbus.Interface(bus.get_object('org.freedesktop.PackageKit', self.tid()), interface)
 
     def job_id(func):
+        """
+        Decorator for the dbus calls.
+        Append async=True to the args if you want the call to be asynchronous.
+        """
         def wrapper(*args, **kwargs):
-            jid = func(*args, **kwargs)
+            self = args[0]
+            jid = polkit_auth_wrapper(func, *args)
             if jid == -1:
                 raise PackageKitTransactionFailure
+            elif not 'async' in kwargs.keys() and jid == None:
+                self.run()
             else:
                 return jid
         return wrapper
 
     def run(self):
-        self.loop = gobject.MainLoop()
         self.loop.run()
 
     def catchall_signal_handler(self, *args, **kwargs):
-        if kwargs['member'] == "Finished":
+        member = kwargs['member'] 
+        if member == "AllowCancel":
+            self.AllowCancel(args[0])
+        elif member == "CallerActiveChanged":
+            self.CallerActiveChanged(args[0]) 
+        elif member == "Category":
+            self.Category(args[0], args[1], args[2], args[3], args[4])
+        elif member == "Details":
+            self.Details(args[0], args[1], args[2], args[3], args[4], args[5])
+        elif member == "ErrorCode":
+            self.ErrorCode(args[0], args[1])
+        elif member == "Files":
+            self.Files(args[0], args[1])
+        elif member == "Finished":
             self.loop.quit()
-            self.Finished(args[0], args[1], args[2])
-        elif kwargs['member'] == "ProgressChanged":
-            self.ProgressChanged(args[0], float(args[1])+(float(args[2])/100.0), args[3], args[4])
-        elif kwargs['member'] == "StatusChanged":
-            self.JobStatus(args[0], args[1])
-        elif kwargs['member'] == "Package":
-            self.Package(args[0], args[1], args[2], args[3])
-        elif kwargs['member'] == "UpdateDetail":
-            self.UpdateDetail(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
-        elif kwargs['member'] == "Details":
-            self.Details(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
-        elif kwargs['member'] == "ErrorCode":
-            self.ErrorCode(args[0], args[1], args[2])
-        elif kwargs['member'] == "RequireRestart":
-            self.RequireRestart(args[0], args[1], args[2])
-        elif kwargs['member'] == "Transaction":
-            self.Transaction(args[0], args[1], args[2], args[3], args[4], args[5])
-        elif kwargs['member'] in ["TransactionListChanged",
-                      "AllowCancel", "JobListChanged", "Locked"]:
+            self.Finished(args[0], args[1])
+        elif member == "Message":
+            self.Message(args[0], args[1]) 
+        elif member == "Package":
+            self.Package(args[0], args[1], args[2])
+        elif member == "ProgressChanged":
+            self.ProgressChanged(args[0], args[1], args[2], args[3])
+        elif member == "RepoDetail":
+            self.RepoDetail(args[0], args[1], args[2])
+        elif member == "RepoSignatureRequired":
+            self.RepoSignatureRequired(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+        elif member == "EulaRequired":
+            self.EulaRequired(args[0], args[1], args[2], args[3])
+        elif member == "MediaChangeRequired":
+            self.MediaChangeRequired(args[0], args[1], args[2])
+        elif member == "RequireRestart":
+            self.RequireRestart(args[0], args[1])
+        elif member == "StatusChanged":
+            self.StatusChanged(args[0])
+        elif member == "Transaction":
+            self.Transaction(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+        elif member == "UpdateDetail":
+            self.UpdateDetail(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+        elif member == "DistroUpgrade":
+            self.DistroUpgrade(args[0], args[1], args[2])
+        elif member in ["Destroy", "Locked", "TransactionListChanged"]:
             pass
         else:
-            print "Caught unhandled signal %s"% kwargs['member']
+            print "Caught unhandled signal %s"% member
             print "  args:"
             for arg in args:
                 print "        " + str(arg)
 
 # --- PK Signal Handlers ---
+# See http://www.packagekit.org/gtk-doc/Transaction.html
 
-    def Finished(self,
-            jid,         # Job ID
-            status,      # enum - unknown, success, failed, canceled
-            running_time  # amount of time transaction has been running in seconds
-            ):
+    def AllowCancel(self,
+                    allow_cancel):
         pass
 
-    def ProgressChanged(self,
-            jid,       # Job ID
-            percent,   # 0.0 - 100.0
-            elapsed,     # time
-            remaining    # time
-            ):
+    def CallerActiveChanged(self,
+                            is_active):
         pass
 
-    def JobStatus(self,
-            jid,       # Job ID
-            status      # enum - invalid, setup, download, install, update, exit
-            ):
-        pass
-
-    def Package(self,
-            jid,       # Job ID
-            value,     # installed=1, not-installed=0 | security=1, normal=0
-            package_id,
-            package_summary
-            ):
-        pass
-
-    def UpdateDetail(self,
-             jid,       # Job ID
-             package_id,
-             updates,
-             obsoletes,
-             url,
-             restart_required,
-             update_text
-             ):
+    def Category(self,
+                 parent_id,
+                 cat_id,
+                 name,
+                 summary,
+                 icon):
         pass
 
     def Details(self,
-            jid,       # Job ID
-            package_id,
-            license,
-            group,
-            detail,
-            url,
-            size,      # in bytes
-            file_list   # separated by ';'
-            ):
+                package_id,
+                license,
+                group,
+                detail,
+                url,
+                size):
         pass
 
     def ErrorCode(self,
-            jid,       # Job ID
-            error_code, # enumerated - see pk-enum.c in PackageKit source
-            details     # non-localized details
-            ):
+                  code,
+                  details):
+        pass
+
+    def Files(self,
+              package_id,
+              file_list):
+        pass
+
+    def Finished(self,
+                 exit,
+                 runtime):
+        pass
+
+    def Message(self,
+                type,
+                details):
+        pass
+
+    def Package(self,
+                info,
+                package_id,
+                summary):
+        pass
+
+    def ProgressChanged(self,
+                        percentage,
+                        subpercentage,
+                        elapsed,
+                        remaining):
+        pass
+
+    def RepoDetail(self,
+                   repo_id,
+                   description,
+                   enabled):
+        pass
+
+    def RepoSignatureRequired(self,
+                              package_id,
+                              repository_name,
+                              key_url,
+                              key_userid,
+                              key_id,
+                              key_fingerprint,
+                              key_timestamp,
+                              type):
+        pass
+
+    def EulaRequired(self,
+                     eula_id,
+                     package_id,
+                     vendor_name,
+                     license_agreement):
+        pass
+
+    def MediaChangeRequired(self,
+                            media_type,
+                            media_id,
+                            media_text):
         pass
 
     def RequireRestart(self,
-            jid,       # Job ID
-            type,      # enum - system, application, session
-            details     # non-localized details
-            ):
+                       type,
+                       package_id):
+        pass
+
+    def StatusChanged(self,
+                      status):
         pass
 
     def Transaction(self,
-            jid,      # Job ID
-            old_jid,  # Old Job ID
-            timespec, # Time (2007-09-27T15:29:22Z)
-            succeeded, # 1 or 0
-            role,     # enum, see task_role in pk-enum.c
-            duration   # in seconds
-            ):
+                    old_tid,
+                    timespec,
+                    succeeded,
+                    role,
+                    duration,
+                    data,
+                    uid,
+                    cmdline):
+        pass
+
+    def UpdateDetail(self,
+                     package_id,
+                     updates,
+                     obsoletes,
+                     vendor_url,
+                     bugzilla_url,
+                     cve_url,
+                     restart,
+                     update_text,
+                     changelog,
+                     state,
+                     issued,
+                     updated):
+        pass
+
+    def DistroUpgrade(self, 
+                      type,
+                      name,
+                      summary):
         pass
 
 # --- PK Methods ---
@@ -169,7 +259,7 @@ class PackageKit(PackageKitDbusInterface):
         Lists packages which could be updated.
         Causes 'Package' signals for each available package.
         """
-        return self.pk_iface.GetUpdates(self.tid(), filter)
+        return self.get_iface().GetUpdates(filter)
 
     @dbusException
     @job_id
@@ -177,8 +267,24 @@ class PackageKit(PackageKitDbusInterface):
         """
         Refreshes the backend's cache.
         """
-        return self.pk_iface.RefreshCache(self.tid(), force)
+        return self.get_iface().RefreshCache(force)
 
+    @dbusException
+    @job_id
+    def RepoEnable(self, repo, enabled):
+        """
+        Enable or disable the repository
+        """
+        return self.get_iface().RepoEnable(repo, enabled)
+
+    @dbusException
+    @job_id
+    def GetRepoList(self, filter):
+        """
+        Enable or disable the repository
+        """
+        return self.get_iface().GetRepoList(filter)
+    
     @dbusException
     @job_id
     def UpdateSystem(self):
@@ -186,16 +292,25 @@ class PackageKit(PackageKitDbusInterface):
         Applies all available updates.
         Asynchronous
         """
-        return self.pk_iface.UpdateSystem(self.tid())
+        return self.get_iface().UpdateSystem()
 
     @dbusException
     @job_id
-    def Resolve(self, package_name, filter="none"):
+    def UpdatePackages(self, package_ids):
         """
-        Finds a package with the given name, and gives back a Package that matches that name exactly
+        Applies all available updates.
+        Asynchronous
+        """
+        return self.get_iface().UpdateSystem(package_ids)
+
+    @dbusException
+    @job_id
+    def Resolve(self, package_names, filter="none"):
+        """
+        Finds a packages with the given names, and gives back a Package that matches those names exactly
         (not yet supported in yum backend, and maybe others)
         """
-        return self.pk_iface.Resolve(self.tid(), filter, package_name)
+        return self.get_iface().Resolve(filter, package_names)
 
     @dbusException
     @job_id
@@ -205,7 +320,7 @@ class PackageKit(PackageKitDbusInterface):
         'filter' could be 'installed', a repository name, or 'none'.
         Causes 'Package' signals for each package found.
         """
-        return self.pk_iface.SearchName(self.tid(), filter, pattern)
+        return self.get_iface().SearchName(filter, pattern)
 
     @dbusException
     @job_id
@@ -215,7 +330,7 @@ class PackageKit(PackageKitDbusInterface):
         'filter' could be 'installed', a repository name, or 'none'.
         Causes 'Package' signals for each package found.
         """
-        return self.pk_iface.SearchDetails(self.tid(), filter, pattern)
+        return self.get_iface().SearchDetails(filter, pattern)
 
     @dbusException
     @job_id
@@ -225,7 +340,7 @@ class PackageKit(PackageKitDbusInterface):
         'filter' could be 'installed', a repository name, or 'none'.
         Causes 'Package' signals for each package found.
         """
-        return self.pk_iface.SearchGroup(self.tid(), filter, pattern)
+        return self.get_iface().SearchGroup(filter, pattern)
 
     @dbusException
     @job_id
@@ -235,58 +350,58 @@ class PackageKit(PackageKitDbusInterface):
         'filter' could be 'installed', a repository name, or 'none'.
         Causes 'Package' signals for each package found.
         """
-        return self.pk_iface.SearchFile(self.tid(), filter, pattern)
+        return self.get_iface().SearchFile(filter, pattern)
 
     @dbusException
     @job_id
-    def GetDepends(self, package_id, recursive=False):
+    def GetDepends(self, package_ids, filter="none", recursive=False):
         """
         Lists package dependancies
         """
-        return self.pk_iface.GetDepends(self.tid(), package_id, recursive)
+        return self.get_iface().GetDepends(filter, package_ids, recursive)
 
     @dbusException
     @job_id
-    def GetRequires(self, package_id, recursive):
+    def GetRequires(self, package_ids, filter="none", recursive=False):
         """
         Lists package requires
         """
-        return self.pk_iface.GetRequires(self.tid(), package_id, recursive)
+        return self.get_iface().GetRequires(filter, package_id, recursive)
 
     @dbusException
     @job_id
-    def GetUpdateDetail(self, package_id):
+    def GetUpdateDetail(self, package_ids):
         """
         More details about an update.
         """
-        return self.pk_iface.GetUpdateDetail(self.tid(), package_id)
+        return self.get_iface().GetUpdateDetail(package_ids)
 
     @dbusException
     @job_id
-    def GetDetails(self, package_id):
+    def GetDetails(self, package_ids):
         """
-        Gets the Details of a given package_id.
+        Gets the Details of given package_ids.
         Causes a 'Details' signal.
         """
-        return self.pk_iface.GetDetails(self.tid(), package_id)
+        return self.get_iface().GetDetails(package_ids)
 
     @dbusException
     @job_id
-    def RemovePackages(self, package_ids, allow_deps=False ):
+    def RemovePackages(self, package_ids, allow_deps=False, auto_remove=False):
         """
-        Removes a package.
+        Removes packages.
         Asynchronous
         """
-        return self.pk_iface.RemovePackages(self.tid(), package_ids, allow_deps)
+        return self.get_iface().RemovePackages(package_ids, allow_deps, auto_remove)
 
     @dbusException
     @job_id
     def InstallPackages(self, package_ids):
         """
-        Installs a package.
+        Installs packages.
         Asynchronous
         """
-        return self.pk_iface.InstallPackages(self.tid(), package_ids)
+        return self.get_iface().InstallPackages(package_ids)
 
     @dbusException
     @job_id
@@ -295,25 +410,120 @@ class PackageKit(PackageKitDbusInterface):
         Updates a package.
         Asynchronous
         """
-        return self.pk_iface.UpdatePackages(self.tid(), package_ids)
+        return self.get_iface().UpdatePackages(package_ids)
 
     @dbusException
     @job_id
-    def InstallFiles(self, full_paths):
+    def InstallFiles(self, full_paths, only_trusted=False):
         """
         Installs a package which provides given file?
         Asynchronous
         """
-        return self.pk_iface.InstallFiles(self.tid(), full_paths)
+        return self.get_iface().InstallFiles(only_trusted, full_paths)
+    
+    @dbusException
+    @job_id
+    def SetLocale(self, code):
+        """
+        Set system locale.
+        """
+        return self.get_iface().SetLocale(code)
+    
+    @dbusException
+    @job_id
+    def AcceptEula(self, eula_id):
+        """
+        This method allows the user to accept an end user licence agreement.
+        """
+        return self.get_iface().AcceptEula(eula_id)
+ 
+    @dbusException
+    @job_id
+    def DownloadPackages(self, package_ids):
+        """
+        This method allows the user to accept an end user licence agreement.
+        """
+        return self.get_iface().DownloadPackages(package_ids)
+    
+    @dbusException
+    @job_id
+    def GetAllowCancel(self):
+        """
+        Get if cancel is allowed for the transaction 
+        """
+        return self.get_iface().GetAllowCancel()
 
     @dbusException
     @job_id
-    def ServicePack(self, location, enabled):
+    def GetCategories(self):
         """
-        Updates a service pack from a location
-        Asynchronous
+        This method returns the collection categories
         """
-        return self.pk_iface.ServicePack(self.tid(), location, enabled)
+        return self.get_iface().GetCategories()
+    
+    @dbusException
+    @job_id
+    def GetFiles(self, package_ids):
+        """
+        This method should return the file list of the package_ids
+        """
+        return self.get_iface().GetFiles(package_ids)
+
+    @dbusException
+    @job_id
+    def GetPackageLast(self):
+        """
+        This method emits the package that was last emmitted from the daemon.
+        """
+        return self.get_iface().GetPackageLast()
+
+    @dbusException
+    @job_id
+    def GetDistroUpgrades(self):
+        """
+        This method should return a list of distribution upgrades that are available.
+        """
+        return self.get_iface().GetDistroUpgrades()
+
+    @dbusException
+    @job_id
+    def InstallSignature(self, sig_type, key_id, package_id):
+        """
+        This method allows us to install new security keys.
+        """
+        return self.get_iface().InstallSignature(sig_type, key_id, package_id)
+
+    @dbusException
+    @job_id
+    def IsCallerActive(self):
+        """
+        This method allows us to find if the original caller of the method is still connected to the session bus.
+        """
+        return self.get_iface().IsCallerActive()
+
+    @dbusException
+    @job_id
+    def RepoSetData(self, repo_id, parameter, value):
+        """
+        This method allows arbitary data to be passed to the repository handler.
+        """
+        return self.get_iface().RepoSetData(repo_id, parameter, value)
+
+    @dbusException
+    @job_id
+    def Rollback(self, transaction_id):
+        """
+        This method rolls back the package database to a previous transaction.
+        """
+        return self.get_iface().Rollback(transaction_id)
+
+    @dbusException
+    @job_id
+    def WhatProvides(self, filter, type, search):
+        """
+        This method returns packages that provide the supplied attributes.
+        """
+        return self.get_iface().WhatProvides(filter, type, search)
 
 ## Do things or query transactions
     @dbusException
@@ -323,7 +533,7 @@ class PackageKit(PackageKitDbusInterface):
         Might not succeed for all manner or reasons.
         throws NoSuchTransaction
         """
-        return self.pk_iface.Cancel(self.tid())
+        return self.get_iface().Cancel()
 
     @dbusException
     @job_id
@@ -333,7 +543,7 @@ class PackageKit(PackageKitDbusInterface):
         Returns status (query, download, install, exit)
         throws NoSuchTransaction
         """
-        return self.pk_iface.GetStatus(self.tid())
+        return self.get_iface().GetStatus()
 
     @dbusException
     @job_id
@@ -343,81 +553,33 @@ class PackageKit(PackageKitDbusInterface):
         Returns status (query, download, install, exit) and package_id (package acted upon, or NULL
         throws NoSuchTransaction
         """
-        return self.pk_iface.GetRole(self.tid())
+        return self.get_iface().GetRole()
 
     @dbusException
     @job_id
-    def GetPercentage(self):
+    def GetProgress(self):
         """
-        Returns percentage of transaction complete
-        throws NoSuchTransaction
+        Returns progress of transaction
         """
-        return self.pk_iface.GetPercentage(self.tid())
+        return self.get_iface().GetSubPercentage()
 
     @dbusException
     @job_id
-    def GetSubPercentage(self):
+    def GetPackages(self, filter="none"):
         """
-        Returns percentage of this part of transaction complete
+        Returns packages being acted upon at this very moment
         throws NoSuchTransaction
         """
-        return self.pk_iface.GetSubPercentage(self.tid())
-
-    @dbusException
-    @job_id
-    def GetPackage(self):
-        """
-        Returns package being acted upon at this very moment
-        throws NoSuchTransaction
-        """
-        return self.pk_iface.GetPackage(self.tid())
+        return self.get_iface().GetPackage(filter)
 
 ## Get lists of transactions
-
-    @dbusException
-    def GetTransactionList(self):
-        """
-        Returns list of (active) transactions.
-        """
-        return self.pk_iface.GetTransactionList()
-
     @dbusException
     @job_id
     def GetOldTransactions(self, number=5):
         """
         Causes Transaction signals for each Old transaction.
         """
-        return self.pk_iface.GetOldTransactions(self.tid(), number)
-
-## General methods
-
-    @dbusException
-    def GetBackendDetail(self):
-        """
-        Returns name, author, and version of backend.
-        """
-        return self.pk_iface.GetBackendDetail()
-
-    @dbusException
-    def GetActions(self):
-        """
-        Returns list of supported actions.
-        """
-        return self.pk_iface.GetActions()
-
-    @dbusException
-    def GetGroups(self):
-        """
-        Returns list of supported groups.
-        """
-        return self.pk_iface.GetGroups()
-
-    @dbusException
-    def GetFilters(self):
-        """
-        Returns list of supported filters.
-        """
-        return self.pk_iface.GetFilters()
+        return self.get_iface().GetOldTransactions(number)
 
 class DumpingPackageKit(PackageKit):
     """
@@ -431,4 +593,36 @@ class DumpingPackageKit(PackageKit):
         print "  args:"
         for arg in args:
             print "        " + str(arg)
+
+#### PolicyKit authentication borrowed wrapper ##
+class PermissionDeniedByPolicy(dbus.DBusException):
+    _dbus_error_name = 'org.freedesktop.PackageKit.Transaction.RefusedByPolicy'
+
+def polkit_auth_wrapper(fn, *args, **kwargs):
+    '''Function call wrapper for PolicyKit authentication.
+
+    Call fn(*args, **kwargs). If it fails with a PermissionDeniedByPolicy
+    and the caller can authenticate to get the missing privilege, the PolicyKit
+    authentication agent is called, and the function call is attempted again.
+    '''
+    try:
+        return fn(*args, **kwargs)
+    except dbus.DBusException, e:
+        if e._dbus_error_name == PermissionDeniedByPolicy._dbus_error_name:
+            # last words in message are privilege and auth result
+            (priv, auth_result) = e.message.split()[-2:]
+            if auth_result.startswith('auth_'):
+                pk_auth = dbus.SessionBus().get_object(
+                    'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
+                    'org.gnome.PolicyKit.AuthorizationManager.SingleInstance')
+                # TODO: provide xid
+                res = pk_auth.ObtainAuthorization(priv, dbus.UInt32(0),
+                    dbus.UInt32(os.getpid()), timeout=300)
+                print res
+                if res:
+                    return fn(*args, **kwargs)
+            raise PermissionDeniedByPolicy(priv + ' ' + auth_result)
+        else:
+            raise
+
 

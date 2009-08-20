@@ -60,6 +60,10 @@ if BACKEND_TYPE_PORTAGE
 SUBDIRS += portage
 endif
 
+if BACKEND_TYPE_PORTS
+SUBDIRS += ports
+endif
+
 clean-local :
 	rm -f *~
 

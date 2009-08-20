@@ -129,7 +129,6 @@ struct PkTransactionPrivate
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
-	gchar			*cached_full_path;
 	gchar			**cached_full_paths;
 	PkBitfield		 cached_filters;
 	gchar			*cached_search;
@@ -353,6 +352,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	/* could the update list have changed? */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -655,6 +655,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			}
 			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
 			g_ptr_array_free (list, TRUE);
+		}
+	}
+
+	/* look for library restarts */
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS) {
+		ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+		if (ret) {
+			/* now emit what we found ealier */
+			pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra);
 		}
 	}
 
@@ -1068,6 +1077,9 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 
 /**
  * pk_transaction_pre_transaction_checks:
+ * @package_ids: the list of packages to process
+ *
+ * This function does any pre-transaction checks
  */
 static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
@@ -1117,6 +1129,12 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 		}
 	}
 
+	/* nothing to scan for */
+	if (list->len == 0) {
+		egg_debug ("no security updates");
+		goto out;
+	}
+
 	/* is a security update we are installing */
 	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		ret = FALSE;
@@ -1141,7 +1159,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* find files in security updates */
 	package_ids_security = pk_package_ids_from_array (list);
-	ret = pk_transaction_extra_check_library_restart (transaction->priv->transaction_extra, package_ids_security);
+	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
 out:
 	g_strfreev (package_ids_security);
 	if (list != NULL) {
@@ -1314,7 +1332,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_store_set_strv (store, "full_paths", priv->cached_full_paths);
 	pk_store_set_string (store, "package_id", priv->cached_package_id);
 	pk_store_set_string (store, "transaction_id", priv->cached_transaction_id);
-	pk_store_set_string (store, "full_path", priv->cached_full_path);
 	pk_store_set_string (store, "search", priv->cached_search);
 	pk_store_set_string (store, "repo_id", priv->cached_repo_id);
 	pk_store_set_string (store, "key_id", priv->cached_key_id);
@@ -1777,6 +1794,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	PolkitDetails *details;
 	const gchar *action_id;
 	gboolean ret = FALSE;
+	gchar *package_ids = NULL;
 
 	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
 
@@ -1810,6 +1828,16 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	details = polkit_details_new ();
 	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
 	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+
+	/* do we have package details? */
+	if (transaction->priv->cached_package_id != NULL)
+		package_ids = g_strdup (transaction->priv->cached_package_id);
+	else if (transaction->priv->cached_package_ids != NULL)
+		package_ids = pk_package_ids_to_text (transaction->priv->cached_package_ids);
+
+	/* save optional stuff */
+	if (package_ids != NULL)
+		polkit_details_insert (details, "package_ids", package_ids);
 	if (transaction->priv->cmdline != NULL)
 		polkit_details_insert (details, "cmdline", transaction->priv->cmdline);
 
@@ -1829,6 +1857,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	/* assume success, as this is async */
 	ret = TRUE;
 out:
+	g_free (package_ids);
 	return ret;
 }
 
@@ -1883,7 +1912,7 @@ pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation 
 
 	/* check is the same as the sender that did GetTid */
 	sender = dbus_g_method_get_sender (context);
-	ret = egg_strequal (transaction->priv->sender, sender);
+	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 				      "sender does not match (%s vs %s)", sender, transaction->priv->sender);
@@ -3075,7 +3104,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	GError *error;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
-	gchar *content_type;
+	gchar *content_type = NULL;
 	guint length;
 	guint i;
 
@@ -3092,7 +3121,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check if the sender is the same */
@@ -3100,7 +3129,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	if (!ret) {
 		/* don't release tid */
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check all files exists and are valid */
@@ -3114,7 +3143,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 					     "No such file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* get content type */
@@ -3124,18 +3153,17 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 					     "Failed to get content type for file %s", full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* supported content type? */
 		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		g_free (content_type);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					     "MIME type not supported %s", full_paths[i]);
+					     "MIME type '%s' not supported %s", content_type, full_paths[i]);
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 
 		/* valid */
@@ -3149,7 +3177,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 				pk_transaction_release_tid (transaction);
 				pk_transaction_dbus_return_error (context, error);
 				g_error_free (error_local);
-				return;
+				goto out;
 			}
 		}
 	}
@@ -3159,7 +3187,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save so we can run later */
@@ -3169,6 +3197,8 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
+out:
+	g_free (content_type);
 	return;
 }
 
@@ -4432,7 +4462,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_package_id = NULL;
 	transaction->priv->cached_package_ids = NULL;
 	transaction->priv->cached_transaction_id = NULL;
-	transaction->priv->cached_full_path = NULL;
 	transaction->priv->cached_full_paths = NULL;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
 	transaction->priv->cached_search = NULL;
@@ -4617,7 +4646,7 @@ egg_test_transaction (EggTest *test)
 #ifdef USE_SECURITY_POLKIT
 	egg_test_title (test, "map valid role to action");
 	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (egg_strequal (action, "org.freedesktop.packagekit.system-update"))
+	if (g_strcmp0 (action, "org.freedesktop.packagekit.system-update") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "did not get correct action '%s'", action);
