@@ -1752,11 +1752,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Find the packages with the given namens. Afterwards filter and emit
         them
         """
-        for name in pkgs:
+        for name_raw in pkgs:
+            #FIXME: Python-apt doesn't allow unicode as key. See #542965
+            name = str(name_raw)
             if self._cache.has_key(name) and \
                self._is_package_visible(self._cache[name], filters):
                 self._emit_package(self._cache[name], info)
-
 
     def _is_package_visible(self, pkg, filters):
         """
@@ -1841,7 +1842,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Return a package version matching the given package id or None.
         """
-        name, version, arch, data = id.split(";", 4)
+        name_raw, version, arch, data = id.split(";", 4)
+        #FIXME: Python-apt doesn't allow unicode as key. See #542965
+        name = str(name_raw)
         if self._cache.has_key(name):
             for pkg_ver in self._cache[name].versions:
                 if pkg_ver.version == version and \
@@ -1854,7 +1857,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Return a package matching to the given package id
         """
         # FIXME: Should use package.Version
-        name, version, arch, data = id.split(";", 4)
+        name_raw, version, arch, data = id.split(";", 4)
+        #FIXME: Python-apt doesn't allow unicode as key. See #542965
+        name = str(name_raw)
         if self._cache.has_key(name):
             return self._cache[name]
         else:
