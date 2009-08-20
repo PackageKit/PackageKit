@@ -528,7 +528,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
-        for pkg_name in search(self._cache.keys()):
+        for pkg_name in self._cache.keys():
             if search in pkg_name:
                 self._emit_visible_package(filters, self._cache[pkg_name])
 
