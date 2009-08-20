@@ -542,9 +542,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
-        for pkg in self._cache:
-            if search in pkg.name:
-                self._emit_visible_package(filters, pkg)
+        for pkg_name in search(self._cache.keys()):
+            if search in pkg_name:
+                self._emit_visible_package(filters, self._cache[pkg_name])
 
     def search_details(self, filters, search):
         """
