@@ -556,20 +556,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             enquire = xapian.Enquire(db)
             enquire.set_query(query)
             matches = enquire.get_mset(0, 1000)
-            for r in  map(lambda m: m[xapian.MSET_DOCUMENT].get_data(),
-                          enquire.get_mset(0,1000)):
-                if self._cache.has_key(r):
-                    results.append(self._cache[r])
+            for pkg_name in (match[xapian.MSET_DOCUMENT].get_data() \
+                             for match in enquire.get_mset(0,1000)):
+                if pkg_name in self._cache:
+                    self._emit_visible_package(filters, self._cache[pkg_name])
         else:
             pklog.debug("Performing apt cache based search")
             for p in self._cache._dict.values():
                 needle = search.strip().lower()
                 haystack = p.description.lower()
                 if p.name.find(needle) >= 0 or haystack.find(needle) >= 0:
-                    results.append(p)
-
-        for r in results:
-            self._emit_visible_package(filters, r)
+                    self._emit_visible_package(filters, r)
 
     def get_distro_upgrades(self):
         """
