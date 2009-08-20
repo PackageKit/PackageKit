@@ -601,7 +601,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             time.sleep(1)
         #FIXME: Add support for description
         if meta_release.new_dist != None:
-            self.distro_ppgrade("stable", 
+            self.distro_upgrade("stable", 
                                 "%s %s" % (meta_release.new_dist.name,
                                            meta_release.new_dist.version),
                                 "The latest stable release")
