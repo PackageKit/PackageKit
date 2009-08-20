@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-07 19:47+0000\n"
-"PO-Revision-Date: 2009-08-07 17:21-0300\n"
+"POT-Creation-Date: 2009-08-20 19:52+0000\n"
+"PO-Revision-Date: 2009-08-20 23:23-0300\n"
 "Last-Translator: Igor Pires Soares <igor@projetofedora.org>\n"
 "Language-Team: Brazilian Portuguese <fedora-trans-pt_br@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +48,7 @@ msgstr "Falso"
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:237
-#: ../src/pk-polkit-action-lookup.c:331
+#: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
 msgstr "Modo"
 
@@ -64,7 +64,7 @@ msgstr "(segundos)"
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:246
-#: ../src/pk-polkit-action-lookup.c:345
+#: ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
 msgstr "Linha de comando"
 
@@ -141,7 +141,7 @@ msgstr "Detalhes sobre a atualização:"
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:341
-#: ../src/pk-polkit-action-lookup.c:356
+#: ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Pacote"
@@ -547,6 +547,7 @@ msgstr "Subcomandos:"
 #: ../client/pk-monitor.c:128
 #: ../contrib/command-not-found/pk-command-not-found.c:616
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/device-rebind/pk-device-rebind.c:280
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Mostrar informações extras de depuração"
@@ -849,6 +850,60 @@ msgstr "Por favor, escolha o pacote correto: "
 msgid "Please enter a number from 1 to %i: "
 msgstr "Por favor, insira um número entre 1 e %i: "
 
+#. TRANSLATORS: when we are getting data from the daemon
+#: ../contrib/browser-plugin/pk-plugin-install.c:433
+msgid "Getting package information..."
+msgstr "Obtendo informações do pacote..."
+
+#. TRANSLATORS: run an applicaiton
+#: ../contrib/browser-plugin/pk-plugin-install.c:439
+#, c-format
+msgid "Run %s"
+msgstr "Executar %s"
+
+#. TRANSLATORS: show the installed version of a package
+#: ../contrib/browser-plugin/pk-plugin-install.c:445
+msgid "Installed version"
+msgstr "Versão instalada"
+
+#. TRANSLATORS: run the application now
+#: ../contrib/browser-plugin/pk-plugin-install.c:453
+#, c-format
+msgid "Run version %s now"
+msgstr "Executar a versão %s agora"
+
+#. TRANSLATORS: run the application now
+#: ../contrib/browser-plugin/pk-plugin-install.c:459
+msgid "Run now"
+msgstr "Executar agora"
+
+#. TRANSLATORS: update to a new version of the package
+#: ../contrib/browser-plugin/pk-plugin-install.c:465
+#, c-format
+msgid "Update to version %s"
+msgstr "Atualizar para a versão %s"
+
+#. TRANSLATORS: To install a package
+#: ../contrib/browser-plugin/pk-plugin-install.c:471
+#, c-format
+msgid "Install %s now"
+msgstr "Instalar %s agora"
+
+#. TRANSLATORS: the version of the package
+#: ../contrib/browser-plugin/pk-plugin-install.c:474
+msgid "Version"
+msgstr "Versão"
+
+#. TRANSLATORS: noting found, so can't install
+#: ../contrib/browser-plugin/pk-plugin-install.c:479
+msgid "No packages found for your system"
+msgstr "Nenhum pacote localizado para o seu sistema"
+
+#. TRANSLATORS: package is being installed
+#: ../contrib/browser-plugin/pk-plugin-install.c:484
+msgid "Installing..."
+msgstr "Instalando..."
+
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:349
 msgid "Downloading details about the software sources."
@@ -937,60 +992,6 @@ msgstr "Os pacotes apropriados são:"
 #: ../contrib/command-not-found/pk-command-not-found.c:764
 msgid "Please choose a package to install"
 msgstr "Por favor, escolha um pacote a ser instalado"
-
-#. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:433
-msgid "Getting package information..."
-msgstr "Obtendo informações do pacote..."
-
-#. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:439
-#, c-format
-msgid "Run %s"
-msgstr "Executar %s"
-
-#. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:445
-msgid "Installed version"
-msgstr "Versão instalada"
-
-#. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:453
-#, c-format
-msgid "Run version %s now"
-msgstr "Executar a versão %s agora"
-
-#. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:459
-msgid "Run now"
-msgstr "Executar agora"
-
-#. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:465
-#, c-format
-msgid "Update to version %s"
-msgstr "Atualizar para a versão %s"
-
-#. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:471
-#, c-format
-msgid "Install %s now"
-msgstr "Instalar %s agora"
-
-#. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:474
-msgid "Version"
-msgstr "Versão"
-
-#. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:479
-msgid "No packages found for your system"
-msgstr "Nenhum pacote localizado para o seu sistema"
-
-#. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:484
-msgid "Installing..."
-msgstr "Instalando..."
 
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
@@ -1176,6 +1177,82 @@ msgstr "Não foi possível desabilitar as fontes de depuração: %s"
 msgid "Disabled %i debugging sources."
 msgstr "%i fontes de depuração desabilitadas."
 
+#. TRANSLATORS: couldn't open device to write
+#: ../contrib/device-rebind/pk-device-rebind.c:61
+msgid "Failed to open file"
+msgstr "Falha ao abrir o arquivo"
+
+#. TRANSLATORS: could not write to the device
+#: ../contrib/device-rebind/pk-device-rebind.c:70
+msgid "Failed to write to the file"
+msgstr "Falha ao gravar no arquivo"
+
+#. TRANSLATORS: we failed to release the current driver
+#: ../contrib/device-rebind/pk-device-rebind.c:110
+#: ../contrib/device-rebind/pk-device-rebind.c:147
+msgid "Failed to write to device"
+msgstr "Falha ao gravar no dispositivo"
+
+#. TRANSLATORS: we failed to release the current driver
+#: ../contrib/device-rebind/pk-device-rebind.c:191
+msgid "Failed to unregister driver"
+msgstr "Falha ao liberar o driver"
+
+#. TRANSLATORS: we failed to bind the old driver
+#: ../contrib/device-rebind/pk-device-rebind.c:200
+msgid "Failed to register driver"
+msgstr "Falha ao registrar o driver"
+
+#. TRANSLATORS: user did not specify a device sysfs path that exists
+#: ../contrib/device-rebind/pk-device-rebind.c:249
+msgid "Device path not found"
+msgstr "Caminho de dispositivo não localizado"
+
+#. TRANSLATORS: user did not specify a valid device sysfs path
+#: ../contrib/device-rebind/pk-device-rebind.c:257
+msgid "Incorrect device path specified"
+msgstr "Caminho incorreto de dispositivo especificado"
+
+#. command line argument, simulate what would be done, but don't actually do it
+#: ../contrib/device-rebind/pk-device-rebind.c:283
+msgid "Don't actually touch the hardware, only simulate what would be done"
+msgstr "Não lida com o hardware na realidade, apenas simula o que seria feito"
+
+#. TRANSLATORS: command line option: a list of files to install
+#: ../contrib/device-rebind/pk-device-rebind.c:286
+msgid "Device paths"
+msgstr "Caminhos de dispositivos"
+
+#. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
+#: ../contrib/device-rebind/pk-device-rebind.c:292
+msgid "PackageKit Device Reloader"
+msgstr "Recarregador de dispositivos do PackageKit"
+
+#. TRANSLATORS: user did not specify a valid device sysfs path
+#: ../contrib/device-rebind/pk-device-rebind.c:300
+msgid "You need to specify at least one valid device path"
+msgstr "Você precisa especificar pelo menos um caminho de dispositivo válido"
+
+#. TRANSLATORS: we're going to verify the path first
+#: ../contrib/device-rebind/pk-device-rebind.c:309
+msgid "Verifying device path"
+msgstr "Verificando caminho do dispositivo"
+
+#. TRANSLATORS: user did not specify a device sysfs path that exists
+#: ../contrib/device-rebind/pk-device-rebind.c:314
+msgid "Failed to verify device path"
+msgstr "Falha ao verificar o caminho do dispositivo"
+
+#. TRANSLATORS: we're going to try
+#: ../contrib/device-rebind/pk-device-rebind.c:328
+msgid "Attempting to rebind device"
+msgstr "Tentando revincular o dispositivo"
+
+#. TRANSLATORS: we failed to release the current driver
+#: ../contrib/device-rebind/pk-device-rebind.c:333
+msgid "Failed to rebind device"
+msgstr "Falha ao revincular o dispositivo"
+
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
 msgstr "Catálogo do PackageKit"
@@ -1227,18 +1304,22 @@ msgid "Authentication is required to refresh the system sources"
 msgstr "É necessário autenticar para recarregar as fontes do sistema"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "É necessário autenticar para recarregar o dispositivo com o novo driver"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to remove packages"
 msgstr "É necessário autenticar para remover pacotes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to rollback a transaction"
 msgstr "É necessário autenticar para retroceder uma transação"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to set the network proxy used for downloading packages"
 msgstr "É necessário autenticar para definir o proxy de rede usado para baixar pacotes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Authentication is required to update packages"
 msgstr "É necessário autenticar para atualizar os pacotes"
 
@@ -1247,7 +1328,7 @@ msgstr "É necessário autenticar para atualizar os pacotes"
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:24
+#: ../policy/org.freedesktop.packagekit.policy.in.h:25
 msgid "Cancel foreign task"
 msgstr "Cancelar tarefa externa"
 
@@ -1256,7 +1337,7 @@ msgstr "Cancelar tarefa externa"
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:30
+#: ../policy/org.freedesktop.packagekit.policy.in.h:31
 msgid "Change software source parameters"
 msgstr "Altere parâmetros das fontes de programas"
 
@@ -1266,7 +1347,7 @@ msgstr "Altere parâmetros das fontes de programas"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:37
+#: ../policy/org.freedesktop.packagekit.policy.in.h:38
 msgid "Install signed package"
 msgstr "Instalar pacote assinado"
 
@@ -1276,7 +1357,7 @@ msgstr "Instalar pacote assinado"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:44
+#: ../policy/org.freedesktop.packagekit.policy.in.h:45
 msgid "Install untrusted local file"
 msgstr "Instalar arquivo local não confiável"
 
@@ -1284,9 +1365,20 @@ msgstr "Instalar arquivo local não confiável"
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:49
+#: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Refresh system sources"
 msgstr "Recarregar fontes do sistema"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+msgid "Reload a device"
+msgstr "Recarregar um dispositivo"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1297,7 +1389,7 @@ msgstr "Recarregar fontes do sistema"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:59
+#: ../policy/org.freedesktop.packagekit.policy.in.h:68
 msgid "Remove package"
 msgstr "Remover pacote"
 
@@ -1306,7 +1398,7 @@ msgstr "Remover pacote"
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:65
+#: ../policy/org.freedesktop.packagekit.policy.in.h:74
 msgid "Rollback to a previous transaction"
 msgstr "Retroceder para uma transação anterior"
 
@@ -1314,7 +1406,7 @@ msgstr "Retroceder para uma transação anterior"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:70
+#: ../policy/org.freedesktop.packagekit.policy.in.h:79
 msgid "Set network proxy"
 msgstr "Definir um proxy de rede"
 
@@ -1324,7 +1416,7 @@ msgstr "Definir um proxy de rede"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:77
+#: ../policy/org.freedesktop.packagekit.policy.in.h:86
 msgid "Trust a key used for signing packages"
 msgstr "Confiar numa chave usada para assinar pacotes"
 
@@ -1335,7 +1427,7 @@ msgstr "Confiar numa chave usada para assinar pacotes"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:85
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Update packages"
 msgstr "Atualizar pacotes"
 
@@ -1410,7 +1502,7 @@ msgstr "Fontes extras precisam ser habilitadas para a instalação dos pacotes d
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:168
-#: ../src/pk-polkit-action-lookup.c:191
+#: ../src/pk-polkit-action-lookup.c:187
 msgid "The software is not from a trusted source."
 msgstr "O programa não vem de uma fonte confiável."
 
@@ -1422,27 +1514,26 @@ msgstr "Não atualize este pacote a não ser que você esteja certo de que é se
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
-#. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:180
-#: ../src/pk-polkit-action-lookup.c:203
-msgid "Malicious software can damage your computer or cause other harm."
-msgstr "Programas maliciosos podem danificar o seu computador ou causar outros prejuízos."
-
-#: ../src/pk-polkit-action-lookup.c:196
+#: ../src/pk-polkit-action-lookup.c:192
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
-#: ../src/pk-polkit-action-lookup.c:197
+#: ../src/pk-polkit-action-lookup.c:193
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
+#. TRANSLATORS: warn the user that all bets are off
+#: ../src/pk-polkit-action-lookup.c:199
+msgid "Malicious software can damage your computer or cause other harm."
+msgstr "Programas maliciosos podem danificar o seu computador ou causar outros prejuízos."
+
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:278
+#: ../src/pk-polkit-action-lookup.c:274
 msgid "Many packages"
 msgstr "Muitos pacotes"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:338
+#: ../src/pk-polkit-action-lookup.c:334
 msgid "Only trusted"
 msgstr "Somente confiáveis"
 
@@ -1486,8 +1577,6 @@ msgstr "Somente confiáveis"
 #~ msgstr ""
 #~ "Você precisa especificar o pacote para o qual você quer localizar os "
 #~ "arquivos"
-#~ msgid "You need to specify a list file to create"
-#~ msgstr "Você precisa especificar um arquivo de lista a ser criado"
 #~ msgid "You need to specify a list file to open"
 #~ msgstr "Você precisa especificar um arquivo de lista a ser aberto"
 #~ msgid "This tool could not remove the packages: '%s'"
