@@ -1633,7 +1633,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, format_string(e.message))
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
-            self._canceled.clear()
         except InstallTimeOutPKError, e:
             self._recover()
             self._open_cache(prange=(95,100))
