@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <glib-object.h>
@@ -207,6 +208,33 @@ out:
 }
 
 /**
+ * pk_device_rebind_verify_path:
+ **/
+static gboolean
+pk_device_rebind_verify_path (const gchar *filename)
+{
+	gboolean ret;
+	gchar *found;
+
+	/* don't let the user escape /sys */
+	ret = (strstr (filename, "..") == NULL);
+	if (!ret)
+		goto out;
+
+	/* don't let the user use quoting */
+	ret = (strstr (filename, "\\") == NULL);
+	if (!ret)
+		goto out;
+
+	/* linux specific */
+	ret = g_str_has_prefix (filename, "/sys/");
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
  * pk_device_rebind_verify:
  **/
 static gboolean
@@ -222,8 +250,8 @@ pk_device_rebind_verify (const gchar *filename, GError **error)
 		goto out;
 	}
 
-	/* linux specific */
-	ret = g_str_has_prefix (filename, "/sys/");
+	/* don't let the user escape /sys */
+	ret = pk_device_rebind_verify_path (filename);
 	if (!ret) {
 		/* TRANSLATORS: user did not specify a valid device sysfs path */
 		*error = g_error_new (1, 0, "%s: %s\n", _("Incorrect device path specified"), filename);
