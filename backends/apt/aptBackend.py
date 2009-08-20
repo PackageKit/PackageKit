@@ -1339,7 +1339,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(False)
 
-        for name in names:
+        for name_raw in names:
+            #FIXME: Python-apt doesn't allow unicode as key. See #542965
+            name = str(name_raw)
             if self._cache.has_key(name):
                 self._emit_visible_package(filters, self._cache[name])
             else:
