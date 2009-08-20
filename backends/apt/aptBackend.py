@@ -1587,14 +1587,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                          progress))
         except:
             self.error(ERROR_NO_CACHE, "Package cache could not be opened")
-            self.Exit()
             return
         if self._cache._depcache.BrokenCount > 0:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "There are broken dependecies on your system. "
                        "Please use an advanced package manage e.g. "
                        "Synaptic or aptitude to resolve this situation.")
-            self.Exit()
             return
         self._last_cache_refresh = time.time()
 
