@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [4])
-m4_define([pk_micro_version], [9])
+m4_define([pk_micro_version], [10])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -169,7 +169,7 @@ AC_SUBST(DBUS_LIBS)
 
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
- gio-unix-2.0 >= $DBUS_REQUIRED)
+ gio-unix-2.0 >= $GIO_REQUIRED)
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
 
