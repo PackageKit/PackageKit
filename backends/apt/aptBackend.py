@@ -29,24 +29,16 @@ import os
 import pty
 import re
 import signal
-import shutil
 import socket
 import stat
 import string
 import subprocess
 import sys
 import time
-import urllib2
-import warnings
 
 import apt
 import apt.debfile
 import apt_pkg
-import dbus
-import dbus.glib
-import dbus.service
-import dbus.mainloop.glib
-import gobject
 
 from packagekit.backend import *
 from packagekit.progress import *
