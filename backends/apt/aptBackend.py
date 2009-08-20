@@ -185,20 +185,6 @@ class InstallTimeOutPKError(PKError):
     pass
 
 
-class PackageKitCache(apt.cache.Cache):
-    """
-    Enhanced version of the apt.cache.Cache class which supports some features
-    which can only be found in the consolidate branch of python-apt
-    """
-    def __iter__(self):
-        """
-        Let the cache behave like a sorted list of packages
-        """
-        for pkgname in sorted(self._dict.keys()):
-            yield self._dict[pkgname]
-        raise StopIteration
-
-
 class DpkgInstallProgress(apt.progress.InstallProgress):
     """
     Class to initiate and monitor installation of local package files with dpkg
@@ -1574,8 +1560,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Open APT cache")
         self.status(STATUS_LOADING_CACHE)
         try:
-            self._cache = PackageKitCache(PackageKitOpProgress(self, prange,
-                                                               progress))
+            self._cache = apt.Cache(PackageKitOpProgress(self, prange,
+                                                         progress))
         except:
             self.error(ERROR_NO_CACHE, "Package cache could not be opened")
             return
