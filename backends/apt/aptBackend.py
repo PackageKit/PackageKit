@@ -157,6 +157,9 @@ HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
 MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
+# Required to get translated descriptions
+locale.setlocale(locale.LC_ALL, "")
+
 def unlock_cache_afterwards(func):
     """
     Make sure that the package cache is unlocked after the decorated function
