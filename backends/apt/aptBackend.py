@@ -1077,7 +1077,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
-            auto = self._cache._depcache.IsAutoInstalled(pkg._pkg)
+            auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
             pkg.markInstall(False, True, auto)
             resolver.Clear(pkg._pkg)
             resolver.Protect(pkg._pkg)
