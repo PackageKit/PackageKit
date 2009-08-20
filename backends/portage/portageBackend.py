@@ -270,11 +270,24 @@ class PortageBridge():
         self.portdb = self.trees[self.settings['ROOT']]['porttree'].dbapi
         self.root_config = self.trees[self.settings['ROOT']]['root_config']
 
+        # doing all the changes to settings
         self.settings.unlock()
+
+        # we don't want interactive ebuilds
         self.settings["ACCEPT_PROPERTIES"] = "-interactive"
         self.settings.backup_changes("ACCEPT_PROPERTIES")
+
+        # do not log with mod_echo (cleanly prevent some outputs)
+        def filter_echo(x): return x != 'echo'
+        elogs = self.settings["PORTAGE_ELOG_SYSTEM"].split()
+        elogs = filter(filter_echo, elogs)
+        self.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
+        self.settings.backup_changes("PORTAGE_ELOG_SYSTEM")
+
+        # finally, regenerate settings and lock them again
         self.settings.regenerate()
         self.settings.lock()
+
 
 class PackageKitPortageBackend(PackageKitBaseBackend):
 
@@ -290,15 +303,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
         self.orig_err = None
-
-        # do not log with mod_echo
-        '''
-        def filter_echo(x): return x != 'echo'
-
-        elogs = self.pvar.settings["PORTAGE_ELOG_SYSTEM"].split()
-        elogs = filter(filter_echo, elogs)
-        self.pvar.settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
-        '''
 
     def get_ebuild_settings(self, cpv, metadata):
         settings = portage.config(clone=self.pvar.settings)
@@ -1183,7 +1187,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # even if it happens to be needed in Gentoo but probably not this API
 
         # TODO: manage errors
-        # TODO: manage config file updates
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
@@ -1218,18 +1221,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         favorites = []
         myparams = _emerge.create_depgraph_params.create_depgraph_params(
                 myopts, "")
-
-        # do not log with mod_echo
-        '''
-        def filter_echo(x): return x != 'echo'
-
-        elogs = settings["PORTAGE_ELOG_SYSTEM"].split()
-        elogs = filter(filter_echo, elogs)
-        settings.unlock()
-        settings["PORTAGE_ELOG_SYSTEM"] = ' '.join(elogs)
-        settings.backup_changes("PORTAGE_ELOG_SYSTEM")
-        settings.regenerate()
-        '''
 
         self.status(STATUS_DEP_RESOLVE)
 

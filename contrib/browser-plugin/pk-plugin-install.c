@@ -777,7 +777,7 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 						      24 * 60 * 1000 * 1000, /* one day */
 						      G_TYPE_UINT, xid, /* xid */
 						      G_TYPE_STRV, packages,
-						      G_TYPE_STRING, "hide-finished",
+						      G_TYPE_STRING, "hide-confirm-search,hide-confirm-deps,hide-finished",
 						      G_TYPE_INVALID,
 						      G_TYPE_INVALID);
 	g_strfreev (packages);

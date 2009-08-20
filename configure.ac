@@ -258,7 +258,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--disable-service-packs],
-							[Disable Service Packs support]), enable_servicepacks=$enableval)
+		[Disable Service Packs support]), enable_servicepacks=$enableval)
 if test x$enable_servicepacks != xno; then
 	AC_CHECK_HEADERS(archive.h,
 			 HAVE_ARCHIVE_H="yes",
@@ -292,8 +292,8 @@ dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
-							[Disable NetworkManager support]),
-							enable_networkmanager=$enableval)
+		[Disable NetworkManager support]),
+		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
 	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
@@ -316,7 +316,7 @@ dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(connman, AC_HELP_STRING([--disable-connman],
-							[Disable ConnMan support]), enable_connman=$enableval)
+		[Disable ConnMan support]), enable_connman=$enableval)
 if test x$enable_connman != xno; then
 	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
 	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
@@ -344,7 +344,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
-							[Disable man pages generation]), enable_man_pages=$enableval)
+		[Disable man pages generation]), enable_man_pages=$enableval)
 if test x$enable_man_pages != xno; then
 	AC_PATH_PROG(XSLTPROC, xsltproc, no)
 	if test x$enable_man_pages = xyes; then
@@ -503,6 +503,19 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(debuginfo-install, AS_HELP_STRING([--enable-debuginfo-install],[Build debuginfo-install functionality]),
 	      build_debuginfo_install=$enableval,build_debuginfo_install=yes)
 AM_CONDITIONAL(PK_BUILD_DEBUGINFO_INSTALL, test $build_debuginfo_install = "yes")
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to use device rebind functionality
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(device-rebind, AS_HELP_STRING([--enable-device-rebind],[Build device rebind functionality]),
+	      build_device_rebind=$enableval,build_device_rebind=yes)
+if test x$build_device_rebind = xyes; then
+	PKG_CHECK_MODULES(GUDEV, gudev-1.0,
+			  build_device_rebind=yes, build_device_rebind=no)
+else
+	build_device_rebind=no
+fi
+AM_CONDITIONAL(PK_BUILD_DEVICE_REBIND, test $build_device_rebind = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Able to build pm-utils script functionality
@@ -763,6 +776,7 @@ contrib/yum-packagekit/Makefile
 contrib/command-not-found/Makefile
 contrib/cron/Makefile
 contrib/debuginfo-install/Makefile
+contrib/device-rebind/Makefile
 contrib/pm-utils/Makefile
 contrib/ruck/Makefile
 contrib/ruck/src/Makefile
@@ -831,6 +845,7 @@ echo "
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
+        device-rebind:             ${build_device_rebind}
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
