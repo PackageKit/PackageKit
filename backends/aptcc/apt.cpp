@@ -503,15 +503,14 @@ void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 	}
 }
 
-// used to emit files it reads the info directly from the files
+// used to return files it reads, using the info from the files in /var/lib/dpkg/info/
 vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel)
 {
 	vector<string> packageList;
+	regex_t re;
 
-	matcher *m_matcher = new matcher(string(file_name));
-	if (m_matcher->hasError()) {
+	if(regcomp(&re, file_name.c_str(), REG_ICASE|REG_NOSUB) != 0) {
 		egg_debug("Regex compilation error");
-		delete m_matcher;
 		return vector<string>();
 	}
 
@@ -519,7 +518,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 	struct dirent *dirp;
 	if (!(dp = opendir("/var/lib/dpkg/info/"))) {
 		egg_debug ("Error opening /var/lib/dpkg/info/\n");
-		delete m_matcher;
+		regfree(&re);
 		return vector<string>();
 	}
 
@@ -537,9 +536,8 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 			map<int, bool> matchers_used;
 			while (!in.eof()) {
 				getline(in, line);
-				if (m_matcher->matchesFile(line, matchers_used)) {
+				if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
 					string file(dirp->d_name);
-					printf("matchers_used: %d", matchers_used.size());
 					packageList.push_back(file.erase(file.size() - 5, file.size()));
 					break;
 				}
@@ -547,7 +545,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 		}
 	}
 	closedir(dp);
-	delete m_matcher;
+	regfree(&re);
 	return packageList;
 }
 
