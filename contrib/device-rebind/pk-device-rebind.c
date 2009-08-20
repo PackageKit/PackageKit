@@ -161,6 +161,7 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	GUdevDevice *device;
 	gint busnum;
 	gint devnum;
+	gboolean ret;
 	const gchar *driver;
 	const gchar *subsystem;
 	gchar *bus_id;
@@ -183,10 +184,10 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	bus_id = g_strdup_printf ("%i-%i", busnum, devnum);
 
 	/* unbind device */
-	ret = pk_device_unbind (paths[i], bus_id, &error_local);
+	ret = pk_device_unbind (path, bus_id, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: we failed to release the current driver */
-		*error = g_error_new (1, 0, _("Failed to unregister driver"), error_local->message);
+		*error = g_error_new (1, 0, "%s: %s", _("Failed to unregister driver"), error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -195,7 +196,7 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	ret = pk_device_bind (bus_id, subsystem, driver, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: we failed to bind the old driver */
-		*error = g_error_new (1, 0, _("Failed to register driver"), error_local->message);
+		*error = g_error_new (1, 0, "%s: %s", _("Failed to register driver"), error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
