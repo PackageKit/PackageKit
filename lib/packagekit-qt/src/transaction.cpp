@@ -39,6 +39,8 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	if(!d->p->isValid())
 		qDebug("Error, cannot create transaction proxy");
 
+	d->error = Client::NoError;
+
 	connect(d->p, SIGNAL(AllowCancel(bool)), this, SIGNAL(allowCancelChanged(bool)));
 	connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)), this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(Destroy()), this, SIGNAL(destroy()));

@@ -1160,6 +1160,41 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+
+	pk_backend_package (backend, PK_INFO_ENUM_REMOVING,
+			    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+			    "gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+
+	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			    "lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
+
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+			    "libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
+
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+
+	pk_backend_package (backend, PK_INFO_ENUM_OBSOLETING,
+			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
+
+	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
+
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -1195,6 +1230,10 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_what_provides			/* what_provides */
+	backend_what_provides,			/* what_provides */
+	NULL,					/* simulate_install_files */
+	backend_simulate_install_packages,	/* simulate_install_packages */
+	NULL,					/* simulate_remove_packages */
+	NULL					/* simulate_update_packages */
 );
 

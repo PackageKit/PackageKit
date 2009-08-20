@@ -258,6 +258,14 @@ pk_backend_get_actions (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	if (desc->get_categories != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
+	if (desc->simulate_install_files != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
+	if (desc->simulate_install_packages != NULL || desc->get_depends != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
+	if (desc->simulate_remove_packages != NULL || desc->get_requires != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
+	if (desc->simulate_update_packages != NULL || desc->get_depends != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	return roles;
 }
 
@@ -761,14 +769,14 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* do we have to enumate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-			egg_debug ("emiting status-changed running");
+			egg_debug ("emitting status-changed running");
 			g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
 		}
 	}
 
 	backend->priv->status = status;
 
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
+	egg_debug ("emitting status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, status);
 	return TRUE;
 }

@@ -1238,6 +1238,94 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="SimulateInstallFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method simulates a package file instalation emitting packages required to be
+            installed, removed, reinstalled or updated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="full_paths" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of full path and filenames to packages.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SimulateInstallPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method simulates a package instalation emitting packages required to be
+            installed, removed, reinstalled or updated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SimulateRemovePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method simulates a package removal emitting packages required to be
+            installed, removed, reinstalled or updated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SimulateUpdatePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method simulates a package update emitting packages required to be
+            installed, removed, reinstalled or updated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <method name="UpdatePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

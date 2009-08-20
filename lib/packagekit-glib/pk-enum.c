@@ -94,37 +94,41 @@ static const PkEnumMatch enum_status[] = {
 };
 
 static const PkEnumMatch enum_role[] = {
-	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_ROLE_ENUM_CANCEL,			"cancel"},
-	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
-	{PK_ROLE_ENUM_GET_DETAILS,		"get-details"},
-	{PK_ROLE_ENUM_GET_FILES,		"get-files"},
-	{PK_ROLE_ENUM_GET_PACKAGES,		"get-packages"},
-	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
-	{PK_ROLE_ENUM_GET_REQUIRES,		"get-requires"},
-	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
-	{PK_ROLE_ENUM_GET_UPDATES,		"get-updates"},
-	{PK_ROLE_ENUM_INSTALL_FILES,		"install-files"},
-	{PK_ROLE_ENUM_INSTALL_PACKAGES,		"install-packages"},
-	{PK_ROLE_ENUM_INSTALL_SIGNATURE,	"install-signature"},
-	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ROLE_ENUM_REMOVE_PACKAGES,		"remove-packages"},
-	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
-	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
-	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
-	{PK_ROLE_ENUM_ROLLBACK,			"rollback"},
-	{PK_ROLE_ENUM_SEARCH_DETAILS,		"search-details"},
-	{PK_ROLE_ENUM_SEARCH_FILE,		"search-file"},
-	{PK_ROLE_ENUM_SEARCH_GROUP,		"search-group"},
-	{PK_ROLE_ENUM_SEARCH_NAME,		"search-name"},
-	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-packages"},
-	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
-	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
-	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
-	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,	"download-packages"},
-	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,	"get-distro-upgrades"},
-	{PK_ROLE_ENUM_GET_CATEGORIES,		"get-categories"},
-	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,	"get-old-transactions"},
+	{PK_ROLE_ENUM_UNKNOWN,				"unknown"},	/* fall though value */
+	{PK_ROLE_ENUM_CANCEL,				"cancel"},
+	{PK_ROLE_ENUM_GET_DEPENDS,			"get-depends"},
+	{PK_ROLE_ENUM_GET_DETAILS,			"get-details"},
+	{PK_ROLE_ENUM_GET_FILES,			"get-files"},
+	{PK_ROLE_ENUM_GET_PACKAGES,			"get-packages"},
+	{PK_ROLE_ENUM_GET_REPO_LIST,			"get-repo-list"},
+	{PK_ROLE_ENUM_GET_REQUIRES,			"get-requires"},
+	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,		"get-update-detail"},
+	{PK_ROLE_ENUM_GET_UPDATES,			"get-updates"},
+	{PK_ROLE_ENUM_INSTALL_FILES,			"install-files"},
+	{PK_ROLE_ENUM_INSTALL_PACKAGES,			"install-packages"},
+	{PK_ROLE_ENUM_INSTALL_SIGNATURE,		"install-signature"},
+	{PK_ROLE_ENUM_REFRESH_CACHE,			"refresh-cache"},
+	{PK_ROLE_ENUM_REMOVE_PACKAGES,			"remove-packages"},
+	{PK_ROLE_ENUM_REPO_ENABLE,			"repo-enable"},
+	{PK_ROLE_ENUM_REPO_SET_DATA,			"repo-set-data"},
+	{PK_ROLE_ENUM_RESOLVE,				"resolve"},
+	{PK_ROLE_ENUM_ROLLBACK,				"rollback"},
+	{PK_ROLE_ENUM_SEARCH_DETAILS,			"search-details"},
+	{PK_ROLE_ENUM_SEARCH_FILE,			"search-file"},
+	{PK_ROLE_ENUM_SEARCH_GROUP,			"search-group"},
+	{PK_ROLE_ENUM_SEARCH_NAME,			"search-name"},
+	{PK_ROLE_ENUM_UPDATE_PACKAGES,			"update-packages"},
+	{PK_ROLE_ENUM_UPDATE_SYSTEM,			"update-system"},
+	{PK_ROLE_ENUM_WHAT_PROVIDES,			"what-provides"},
+	{PK_ROLE_ENUM_ACCEPT_EULA,			"accept-eula"},
+	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,		"download-packages"},
+	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
+	{PK_ROLE_ENUM_GET_CATEGORIES,			"get-categories"},
+	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
+	{PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,		"simulate-install-files"},
+	{PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,	"simulate-install-packages"},
+	{PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,		"simulate-remove-packages"},
+	{PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,		"simulate-update-packages"},
 	{0, NULL}
 };
 
@@ -188,6 +192,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_CONFIGURE, "package-failed-to-configure"},
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_BUILD, "package-failed-to-build"},
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "package-failed-to-install"},
+	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE, "package-failed-to-remove"},
 	{0, NULL}
 };
 
@@ -341,6 +346,7 @@ static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
 	{PK_PROVIDES_ENUM_HARDWARE_DRIVER,	"driver"},
 	{PK_PROVIDES_ENUM_FONT,			"font"},
+	{PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,	"postscript-driver"},
 	{0, NULL}
 };
 

@@ -194,7 +194,11 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	    role == PK_ROLE_ENUM_GET_PACKAGES ||
 	    role == PK_ROLE_ENUM_GET_DEPENDS ||
 	    role == PK_ROLE_ENUM_GET_REQUIRES ||
-	    role == PK_ROLE_ENUM_GET_UPDATES) {
+	    role == PK_ROLE_ENUM_GET_UPDATES ||
+	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
+	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
+	    role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
+	    role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
 		/* don't do the bar */
 		g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
 		goto out;
@@ -858,7 +862,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	package_ids = pk_ptr_array_to_strv (array);
 
 	/* are we dumb and can't check for requires? */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 		/* no, just try to remove it without deps */
 		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
 		if (!ret) {
@@ -879,9 +883,9 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 
 	egg_debug ("Getting installed requires for %s", package_ids[0]);
 	/* see if any packages require this one */
-	ret = pk_client_get_requires (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, TRUE, error);
+	ret = pk_client_simulate_remove_packages (client_sync, package_ids, error);
 	if (!ret) {
-		egg_warning ("failed to get requires");
+		egg_warning ("failed to simulate a package removal");
 		goto out;
 	}
 
@@ -890,7 +894,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
 	g_object_unref (list_single);
 
-	/* one of the get-requires failed */
+	/* one of the simulate-remove-packages failed */
 	if (!ret)
 		goto out;
 

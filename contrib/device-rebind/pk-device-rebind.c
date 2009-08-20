@@ -89,7 +89,7 @@ static gboolean
 pk_device_unbind (const gchar *filename, const gchar *bus_id, GError **error)
 {
 	gchar *path;
-	gboolean ret;
+	gboolean ret = TRUE;
 	GError *error_local = NULL;
 
 	/* create a path to unbind the driver */
@@ -126,11 +126,11 @@ static gboolean
 pk_device_bind (const gchar *bus_id, const gchar *subsystem, const gchar *driver, GError **error)
 {
 	gchar *path;
-	gboolean ret;
+	gboolean ret = TRUE;
 	GError *error_local = NULL;
 
 	/* create a path to bind the driver */
-	path = g_build_filename ("sys", "bus", subsystem, "drivers", driver, "bind", NULL);
+	path = g_build_filename ("/sys", "bus", subsystem, "drivers", driver, "bind", NULL);
 
 	/* debug */
 	if (verbose)
@@ -162,14 +162,21 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	GUdevDevice *device;
 	gint busnum;
 	gint devnum;
-	gboolean ret;
+	gboolean ret = FALSE;
 	const gchar *driver;
 	const gchar *subsystem;
 	gchar *bus_id;
 	GError *error_local = NULL;
 
-	/* get properties about the device */
+	/* get device */
 	device = g_udev_client_query_by_sysfs_path (client, path);
+	if (device == NULL) {
+		/* TRANSLATORS: the device could not be found in sysfs */
+		*error = g_error_new (1, 0, "%s: %s\n", _("Device could not be found"), path);
+		goto out;
+	}
+
+	/* get properties about the device */
 	driver = g_udev_device_get_driver (device);
 	subsystem = g_udev_device_get_subsystem (device);
 	busnum = g_udev_device_get_sysfs_attr_as_int (device, "busnum");
@@ -182,7 +189,11 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	}
 
 	/* form the bus id as recognised by the kernel */
-	bus_id = g_strdup_printf ("%i-%i", busnum, devnum);
+	bus_id = g_path_get_basename (path);
+
+	/* FIXME: sometimes the busnum is incorrect */
+	if (bus_id == NULL)
+		bus_id = g_strdup_printf ("%i-%i", busnum, devnum);
 
 	/* unbind device */
 	ret = pk_device_unbind (path, bus_id, &error_local);
@@ -203,7 +214,8 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	}
 out:
 	g_free (bus_id);
-	g_object_unref (device);
+	if (device != NULL)
+		g_object_unref (device);
 	return ret;
 }
 
@@ -214,7 +226,6 @@ static gboolean
 pk_device_rebind_verify_path (const gchar *filename)
 {
 	gboolean ret;
-	gchar *found;
 
 	/* don't let the user escape /sys */
 	ret = (strstr (filename, "..") == NULL);
@@ -272,6 +283,8 @@ main (gint argc, gchar *argv[])
 	GError *error = NULL;
 	GOptionContext *context;
 	guint i;
+	gint uid;
+	gint euid;
 	guint retval = 0;
 	GUdevClient *client = NULL;
 
@@ -287,6 +300,15 @@ main (gint argc, gchar *argv[])
 		{ NULL}
 	};
 
+	/* setup translations */
+	setlocale (LC_ALL, "");
+	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
+
+	/* setup type system */
+	g_type_init ();
+
 	context = g_option_context_new (NULL);
 	/* TRANSLATORS: tool that gets called when the device needs reloading after installing firmware */
 	g_option_context_set_summary (context, _("PackageKit Device Reloader"));
@@ -298,6 +320,16 @@ main (gint argc, gchar *argv[])
 	if (paths == NULL) {
 		/* TRANSLATORS: user did not specify a valid device sysfs path */
 		g_print ("%s\n", _("You need to specify at least one valid device path"));
+		retval = PK_DEVICE_REBIND_EXIT_CODE_ARGUMENTS_INVALID;
+		goto out;
+	}
+
+	/* get calling process */
+	uid = getuid ();
+	euid = geteuid ();
+	if (uid != 0 || euid != 0) {
+		/* TRANSLATORS: user did not specify a valid device sysfs path */
+		g_print ("%s\n", _("This script can only be used by the root user"));
 		retval = PK_DEVICE_REBIND_EXIT_CODE_ARGUMENTS_INVALID;
 		goto out;
 	}

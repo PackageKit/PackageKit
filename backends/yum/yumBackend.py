@@ -680,6 +680,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return [ "font(%s)" % search ]
         if provides_type == PROVIDES_MIMETYPE:
             return [ "mimehandler(%s)" % search ]
+        if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
+            return [ "postscriptdriver(%s)" % search ]
         if provides_type == PROVIDES_ANY:
             provides = []
             provides.append(self._get_provides_query(PROVIDES_CODEC, search)[0])
@@ -2404,7 +2406,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             break
 
                     gmtime = time.gmtime(change[0])
-                    time_str = "%i-%i-%i" % (gmtime[0], gmtime[1], gmtime[2])
+                    time_str = "%i-%02i-%02i" % (gmtime[0], gmtime[1], gmtime[2])
                     body = _to_unicode(change[2].replace("\t", " "))
                     changelog += _format_str('**' + time_str + '** ' + header + '\n' + body + '\n\n')
 

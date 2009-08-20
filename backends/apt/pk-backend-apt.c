@@ -517,7 +517,11 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_what_provides			/* what_provides */
+	backend_what_provides,			/* what_provides */
+	NULL,					/* simulate_install_files */
+	NULL,					/* simulate_install_packages */
+	NULL,					/* simulate_remove_packages */
+	NULL					/* simulate_update_packages */
 );
 
 

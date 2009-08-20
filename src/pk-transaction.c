@@ -1397,7 +1397,27 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
 		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
-	else {
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
+		desc->simulate_install_files (priv->backend, priv->cached_package_ids);
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
+		if (desc->simulate_install_packages != NULL) {
+			desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
+		} else {
+			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+		}
+	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
+		if (desc->simulate_remove_packages != NULL) {
+			desc->simulate_remove_packages (priv->backend, priv->cached_package_ids);
+		} else {
+			desc->get_requires (priv->backend, PK_FILTER_ENUM_INSTALLED, priv->cached_package_ids, TRUE);
+		}
+	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+		if (desc->simulate_update_packages != NULL) {
+			desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
+		} else {
+			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+		}
+	} else {
 		egg_error ("failed to run as role not assigned");
 		return FALSE;
 	}
@@ -4075,6 +4095,342 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 
 	/* save so we can pass to the backend */
 	transaction->priv->locale = g_strdup (code);
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_simulate_install_files:
+ **/
+void
+pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_paths, DBusGMethodInvocation *context)
+{
+	gchar *full_paths_temp;
+	gboolean ret;
+	GError *error;
+	GError *error_local = NULL;
+	PkServicePack *service_pack;
+	gchar *content_type;
+	guint length;
+	guint i;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	full_paths_temp = pk_package_ids_to_text (full_paths);
+	egg_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
+	g_free (full_paths_temp);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->simulate_install_files == NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "SimulateInstallFiles not yet supported by backend");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check all files exists and are valid */
+	length = g_strv_length (full_paths);
+
+	for (i=0; i<length; i++) {
+		/* exists */
+		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
+		if (!ret) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+					     "No such file %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			pk_transaction_dbus_return_error (context, error);
+			return;
+		}
+
+		/* get content type */
+		content_type = pk_transaction_get_content_type_for_file (full_paths[i], &error_local);
+		if (content_type == NULL) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "Failed to get content type for file %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			pk_transaction_dbus_return_error (context, error);
+			return;
+		}
+
+		/* supported content type? */
+		ret = pk_transaction_is_supported_content_type (transaction, content_type);
+		g_free (content_type);
+		if (!ret) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
+					     "MIME type not supported %s", full_paths[i]);
+			pk_transaction_release_tid (transaction);
+			pk_transaction_dbus_return_error (context, error);
+			return;
+		}
+
+		/* valid */
+		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
+			service_pack = pk_service_pack_new ();
+			pk_service_pack_set_filename (service_pack, full_paths[i]);
+			ret = pk_service_pack_check_valid (service_pack, &error_local);
+			g_object_unref (service_pack);
+			if (!ret) {
+				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
+				pk_transaction_release_tid (transaction);
+				pk_transaction_dbus_return_error (context, error);
+				g_error_free (error_local);
+				return;
+			}
+		}
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_full_paths = g_strdupv (full_paths);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_simulate_install_packages:
+ **/
+void
+pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	egg_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->simulate_install_packages == NULL &&
+	    transaction->priv->backend->desc->get_depends == NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "SimulateInstallPackages not yet supported by backend");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_simulate_remove_packages:
+ **/
+void
+pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	egg_debug ("SimulateRemovePackages method called: %s", package_ids[0]);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->simulate_remove_packages == NULL &&
+	    transaction->priv->backend->desc->get_requires == NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "SimulateRemovePackages not yet supported by backend");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_simulate_update_packages:
+ **/
+void
+pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *package_ids_temp;
+	guint length;
+	guint max_length;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	egg_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->simulate_update_packages == NULL &&
+	    transaction->priv->backend->desc->get_depends == NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "SimulateUpdatePackages not yet supported by backend");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check for length sanity */
+	length = g_strv_length (package_ids);
+	max_length = pk_conf_get_int (transaction->priv->conf, "MaximumPackagesToProcess");
+	if (length > max_length) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "Too many packages to process (%i/%i)", length, max_length);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);

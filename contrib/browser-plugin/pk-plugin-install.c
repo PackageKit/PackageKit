@@ -22,14 +22,17 @@
 
 #include <config.h>
 
-#include <glib/gi18n-lib.h>
+#include <stdlib.h>
 #include <string.h>
+#include <math.h>
+
+#include <glib/gi18n-lib.h>
 #include <gio/gdesktopappinfo.h>
 #include <pango/pangocairo.h>
 #include <dbus/dbus-glib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
-
+#include <math.h>
 #include "pk-main.h"
 #include "pk-plugin-install.h"
 
@@ -58,6 +61,9 @@ struct PkPluginInstallPrivate
 	PkClientPool		*client_pool;
 	DBusGProxy		*install_package_proxy;
 	DBusGProxyCall		*install_package_call;
+	gint			timeout;
+	gint			current;
+	gint			update_spinner;
 };
 
 G_DEFINE_TYPE (PkPluginInstall, pk_plugin_install, PK_TYPE_PLUGIN)
@@ -85,6 +91,24 @@ pk_plugin_install_refresh (PkPluginInstall *self)
 	pk_plugin_request_refresh (PK_PLUGIN (self));
 }
 
+#define SPINNER_LINES 12
+#define SPINNER_SIZE 24
+
+static gboolean
+spinner_timeout (gpointer data)
+{
+	PkPluginInstall *self = data;
+
+	self->priv->current++;
+	if (self->priv->current >= SPINNER_LINES)
+		self->priv->current = 0;
+	self->priv->update_spinner = TRUE;
+
+	pk_plugin_install_refresh (self);
+
+	return TRUE;
+}
+
 /**
  * pk_plugin_install_set_status:
  **/
@@ -94,7 +118,16 @@ pk_plugin_install_set_status (PkPluginInstall *self, PkPluginInstallPackageStatu
 	if (self->priv->status != status) {
 		pk_debug ("setting status %u", status);
 		self->priv->status = status;
+
+		if (status == INSTALLING) {
+			self->priv->timeout = g_timeout_add (80, spinner_timeout, self);
+		}
+		else if (self->priv->timeout) {
+			g_source_remove (self->priv->timeout);
+			self->priv->timeout = 0;
+		}
 	}
+
 }
 
 /**
@@ -273,7 +306,7 @@ pk_plugin_install_error_code_cb (PkClient *client, PkErrorCodeEnum code, const g
  * pk_plugin_install_finished_cb:
  **/
 static void
-pk_plugin_install_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkPluginInstall *self)
+pk_plugin_install_finished_cb (PkClient *client, PkExitEnum exit_code, guint runtime, PkPluginInstall *self)
 {
 	if (self->priv->status == IN_PROGRESS) {
 		pk_plugin_install_set_status (self, UNAVAILABLE);
@@ -536,6 +569,83 @@ pk_plugin_install_start (PkPlugin *plugin)
 }
 
 /**
+ * pk_plugin_install_draw_spinner:
+ **/
+static void
+pk_plugin_install_draw_spinner (PkPlugin *plugin, cairo_t *cr, int cx, int cy)
+{
+	gint width, height;
+	double x, y;
+	double radius;
+	double half;
+	gint i;
+
+	PkPluginInstall *self = PK_PLUGIN_INSTALL (plugin);
+
+        cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+
+	width = height = SPINNER_SIZE;
+	radius = MIN (width / 2.0, height / 2.0);
+	half = SPINNER_LINES / 2;
+
+	x = cx + width / 2;
+	y = cy + height / 2;
+
+	for (i = 0; i < SPINNER_LINES; i++) {
+		gint inset = 0.7 * radius;
+		/* transparency is a function of time and intial value */
+		gdouble t = (gdouble) ((i + SPINNER_LINES - self->priv->current) % SPINNER_LINES) / SPINNER_LINES;
+		cairo_save (cr);
+
+		cairo_set_source_rgba (cr, 0, 0, 0, t);
+		cairo_set_line_width (cr, 2.0);
+		cairo_move_to (cr,
+			       x + (radius - inset) * cos (i * G_PI / half),
+			       y + (radius - inset) * sin (i * G_PI / half));
+		cairo_line_to (cr,
+			       x + radius * cos (i * G_PI / half),
+			       y + radius * sin (i * G_PI / half));
+		cairo_stroke (cr);
+		cairo_restore (cr);
+	}
+}
+
+/**
+ * pk_plugin_install_rounded_rectangle:
+ **/
+static void
+pk_plugin_install_rounded_rectangle (cairo_t *cr, gdouble x, gdouble y,
+				     gdouble w, gdouble h, gdouble radius)
+{
+	const gdouble ARC_TO_BEZIER = 0.55228475;
+	gdouble c;
+
+	if (radius == 0) {
+		cairo_rectangle (cr, x, y, w, h);
+		return;
+	}
+
+	if (radius > w - radius)
+		radius = w / 2;
+	if (radius > h - radius)
+		radius = h / 2;
+
+	c = ARC_TO_BEZIER * radius;
+
+	cairo_new_path (cr);
+	cairo_move_to (cr, x + radius, y);
+	cairo_rel_line_to (cr, w - 2 * radius, 0);
+	cairo_rel_curve_to (cr, c, 0, radius, c, radius, radius);
+	cairo_rel_line_to (cr, 0, h - 2 * radius);
+	cairo_rel_curve_to (cr, 0, c, c - radius, radius, -radius, radius);
+	cairo_rel_line_to (cr, -w + 2 * radius, 0);
+	cairo_rel_curve_to (cr, -c, 0, -radius, -c, -radius, -radius);
+	cairo_rel_line_to (cr, 0, -h + 2 * radius);
+	cairo_rel_curve_to (cr, 0, -c, radius - c, -radius, radius, -radius);
+	cairo_close_path (cr);
+}
+
+/**
  * pk_plugin_install_draw:
  **/
 static gboolean
@@ -547,10 +657,16 @@ pk_plugin_install_draw (PkPlugin *plugin, cairo_t *cr)
 	guint y;
 	guint width;
 	guint height;
+	guint radius;
 	const gchar *filename;
 	GtkIconTheme *theme;
 	GdkPixbuf *pixbuf;
+	PangoRectangle rect;
 	PkPluginInstall *self = PK_PLUGIN_INSTALL (plugin);
+	guint sep;
+	const gchar *data;
+	PangoColor color;
+	gboolean has_color;
 
 	/* get parameters */
 	g_object_get (self,
@@ -560,19 +676,43 @@ pk_plugin_install_draw (PkPlugin *plugin, cairo_t *cr)
 		      "height", &height,
 		      NULL);
 
+	data = pk_plugin_get_data (plugin, "radius");
+	if (data)
+		radius = atoi (data);
+	else
+		radius = 0;
+
+	data = pk_plugin_get_data (plugin, "color");
+	if (data)
+		has_color = pango_color_parse (&color, data);
+	else
+		has_color = FALSE;
+
+	sep = MAX ((height - 48) / 2, radius);
+
 	pk_debug ("drawing on %ux%u (%ux%u)", x, y, width, height);
 
 	/* get properties */
 	pk_plugin_install_get_style (&font_desc, &foreground, &background, &link);
+	if (self->priv->update_spinner) {
+		self->priv->update_spinner = FALSE;
+		goto update_spinner;
+	}
 
-       /* fill background */
+        /* fill background */
 	pk_plugin_install_set_source_from_rgba (cr, background);
 	cairo_rectangle (cr, x, y, width, height);
+	cairo_fill (cr);
+	if (has_color)
+		cairo_set_source_rgb (cr, color.red / 65536.0, color.green / 65536.0, color.blue / 65536.0);
+	else
+		pk_plugin_install_set_source_from_rgba (cr, background);
+	pk_plugin_install_rounded_rectangle (cr, x + 0.5, y + 0.5, width - 1, height - 1, radius);
 	cairo_fill (cr);
 
         /* grey outline */
 	cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
-	cairo_rectangle (cr, x + 0.5, y + 0.5, width - 1, height - 1);
+	pk_plugin_install_rounded_rectangle (cr, x + 0.5, y + 0.5, width - 1, height - 1, radius);
 	cairo_set_line_width (cr, 1);
 	cairo_stroke (cr);
 
@@ -584,17 +724,39 @@ pk_plugin_install_draw (PkPlugin *plugin, cairo_t *cr)
 	pixbuf = gtk_icon_theme_load_icon (theme, filename, 48, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
 	if (pixbuf == NULL)
 		goto skip;
-	gdk_cairo_set_source_pixbuf (cr, pixbuf, x + PK_PLUGIN_INSTALL_MARGIN, y + PK_PLUGIN_INSTALL_MARGIN);
-	cairo_rectangle (cr, x + PK_PLUGIN_INSTALL_MARGIN, y + PK_PLUGIN_INSTALL_MARGIN, 48, 48);
+
+	gdk_cairo_set_source_pixbuf (cr, pixbuf, x + sep, y + (height - 48) / 2);
+	cairo_rectangle (cr, x + sep, y + (height - 48) / 2, 48, 48);
 	cairo_fill (cr);
 	g_object_unref (pixbuf);
 
 skip:
 	/* write text */
 	pk_plugin_install_ensure_layout (self, cr, font_desc, link);
-	cairo_move_to (cr, (x + PK_PLUGIN_INSTALL_MARGIN*2) + 48, y + PK_PLUGIN_INSTALL_MARGIN + PK_PLUGIN_INSTALL_MARGIN);
+	pango_layout_get_pixel_extents (self->priv->pango_layout, &rect, NULL);
+	cairo_move_to (cr, x + sep + 48 + sep, y + (height - (rect.height + 48) / 2) / 2);
 	pk_plugin_install_set_source_from_rgba (cr, foreground);
 	pango_cairo_show_layout (cr, self->priv->pango_layout);
+
+update_spinner:
+	if (self->priv->status == INSTALLING) {
+		pango_layout_get_pixel_extents (self->priv->pango_layout, &rect, NULL);
+		if (has_color)
+			cairo_set_source_rgb (cr, color.red / 65536.0, color.green / 65536.0, color.blue / 65536.0);
+		else
+			pk_plugin_install_set_source_from_rgba (cr, background);
+		cairo_rectangle (cr,
+				 x + sep + 48 + sep + rect.width + 2 * sep,
+				 y + (height - SPINNER_SIZE) / 2,
+				 SPINNER_SIZE, SPINNER_SIZE);
+		cairo_fill (cr);
+		pk_plugin_install_set_source_from_rgba (cr, foreground);
+
+		pk_plugin_install_draw_spinner (plugin, cr,
+						x + sep + 48 + sep + rect.width + 2 * sep,
+						y + (height - SPINNER_SIZE) / 2);
+	}
+
 	return TRUE;
 }
 
@@ -653,14 +815,27 @@ pk_plugin_install_get_link_index (PkPluginInstall *self, gint x, gint y)
 	gint seen_links = 0;
 	gboolean in_link = FALSE;
 	gint result = -1;
+	guint height;
+	guint radius;
+	guint sep;
+	PangoRectangle rect;
+	const char *data;
 
 	/* Coordinates are relative to origin of plugin (different from drawing) */
 
 	if (!self->priv->pango_layout)
 		return -1;
 
-	x -= (PK_PLUGIN_INSTALL_MARGIN * 2) + 48;
-	y -= (PK_PLUGIN_INSTALL_MARGIN * 2);
+	g_object_get (self, "height", &height, NULL);
+	data = pk_plugin_get_data (PK_PLUGIN (self), "radius");
+	if (data)
+		radius = atoi (data);
+	else
+		radius = 0;
+	sep = MAX ((height - 48) / 2, radius);
+	pango_layout_get_pixel_extents (self->priv->pango_layout, &rect, NULL);
+	x -= sep + 48 + sep;
+	y -= (height - (rect.height + 48) / 2) / 2;
 
 	if (!pango_layout_xy_to_index (self->priv->pango_layout, x * PANGO_SCALE, y * PANGO_SCALE, &idx, &trailing))
 		return - 1;
@@ -777,7 +952,7 @@ pk_plugin_install_install_package (PkPluginInstall *self, Time event_time)
 						      24 * 60 * 1000 * 1000, /* one day */
 						      G_TYPE_UINT, xid, /* xid */
 						      G_TYPE_STRV, packages,
-						      G_TYPE_STRING, "hide-confirm-search,hide-confirm-deps,hide-finished",
+						      G_TYPE_STRING, "hide-confirm-search,hide-progress,hide-confirm-deps,hide-finished",
 						      G_TYPE_INVALID,
 						      G_TYPE_INVALID);
 	g_strfreev (packages);
@@ -867,6 +1042,52 @@ pk_plugin_install_button_release (PkPlugin *plugin, gint x, gint y, Time event_t
 	return TRUE;
 }
 
+static void
+pk_plugin_set_cursor (GdkWindow     *window,
+                      GdkCursorType  cursor)
+{
+	Display *display;
+	Cursor xcursor;
+
+	display = GDK_DISPLAY_XDISPLAY (gdk_display_get_default());
+        if (cursor >= 0)
+		xcursor = XCreateFontCursor (display, cursor);
+	else
+		xcursor = None;
+	XDefineCursor (display, GDK_WINDOW_XID (window), xcursor);
+}
+
+static gboolean
+pk_plugin_install_motion (PkPlugin *plugin,
+                          gint      x,
+                          gint      y)
+{
+	PkPluginInstall *self = PK_PLUGIN_INSTALL (plugin);
+	GdkWindow *window;
+	gint idx;
+
+	idx = pk_plugin_install_get_link_index (self, x, y);
+        g_object_get (plugin, "gdk-window", &window, NULL);
+
+	if (idx < 0) {
+		pk_plugin_set_cursor (window, -1);
+		return FALSE;
+	}
+	switch (self->priv->status) {
+	case IN_PROGRESS:
+	case INSTALLING:
+	case UNAVAILABLE:
+		pk_plugin_set_cursor (window, -1);
+		break;
+	case INSTALLED:
+	case UPGRADABLE:
+	case AVAILABLE:
+		pk_plugin_set_cursor (window, GDK_HAND2);
+		break;
+	}
+	return FALSE;
+}
+
 /**
  * pk_plugin_install_finalize:
  **/
@@ -906,6 +1127,7 @@ pk_plugin_install_class_init (PkPluginInstallClass *klass)
 	plugin_class->start = pk_plugin_install_start;
 	plugin_class->draw = pk_plugin_install_draw;
 	plugin_class->button_release = pk_plugin_install_button_release;
+	plugin_class->motion = pk_plugin_install_motion;
 
 	g_type_class_add_private (klass, sizeof (PkPluginInstallPrivate));
 }

@@ -13,7 +13,7 @@ rebind a device with Linux.
 
 You can test this functionality by doing:
 
-./pk-device-rebind -v -s "/sys/devices/pci0000:00/0000:00:1d.0/usb5/5-2" */
+./pk-device-rebind -v -s "/sys/devices/pci0000:00/0000:00:1d.0/usb5/5-2"
 
 In userspace it is expected that clients just use PolicyKit to run this command
 as root, for instance, "pkexec /usr/sbin/pk-device-rebind"
