@@ -44,6 +44,7 @@ BuildRequires: python-devel
 BuildRequires: perl(XML::Parser)
 BuildRequires: intltool
 BuildRequires: gettext
+BuildRequires: libgudev1-devel
 BuildRequires: xulrunner-devel
 BuildRequires: libarchive-devel
 BuildRequires: gstreamer-devel
@@ -226,6 +227,16 @@ interface for rcd and red carpet daemon.
 Ruck is for a couple of lazy people who got used to Red Carpet's rug command
 and are unable to learn any new tricks.
 
+%package device-rebind
+Summary: Device rebind functionality for PackageKit
+Group: Development/Libraries
+Requires: PackageKit-glib = %{version}-%{release}
+
+%description device-rebind
+The device rebind functionality offer the ability to re-initialize devices
+after firmware has been installed by PackageKit. This removes the need for the
+user to restart the computer or remove and re-insert the device.
+
 %prep
 %setup -q
 
@@ -390,6 +401,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
+
+%files device-rebind
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_sbindir}/pk-device-rebind
+%{_datadir}/man/man1/pk-device-rebind.1.gz
 
 %files ruck
 %defattr(-,root,root,-)
