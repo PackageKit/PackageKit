@@ -350,6 +350,24 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 
+/* simulate stuff */
+gboolean	 pk_client_simulate_install_files	(PkClient	*client,
+							 gchar		**files_rel,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_simulate_install_packages	(PkClient	*client,
+							 gchar		**package_ids,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_simulate_remove_packages	(PkClient	*client,
+							 gchar		**package_ids,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_simulate_update_packages	(PkClient	*client,
+							 gchar		**package_ids,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+
 /* cached stuff */
 PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);

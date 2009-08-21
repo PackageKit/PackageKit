@@ -3767,6 +3767,295 @@ out:
 }
 
 /**
+ * pk_client_simulate_install_files:
+ * @client: a valid #PkClient instance
+ * @files_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @error: a %GError to put the error code and message in, or %NULL
+ * Simulate an installation of files.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status.
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_simulate_install_files (PkClient *client, gchar **files_rel, GError **error)
+{
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+	gchar **files = NULL;
+	gchar *file;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (files_rel != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* convert all the relative paths to absolute ones */
+	files = g_strdupv (files_rel);
+	length = g_strv_length (files);
+	for (i=0; i<length; i++) {
+		file = pk_resolve_local_path (files[i]);
+		/* only replace if different */
+		if (g_strcmp0 (file, files[i]) != 0) {
+			egg_debug ("resolved %s to %s", files[i], file);
+			/* replace */
+			g_free (files[i]);
+			files[i] = g_strdup (file);
+		}
+		g_free (file);
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SIMULATE_INSTALL_FILES;
+	client->priv->cached_full_paths = g_strdupv (files);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+
+	/* do the method */
+	ret = dbus_g_proxy_call (client->priv->proxy, "SimulateInstallFiles", error,
+				 G_TYPE_STRV, files,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* we failed one of these, return the error to the user */
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_simulate_install_packages:
+ * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ * Simulate an installation of packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
+ *       if the backend supports SimulateInstallPackages, otherwise it will silently fallback
+ *       to use GetDepends("~installed", packages, recursive=TRUE), which might emit only
+ *       AVAILABLE packages.
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GError **error)
+{
+	gboolean ret;
+	gchar *package_ids_temp;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		return FALSE;
+	}
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "SimulateInstallPackages", error,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_simulate_remove_packages:
+ * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ * Simulate a removal of packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
+ *       if the backend supports SimulateRemovePackages, otherwise it will silently fallback
+ *       to use GetRequires("installed", packages, recursive=TRUE), which might emit only
+ *       INSTALLED packages.
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GError **error)
+{
+	gboolean ret;
+	gchar *package_ids_temp;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		return FALSE;
+	}
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "SimulateRemovePackages", error,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_simulate_update_packages:
+ * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ * Simulate an update of packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
+ *       if the backend supports SimulateUpdatePackages, otherwise it will silently fallback
+ *       to use GetDepends("~installed", packages, recursive=TRUE), which might emit only
+ *       AVAILABLE packages.
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GError **error)
+{
+	gboolean ret;
+	gchar *package_ids_temp;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ensure we are not trying to run without reset */
+	if (client->priv->tid != NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "TID already set to %s", client->priv->tid);
+		return FALSE;
+	}
+
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids);
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		return FALSE;
+	}
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "SimulateUpdatePackages", error,
+				 G_TYPE_STRV, package_ids,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret && !client->priv->is_finished) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous)
+			g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
+/**
  * pk_client_is_caller_active:
  * @client: a valid #PkClient instance
  * @is_active: if the caller of the method is still alive
@@ -3976,6 +4265,14 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_get_categories (client, error);
 	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
 		ret = pk_client_get_distro_upgrades (client, error);
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
+		ret = pk_client_simulate_install_files (client, priv->cached_full_paths, error);
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)
+		ret = pk_client_simulate_install_packages (client, priv->cached_package_ids, error);
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)
+		ret = pk_client_simulate_remove_packages (client, priv->cached_package_ids, error);
+	else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)
+		ret = pk_client_simulate_update_packages (client, priv->cached_package_ids, error);
 	else {
 		if (error != NULL)
 			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
