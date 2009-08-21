@@ -99,6 +99,10 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
-	NULL					/* what_provides */
+	NULL,					/* what_provides */
+	NULL,					/* simulate_install_files */
+	NULL,					/* simulate_install_packages */
+	NULL,					/* simulate_remove_packages */
+	NULL					/* simulate_update_packages */
 );
 
