@@ -342,6 +342,7 @@ static const PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
 	{PK_PROVIDES_ENUM_HARDWARE_DRIVER,	"driver"},
 	{PK_PROVIDES_ENUM_FONT,			"font"},
+	{PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER,	"postscript-driver"},
 	{0, NULL}
 };
 
