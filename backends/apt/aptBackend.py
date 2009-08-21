@@ -613,19 +613,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             archive and 1.1.1 in the archive of proposed updates or the
             same version in both archives.
             """
-            inst_ver = pkg._pkg.CurrentVer
-            for ver in pkg._pkg.VersionList:
+            inst_ver = pkg.installed
+            for version in pkg.versions:
                 # Skip versions which are not later
-                if inst_ver and \
-                   apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
+                if inst_ver <= version:
                     continue
-                for(verFileIter, index) in ver.FileList:
-                    if verFileIter.Origin in ["Debian", "Ubuntu"] and \
-                       (verFileIter.Archive.endswith("-security") or \
-                        verFileIter.Label == "Debian-Security"):
-                        indexfile = pkg._list.FindIndex(verFileIter)
-                        if indexfile and indexfile.IsTrusted:
-                            return True
+                for origin in version.origins:
+                    if (origin.origin == "Debian" and \
+                        origin.label == "Debian-Security") or \
+                       (origin.origin == "Ubuntu" and \
+                        origin.archive.endswith("-security")) and \
+                       origin.trusted:
+                        return True
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
