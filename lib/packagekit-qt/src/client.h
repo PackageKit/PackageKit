@@ -380,6 +380,7 @@ public:
 		ErrorPackageFailedToConfigure,
 		ErrorPackageFailedToBuild,
 		ErrorPackageFailedToInstall,
+		ErrorPackageFailedToRemove,
 		UnknownErrorType
 	} ErrorType;
 
