@@ -680,6 +680,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return [ "font(%s)" % search ]
         if provides_type == PROVIDES_MIMETYPE:
             return [ "mimehandler(%s)" % search ]
+        if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
+            return [ "postscriptdriver(%s)" % search ]
         if provides_type == PROVIDES_ANY:
             provides = []
             provides.append(self._get_provides_query(PROVIDES_CODEC, search)[0])
