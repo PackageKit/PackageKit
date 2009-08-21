@@ -634,58 +634,62 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         # Start with a safe upgrade
         self.status(STATUS_DEP_RESOLVE)
-        self._cache.upgrade()
-        upgrades_safe = self._cache.getChanges()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for upgrade in upgrades_safe:
-            resolver.clear(upgrade)
-            resolver.protect(upgrade)
-        # Search for upgrades which are not already part of the safe upgrade
-        # but would only require the installation of additional packages
-        for pkg in self._cache:
-            if not pkg.isUpgradable:
-                continue
-            pklog.debug("Checking upgrade of %s" % pkg.name)
-            if not pkg in upgrades_safe:
-                # Check if the upgrade would require the removal of an already
-                # installed package. If this is the case it will be skipped
-                resolver.clear(pkg)
-                resolver.protect(pkg)
-                resolver.install_protect()
-                try:
-                    resolver.resolve()
-                except:
-                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    resolver.clear(pkg)
-                    self._cache.clear()
+        with self._cache.actiongroup():
+            self._cache.upgrade()
+            upgrades_safe = self._cache.getChanges()
+            resolver = apt.cache.ProblemResolver(self._cache)
+            for upgrade in upgrades_safe:
+                resolver.clear(upgrade)
+                resolver.protect(upgrade)
+            # Search for upgrades which are not already part of the safe upgrade
+            # but would only require the installation of additional packages
+            for pkg in self._cache:
+                if not pkg.isUpgradable:
                     continue
-                if self._cache.delete_count:
-                    self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
+                pklog.debug("Checking upgrade of %s" % pkg.name)
+                if not pkg in upgrades_safe:
+                    # Check if the upgrade would require the removal of an
+                    # already installed package. If this is the case it will
+                    # be skipped
                     resolver.clear(pkg)
-                    self._cache.clear()
-                    continue
-            # The update can be safely installed
-            info = INFO_NORMAL
-            # Detect the nature of the upgrade (e.g. security, enhancement)
-            archive = pkg.candidateOrigin[0].archive
-            origin = pkg.candidateOrigin[0].origin
-            trusted = pkg.candidateOrigin[0].trusted
-            label = pkg.candidateOrigin[0].label
-            if origin in ["Debian", "Ubuntu"] and trusted == True:
-                if archive.endswith("-security") or \
-                    label == "Debian-Security":
-                    info = INFO_SECURITY
-                elif succeeds_security_update(pkg):
-                    pklog.debug("Update of %s succeeds a security update. "
-                                "Raising its priority." % pkg.name)
-                    info = INFO_SECURITY
-                elif archive.endswith("-backports"):
+                    resolver.protect(pkg)
+                    resolver.install_protect()
+                    try:
+                        resolver.resolve()
+                    except:
+                        self._emit_package(pkg, INFO_BLOCKED,
+                                           force_candidate=True)
+                        resolver.clear(pkg)
+                        self._cache.clear()
+                        continue
+                    if self._cache.delete_count:
+                        self._emit_package(pkg, INFO_BLOCKED,
+                                           force_candidate=True)
+                        resolver.clear(pkg)
+                        self._cache.clear()
+                        continue
+                # The update can be safely installed
+                info = INFO_NORMAL
+                # Detect the nature of the upgrade (e.g. security, enhancement)
+                archive = pkg.candidateOrigin[0].archive
+                origin = pkg.candidateOrigin[0].origin
+                trusted = pkg.candidateOrigin[0].trusted
+                label = pkg.candidateOrigin[0].label
+                if origin in ["Debian", "Ubuntu"] and trusted == True:
+                    if archive.endswith("-security") or \
+                        label == "Debian-Security":
+                        info = INFO_SECURITY
+                    elif succeeds_security_update(pkg):
+                        pklog.debug("Update of %s succeeds a security update. "
+                                    "Raising its priority." % pkg.name)
+                        info = INFO_SECURITY
+                    elif archive.endswith("-backports"):
+                        info = INFO_ENHANCEMENT
+                    elif archive.endswith("-updates"):
+                        info = INFO_BUGFIX
+                if origin in ["Backports.org archive"] and trusted == True:
                     info = INFO_ENHANCEMENT
-                elif archive.endswith("-updates"):
-                    info = INFO_BUGFIX
-            if origin in ["Backports.org archive"] and trusted == True:
-                info = INFO_ENHANCEMENT
-            self._emit_package(pkg, info, force_candidate=True)
+                self._emit_package(pkg, info, force_candidate=True)
         self._cache.clear()
 
     def get_update_detail(self, pkg_ids):
@@ -790,33 +794,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,5))
         # Start with protecting all safe upgrades
         self.status(STATUS_DEP_RESOLVE)
-        self._cache.upgrade()
-        upgrades_safe = self._cache.getChanges()
-        resolver = apt.cache.ProblemResolver(self._cache)
-        for upgrade in upgrades_safe:
-            resolver.clear(upgrade)
-            resolver.protect(upgrade)
-        # Search for upgrades which are not already part of the safe upgrade
-        # but would only require the installation of additional packages
-        for pkg in self._cache:
-            if not pkg.isUpgradable or pkg in upgrades_safe:
-                continue
-            pklog.debug("Checking upgrade of %s" % pkg.name)
-            resolver.clear(pkg)
-            resolver.protect(pkg)
+        with self._cache.actiongroup():
+            self._cache.upgrade()
+            upgrades_safe = self._cache.getChanges()
+            resolver = apt.cache.ProblemResolver(self._cache)
+            for upgrade in upgrades_safe:
+                resolver.clear(upgrade)
+                resolver.protect(upgrade)
+            # Search for upgrades which are not already part of the safe upgrade
+            # but would only require the installation of additional packages
+            for pkg in self._cache:
+                if not pkg.isUpgradable or pkg in upgrades_safe:
+                    continue
+                pklog.debug("Checking upgrade of %s" % pkg.name)
+                resolver.clear(pkg)
+                resolver.protect(pkg)
+                resolver.install_protect()
+                try:
+                    resolver.resolve()
+                except:
+                    resolver.clear(pkg)
+                    self._cache.clear()
+                    continue
+                if self._cache.delete_count:
+                    resolver.clear(pkg)
+                    self._cache.clear()
+                    continue
             resolver.install_protect()
-            try:
-                resolver.resolve()
-            except:
-                resolver.clear(pkg)
-                self._cache.clear()
-                continue
-            if self._cache.delete_count:
-                resolver.clear(pkg)
-                self._cache.clear()
-                continue
-        resolver.install_protect()
-        resolver.resolve()
+            resolver.resolve()
         if not self._commit_changes(): return False
 
     @unlock_cache_afterwards
