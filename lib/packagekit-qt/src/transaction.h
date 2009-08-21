@@ -185,6 +185,10 @@ public:
 		StatusScanApplications,
 		StatusGeneratePackageList,
 		StatusWaitingForLock,
+		StatusWaitingForAuth,
+		StatusScanProcessList,
+		StatusCheckExecutableFiles,
+		StatusCheckLibraries,
 		UnknownStatus
 	} Status;
 	/**
