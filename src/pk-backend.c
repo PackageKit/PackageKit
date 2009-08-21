@@ -761,14 +761,14 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* do we have to enumate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-			egg_debug ("emiting status-changed running");
+			egg_debug ("emitting status-changed running");
 			g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
 		}
 	}
 
 	backend->priv->status = status;
 
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
+	egg_debug ("emitting status-changed %s", pk_status_enum_to_text (status));
 	g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
