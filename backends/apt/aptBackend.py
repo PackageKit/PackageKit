@@ -833,7 +833,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
-        action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
             pkg = self._find_package_by_id(id)
@@ -850,10 +849,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s cannot be removed." % pkg.name)
                 return
             pkgs.append(pkg.name[:])
-            pkg.markDelete(False, False)
             resolver.clear(pkg)
             resolver.protect(pkg)
             resolver.remove(pkg)
+        resolver.install_protect()
         try:
             resolver.resolve()
         except SystemError, error:
@@ -862,7 +861,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages would break and so block the "
                        "removal: %s" % " ".join(broken))
             return
-        action_group.release()
         # Error out if the installation would the installation or upgrade of
         # other packages
         if self._cache.install_count:
@@ -1055,7 +1053,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
-        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
             pkg = self._find_package_by_id(id)
@@ -1068,11 +1065,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "%s isn't installed" % pkg.name)
                 return
             pkgs.append(pkg.name[:])
-            # Actually should be fixed in python-apt
-            auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
-            pkg.markInstall(False, True, auto)
             resolver.clear(pkg)
             resolver.protect(pkg)
+        resolver.install_protect()
         try:
             resolver.resolve()
         except SystemError, error:
@@ -1081,7 +1076,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
             return
-        ac.release()
         # Error out if the updates would require the removal of already
         # installed packages
         if self._cache.delete_count:
@@ -1165,7 +1159,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(prange=(0,10))
         self.status(STATUS_DEP_RESOLVE)
         pkgs=[]
-        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
             pkg = self._find_package_by_id(id)
@@ -1178,9 +1171,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s is already installed" % pkg.name)
                 return
             pkgs.append(pkg.name[:])
-            pkg.markInstall(False, True, True)
             resolver.clear(pkg)
             resolver.protect(pkg)
+        resolver.install_protect()
         try:
             resolver.resolve()
         except SystemError, error:
@@ -1189,7 +1182,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
             return
-        ac.release()
         # Error out if the installation would require the removal of already
         # installed packages
         if self._cache.delete_count:
