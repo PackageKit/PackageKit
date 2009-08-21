@@ -299,6 +299,8 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
 
         # TODO: atm, this stack keep tracks of elog messages
         self._elog_messages = []
+        self._error_message = ""
+        self._error_phase = ""
 
         # TODO: should be removed when using non-verbose function API
         self.orig_out = None
@@ -406,11 +408,11 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         listeners so we have to keep them as arguments.
         '''
         message = "Messages for package %s:;" % str(key)
+        error_message = ""
 
         # building the message
-        for phases in logentries:
-            # actually, we don't care about phases
-            for entries in logentries[phases]:
+        for phase in logentries:
+            for entries in logentries[phase]:
                 type = entries[0]
                 messages = entries[1]
 
@@ -419,19 +421,41 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     message += ";Information messages:"
                 elif type == 'WARN':
                     message += ";Warning messages:"
-                elif type == 'ERROR':
-                    message += ";Error messages:"
                 elif type == 'QA':
                     message += ";QA messages:"
+                elif type == 'ERROR':
+                    message += ";Error messages:"
+                    self._error_phase = phase
                 else:
                     continue
 
                 for msg in messages:
                     msg = msg.replace('\n', '')
+                    if type == 'ERROR':
+                        error_message += msg + ";"
                     message += "; " + msg
 
         # add the message to the stack
         self._elog_messages.append(message)
+        self._error_message = message
+
+    def send_merge_error(self, default):
+        # EAPI-2 compliant (at least)
+        # 'other' phase is ignored except this one, every phase should be there
+        if self._error_phase in ("setup", "unpack", "prepare", "configure",
+            "nofetch", "config", "info"):
+            error_type = ERROR_PACKAGE_FAILED_TO_CONFIGURE
+        elif self._error_phase in ("compile", "test"):
+            error_type = ERROR_PACKAGE_FAILED_TO_BUILD
+        elif self._error_phase in ("install", "preinst", "postinst",
+            "package"):
+            error_type = ERROR_PACKAGE_FAILED_TO_INSTALL
+        elif self._error_phase in ("prerm", "postrm"):
+            error_type = ERROR_PACKAGE_FAILED_TO_REMOVE
+        else:
+            error_type = default
+
+        self.error(error_type, self._error_message)
 
     def get_file_list(self, cpv):
         cat, pv = portage.catsplit(cpv)
@@ -1186,8 +1210,6 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         # can't install an already installed packages
         # even if it happens to be needed in Gentoo but probably not this API
 
-        # TODO: manage errors
-
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
@@ -1246,9 +1268,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
                     self.pvar.trees, self.pvar.mtimedb, myopts, None,
                     depgraph.altlist(), favorites, depgraph.schedulerGraph())
-            mergetask.merge()
+            rval = mergetask.merge()
         finally:
             self.unblock_output()
+
+        # when an error is found print error messages
+        if rval != os.EX_OK:
+            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
 
         # show elog messages and clean
         portage.elog.remove_listener(self.elog_listener)
@@ -1381,9 +1407,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
                     self.pvar.trees, self.pvar.mtimedb, mergelist=packages,
                     myopts={}, spinner=None, favorites=favorites, digraph=None)
-            mergetask.merge()
+            rval = mergetask.merge()
         finally:
             self.unblock_output()
+
+        # when an error is found print error messages
+        if rval != os.EX_OK:
+            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_REMOVE)
 
         # show elog messages and clean
         portage.elog.remove_listener(self.elog_listener)
@@ -1698,9 +1728,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
                     self.pvar.trees, self.pvar.mtimedb, myopts, None,
                     depgraph.altlist(), favorites, depgraph.schedulerGraph())
-            mergetask.merge()
+            rval = mergetask.merge()
         finally:
             self.unblock_output()
+
+        # when an error is found print error messages
+        if rval != os.EX_OK:
+            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
 
         # show elog messages and clean
         portage.elog.remove_listener(self.elog_listener)
@@ -1755,9 +1789,13 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
                     self.pvar.trees, self.pvar.mtimedb, myopts, None,
                     depgraph.altlist(), None, depgraph.schedulerGraph())
-            mergetask.merge()
+            rval = mergetask.merge()
         finally:
             self.unblock_output()
+
+        # when an error is found print error messages
+        if rval != os.EX_OK:
+            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
 
         # show elog messages and clean
         portage.elog.remove_listener(self.elog_listener)
