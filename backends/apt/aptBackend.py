@@ -660,7 +660,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     resolver.clear(pkg)
                     self._cache.clear()
                     continue
-                if self._cache._depcache.DelCount:
+                if self._cache.delete_count:
                     self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
                     resolver.clear(pkg)
                     self._cache.clear()
@@ -812,7 +812,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 resolver.clear(pkg)
                 self._cache.clear()
                 continue
-            if self._cache._depcache.DelCount:
+            if self._cache.delete_count:
                 resolver.clear(pkg)
                 self._cache.clear()
                 continue
@@ -865,7 +865,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         action_group.release()
         # Error out if the installation would the installation or upgrade of
         # other packages
-        if self._cache._depcache.InstCount:
+        if self._cache.install_count:
             installed = [pkg.name for pkg in self._cache.getChanges() if \
                          pkg.markedInstall or pkg.markedUpgrade]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -1084,7 +1084,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac.release()
         # Error out if the updates would require the removal of already
         # installed packages
-        if self._cache._depcache.DelCount:
+        if self._cache.delete_count:
             deleted = [pkg.name for pkg in self._cache.getChanges() if \
                        pkg.markedDelete]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -1192,7 +1192,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac.release()
         # Error out if the installation would require the removal of already
         # installed packages
-        if self._cache._depcache.DelCount:
+        if self._cache.delete_count:
             deleted = [pkg.name for pkg in self._cache.getChanges() if \
                        pkg.markedDelete]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -1576,7 +1576,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except:
             self.error(ERROR_NO_CACHE, "Package cache could not be opened")
             return
-        if self._cache._depcache.BrokenCount > 0:
+        if self._cache.broken_count:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "There are broken dependecies on your system. "
                        "Please use an advanced package manage e.g. "
@@ -1653,7 +1653,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # any broken packages and if the dpkg status or apt cache files have 
         # been changed since the last refresh
         if not isinstance(self._cache, apt.cache.Cache) or \
-           (self._cache._depcache.BrokenCount > 0) or \
+           self._cache.broken_count or \
            (os.stat(apt_pkg.Config["Dir::State::status"])[stat.ST_MTIME] > \
             self._last_cache_refresh) or \
            (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
