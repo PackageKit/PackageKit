@@ -40,7 +40,7 @@ Transaction* ClientPrivate::createNewTransaction()
 	Transaction* t = new Transaction(daemon->GetTid(), c);
 	if (t->tid().isEmpty()) {
 		qDebug() << "empty tid, the daemon is probably not here anymore";
-		return NULL;
+		return t;
 	}
 
 	if(!locale.isNull())

@@ -32,7 +32,7 @@
 
 #define CREATE_NEW_TRANSACTION                      \
 		Transaction* t = d->createNewTransaction(); \
-		if (!t) {                                   \
+		if (t->tid ().isEmpty ()) {                                   \
 			setLastError (ErrorDaemonUnreachable);  \
 			setTransactionError (t, ErrorDaemonUnreachable); \
 			return t;                            \
