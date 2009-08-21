@@ -857,8 +857,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would break and so block the "
                        "removal: %s" % " ".join(broken))
@@ -1077,8 +1076,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
@@ -1186,8 +1184,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
