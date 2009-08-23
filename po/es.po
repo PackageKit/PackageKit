@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-20 08:42+0000\n"
-"PO-Revision-Date: 2009-08-20 09:46-0300\n"
+"POT-Creation-Date: 2009-08-23 08:29+0000\n"
+"PO-Revision-Date: 2009-08-23 10:38-0300\n"
 "Last-Translator: Domingo Becker <domingobecker@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -547,7 +547,7 @@ msgstr "Subcomandos:"
 #: ../client/pk-monitor.c:128
 #: ../contrib/command-not-found/pk-command-not-found.c:616
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
-#: ../contrib/device-rebind/pk-device-rebind.c:252
+#: ../contrib/device-rebind/pk-device-rebind.c:293
 #: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Mostrar información extra de depuración"
@@ -851,56 +851,56 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "Introduzca un número de 1 a %i: "
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:433
+#: ../contrib/browser-plugin/pk-plugin-install.c:464
 msgid "Getting package information..."
 msgstr "Extrayendo información del paquete..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:439
+#: ../contrib/browser-plugin/pk-plugin-install.c:470
 #, c-format
 msgid "Run %s"
 msgstr "Ejecutar %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:445
+#: ../contrib/browser-plugin/pk-plugin-install.c:476
 msgid "Installed version"
 msgstr "Versión instalada"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:453
+#: ../contrib/browser-plugin/pk-plugin-install.c:484
 #, c-format
 msgid "Run version %s now"
 msgstr "Ejecutar la versión %s ahora"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:459
+#: ../contrib/browser-plugin/pk-plugin-install.c:490
 msgid "Run now"
 msgstr "Ejecutar ahora"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:465
+#: ../contrib/browser-plugin/pk-plugin-install.c:496
 #, c-format
 msgid "Update to version %s"
 msgstr "Actualizar a la versión %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:471
+#: ../contrib/browser-plugin/pk-plugin-install.c:502
 #, c-format
 msgid "Install %s now"
 msgstr "Instalar %s ahora"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:474
+#: ../contrib/browser-plugin/pk-plugin-install.c:505
 msgid "Version"
 msgstr "Versión"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:479
+#: ../contrib/browser-plugin/pk-plugin-install.c:510
 msgid "No packages found for your system"
 msgstr "No se encontró ningún paquete para su sistema"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:484
+#: ../contrib/browser-plugin/pk-plugin-install.c:515
 msgid "Installing..."
 msgstr "Instalando..."
 
@@ -1178,78 +1178,88 @@ msgid "Disabled %i debugging sources."
 msgstr "Se han deshabilitado %i fuentes para la depuración. "
 
 #. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:60
+#: ../contrib/device-rebind/pk-device-rebind.c:61
 msgid "Failed to open file"
 msgstr "Falló al abrir el archivo"
 
 #. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:69
+#: ../contrib/device-rebind/pk-device-rebind.c:70
 msgid "Failed to write to the file"
 msgstr "Falló al escribir en el archivo"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:109
-#: ../contrib/device-rebind/pk-device-rebind.c:146
+#: ../contrib/device-rebind/pk-device-rebind.c:110
+#: ../contrib/device-rebind/pk-device-rebind.c:147
 msgid "Failed to write to device"
 msgstr "Falló al escribir en el dispositivo"
 
+#. TRANSLATORS: the device could not be found in sysfs
+#: ../contrib/device-rebind/pk-device-rebind.c:175
+msgid "Device could not be found"
+msgstr "No se pudo encontrar el dispositivo"
+
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:190
+#: ../contrib/device-rebind/pk-device-rebind.c:202
 msgid "Failed to unregister driver"
 msgstr "Falló al desregistrar el controlador"
 
 #. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:199
+#: ../contrib/device-rebind/pk-device-rebind.c:211
 msgid "Failed to register driver"
 msgstr "Falló al registrar el controlador"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:221
+#: ../contrib/device-rebind/pk-device-rebind.c:260
 msgid "Device path not found"
 msgstr "Dirección de dispositivo no encontrado"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:229
+#: ../contrib/device-rebind/pk-device-rebind.c:268
 msgid "Incorrect device path specified"
 msgstr "Dirección de dispositivo especificada incorrecta"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/device-rebind/pk-device-rebind.c:255
+#: ../contrib/device-rebind/pk-device-rebind.c:296
 msgid "Don't actually touch the hardware, only simulate what would be done"
 msgstr "No tocar el hardware, solamente simular lo que se haría"
 
 #. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:258
+#: ../contrib/device-rebind/pk-device-rebind.c:299
 msgid "Device paths"
 msgstr "Dirección de dispositivo"
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:264
+#: ../contrib/device-rebind/pk-device-rebind.c:314
 msgid "PackageKit Device Reloader"
 msgstr "Recargador de Dispositivo de PackageKit"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:272
+#: ../contrib/device-rebind/pk-device-rebind.c:322
 msgid "You need to specify at least one valid device path"
 msgstr "Necesita especificar al menos una dirección de dispositivo válida"
 
+#. TRANSLATORS: user did not specify a valid device sysfs path
+#: ../contrib/device-rebind/pk-device-rebind.c:332
+msgid "This script can only be used by the root user"
+msgstr "Este script sólo puede ser usado por el usuario root"
+
 #. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:281
+#: ../contrib/device-rebind/pk-device-rebind.c:341
 msgid "Verifying device path"
 msgstr "Verificando dirección de dispositivo"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:286
+#: ../contrib/device-rebind/pk-device-rebind.c:346
 msgid "Failed to verify device path"
 msgstr "Falló al verificar la dirección del dispositivo"
 
 #. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:300
+#: ../contrib/device-rebind/pk-device-rebind.c:360
 msgid "Attempting to rebind device"
 msgstr "Intentando reconectar dispositivo"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:305
+#: ../contrib/device-rebind/pk-device-rebind.c:365
 msgid "Failed to rebind device"
 msgstr "Falló al reconectar el dispositivo"
 
