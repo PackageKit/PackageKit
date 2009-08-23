@@ -194,7 +194,11 @@ pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
 	    role == PK_ROLE_ENUM_GET_PACKAGES ||
 	    role == PK_ROLE_ENUM_GET_DEPENDS ||
 	    role == PK_ROLE_ENUM_GET_REQUIRES ||
-	    role == PK_ROLE_ENUM_GET_UPDATES) {
+	    role == PK_ROLE_ENUM_GET_UPDATES ||
+	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
+	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
+	    role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
+	    role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
 		/* don't do the bar */
 		g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
 		goto out;
