@@ -113,8 +113,6 @@ Add the following code to your web page:
       <param name="displayname" value="GNU Backgammon"/>
       <!-- Whitespace separated list of package names -->
       <param name="packagenames" value="gnubg"/>
-      <!-- List of basenames of possible desktop files (no .desktop extension) -->
-      <param name="desktopnames" value="gnubg fedora-gnubg"/>
     </object>
 
 Unfortunately browser plugins have no mechanism for size negotiation, so you
@@ -135,6 +133,25 @@ Using em sizes rather than points is probably a good idea to help with the
 font size issue, but it doesn't completely resolve it since the text of the
 plugin will be sized based on the system font size, not on the web pages font.
 
+Customization
+=============
+
+The default appearance of the plugin is very plain, with a rectangular outline
+and a white background. To customize this appearance, you can add the
+optional parameters radius and color to your web page. This will make the
+plugin draw a rectangle with rounded corners, and use the given color
+instead of white.
+
+    <!-- radius for rounded corners -->
+    <param name="radius" value="10"/>
+    <!-- background color, must be parsable by pango_color_parse() -->
+    <param name="color" value="#aeaeff"/>
+
+
 Owen Taylor <otaylor@redhat.com>
 July 24, 2008
 
+Last updated:
+
+Matthias Clasen <mclasen@redhat.com>
+August 21, 2009

@@ -145,7 +145,9 @@ pk_main_newp (NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, 
 	/* set data */
 	for (i=0; i<argc; i++) {
 		if (g_strcmp0 (argn[i], "displayname") == 0 ||
-		    g_strcmp0 (argn[i], "packagenames") == 0)
+		    g_strcmp0 (argn[i], "packagenames") == 0 ||
+                    g_strcmp0 (argn[i], "radius") == 0 ||
+                    g_strcmp0 (argn[i], "color") == 0)
 			pk_plugin_set_data (plugin, argn[i], argv[i]);
 	}
 
@@ -241,6 +243,7 @@ pk_main_create_window (PkPlugin *plugin)
 		/* show window */
 		gdk_window_show (gdk_window);
 		g_object_set (plugin, "gdk-window", gdk_window, NULL);
+
 	} else {
 		gdk_window_move_resize (gdk_window, 0, 0, width, height);
 	}
