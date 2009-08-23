@@ -1401,21 +1401,21 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->simulate_install_files (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
 		if (desc->simulate_install_packages != NULL) {
-		    desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
+			desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
-		    desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
 		if (desc->simulate_remove_packages != NULL) {
-		    desc->simulate_remove_packages (priv->backend, priv->cached_package_ids);
+			desc->simulate_remove_packages (priv->backend, priv->cached_package_ids);
 		} else {
-		    desc->get_requires (priv->backend, PK_FILTER_ENUM_INSTALLED, priv->cached_package_ids, TRUE);
+			desc->get_requires (priv->backend, PK_FILTER_ENUM_INSTALLED, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
 		if (desc->simulate_update_packages != NULL) {
-		    desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
+			desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
-		    desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
 		}
 	} else {
 		egg_error ("failed to run as role not assigned");
@@ -4227,7 +4227,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->simulate_install_packages == NULL &&
-	    transaction->priv->backend->desc->get_depends               == NULL) {
+	    transaction->priv->backend->desc->get_depends == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateInstallPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4303,7 +4303,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->simulate_remove_packages == NULL &&
-	    transaction->priv->backend->desc->get_requires             == NULL) {
+	    transaction->priv->backend->desc->get_requires == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateRemovePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4378,8 +4378,8 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 	egg_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->simulate_update_packages  == NULL &&
-	    transaction->priv->backend->desc->get_depends               == NULL) {
+	if (transaction->priv->backend->desc->simulate_update_packages == NULL &&
+	    transaction->priv->backend->desc->get_depends == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateUpdatePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
