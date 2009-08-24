@@ -322,6 +322,7 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_COLLECTION_INSTALLED,	"collection-installed"},
 	{PK_INFO_ENUM_COLLECTION_AVAILABLE,	"collection-available"},
 	{PK_INFO_ENUM_FINISHED,			"finished"},
+	{PK_INFO_ENUM_REINSTALLING,		"reinstalling"},
 	{0, NULL}
 };
 
