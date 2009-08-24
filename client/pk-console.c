@@ -820,6 +820,58 @@ pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, G
 }
 
 /**
+ * pk_console_print_deps_list_info:
+ **/
+static guint
+pk_console_print_deps_list_info (PkPackageList *list, PkInfoEnum info, const gchar *header)
+{
+	const PkPackageObj *obj;
+	gboolean ret = FALSE;
+	guint found = 0;
+	guint i;
+	guint length;
+
+	length = pk_package_list_get_size (list);
+	for (i=0; i<length; i++) {
+		obj = pk_package_list_get_obj (list, i);
+
+		/* are we interested in this type */
+		if (obj->info != info)
+			continue;
+
+		/* print header if it's not been done before */
+		if (!ret) {
+			g_print ("%s\n", header);
+			ret = TRUE;
+		}
+
+		/* print package */
+		g_print ("%i\t%s-%s.%s\n", ++found, obj->id->name, obj->id->version, obj->id->arch);
+	}
+	return found;
+}
+
+/**
+ * pk_console_print_deps_list:
+ **/
+static guint
+pk_console_print_deps_list (PkPackageList *list)
+{
+	guint found = 0;
+
+	/* TRANSLATORS: When removing, we might have to remove other dependencies */
+	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REMOVING, _("The following packages have to be removed:"));
+
+	/* TRANSLATORS: When removing, we might have to install other dependencies */
+	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_INSTALLING, _("The following packages have to be installed:"));
+
+	/* TRANSLATORS: When removing, we might have to update other dependencies */
+	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_UPDATING, _("The following packages have to be updated:"));
+
+	return found;
+}
+
+/**
  * pk_console_remove_packages:
  **/
 static gboolean
@@ -827,7 +879,6 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 {
 	gchar *package_id;
 	gboolean ret = TRUE;
-	const PkPackageObj *obj;
 	guint i;
 	guint length;
 	gboolean remove_deps;
@@ -916,20 +967,16 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	if (awaiting_space)
 		g_print ("\n");
 
-	/* TRANSLATORS: When removing, we might have to remove other dependencies */
-	g_print ("%s\n", _("The following packages have to be removed:"));
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		g_print ("%i\t%s-%s.%s\n", i, obj->id->name, obj->id->version, obj->id->arch);
-	}
+	/* print the additional deps to the screen */
+	pk_console_print_deps_list (list);
 
 	/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-	remove_deps = pk_console_get_prompt (_("Proceed removing additional packages?"), FALSE);
+	remove_deps = pk_console_get_prompt (_("Proceed with additional packages?"), FALSE);
 
 	/* we chickened out */
 	if (!remove_deps) {
-		/* TRANSLATORS: We did not remove any packages */
-		g_print ("%s\n", _("The package removal was canceled!"));
+		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
+		*error = g_error_new (1, 0, "%s", _("The package removal was canceled!"));
 		ret = FALSE;
 		goto out;
 	}
