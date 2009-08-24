@@ -158,6 +158,46 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-update-detail", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-updates", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
+ * backend_install_packages:
+ */
+static void
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -171,6 +211,19 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	}
 
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_text (force), NULL);
+}
+
+/**
+ * backend_remove_packages:
+ */
+static void
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	gchar *package_ids_temp;
+
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "remove-packages", pk_backend_bool_to_text (allow_deps), pk_backend_bool_to_text (autoremove), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -242,6 +295,20 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
+ * backend_update_packages:
+ */
+static void
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
  * backend_get_packages:
  */
 static void
@@ -283,6 +350,15 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	g_free (package_ids_temp);
 }
 
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend, gboolean only_trusted)
+{
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_text (only_trusted), NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"Ports",				/* description */
 	"Anders F Björklund <afb@users.sourceforge.net>",	/* author */
@@ -301,13 +377,13 @@ PK_BACKEND_OPTIONS (
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
-	NULL,		/* get_update_detail */
-	NULL,			/* get_updates */
+	backend_get_update_detail,		/* get_update_detail */
+	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
-	NULL,		/* install_packages */
+	backend_install_packages,		/* install_packages */
 	NULL,			/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,		/* remove_packages */
+	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	backend_resolve,			/* resolve */
@@ -316,8 +392,8 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,		/* update_packages */
-	NULL,			/* update_system */
+	backend_update_packages,		/* update_packages */
+	backend_update_system,			/* update_system */
 	NULL			/* what_provides */
 );
 

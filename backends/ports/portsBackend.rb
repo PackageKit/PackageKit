@@ -20,8 +20,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 require 'pkgtools'
+require 'open3' # ignores exitcodes
 
-$LOAD_PATH.unshift File.dirname(File.expand_path($PROGRAM_NAME))
+PROGRAM_DIR=File.dirname(File.expand_path($PROGRAM_NAME))
+$LOAD_PATH.unshift PROGRAM_DIR
 
 require 'ruby_packagekit/enums'
 
@@ -169,6 +171,10 @@ end
 
 def resolve(filters, packages)
     status(STATUS_QUERY)
+    _resolve(filters, packages)
+end
+
+def _resolve(filters, packages)
     filterlist = filters.split(';')
     packages.each do |package|
       portnames = $portsdb.glob(package)
@@ -322,6 +328,7 @@ end
 
 def get_depends(filters, package_ids, recursive)
     status(STATUS_INFO)
+    filterlist = filters.split(';')
     package_ids.each do |package|
       name, version, arch, data = package.split(';')
 
@@ -332,9 +339,13 @@ def get_depends(filters, package_ids, recursive)
         next if pkg.version != version
 
         if pkg.pkgdep
-        pkg.pkgdep.each do |dep|
-            resolve(FILTER_INSTALLED, dep)
-        end
+          pkg.pkgdep.each do |dep|
+            _resolve(filters, dep)
+          end
+        elsif port.all_depends
+          port.all_depends.each do |dep|
+            _resolve(filters, dep)
+          end
         end
        end
       else
@@ -423,17 +434,307 @@ def get_requires(filters, package_ids, recursive)
     end
 end
 
+# (ports-mgmt/portaudit)
+PORTAUDIT="#{PREFIX}/sbin/portaudit"
+
 def refresh_cache(force)
     percentage(0)
     status(STATUS_DOWNLOAD_PACKAGELIST)
     $portsdb.update(fetch=true)
+    if File.exist?(PORTAUDIT)
+      status(STATUS_DOWNLOAD_UPDATEINFO)
+      system(PORTAUDIT, '-q', '-F')
+    end
     percentage(50)
     status(STATUS_REFRESH_CACHE)
     $portsdb.update_db(force)
     percentage(100)
 end
 
+def get_updates(filters)
+    status(STATUS_DEP_RESOLVE)
+    filterlist = filters.split(';')
+    list = []
+    $pkgdb.glob.each do |pkgname|
+        list |= $pkgdb.recurse(pkgname)
+    end
+    status(STATUS_INFO)
+    list.each do |pkg|
+        pkgname = pkg.fullname
+        if origin = pkg.origin
+            if portinfo = $portsdb[origin]
+              newpkg = portinfo.pkgname
+            elsif $portsdb.exist?(origin, quick = true)
+              pkgname = $portsdb.exist?(origin) or next
+              newpkg = PkgInfo.new(pkgname)
+            else
+              # pkg's port is not in portsdb
+              next
+            end
+            if newpkg.version > pkg.version
+              data = "ports"
+              package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+              status = INFO_NORMAL
+              if File.exist?(PORTAUDIT)
+                system("PATH=/sbin:$PATH #{PORTAUDIT} -q '#{pkg.fullname}'") # /sbin/md5
+                status = INFO_SECURITY if ($? != 0)
+              end
+              summary = pkg.comment
+              if summary
+                summary.chomp.chomp
+                summary = summary.gsub(/\n/, ' ')
+                summary = summary.gsub(/\t/, ' ')
+              end
+              package(package_id, status, summary)
+            end
+        end
+    end
+end
+
+def get_update_detail(package_ids)
+    status(STATUS_INFO)
+    package_ids.each do |package|
+      name, version, arch, data = package.split(';')
+
+     pkgnames = $portsdb.glob(name)
+      if pkgnames
+       pkgnames.each do |port|
+        pkg = PkgInfo.new(port.pkgname)
+
+        updates = ''
+        obsoletes = ''
+
+        oldpkg = $pkgdb.glob(port.origin).first
+        next if pkg == oldpkg
+        if oldpkg
+          next if oldpkg.version != version
+          data = 'ports'
+          package = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+          data = oldpkg.installed? ? 'installed' : 'ports'
+          updates = sprintf "%s;%s;%s;%s", oldpkg.name, oldpkg.version, $pkg_arch, data
+        else
+          pkgnames = $portsdb.glob(name)
+          pkgnames.each do |oldport|
+            oldpkg = PkgInfo.new(oldport.pkgname)
+            next if oldpkg.version != version
+          end
+          data = oldpkg.installed? ? 'installed' : 'ports'
+          obsoletes = sprintf "%s;%s;%s;%s", oldpkg.name, oldpkg.version, $pkg_arch, data
+        end
+
+        state = UPDATE_STATE_STABLE
+
+        vendor_urls = []
+        bugzilla_urls = []
+        cve_urls = []
+
+        description = ''
+
+        issued = ''
+        updated = ''
+
+        # TODO: http://www.vuxml.org
+
+        vendor_urls = vendor_urls.join(';')
+        bugzilla_urls = bugzilla_urls.join(';')
+        cve_urls = cve_urls.join(';')
+
+        reboot = 'none'
+        changelog = ''
+
+        update_detail(package,
+                updates, obsoletes, vendor_urls, bugzilla_urls, cve_urls,
+                reboot, description, changelog, state, issued, updated)
+        break
+       end
+      else
+        error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
+      end
+    end
+end
+
+# (ports-mgmt/portupgrade)
+PORTUPGRADE="#{PREFIX}/sbin/portupgrade"
+
+# use a non-interactive (default) dialog program
+DIALOG="#{PROGRAM_DIR}/helpers/default-dialog.rb"
+
+USE_PKG = true # use packages
+BIN_PKG = true # build packages
+
+# Here are the extra subphases used, when:
+# ---> Using the port instead of a package
+
+# ---> Building '#{portdir}'
+# ===> Cleaning for #{pkgname}
+# [fetch distfiles]
+# ===> Extracting for #{pkgname}
+# [fetch patchfiles]
+# ===> Patching for #{pkgname}
+# ===> Configuring for #{pkgname}
+# ===> Building for #{pkgname}
+# ===> Installing for #{pkgname}
+# ===> Building package for #{pkgname}
+# ===> Cleaning for #{pkgname}
+
+def update_system(only_trusted)
+    if only_trusted
+        error(ERROR_NOT_SUPPORTED, "Trusted packages not available.")
+        return
+    end
+    args = ['-M', 'DIALOG='+DIALOG]
+    args << '-P' if USE_PKG
+    args << '-p' if BIN_PKG
+    args << '-a' # all installed
+    status(STATUS_DEP_RESOLVE)
+    stdin, stdout, stderr = Open3.popen3(PORTUPGRADE, *args)
+    stdout.each_line do |line|
+        if line.match(/^\=+\>/)
+            message(MESSAGE_UNKNOWN, line.chomp)
+        elsif line.match(/^\-\-\-\>/)
+           if line.match(/Upgrading '(.*)\-(.*)' to '(.*)\-(.*)'/)
+                status(STATUS_UPDATE)
+                _resolve(FILTER_NONE, $1)
+            elsif line.match(/Fetching (.*)\-(.*)/)
+                status(STATUS_DOWNLOAD)
+                _resolve(FILTER_NONE, $1)
+            elsif line.match(/SECURITY REPORT/)
+                # important safety tip
+            end
+            message(MESSAGE_UNKNOWN, line.chomp)
+        end
+    end
+    stderr.each_line do |line|
+        if line.match(/\[Updating the pkgdb.*\]/)
+          status(STATUS_WAIT)
+        elsif line.match(/^\*\* Command failed \[exit code (\d)\]: (.*)/)
+          error(ERROR_TRANSACTION_ERROR, $2)
+        elsif not line.match(/\[Gathering depends.*\]/) \
+          and not line.match(/^\*\* Could not find the latest version/)
+          message(MESSAGE_BACKEND_ERROR, line.chomp)
+        end
+    end
+end
+
+def install_packages(only_trusted, package_ids)
+    if only_trusted
+        error(ERROR_NOT_SUPPORTED, "Trusted packages not available.")
+        return
+    end
+    pkgnames = []
+    package_ids.each do |package|
+      name, version, arch, data = package.split(';')
+      if not $portsdb.glob(name)
+        error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
+        next
+      end
+      pkgname = "#{name}-#{version}"
+      pkg = PkgInfo.new(pkgname)
+      if pkg.installed?
+        error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package #{pkgname} is already installed")
+      else
+        pkgnames << pkgname
+      end
+    end
+    return if pkgnames.empty?
+    args = ['-M', 'DIALOG='+DIALOG]
+    args << '-P' if USE_PKG
+    args << '-p' if BIN_PKG
+    args.concat pkgnames
+    status(STATUS_DEP_RESOLVE)
+    stdin, stdout, stderr = Open3.popen3(PkgDB::command(:portinstall), *args)
+    stdout.each_line do |line|
+        if line.match(/^\=+\>/)
+            message(MESSAGE_UNKNOWN, line.chomp)
+        elsif line.match(/^\-\-\-\>/)
+            if line.match(/Installing '(.*)\-(.*)'/)
+                status(STATUS_INSTALL)
+                _resolve(FILTER_NONE, $1)
+            elsif line.match(/Fetching (.*)\-(.*)/)
+                status(STATUS_DOWNLOAD)
+                _resolve(FILTER_NONE, $1)
+            elsif line.match(/SECURITY REPORT/)
+                # important safety tip
+            end
+            message(MESSAGE_UNKNOWN, line.chomp)
+        end
+     end
+    stderr.each_line do |line|
+        if line.match(/\[Updating the pkgdb.*\]/)
+          status(STATUS_WAIT)
+        elsif line.match(/^\*\* Command failed \[exit code (\d)\]: (.*)/)
+          error(ERROR_TRANSACTION_ERROR, $2)
+        elsif not line.match(/\[Gathering depends.*\]/) \
+          and not line.match(/^\*\* Could not find the latest version/)
+          message(MESSAGE_BACKEND_ERROR, line.chomp)
+        end
+    end
+    package_ids.each do |package|
+      name, version, arch, data = package.split(';')
+      pkgname = "#{name}-#{version}"
+      _resolve(FILTER_INSTALLED, pkgname)
+    end
+end
+
+def remove_packages(allowdep, autoremove, package_ids)
+    if autoremove
+        error(ERROR_NOT_SUPPORTED, "Automatic removal not available.", exit=false)
+    end
+    pkgnames = []
+    package_ids.each do |package|
+      name, version, arch, data = package.split(';')
+      if not $portsdb.glob(name)
+        error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
+        next
+      end
+      pkgname = "#{name}-#{version}"
+      pkg = PkgInfo.new(pkgname)
+      if not pkg.installed?
+        error(ERROR_PACKAGE_NOT_INSTALLED, "The package #{pkgname} is not installed")
+      else
+        pkgnames << pkgname
+      end
+    end
+    return if pkgnames.empty?
+    status(STATUS_DEP_RESOLVE)
+    args = []
+    args << '--recursive' if allowdep
+    args.concat pkgnames
+    stdin, stdout, stderr = Open3.popen3(PkgDB::command(:pkg_deinstall), *args)
+    stdout.each_line do |line|
+        if line.match(/^\=+\>/)
+            message(MESSAGE_UNKNOWN, line.chomp)
+        elsif line.match(/^\-\-\-\>/)
+            if line.match(/Deinstalling '(.*)\-(.*)'/)
+                status(STATUS_REMOVE)
+                _resolve(FILTER_NONE, $1)
+            end
+            message(MESSAGE_UNKNOWN, line.chomp)
+        end
+    end
+    stderr.each_line do |line|
+        if line.match(/\[Updating the pkgdb.*\]/)
+           status(STATUS_WAIT)
+        elsif line.match(/^\*\* Command failed \[exit code (\d)\]: (.*)/)
+          error(ERROR_TRANSACTION_ERROR, $2)
+        elsif not line.match(/\[Gathering depends.*\]/) \
+          and not line.match(/^\*\* Could not find the latest version/)
+           message(MESSAGE_BACKEND_ERROR, line.chomp)
+        end
+    end
+    package_ids.each do |package|
+      name, version, arch, data = package.split(';')
+      pkgname = "#{name}-#{version}"
+      _resolve(FILTER_NOT_INSTALLED, pkgname)
+    end
+end
+
 #######################################################################
+
+def message(typ, msg)
+   $stdout.printf "message\t%s\t%s\n", typ, msg
+   $stdout.flush
+end
 
 def package(package_id, status, summary)
    $stdout.printf "package\t%s\t%s\t%s\n", status, package_id, summary
@@ -442,6 +743,11 @@ end
 
 def repo_detail(repoid, name, state)
    $stdout.printf "repo-detail\t%s\t%s\t%s\n", repoid, name, state
+   $stdout.flush
+end
+
+def update_detail(package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated)
+   $stdout.printf "updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated
    $stdout.flush
 end
 
@@ -489,6 +795,8 @@ end
 def to_b(string)
     return true if string == true || string =~ /^true$/i
     return false if string == false || string.nil? || string =~ /^false$/i
+    return true if string == "yes"
+    return false if string == "no"
     raise ArgumentError.new("invalid value for bool: \"#{string}\"")
 end
 
@@ -547,9 +855,32 @@ def dispatch_command(cmd, args)
         recursive = to_b(args[2])
         get_requires(filters, package_ids, recursive)
         finished()
+    when cmd == 'get-update-detail'
+        package_ids = args[0].split(PACKAGE_IDS_DELIM)
+        get_update_detail(package_ids)
+        finished()
+    when cmd == 'get-updates'
+        filters = args[0]
+        get_updates(filters)
+        finished()
+    when cmd == 'install-packages'
+        only_trusted = to_b(args[0])
+        package_ids = args[1].split(PACKAGE_IDS_DELIM)
+        install_packages(only_trusted, package_ids)
+        finished()
     when cmd == 'refresh-cache'
         force = to_b(args[0])
         refresh_cache(force)
+        finished()
+    when cmd == 'remove-packages'
+        allowdeps = to_b(args[0])
+        autoremove = to_b(args[1])
+        package_ids = args[2].split(PACKAGE_IDS_DELIM)
+        remove_packages(allowdeps, autoremove, package_ids)
+        finished()
+    when cmd == 'update-system'
+        only_trusted = to_b(args[0])
+        update_system(only_trusted)
         finished()
     else
         errmsg = "command '#{cmd}' is not known"
