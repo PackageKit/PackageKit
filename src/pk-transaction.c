@@ -1218,6 +1218,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	GError *error = NULL;
 	PkBackendDesc *desc;
 	PkStore *store;
+	PkBitfield filters;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
@@ -1400,22 +1401,28 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
 		desc->simulate_install_files (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
+		/* fallback to a method we do have */
 		if (desc->simulate_install_packages != NULL) {
 			desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
-			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
+		/* fallback to a method we do have */
 		if (desc->simulate_remove_packages != NULL) {
 			desc->simulate_remove_packages (priv->backend, priv->cached_package_ids);
 		} else {
-			desc->get_requires (priv->backend, PK_FILTER_ENUM_INSTALLED, priv->cached_package_ids, TRUE);
+			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+			desc->get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+		/* fallback to a method we do have */
 		if (desc->simulate_update_packages != NULL) {
 			desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
-			desc->get_depends (priv->backend, PK_FILTER_ENUM_NOT_INSTALLED, priv->cached_package_ids, TRUE);
+			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else {
 		egg_error ("failed to run as role not assigned");
