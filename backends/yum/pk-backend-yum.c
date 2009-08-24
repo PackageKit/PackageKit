@@ -472,6 +472,20 @@ backend_get_categories (PkBackend *backend)
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "get-categories", NULL);
 }
 
+/**
+ * backend_simulate_install_files:
+ */
+static void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "simulate-install-files", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>, Richard Hughes <richard@hughsie.com>",	/* author */
@@ -508,7 +522,7 @@ PK_BACKEND_OPTIONS (
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides,			/* what_provides */
-	NULL,					/* simulate_install_files */
+	backend_simulate_install_files,		/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL					/* simulate_update_packages */

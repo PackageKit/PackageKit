@@ -2442,6 +2442,48 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except IOError, e:
                 self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
 
+    def simulate_install_files(self, inst_files):
+        '''
+        Install the package containing the inst_file file
+        '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.allow_cancel(True)
+        self.percentage(0)
+        self.status(STATUS_RUNNING)
+
+        # common checks copied from yum
+        for inst_file in inst_files:
+            if not self._check_local_file(inst_file):
+                return
+
+        package_list = []
+        txmbrs = []
+        for inst_file in inst_files:
+            try:
+                txmbr = self.yumbase.installLocal(inst_file)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            if txmbr:
+                txmbrs.extend(txmbr)
+            else:
+                self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s as no transaction" % _to_unicode(inst_file))
+        if len(self.yumbase.tsInfo) == 0:
+            self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % " or ".join(inst_files), exit=False)
+            return
+
+        # add each package
+        for txmbr in self.yumbase.tsInfo:
+            package_list.append((txmbr.po, INFO_INSTALLING))
+
+        self.percentage(90)
+        self._show_package_list(package_list)
+        self.percentage(100)
+
     def install_signature(self, sigtype, key_id, package):
         self._check_init(repo_setup=False)
         self.yumbase.conf.cache = 0 # Allow new files
