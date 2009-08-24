@@ -46,6 +46,7 @@ static gboolean _use_eula = FALSE;
 static gboolean _use_media = FALSE;
 static gboolean _use_gpg = FALSE;
 static gboolean _use_distro_upgrade = FALSE;
+static PkBitfield _filters = 0;
 
 /**
  * backend_initialize:
@@ -612,13 +613,17 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	/* each one has a different detail for testing */
 	len = g_strv_length (packages);
 	for (i=0; i<len; i++) {
-		if (g_strcmp0 (packages[i], "vips-doc") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
-		else if (g_strcmp0 (packages[i], "glib2") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-					    "glib2;2.14.0;i386;fedora", "The GLib library");
-		else if (g_strcmp0 (packages[i], "powertop") == 0)
+		if (g_strcmp0 (packages[i], "vips-doc") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+				pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+						    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
+			}
+		} else if (g_strcmp0 (packages[i], "glib2") == 0) {
+			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+						    "glib2;2.14.0;i386;fedora", "The GLib library");
+			}
+		} else if (g_strcmp0 (packages[i], "powertop") == 0)
 			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
 		else if (g_strcmp0 (packages[i], "kernel") == 0)
@@ -1086,12 +1091,19 @@ backend_what_provides_timeout (gpointer data)
 					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
 					    "MPEG demuxer for GStreamer");
 		} else {
-			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-					    "evince;0.9.3-5.fc8;i386;installed",
-					    "PDF Document viewer");
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
-					    "scribus;1.3.4-1.fc8;i386;fedora",
-					    "Scribus is an desktop open source page layout program");
+			/* pkcon install vips-doc says it's installed cause evince is INSTALLED */
+			if (g_strcmp0 (_search, "vips-doc") != 0) {
+				if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+					pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+							    "evince;0.9.3-5.fc8;i386;installed",
+							    "PDF Document viewer");
+				}
+				if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_INSTALLED)) {
+					pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+							    "scribus;1.3.4-1.fc8;i386;fedora",
+							    "Scribus is an desktop open source page layout program");
+				}
+			}
 		}
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1110,6 +1122,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	_progress_percentage = 0;
 	_search = search;
 	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
+	_filters = filters;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, _progress_percentage);
