@@ -888,6 +888,19 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		ret = FALSE;
 		goto out;
 	}
+
+	/* fix up available and installed when doing simulate roles */
+	if (backend->priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
+	    backend->priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
+	    backend->priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
+	    backend->priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+		if (info == PK_INFO_ENUM_AVAILABLE)
+			info = PK_INFO_ENUM_INSTALLING;
+		else if (info == PK_INFO_ENUM_INSTALLED)
+			info = PK_INFO_ENUM_REMOVING;
+	}
+
+	/* create a new package object AFTER we emulate the info value */
 	obj = pk_package_obj_new (info, id, summary_safe);
 	if (obj == NULL) {
 		egg_warning ("Failed to create object summary: '%s'", summary_safe);
