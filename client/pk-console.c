@@ -1073,8 +1073,13 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	gboolean ret;
 	gchar *package_id;
 	gchar **package_ids;
+	guint length;
 	GError *error_local = NULL;
+	gboolean accept_changes;
+	PkPackageList *list;
+	PkPackageList *list_single;
 
+	list = pk_package_list_new ();
 	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
@@ -1082,14 +1087,74 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 		g_error_free (error_local);
 		return FALSE;
 	}
-
 	package_ids = pk_package_ids_from_id (package_id);
+
+	/* are we dumb and can't simulate? */
+	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
+		/* no, just try to update it without deps */
+		ret = pk_client_update_packages (client, TRUE, package_ids, error);
+		if (!ret) {
+			/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
+			*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
+			g_error_free (error_local);
+		}
+		goto out;
+	}
+
+	ret = pk_client_reset (client_sync, &error_local);
+	if (!ret) {
+		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	egg_debug ("Simulating update for %s", package_ids[0]);
+	ret = pk_client_simulate_update_packages (client_sync, package_ids, error);
+	if (!ret) {
+		egg_warning ("failed to simulate a package update");
+		goto out;
+	}
+
+	/* see how many packages there are */
+	list_single = pk_client_get_package_list (client_sync);
+	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
+	g_object_unref (list_single);
+
+	/* one of the simulate-update-packages failed */
+	if (!ret)
+		goto out;
+
+	/* if there are no required packages, just do the remove */
+	length = pk_package_list_get_size (list);
+	if (length != 0) {
+		/* present this to the user */
+		if (awaiting_space)
+			g_print ("\n");
+
+		/* print the additional deps to the screen */
+		pk_console_print_deps_list (list);
+
+		/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
+		accept_changes = pk_console_get_prompt (_("Are you ok with these changes?"), FALSE);
+
+		/* we chickened out */
+		if (!accept_changes) {
+			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
+			*error = g_error_new (1, 0, "%s", _("The package update was canceled!"));
+			ret = FALSE;
+			goto out;
+		}
+	}
+
 	ret = pk_client_update_packages (client, TRUE, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
+out:
+	g_object_unref (list);
 	g_strfreev (package_ids);
 	g_free (package_id);
 	return ret;
