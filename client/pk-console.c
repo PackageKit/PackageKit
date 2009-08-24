@@ -757,11 +757,14 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	gboolean ret = TRUE;
 	gboolean installed;
 	gboolean is_local;
+	gboolean accept_changes;
 	gchar *package_id = NULL;
 	gchar **package_ids = NULL;
 	gchar **files = NULL;
 	guint i;
 	guint length;
+	PkPackageList *list;
+	PkPackageList *list_single;
 	GPtrArray *array_packages;
 	GPtrArray *array_files;
 	GError *error_local = NULL;
@@ -769,6 +772,8 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	array_packages = g_ptr_array_new ();
 	array_files = g_ptr_array_new ();
 	length = g_strv_length (packages);
+	list = pk_package_list_new ();
+
 	for (i=2; i<length; i++) {
 		/* are we a local file */
 		is_local = g_file_test (packages[i], G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR);
@@ -808,6 +813,55 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* convert to strv */
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
+		/* can we simulate? */
+		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
+			ret = pk_client_reset (client_sync, &error_local);
+			if (!ret) {
+				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+				g_error_free (error_local);
+				goto out;
+			}
+
+			egg_debug ("Simullating install for %s", package_ids[0]);
+			ret = pk_client_simulate_install_packages (client_sync, package_ids, error);
+			if (!ret) {
+				egg_warning ("failed to simulate a package install");
+				goto out;
+			}
+
+			/* see how many packages there are */
+			list_single = pk_client_get_package_list (client_sync);
+			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
+			g_object_unref (list_single);
+
+			/* one of the simulate-install-packages failed */
+			if (!ret)
+				goto out;
+
+			/* if there are no required packages, just do the remove */
+			length = pk_package_list_get_size (list);
+			if (length != 0) {
+				/* present this to the user */
+				if (awaiting_space)
+					g_print ("\n");
+
+				/* print the additional deps to the screen */
+				pk_console_print_deps_list (list);
+
+				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
+				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
+
+				/* we chickened out */
+				if (!accept_changes) {
+					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
+					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
+					ret = FALSE;
+					goto out;
+				}
+			}
+		}
+
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
@@ -831,6 +885,55 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 		/* convert to strv */
 		files = pk_ptr_array_to_strv (array_files);
 
+		/* can we simulate? */
+		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
+			ret = pk_client_reset (client_sync, &error_local);
+			if (!ret) {
+				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
+				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+				g_error_free (error_local);
+				goto out;
+			}
+
+			egg_debug ("Simullating install for %s", files[0]);
+			ret = pk_client_simulate_install_files (client_sync, files, error);
+			if (!ret) {
+				egg_warning ("failed to simulate a package install");
+				goto out;
+			}
+
+			/* see how many packages there are */
+			list_single = pk_client_get_package_list (client_sync);
+			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
+			g_object_unref (list_single);
+
+			/* one of the simulate-install-files failed */
+			if (!ret)
+				goto out;
+
+			/* if there are no required packages, just do the remove */
+			length = pk_package_list_get_size (list);
+			if (length != 0) {
+				/* present this to the user */
+				if (awaiting_space)
+					g_print ("\n");
+
+				/* print the additional deps to the screen */
+				pk_console_print_deps_list (list);
+
+				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
+				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
+
+				/* we chickened out */
+				if (!accept_changes) {
+					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
+					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
+					ret = FALSE;
+					goto out;
+				}
+			}
+		}
+
 		/* reset */
 		ret = pk_client_reset (client, &error_local);
 		if (!ret) {
@@ -850,6 +953,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	}
 
 out:
+	g_object_unref (list);
 	g_strfreev (package_ids);
 	g_strfreev (files);
 	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
@@ -1136,7 +1240,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 		pk_console_print_deps_list (list);
 
 		/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-		accept_changes = pk_console_get_prompt (_("Are you ok with these changes?"), FALSE);
+		accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
 
 		/* we chickened out */
 		if (!accept_changes) {
