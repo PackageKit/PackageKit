@@ -1190,7 +1190,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 			    "lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
 
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+	pk_backend_package (backend, PK_INFO_ENUM_REINSTALLING,
 			    "libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
 
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
