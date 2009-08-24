@@ -48,6 +48,24 @@
 #include "egg-string.h"
 
 /**
+ * pk_get_os_release:
+ *
+ * Return value: The current OS release, e.g. "7.2-RELEASE"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_get_os_release (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0)
+		return g_strdup ("unknown");
+	return g_strdup (buf.release);
+}
+
+/**
  * pk_get_machine_type:
  *
  * Return value: The current machine ID, e.g. "i386"
@@ -194,6 +212,29 @@ pk_get_distro_id (void)
 		distro = g_strdup_printf ("debian-(%s)", contents);
 		goto out;
 	}
+
+#ifdef __FreeBSD__
+        {
+		/* we can't get version from /etc */
+		version = pk_get_os_release ();
+		if (version == NULL)
+			goto out;
+
+		/* 7.2-RELEASE */
+		split = g_strsplit (version, "-", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("freebsd-%s-%s", split[0], arch);
+		goto out;
+	}
+#endif
 
 out:
 	g_strfreev (split);
