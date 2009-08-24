@@ -3838,8 +3838,14 @@ pk_client_simulate_install_files (PkClient *client, gchar **files_rel, GError **
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (PK_IS_CLIENT (client) && client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 
 	return ret;
@@ -3908,8 +3914,14 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GErr
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (PK_IS_CLIENT (client) && client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 
 	return ret;
@@ -3978,8 +3990,14 @@ pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GErro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (PK_IS_CLIENT (client) && client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 
 	return ret;
@@ -4048,8 +4066,14 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GErro
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
 		/* spin until finished */
-		if (client->priv->synchronous)
+		if (client->priv->synchronous) {
 			g_main_loop_run (client->priv->loop);
+			if (PK_IS_CLIENT (client) && client->priv->error != NULL) {
+				ret = FALSE;
+				if (error != NULL)
+					*error = g_error_copy (client->priv->error);
+			}
+		}
 	}
 
 	return ret;
