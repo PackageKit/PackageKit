@@ -1080,7 +1080,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	PkPackageList *list_single;
 
 	list = pk_package_list_new ();
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error_local);
+	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
