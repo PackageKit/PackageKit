@@ -214,7 +214,10 @@ pk_get_distro_id (void)
 	}
 
 #ifdef __FreeBSD__
-        {
+	ret = TRUE;
+#endif
+	/* FreeBSD */
+	if (ret) {
 		/* we can't get version from /etc */
 		version = pk_get_os_release ();
 		if (version == NULL)
@@ -234,8 +237,6 @@ pk_get_distro_id (void)
 		distro = g_strdup_printf ("freebsd-%s-%s", split[0], arch);
 		goto out;
 	}
-#endif
-
 out:
 	g_strfreev (split);
 	g_free (version);
