@@ -102,6 +102,7 @@ public:
 		StateCollectionInstalled,
 		StateCollectionAvailable,
 		StateFinished,
+		StateReinstalling,
 		UnknownState
 	} State;
 	/**

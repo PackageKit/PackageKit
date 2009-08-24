@@ -859,14 +859,17 @@ pk_console_print_deps_list (PkPackageList *list)
 {
 	guint found = 0;
 
-	/* TRANSLATORS: When removing, we might have to remove other dependencies */
+	/* TRANSLATORS: When processing, we might have to remove other dependencies */
 	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REMOVING, _("The following packages have to be removed:"));
 
-	/* TRANSLATORS: When removing, we might have to install other dependencies */
+	/* TRANSLATORS: When processing, we might have to install other dependencies */
 	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_INSTALLING, _("The following packages have to be installed:"));
 
-	/* TRANSLATORS: When removing, we might have to update other dependencies */
+	/* TRANSLATORS: When processing, we might have to update other dependencies */
 	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_UPDATING, _("The following packages have to be updated:"));
+
+	/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
+	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REINSTALLING, _("The following packages have to be reinstalled:"));
 
 	return found;
 }
