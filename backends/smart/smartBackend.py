@@ -432,8 +432,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 else:
                     vendor_urls.append(url)
             vendor_url = ';'.join(vendor_urls)
-            bugzilla_url = ';'.join(vendor_urls)
-            cve_url = ';'.join(vendor_urls)
+            bugzilla_url = ';'.join(bugzilla_urls)
+            cve_url = ';'.join(cve_urls)
 
             if errata.isRebootSuggested():
                 reboot = 'system'
