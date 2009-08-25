@@ -54,6 +54,8 @@ PkBackend *backend_instance = NULL;
 GHashTable *group_map;
 
 alpm_list_t *syncfirst = NULL;
+alpm_list_t *holdpkg = NULL;
+
 alpm_list_t *downloaded_files = NULL;
 gchar *current_file = NULL;
 
@@ -267,7 +269,7 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 				pmdb_t *db = alpm_list_getdata (repos);
 
 				/* iterate pkgs */
-				for (packages = alpm_db_getpkgcache (db); current_pkg == NULL && packages; packages = alpm_list_next (packages)) {
+				for (packages = alpm_db_get_pkgcache (db); current_pkg == NULL && packages; packages = alpm_list_next (packages)) {
 					pmpkg_t *pkg = alpm_list_getdata (packages);
 
 					/* compare package information with file name */
@@ -419,8 +421,18 @@ set_repeating_option(const char *ptr, const char *option, void (*optionfunc) (co
  * @param name name of the package to be added
  */
 static void
-option_add_syncfirst(const char *name) {
+option_add_syncfirst (const char *name) {
 	syncfirst = alpm_list_add (syncfirst, strdup (name));
+}
+
+/**
+ * option_add_holdpkg:
+ * Add package name to HoldPkg list
+ * @param name name of the package to be added
+ */
+static void
+option_add_holdpkg (const char *name) {
+	holdpkg = alpm_list_add (holdpkg, strdup (name));
 }
 
 /**
@@ -538,7 +550,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 					} else if (g_strcmp0 (key, "IgnoreGroup") == 0) {
 						set_repeating_option (ptr, "IgnoreGroup", alpm_option_add_ignoregrp);
 					} else if (g_strcmp0 (key, "HoldPkg") == 0) {
-						set_repeating_option (ptr, "HoldPkg", alpm_option_add_holdpkg);
+						set_repeating_option (ptr, "HoldPkg", option_add_holdpkg);
 					} else if (g_strcmp0 (key, "SyncFirst") == 0) {
 						set_repeating_option (ptr, "SyncFirst", option_add_syncfirst);
 					} else if (g_strcmp0 (key, "DBPath") == 0) {
@@ -555,9 +567,6 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 					} else if (g_strcmp0 (key, "LogFile") == 0) {
 						alpm_option_set_logfile (ptr);
 						egg_debug ("config: logfile: %s", ptr);
-					} else if (g_strcmp0 (key, "XferCommand") == 0) {
-						alpm_option_set_xfercommand (ptr);
-						egg_debug ("config: xfercommand: %s", ptr);
 					} else {
 						egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 						return 1;
@@ -977,7 +986,7 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 	}
 
 	/* get package cache for specified repo */
-	pkg_cache = alpm_db_getpkgcache (repo);
+	pkg_cache = alpm_db_get_pkgcache (repo);
 
 	/* iterate package cache */
 	for (iterator = pkg_cache; iterator; iterator = alpm_list_next (iterator)) {
@@ -1132,7 +1141,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 	pk_backend_set_allow_cancel (backend, FALSE);
 
 	/* iterate through list of installed packages to find update for each */
-	for (list_iterator = alpm_db_getpkgcache (alpm_option_get_localdb ()); list_iterator; list_iterator = alpm_list_next (list_iterator)) {
+	for (list_iterator = alpm_db_get_pkgcache (alpm_option_get_localdb ()); list_iterator; list_iterator = alpm_list_next (list_iterator)) {
 		alpm_list_t *db_iterator;
 
 		pmpkg_t *pkg = alpm_list_getdata (list_iterator);
@@ -1519,7 +1528,7 @@ backend_update_system_thread (PkBackend *backend)
 	}
 
 	/* set action, prepare and commit transaction */
-	if (alpm_trans_sysupgrade () != 0 || alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
+	if (alpm_trans_sysupgrade (FALSE) != 0 || alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
