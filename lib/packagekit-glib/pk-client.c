@@ -3354,6 +3354,7 @@ pk_resolve_local_path (const gchar *rel_path)
 	if (rel_path == NULL)
 		return NULL;
 
+#ifndef __FreeBSD__
 	/* ITS4: ignore, glibc allocates us a buffer to try and fix some brain damage */
 	temp = realpath (rel_path, NULL);
 	if (temp != NULL) {
@@ -3361,6 +3362,15 @@ pk_resolve_local_path (const gchar *rel_path)
 		/* yes, free, not g_free */
 		free (temp);
 	}
+#else /* __FreeBSD__ */
+{
+	char abs_path[PATH_MAX];
+	temp = realpath (rel_path, abs_path);
+	if (temp != NULL) {
+		real = g_strdup (temp);
+	}
+}
+#endif
 	return real;
 }
 

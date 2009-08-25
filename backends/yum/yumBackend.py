@@ -82,6 +82,32 @@ StatusPercentageMap = {
     STATUS_CLEANUP     : 95
 }
 
+# this isn't defined in yum as it's only used in the rollback plugin
+TS_REPACKAGING = 'repackaging'
+
+# Map yum transactions with pk info enums
+TransactionsInfoMap = {
+    TS_UPDATE       : INFO_UPDATING,
+    TS_ERASE        : INFO_REMOVING,
+    TS_INSTALL      : INFO_INSTALLING,
+    TS_TRUEINSTALL  : INFO_INSTALLING,
+    TS_OBSOLETED    : INFO_OBSOLETING,
+    TS_OBSOLETING   : INFO_INSTALLING,
+    TS_UPDATED      : INFO_CLEANUP
+}
+
+# Map yum transactions with pk state enums
+TransactionsStateMap = {
+    TS_UPDATE       : STATUS_UPDATE,
+    TS_ERASE        : STATUS_REMOVE,
+    TS_INSTALL      : STATUS_INSTALL,
+    TS_TRUEINSTALL  : STATUS_INSTALL,
+    TS_OBSOLETED    : STATUS_OBSOLETE,
+    TS_OBSOLETING   : STATUS_INSTALL,
+    TS_UPDATED      : STATUS_CLEANUP,
+    TS_REPACKAGING  : STATUS_REPACKAGING
+}
+
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
@@ -2085,7 +2111,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _pkg_to_id(self, pkg):
         pkgver = _get_package_ver(pkg)
-        package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        repo = str(pkg.repo)
+        if repo.startswith('/'):
+            repo = "local"
+        package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, repo)
         return package_id
 
     def _show_package(self, pkg, status):
@@ -2194,7 +2223,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if pkgfilter.pre_process(pkg):
                 # we pre-get the ChangeLog data so that the changes file is
                 # downloaded at GetUpdates time, not when we open the GUI
-                changelog = pkg.returnChangelog()
+                # get each element of the ChangeLog
+                try:
+                    changelog = pkg.returnChangelog()
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
@@ -2441,6 +2476,58 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
+
+    def simulate_install_files(self, inst_files):
+        '''
+        Install the package containing the inst_file file
+        '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.allow_cancel(True)
+        self.percentage(0)
+        self.status(STATUS_RUNNING)
+
+        # common checks copied from yum
+        for inst_file in inst_files:
+            if not self._check_local_file(inst_file):
+                return
+
+        package_list = []
+        txmbrs = []
+        for inst_file in inst_files:
+            try:
+                txmbr = self.yumbase.installLocal(inst_file)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            if txmbr:
+                txmbrs.extend(txmbr)
+            else:
+                self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s as no transaction" % _to_unicode(inst_file))
+        if len(self.yumbase.tsInfo) == 0:
+            self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % " or ".join(inst_files), exit=False)
+            return
+
+        # do the depsolve to pull in deps
+        try:
+            rc, msgs =  self.yumbase.buildTransaction()
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        if rc != 2:
+            self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
+
+        # add each package
+        for txmbr in self.yumbase.tsInfo:
+            if txmbr.output_state in TransactionsInfoMap.keys():
+                info = TransactionsInfoMap[txmbr.output_state]
+                package_list.append((txmbr.po, info))
+
+        self.percentage(90)
+        self._show_package_list(package_list)
+        self.percentage(100)
 
     def install_signature(self, sigtype, key_id, package):
         self._check_init(repo_setup=False)
@@ -2691,28 +2778,6 @@ class PackageKitCallback(RPMBaseCallback):
         self.percent_start = 0
         self.percent_length = 0
 
-        # this isn't defined in yum as it's only used in the rollback plugin
-        TS_REPACKAGING = 'repackaging'
-
-        # Map yum transactions with pk info enums
-        self.info_actions = { TS_UPDATE : INFO_UPDATING,
-                        TS_ERASE: INFO_REMOVING,
-                        TS_INSTALL: INFO_INSTALLING,
-                        TS_TRUEINSTALL : INFO_INSTALLING,
-                        TS_OBSOLETED: INFO_OBSOLETING,
-                        TS_OBSOLETING: INFO_INSTALLING,
-                        TS_UPDATED: INFO_CLEANUP}
-
-        # Map yum transactions with pk state enums
-        self.state_actions = { TS_UPDATE : STATUS_UPDATE,
-                        TS_ERASE: STATUS_REMOVE,
-                        TS_INSTALL: STATUS_INSTALL,
-                        TS_TRUEINSTALL : STATUS_INSTALL,
-                        TS_OBSOLETED: STATUS_OBSOLETE,
-                        TS_OBSOLETING: STATUS_INSTALL,
-                        TS_UPDATED: STATUS_CLEANUP,
-                        TS_REPACKAGING: STATUS_REPACKAGING}
-
     def _showName(self, status):
         # curpkg is a yum package object or simple string of the package name
         if type(self.curpkg) in types.StringTypes:
@@ -2734,8 +2799,8 @@ class PackageKitCallback(RPMBaseCallback):
         if str(package) != str(self.curpkg):
             self.curpkg = package
             try:
-                self.base.status(self.state_actions[action])
-                self._showName(self.info_actions[action])
+                self.base.status(TransactionsStateMap[action])
+                self._showName(TransactionsInfoMap[action])
             except exceptions.KeyError, e:
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 

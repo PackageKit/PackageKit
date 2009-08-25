@@ -484,6 +484,34 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def simulate_install_files (self, inst_files):
+        '''
+        Implement the {backend}-simulate-install-files functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
+    def simulate_install_packages(self, package_ids):
+        '''
+        Implement the {backend}-simulate-install-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
+    def simulate_remove_packages(self, package_ids):
+        '''
+        Implement the {backend}-simulate-remove-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
+    def simulate_update_packages(self, package_ids):
+        '''
+        Implement the {backend}-simulate-update-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def customTracebackHandler(self, tb):
         '''
         Custom Traceback Handler
@@ -636,6 +664,22 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'get-categories':
             self.get_categories()
+            self.finished()
+        elif cmd == 'simulate-install-files':
+            files_to_inst = args[0].split(FILENAME_DELIM)
+            self.simulate_install_files(files_to_inst)
+            self.finished()
+        elif cmd == 'simulate-install-packages':
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.simulate_install_packages(package_ids)
+            self.finished()
+        elif cmd == 'simulate-remove-packages':
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.simulate_remove_packages(package_ids)
+            self.finished()
+        elif cmd == 'simulate-update-packages':
+            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            self.simulate_update_packages(package_ids)
             self.finished()
         else:
             errmsg = "command '%s' is not known" % cmd
