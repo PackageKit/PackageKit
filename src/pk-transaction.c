@@ -1399,7 +1399,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
 		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
-		desc->simulate_install_files (priv->backend, priv->cached_package_ids);
+		desc->simulate_install_files (priv->backend, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
 		/* fallback to a method we do have */
 		if (desc->simulate_install_packages != NULL) {
