@@ -2194,7 +2194,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if pkgfilter.pre_process(pkg):
                 # we pre-get the ChangeLog data so that the changes file is
                 # downloaded at GetUpdates time, not when we open the GUI
-                changelog = pkg.returnChangelog()
+                # get each element of the ChangeLog
+                try:
+                    changelog = pkg.returnChangelog()
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
                 # Get info about package in updates info
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
