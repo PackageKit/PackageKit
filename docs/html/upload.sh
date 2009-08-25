@@ -28,4 +28,6 @@ docbook2html ../../../gnome-packagekit/docs/dbus/org.freedesktop.PackageKit.ref.
 mv r1.html api-reference-session.html
 scp api-reference-session.html $USER@$SERVER:/$LOCATION/gtk-doc/
 rm api-reference-session.html
+doxygen ../../lib/packagekit-qt/Doxyfile
+scp ../packagekit-qt/html/* $USER@$SERVER:/$LOCATION/qt-doc/
 
