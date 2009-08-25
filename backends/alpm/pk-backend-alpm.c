@@ -821,7 +821,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 
 		pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
 		if (pkg == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, alpm_strerrorlast ());
 			pk_backend_finished (backend);
 			return;
 		}
@@ -856,12 +856,6 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 					found = TRUE;
 					emit_package (backend, dep_pkg, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_INSTALLED);
 				}
-			}
-
-			if (found == FALSE) {
-				pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
-				pk_backend_finished (backend);
-				return;
 			}
 		}
 	}
