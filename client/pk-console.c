@@ -306,6 +306,10 @@ pk_console_print_deps_list_info (PkPackageList *list, PkInfoEnum info, const gch
 		if (obj->info != info)
 			continue;
 
+		/* is this package already local */
+		if (g_strcmp0 (obj->id->data, "local") == 0)
+			continue;
+
 		/* print header if it's not been done before */
 		if (!ret) {
 			g_print ("%s\n", header);
@@ -823,7 +827,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 				goto out;
 			}
 
-			egg_debug ("Simullating install for %s", package_ids[0]);
+			egg_debug ("Simulating install for %s", package_ids[0]);
 			ret = pk_client_simulate_install_packages (client_sync, package_ids, error);
 			if (!ret) {
 				egg_warning ("failed to simulate a package install");
@@ -895,7 +899,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 				goto out;
 			}
 
-			egg_debug ("Simullating install for %s", files[0]);
+			egg_debug ("Simulating install for %s", files[0]);
 			ret = pk_client_simulate_install_files (client_sync, files, error);
 			if (!ret) {
 				egg_warning ("failed to simulate a package install");
