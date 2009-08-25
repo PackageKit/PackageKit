@@ -156,14 +156,23 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 */
 
 static void
+emit_package (PkBackend *backend, pmpkg_t *pkg, const gchar *repo, PkInfoEnum info)
+{
+	gchar *package_id_str;
+
+	egg_debug ("alpm: emitting package with name %s", alpm_pkg_get_name (pkg));
+
+	package_id_str = pkg_to_package_id_str (pkg, repo);
+	pk_backend_package (backend, info, package_id_str, alpm_pkg_get_desc (pkg));
+	g_free (package_id_str);
+}
+
+static void
 cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
-	/* TODO: Add more code here */
 	gchar **package_ids;
-	gchar *package_id_needle;
-	gchar *package_id_str;
-	GString *package_id_builder;
 
+	/* TODO: Add more code here */
 	switch (event) {
 		case PM_TRANS_EVT_REMOVE_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
@@ -171,9 +180,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 			/* reset transaction subprogress */
 			trans_subprogress = -1;
 
-			package_id_str = pkg_to_package_id_str (data1, ALPM_LOCAL_DB_ALIAS);
-			pk_backend_package (backend_instance, PK_INFO_ENUM_REMOVING, package_id_str, alpm_pkg_get_desc (data1));
-			g_free (package_id_str);
+			emit_package (backend_instance, data1, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_REMOVING);
 			break;
 		case PM_TRANS_EVT_ADD_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
@@ -182,28 +189,26 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 			trans_subprogress = -1;
 
 			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
-			package_id_needle = pkg_to_package_id_str (data1, "");
-			egg_debug ("needle is %s", package_id_needle);
-			package_ids = pk_backend_get_strv (backend_instance, "package_ids");
 
+			package_ids = pk_backend_get_strv (backend_instance, "package_ids");
 			if (package_ids != NULL) {
-				/* search for this package in package_ids */
 				unsigned int iterator;
+
+				/* search for package in package_ids */
+				gchar *package_id_needle = pkg_to_package_id_str (data1, "");
+
+				egg_debug ("needle is %s", package_id_needle);
 				for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator)
 					if (strstr (package_ids[iterator], package_id_needle) != NULL) {
 						pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_ids[iterator], alpm_pkg_get_desc (data1));
 						break;
 					}
-			} else {
-				/* we are installing a local file */
-				package_id_builder = g_string_new (package_id_needle);
-				g_string_append (package_id_builder, "local");
-				package_id_str = g_string_free (package_id_builder, FALSE);
-				pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_id_str, alpm_pkg_get_desc (data1));
-				g_free (package_id_str);
-			}
 
-			g_free (package_id_needle);
+				g_free (package_id_needle);
+			} else
+				/* we are installing a local file */
+				emit_package (backend_instance, data1, "local", PK_INFO_ENUM_INSTALLING);
+
 			break;
 		case PM_TRANS_EVT_UPGRADE_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
@@ -211,9 +216,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 			/* reset transaction subprogress */
 			trans_subprogress = -1;
 
-			package_id_str = pkg_to_package_id_str (data1, "local");
-			pk_backend_package (backend_instance, PK_INFO_ENUM_UPDATING, package_id_str, alpm_pkg_get_desc (data1));
-			g_free (package_id_str);
+			emit_package (backend_instance, data1, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_UPDATING);
 			break;
 		default: egg_debug ("alpm: event %i happened", event);
 	}
@@ -279,12 +282,8 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 				}
 			}
 
-			/* emit package */
-			if (current_pkg != NULL) {
-				gchar *package_id = pkg_to_package_id_str (current_pkg, repo_name);
-				pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_id, alpm_pkg_get_desc (current_pkg));
-				g_free (package_id);
-			}
+			if (current_pkg != NULL)
+				emit_package (backend_instance, current_pkg, repo_name, PK_INFO_ENUM_DOWNLOADING);
 		}
 	}
 
@@ -306,18 +305,6 @@ cb_dl_total (off_t total)
 	/* zero total size means that download is finished, so clear trans_xfered */
 	if (total == 0)
 		trans_xfered = 0;
-}
-
-static void
-emit_package (PkBackend *backend, pmpkg_t *pkg, const gchar *repo, PkInfoEnum info)
-{
-	gchar *package_id_str;
-
-	egg_debug ("alpm: emitting package with name %s", alpm_pkg_get_name (pkg));
-
-	package_id_str = pkg_to_package_id_str (pkg, repo);
-	pk_backend_package (backend, info, package_id_str, alpm_pkg_get_desc (pkg));
-	g_free (package_id_str);
 }
 
 /**
@@ -1235,7 +1222,7 @@ backend_install_packages_thread (PkBackend *backend)
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
