@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
 
@@ -74,6 +75,8 @@ GType		 pk_client_get_type		  	(void);
 PkClient	*pk_client_new				(void);
 
 void		 pk_client_resolve_async		(PkClient		*client,
+							 PkBitfield		 filters,
+							 gchar			**packages,
 							 GCancellable		*cancellable,
 							 /* TODO: progress cb */
 							 /* TODO: status cb */

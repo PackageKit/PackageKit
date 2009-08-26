@@ -317,7 +317,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	action->sack = sack;
 
 	/* get new tid */
-	pk_client_resolve_async (sack->priv->client, cancellable, (GAsyncReadyCallback) pk_client_resolve_cb, action);
+	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), action->package_ids, cancellable, (GAsyncReadyCallback) pk_client_resolve_cb, action);
 }
 
 

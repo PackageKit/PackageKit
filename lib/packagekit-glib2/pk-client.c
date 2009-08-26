@@ -95,6 +95,7 @@ typedef struct {
 	DBusGProxyCall		*call;
 	PkResults		*results;
 	DBusGProxy		*proxy;
+	PkBitfield		 filters;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -201,6 +202,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	const gchar *tid = NULL;
+	gchar *filters_text;
 
 	tid = pk_control_get_tid_finish (control, result, &error);
 	if (tid == NULL) {
@@ -227,10 +229,13 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
 	dbus_g_proxy_connect_signal (state->proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), state, NULL);
 
+	/* send the filter as a string over the wire */
+	filters_text = pk_filter_bitfield_to_text (state->filters);
+
 	/* do this async, although this should be pretty fast anyway */
 	state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
 					       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-					       G_TYPE_STRING, "installed", //TODO: add filter
+					       G_TYPE_STRING, filters_text,
 					       G_TYPE_STRV, state->packages,
 					       G_TYPE_INVALID);
 
@@ -239,6 +244,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+
+	/* deallocate temp state */
+	g_free (filters_text);
 }
 
 /**
@@ -251,7 +259,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
  * TODO
  **/
 void
-pk_client_resolve_async (PkClient *client, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
+			 GAsyncReadyCallback callback, gpointer user_data)
 {
 	GSimpleAsyncResult *result;
 	PkClientState *state;
@@ -269,7 +278,8 @@ pk_client_resolve_async (PkClient *client, GCancellable *cancellable, GAsyncRead
 	state->results = NULL;
 	state->proxy = NULL;
 	state->call = NULL;
-	state->packages = g_strsplit ("gnome-power-manager,hal", ",", -1); //TODO: add parameter
+	state->filters = filters;
+	state->packages = g_strdupv (packages);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -470,6 +480,7 @@ void
 pk_client_test (EggTest *test)
 {
 	PkClient *client;
+	gchar **package_ids;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -481,12 +492,15 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get TID async");
-	pk_client_resolve_async (client, NULL, (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
+	package_ids = g_strsplit ("gnome-power-manager,hal", ",", -1);
+	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
+				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
+	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
 
 	g_object_unref (client);
-out:
+
 	egg_test_end (test);
 }
 #endif
