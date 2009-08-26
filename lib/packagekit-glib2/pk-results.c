@@ -65,6 +65,8 @@ struct _PkResultsPrivate
 {
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
+	GPtrArray		*details_array;
+	GPtrArray		*update_detail_array;
 };
 
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
@@ -80,6 +82,43 @@ pk_result_item_package_free (PkResultItemPackage *item)
 	g_free (item->package_id);
 	g_free (item->summary);
 	g_free (item);
+}
+
+/**
+ * pk_result_item_details_free:
+ **/
+static void
+pk_result_item_details_free (PkResultItemDetails *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->package_id);
+	g_free (item->license);
+	g_free (item->description);
+	g_free (item->url);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_update_detail_free:
+ **/
+static void
+pk_result_item_update_detail_free (PkResultItemUpdateDetail *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->package_id);
+	g_free (item->updates);
+	g_free (item->obsoletes);
+	g_free (item->vendor_url);
+	g_free (item->bugzilla_url);
+	g_free (item->cve_url);
+	g_free (item->update_text);
+	g_free (item->changelog);
+	if (item->issued != NULL)
+		g_date_free (item->issued);
+	if (item->updated != NULL)
+		g_date_free (item->updated);
 }
 
 /**
@@ -105,9 +144,8 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 /**
  * pk_results_add_package:
  * @results: a valid #PkResults instance
- * @id: the valid results_id
  *
- * Sets the results object to have the given ID
+ * Adds a package to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
@@ -126,6 +164,76 @@ pk_results_add_package (PkResults *results, PkInfoEnum info_enum, const gchar *p
 	item->package_id = g_strdup (package_id);
 	item->summary = g_strdup (summary);
 	g_ptr_array_add (results->priv->package_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_details:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some package details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_details (PkResults *results, const gchar	*package_id, const gchar *license,
+			PkGroupEnum group_enum, const gchar *description, const gchar *url, guint64 size)
+{
+	PkResultItemDetails *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemDetails, 1);
+	item->package_id = g_strdup (package_id);
+	item->license = g_strdup (license);
+	item->group_enum = group_enum;
+	item->description = g_strdup (description);
+	item->url = g_strdup (url);
+	item->size = size;
+	g_ptr_array_add (results->priv->details_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_update_detail:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some update details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_update_detail (PkResults *results, const gchar *package_id, const gchar *updates,
+			      const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
+			      const gchar *cve_url, PkRestartEnum restart_enum, const gchar *update_text,
+			      const gchar *changelog, PkUpdateStateEnum state_enum, GDate *issued, GDate *updated)
+{
+	PkResultItemUpdateDetail *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemUpdateDetail, 1);
+	item->package_id = g_strdup (package_id);
+	item->updates = g_strdup (updates);
+	item->obsoletes = g_strdup (obsoletes);
+	item->vendor_url = g_strdup (vendor_url);
+	item->bugzilla_url = g_strdup (bugzilla_url);
+	item->cve_url = g_strdup (cve_url);
+	item->restart_enum = restart_enum;
+	item->update_text = g_strdup (update_text);
+	item->changelog = g_strdup (changelog);
+	item->state_enum = state_enum;
+	if (issued != NULL)
+		item->issued = g_date_new_dmy (issued->day, issued->month, issued->year);
+	if (updated != NULL)
+		item->updated = g_date_new_dmy (updated->day, updated->month, updated->year);
+	g_ptr_array_add (results->priv->update_detail_array, item);
 
 	return TRUE;
 }
@@ -151,13 +259,43 @@ pk_results_get_exit_code (PkResults *results)
  *
  * Gets the packages from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkResultItemDetails's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->package_array);
+}
+
+/**
+ * pk_results_get_details_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the package details from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_details_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->details_array);
+}
+
+/**
+ * pk_results_get_update_detail_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the update details from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemUpdateDetail's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_update_detail_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->update_detail_array);
 }
 
 /**
@@ -182,6 +320,8 @@ pk_results_init (PkResults *results)
 	results->priv = PK_RESULTS_GET_PRIVATE (results);
 	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_package_free);
+	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_details_free);
+	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_update_detail_free);
 }
 
 /**
@@ -195,6 +335,8 @@ pk_results_finalize (GObject *object)
 	PkResultsPrivate *priv = results->priv;
 
 	g_ptr_array_unref (priv->package_array);
+	g_ptr_array_unref (priv->details_array);
+	g_ptr_array_unref (priv->update_detail_array);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }

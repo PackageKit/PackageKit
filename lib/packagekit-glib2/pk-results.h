@@ -79,17 +79,65 @@ gboolean	 pk_results_add_package			(PkResults	*results,
 							 PkInfoEnum	 info_enum,
 							 const gchar	*package_id,
 							 const gchar	*summary);
+gboolean	 pk_results_add_details			(PkResults	*results,
+							 const gchar	*package_id,
+							 const gchar	*license,
+							 PkGroupEnum	 group_enum,
+							 const gchar	*description,
+							 const gchar	*url,
+							 guint64	 size);
+gboolean	 pk_results_add_update_detail		(PkResults	*results,
+							 const gchar	*package_id,
+							 const gchar	*updates,
+							 const gchar	*obsoletes,
+							 const gchar	*vendor_url,
+							 const gchar	*bugzilla_url,
+							 const gchar	*cve_url,
+							 PkRestartEnum	 restart_enum,
+							 const gchar	*update_text,
+							 const gchar	*changelog,
+							 PkUpdateStateEnum state_enum,
+							 GDate		*issued,
+							 GDate		*updated);
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults	*results);
 
-/* get array data */
+/* get package array data */
 typedef struct {
 	PkInfoEnum	 info_enum;
 	gchar		*package_id;
 	gchar		*summary;	
 } PkResultItemPackage;
 GPtrArray	*pk_results_get_package_array		(PkResults	*results);
+
+/* get details array data */
+typedef struct {
+	gchar		*package_id;
+	gchar		*license;
+	PkGroupEnum	 group_enum;
+	gchar		*description;
+	gchar		*url;
+	guint64		 size;
+} PkResultItemDetails;
+GPtrArray	*pk_results_get_details_array		(PkResults	*results);
+
+/* get update detail array data */
+typedef struct {
+	gchar		*package_id;
+	gchar		*updates;
+	gchar		*obsoletes;
+	gchar		*vendor_url;
+	gchar		*bugzilla_url;
+	gchar		*cve_url;
+	PkRestartEnum	 restart_enum;
+	gchar		*update_text;
+	gchar		*changelog;
+	PkUpdateStateEnum state_enum;
+	GDate		*issued;
+	GDate		*updated;
+} PkResultItemUpdateDetail;
+GPtrArray	*pk_results_get_update_detail_array	(PkResults	*results);
 
 G_END_DECLS
 
