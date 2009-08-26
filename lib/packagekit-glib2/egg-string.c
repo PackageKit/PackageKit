@@ -1,0 +1,1 @@
+../packagekit-glib/egg-string.c
