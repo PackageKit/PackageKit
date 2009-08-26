@@ -70,6 +70,22 @@ struct _PkPackagePrivate
 	gchar			*id_data;
 	gchar			*summary;
 	PkInfoEnum		 info;
+	gchar			*license;
+	PkGroupEnum		 group;
+	gchar			*description;
+	gchar			*url;
+	guint64			 size;
+	gchar			*update_updates;
+	gchar			*update_obsoletes;
+	gchar			*update_vendor_url;
+	gchar			*update_bugzilla_url;
+	gchar			*update_cve_url;
+	PkRestartEnum		 update_restart;
+	gchar			*update_text;
+	gchar			*update_changelog;
+	PkUpdateStateEnum	 update_state;
+	GDate			*update_issued;
+	GDate			*update_updated;
 };
 
 enum {
@@ -86,6 +102,22 @@ enum {
 	PROP_ID_DATA,
 	PROP_SUMMARY,
 	PROP_INFO,
+	PROP_LICENSE,
+	PROP_GROUP,
+	PROP_DESCRIPTION,
+	PROP_URL,
+	PROP_SIZE,
+	PROP_UPDATE_UPDATES,
+	PROP_UPDATE_OBSOLETES,
+	PROP_UPDATE_VENDOR_URL,
+	PROP_UPDATE_BUGZILLA_URL,
+	PROP_UPDATE_CVE_URL,
+	PROP_UPDATE_RESTART,
+	PROP_UPDATE_UPDATE_TEXT,
+	PROP_UPDATE_CHANGELOG,
+	PROP_UPDATE_STATE,
+	PROP_UPDATE_ISSUED,
+	PROP_UPDATE_UPDATED,
 	PROP_LAST
 };
 
@@ -211,6 +243,54 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_INFO:
 		g_value_set_uint (value, priv->info);
 		break;
+	case PROP_LICENSE:
+		g_value_set_string (value, priv->license);
+		break;
+	case PROP_GROUP:
+		g_value_set_uint (value, priv->group);
+		break;
+	case PROP_DESCRIPTION:
+		g_value_set_string (value, priv->description);
+		break;
+	case PROP_URL:
+		g_value_set_string (value, priv->url);
+		break;
+	case PROP_SIZE:
+		g_value_set_uint64 (value, priv->size);
+		break;
+	case PROP_UPDATE_UPDATES:
+		g_value_set_string (value, priv->update_updates);
+		break;
+	case PROP_UPDATE_OBSOLETES:
+		g_value_set_string (value, priv->update_obsoletes);
+		break;
+	case PROP_UPDATE_VENDOR_URL:
+		g_value_set_string (value, priv->update_vendor_url);
+		break;
+	case PROP_UPDATE_BUGZILLA_URL:
+		g_value_set_string (value, priv->update_bugzilla_url);
+		break;
+	case PROP_UPDATE_CVE_URL:
+		g_value_set_string (value, priv->update_cve_url);
+		break;
+	case PROP_UPDATE_RESTART:
+		g_value_set_uint (value, priv->update_restart);
+		break;
+	case PROP_UPDATE_UPDATE_TEXT:
+		g_value_set_string (value, priv->update_text);
+		break;
+	case PROP_UPDATE_CHANGELOG:
+		g_value_set_string (value, priv->update_changelog);
+		break;
+	case PROP_UPDATE_STATE:
+		g_value_set_uint (value, priv->update_state);
+		break;
+	case PROP_UPDATE_ISSUED:
+		g_value_set_pointer (value, priv->update_issued);
+		break;
+	case PROP_UPDATE_UPDATED:
+		g_value_set_pointer (value, priv->update_updated);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -225,6 +305,7 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 {
 	PkPackage *package = PK_PACKAGE (object);
 	PkPackagePrivate *priv = package->priv;
+	GDate *date;
 
 	switch (prop_id) {
 	case PROP_SUMMARY:
@@ -233,6 +314,70 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_INFO:
 		priv->info = g_value_get_uint (value);
+		break;
+	case PROP_LICENSE:
+		g_free (priv->license);
+		priv->license = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_GROUP:
+		priv->group = g_value_get_uint (value);
+		break;
+	case PROP_DESCRIPTION:
+		g_free (priv->description);
+		priv->description = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_URL:
+		g_free (priv->url);
+		priv->url = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_SIZE:
+		priv->size = g_value_get_uint64 (value);
+		break;
+	case PROP_UPDATE_UPDATES:
+		g_free (priv->update_updates);
+		priv->update_updates = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_OBSOLETES:
+		g_free (priv->update_obsoletes);
+		priv->update_obsoletes = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_VENDOR_URL:
+		g_free (priv->update_vendor_url);
+		priv->update_vendor_url = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_BUGZILLA_URL:
+		g_free (priv->update_bugzilla_url);
+		priv->update_bugzilla_url = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_CVE_URL:
+		g_free (priv->update_cve_url);
+		priv->update_cve_url = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_RESTART:
+		priv->update_restart = g_value_get_uint (value);
+		break;
+	case PROP_UPDATE_UPDATE_TEXT:
+		g_free (priv->update_text);
+		priv->update_text = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_CHANGELOG:
+		g_free (priv->update_changelog);
+		priv->update_changelog = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_UPDATE_STATE:
+		priv->update_state = g_value_get_uint (value);
+		break;
+	case PROP_UPDATE_ISSUED:
+		if (priv->update_issued != NULL)
+			g_date_free (priv->update_issued);
+		date = g_value_get_pointer (value);
+		priv->update_issued = g_date_new_dmy (date->day, date->month, date->year);
+		break;
+	case PROP_UPDATE_UPDATED:
+		if (priv->update_updated != NULL)
+			g_date_free (priv->update_updated);
+		date = g_value_get_pointer (value);
+		priv->update_updated = g_date_new_dmy (date->day, date->month, date->year);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -312,9 +457,151 @@ pk_package_class_init (PkPackageClass *klass)
 	 */
 	pspec = g_param_spec_uint ("info", NULL,
 				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
-				   0, G_MAXUINT, 0,
+				   0, G_MAXUINT, PK_INFO_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_INFO, pspec);
+
+	/**
+	 * PkPackage:license:
+	 */
+	pspec = g_param_spec_string ("license", NULL,
+				     "The package license",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_LICENSE, pspec);
+
+	/**
+	 * PkPackage:group:
+	 */
+	pspec = g_param_spec_uint ("group", NULL,
+				   "The package group",
+				   0, PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_GROUP, pspec);
+
+	/**
+	 * PkPackage:description:
+	 */
+	pspec = g_param_spec_string ("description", NULL,
+				     "The package description",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
+
+	/**
+	 * PkPackage:url:
+	 */
+	pspec = g_param_spec_string ("url", NULL,
+				     "The package homepage URL",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_URL, pspec);
+
+	/**
+	 * PkPackage:size:
+	 */
+	pspec = g_param_spec_uint64 ("size", NULL,
+				     "The package size",
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SIZE, pspec);
+
+	/**
+	 * PkPackage:update-updates:
+	 */
+	pspec = g_param_spec_string ("update-updates", NULL,
+				     "The update packages",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_UPDATES, pspec);
+
+	/**
+	 * PkPackage:update-obsoletes:
+	 */
+	pspec = g_param_spec_string ("update-obsoletes", NULL,
+				     "The update packages that are obsoleted",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_OBSOLETES, pspec);
+
+	/**
+	 * PkPackage:update-vendor-url:
+	 */
+	pspec = g_param_spec_string ("update-vendor-url", NULL,
+				     "The update vendor URL",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_VENDOR_URL, pspec);
+
+	/**
+	 * PkPackage:update-bugzilla-url:
+	 */
+	pspec = g_param_spec_string ("update-bugzilla-url", NULL,
+				     "The update bugzilla URL",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_BUGZILLA_URL, pspec);
+
+	/**
+	 * PkPackage:update-cve-url:
+	 */
+	pspec = g_param_spec_string ("update-cve-url", NULL,
+				     "The update CVE URL",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_CVE_URL, pspec);
+
+	/**
+	 * PkPackage:update-restart:
+	 */
+	pspec = g_param_spec_string ("update-restart", NULL,
+				     "The update restart type",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_RESTART, pspec);
+
+	/**
+	 * PkPackage:update-text:
+	 */
+	pspec = g_param_spec_string ("update-text", NULL,
+				     "The update description",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_UPDATE_TEXT, pspec);
+
+	/**
+	 * PkPackage:update-changelog:
+	 */
+	pspec = g_param_spec_string ("update-changelog", NULL,
+				     "The update ChangeLog",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_CHANGELOG, pspec);
+
+	/**
+	 * PkPackage:update-state:
+	 */
+	pspec = g_param_spec_uint ("update-state", NULL,
+				   "The update state",
+				   0, PK_UPDATE_STATE_ENUM_UNKNOWN, PK_UPDATE_STATE_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_STATE, pspec);
+
+	/**
+	 * PkPackage:update-issued:
+	 */
+	pspec = g_param_spec_pointer ("update-issued", NULL,
+				      "When the update was issued",
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_ISSUED, pspec);
+
+	/**
+	 * PkPackage:update-updated:
+	 */
+	pspec = g_param_spec_pointer ("update-updated", NULL,
+				      "When the update was last updated",
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_UPDATE_UPDATED, pspec);
 
 	/**
 	 * PkPackage::changed:
