@@ -557,7 +557,7 @@ end
 PORTUPGRADE="#{PREFIX}/sbin/portupgrade"
 
 # use a non-interactive (default) dialog program
-DIALOG="#{PROGRAM_DIR}/helpers/default-dialog.rb"
+DIALOG="#{PROGRAM_DIR}/helpers/default-dialog"
 
 USE_PKG = true # use packages
 BIN_PKG = true # build packages
