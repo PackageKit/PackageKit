@@ -25,7 +25,7 @@
 
 /**
  * SECTION:pk-control
- * @short_description: An abstract control GObject
+ * @short_description: An abstract control access GObject
  */
 
 #ifndef __PK_CONTROL_H

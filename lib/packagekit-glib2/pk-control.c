@@ -50,6 +50,7 @@
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-version.h>
 
 #include "egg-debug.h"
 
@@ -66,6 +67,9 @@ struct _PkControlPrivate
 {
 	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
+	gboolean		 version_major;
+	gboolean		 version_minor;
+	gboolean		 version_micro;
 };
 
 enum {
@@ -75,8 +79,9 @@ enum {
 
 enum {
 	PROP_0,
-	/* TODO: add the other existing properties */
-	PROP_ID,
+	PROP_VERSION_MAJOR,
+	PROP_VERSION_MINOR,
+	PROP_VERSION_MICRO,
 	PROP_LAST
 };
 
@@ -221,18 +226,96 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *result, GError **er
 }
 
 /**
+ * pk_control_set_properties_collect_cb:
+ **/
+static void
+pk_control_set_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
+{
+	if (g_strcmp0 (key, "version-major") == 0)
+		control->priv->version_major = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-minor") == 0)
+		control->priv->version_minor = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-micro") == 0)
+		control->priv->version_micro = g_value_get_uint (value);
+	else
+		egg_warning ("unhandled property '%s'", key);
+}
+
+/**
+ * pk_control_set_properties_cb:
+ **/
+static void
+pk_control_set_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl *control)
+{
+	GError *error = NULL;
+	gboolean ret;
+	GHashTable *hash;
+
+	/* we've sent this async */
+	egg_debug ("got reply to request");
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE),
+				     &hash,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to get properties: %s", error->message);
+		return;
+	}
+
+	/* process results */
+	if (hash != NULL) {
+		g_hash_table_foreach (hash, (GHFunc) pk_control_set_properties_collect_cb, control);
+		g_hash_table_unref (hash);
+	}
+	g_object_unref (proxy);
+}
+
+/**
+ * pk_control_set_properties:
+ **/
+static void
+pk_control_set_properties (PkControl *control)
+{
+	DBusGProxy *proxy;
+
+	/* connect to the correct path for properties */
+	proxy = dbus_g_proxy_new_for_name (control->priv->connection,
+					   "org.freedesktop.PackageKit",
+					   "/org/freedesktop/PackageKit",
+					   "org.freedesktop.DBus.Properties");
+	if (proxy == NULL) {
+		egg_warning ("Couldn't connect to proxy");
+		return;
+	}
+
+	/* does an async call, so properties may not be set until some time after the object is setup */
+	dbus_g_proxy_begin_call (proxy, "GetAll",
+			         (DBusGProxyCallNotify) pk_control_set_properties_cb, control, NULL,
+				 G_TYPE_STRING, "org.freedesktop.PackageKit",
+			         G_TYPE_INVALID);
+}
+
+/**
  * pk_control_get_property:
  **/
 static void
 pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-//	PkControl *control = PK_CONTROL (object);
-//	PkControlPrivate *priv = control->priv;
+	PkControl *control = PK_CONTROL (object);
+	PkControlPrivate *priv = control->priv;
 
 	switch (prop_id) {
-//	case PROP_ID:
-//		g_value_set_string (value, priv->id);
-//		break;
+	case PROP_VERSION_MAJOR:
+		g_value_set_uint (value, priv->version_major);
+		break;
+	case PROP_VERSION_MINOR:
+		g_value_set_uint (value, priv->version_minor);
+		break;
+	case PROP_VERSION_MICRO:
+		g_value_set_uint (value, priv->version_micro);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -245,13 +328,7 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 static void
 pk_control_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-//	PkControl *control = PK_CONTROL (object);
-//	PkControlPrivate *priv = control->priv;
-
 	switch (prop_id) {
-//	case PROP_INFO:
-//		priv->info = g_value_get_uint (value);
-//		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -272,13 +349,28 @@ pk_control_class_init (PkControlClass *klass)
 	object_class->finalize = pk_control_finalize;
 
 	/**
-	 * PkControl:id:
+	 * PkControl:version-major:
 	 */
-	pspec = g_param_spec_string ("id", NULL,
-				     "The full control_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
+	pspec = g_param_spec_uint ("version-major", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_VERSION_MAJOR, pspec);
+
+	/**
+	 * PkControl:version-minor:
+	 */
+	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_VERSION_MINOR, pspec);
+
+	/**
+	 * PkControl:version-micro:
+	 */
+	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
 
 	/**
 	 * PkControl::changed:
@@ -304,6 +396,7 @@ static void
 pk_control_init (PkControl *control)
 {
 	GError *error = NULL;
+
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
 
 	/* check dbus connections, exit if not valid */
@@ -314,6 +407,11 @@ pk_control_init (PkControl *control)
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
 
+	/* we maintain a local copy */
+	control->priv->version_major = 0;
+	control->priv->version_minor = 0;
+	control->priv->version_micro = 0;
+
 	/* get a connection to the engine object */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
 							  PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
@@ -322,6 +420,9 @@ pk_control_init (PkControl *control)
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
+
+	/* get properties async if they exist */
+	pk_control_set_properties (control);
 }
 
 /**
@@ -380,6 +481,7 @@ void
 pk_control_test (EggTest *test)
 {
 	PkControl *control;
+	guint version;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
@@ -394,6 +496,21 @@ pk_control_test (EggTest *test)
 	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "version major");
+	g_object_get (control, "version-major", &version, NULL);
+	egg_test_assert (test, (version == PK_MAJOR_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "version minor");
+	g_object_get (control, "version-minor", &version, NULL);
+	egg_test_assert (test, (version == PK_MINOR_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "version micro");
+	g_object_get (control, "version-micro", &version, NULL);
+	egg_test_assert (test, (version == PK_MICRO_VERSION));
 
 	g_object_unref (control);
 out:

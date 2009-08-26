@@ -66,7 +66,6 @@ static void     pk_client_finalize	(GObject     *object);
  **/
 struct _PkClientPrivate
 {
-//	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
 	PkControl		*control;
 };
