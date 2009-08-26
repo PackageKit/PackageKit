@@ -103,6 +103,7 @@ public:
 		StateCollectionAvailable,
 		StateFinished,
 		StateReinstalling,
+		StateDowngrading,
 		UnknownState
 	} State;
 	/**
