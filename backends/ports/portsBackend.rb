@@ -579,7 +579,7 @@ BIN_PKG = true # build packages
 
 def update_system(only_trusted)
     if only_trusted
-        error(ERROR_NOT_SUPPORTED, "Trusted packages not available.")
+        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
     end
     args = ['-M', 'DIALOG='+DIALOG]
@@ -618,7 +618,7 @@ end
 
 def install_packages(only_trusted, package_ids)
     if only_trusted
-        error(ERROR_NOT_SUPPORTED, "Trusted packages not available.")
+        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
     end
     pkgnames = []
