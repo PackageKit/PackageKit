@@ -941,6 +941,11 @@
             other methods.
           </doc:para>
           <doc:para>
+            If the package is a fully formed package_id, then this should be treated
+            as an exact package match. This is useful to find the summary or installed
+            status of a package_id returned from other methods.
+          </doc:para>
+          <doc:para>
             This method typically emits
             <doc:tt>Error</doc:tt> and
             <doc:tt>Package</doc:tt>.
