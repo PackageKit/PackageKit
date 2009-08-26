@@ -88,23 +88,35 @@ gboolean	 pk_package_sack_remove_package		(PkPackageSack		*sack,
 							 PkPackage		*package);
 gboolean	 pk_package_sack_remove_package_by_id	(PkPackageSack		*sack,
 							 const gchar		*package_id);
+PkPackage	*pk_package_sack_find_by_id		(PkPackageSack		*sack,
+							 const gchar		*package_id);
 
-/* merging in data to the array */
-typedef void	(*PkPackageSackFinishedCb) 		(PkPackageSack		*sack,
-							 PkPackageSackResults	*results,
-							 gpointer		 user_data);
+/* merging in data to the array using Resolve() */
 void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
-							 PkPackageSackFinishedCb callback,
+							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-void		 pk_package_sack_merge_details_async		(PkPackageSack		*sack,
+gboolean	 pk_package_sack_merge_resolve_finish	(PkPackageSack		*sack,
+							 GAsyncResult		*res,
+							 GError			**error);
+
+/* merging in data to the array using Details() */
+void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
-							 PkPackageSackFinishedCb callback,
+							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-void		 pk_package_sack_merge_update_details_async	(PkPackageSack		*sack,
+gboolean	 pk_package_sack_merge_details_finish	(PkPackageSack		*sack,
+							 GAsyncResult		*res,
+							 GError			**error);
+
+/* merging in data to the array using UpdateDetails() */
+void		 pk_package_sack_merge_update_details_async (PkPackageSack	*sack,
 							 GCancellable		*cancellable,
-							 PkPackageSackFinishedCb callback,
+							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
+gboolean	 pk_package_sack_merge_update_details_finish (PkPackageSack	*sack,
+							 GAsyncResult		*res,
+							 GError			**error);
 
 G_END_DECLS
 

@@ -240,6 +240,41 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
 }
 
 /**
+ * pk_package_sack_find_by_id:
+ * @sack: a valid #PkPackageSack instance
+ * @package_id: a package_id descriptor
+ *
+ * Finds a package in a sack from reference. As soon as one package is found
+ * the search is stopped.
+ *
+ * Return value: the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
+ **/
+PkPackage *
+pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
+{
+	PkPackage *package_tmp;
+	const gchar *id;
+	PkPackage *package = NULL;
+	guint i;
+	guint len;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	len = sack->priv->array->len;
+	for (i=0; i<len; i++) {
+		package_tmp = g_ptr_array_index (sack->priv->array, i);
+		id = pk_package_get_id (package_tmp);
+		if (g_strcmp0 (package_id, id) == 0) {
+			package = g_object_ref (package_tmp);
+			break;
+		}
+	}
+
+	return package;
+}
+
+/**
  * pk_package_sack_get_package_ids:
  **/
 static gchar **
@@ -247,15 +282,15 @@ pk_package_sack_get_package_ids (PkPackageSack *sack)
 {
 	const gchar *id;
 	gchar **package_ids;
-	guint i;
-	guint len;
+	const GPtrArray *array;
 	PkPackage *package;
+	guint i;
 
 	/* create array of package_ids */
-	len = sack->priv->array->len;
-	package_ids = g_new0 (gchar *, len+1);
-	for (i=0; i<len; i++) {
-		package = g_ptr_array_index (sack->priv->array, i);
+	array = sack->priv->array;
+	package_ids = g_new0 (gchar *, array->len+1);
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
 		id = pk_package_get_id (package);
 		package_ids[i] = g_strdup (id);
 	}
@@ -264,62 +299,175 @@ pk_package_sack_get_package_ids (PkPackageSack *sack)
 }
 
 typedef struct {
-	PkRoleEnum		 role;
-	gchar			**package_ids;
 	PkPackageSack		*sack;
-} PkPackageSackAction;
+	GCancellable		*cancellable;
+	gboolean		 ret;
+	GSimpleAsyncResult	*res;
+} PkPackageSackState;
+
+/***************************************************************************************************/
 
 /**
- * pk_client_resolve_cb:
+ * pk_package_sack_merge_resolve_state_finish:
  **/
 static void
-pk_client_resolve_cb (GObject *object, GAsyncResult *result, PkPackageSackAction *action)
+pk_package_sack_merge_resolve_state_finish (PkPackageSackState *state, GError *error)
 {
-	PkClient *client = PK_CLIENT (object);
-	GError *error = NULL;
-	PkResults *results;
+	/* remove weak ref */
+	if (state->sack != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
-	results = pk_client_resolve_finish (client, result, &error);
-	if (results == NULL) {
-		egg_warning ("failed to resolve: %s", error->message);
-		g_error_free (error);
-		goto out;
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
 	}
 
-	egg_warning ("results = %p", results);
+	/* get result */
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkPackageSackState, state);
+}
+
+/**
+ * pk_package_sack_merge_resolve_cb:
+ **/
+static void
+pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *packages;
+	const PkResultItemPackage *item;
+	guint i;
+	PkPackage *package;
+
+	/* get the results */
+	results = pk_client_resolve_finish (client, res, &error);
+	if (results == NULL) {
+		egg_warning ("failed to resolve: %s", error->message);
+		pk_package_sack_merge_resolve_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* get the packages */
+	packages = pk_results_get_package_array (results);
+	if (packages->len == 0) {
+		egg_error ("%i", state->ret);
+		error = g_error_new (1, 0, "no packages found!");
+		pk_package_sack_merge_resolve_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* set data on each item */
+	for (i=0; i<packages->len; i++) {
+		item = g_ptr_array_index (packages, i);
+
+		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+
+		/* get package, and set data */
+		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		if (package != NULL) {
+			g_object_set (package,
+				      "info", item->info_enum,
+				      "summary", item->summary,
+				      NULL);
+			g_object_unref (package);
+		} else {
+			egg_warning ("failed to find %s", item->package_id);
+		}
+	}
+
+	/* all okay */
+	state->ret = TRUE;
 	g_object_unref (results);
-out:
-//	g_free (tid);
-	return;
+
+	/* we're done */
+	pk_package_sack_merge_resolve_state_finish (state, error);
 }
 
 /**
  * pk_package_sack_merge_resolve_async:
- * @sack: a valid #PkPackageSack instance
+ * @package_sack: a valid #PkPackageSack instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
  *
  * Merges in details about packages using resolve.
  **/
 void
-pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
-			       PkPackageSackFinishedCb callback, gpointer user_data)
+pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackAction *action;
+	GSimpleAsyncResult *res;
+	PkPackageSackState *state;
+	gchar **package_ids;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	/* create new action */
-	action = g_new0 (PkPackageSackAction, 1);
-//	action->callback = callback;
-//	action->user_data = user_data;
-	action->role = PK_ROLE_ENUM_RESOLVE;
-	action->package_ids = pk_package_sack_get_package_ids (sack);
-	action->sack = sack;
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_resolve_async);
 
-	/* get new tid */
-	pk_client_resolve_async (sack->priv->client, cancellable, (GAsyncReadyCallback) pk_client_resolve_cb, action);
+	/* save state */
+	state = g_slice_new0 (PkPackageSackState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->sack = sack;
+	state->ret = FALSE;
+	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
+
+	/* start resolve async */
+	package_ids = pk_package_sack_get_package_ids (sack);
+	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
+				 cancellable, (GAsyncReadyCallback) pk_package_sack_merge_resolve_cb, state);
+
+	g_strfreev (package_ids);
+	g_object_unref (res);
 }
 
+/**
+ * pk_package_sack_merge_resolve_finish:
+ * @package_sack: a valid #PkPackageSack instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function. 
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_package_sack_merge_resolve_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_package_sack_merge_resolve_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
 
 /**
  * pk_package_sack_get_property:
@@ -424,7 +572,6 @@ pk_package_sack_finalize (GObject *object)
 	PkPackageSack *sack = PK_PACKAGE_SACK (object);
 	PkPackageSackPrivate *priv = sack->priv;
 
-//	g_free (priv->id);
 	g_ptr_array_unref (priv->array);
 	g_object_unref (priv->client);
 
@@ -450,14 +597,34 @@ pk_package_sack_new (void)
 #ifdef EGG_TEST
 #include "egg-test.h"
 
+static void
+pk_package_sack_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkPackageSack *sack = PK_PACKAGE_SACK (object);
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = pk_package_sack_merge_resolve_finish (sack, res, &error);
+	if (!ret) {
+		egg_test_failed (test, "failed to merge resolve: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
 void
 pk_package_sack_test (EggTest *test)
 {
 	gboolean ret;
 	PkPackageSack *sack;
+	PkPackage *package;
 	const gchar *id;
 	gchar *text;
 	guint size;
+	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 
 	if (!egg_test_start (test, "PkPackageSack"))
 		return;
@@ -474,12 +641,17 @@ pk_package_sack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "remove package not present");
-	ret = pk_package_sack_remove_package_by_id (sack, "moo;moo;moo;moo");
+	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
 	egg_test_assert (test, !ret);
 
 	/************************************************************/
+	egg_test_title (test, "find package not present");
+	package = pk_package_sack_find_by_id (sack, "glib2;2.14.0;i386;fedora");
+	egg_test_assert (test, (package == NULL));
+
+	/************************************************************/
 	egg_test_title (test, "add package");
-	ret = pk_package_sack_add_package_by_id (sack, "moo;moo;moo;moo", NULL);
+	ret = pk_package_sack_add_package_by_id (sack, "glib2;2.14.0;i386;fedora", NULL);
 	egg_test_assert (test, ret);
 
 	/************************************************************/
@@ -488,8 +660,34 @@ pk_package_sack_test (EggTest *test)
 	egg_test_assert (test, (size == 1));
 
 	/************************************************************/
+	egg_test_title (test, "merge resolve results");
+	pk_package_sack_merge_resolve_async (sack, NULL, (GAsyncReadyCallback) pk_package_sack_test_resolve_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "find package which is present");
+	package = pk_package_sack_find_by_id (sack, "glib2;2.14.0;i386;fedora");
+	egg_test_assert (test, (package != NULL));
+
+	/************************************************************/
+	egg_test_title (test, "check new summary");
+	g_object_get (package,
+		      "info", &info,
+		      "summary", &text,
+		      NULL);
+	egg_test_assert (test, (g_strcmp0 (text, "The GLib library") == 0));
+
+	/************************************************************/
+	egg_test_title (test, "check new info");
+	egg_test_assert (test, (info == PK_INFO_ENUM_INSTALLED));
+
+	g_free (text);
+	g_object_unref (package);
+
+	/************************************************************/
 	egg_test_title (test, "remove package");
-	ret = pk_package_sack_remove_package_by_id (sack, "moo;moo;moo;moo");
+	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
 	egg_test_assert (test, ret);
 
 	/************************************************************/
@@ -499,19 +697,8 @@ pk_package_sack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "remove already removed package");
-	ret = pk_package_sack_remove_package_by_id (sack, "moo;moo;moo;moo");
+	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
 	egg_test_assert (test, !ret);
-
-//static void
-//pk_client_test_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, EggTest *test)
-//{
-//	egg_test_loop_quit (test);
-//}
-
-
-	pk_package_sack_merge_resolve_async (sack, NULL, (PkPackageSackFinishedCb) &ret, NULL);
-	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
 
 	g_object_unref (sack);
 out:

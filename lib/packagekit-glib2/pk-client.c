@@ -66,7 +66,6 @@ static void     pk_client_finalize	(GObject     *object);
  **/
 struct _PkClientPrivate
 {
-//	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
 	PkControl		*control;
 };
@@ -92,13 +91,15 @@ typedef struct {
 	GCancellable		*cancellable;
 	gchar			*tid;
 	gchar			**packages;
-	GSimpleAsyncResult	*result;
+	GSimpleAsyncResult	*res;
 	DBusGProxyCall		*call;
 	PkResults		*results;
 	DBusGProxy		*proxy;
+	PkBitfield		 filters;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
+static void pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state);
 
 /**
  * pk_client_state_finish:
@@ -121,20 +122,19 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	}
 
 	if (state->proxy != NULL) {
-		dbus_g_proxy_disconnect_signal (state->proxy, "Finished",
-						G_CALLBACK (pk_client_finished_cb), state->client);
+		pk_client_disconnect_proxy (state->proxy, state);
 		g_object_unref (G_OBJECT (state->proxy));
 	}
 
 	if (state->results != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->result, g_object_ref (state->results), g_object_unref);
+		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
 	} else {
-		g_simple_async_result_set_from_error (state->result, error);
+		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
 
-	g_simple_async_result_complete_in_idle (state->result);
-	g_object_unref (state->result);
+	g_simple_async_result_complete_in_idle (state->res);
+	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
 }
 
@@ -147,7 +147,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	GError *error = NULL;
 	PkExitEnum exit_enum;
 
-	egg_warning ("exit_text=%s", exit_text);
+	egg_debug ("exit_text=%s", exit_text);
 
 	/* yay */
 	exit_enum = pk_exit_enum_from_text (exit_text);
@@ -194,19 +194,169 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 }
 
 /**
+ * pk_client_package_cb:
+ */
+static void
+pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *package_id, const gchar *summary, PkClientState *state)
+{
+	PkInfoEnum info_enum;
+	g_return_if_fail (PK_IS_CLIENT (state->client));
+	info_enum = pk_info_enum_from_text (info_text);
+	pk_results_add_package (state->results, info_enum, package_id, summary);
+}
+
+/**
+ * pk_client_connect_proxy:
+ **/
+static void
+pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
+{
+	/* add the signal types */
+	dbus_g_proxy_add_signal (proxy, "Finished",
+				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "ProgressChanged",
+				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "StatusChanged",
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Package",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Transaction",
+				 G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "DistroUpgrade",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Details",
+				 G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+				 G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Files", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "RepoDetail", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Message", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Category", G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "MediaChangeRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* connect up the signals */
+	dbus_g_proxy_connect_signal (proxy, "Finished",
+				     G_CALLBACK (pk_client_finished_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Package",
+				     G_CALLBACK (pk_client_package_cb), state, NULL);
+#if 0
+	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
+				     G_CALLBACK (pk_client_progress_changed_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
+				     G_CALLBACK (pk_client_status_changed_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Transaction",
+				     G_CALLBACK (pk_client_transaction_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
+				     G_CALLBACK (pk_client_update_detail_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
+				     G_CALLBACK (pk_client_distro_upgrade_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_client_details_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Files",
+				     G_CALLBACK (pk_client_files_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
+				     G_CALLBACK (pk_client_repo_signature_required_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_client_eula_required_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
+				     G_CALLBACK (pk_client_repo_detail_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
+				     G_CALLBACK (pk_client_error_code_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
+				     G_CALLBACK (pk_client_require_restart_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Message",
+				     G_CALLBACK (pk_client_message_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
+				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
+				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Category",
+				     G_CALLBACK (pk_client_category_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
+				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Destroy",
+				     G_CALLBACK (pk_client_destroy_cb), state, NULL);
+#endif
+}
+
+/**
+ * pk_client_disconnect_proxy:
+ **/
+static void
+pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
+{
+	dbus_g_proxy_disconnect_signal (proxy, "Finished",
+					G_CALLBACK (pk_client_finished_cb), state);
+#if 0
+	dbus_g_proxy_disconnect_signal (proxy, "ProgressChanged",
+					G_CALLBACK (pk_client_progress_changed_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
+					G_CALLBACK (pk_client_status_changed_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Package",
+					G_CALLBACK (pk_client_package_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Transaction",
+					G_CALLBACK (pk_client_transaction_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
+					G_CALLBACK (pk_client_distro_upgrade_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Details",
+					G_CALLBACK (pk_client_details_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Files",
+					G_CALLBACK (pk_client_files_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
+					G_CALLBACK (pk_client_repo_signature_required_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
+					G_CALLBACK (pk_client_eula_required_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "ErrorCode",
+					G_CALLBACK (pk_client_error_code_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
+					G_CALLBACK (pk_client_require_restart_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Message",
+					G_CALLBACK (pk_client_message_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
+					G_CALLBACK (pk_client_caller_active_changed_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
+					G_CALLBACK (pk_client_allow_cancel_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Destroy",
+					G_CALLBACK (pk_client_destroy_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
+					G_CALLBACK (pk_client_media_change_required_cb), state);
+#endif
+}
+
+/**
  * pk_client_get_tid_cb:
  **/
 static void
-pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *state)
+pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	const gchar *tid = NULL;
+	gchar *filters_text;
 
-	tid = pk_control_get_tid_finish (control, result, &error);
+	tid = pk_control_get_tid_finish (control, res, &error);
 	if (tid == NULL) {
 		pk_client_state_finish (state, error);
-//		egg_test_failed (test, "failed to get transaction: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -223,15 +373,16 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
 
-	dbus_g_proxy_add_signal (state->proxy, "Finished",
-				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (state->proxy, "Finished",
-				     G_CALLBACK (pk_client_finished_cb), state, NULL);
+	/* setup the proxies ready for use */
+	pk_client_connect_proxy (state->proxy, state);
+
+	/* send the filter as a string over the wire */
+	filters_text = pk_filter_bitfield_to_text (state->filters);
 
 	/* do this async, although this should be pretty fast anyway */
 	state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
 					       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-					       G_TYPE_STRING, "installed", //TODO: add filter
+					       G_TYPE_STRING, filters_text,
 					       G_TYPE_STRV, state->packages,
 					       G_TYPE_INVALID);
 
@@ -240,6 +391,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+
+	/* deallocate temp state */
+	g_free (filters_text);
 }
 
 /**
@@ -252,36 +406,38 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *result, PkClientState *stat
  * TODO
  **/
 void
-pk_client_resolve_async (PkClient *client, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
+			 GAsyncReadyCallback callback, gpointer user_data)
 {
-	GSimpleAsyncResult *result;
+	GSimpleAsyncResult *res;
 	PkClientState *state;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback != NULL);
 
-	result = g_simple_async_result_new (G_OBJECT (client), callback, user_data, pk_client_resolve_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback, user_data, pk_client_resolve_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
-	state->result = g_object_ref (result);
+	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->client = client;
 	state->results = NULL;
 	state->proxy = NULL;
 	state->call = NULL;
-	state->packages = g_strsplit ("gnome-power-manager,hal", ",", -1); //TODO: add parameter
+	state->filters = filters;
+	state->packages = g_strdupv (packages);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
-	g_object_unref (result);
+	g_object_unref (res);
 }
 
 /**
  * pk_client_resolve_finish:
  * @client: a valid #PkClient instance
- * @result: the #GAsyncResult
+ * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
  * Gets the result from the asynchronous function. 
@@ -289,15 +445,15 @@ pk_client_resolve_async (PkClient *client, GCancellable *cancellable, GAsyncRead
  * Return value: the ID, or %NULL if unset
  **/
 PkResults *
-pk_client_resolve_finish (PkClient *client, GAsyncResult *result, GError **error)
+pk_client_resolve_finish (PkClient *client, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 	gpointer source_tag;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (result), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
 
-	simple = G_SIMPLE_ASYNC_RESULT (result);
+	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
 	g_return_val_if_fail (source_tag == pk_client_resolve_async, NULL);
@@ -405,9 +561,82 @@ pk_client_init (PkClient *client)
 	/* use a control object */
 	client->priv->control = pk_control_new ();
 
+	/* DistroUpgrade, MediaChangeRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* ProgressChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
+					   G_TYPE_NONE, G_TYPE_UINT,
+					   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+
+	/* AllowCancel */
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
+					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+
+	/* StatusChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_INVALID);
+
 	/* Finished */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+
+	/* ErrorCode, RequireRestart, Message */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* CallerActiveChanged */
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
+					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+
+	/* Details */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+					   G_TYPE_INVALID);
+
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* Files */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* RepoSignatureRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* Package */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* RepoDetail */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_BOOLEAN, G_TYPE_INVALID);
+
+	/* UpdateDetail */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	/* Transaction */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT_STRING_UINT_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
+					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+					   G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	/* Category */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 }
 
 /**
@@ -445,14 +674,18 @@ pk_client_new (void)
 #include "egg-test.h"
 
 static void
-pk_client_test_resolve_cb (GObject *object, GAsyncResult *result, EggTest *test)
+pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
+	GPtrArray *packages;
+	const PkResultItemPackage *item;
+	guint i;
 
-	results = pk_client_resolve_finish (client, result, &error);
+	/* get the results */
+	results = pk_client_resolve_finish (client, res, &error);
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
@@ -463,6 +696,21 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *result, EggTest *test)
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
 		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
 
+	packages = pk_results_get_package_array (results);
+	if (packages == NULL)
+		egg_test_failed (test, "no packages!");
+
+	/* list, just for shits and giggles */
+	for (i=0; i<packages->len; i++) {
+		item = g_ptr_array_index (packages, i);
+		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+	}
+
+	if (packages->len != 2)
+		egg_test_failed (test, "invalid number of packages: %i", packages->len);
+
+	g_ptr_array_unref (packages);
+
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
 	egg_test_loop_quit (test);
 }
@@ -471,6 +719,7 @@ void
 pk_client_test (EggTest *test)
 {
 	PkClient *client;
+	gchar **package_ids;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -482,12 +731,15 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get TID async");
-	pk_client_resolve_async (client, NULL, (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
+	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora,powertop", ",", -1);
+	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
+				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
+	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
 
 	g_object_unref (client);
-out:
+
 	egg_test_end (test);
 }
 #endif

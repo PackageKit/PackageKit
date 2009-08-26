@@ -45,6 +45,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-enum.h						\
 	pk-package.c						\
 	pk-package.h						\
+	pk-bitfield.c						\
+	pk-bitfield.h						\
 	pk-package-sack.c					\
 	pk-package-sack.h					\
 	pk-control.c						\

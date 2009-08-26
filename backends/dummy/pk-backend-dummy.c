@@ -613,24 +613,24 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	/* each one has a different detail for testing */
 	len = g_strv_length (packages);
 	for (i=0; i<len; i++) {
-		if (g_strcmp0 (packages[i], "vips-doc") == 0) {
+		if (g_strcmp0 (packages[i], "vips-doc") == 0 || g_strcmp0 (packages[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 						    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 			}
-		} else if (g_strcmp0 (packages[i], "glib2") == 0) {
+		} else if (g_strcmp0 (packages[i], "glib2") == 0 || g_strcmp0 (packages[i], "glib2;2.14.0;i386;fedora") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 						    "glib2;2.14.0;i386;fedora", "The GLib library");
 			}
-		} else if (g_strcmp0 (packages[i], "powertop") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+		} else if (g_strcmp0 (packages[i], "powertop") == 0 || g_strcmp0 (packages[i], "powertop;1.8-1.fc8;i386;fedora") == 0)
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
-		else if (g_strcmp0 (packages[i], "kernel") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+		else if (g_strcmp0 (packages[i], "kernel") == 0 || g_strcmp0 (packages[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
-		else if (g_strcmp0 (packages[i], "gtkhtml2") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+		else if (g_strcmp0 (packages[i], "gtkhtml2") == 0 || g_strcmp0 (packages[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_finished (backend);

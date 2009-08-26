@@ -25,7 +25,7 @@
 
 /**
  * SECTION:pk-control
- * @short_description: An abstract control GObject
+ * @short_description: An abstract control access GObject
  */
 
 #ifndef __PK_CONTROL_H
@@ -77,7 +77,7 @@ void		 pk_control_get_tid_async		(PkControl		*control,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 gchar		*pk_control_get_tid_finish		(PkControl		*control,
-							 GAsyncResult		*result,
+							 GAsyncResult		*res,
 							 GError			**error);
 
 G_END_DECLS
