@@ -609,6 +609,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	guint len;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (packages);
@@ -633,6 +634,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	}
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 }
 
