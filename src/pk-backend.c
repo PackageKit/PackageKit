@@ -822,7 +822,8 @@ pk_backend_package_emulate_finished (PkBackend *backend)
 	    info == PK_INFO_ENUM_REMOVING ||
 	    info == PK_INFO_ENUM_CLEANUP ||
 	    info == PK_INFO_ENUM_OBSOLETING ||
-	    info == PK_INFO_ENUM_REINSTALLING) {
+	    info == PK_INFO_ENUM_REINSTALLING ||
+	    info == PK_INFO_ENUM_DOWNGRADING) {
 		package_id = pk_package_id_to_string (backend->priv->last_package->id);
 		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, backend->priv->last_package->summary);
 		g_free (package_id);

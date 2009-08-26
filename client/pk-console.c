@@ -342,6 +342,9 @@ pk_console_print_deps_list (PkPackageList *list)
 	/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
 	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REINSTALLING, _("The following packages have to be reinstalled:"));
 
+	/* TRANSLATORS: When processing, we might have to downgrade other dependencies */
+	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_DOWNGRADING, _("The following packages have to be downgraded:"));
+
 	return found;
 }
 

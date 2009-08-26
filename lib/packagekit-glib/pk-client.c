@@ -3782,7 +3782,8 @@ out:
  * @files_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @error: a %GError to put the error code and message in, or %NULL
  * Simulate an installation of files.
- * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+ *       REINSTALLING or DOWNGRADING status.
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
@@ -3867,10 +3868,8 @@ pk_client_simulate_install_files (PkClient *client, gchar **files_rel, GError **
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  * Simulate an installation of packages.
- * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
- *       if the backend supports SimulateInstallPackages, otherwise it will silently fallback
- *       to use GetDepends("~installed", packages, recursive=TRUE), which might emit only
- *       AVAILABLE packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+ *       REINSTALLING or DOWNGRADING status.
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
@@ -3943,10 +3942,8 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GErr
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  * Simulate a removal of packages.
- * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
- *       if the backend supports SimulateRemovePackages, otherwise it will silently fallback
- *       to use GetRequires("installed", packages, recursive=TRUE), which might emit only
- *       INSTALLED packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+ *       REINSTALLING or DOWNGRADING status.
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
@@ -4019,10 +4016,8 @@ pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GErro
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  * Simulate an update of packages.
- * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING or REINSTALLING status
- *       if the backend supports SimulateUpdatePackages, otherwise it will silently fallback
- *       to use GetDepends("~installed", packages, recursive=TRUE), which might emit only
- *       AVAILABLE packages.
+ * NOTE: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+ *       REINSTALLING or DOWNGRADING status.
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean

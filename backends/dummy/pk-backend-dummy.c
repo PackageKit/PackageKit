@@ -1199,7 +1199,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 
-	pk_backend_package (backend, PK_INFO_ENUM_OBSOLETING,
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNGRADING,
 			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
 
 	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
