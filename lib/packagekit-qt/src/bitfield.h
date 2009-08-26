@@ -1,0 +1,26 @@
+#ifndef BITFIELD_H
+#define BITFIELD_H
+
+#include <QtGlobal>
+
+namespace PackageKit {
+	class Bitfield
+	{
+	public:
+		Bitfield ();
+		Bitfield (qint64 val);
+		~Bitfield ();
+
+		qint64 operator& (qint64 mask);
+		qint64 operator&= (qint64 mask);
+		qint64 operator| (qint64 mask);
+		qint64 operator|= (qint64 mask);
+
+		Bitfield& operator= (const Bitfield& other);
+
+	private:
+		qint64 m_val;
+	};
+} // End namespace PackageKit
+
+#endif

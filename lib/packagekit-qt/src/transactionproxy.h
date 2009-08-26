@@ -277,6 +277,34 @@ public Q_SLOTS: // METHODS
         return callWithArgumentList(QDBus::Block, QLatin1String("SetLocale"), argumentList);
     }
 
+    inline QDBusReply<void> SimulateInstallFiles(const QStringList &full_paths)
+    {
+        QList<QVariant> argumentList;
+        argumentList << qVariantFromValue(full_paths);
+        return callWithArgumentList(QDBus::Block, QLatin1String("SimulateInstallFiles"), argumentList);
+    }
+
+    inline QDBusReply<void> SimulateInstallPackages(const QStringList &package_ids)
+    {
+        QList<QVariant> argumentList;
+        argumentList << qVariantFromValue(package_ids);
+        return callWithArgumentList(QDBus::Block, QLatin1String("SimulateInstallPackages"), argumentList);
+    }
+
+    inline QDBusReply<void> SimulateRemovePackages(const QStringList &package_ids)
+    {
+        QList<QVariant> argumentList;
+        argumentList << qVariantFromValue(package_ids);
+        return callWithArgumentList(QDBus::Block, QLatin1String("SimulateRemovePackages"), argumentList);
+    }
+
+    inline QDBusReply<void> SimulateUpdatePackages(const QStringList &package_ids)
+    {
+        QList<QVariant> argumentList;
+        argumentList << qVariantFromValue(package_ids);
+        return callWithArgumentList(QDBus::Block, QLatin1String("SimulateUpdatePackages"), argumentList);
+    }
+
     inline QDBusReply<void> UpdatePackages(bool only_trusted, const QStringList &package_ids)
     {
         QList<QVariant> argumentList;
@@ -287,7 +315,7 @@ public Q_SLOTS: // METHODS
     inline QDBusReply<void> UpdateSystem(bool only_trusted)
     {
         QList<QVariant> argumentList;
-		argumentList << qVariantFromValue (only_trusted);
+        argumentList << qVariantFromValue (only_trusted);
         return callWithArgumentList(QDBus::Block, QLatin1String("UpdateSystem"), argumentList);
     }
 

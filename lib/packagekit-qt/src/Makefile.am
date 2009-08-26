@@ -21,6 +21,7 @@ libpackagekit_qt_include_HEADERS =				\
 	client.h						\
 	transaction.h						\
 	package.h						\
+	bitfield.h                      \
 	$(NULL)
 
 $(libpackagekit_qt_la_OBJECTS) :				\
@@ -52,6 +53,8 @@ libpackagekit_qt_la_SOURCES =					\
 	package.cpp						\
 	util.h							\
 	util.cpp						\
+	bitfield.h                      \
+	bitfield.cpp                    \
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
