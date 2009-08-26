@@ -431,7 +431,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	/* start resolve async */
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
-				 cancellable, (GAsyncReadyCallback) pk_package_sack_merge_resolve_cb, state);
+				 cancellable, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_merge_resolve_cb, state);
 
 	g_strfreev (package_ids);
 	g_object_unref (res);

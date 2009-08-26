@@ -74,14 +74,24 @@ GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_get_type		  	(void);
 PkClient	*pk_client_new				(void);
 
+typedef void	(*PkClientProgressCallback)		(PkClient		*client,
+							 gint			 percentage,
+                                                         gpointer		 user_data);
+typedef void	(*PkClientStatusCallback)		(PkClient		*client,
+							 PkStatusEnum		 status,
+                                                         gpointer		 user_data);
+typedef void	(*PkClientPackageCallback)		(PkClient		*client,
+							 const gchar		*package_id,
+                                                         gpointer		 user_data);
+
 void		 pk_client_resolve_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**packages,
 							 GCancellable		*cancellable,
-							 /* TODO: progress cb */
-							 /* TODO: status cb */
-							 /* TODO: package cb */
-							 GAsyncReadyCallback	 callback,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 PkClientPackageCallback callback_package,
+							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 PkResults	*pk_client_resolve_finish		(PkClient		*client,
 							 GAsyncResult		*res,

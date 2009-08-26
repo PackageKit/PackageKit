@@ -87,15 +87,19 @@ static guint signals [SIGNAL_LAST] = { 0 };
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 typedef struct {
-	PkClient		*client;
-	GCancellable		*cancellable;
-	gchar			*tid;
-	gchar			**packages;
-	GSimpleAsyncResult	*res;
-	DBusGProxyCall		*call;
-	PkResults		*results;
-	DBusGProxy		*proxy;
-	PkBitfield		 filters;
+	PkClient			*client;
+	GCancellable			*cancellable;
+	gchar				*tid;
+	gchar				**packages;
+	GSimpleAsyncResult		*res;
+	DBusGProxyCall			*call;
+	PkResults			*results;
+	DBusGProxy			*proxy;
+	PkBitfield			 filters;
+	PkClientProgressCallback	 callback_progress;
+	PkClientStatusCallback		 callback_status;
+	PkClientPackageCallback		 callback_package;
+	gpointer			 user_data;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -201,8 +205,41 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 {
 	PkInfoEnum info_enum;
 	g_return_if_fail (PK_IS_CLIENT (state->client));
+
+	/* add to results */
 	info_enum = pk_info_enum_from_text (info_text);
 	pk_results_add_package (state->results, info_enum, package_id, summary);
+
+	/* do the callback for GUI programs */
+	if (state->callback_package != NULL)
+		state->callback_package (state->client, package_id, state->user_data);
+}
+
+/**
+ * pk_client_progress_changed_cb:
+ */
+static void
+pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subpercentage,
+			       guint elapsed, guint remaining, PkClientState *state)
+{
+	/* do the callback for GUI programs */
+	if (state->callback_progress != NULL)
+		state->callback_progress (state->client, percentage, state->user_data);
+}
+
+/**
+ * pk_client_status_changed_cb:
+ */
+static void
+pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClientState *state)
+{
+	PkStatusEnum status_enum;
+
+	/* do the callback for GUI programs */
+	if (state->callback_status != NULL) {
+		status_enum = pk_status_enum_from_text (status_text);
+		state->callback_status (state->client, status_enum, state->user_data);
+	}
 }
 
 /**
@@ -259,11 +296,11 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_finished_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_client_package_cb), state, NULL);
-#if 0
-	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
-				     G_CALLBACK (pk_client_progress_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
 				     G_CALLBACK (pk_client_status_changed_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
+				     G_CALLBACK (pk_client_progress_changed_cb), state, NULL);
+#if 0
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
@@ -307,13 +344,13 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 {
 	dbus_g_proxy_disconnect_signal (proxy, "Finished",
 					G_CALLBACK (pk_client_finished_cb), state);
-#if 0
+	dbus_g_proxy_disconnect_signal (proxy, "Package",
+					G_CALLBACK (pk_client_package_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "ProgressChanged",
 					G_CALLBACK (pk_client_progress_changed_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
 					G_CALLBACK (pk_client_status_changed_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Package",
-					G_CALLBACK (pk_client_package_cb), state);
+#if 0
 	dbus_g_proxy_disconnect_signal (proxy, "Transaction",
 					G_CALLBACK (pk_client_transaction_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
@@ -400,22 +437,26 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
  * pk_client_resolve_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback: the function to run on completion
+ * @callback_progress: the function to run when the progress changes
+ * @callback_status: the function to run when the status changes
+ * @callback_package: the function to run when the package changes
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * TODO
  **/
 void
 pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
-			 GAsyncReadyCallback callback, gpointer user_data)
+			 PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			 PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
-	g_return_if_fail (callback != NULL);
+	g_return_if_fail (callback_ready != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback, user_data, pk_client_resolve_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_resolve_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
@@ -427,6 +468,10 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->call = NULL;
 	state->filters = filters;
 	state->packages = g_strdupv (packages);
+	state->callback_progress = callback_progress;
+	state->callback_status = callback_status;
+	state->callback_package = callback_package;
+	state->user_data = user_data;
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -715,6 +760,31 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	egg_test_loop_quit (test);
 }
 
+static guint _progress_cb = 0;
+static guint _status_cb = 0;
+static guint _package_cb = 0;
+
+void
+pk_client_test_progress_cb (PkClient *client, gint percentage, EggTest *test)
+{
+	egg_debug ("progress now %i", percentage);
+	_progress_cb++;
+}
+
+void
+pk_client_test_status_cb (PkClient *client, PkStatusEnum status, EggTest *test)
+{
+	egg_debug ("status now %s", pk_status_enum_to_text (status));
+	_status_cb++;
+}
+
+void
+pk_client_test_package_cb (PkClient *client, const gchar *package_id, EggTest *test)
+{
+	egg_debug ("package now %s", package_id);
+	_package_cb++;
+}
+
 void
 pk_client_test (EggTest *test)
 {
@@ -730,13 +800,37 @@ pk_client_test (EggTest *test)
 	egg_test_assert (test, client != NULL);
 
 	/************************************************************/
-	egg_test_title (test, "get TID async");
+	egg_test_title (test, "resolve package");
 	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora,powertop", ",", -1);
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
+				 (PkClientProgressCallback) pk_client_test_progress_cb,
+				 (PkClientStatusCallback) pk_client_test_status_cb,
+				 (PkClientPackageCallback) pk_client_test_package_cb,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
-	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
+	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "got progress updates");
+	if (_progress_cb > 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i updates", _progress_cb);
+
+	/************************************************************/
+	egg_test_title (test, "got status updates");
+	if (_status_cb > 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i updates", _status_cb);
+
+	/************************************************************/
+	egg_test_title (test, "got package updates");
+	if (_package_cb > 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i updates", _package_cb);
 
 	g_object_unref (client);
 
