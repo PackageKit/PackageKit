@@ -93,9 +93,11 @@ typedef struct {
 	PkControl		*control;
 	GCancellable		*cancellable;
 	gchar			*tid;
-	GSimpleAsyncResult	*result;
+	GSimpleAsyncResult	*res;
 	DBusGProxyCall		*call;
 } PkControlState;
+
+/***************************************************************************************************/
 
 /**
  * pk_control_get_tid_state_finish:
@@ -103,30 +105,31 @@ typedef struct {
 static void
 pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 {
-//	PkControlPrivate *priv;
-
-	if (state->control != NULL) {
-//		priv = state->control->priv;
+	/* remove weak ref */
+	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-	}
 
+	/* cancel */
 	if (state->cancellable != NULL) {
 		g_cancellable_cancel (state->cancellable);
 		g_object_unref (state->cancellable);
 	}
 
+	/* get result */
 	if (state->tid != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->result, g_strdup (state->tid), g_free);
+		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->tid), g_free);
 	} else {
-		g_simple_async_result_set_from_error (state->result, error);
+		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
 
-	g_simple_async_result_complete_in_idle (state->result);
-	g_object_unref (state->result);
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
-
 
 /**
  * pk_control_get_tid_cb:
@@ -134,7 +137,6 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 static void
 pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
 {
-//	PkControl *control = PK_CONTROL (state->control);
 	GError *error = NULL;
 	gchar *tid = NULL;
 	gboolean ret;
@@ -173,32 +175,34 @@ out:
 void
 pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
 {
-	GSimpleAsyncResult *result;
+	GSimpleAsyncResult *res;
 	PkControlState *state;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 
-	result = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_tid_async);
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_tid_async);
 
 	/* save state */
 	state = g_slice_new0 (PkControlState);
-	state->result = g_object_ref (result);
+	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->control = control;
+	state->call = NULL;
+	state->tid = NULL;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTid",
 					       (DBusGProxyCallNotify) pk_control_get_tid_cb, state,
 					       NULL, G_TYPE_INVALID);
-	g_object_unref (result);
+	g_object_unref (res);
 }
 
 /**
  * pk_control_get_tid_finish:
  * @control: a valid #PkControl instance
- * @result: the #GAsyncResult
+ * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
  * Gets the result from the asynchronous function. 
@@ -206,15 +210,15 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
  * Return value: the ID, or %NULL if unset
  **/
 gchar *
-pk_control_get_tid_finish (PkControl *control, GAsyncResult *result, GError **error)
+pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 	gpointer source_tag;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (result), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
 
-	simple = G_SIMPLE_ASYNC_RESULT (result);
+	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
 	g_return_val_if_fail (source_tag == pk_control_get_tid_async, NULL);
@@ -224,6 +228,8 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *result, GError **er
 
 	return g_simple_async_result_get_op_res_gpointer (simple);
 }
+
+/***************************************************************************************************/
 
 /**
  * pk_control_set_properties_collect_cb:
@@ -460,13 +466,14 @@ pk_control_new (void)
 #include "egg-test.h"
 
 static void
-pk_control_test_get_tid_cb (GObject *object, GAsyncResult *result, EggTest *test)
+pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	const gchar *tid = NULL;
 
-	tid = pk_control_get_tid_finish (control, result, &error);
+	/* get the result */
+	tid = pk_control_get_tid_finish (control, res, &error);
 	if (tid == NULL) {
 		egg_test_failed (test, "failed to get transaction: %s", error->message);
 		g_error_free (error);

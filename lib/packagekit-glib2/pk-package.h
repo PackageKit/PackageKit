@@ -76,6 +76,7 @@ gboolean	 pk_package_set_id			(PkPackage	*package,
 							 const gchar	*package_id,
 							 GError		**error);
 const gchar	*pk_package_get_id			(PkPackage	*package);
+void		 pk_package_print			(PkPackage	*package);
 
 G_END_DECLS
 

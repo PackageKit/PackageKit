@@ -165,6 +165,22 @@ pk_package_get_id (PkPackage *package)
 }
 
 /**
+ * pk_package_print:
+ * @package: a valid #PkPackage instance
+ *
+ * Prints details about the package to standard out.
+ **/
+void
+pk_package_print (PkPackage *package)
+{
+	PkPackagePrivate *priv;
+	g_return_if_fail (PK_IS_PACKAGE (package));
+
+	priv = package->priv;
+	g_print ("%s-%s.%s\t%s\t%s\n", priv->id_name, priv->id_version, priv->id_arch, priv->id_data, priv->summary);
+}
+
+/**
  * pk_package_get_property:
  **/
 static void
@@ -285,7 +301,7 @@ pk_package_class_init (PkPackageClass *klass)
 	/**
 	 * PkPackage:summary:
 	 */
-	pspec = g_param_spec_string ("id-summary", NULL,
+	pspec = g_param_spec_string ("summary", NULL,
 				     "The package summary",
 				     NULL,
 				     G_PARAM_READWRITE);

@@ -84,7 +84,7 @@ void		 pk_client_resolve_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 PkResults	*pk_client_resolve_finish		(PkClient		*client,
-							 GAsyncResult		*result,
+							 GAsyncResult		*res,
 							 GError			**error);
 
 G_END_DECLS
