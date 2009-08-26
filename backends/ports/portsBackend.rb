@@ -616,11 +616,7 @@ def update_system(only_trusted)
     end
 end
 
-def install_packages(only_trusted, package_ids)
-    if only_trusted
-        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
-        return
-    end
+def download_packages(directory, package_ids)
     pkgnames = []
     package_ids.each do |package|
       name, version, arch, data = package.split(';')
@@ -629,13 +625,103 @@ def install_packages(only_trusted, package_ids)
         next
       end
       pkgname = "#{name}-#{version}"
-      pkg = PkgInfo.new(pkgname)
-      if pkg.installed?
-        error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package #{pkgname} is already installed")
-      else
-        pkgnames << pkgname
-      end
+      pkgnames << pkgname
     end
+
+    args = [ '-f' ] # download even if installed
+    args.concat pkgnames
+    packages = ENV['PACKAGES']
+    pkgname = nil
+    status(STATUS_DEP_RESOLVE)
+    ENV['PACKAGES'] = directory
+    stdin, stdout, stderr = Open3.popen3(PkgDB::command(:pkg_fetch), *args)
+    stdout.each_line do |line|
+        if line.match(/^\-\-\-\>/)
+            if line.match(/Fetching (.*)\-(.*)/)
+                status(STATUS_DOWNLOAD)
+                _resolve(FILTER_NONE, $1)
+                pkgname = "#{$1}-#{$2}"
+            elsif line.match(/Saved as (.*)/)
+                next unless pkgname
+                pkg = PkgInfo.new(pkgname)
+                file_list = $1
+                data = pkg.installed? ? "installed" : "ports"
+                package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+                files(package_id, file_list)
+                pkgname = nil
+            end
+            message(MESSAGE_UNKNOWN, line.chomp)
+        end
+    end
+    stderr.each_line do |line|
+        if line.match(/\*\* Failed to fetch (.*)\-(.*)/)
+          pkgname = "#{$1}-#{$2}"
+          next unless pkgnames.include?(pkgname)
+          message(ERROR_PACKAGE_DOWNLOAD_FAILED, "Failed to fetch #{pkgname}")
+        else
+          message(MESSAGE_BACKEND_ERROR, line.chomp)
+        end
+    end
+    ENV['PACKAGES'] = packages
+end
+
+def install_files(only_trusted, inst_files)
+    if only_trusted
+        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+        return
+    end
+    pkg_path = ENV['PKG_PATH']
+    path = []
+    pkgnames = []
+    inst_files.each do |file|
+        begin
+            pkg = PkgFileInfo.new(file)
+            pkgname = pkg.fullname
+            if pkg.installed?
+              error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package #{pkgname} is already installed")
+            elsif $portsdb.glob(pkgname).empty?
+              # portinstall is a little picky about installing packages for mismatched ports
+              error(ERROR_PACKAGE_NOT_FOUND, "Port for #{pkgname} was not found", exit=true)
+            else
+              pkgnames << pkgname
+            end
+        rescue ArgumentError
+            error(ERROR_INVALID_PACKAGE_FILE, "File #{file} is not a package")
+            next
+        end
+        path << File.dirname(file)
+    end
+    path << $packages_dir # add default dir for depends
+    ENV['PKG_PATH'] = path.join(':')
+    _install(pkgnames)
+    ENV['PKG_PATH'] = pkg_path
+end
+
+def install_packages(only_trusted, package_ids)
+    if only_trusted
+        error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+        return
+    end
+    pkgnames = []
+    package_ids.each do |package|
+        name, version, arch, data = package.split(';')
+        if $portsdb.glob(name)
+            pkgname = "#{name}-#{version}"
+            pkg = PkgInfo.new(pkgname)
+            if pkg.installed?
+              error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package #{pkgname} is already installed")
+            else
+              pkgnames << pkg.fullname
+            end
+        else
+            error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
+            next
+        end
+    end
+    _install(pkgnames)
+end
+
+def _install(pkgnames)
     return if pkgnames.empty?
     args = ['-M', 'DIALOG='+DIALOG]
     args << '-P' if USE_PKG
@@ -669,9 +755,7 @@ def install_packages(only_trusted, package_ids)
           message(MESSAGE_BACKEND_ERROR, line.chomp)
         end
     end
-    package_ids.each do |package|
-      name, version, arch, data = package.split(';')
-      pkgname = "#{name}-#{version}"
+    pkgnames.each do |pkgname|
       _resolve(FILTER_INSTALLED, pkgname)
     end
 end
@@ -802,6 +886,11 @@ end
 
 def dispatch_command(cmd, args)
     case
+    when cmd == 'download-packages'
+        directory = args[0]
+        package_ids = args[1].split(PACKAGE_IDS_DELIM)
+        download_packages(directory, package_ids)
+        finished()
     when cmd == 'get-packages'
         filters = args[0]
         get_packages(filters)
@@ -862,6 +951,11 @@ def dispatch_command(cmd, args)
     when cmd == 'get-updates'
         filters = args[0]
         get_updates(filters)
+        finished()
+    when cmd == 'install-files'
+        only_trusted = to_b(args[0])
+        files_to_inst = args[1].split(FILENAME_DELIM)
+        install_files(only_trusted, files_to_inst)
         finished()
     when cmd == 'install-packages'
         only_trusted = to_b(args[0])

@@ -106,6 +106,16 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-compressed-tar;"	/* .tgz */
+	                 "application/x-bzip-compressed-tar"	/* .tbz */);
+}
+
+/**
  * backend_cancel:
  */
 static void
@@ -113,6 +123,20 @@ backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -195,6 +219,20 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_files:
+ */
+static void
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+{
+	gchar *full_paths_temp;
+
+	/* send the complete list as stdin */
+	full_paths_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-files", pk_backend_bool_to_text (only_trusted), full_paths_temp, NULL);
+	g_free (full_paths_temp);
 }
 
 /**
@@ -366,9 +404,9 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,			/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,		/* download_packages */
+	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
@@ -379,7 +417,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,			/* install_files */
+	backend_install_files,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,			/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
