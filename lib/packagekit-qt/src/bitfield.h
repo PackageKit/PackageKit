@@ -16,6 +16,11 @@ namespace PackageKit {
 		qint64 operator| (qint64 mask);
 		qint64 operator|= (qint64 mask);
 
+		Bitfield operator& (Bitfield mask);
+		Bitfield operator&= (Bitfield mask);
+		Bitfield operator| (Bitfield mask);
+		Bitfield operator|= (Bitfield mask);
+
 		Bitfield& operator= (const Bitfield& other);
 
 	private:
