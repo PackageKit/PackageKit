@@ -84,6 +84,7 @@ typedef void	(*PkClientPackageCallback)		(PkClient		*client,
 							 const gchar		*package_id,
                                                          gpointer		 user_data);
 
+/* resolve */
 void		 pk_client_resolve_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**packages,
@@ -94,6 +95,32 @@ void		 pk_client_resolve_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 PkResults	*pk_client_resolve_finish		(PkClient		*client,
+							 GAsyncResult		*res,
+							 GError			**error);
+
+/* get_details */
+void		 pk_client_get_details_async		(PkClient		*client,
+							 gchar			**packages,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 PkClientPackageCallback callback_package,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+PkResults	*pk_client_get_details_finish		(PkClient		*client,
+							 GAsyncResult		*res,
+							 GError			**error);
+
+/* get_update_detail */
+void		 pk_client_get_update_detail_async	(PkClient		*client,
+							 gchar			**packages,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 PkClientPackageCallback callback_package,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+PkResults	*pk_client_get_update_detail_finish	(PkClient		*client,
 							 GAsyncResult		*res,
 							 GError			**error);
 

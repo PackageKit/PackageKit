@@ -100,6 +100,7 @@ typedef struct {
 	PkClientStatusCallback		 callback_status;
 	PkClientPackageCallback		 callback_package;
 	gpointer			 user_data;
+	PkRoleEnum			 role;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -389,7 +390,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	const gchar *tid = NULL;
-	gchar *filters_text;
+	gchar *filters_text = NULL;
 
 	tid = pk_control_get_tid_finish (control, res, &error);
 	if (tid == NULL) {
@@ -413,15 +414,27 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	/* setup the proxies ready for use */
 	pk_client_connect_proxy (state->proxy, state);
 
-	/* send the filter as a string over the wire */
-	filters_text = pk_filter_bitfield_to_text (state->filters);
-
 	/* do this async, although this should be pretty fast anyway */
-	state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
-					       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-					       G_TYPE_STRING, filters_text,
-					       G_TYPE_STRV, state->packages,
-					       G_TYPE_INVALID);
+	if (state->role == PK_ROLE_ENUM_RESOLVE) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_STRV, state->packages,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_DETAILS) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDetails",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->packages,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdateDetail",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->packages,
+						       G_TYPE_INVALID);
+	} else {
+		g_assert_not_reached ();
+	}
 
 	/* we've sent this async */
 	egg_debug ("sent request");
@@ -432,6 +445,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	/* deallocate temp state */
 	g_free (filters_text);
 }
+
+/*****************************************************************************************************************************/
 
 /**
  * pk_client_resolve_async:
@@ -460,6 +475,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_RESOLVE;
 	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->client = client;
@@ -485,7 +501,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
- * Gets the result from the asynchronous function. 
+ * Gets the result from the asynchronous function.
  *
  * Return value: the ID, or %NULL if unset
  **/
@@ -502,6 +518,162 @@ pk_client_resolve_finish (PkClient *client, GAsyncResult *res, GError **error)
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
 	g_return_val_if_fail (source_tag == pk_client_resolve_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/*****************************************************************************************************************************/
+
+/**
+ * pk_client_get_details_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback_progress: the function to run when the progress changes
+ * @callback_status: the function to run when the status changes
+ * @callback_package: the function to run when the package changes
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * TODO
+ **/
+void
+pk_client_get_details_async (PkClient *client, gchar **packages, GCancellable *cancellable,
+			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_details_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_GET_DETAILS;
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->results = NULL;
+	state->proxy = NULL;
+	state->call = NULL;
+	state->packages = g_strdupv (packages);
+	state->callback_progress = callback_progress;
+	state->callback_status = callback_status;
+	state->callback_package = callback_package;
+	state->user_data = user_data;
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_get_details_finish:
+ * @client: a valid #PkClient instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkResults *
+pk_client_get_details_finish (PkClient *client, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_client_get_details_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/*****************************************************************************************************************************/
+
+/**
+ * pk_client_get_update_detail_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback_progress: the function to run when the progress changes
+ * @callback_status: the function to run when the status changes
+ * @callback_package: the function to run when the package changes
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * TODO
+ **/
+void
+pk_client_get_update_detail_async (PkClient *client, gchar **packages, GCancellable *cancellable,
+				   PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+				   PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_update_detail_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->results = NULL;
+	state->proxy = NULL;
+	state->call = NULL;
+	state->packages = g_strdupv (packages);
+	state->callback_progress = callback_progress;
+	state->callback_status = callback_status;
+	state->callback_package = callback_package;
+	state->user_data = user_data;
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_get_update_detail_finish:
+ * @client: a valid #PkClient instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkResults *
+pk_client_get_update_detail_finish (PkClient *client, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_client_get_update_detail_async, NULL);
 
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
