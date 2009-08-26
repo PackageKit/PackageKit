@@ -90,7 +90,7 @@ backend_get_groups (PkBackend *backend)
 		/*	PK_GROUP_ENUM_ELECTRONICS, */
 		/*	PK_GROUP_ENUM_COLLECTIONS, */
 		/*	PK_GROUP_ENUM_VENDOR, */
-		/*	PK_GROUP_ENUM_NEWEST, */
+			PK_GROUP_ENUM_NEWEST,
 			-1);
 }
 
