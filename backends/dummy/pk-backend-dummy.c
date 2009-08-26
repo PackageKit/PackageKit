@@ -624,13 +624,13 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 						    "glib2;2.14.0;i386;fedora", "The GLib library");
 			}
 		} else if (g_strcmp0 (packages[i], "powertop") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
 		else if (g_strcmp0 (packages[i], "kernel") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
 		else if (g_strcmp0 (packages[i], "gtkhtml2") == 0)
-			pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 					    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_finished (backend);
