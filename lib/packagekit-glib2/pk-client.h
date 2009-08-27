@@ -150,7 +150,234 @@ void		 pk_client_get_update_detail_async	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-//							 PkClientPackageCallback callback_package,
+void		 pk_client_download_packages		(PkClient		*client,
+							 gchar			**package_ids,
+							 const gchar		*directory,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_updates			(PkClient		*client,
+							 PkBitfield		 filters,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_update_system		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_depends			(PkClient		*client,
+							 PkBitfield		 filters,
+							 gchar			**package_ids,
+							 gboolean		 recursive,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_packages			(PkClient		*client,
+							 PkBitfield		 filters,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_update_detail		(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_requires			(PkClient		*client,
+							 PkBitfield		 filters,
+							 gchar			**package_ids,
+							 gboolean		 recursive,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_what_provides		(PkClient		*client,
+							 PkBitfield		 filters,
+							 PkProvidesEnum		 provides,
+							 const gchar		*search,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_details			(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_distro_upgrades		(PkClient		*client,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_files			(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_categories		(PkClient		*client,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_remove_packages		(PkClient		*client,
+							 gchar			**package_ids,
+							 gboolean		 allow_deps,
+							 gboolean		 autoremove,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_refresh_cache		(PkClient		*client,
+							 gboolean		 force,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_install_packages		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_install_signature		(PkClient		*client,
+							 PkSigTypeEnum		 type,
+							 const gchar		*key_id,
+							 const gchar		*package_id,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_update_packages		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_install_files		(PkClient		*client,
+							 gboolean		 only_trusted,
+							 gchar			**files_rel,
+							 GCancellable		*cancellable,
+							 PkClientPackageCallback callback_package,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_accept_eula			(PkClient		*client,
+							 const gchar		*eula_id,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_repo_list		(PkClient		*client,
+							 PkBitfield		 filters,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_repo_enable			(PkClient		*client,
+							 const gchar		*repo_id,
+							 gboolean		 enabled,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_repo_set_data		(PkClient		*client,
+							 const gchar		*repo_id,
+							 const gchar		*parameter,
+							 const gchar		*value,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_simulate_install_files	(PkClient		*client,
+							 gchar			**files_rel,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_simulate_install_packages	(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_simulate_remove_packages	(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_simulate_update_packages	(PkClient		*client,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
 
 G_END_DECLS
 
