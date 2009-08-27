@@ -21,7 +21,9 @@
 
 /**
  * SECTION:pk-client
- * @short_description: TODO
+ * @short_description: GObject class for PackageKit client access
+ *
+ * A nice GObject to use for accessing PackageKit asynchronously
  */
 
 #include "config.h"
@@ -68,6 +70,8 @@ struct _PkClientPrivate
 {
 	DBusGConnection		*connection;
 	PkControl		*control;
+	PkRoleEnum		 role;
+	PkStatusEnum		 status;
 };
 
 enum {
@@ -77,8 +81,8 @@ enum {
 
 enum {
 	PROP_0,
-	/* TODO: add the other existing properties */
-	PROP_ID,
+	PROP_ROLE,
+	PROP_STATUS,
 	PROP_LAST
 };
 
@@ -236,11 +240,15 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClie
 {
 	PkStatusEnum status_enum;
 
+	/* convert from text */
+	status_enum = pk_status_enum_from_text (status_text);
+
+	/* save cached value */
+	state->client->priv->status = status_enum;
+
 	/* do the callback for GUI programs */
-	if (state->callback_status != NULL) {
-		status_enum = pk_status_enum_from_text (status_text);
+	if (state->callback_status != NULL)
 		state->callback_status (state->client, status_enum, state->user_data);
-	}
 }
 
 /**
@@ -729,13 +737,16 @@ pk_client_get_update_detail_finish (PkClient *client, GAsyncResult *res, GError 
 static void
 pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-//	PkClient *client = PK_CLIENT (object);
-//	PkClientPrivate *priv = client->priv;
+	PkClient *client = PK_CLIENT (object);
+	PkClientPrivate *priv = client->priv;
 
 	switch (prop_id) {
-//	case PROP_ID:
-//		g_value_set_string (value, priv->id);
-//		break;
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
+		break;
+	case PROP_STATUS:
+		g_value_set_uint (value, priv->status);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -748,13 +759,7 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 static void
 pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-//	PkClient *client = PK_CLIENT (object);
-//	PkClientPrivate *priv = client->priv;
-
 	switch (prop_id) {
-//	case PROP_INFO:
-//		priv->info = g_value_get_uint (value);
-//		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -763,7 +768,6 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 
 /**
  * pk_client_class_init:
- * @klass: The PkClientClass
  **/
 static void
 pk_client_class_init (PkClientClass *klass)
@@ -775,13 +779,20 @@ pk_client_class_init (PkClientClass *klass)
 	object_class->finalize = pk_client_finalize;
 
 	/**
-	 * PkClient:id:
+	 * PkClient:role:
 	 */
-	pspec = g_param_spec_string ("id", NULL,
-				     "The full client_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
+	/**
+	 * PkClient:status:
+	 */
+	pspec = g_param_spec_uint ("status", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
 	/**
 	 * PkClient::changed:
@@ -801,13 +812,15 @@ pk_client_class_init (PkClientClass *klass)
 
 /**
  * pk_client_init:
- * @client: This class instance
  **/
 static void
 pk_client_init (PkClient *client)
 {
 	GError *error = NULL;
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
+
+	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -900,7 +913,6 @@ pk_client_init (PkClient *client)
 
 /**
  * pk_client_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_client_finalize (GObject *object)
@@ -916,7 +928,10 @@ pk_client_finalize (GObject *object)
 /**
  * pk_client_new:
  *
- * Return value: a new PkClient object.
+ * PkClient is a nice GObject wrapper for PackageKit and makes writing
+ * frontends easy.
+ *
+ * Return value: A new %PkClient instance
  **/
 PkClient *
 pk_client_new (void)

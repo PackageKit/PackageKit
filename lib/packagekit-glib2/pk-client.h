@@ -40,10 +40,10 @@ G_BEGIN_DECLS
 #define PK_TYPE_CLIENT		(pk_client_get_type ())
 #define PK_CLIENT(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_CLIENT, PkClient))
 #define PK_CLIENT_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_CLIENT, PkClientClass))
-#define PK_IS_CLIENT(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_CLIENT))
+#define PK_IS_CLIENT(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_CLIENT))
 #define PK_IS_CLIENT_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CLIENT))
 #define PK_CLIENT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CLIENT, PkClientClass))
-#define PK_CLIENT_ERROR	(pk_client_error_quark ())
+#define PK_CLIENT_ERROR		(pk_client_error_quark ())
 #define PK_CLIENT_TYPE_ERROR	(pk_client_error_get_type ())
 
 typedef struct _PkClientPrivate	PkClientPrivate;
