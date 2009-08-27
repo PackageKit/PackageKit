@@ -162,6 +162,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	const gchar *package_id;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
 
 	/* each one has a different detail for testing */
 	len = g_strv_length (package_ids);
@@ -204,6 +205,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 					    "import/export and creation of color separations.", "http://live.gnome.org/scribus", 44*1024*1024);
 		}
 	}
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 }
 
@@ -297,6 +299,7 @@ backend_get_update_detail_timeout (gpointer data)
 		    "- xserver-1.6.0-primary.patch: Really, only look at VGA devices. (#488869)\n";
 
 	/* each one has a different detail for testing */
+	pk_backend_set_percentage (backend, 0);
 	len = g_strv_length (_package_ids);
 	for (i=0; i<len; i++) {
 		package_id = _package_ids[i];
@@ -344,6 +347,7 @@ backend_get_update_detail_timeout (gpointer data)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "the package update detail was not found for %s", package_id);
 		}
 	}
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	_signal_timeout = 0;
 	return FALSE;
