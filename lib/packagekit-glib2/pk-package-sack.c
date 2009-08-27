@@ -308,10 +308,10 @@ typedef struct {
 /***************************************************************************************************/
 
 /**
- * pk_package_sack_merge_resolve_state_finish:
+ * pk_package_sack_merge_bool_state_finish:
  **/
 static void
-pk_package_sack_merge_resolve_state_finish (PkPackageSackState *state, GError *error)
+pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, GError *error)
 {
 	/* remove weak ref */
 	if (state->sack != NULL)
@@ -357,7 +357,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	results = pk_client_resolve_finish (client, res, &error);
 	if (results == NULL) {
 		egg_warning ("failed to resolve: %s", error->message);
-		pk_package_sack_merge_resolve_state_finish (state, error);
+		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		return;
 	}
@@ -365,9 +365,9 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	/* get the packages */
 	packages = pk_results_get_package_array (results);
 	if (packages->len == 0) {
-		egg_error ("%i", state->ret);
+		egg_warning ("%i", state->ret);
 		error = g_error_new (1, 0, "no packages found!");
-		pk_package_sack_merge_resolve_state_finish (state, error);
+		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		return;
 	}
@@ -396,7 +396,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	g_object_unref (results);
 
 	/* we're done */
-	pk_package_sack_merge_resolve_state_finish (state, error);
+	pk_package_sack_merge_bool_state_finish (state, error);
 }
 
 /**
@@ -443,7 +443,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
- * Gets the result from the asynchronous function. 
+ * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE for success
  **/
@@ -468,6 +468,279 @@ pk_package_sack_merge_resolve_finish (PkPackageSack *package_sack, GAsyncResult 
 }
 
 /***************************************************************************************************/
+
+/**
+ * pk_package_sack_merge_details_cb:
+ **/
+static void
+pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *details;
+	const PkResultItemDetails *item;
+	guint i;
+	PkPackage *package;
+
+	/* get the results */
+	results = pk_client_get_details_finish (client, res, &error);
+	if (results == NULL) {
+		egg_warning ("failed to details: %s", error->message);
+		pk_package_sack_merge_bool_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* get the details */
+	details = pk_results_get_details_array (results);
+	if (details->len == 0) {
+		egg_error ("%i", state->ret);
+		error = g_error_new (1, 0, "no details found!");
+		pk_package_sack_merge_bool_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* set data on each item */
+	for (i=0; i<details->len; i++) {
+		item = g_ptr_array_index (details, i);
+
+		egg_debug ("%s\t%s\t%s", item->package_id, item->url, item->license);
+
+		/* get package, and set data */
+		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		if (package != NULL) {
+			g_object_set (package,
+				      "license", item->license,
+				      "group", item->group_enum,
+				      "description", item->description,
+				      "url", item->url,
+				      "size", item->size,
+				      NULL);
+			g_object_unref (package);
+		} else {
+			egg_warning ("failed to find %s", item->package_id);
+		}
+	}
+
+	/* all okay */
+	state->ret = TRUE;
+	g_object_unref (results);
+
+	/* we're done */
+	pk_package_sack_merge_bool_state_finish (state, error);
+}
+
+/**
+ * pk_package_sack_merge_details_async:
+ * @package_sack: a valid #PkPackageSack instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Merges in details about packages.
+ **/
+void
+pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkPackageSackState *state;
+	gchar **package_ids;
+
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_details_async);
+
+	/* save state */
+	state = g_slice_new0 (PkPackageSackState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->sack = sack;
+	state->ret = FALSE;
+	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
+
+	/* start details async */
+	package_ids = pk_package_sack_get_package_ids (sack);
+	pk_client_get_details_async (sack->priv->client, package_ids,
+				     cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_merge_details_cb, state);
+
+	g_strfreev (package_ids);
+	g_object_unref (res);
+}
+
+/**
+ * pk_package_sack_merge_details_finish:
+ * @package_sack: a valid #PkPackageSack instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_package_sack_merge_details_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_package_sack_merge_details_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_package_sack_merge_update_detail_cb:
+ **/
+static void
+pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *update_details;
+	const PkResultItemUpdateDetail *item;
+	guint i;
+	PkPackage *package;
+
+	/* get the results */
+	results = pk_client_get_update_detail_finish (client, res, &error);
+	if (results == NULL) {
+		egg_warning ("failed to update_detail: %s", error->message);
+		pk_package_sack_merge_bool_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* get the update_details */
+	update_details = pk_results_get_update_detail_array (results);
+	if (update_details->len == 0) {
+		egg_error ("%i", state->ret);
+		error = g_error_new (1, 0, "no update details found!");
+		pk_package_sack_merge_bool_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* set data on each item */
+	for (i=0; i<update_details->len; i++) {
+		item = g_ptr_array_index (update_details, i);
+
+		egg_debug ("%s\t%s\t%s", item->package_id, item->updates, item->changelog);
+
+		/* get package, and set data */
+		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		if (package != NULL) {
+			g_object_set (package,
+				      "update-updates", item->updates,
+				      "update-obsoletes", item->obsoletes,
+				      "update-vendor-url", item->vendor_url,
+				      "update-bugzilla-url", item->bugzilla_url,
+				      "update-cve-url", item->cve_url,
+				      "update-restart", item->restart_enum,
+				      "update-text", item->update_text,
+				      "update-changelog", item->changelog,
+				      "update-state", item->state_enum,
+				      "update-issued", item->issued,
+				      "update-updated", item->updated,
+				      NULL);
+			g_object_unref (package);
+		} else {
+			egg_warning ("failed to find %s", item->package_id);
+		}
+	}
+
+	/* all okay */
+	state->ret = TRUE;
+	g_object_unref (results);
+
+	/* we're done */
+	pk_package_sack_merge_bool_state_finish (state, error);
+}
+
+/**
+ * pk_package_sack_merge_update_detail_async:
+ * @package_sack: a valid #PkPackageSack instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Merges in update details about packages.
+ **/
+void
+pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkPackageSackState *state;
+	gchar **package_ids;
+
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_update_detail_async);
+
+	/* save state */
+	state = g_slice_new0 (PkPackageSackState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->sack = sack;
+	state->ret = FALSE;
+	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
+
+	/* start update_detail async */
+	package_ids = pk_package_sack_get_package_ids (sack);
+	pk_client_get_update_detail_async (sack->priv->client, package_ids,
+					   cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_merge_update_detail_cb, state);
+
+	g_strfreev (package_ids);
+	g_object_unref (res);
+}
+
+/**
+ * pk_package_sack_merge_update_detail_finish:
+ * @package_sack: a valid #PkPackageSack instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_package_sack_merge_update_detail_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_package_sack_merge_update_detail_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
+
 
 /**
  * pk_package_sack_get_property:
@@ -615,6 +888,42 @@ pk_package_sack_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *te
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_package_sack_test_details_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkPackageSack *sack = PK_PACKAGE_SACK (object);
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = pk_package_sack_merge_details_finish (sack, res, &error);
+	if (!ret) {
+		egg_test_failed (test, "failed to merge details: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_package_sack_test_update_detail_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkPackageSack *sack = PK_PACKAGE_SACK (object);
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = pk_package_sack_merge_update_detail_finish (sack, res, &error);
+	if (!ret) {
+		egg_test_failed (test, "failed to merge update detail: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
 void
 pk_package_sack_test (EggTest *test)
 {
@@ -641,17 +950,17 @@ pk_package_sack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "remove package not present");
-	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "find package not present");
-	package = pk_package_sack_find_by_id (sack, "glib2;2.14.0;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, (package == NULL));
 
 	/************************************************************/
 	egg_test_title (test, "add package");
-	ret = pk_package_sack_add_package_by_id (sack, "glib2;2.14.0;i386;fedora", NULL);
+	ret = pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora", NULL);
 	egg_test_assert (test, ret);
 
 	/************************************************************/
@@ -667,7 +976,7 @@ pk_package_sack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "find package which is present");
-	package = pk_package_sack_find_by_id (sack, "glib2;2.14.0;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, (package != NULL));
 
 	/************************************************************/
@@ -676,7 +985,7 @@ pk_package_sack_test (EggTest *test)
 		      "info", &info,
 		      "summary", &text,
 		      NULL);
-	egg_test_assert (test, (g_strcmp0 (text, "The GLib library") == 0));
+	egg_test_assert (test, (g_strcmp0 (text, "Power consumption monitor") == 0));
 
 	/************************************************************/
 	egg_test_title (test, "check new info");
@@ -686,8 +995,47 @@ pk_package_sack_test (EggTest *test)
 	g_object_unref (package);
 
 	/************************************************************/
+	egg_test_title (test, "merge details results");
+	pk_package_sack_merge_details_async (sack, NULL, (GAsyncReadyCallback) pk_package_sack_test_details_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got details in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "find package which is present");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	egg_test_assert (test, (package != NULL));
+
+	/************************************************************/
+	egg_test_title (test, "check new url");
+	g_object_get (package,
+		      "url", &text,
+		      NULL);
+	egg_test_assert (test, (g_strcmp0 (text, "http://live.gnome.org/powertop") == 0));
+
+	/************************************************************/
+	egg_test_title (test, "merge update detail results");
+	pk_package_sack_merge_update_detail_async (sack, NULL, (GAsyncReadyCallback) pk_package_sack_test_update_detail_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got update detail in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "find package which is present");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	egg_test_assert (test, (package != NULL));
+
+	/************************************************************/
+	egg_test_title (test, "check new vendor url");
+	g_object_get (package,
+		      "update-vendor-url", &text,
+		      NULL);
+	egg_test_assert (test, (g_strcmp0 (text, "http://www.distro-update.org/page?moo;Bugfix release for powertop") == 0));
+
+	g_free (text);
+	g_object_unref (package);
+
+	/************************************************************/
 	egg_test_title (test, "remove package");
-	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, ret);
 
 	/************************************************************/
@@ -697,7 +1045,7 @@ pk_package_sack_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "remove already removed package");
-	ret = pk_package_sack_remove_package_by_id (sack, "glib2;2.14.0;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, !ret);
 
 	g_object_unref (sack);

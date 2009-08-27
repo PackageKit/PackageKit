@@ -368,16 +368,22 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		priv->update_state = g_value_get_uint (value);
 		break;
 	case PROP_UPDATE_ISSUED:
-		if (priv->update_issued != NULL)
+		if (priv->update_issued != NULL) {
 			g_date_free (priv->update_issued);
+			priv->update_issued = NULL;
+		}
 		date = g_value_get_pointer (value);
-		priv->update_issued = g_date_new_dmy (date->day, date->month, date->year);
+		if (date != NULL)
+			priv->update_issued = g_date_new_dmy (date->day, date->month, date->year);
 		break;
 	case PROP_UPDATE_UPDATED:
-		if (priv->update_updated != NULL)
+		if (priv->update_updated != NULL) {
 			g_date_free (priv->update_updated);
+			priv->update_updated = NULL;
+		}
 		date = g_value_get_pointer (value);
-		priv->update_updated = g_date_new_dmy (date->day, date->month, date->year);
+		if (date != NULL)
+			priv->update_updated = g_date_new_dmy (date->day, date->month, date->year);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -554,10 +560,10 @@ pk_package_class_init (PkPackageClass *klass)
 	/**
 	 * PkPackage:update-restart:
 	 */
-	pspec = g_param_spec_string ("update-restart", NULL,
-				     "The update restart type",
-				     NULL,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_uint ("update-restart", NULL,
+				   "The update restart type",
+				   0, PK_RESTART_ENUM_UNKNOWN, PK_RESTART_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATE_RESTART, pspec);
 
 	/**
