@@ -168,9 +168,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def install_packages(self, only_trusted, packageids):
-
-        # FIXME: use only_trusted
-
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+            return
+        end
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -204,6 +205,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def install_files(self, only_trusted, paths):
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+            return
+        end
         for path in paths:
             self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
@@ -264,9 +269,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def update_packages(self, only_trusted, packageids):
-
-        # FIXME: use only_trusted
-
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+            return
+        end
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -315,9 +321,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def update_system(self, only_trusted):
-
-        # FIXME: use only_trusted
-
+        if only_trusted:
+            self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
+            return
+        end
         self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
