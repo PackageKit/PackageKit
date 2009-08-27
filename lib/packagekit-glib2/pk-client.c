@@ -470,6 +470,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	GError *error = NULL;
 	const gchar *tid = NULL;
 	gchar *filters_text = NULL;
+	const gchar *enum_text;
 
 	tid = pk_control_get_tid_finish (control, res, &error);
 	if (tid == NULL) {
@@ -536,6 +537,149 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdateDetail",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_STRING, state->directory,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdates",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "UpdateSystem",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->only_trusted,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDepends",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_BOOLEAN, state->recursive,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetPackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRequires",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_BOOLEAN, state->recursive,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		enum_text = pk_provides_enum_to_text (state->provides);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "WhatProvides",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_STRING, enum_text,
+						       G_TYPE_STRING, state->search,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDistroUpgrades",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_FILES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetFiles",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetCategories",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "RemovePackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_BOOLEAN, state->allow_deps,
+						       G_TYPE_BOOLEAN, state->autoremove,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "RefreshCache",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->force,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallPackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->only_trusted,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+		enum_text = pk_sig_type_enum_to_text (state->type);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallSignature",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, enum_text,
+						       G_TYPE_STRING, state->key_id,
+						       G_TYPE_STRING, state->package_id,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "UpdatePackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->only_trusted,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallFiles",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, state->only_trusted,
+						       G_TYPE_STRV, state->files,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_ACCEPT_EULA) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "AcceptEula",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, state->eula_id,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		filters_text = pk_filter_bitfield_to_text (state->filters);
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRepoList",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, filters_text,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_REPO_ENABLE) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "RepoEnable",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, state->repo_id,
+						       G_TYPE_BOOLEAN, state->enabled,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "RepoSetData",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, state->repo_id,
+						       G_TYPE_STRING, state->parameter,
+						       G_TYPE_STRING, state->value,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallFiles",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->files,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallPackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateRemovePackages",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateUpdatePackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
