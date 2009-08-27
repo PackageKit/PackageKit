@@ -51,6 +51,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-package-sack.h					\
 	pk-control.c						\
 	pk-control.h						\
+	pk-common.c						\
+	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
 	pk-marshal.c						\

@@ -91,7 +91,6 @@ void		 pk_client_resolve_async		(PkClient		*client,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
 							 PkClientStatusCallback	 callback_status,
-							 PkClientPackageCallback callback_package,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 PkResults	*pk_client_resolve_finish		(PkClient		*client,
@@ -104,7 +103,6 @@ void		 pk_client_get_details_async		(PkClient		*client,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
 							 PkClientStatusCallback	 callback_status,
-							 PkClientPackageCallback callback_package,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 PkResults	*pk_client_get_details_finish		(PkClient		*client,
@@ -117,12 +115,13 @@ void		 pk_client_get_update_detail_async	(PkClient		*client,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
 							 PkClientStatusCallback	 callback_status,
-							 PkClientPackageCallback callback_package,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 PkResults	*pk_client_get_update_detail_finish	(PkClient		*client,
 							 GAsyncResult		*res,
 							 GError			**error);
+
+//							 PkClientPackageCallback callback_package,
 
 G_END_DECLS
 

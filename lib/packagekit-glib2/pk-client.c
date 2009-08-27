@@ -244,6 +244,49 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClie
 }
 
 /**
+ * pk_client_details_cb:
+ */
+static void
+pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *license,
+		      const gchar *group_text, const gchar *description, const gchar *url,
+		      guint64 size, PkClientState *state)
+{
+	PkGroupEnum group_enum;
+	group_enum = pk_group_enum_from_text (group_text);
+	pk_results_add_details (state->results, package_id, license, group_enum, description, url, size);
+}
+
+/**
+ * pk_client_update_detail_cb:
+ */
+static void
+pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *updates,
+			    const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
+			    const gchar *cve_url, const gchar *restart_text, const gchar *update_text,
+			    const gchar *changelog, const gchar *state_text, const gchar *issued_text,
+			    const gchar *updated_text, PkClientState *state)
+{
+	GDate *issued;
+	GDate *updated;
+	PkUpdateStateEnum state_enum;
+	PkRestartEnum restart_enum;
+
+	restart_enum = pk_restart_enum_from_text (restart_text);
+	state_enum = pk_update_state_enum_from_text (state_text);
+	issued = pk_iso8601_to_date (issued_text);
+	updated = pk_iso8601_to_date (updated_text);
+
+	pk_results_add_update_detail (state->results, package_id, updates, obsoletes, vendor_url,
+				      bugzilla_url, cve_url, restart_enum, update_text, changelog,
+				      state_enum, issued, updated);
+
+	if (issued != NULL)
+		g_date_free (issued);
+	if (updated != NULL)
+		g_date_free (updated);
+}
+
+/**
  * pk_client_connect_proxy:
  **/
 static void
@@ -301,15 +344,15 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_status_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
 				     G_CALLBACK (pk_client_progress_changed_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_client_details_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
+				     G_CALLBACK (pk_client_update_detail_cb), state, NULL);
 #if 0
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
-				     G_CALLBACK (pk_client_update_detail_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
 				     G_CALLBACK (pk_client_distro_upgrade_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Details",
-				     G_CALLBACK (pk_client_details_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
@@ -351,13 +394,15 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_progress_changed_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
 					G_CALLBACK (pk_client_status_changed_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Details",
+					G_CALLBACK (pk_client_details_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
+					G_CALLBACK (pk_client_update_detail_cb), state);
 #if 0
 	dbus_g_proxy_disconnect_signal (proxy, "Transaction",
 					G_CALLBACK (pk_client_transaction_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
 					G_CALLBACK (pk_client_distro_upgrade_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Details",
-					G_CALLBACK (pk_client_details_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_client_files_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
@@ -463,7 +508,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 void
 pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
 			 PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
-			 PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
+			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -486,7 +531,6 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->packages = g_strdupv (packages);
 	state->callback_progress = callback_progress;
 	state->callback_status = callback_status;
-	state->callback_package = callback_package;
 	state->user_data = user_data;
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
@@ -542,7 +586,7 @@ pk_client_resolve_finish (PkClient *client, GAsyncResult *res, GError **error)
 void
 pk_client_get_details_async (PkClient *client, gchar **packages, GCancellable *cancellable,
 			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
-			     PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -564,7 +608,6 @@ pk_client_get_details_async (PkClient *client, gchar **packages, GCancellable *c
 	state->packages = g_strdupv (packages);
 	state->callback_progress = callback_progress;
 	state->callback_status = callback_status;
-	state->callback_package = callback_package;
 	state->user_data = user_data;
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
@@ -620,7 +663,7 @@ pk_client_get_details_finish (PkClient *client, GAsyncResult *res, GError **erro
 void
 pk_client_get_update_detail_async (PkClient *client, gchar **packages, GCancellable *cancellable,
 				   PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
-				   PkClientPackageCallback callback_package, GAsyncReadyCallback callback_ready, gpointer user_data)
+				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -642,7 +685,6 @@ pk_client_get_update_detail_async (PkClient *client, gchar **packages, GCancella
 	state->packages = g_strdupv (packages);
 	state->callback_progress = callback_progress;
 	state->callback_status = callback_status;
-	state->callback_package = callback_package;
 	state->user_data = user_data;
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
@@ -932,9 +974,51 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	GPtrArray *details;
+	const PkResultItemDetails *item;
+	guint i;
+
+	/* get the results */
+	results = pk_client_get_details_finish (client, res, &error);
+	if (results == NULL) {
+		egg_test_failed (test, "failed to resolve: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+
+	details = pk_results_get_details_array (results);
+	if (details == NULL)
+		egg_test_failed (test, "no details!");
+
+	/* list, just for shits and giggles */
+	for (i=0; i<details->len; i++) {
+		item = g_ptr_array_index (details, i);
+		egg_debug ("%s\t%s\t%s", item->package_id, item->url, item->description);
+	}
+
+	if (details->len != 1)
+		egg_test_failed (test, "invalid number of details: %i", details->len);
+
+	g_ptr_array_unref (details);
+
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_test_loop_quit (test);
+}
+
 static guint _progress_cb = 0;
 static guint _status_cb = 0;
-static guint _package_cb = 0;
+//static guint _package_cb = 0;
 
 void
 pk_client_test_progress_cb (PkClient *client, gint percentage, EggTest *test)
@@ -950,12 +1034,14 @@ pk_client_test_status_cb (PkClient *client, PkStatusEnum status, EggTest *test)
 	_status_cb++;
 }
 
+#if 0
 void
 pk_client_test_package_cb (PkClient *client, const gchar *package_id, EggTest *test)
 {
 	egg_debug ("package now %s", package_id);
 	_package_cb++;
 }
+#endif
 
 void
 pk_client_test (EggTest *test)
@@ -977,7 +1063,6 @@ pk_client_test (EggTest *test)
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
 				 (PkClientProgressCallback) pk_client_test_progress_cb,
 				 (PkClientStatusCallback) pk_client_test_status_cb,
-				 (PkClientPackageCallback) pk_client_test_package_cb,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
@@ -997,12 +1082,35 @@ pk_client_test (EggTest *test)
 	else
 		egg_test_failed (test, "got %i updates", _status_cb);
 
+	/* reset */
+	_progress_cb = 0;
+	_status_cb = 0;
+//	_package_cb = 0;
+
 	/************************************************************/
-	egg_test_title (test, "got package updates");
-	if (_package_cb > 0)
+	egg_test_title (test, "get details about package");
+	package_ids = g_strsplit ("powertop;1.8-1.fc8;i386;fedora", ",", -1);
+	pk_client_get_details_async (client, package_ids, NULL,
+				     (PkClientProgressCallback) pk_client_test_progress_cb,
+				     (PkClientStatusCallback) pk_client_test_status_cb,
+				     (GAsyncReadyCallback) pk_client_test_get_details_cb, test);
+	g_strfreev (package_ids);
+	egg_test_loop_wait (test, 15000);
+	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "got progress updates");
+	if (_progress_cb > 0)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "got %i updates", _package_cb);
+		egg_test_failed (test, "got %i updates", _progress_cb);
+
+	/************************************************************/
+	egg_test_title (test, "got status updates");
+	if (_status_cb > 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i updates", _status_cb);
 
 	g_object_unref (client);
 
