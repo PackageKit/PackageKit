@@ -2358,6 +2358,43 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	PkPackageSack *sack;
+	guint size;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		egg_test_failed (test, "failed to resolve: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+
+	sack = pk_results_get_package_sack (results);
+	if (sack == NULL)
+		egg_test_failed (test, "no details!");
+
+	/* check size */
+	size = pk_package_sack_get_size (sack);
+	if (size != 3)
+		egg_test_failed (test, "invalid number of updates: %i", size);
+
+	g_object_unref (sack);
+
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_test_loop_quit (test);
+}
+
 static guint _progress_cb = 0;
 static guint _status_cb = 0;
 //static guint _package_cb = 0;
@@ -2446,6 +2483,27 @@ pk_client_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "got %i updates", _progress_cb);
+
+	/************************************************************/
+	egg_test_title (test, "got status updates");
+	if (_status_cb > 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got %i updates", _status_cb);
+
+	/* reset */
+	_progress_cb = 0;
+	_status_cb = 0;
+//	_package_cb = 0;
+
+	/************************************************************/
+	egg_test_title (test, "get updates");
+	pk_client_get_updates_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), NULL,
+				     (PkClientProgressCallback) pk_client_test_progress_cb,
+				     (PkClientStatusCallback) pk_client_test_status_cb,
+				     (GAsyncReadyCallback) pk_client_test_get_updates_cb, test);
+	egg_test_loop_wait (test, 15000);
+	egg_test_success (test, "got updates in %i", egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "got status updates");
