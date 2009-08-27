@@ -150,7 +150,7 @@ void		 pk_client_get_update_detail_async	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_download_packages		(PkClient		*client,
+void		 pk_client_download_packages_async	(PkClient		*client,
 							 gchar			**package_ids,
 							 const gchar		*directory,
 							 GCancellable		*cancellable,
@@ -160,7 +160,7 @@ void		 pk_client_download_packages		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_updates			(PkClient		*client,
+void		 pk_client_get_updates_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -168,7 +168,7 @@ void		 pk_client_get_updates			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_update_system		(PkClient		*client,
+void		 pk_client_update_system_async		(PkClient		*client,
 							 gboolean		 only_trusted,
 							 GCancellable		*cancellable,
 							 PkClientPackageCallback callback_package,
@@ -177,7 +177,7 @@ void		 pk_client_update_system		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_depends			(PkClient		*client,
+void		 pk_client_get_depends_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
@@ -187,7 +187,7 @@ void		 pk_client_get_depends			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_packages			(PkClient		*client,
+void		 pk_client_get_packages_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -195,15 +195,7 @@ void		 pk_client_get_packages			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_update_detail		(PkClient		*client,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
-
-void		 pk_client_get_requires			(PkClient		*client,
+void		 pk_client_get_requires_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
@@ -213,7 +205,7 @@ void		 pk_client_get_requires			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_what_provides		(PkClient		*client,
+void		 pk_client_what_provides_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 PkProvidesEnum		 provides,
 							 const gchar		*search,
@@ -223,7 +215,14 @@ void		 pk_client_what_provides		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_details			(PkClient		*client,
+void		 pk_client_get_distro_upgrades_async	(PkClient		*client,
+							 GCancellable		*cancellable,
+							 PkClientProgressCallback callback_progress,
+							 PkClientStatusCallback	 callback_status,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_get_files_async		(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -231,29 +230,14 @@ void		 pk_client_get_details			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_distro_upgrades		(PkClient		*client,
+void		 pk_client_get_categories_async		(PkClient		*client,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
 							 PkClientStatusCallback	 callback_status,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_files			(PkClient		*client,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
-
-void		 pk_client_get_categories		(PkClient		*client,
-							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
-							 GAsyncReadyCallback	 callback_ready,
-							 gpointer		 user_data);
-
-void		 pk_client_remove_packages		(PkClient		*client,
+void		 pk_client_remove_packages_async	(PkClient		*client,
 							 gchar			**package_ids,
 							 gboolean		 allow_deps,
 							 gboolean		 autoremove,
@@ -264,7 +248,7 @@ void		 pk_client_remove_packages		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_refresh_cache		(PkClient		*client,
+void		 pk_client_refresh_cache_async		(PkClient		*client,
 							 gboolean		 force,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -272,7 +256,7 @@ void		 pk_client_refresh_cache		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_install_packages		(PkClient		*client,
+void		 pk_client_install_packages_async	(PkClient		*client,
 							 gboolean		 only_trusted,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
@@ -282,7 +266,7 @@ void		 pk_client_install_packages		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_install_signature		(PkClient		*client,
+void		 pk_client_install_signature_async	(PkClient		*client,
 							 PkSigTypeEnum		 type,
 							 const gchar		*key_id,
 							 const gchar		*package_id,
@@ -292,7 +276,7 @@ void		 pk_client_install_signature		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_update_packages		(PkClient		*client,
+void		 pk_client_update_packages_async	(PkClient		*client,
 							 gboolean		 only_trusted,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
@@ -302,9 +286,9 @@ void		 pk_client_update_packages		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_install_files		(PkClient		*client,
+void		 pk_client_install_files_async		(PkClient		*client,
 							 gboolean		 only_trusted,
-							 gchar			**files_rel,
+							 gchar			**files,
 							 GCancellable		*cancellable,
 							 PkClientPackageCallback callback_package,
 							 PkClientProgressCallback callback_progress,
@@ -312,7 +296,7 @@ void		 pk_client_install_files		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_accept_eula			(PkClient		*client,
+void		 pk_client_accept_eula_async		(PkClient		*client,
 							 const gchar		*eula_id,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -320,7 +304,7 @@ void		 pk_client_accept_eula			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_get_repo_list		(PkClient		*client,
+void		 pk_client_get_repo_list_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -328,7 +312,7 @@ void		 pk_client_get_repo_list		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_repo_enable			(PkClient		*client,
+void		 pk_client_repo_enable_async		(PkClient		*client,
 							 const gchar		*repo_id,
 							 gboolean		 enabled,
 							 GCancellable		*cancellable,
@@ -337,7 +321,7 @@ void		 pk_client_repo_enable			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_repo_set_data		(PkClient		*client,
+void		 pk_client_repo_set_data_async		(PkClient		*client,
 							 const gchar		*repo_id,
 							 const gchar		*parameter,
 							 const gchar		*value,
@@ -347,15 +331,15 @@ void		 pk_client_repo_set_data		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_simulate_install_files	(PkClient		*client,
-							 gchar			**files_rel,
+void		 pk_client_simulate_install_files_async	(PkClient		*client,
+							 gchar			**files,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
 							 PkClientStatusCallback	 callback_status,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_simulate_install_packages	(PkClient		*client,
+void		 pk_client_simulate_install_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -363,7 +347,7 @@ void		 pk_client_simulate_install_packages	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_simulate_remove_packages	(PkClient		*client,
+void		 pk_client_simulate_remove_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
@@ -371,7 +355,7 @@ void		 pk_client_simulate_remove_packages	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_simulate_update_packages	(PkClient		*client,
+void		 pk_client_simulate_update_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
 							 PkClientProgressCallback callback_progress,
