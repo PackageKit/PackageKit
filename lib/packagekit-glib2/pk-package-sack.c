@@ -385,7 +385,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	PkPackage *package;
 
 	/* get the results */
-	results = pk_client_resolve_finish (client, res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		egg_warning ("failed to resolve: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
@@ -469,7 +469,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 }
 
 /**
- * pk_package_sack_merge_resolve_finish:
+ * pk_package_sack_merge_generic_finish:
  * @package_sack: a valid #PkPackageSack instance
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
@@ -479,18 +479,14 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
  * Return value: %TRUE for success
  **/
 gboolean
-pk_package_sack_merge_resolve_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
+pk_package_sack_merge_generic_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
-	gpointer source_tag;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_package_sack_merge_resolve_async, FALSE);
 
 	if (g_simple_async_result_propagate_error (simple, error))
 		return FALSE;
@@ -515,7 +511,7 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	PkPackage *package;
 
 	/* get the results */
-	results = pk_client_get_details_finish (client, res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		egg_warning ("failed to details: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
@@ -601,36 +597,6 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 	g_object_unref (res);
 }
 
-/**
- * pk_package_sack_merge_details_finish:
- * @package_sack: a valid #PkPackageSack instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: %TRUE for success
- **/
-gboolean
-pk_package_sack_merge_details_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_package_sack_merge_details_async, FALSE);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
-}
-
 /***************************************************************************************************/
 
 /**
@@ -648,7 +614,7 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	PkPackage *package;
 
 	/* get the results */
-	results = pk_client_get_update_detail_finish (client, res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		egg_warning ("failed to update_detail: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
@@ -740,38 +706,7 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 	g_object_unref (res);
 }
 
-/**
- * pk_package_sack_merge_update_detail_finish:
- * @package_sack: a valid #PkPackageSack instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: %TRUE for success
- **/
-gboolean
-pk_package_sack_merge_update_detail_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_package_sack_merge_update_detail_async, FALSE);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
-}
-
 /***************************************************************************************************/
-
 
 /**
  * pk_package_sack_get_property:
@@ -909,7 +844,7 @@ pk_package_sack_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *te
 	gboolean ret;
 
 	/* get the result */
-	ret = pk_package_sack_merge_resolve_finish (sack, res, &error);
+	ret = pk_package_sack_merge_generic_finish (sack, res, &error);
 	if (!ret) {
 		egg_test_failed (test, "failed to merge resolve: %s", error->message);
 		g_error_free (error);
@@ -927,7 +862,7 @@ pk_package_sack_test_details_cb (GObject *object, GAsyncResult *res, EggTest *te
 	gboolean ret;
 
 	/* get the result */
-	ret = pk_package_sack_merge_details_finish (sack, res, &error);
+	ret = pk_package_sack_merge_generic_finish (sack, res, &error);
 	if (!ret) {
 		egg_test_failed (test, "failed to merge details: %s", error->message);
 		g_error_free (error);
@@ -945,7 +880,7 @@ pk_package_sack_test_update_detail_cb (GObject *object, GAsyncResult *res, EggTe
 	gboolean ret;
 
 	/* get the result */
-	ret = pk_package_sack_merge_update_detail_finish (sack, res, &error);
+	ret = pk_package_sack_merge_generic_finish (sack, res, &error);
 	if (!ret) {
 		egg_test_failed (test, "failed to merge update detail: %s", error->message);
 		g_error_free (error);

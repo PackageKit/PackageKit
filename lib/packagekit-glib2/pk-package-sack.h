@@ -97,25 +97,20 @@ void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-gboolean	 pk_package_sack_merge_resolve_finish	(PkPackageSack		*sack,
-							 GAsyncResult		*res,
-							 GError			**error);
 
 /* merging in data to the array using Details() */
 void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-gboolean	 pk_package_sack_merge_details_finish	(PkPackageSack		*sack,
-							 GAsyncResult		*res,
-							 GError			**error);
 
 /* merging in data to the array using UpdateDetail() */
 void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-gboolean	 pk_package_sack_merge_update_detail_finish (PkPackageSack	*sack,
+
+gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
 							 GAsyncResult		*res,
 							 GError			**error);
 
