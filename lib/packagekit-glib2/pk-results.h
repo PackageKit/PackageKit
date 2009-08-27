@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-sack.h>
 
 G_BEGIN_DECLS
 
@@ -102,6 +103,9 @@ gboolean	 pk_results_add_update_detail		(PkResults	*results,
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults	*results);
+
+/* get package objects */
+PkPackageSack	*pk_results_get_package_sack		(PkResults	*results);
 
 /* get package array data */
 typedef struct {

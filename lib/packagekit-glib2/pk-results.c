@@ -269,6 +269,54 @@ pk_results_get_package_array (PkResults *results)
 }
 
 /**
+ * pk_results_get_package_sack:
+ * @results: a valid #PkResults instance
+ *
+ * Gets a package sack from the transaction.
+ *
+ * Return value: A #PkPackageSack of data.
+ **/
+PkPackageSack *
+pk_results_get_package_sack (PkResults *results)
+{
+	PkPackage *package;
+	PkPackageSack *sack;
+	GPtrArray *array;
+	guint i;
+	const PkResultItemPackage *item;
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
+
+	/* create a new sack */
+	sack = pk_package_sack_new ();
+
+	/* go through each of the bare packages */
+	array = results->priv->package_array;
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+
+		/* create a PkPackage object */
+		package = pk_package_new ();
+		ret = pk_package_set_id (package, item->package_id, NULL);
+		if (!ret)
+			egg_error ("couldn't add package ID, internal error");
+
+		/* set data we already know */
+		g_object_set (package,
+			      "info", item->info_enum,
+			      "summary", item->summary,
+			      NULL);
+
+		/* add to sack */
+		pk_package_sack_add_package (sack, package);
+		g_object_unref (package);
+	}
+
+	return sack;
+}
+
+/**
  * pk_results_get_details_array:
  * @results: a valid #PkResults instance
  *
