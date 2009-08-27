@@ -207,10 +207,19 @@ end
 def search_group(filters, key)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
-    category = GROUPS.invert[key] || GROUP_UNKNOWN
+    if key == GROUP_NEWEST
+      portmodified = Hash.new do |modified, portinfo|
+        modified[portinfo] = File.mtime(File.join(portinfo.portdir, 'Makefile')) if portinfo
+      end
+      ports = $portsdb.origins.sort { |a, b| portmodified[$portsdb.port(b)] \
+                                         <=>  portmodified[$portsdb.port(a)] }
+    else
+      category = GROUPS.invert[key] || GROUP_UNKNOWN
+      ports = $portsdb.origins(category)
+    end
     begin
-      $portsdb.each(category) do |portinfo|
-        port = PortInfo.new(portinfo)
+      ports.each do |origin|
+        port = $portsdb.port(origin)
         pkg = PkgInfo.new(port.pkgname)
         installed = pkg.installed?
         if filterlist.include? FILTER_NOT_INSTALLED and installed:
