@@ -275,6 +275,37 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_get_total_bytes:
+ * @sack: a valid #PkPackageSack instance
+ *
+ * Gets the total size of the package sack in bytes.
+ *
+ * Return value: the size in bytes
+ **/
+guint64
+pk_package_sack_get_total_bytes (PkPackageSack *sack)
+{
+	PkPackage *package = NULL;
+	guint i;
+	GPtrArray *array;
+	guint64 bytes = 0;
+	guint64 bytes_tmp = 0;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+
+	array = sack->priv->array;
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		g_object_get (package,
+			      "size", &bytes_tmp,
+			      NULL);
+		bytes += bytes_tmp;
+	}
+
+	return bytes;
+}
+
+/**
  * pk_package_sack_get_package_ids:
  **/
 static gchar **
@@ -934,6 +965,7 @@ pk_package_sack_test (EggTest *test)
 	gchar *text;
 	guint size;
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
+	guint64 bytes;
 
 	if (!egg_test_start (test, "PkPackageSack"))
 		return;
@@ -1032,6 +1064,11 @@ pk_package_sack_test (EggTest *test)
 
 	g_free (text);
 	g_object_unref (package);
+
+	/************************************************************/
+	egg_test_title (test, "chck size in bytes");
+	bytes = pk_package_sack_get_total_bytes (sack);
+	egg_test_assert (test, (bytes == 103424));
 
 	/************************************************************/
 	egg_test_title (test, "remove package");
