@@ -57,6 +57,16 @@ public:
 	bool is_held(const pkgCache::PkgIterator &pkg);
 
 	/**
+	 *  prepare a transaction to install/remove/update packages
+	 *  - for install and update, \p remove should be set to false
+	 *  - if you are going to remove, \p remove should be true
+	 *  - If you don't want to actually install/update/remove
+	 *    simulate should be true, in this case packages with
+	 *    what's going to happen will be emitted.
+	 */
+	bool prepare_transaction(bool simulate, bool remove);
+
+	/**
 	 *  get the state cache of the package
 	 */
 	pkgDepCache::StateCache get_state(const pkgCache::PkgIterator &pkg);
