@@ -121,6 +121,64 @@ pk_result_item_update_detail_free (PkResultItemUpdateDetail *item)
 		g_date_free (item->updated);
 }
 
+#if 0
+/**
+ * pk_result_item_category_free:
+ **/
+static void
+pk_result_item_category_free (PkResultItemCategory *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->parent_id);
+	g_free (item->cat_id);
+	g_free (item->name);
+	g_free (item->summary);
+	g_free (item->icon);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_distro_upgrade_free:
+ **/
+static void
+pk_result_item_distro_upgrade_free (PkResultItemDistroUpgrade *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->name);
+	g_free (item->summary);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_require_restart_free:
+ **/
+static void
+pk_result_item_require_restart_free (PkResultItemRequireRestart *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->package_id);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_transaction_free:
+ **/
+static void
+pk_result_item_transaction_free (PkResultItemTransaction *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->tid);
+	g_free (item->timespec);
+	g_free (item->data);
+	g_free (item->cmdline);
+	g_free (item);
+}
+#endif
+
 /**
  * pk_results_set_exit_code:
  * @results: a valid #PkResults instance

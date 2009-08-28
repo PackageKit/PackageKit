@@ -67,6 +67,105 @@ struct _PkResultsClass
 	void (*_pk_reserved5) (void);
 };
 
+/**
+ * PkResultItemRequireRestart:
+ *
+ * Object to represent details about the require_restart.
+ **/
+typedef struct
+{
+	PkRestartEnum			 restart;
+	gchar				*package_id;
+} PkResultItemRequireRestart;
+
+/**
+ * PkResultItemTransaction:
+ *
+ * Object to represent details about the transaction.
+ **/
+typedef struct
+{
+	gchar				*tid;
+	gchar				*timespec;
+	gboolean			 succeeded;
+	PkRoleEnum			 role;
+	guint				 duration;
+	gchar				*data;
+	guint				 uid;
+	gchar				*cmdline;
+} PkResultItemTransaction;
+
+/**
+ * PkResultItemDetails:
+ *
+ * Object to represent details about the update.
+ **/
+typedef struct {
+	gchar		*package_id;
+	gchar		*license;
+	PkGroupEnum	 group_enum;
+	gchar		*description;
+	gchar		*url;
+	guint64		 size;
+} PkResultItemDetails;
+
+/**
+ * PkResultItemUpdateDetail:
+ *
+ * Object to represent details about the update.
+ **/
+typedef struct {
+	gchar		*package_id;
+	gchar		*updates;
+	gchar		*obsoletes;
+	gchar		*vendor_url;
+	gchar		*bugzilla_url;
+	gchar		*cve_url;
+	PkRestartEnum	 restart_enum;
+	gchar		*update_text;
+	gchar		*changelog;
+	PkUpdateStateEnum state_enum;
+	GDate		*issued;
+	GDate		*updated;
+} PkResultItemUpdateDetail;
+
+/**
+ * PkResultItemPackage:
+ *
+ * Object to represent details about a package.
+ **/
+typedef struct {
+	PkInfoEnum	 info_enum;
+	gchar		*package_id;
+	gchar		*summary;
+} PkResultItemPackage;
+
+/**
+ * PkResultItemDistroUpgrade:
+ *
+ * Object to represent details about the distribution update.
+ **/
+typedef struct
+{
+	PkUpdateStateEnum		 state;
+	gchar				*name;
+	gchar				*summary;
+} PkResultItemDistroUpgrade;
+
+/**
+ * PkResultItemCategory:
+ *
+ * Object to represent category about the category.
+ **/
+typedef struct
+{
+	gchar				*parent_id;
+	gchar				*cat_id;
+	gchar				*name;
+	gchar				*summary;
+	gchar				*icon;
+} PkResultItemCategory;
+
 GQuark		 pk_results_error_quark			(void);
 GType		 pk_results_get_type		  	(void);
 PkResults	*pk_results_new				(void);
@@ -103,44 +202,11 @@ gboolean	 pk_results_add_update_detail		(PkResults	*results,
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults	*results);
-
-/* get package objects */
 PkPackageSack	*pk_results_get_package_sack		(PkResults	*results);
 
-/* get package array data */
-typedef struct {
-	PkInfoEnum	 info_enum;
-	gchar		*package_id;
-	gchar		*summary;	
-} PkResultItemPackage;
+/* get package array objects */
 GPtrArray	*pk_results_get_package_array		(PkResults	*results);
-
-/* get details array data */
-typedef struct {
-	gchar		*package_id;
-	gchar		*license;
-	PkGroupEnum	 group_enum;
-	gchar		*description;
-	gchar		*url;
-	guint64		 size;
-} PkResultItemDetails;
 GPtrArray	*pk_results_get_details_array		(PkResults	*results);
-
-/* get update detail array data */
-typedef struct {
-	gchar		*package_id;
-	gchar		*updates;
-	gchar		*obsoletes;
-	gchar		*vendor_url;
-	gchar		*bugzilla_url;
-	gchar		*cve_url;
-	PkRestartEnum	 restart_enum;
-	gchar		*update_text;
-	gchar		*changelog;
-	PkUpdateStateEnum state_enum;
-	GDate		*issued;
-	GDate		*updated;
-} PkResultItemUpdateDetail;
 GPtrArray	*pk_results_get_update_detail_array	(PkResults	*results);
 
 G_END_DECLS
