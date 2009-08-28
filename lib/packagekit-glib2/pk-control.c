@@ -73,19 +73,20 @@ static guint signals [SIGNAL_LAST] = { 0 };
 G_DEFINE_TYPE (PkControl, pk_control, G_TYPE_OBJECT)
 
 typedef struct {
-	PkControl		*control;
-	GCancellable		*cancellable;
+	gboolean		 ret;
+	gchar			**mime_types;
 	gchar			*tid;
-	GSimpleAsyncResult	*res;
+	gchar			**transaction_list;
+	guint			 time;
 	DBusGProxyCall		*call;
-	PkBitfield		 roles;
+	GCancellable		*cancellable;
+	GSimpleAsyncResult	*res;
+	PkAuthorizeEnum		 can_authorize;
 	PkBitfield		 filters;
 	PkBitfield		 groups;
-	gchar			**mime_types;
+	PkBitfield		 roles;
+	PkControl		*control;
 	PkNetworkEnum		 network;
-	guint			 time;
-	gchar			**transaction_list;
-	PkAuthorizeEnum		 can_authorize;
 } PkControlState;
 
 /***************************************************************************************************/
@@ -348,6 +349,140 @@ pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError 
 		return NULL;
 
 	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_set_proxy_state_finish:
+ **/
+static void
+pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->mime_types != NULL) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_set_proxy_cb:
+ **/
+static void
+pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *tid = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to set proxy: %s", error->message);
+		pk_control_set_proxy_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->ret = TRUE;
+
+	/* we're done */
+	pk_control_set_proxy_state_finish (state, error);
+out:
+	g_free (tid);
+}
+
+/**
+ * pk_control_set_proxy_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GCancellable *cancellable,
+			    GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_proxy_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus set_proxy async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "SetProxy",
+					       (DBusGProxyCallNotify) pk_control_set_proxy_cb, state, NULL,
+					       G_TYPE_STRING, proxy_http,
+					       G_TYPE_STRING, proxy_ftp,
+					       G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_set_proxy_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_set_proxy_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
 }
 
 /***************************************************************************************************/
