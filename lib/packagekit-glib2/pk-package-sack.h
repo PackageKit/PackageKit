@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-package.h>
 
 G_BEGIN_DECLS
@@ -99,18 +100,24 @@ gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
 /* merging in data to the array using Resolve() */
 void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using Details() */
 void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using UpdateDetail() */
 void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 

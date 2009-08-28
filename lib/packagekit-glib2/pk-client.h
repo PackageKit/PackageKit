@@ -32,7 +32,9 @@
 #define __PK_CLIENT_H
 
 #include <glib-object.h>
+
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
@@ -74,16 +76,6 @@ GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_get_type		  	(void);
 PkClient	*pk_client_new				(void);
 
-typedef void	(*PkClientProgressCallback)		(PkClient		*client,
-							 gint			 percentage,
-                                                         gpointer		 user_data);
-typedef void	(*PkClientStatusCallback)		(PkClient		*client,
-							 PkStatusEnum		 status,
-                                                         gpointer		 user_data);
-typedef void	(*PkClientPackageCallback)		(PkClient		*client,
-							 const gchar		*package_id,
-                                                         gpointer		 user_data);
-
 /* get transaction results */
 PkResults	*pk_client_generic_finish		(PkClient		*client,
 							 GAsyncResult		*res,
@@ -93,8 +85,8 @@ void		 pk_client_resolve_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**packages,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -102,8 +94,8 @@ void		 pk_client_search_name_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 const gchar		*search,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -111,8 +103,8 @@ void		 pk_client_search_details_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 const gchar		*search,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -120,8 +112,8 @@ void		 pk_client_search_group_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 const gchar		*search,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -129,24 +121,24 @@ void		 pk_client_search_file_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 const gchar		*search,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_details_async		(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_update_detail_async	(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -154,26 +146,24 @@ void		 pk_client_download_packages_async	(PkClient		*client,
 							 gchar			**package_ids,
 							 const gchar		*directory,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_updates_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_update_system_async		(PkClient		*client,
 							 gboolean		 only_trusted,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -182,16 +172,16 @@ void		 pk_client_get_depends_async		(PkClient		*client,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_packages_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -200,8 +190,8 @@ void		 pk_client_get_requires_async		(PkClient		*client,
 							 gchar			**package_ids,
 							 gboolean		 recursive,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -210,30 +200,30 @@ void		 pk_client_what_provides_async		(PkClient		*client,
 							 PkProvidesEnum		 provides,
 							 const gchar		*search,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_distro_upgrades_async	(PkClient		*client,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_files_async		(PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_categories_async		(PkClient		*client,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -242,17 +232,16 @@ void		 pk_client_remove_packages_async	(PkClient		*client,
 							 gboolean		 allow_deps,
 							 gboolean		 autoremove,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_refresh_cache_async		(PkClient		*client,
 							 gboolean		 force,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -260,9 +249,8 @@ void		 pk_client_install_packages_async	(PkClient		*client,
 							 gboolean		 only_trusted,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -271,8 +259,8 @@ void		 pk_client_install_signature_async	(PkClient		*client,
 							 const gchar		*key_id,
 							 const gchar		*package_id,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -280,9 +268,8 @@ void		 pk_client_update_packages_async	(PkClient		*client,
 							 gboolean		 only_trusted,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -290,25 +277,24 @@ void		 pk_client_install_files_async		(PkClient		*client,
 							 gboolean		 only_trusted,
 							 gchar			**files,
 							 GCancellable		*cancellable,
-							 PkClientPackageCallback callback_package,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_accept_eula_async		(PkClient		*client,
 							 const gchar		*eula_id,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_get_repo_list_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -316,8 +302,8 @@ void		 pk_client_repo_enable_async		(PkClient		*client,
 							 const gchar		*repo_id,
 							 gboolean		 enabled,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
@@ -326,40 +312,40 @@ void		 pk_client_repo_set_data_async		(PkClient		*client,
 							 const gchar		*parameter,
 							 const gchar		*value,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_simulate_install_files_async	(PkClient		*client,
 							 gchar			**files,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_simulate_install_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_simulate_remove_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
 void		 pk_client_simulate_update_packages_async (PkClient		*client,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,
-							 PkClientProgressCallback callback_progress,
-							 PkClientStatusCallback	 callback_status,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
