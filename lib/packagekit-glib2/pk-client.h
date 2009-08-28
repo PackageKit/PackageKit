@@ -159,6 +159,14 @@ void		 pk_client_get_updates_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_get_old_transactions_async	(PkClient		*client,
+							 guint			 number,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 void		 pk_client_update_system_async		(PkClient		*client,
 							 gboolean		 only_trusted,
 							 GCancellable		*cancellable,

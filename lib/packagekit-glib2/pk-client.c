@@ -110,6 +110,7 @@ typedef struct {
 	gchar				*value;
 	gpointer			 progress_user_data;
 	gpointer			 user_data;
+	guint				 number;
 	DBusGProxyCall			*call;
 	DBusGProxy			*proxy;
 	GCancellable			*cancellable;
@@ -714,6 +715,11 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1271,7 +1277,6 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_get_updates_async:
  * @client: a valid #PkClient instance
@@ -1303,6 +1308,47 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->cancellable = cancellable;
 	state->client = client;
 	state->filters = filters;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_get_old_transactions_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * TODO
+ **/
+void
+pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_old_transactions_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->number = number;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
