@@ -74,6 +74,7 @@ enum {
 };
 
 static guint signals [SIGNAL_LAST] = { 0 };
+static gpointer pk_control_object = NULL;
 
 G_DEFINE_TYPE (PkControl, pk_control, G_TYPE_OBJECT)
 
@@ -2005,9 +2006,13 @@ pk_control_finalize (GObject *object)
 PkControl *
 pk_control_new (void)
 {
-	PkControl *control;
-	control = g_object_new (PK_TYPE_CONTROL, NULL);
-	return PK_CONTROL (control);
+	if (pk_control_object != NULL) {
+		g_object_ref (pk_control_object);
+	} else {
+		pk_control_object = g_object_new (PK_TYPE_CONTROL, NULL);
+		g_object_add_weak_pointer (pk_control_object, &pk_control_object);
+	}
+	return PK_CONTROL (pk_control_object);
 }
 
 /***************************************************************************
