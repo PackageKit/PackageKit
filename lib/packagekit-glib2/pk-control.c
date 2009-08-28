@@ -26,30 +26,12 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-#include <string.h>
-#include <locale.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <sys/wait.h>
-#include <fcntl.h>
-
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
+#include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <gio/gio.h>
 
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
-#include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-version.h>
 
 #include "egg-debug.h"
@@ -96,6 +78,14 @@ typedef struct {
 	gchar			*tid;
 	GSimpleAsyncResult	*res;
 	DBusGProxyCall		*call;
+	PkBitfield		 roles;
+	PkBitfield		 filters;
+	PkBitfield		 groups;
+	gchar			**mime_types;
+	PkNetworkEnum		 network;
+	guint			 time;
+	gchar			**transaction_list;
+	PkAuthorizeEnum		 can_authorize;
 } PkControlState;
 
 /***************************************************************************************************/
@@ -206,7 +196,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
- * Gets the result from the asynchronous function. 
+ * Gets the result from the asynchronous function.
  *
  * Return value: the ID, or %NULL if unset
  **/
@@ -223,6 +213,136 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
 	g_return_val_if_fail (source_tag == pk_control_get_tid_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_get_mime_types_state_finish:
+ **/
+static void
+pk_control_get_mime_types_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->mime_types != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->mime_types), (GDestroyNotify) g_strfreev);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_mime_types_cb:
+ **/
+static void
+pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *temp = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &temp,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_mime_types_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->mime_types = g_strsplit (temp, ";", -1);
+
+	/* we're done */
+	pk_control_get_mime_types_state_finish (state, error);
+out:
+	g_free (temp);
+}
+
+/**
+ * pk_control_get_mime_types_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_mime_types_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_mime_types async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetMimeTypes",
+					       (DBusGProxyCallNotify) pk_control_get_mime_types_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_mime_types_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+gchar **
+pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_mime_types_async, NULL);
 
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
@@ -481,7 +601,7 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	const gchar *tid = NULL;
+	const gchar *tid;
 
 	/* get the result */
 	tid = pk_control_get_tid_finish (control, res, &error);
@@ -492,6 +612,39 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	}
 
 	egg_debug ("tid = %s", tid);
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_get_mime_types_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	gchar **types;
+	guint len;
+
+	/* get the result */
+	types = pk_control_get_mime_types_finish (control, res, &error);
+	if (types == NULL) {
+		egg_test_failed (test, "failed to get mime types: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* check size */
+	len = g_strv_length (types);
+	if (len != 2) {
+		egg_test_failed (test, "length incorrect: %i", len);
+		return;
+	}
+
+	/* check value */
+	if (g_strcmp0 (types[0], "application/x-rpm") != 0) {
+		egg_test_failed (test, "data incorrect: %s", types[0]);
+		return;
+	}
+
+	egg_debug ("types = %s", types);
 	egg_test_loop_quit (test);
 }
 
@@ -514,6 +667,12 @@ pk_control_test (EggTest *test)
 	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get mime-types async");
+	pk_control_get_mime_types_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_mime_types_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got mime types in %i", egg_test_elapsed (test));
 
 #if 0
 	/************************************************************/
