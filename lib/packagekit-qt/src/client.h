@@ -23,6 +23,7 @@
 
 #include <QtCore>
 #include <QDBusReply>
+#include <bitfield.h>
 
 namespace PackageKit {
 
@@ -83,39 +84,43 @@ public:
 	 * \sa getActions
 	 */
 	typedef enum {
-		ActionCancel		 = 0x00000001,
-		ActionGetDepends	 = 0x00000002,
-		ActionGetDetails	 = 0x00000004,
-		ActionGetFiles		 = 0x00000008,
-		ActionGetPackages	 = 0x00000010,
-		ActionGetRepoList	 = 0x00000020,
-		ActionGetRequires	 = 0x00000040,
-		ActionGetUpdateDetail	 = 0x00000080,
-		ActionGetUpdates	 = 0x00000100,
-		ActionInstallFiles	 = 0x00000200,
-		ActionInstallPackages	 = 0x00000400,
-		ActionInstallSignature	 = 0x00000800,
-		ActionRefreshCache	 = 0x00001000,
-		ActionRemovePackages	 = 0x00002000,
-		ActionRepoEnable	 = 0x00004000,
-		ActionRepoSetData	 = 0x00008000,
-		ActionResolve		 = 0x00010000,
-		ActionRollback		 = 0x00020000,
-		ActionSearchDetails	 = 0x00040000,
-		ActionSearchFile	 = 0x00080000,
-		ActionSearchGroup	 = 0x00100000,
-		ActionSearchName	 = 0x00200000,
-		ActionUpdatePackages	 = 0x00400000,
-		ActionUpdateSystem	 = 0x00800000,
-		ActionWhatProvides	 = 0x01000000,
-		ActionAcceptEula	 = 0x02000000,
-		ActionDownloadPackages	 = 0x04000000,
-		ActionGetDistroUpgrades	 = 0x08000000,
-		ActionGetCategories	 = 0x10000000,
-		ActionGetOldTransactions = 0x20000000,
-		UnknownAction		 = 0x40000000
+		ActionCancel                  = 1,
+		ActionGetDepends              = 2,
+		ActionGetDetails              = 3,
+		ActionGetFiles                = 4,
+		ActionGetPackages             = 5,
+		ActionGetRepoList             = 6,
+		ActionGetRequires             = 7,
+		ActionGetUpdateDetail         = 8,
+		ActionGetUpdates              = 9,
+		ActionInstallFiles            = 10,
+		ActionInstallPackages         = 11,
+		ActionInstallSignature        = 12,
+		ActionRefreshCache            = 13,
+		ActionRemovePackages          = 14,
+		ActionRepoEnable              = 15,
+		ActionRepoSetData             = 16,
+		ActionResolve                 = 17,
+		ActionRollback                = 18,
+		ActionSearchDetails           = 19,
+		ActionSearchFile              = 20,
+		ActionSearchGroup             = 21,
+		ActionSearchName              = 22,
+		ActionUpdatePackages          = 23,
+		ActionUpdateSystem            = 24,
+		ActionWhatProvides            = 25,
+		ActionAcceptEula              = 26,
+		ActionDownloadPackages        = 27,
+		ActionGetDistroUpgrades       = 28,
+		ActionGetCategories	          = 29,
+		ActionGetOldTransactions      = 30,
+		ActionSimulateInstallFiles    = 31,
+		ActionSimulateInstallPackages = 32,
+		ActionSimulateRemovePackages  = 33,
+		ActionSimulateUpdatePackages  = 34,
+		UnknownAction		          = 35
 	} Action;
-	Q_DECLARE_FLAGS(Actions, Action);
+	typedef Bitfield Actions;
 
 	/**
 	 * Returns all the actions supported by the current backend
@@ -708,6 +713,46 @@ public:
 	Package* searchFromDesktopFile(const QString& path);
 
 	/**
+	 * \brief Simulates an installation of \p files.
+	 *
+	 * You should call this method before installing \p files
+	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+	 *        REINSTALLING or OBSOLETING status.
+	 */
+	Transaction* simulateInstallFiles(const QStringList& files);
+	Transaction* simulateInstallFile(const QString& file);
+
+	/**
+	 * \brief Simulates an installation of \p packages.
+	 *
+	 * You should call this method before installing \p packages
+	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+	 *        REINSTALLING or OBSOLETING status.
+	 */
+	Transaction* simulateInstallPackages(const QList<Package*>& packages);
+	Transaction* simulateInstallPackage(Package* package);
+
+	/**
+	 * \brief Simulates a removal of \p packages.
+	 *
+	 * You should call this method before removing \p packages
+	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+	 *        REINSTALLING or OBSOLETING status.
+	 */
+	Transaction* simulateRemovePackages(const QList<Package*>& packages);
+	Transaction* simulateRemovePackage(Package* package);
+
+	/**
+	 * \brief Simulates an update of \p packages.
+	 *
+	 * You should call this method before updating \p packages
+	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
+	 *        REINSTALLING or OBSOLETING status.
+	 */
+	Transaction* simulateUpdatePackages(const QList<Package*>& packages);
+	Transaction* simulateUpdatePackage(Package* package);
+
+	/**
 	 * Update the given \p packages
 	 */
 	Transaction* updatePackages(bool only_trusted, const QList<Package*>& packages);
@@ -772,7 +817,6 @@ private:
 	void setLastError (DaemonError e);
 	void setTransactionError (Transaction* t, DaemonError e);
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Actions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)
 
 } // End namespace PackageKit

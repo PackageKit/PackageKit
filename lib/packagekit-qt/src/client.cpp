@@ -410,6 +410,46 @@ Package* Client::searchFromDesktopFile(const QString& path)
 
 }
 
+Transaction* Client::simulateInstallFiles(const QStringList& files)
+{
+	RUN_TRANSACTION(SimulateInstallFiles(files))
+}
+
+Transaction* Client::simulateInstallFile(const QString& file)
+{
+	return simulateInstallFiles(QStringList() << file);
+}
+
+Transaction* Client::simulateInstallPackages(const QList<Package*>& packages)
+{
+	RUN_TRANSACTION(SimulateInstallFiles(Util::packageListToPids(packages)))
+}
+
+Transaction* Client::simulateInstallPackage(Package* package)
+{
+	return simulateInstallPackages(QList<Package*>() << package);
+}
+
+Transaction* Client::simulateRemovePackages(const QList<Package*>& packages)
+{
+	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages)))
+}
+
+Transaction* Client::simulateRemovePackage(Package* package)
+{
+	return simulateRemovePackages(QList<Package*>() << package);
+}
+
+Transaction* Client::simulateUpdatePackages(const QList<Package*>& packages)
+{
+	RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
+}
+
+Transaction* Client::simulateUpdatePackage(Package* package)
+{
+	return simulateUpdatePackages(QList<Package*>() << package);
+}
+
 Transaction* Client::updatePackages(bool only_trusted, const QList<Package*>& packages)
 {
 	RUN_TRANSACTION(UpdatePackages(only_trusted, Util::packageListToPids(packages)))
