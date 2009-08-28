@@ -81,7 +81,7 @@ typedef struct {
 	DBusGProxyCall		*call;
 	GCancellable		*cancellable;
 	GSimpleAsyncResult	*res;
-	PkAuthorizeEnum		 can_authorize;
+	PkAuthorizeEnum		 authorize;
 	PkBitfield		*bitfield;
 	PkControl		*control;
 	PkNetworkEnum		 network;
@@ -208,6 +208,7 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -339,6 +340,7 @@ pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError 
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -350,8 +352,6 @@ pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError 
 
 	return g_simple_async_result_get_op_res_gpointer (simple);
 }
-
-/***************************************************************************************************/
 
 /***************************************************************************************************/
 
@@ -473,6 +473,7 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -485,7 +486,6 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 	return g_simple_async_result_get_op_res_gboolean (simple);
 }
 
-/***************************************************************************************************/
 /***************************************************************************************************/
 
 /**
@@ -619,6 +619,7 @@ pk_control_get_roles_finish (PkControl *control, GAsyncResult *res, GError **err
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -751,6 +752,7 @@ pk_control_get_filters_finish (PkControl *control, GAsyncResult *res, GError **e
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -883,6 +885,7 @@ pk_control_get_groups_finish (PkControl *control, GAsyncResult *res, GError **er
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
@@ -893,6 +896,552 @@ pk_control_get_groups_finish (PkControl *control, GAsyncResult *res, GError **er
 		return NULL;
 
 	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_get_transaction_list_state_finish:
+ **/
+static void
+pk_control_get_transaction_list_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->transaction_list != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->transaction_list), (GDestroyNotify) g_strfreev);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_strfreev (state->transaction_list);
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_transaction_list_cb:
+ **/
+static void
+pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar **temp = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRV, &temp,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_transaction_list_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->transaction_list = g_strdupv (temp);
+
+	/* we're done */
+	pk_control_get_transaction_list_state_finish (state, error);
+out:
+	g_strfreev (temp);
+}
+
+/**
+ * pk_control_get_transaction_list_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_transaction_list_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_transaction_list async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTransactionList",
+					       (DBusGProxyCallNotify) pk_control_get_transaction_list_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_transaction_list_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+gchar **
+pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_transaction_list_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_get_time_since_action_state_finish:
+ **/
+static void
+pk_control_get_time_since_action_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->time != 0) {
+		g_simple_async_result_set_op_res_gssize (state->res, state->time);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_time_since_action_cb:
+ **/
+static void
+pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gboolean ret;
+	guint seconds;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_UINT, &seconds,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_time_since_action_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->time = seconds;
+	if (state->time == 0) {
+		error = g_error_new (1, 0, "could not get time");
+		pk_control_get_time_since_action_state_finish (state, error);
+		goto out;
+	}
+
+	/* we're done */
+	pk_control_get_time_since_action_state_finish (state, error);
+out:
+	return;
+}
+
+/**
+ * pk_control_get_time_since_action_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+	const gchar *role_text;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_time_since_action_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_time_since_action async */
+	role_text = pk_role_enum_to_text (role);
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTimeSinceAction",
+					       (DBusGProxyCallNotify) pk_control_get_time_since_action_cb, state, NULL,
+					       G_TYPE_STRING, role_text,
+					       G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_time_since_action_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+guint
+pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), 0);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), 0);
+	g_return_val_if_fail (error == NULL || *error == NULL, 0);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_time_since_action_async, 0);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return 0;
+
+	return (guint) g_simple_async_result_get_op_res_gssize (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_get_network_state_state_finish:
+ **/
+static void
+pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->network != PK_NETWORK_ENUM_UNKNOWN) {
+		g_simple_async_result_set_op_res_gssize (state->res, state->network);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_network_state_cb:
+ **/
+static void
+pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gboolean ret;
+	gchar *network_state = NULL;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &network_state,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_network_state_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->network = pk_network_enum_from_text (network_state);
+	if (state->network == PK_NETWORK_ENUM_UNKNOWN) {
+		error = g_error_new (1, 0, "could not get state");
+		pk_control_get_network_state_state_finish (state, error);
+		goto out;
+	}
+
+	/* we're done */
+	pk_control_get_network_state_state_finish (state, error);
+out:
+	g_free (network_state);
+	return;
+}
+
+/**
+ * pk_control_get_network_state_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_network_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_network_state_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->network = PK_NETWORK_ENUM_UNKNOWN;
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetNetworkState",
+					       (DBusGProxyCallNotify) pk_control_get_network_state_cb, state, NULL,
+					       G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_network_state_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkNetworkEnum
+pk_control_get_network_state_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_NETWORK_ENUM_UNKNOWN);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), PK_NETWORK_ENUM_UNKNOWN);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_network_state_async, PK_NETWORK_ENUM_UNKNOWN);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return PK_NETWORK_ENUM_UNKNOWN;
+
+	return (PkNetworkEnum) g_simple_async_result_get_op_res_gssize (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_can_authorize_state_finish:
+ **/
+static void
+pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->authorize != PK_AUTHORIZE_ENUM_UNKNOWN) {
+		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_can_authorize_cb:
+ **/
+static void
+pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gboolean ret;
+	gchar *authorize_state = NULL;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &authorize_state,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_can_authorize_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->authorize = pk_authorize_type_enum_from_text (authorize_state);
+	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
+		error = g_error_new (1, 0, "could not get state");
+		pk_control_can_authorize_state_finish (state, error);
+		goto out;
+	}
+
+	/* we're done */
+	pk_control_can_authorize_state_finish (state, error);
+out:
+	g_free (authorize_state);
+	return;
+}
+
+/**
+ * pk_control_can_authorize_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_can_authorize_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	state->authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "CanAuthorize",
+					       (DBusGProxyCallNotify) pk_control_can_authorize_cb, state, NULL,
+					       G_TYPE_STRING, action_id,
+					       G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_can_authorize_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkAuthorizeEnum
+pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_AUTHORIZE_ENUM_UNKNOWN);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), PK_AUTHORIZE_ENUM_UNKNOWN);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_can_authorize_async, PK_AUTHORIZE_ENUM_UNKNOWN);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return PK_AUTHORIZE_ENUM_UNKNOWN;
+
+	return (PkAuthorizeEnum) g_simple_async_result_get_op_res_gssize (simple);
 }
 
 /***************************************************************************************************/
@@ -1281,6 +1830,60 @@ pk_control_test_get_groups_cb (GObject *object, GAsyncResult *res, EggTest *test
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_control_test_get_time_since_action_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	guint seconds;
+
+	/* get the result */
+	seconds = pk_control_get_time_since_action_finish (control, res, &error);
+	if (seconds == 0) {
+		egg_test_failed (test, "failed to get time: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_get_network_state_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	PkNetworkEnum network;
+
+	/* get the result */
+	network = pk_control_get_network_state_finish (control, res, &error);
+	if (network == PK_NETWORK_ENUM_UNKNOWN) {
+		egg_test_failed (test, "failed to get network state: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_can_authorize_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	PkAuthorizeEnum auth;
+
+	/* get the result */
+	auth = pk_control_can_authorize_finish (control, res, &error);
+	if (auth == PK_AUTHORIZE_ENUM_UNKNOWN) {
+		egg_test_failed (test, "failed to get auth: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
 void
 pk_control_test (EggTest *test)
 {
@@ -1324,6 +1927,25 @@ pk_control_test (EggTest *test)
 	pk_control_get_groups_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_groups_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got groups in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get time since async");
+	pk_control_get_time_since_action_async (control, PK_ROLE_ENUM_GET_UPDATES, NULL, (GAsyncReadyCallback) pk_control_test_get_time_since_action_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got get time since in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get network state async");
+	pk_control_get_network_state_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_network_state_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "get network state in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get auth state async");
+	pk_control_can_authorize_async (control, "org.freedesktop.packagekit.system-update", NULL,
+					(GAsyncReadyCallback) pk_control_test_can_authorize_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "get auth state in %i", egg_test_elapsed (test));
 
 #if 0
 	/************************************************************/

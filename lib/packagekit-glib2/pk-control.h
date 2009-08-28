@@ -128,15 +128,17 @@ PkNetworkEnum	 pk_control_get_network_state_finish	(PkControl		*control,
 							 GError			**error);
 void		 pk_control_get_time_since_action_async	(PkControl		*control,
 							 PkRoleEnum		 role,
-							 guint			*seconds,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-gboolean	 pk_control_get_time_since_action_finish (PkControl		*control,
+guint		 pk_control_get_time_since_action_finish (PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
-void		 pk_control_transaction_list_get_async	(PkControl		*control);
-gchar		**pk_control_transaction_list_get_finish (PkControl		*control,
+void		 pk_control_get_transaction_list_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gchar		**pk_control_get_transaction_list_finish (PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 void		 pk_control_can_authorize_async		(PkControl		*control,

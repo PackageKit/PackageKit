@@ -488,6 +488,7 @@ pk_package_sack_merge_generic_finish (PkPackageSack *package_sack, GAsyncResult 
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 
