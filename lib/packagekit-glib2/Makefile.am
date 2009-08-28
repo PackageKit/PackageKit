@@ -59,6 +59,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-marshal.h						\
 	pk-results.c						\
 	pk-results.h						\
+	pk-progress.c						\
+	pk-progress.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_LIBADD =					\

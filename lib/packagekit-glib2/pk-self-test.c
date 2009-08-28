@@ -35,6 +35,10 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* tests go here */
+	pk_common_test (test);
+	pk_enum_test (test);
+	pk_bitfield_test (test);
+	pk_progress_test (test);
 	pk_results_test (test);
 	pk_package_test (test);
 	pk_control_test (test);

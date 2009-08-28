@@ -91,15 +91,13 @@ static guint signals [SIGNAL_LAST] = { 0 };
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 typedef struct {
-	DBusGProxyCall			*call;
-	DBusGProxy			*proxy;
 	gboolean			 allow_deps;
 	gboolean			 autoremove;
 	gboolean			 enabled;
 	gboolean			 force;
 	gboolean			 only_trusted;
 	gboolean			 recursive;
-	GCancellable			*cancellable;
+	gboolean			 ret;
 	gchar				*directory;
 	gchar				*eula_id;
 	gchar				**files;
@@ -111,13 +109,17 @@ typedef struct {
 	gchar				*search;
 	gchar				*tid;
 	gchar				*value;
+	gpointer			 progress_user_data;
 	gpointer			 user_data;
+	guint				 number;
+	DBusGProxyCall			*call;
+	DBusGProxy			*proxy;
+	GCancellable			*cancellable;
 	GSimpleAsyncResult		*res;
 	PkBitfield			 filters;
 	PkClient			*client;
-	PkClientPackageCallback		 callback_package;
-	PkClientProgressCallback	 callback_progress;
-	PkClientStatusCallback		 callback_status;
+	PkProgress			*progress;
+	PkProgressCallback		 progress_callback;
 	PkProvidesEnum			 provides;
 	PkResults			*results;
 	PkRoleEnum			 role;
@@ -126,6 +128,86 @@ typedef struct {
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
 static void pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state);
+
+/**
+ * pk_client_error_quark:
+ *
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_client_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("pk_client_error");
+	return quark;
+}
+
+/**
+ * pk_client_fixup_dbus_error:
+ **/
+static void
+pk_client_fixup_dbus_error (GError *error)
+{
+	const gchar *name;
+
+	g_return_if_fail (error != NULL);
+
+	/* old style PolicyKit failure */
+	if (g_str_has_prefix (error->message, "org.freedesktop.packagekit.")) {
+		egg_debug ("fixing up code for Policykit auth failure");
+		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+		g_free (error->message);
+		error->message = g_strdup ("PolicyKit authorization failure");
+		goto out;
+	}
+
+	/* find a better failure code */
+	if (error->domain == DBUS_GERROR &&
+	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+
+		/* fall back to generic */
+		error->code = PK_CLIENT_ERROR_FAILED;
+
+		/* use one of our local codes */
+		name = dbus_g_error_get_name (error);
+
+		/* trim common prefix */
+		if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
+			name = &name[39];
+
+		/* try to get a better error */
+		if (g_str_has_prefix (name, "PermissionDenied") ||
+		    g_str_has_prefix (name, "RefusedByPolicy")) {
+			error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "PackageIdInvalid") ||
+			 g_str_has_prefix (name, "SearchInvalid") ||
+			 g_str_has_prefix (name, "FilterInvalid") ||
+			 g_str_has_prefix (name, "InvalidProvide") ||
+			 g_str_has_prefix (name, "InputInvalid")) {
+			error->code = PK_CLIENT_ERROR_INVALID_INPUT;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "PackInvalid") ||
+			 g_str_has_prefix (name, "NoSuchFile") ||
+			 g_str_has_prefix (name, "NoSuchDirectory")) {
+			error->code = PK_CLIENT_ERROR_INVALID_FILE;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "NotSupported")) {
+			error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
+			goto out;
+		}
+		egg_warning ("couldn't parse execption '%s', please report", name);
+	}
+
+out:
+	/* hardcode domain */
+	error->domain = PK_CLIENT_ERROR;
+	return;
+}
 
 /**
  * pk_client_state_finish:
@@ -146,10 +228,10 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_free (state->value);
 	g_strfreev (state->files);
 	g_strfreev (state->package_ids);
+	g_object_unref (state->progress);
 
-	if (state->client != NULL) {
+	if (state->client != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
-	}
 
 	if (state->cancellable != NULL) {
 		g_cancellable_cancel (state->cancellable);
@@ -206,7 +288,6 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 static void
 pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
-//	PkClient *client = PK_CLIENT (state->client);
 	GError *error = NULL;
 	gboolean ret;
 
@@ -217,6 +298,8 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
@@ -241,9 +324,14 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 	info_enum = pk_info_enum_from_text (info_text);
 	pk_results_add_package (state->results, info_enum, package_id, summary);
 
+	/* save progress */
+	g_object_set (state->progress,
+		      "package_id", package_id,
+		      NULL);
+
 	/* do the callback for GUI programs */
-	if (state->callback_package != NULL)
-		state->callback_package (state->client, package_id, state->user_data);
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
 }
 
 /**
@@ -253,9 +341,30 @@ static void
 pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subpercentage,
 			       guint elapsed, guint remaining, PkClientState *state)
 {
+	gint percentage_new;
+	gint subpercentage_new;
+
+	/* convert to signed */
+	percentage_new = (gint) percentage;
+	subpercentage_new = (gint) subpercentage;
+
+	/* daemon is odd, and says that unknown is 101 */
+	if (percentage_new == 101)
+		percentage_new = -1;
+	if (subpercentage_new == 101)
+		subpercentage_new = -1;
+
+	/* save progress */
+	g_object_set (state->progress,
+		      "percentage", percentage_new,
+		      "subpercentage", subpercentage_new,
+		      NULL);
+
 	/* do the callback for GUI programs */
-	if (state->callback_progress != NULL)
-		state->callback_progress (state->client, percentage, state->user_data);
+	if (state->progress_callback != NULL) {
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
+	}
 }
 
 /**
@@ -272,9 +381,46 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClie
 	/* save cached value */
 	state->client->priv->status = status_enum;
 
+	/* save progress */
+	g_object_set (state->progress,
+		      "status", status_enum,
+		      NULL);
+
 	/* do the callback for GUI programs */
-	if (state->callback_status != NULL)
-		state->callback_status (state->client, status_enum, state->user_data);
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+}
+
+/**
+ * pk_client_allow_cancel_cb:
+ */
+static void
+pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClientState *state)
+{
+	/* save progress */
+	g_object_set (state->progress,
+		      "allow-cancel", allow_cancel,
+		      NULL);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
+}
+
+/**
+ * pk_client_caller_active_changed_cb:
+ */
+static void
+pk_client_caller_active_changed_cb (DBusGProxy *proxy, gboolean is_active, PkClientState *state)
+{
+	/* save progress */
+	g_object_set (state->progress,
+		      "caller-active", is_active,
+		      NULL);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
 }
 
 /**
@@ -318,6 +464,133 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 		g_date_free (issued);
 	if (updated != NULL)
 		g_date_free (updated);
+}
+
+/**
+ * pk_client_transaction_cb:
+ */
+static void
+pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *timespec,
+			  gboolean succeeded, const gchar *role_text, guint duration,
+			  const gchar *data, guint uid, const gchar *cmdline, PkClientState *state)
+{
+	PkRoleEnum role_enum;
+	role_enum = pk_role_enum_from_text (role_text);
+	pk_results_add_transaction (state->results, old_tid, timespec, succeeded, role_enum, duration, data, uid, cmdline);
+}
+
+/**
+ * pk_client_distro_upgrade_cb:
+ */
+static void
+pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gchar *name,
+			     const gchar *summary, PkClientState *state)
+{
+	PkUpdateStateEnum type_enum;
+	type_enum = pk_update_state_enum_from_text (type_text);
+	pk_results_add_distro_upgrade (state->results, type_enum, name, summary);
+}
+
+/**
+ * pk_client_require_restart_cb:
+ */
+static void
+pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, const gchar *package_id, PkClientState *state)
+{
+	PkRestartEnum restart_enum;
+	restart_enum = pk_restart_enum_from_text (restart_text);
+	pk_results_add_require_restart (state->results, restart_enum, package_id);
+}
+
+/**
+ * pk_client_category_cb:
+ */
+static void
+pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *cat_id,
+		       const gchar *name, const gchar *summary, const gchar *icon, PkClientState *state)
+{
+	pk_results_add_category (state->results, parent_id, cat_id, name, summary, icon);
+}
+
+/**
+ * pk_client_files_cb:
+ */
+static void
+pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClientState *state)
+{
+	gchar **files;
+	files = g_strsplit (filelist, ";", -1);
+	pk_results_add_files (state->results, package_id, files);
+	g_strfreev (files);
+}
+
+/**
+ * pk_client_repo_signature_required_cb:
+ **/
+static void
+pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *repository_name,
+				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+				      const gchar *key_fingerprint, const gchar *key_timestamp,
+				      const gchar *type_text, PkClientState *state)
+{
+	PkSigTypeEnum type_enum;
+	type_enum = pk_sig_type_enum_from_text (type_text);
+	pk_results_add_repo_signature_required (state->results, package_id, repository_name, key_url, key_userid,
+						key_id, key_fingerprint, key_timestamp, type_enum);
+}
+
+/**
+ * pk_client_eula_required_cb:
+ **/
+static void
+pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+			    const gchar *vendor_name, const gchar *license_agreement, PkClientState *state)
+{
+	pk_results_add_eula_required (state->results, eula_id, package_id, vendor_name, license_agreement);
+}
+
+/**
+ * pk_client_media_change_required_cb:
+ **/
+static void
+pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_text,
+				    const gchar *media_id, const gchar *media_text, PkClientState *state)
+{
+	PkMediaTypeEnum media_type_enum;
+	media_type_enum = pk_media_type_enum_from_text (media_type_text);
+	pk_results_add_media_change_required (state->results, media_type_enum, media_id, media_text);
+}
+
+/**
+ * pk_client_repo_detail_cb:
+ **/
+static void
+pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
+			  const gchar *description, gboolean enabled, PkClientState *state)
+{
+	pk_results_add_repo_detail (state->results, repo_id, description, enabled);
+}
+
+/**
+ * pk_client_error_code_cb:
+ */
+static void
+pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar *details, PkClientState *state)
+{
+	PkErrorCodeEnum code_enum;
+	code_enum = pk_error_enum_from_text (code_text);
+	pk_results_add_error_code (state->results, code_enum, details);
+}
+
+/**
+ * pk_client_message_cb:
+ */
+static void
+pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar *details, PkClientState *state)
+{
+	PkMessageEnum message_enum;
+	message_enum = pk_message_enum_from_text (message_text);
+	pk_results_add_message (state->results, message_enum, details);
 }
 
 /**
@@ -382,11 +655,18 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_details_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_client_update_detail_cb), state, NULL);
-#if 0
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "DistroUpgrade",
 				     G_CALLBACK (pk_client_distro_upgrade_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
+				     G_CALLBACK (pk_client_require_restart_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Category",
+				     G_CALLBACK (pk_client_category_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
+				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
+				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
@@ -397,21 +677,10 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_repo_detail_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
 				     G_CALLBACK (pk_client_error_code_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
-				     G_CALLBACK (pk_client_require_restart_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Message",
 				     G_CALLBACK (pk_client_message_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
-				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
-				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Category",
-				     G_CALLBACK (pk_client_category_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Destroy",
-				     G_CALLBACK (pk_client_destroy_cb), state, NULL);
-#endif
 }
 
 /**
@@ -432,11 +701,16 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_details_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
 					G_CALLBACK (pk_client_update_detail_cb), state);
-#if 0
 	dbus_g_proxy_disconnect_signal (proxy, "Transaction",
 					G_CALLBACK (pk_client_transaction_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "DistroUpgrade",
 					G_CALLBACK (pk_client_distro_upgrade_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
+					G_CALLBACK (pk_client_require_restart_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
+					G_CALLBACK (pk_client_allow_cancel_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
+					G_CALLBACK (pk_client_caller_active_changed_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_client_files_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
@@ -445,51 +719,36 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_eula_required_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "ErrorCode",
 					G_CALLBACK (pk_client_error_code_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
-					G_CALLBACK (pk_client_require_restart_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Message",
 					G_CALLBACK (pk_client_message_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
-					G_CALLBACK (pk_client_caller_active_changed_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
-					G_CALLBACK (pk_client_allow_cancel_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "Destroy",
-					G_CALLBACK (pk_client_destroy_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
 					G_CALLBACK (pk_client_media_change_required_cb), state);
-#endif
 }
 
 /**
- * pk_client_get_tid_cb:
+ * pk_client_set_locale_cb:
  **/
 static void
-pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	const gchar *tid = NULL;
 	gchar *filters_text = NULL;
 	const gchar *enum_text;
+	GError *error = NULL;
+	gboolean ret;
 
-	tid = pk_control_get_tid_finish (control, res, &error);
-	if (tid == NULL) {
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
+		egg_warning ("failed to set locale: %s", error->message);
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		return;
+		goto out;
 	}
 
-	egg_debug ("tid = %s", tid);
-	state->tid = g_strdup (tid);
-
-	/* get a connection to the tranaction interface */
-	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
-	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", tid);
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
+	/* finished this call */
+	state->call = NULL;
 
 	/* setup the proxies ready for use */
 	pk_client_connect_proxy (state->proxy, state);
@@ -537,6 +796,11 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdateDetail",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
@@ -692,9 +956,50 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
-
-	/* deallocate temp state */
+out:
 	g_free (filters_text);
+	return;
+}
+
+/**
+ * pk_client_get_tid_cb:
+ **/
+static void
+pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	const gchar *tid = NULL;
+	const gchar *locale;
+
+	tid = pk_control_get_tid_finish (control, res, &error);
+	if (tid == NULL) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	egg_debug ("tid = %s", tid);
+	state->tid = g_strdup (tid);
+
+	/* get a connection to the tranaction interface */
+	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
+						  PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
+	if (state->proxy == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", tid);
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
+
+	/* set locale */
+	locale = (const gchar *) setlocale (LC_ALL, NULL);
+	state->call = dbus_g_proxy_begin_call (state->proxy, "SetLocale",
+					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
+					       G_TYPE_STRING, locale,
+					       G_TYPE_INVALID);
+
+	/* we've sent this async */
+	egg_debug ("sent locale request");
 }
 
 /**
@@ -714,6 +1019,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
@@ -726,17 +1032,16 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
  * pk_client_resolve_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
-			 PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			 PkProgressCallback progress_callback, gpointer progress_user_data,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -755,9 +1060,9 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->client = client;
 	state->filters = filters;
 	state->package_ids = g_strdupv (packages);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -769,17 +1074,16 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * pk_client_search_name_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -798,9 +1102,9 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
 	state->client = client;
 	state->filters = filters;
 	state->search = g_strdup (search);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -812,17 +1116,16 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
  * pk_client_search_details_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_search_details_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			        PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			        PkProgressCallback progress_callback, gpointer progress_user_data,
 			        GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -841,9 +1144,9 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
 	state->client = client;
 	state->filters = filters;
 	state->search = g_strdup (search);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -855,17 +1158,16 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
  * pk_client_search_group_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			      PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -884,9 +1186,9 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
 	state->client = client;
 	state->filters = filters;
 	state->search = g_strdup (search);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -898,17 +1200,16 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
  * pk_client_search_file_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -927,9 +1228,9 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
 	state->client = client;
 	state->filters = filters;
 	state->search = g_strdup (search);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -941,17 +1242,16 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
  * pk_client_get_details_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -969,9 +1269,9 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -983,17 +1283,16 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
  * pk_client_get_update_detail_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
- * @callback_package: the function to run when the package changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-				   PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1011,9 +1310,9 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1025,17 +1324,17 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
  * pk_client_download_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_download_packages_async (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
-				   PkClientPackageCallback callback_package, PkClientProgressCallback callback_progress,
-				   PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+				   PkProgressCallback progress_callback, gpointer progress_user_data,
+				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1053,10 +1352,9 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->directory = g_strdup (directory);
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1064,21 +1362,20 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_get_updates_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1096,9 +1393,50 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->cancellable = cancellable;
 	state->client = client;
 	state->filters = filters;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_get_old_transactions_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * TODO
+ **/
+void
+pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_old_transactions_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->number = number;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1111,18 +1449,17 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
  * pk_client_update_system_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_package: the function to run when the package changes
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
-			       PkClientPackageCallback callback_package, PkClientProgressCallback callback_progress,
-			       PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1139,10 +1476,9 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	state->cancellable = cancellable;
 	state->client = client;
 	state->only_trusted = only_trusted;
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1155,17 +1491,17 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
  * pk_client_get_depends_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive,
-			     GCancellable *cancellable, PkClientProgressCallback callback_progress,
-			     PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1184,9 +1520,9 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->filters = filters;
 	state->recursive = recursive;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1199,16 +1535,16 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
  * pk_client_get_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			      PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1226,9 +1562,9 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state->cancellable = cancellable;
 	state->client = client;
 	state->filters = filters;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1243,17 +1579,17 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
  * pk_client_get_requires_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive,
-			      GCancellable *cancellable, PkClientProgressCallback callback_progress,
-			      PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+			      PkProgressCallback progress_callback, gpointer progress_user_data,
+			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1272,9 +1608,9 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state->recursive = recursive;
 	state->filters = filters;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1287,17 +1623,17 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
  * pk_client_what_provides_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search,
-			       GCancellable *cancellable, PkClientProgressCallback callback_progress,
-			       PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1316,9 +1652,9 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->filters = filters;
 	state->provides = provides;
 	state->search = g_strdup (search);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1331,16 +1667,17 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
  * pk_client_get_distro_upgrades_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable, PkClientProgressCallback callback_progress,
-				     PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable,
+				     PkProgressCallback progress_callback, gpointer progress_user_data,
+				     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1356,9 +1693,9 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->client = client;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1371,16 +1708,16 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
  * pk_client_get_files_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-			   PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1398,9 +1735,9 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1413,16 +1750,17 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
  * pk_client_get_categories_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_get_categories_async (PkClient *client, GCancellable *cancellable, PkClientProgressCallback callback_progress,
-				PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
+				PkProgressCallback progress_callback, gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1438,9 +1776,9 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable, PkC
 	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->client = client;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1453,18 +1791,16 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable, PkC
  * pk_client_remove_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_package: the function to run when the package changes
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove,
-				 GCancellable *cancellable, PkClientPackageCallback callback_package,
-				 PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
+				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1484,10 +1820,9 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	state->autoremove = autoremove;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1500,16 +1835,16 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
  * pk_client_refresh_cache_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *cancellable,
-			       PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1527,9 +1862,9 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state->cancellable = cancellable;
 	state->client = client;
 	state->force = force;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1542,18 +1877,16 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
  * pk_client_install_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_package: the function to run when the package changes
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids,
-				  GCancellable *cancellable, PkClientPackageCallback callback_package,
-				  PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
+				  PkProgressCallback progress_callback, gpointer progress_user_data,
 				  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1572,10 +1905,9 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	state->client = client;
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1588,17 +1920,17 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
  * pk_client_install_signature_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id,
-				   GCancellable *cancellable, PkClientProgressCallback callback_progress,
-				   PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
+				   PkProgressCallback progress_callback, gpointer progress_user_data,
+				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1617,9 +1949,9 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->type = type;
 	state->key_id = g_strdup (key_id);
 	state->package_id = g_strdup (package_id);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1632,18 +1964,16 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
  * pk_client_update_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_package: the function to run when the package changes
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids,
-				 GCancellable *cancellable, PkClientPackageCallback callback_package,
-				 PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
+				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1662,10 +1992,9 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	state->client = client;
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1678,18 +2007,16 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
  * pk_client_install_files_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_package: the function to run when the package changes
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **files,
-			       GCancellable *cancellable, PkClientPackageCallback callback_package,
-			       PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1708,10 +2035,9 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	state->client = client;
 	state->only_trusted = only_trusted;
 	state->files = g_strdupv (files);
-	state->callback_package = callback_package;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1724,16 +2050,16 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
  * pk_client_accept_eula_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
-			     PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1751,9 +2077,9 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state->cancellable = cancellable;
 	state->client = client;
 	state->eula_id = g_strdup (eula_id);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1766,16 +2092,16 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
  * pk_client_get_repo_list_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			       PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1793,9 +2119,9 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state->cancellable = cancellable;
 	state->client = client;
 	state->filters = filters;
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1808,17 +2134,17 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
  * pk_client_repo_enable_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean enabled,
-			     GCancellable *cancellable, PkClientProgressCallback callback_progress,
-			     PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1836,9 +2162,9 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state->client = client;
 	state->enabled = enabled;
 	state->repo_id = g_strdup (repo_id);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1851,17 +2177,17 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
  * pk_client_repo_set_data_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
-pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value,
-			       GCancellable *cancellable, PkClientProgressCallback callback_progress,
-			       PkClientStatusCallback callback_status, GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
+			       PkProgressCallback progress_callback,
+			       gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
@@ -1880,9 +2206,9 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->repo_id = g_strdup (repo_id);
 	state->parameter = g_strdup (parameter);
 	state->value = g_strdup (value);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1895,16 +2221,16 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
  * pk_client_simulate_install_files_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancellable *cancellable,
-					PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+					PkProgressCallback progress_callback, gpointer progress_user_data,
 					GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1922,9 +2248,9 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	state->cancellable = cancellable;
 	state->client = client;
 	state->files = g_strdupv (files);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1937,16 +2263,16 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
  * pk_client_simulate_install_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					   PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+					   PkProgressCallback progress_callback, gpointer progress_user_data,
 					   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -1964,9 +2290,9 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1979,16 +2305,16 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
  * pk_client_simulate_remove_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					  PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+					  PkProgressCallback progress_callback, gpointer progress_user_data,
 					  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -2006,9 +2332,9 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2021,16 +2347,16 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
  * pk_client_simulate_update_packages_async:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
- * @callback_progress: the function to run when the progress changes
- * @callback_status: the function to run when the status changes
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback
+ * @user_data: the data to pass to @callback_ready
  *
  * TODO
  **/
 void
 pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					  PkClientProgressCallback callback_progress, PkClientStatusCallback callback_status,
+					  PkProgressCallback progress_callback, gpointer progress_user_data,
 					  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
@@ -2048,15 +2374,149 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	state->cancellable = cancellable;
 	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
-	state->callback_progress = callback_progress;
-	state->callback_status = callback_status;
-	state->user_data = user_data;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
+
+/***************************************************************************************************/
+
+/**
+ * pk_client_cancel_state_finish:
+ **/
+static void
+pk_client_cancel_state_finish (PkClientState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->client != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkClientState, state);
+}
+
+/**
+ * pk_client_cancel_cb:
+ **/
+static void
+pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+{
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
+		egg_warning ("failed: %s", error->message);
+		pk_client_cancel_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save the result */
+	state->ret = TRUE;
+
+	/* we're done */
+	pk_client_cancel_state_finish (state, error);
+out:
+	return;
+}
+
+/**
+ * pk_client_cancel_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_client_cancel_async (PkClient *client, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback, user_data, pk_client_cancel_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->call = NULL;
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* call D-Bus cancel async */
+//FIXME: this will not work.. EVER. proxy has to be found using an ID token
+	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
+					       (DBusGProxyCallNotify) pk_client_cancel_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_cancel_finish:
+ * @client: a valid #PkClient instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+gboolean
+pk_client_cancel_finish (PkClient *client, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_client_cancel_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
 
 /**
  * pk_client_get_property:
@@ -2397,30 +2857,25 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 static guint _progress_cb = 0;
 static guint _status_cb = 0;
-//static guint _package_cb = 0;
+static guint _package_cb = 0;
+static guint _allow_cancel_cb = 0;
 
 void
-pk_client_test_progress_cb (PkClient *client, gint percentage, EggTest *test)
+pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *test)
 {
-	egg_debug ("progress now %i", percentage);
-	_progress_cb++;
-}
+	if (type == PK_PROGRESS_TYPE_PACKAGE_ID)
+		_package_cb++;
+	if (type == PK_PROGRESS_TYPE_PERCENTAGE)
+		_progress_cb++;
+	if (type == PK_PROGRESS_TYPE_SUBPERCENTAGE)
+		_progress_cb++;
+	if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL)
+		_allow_cancel_cb++;
+	if (type == PK_PROGRESS_TYPE_STATUS)
+		_status_cb++;
 
-void
-pk_client_test_status_cb (PkClient *client, PkStatusEnum status, EggTest *test)
-{
-	egg_debug ("status now %s", pk_status_enum_to_text (status));
-	_status_cb++;
+//	egg_debug ("percentage now %i", percentage);
 }
-
-#if 0
-void
-pk_client_test_package_cb (PkClient *client, const gchar *package_id, EggTest *test)
-{
-	egg_debug ("package now %s", package_id);
-	_package_cb++;
-}
-#endif
 
 void
 pk_client_test (EggTest *test)
@@ -2440,8 +2895,7 @@ pk_client_test (EggTest *test)
 	egg_test_title (test, "resolve package");
 	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora,powertop", ",", -1);
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
-				 (PkClientProgressCallback) pk_client_test_progress_cb,
-				 (PkClientStatusCallback) pk_client_test_status_cb,
+				 (PkProgressCallback) pk_client_test_progress_cb, test,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
@@ -2470,8 +2924,7 @@ pk_client_test (EggTest *test)
 	egg_test_title (test, "get details about package");
 	package_ids = g_strsplit ("powertop;1.8-1.fc8;i386;fedora", ",", -1);
 	pk_client_get_details_async (client, package_ids, NULL,
-				     (PkClientProgressCallback) pk_client_test_progress_cb,
-				     (PkClientStatusCallback) pk_client_test_status_cb,
+				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_get_details_cb, test);
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
@@ -2499,8 +2952,7 @@ pk_client_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get updates");
 	pk_client_get_updates_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), NULL,
-				     (PkClientProgressCallback) pk_client_test_progress_cb,
-				     (PkClientStatusCallback) pk_client_test_status_cb,
+				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_get_updates_cb, test);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "got updates in %i", egg_test_elapsed (test));

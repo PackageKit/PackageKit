@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-package.h>
 
 G_BEGIN_DECLS
@@ -92,27 +93,33 @@ PkPackage	*pk_package_sack_find_by_id		(PkPackageSack		*sack,
 							 const gchar		*package_id);
 guint64		 pk_package_sack_get_total_bytes	(PkPackageSack		*sack);
 
+gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
+							 GAsyncResult		*res,
+							 GError			**error);
+
 /* merging in data to the array using Resolve() */
 void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using Details() */
 void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using UpdateDetail() */
 void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-
-gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
-							 GAsyncResult		*res,
-							 GError			**error);
 
 G_END_DECLS
 
