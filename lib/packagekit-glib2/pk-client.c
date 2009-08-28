@@ -97,6 +97,7 @@ typedef struct {
 	gboolean			 force;
 	gboolean			 only_trusted;
 	gboolean			 recursive;
+	gboolean			 ret;
 	gchar				*directory;
 	gchar				*eula_id;
 	gchar				**files;
@@ -2382,6 +2383,140 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
+
+/***************************************************************************************************/
+
+/**
+ * pk_client_cancel_state_finish:
+ **/
+static void
+pk_client_cancel_state_finish (PkClientState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->client != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkClientState, state);
+}
+
+/**
+ * pk_client_cancel_cb:
+ **/
+static void
+pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+{
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
+		egg_warning ("failed: %s", error->message);
+		pk_client_cancel_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save the result */
+	state->ret = TRUE;
+
+	/* we're done */
+	pk_client_cancel_state_finish (state, error);
+out:
+	return;
+}
+
+/**
+ * pk_client_cancel_async:
+ * @client: a valid #PkClient instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_client_cancel_async (PkClient *client, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback, user_data, pk_client_cancel_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->client = client;
+	state->call = NULL;
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* call D-Bus cancel async */
+//FIXME: this will not work.. EVER. proxy has to be found using an ID token
+	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
+					       (DBusGProxyCallNotify) pk_client_cancel_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_cancel_finish:
+ * @client: a valid #PkClient instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+gboolean
+pk_client_cancel_finish (PkClient *client, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_client_cancel_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
 
 /**
  * pk_client_get_property:
