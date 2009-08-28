@@ -91,25 +91,25 @@ void		 pk_control_set_proxy_async		(PkControl		*control,
 gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
-void		 pk_control_get_actions_async		(PkControl		*control,
+void		 pk_control_get_roles_async		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-PkBitfield	 pk_control_get_actions_finish		(PkControl		*control,
+PkBitfield	*pk_control_get_roles_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 void		 pk_control_get_filters_async		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-PkBitfield	 pk_control_get_filters_finish		(PkControl		*control,
+PkBitfield	*pk_control_get_filters_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 void		 pk_control_get_groups_async		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-PkBitfield	 pk_control_get_groups_finish		(PkControl		*control,
+PkBitfield	*pk_control_get_groups_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 void		 pk_control_get_mime_types_async	(PkControl		*control,

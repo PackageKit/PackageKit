@@ -82,9 +82,7 @@ typedef struct {
 	GCancellable		*cancellable;
 	GSimpleAsyncResult	*res;
 	PkAuthorizeEnum		 can_authorize;
-	PkBitfield		 filters;
-	PkBitfield		 groups;
-	PkBitfield		 roles;
+	PkBitfield		*bitfield;
 	PkControl		*control;
 	PkNetworkEnum		 network;
 } PkControlState;
@@ -119,6 +117,7 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	g_free (state->tid);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -251,6 +250,7 @@ pk_control_get_mime_types_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	g_strfreev (state->mime_types);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -483,6 +483,416 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 		return FALSE;
 
 	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
+/***************************************************************************************************/
+
+/**
+ * pk_control_bitfield_copy:
+ **/
+static PkBitfield *
+pk_control_bitfield_copy (PkBitfield *value)
+{
+	PkBitfield *new;
+	new = g_new0 (PkBitfield, 1);
+	*new = *value;
+	return new;
+}
+
+/**
+ * pk_control_get_roles_state_finish:
+ **/
+static void
+pk_control_get_roles_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->bitfield != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_free (state->bitfield);
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_roles_cb:
+ **/
+static void
+pk_control_get_roles_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *roles = NULL;
+	gboolean ret;
+	PkBitfield bitfield;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &roles,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_roles_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	bitfield = pk_role_bitfield_from_text (roles);
+	state->bitfield = pk_control_bitfield_copy (&bitfield);
+
+	/* we're done */
+	pk_control_get_roles_state_finish (state, error);
+out:
+	g_free (roles);
+}
+
+/**
+ * pk_control_get_roles_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_roles_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_roles async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetActions", /* not GetRoles, just get over it... */
+					       (DBusGProxyCallNotify) pk_control_get_roles_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_roles_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkBitfield *
+pk_control_get_roles_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_roles_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+/**
+ * pk_control_get_filters_state_finish:
+ **/
+static void
+pk_control_get_filters_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->bitfield != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_free (state->bitfield);
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_filters_cb:
+ **/
+static void
+pk_control_get_filters_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *filters = NULL;
+	gboolean ret;
+	PkBitfield bitfield;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &filters,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_filters_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	bitfield = pk_filter_bitfield_from_text (filters);
+	state->bitfield = pk_control_bitfield_copy (&bitfield);
+
+	/* we're done */
+	pk_control_get_filters_state_finish (state, error);
+out:
+	g_free (filters);
+}
+
+/**
+ * pk_control_get_filters_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_filters_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_filters async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetFilters",
+					       (DBusGProxyCallNotify) pk_control_get_filters_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_filters_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkBitfield *
+pk_control_get_filters_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_filters_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+/**
+ * pk_control_get_groups_state_finish:
+ **/
+static void
+pk_control_get_groups_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->bitfield != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_free (state->bitfield);
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_groups_cb:
+ **/
+static void
+pk_control_get_groups_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *groups = NULL;
+	gboolean ret;
+	PkBitfield bitfield;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &groups,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_groups_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	bitfield = pk_group_bitfield_from_text (groups);
+	state->bitfield = pk_control_bitfield_copy (&bitfield);
+
+	/* we're done */
+	pk_control_get_groups_state_finish (state, error);
+out:
+	g_free (groups);
+}
+
+/**
+ * pk_control_get_groups_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets a transacton ID from the daemon.
+ **/
+void
+pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_groups_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->cancellable = cancellable;
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_groups async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetGroups",
+					       (DBusGProxyCallNotify) pk_control_get_groups_cb, state,
+					       NULL, G_TYPE_INVALID);
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_groups_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+PkBitfield *
+pk_control_get_groups_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_groups_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
 }
 
 /***************************************************************************************************/
@@ -779,7 +1189,95 @@ pk_control_test_get_mime_types_cb (GObject *object, GAsyncResult *res, EggTest *
 		return;
 	}
 
-	egg_debug ("types = %s", types);
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_get_roles_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	PkBitfield *roles;
+	guint len;
+	gchar *text;
+
+	/* get the result */
+	roles = pk_control_get_roles_finish (control, res, &error);
+	if (roles == NULL) {
+		egg_test_failed (test, "failed to get roles: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* check value */
+	text = pk_role_bitfield_to_text (*roles);
+	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
+			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
+			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
+			     "search-details;search-file;search-group;search-name;update-packages;update-system;"
+			     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
+			     "simulate-remove-packages;simulate-update-packages") != 0) {
+		egg_test_failed (test, "data incorrect: %s", text);
+		return;
+	}
+
+	g_free (text);
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_get_filters_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	PkBitfield *filters;
+	guint len;
+	gchar *text;
+
+	/* get the result */
+	filters = pk_control_get_filters_finish (control, res, &error);
+	if (filters == NULL) {
+		egg_test_failed (test, "failed to get filters: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* check value */
+	text = pk_filter_bitfield_to_text (*filters);
+	if (g_strcmp0 (text, "installed;devel;gui") != 0) {
+		egg_test_failed (test, "data incorrect: %s", text);
+		return;
+	}
+
+	g_free (text);
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_control_test_get_groups_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	PkBitfield *groups;
+	guint len;
+	gchar *text;
+
+	/* get the result */
+	groups = pk_control_get_groups_finish (control, res, &error);
+	if (groups == NULL) {
+		egg_test_failed (test, "failed to get groups: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* check value */
+	text = pk_group_bitfield_to_text (*groups);
+	if (g_strcmp0 (text, "accessibility;games;system") != 0) {
+		egg_test_failed (test, "data incorrect: %s", text);
+		return;
+	}
+
+	g_free (text);
 	egg_test_loop_quit (test);
 }
 
@@ -808,6 +1306,24 @@ pk_control_test (EggTest *test)
 	pk_control_get_mime_types_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_mime_types_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got mime types in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get roles async");
+	pk_control_get_roles_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_roles_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got roles in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get filters async");
+	pk_control_get_filters_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_filters_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got filters in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get groups async");
+	pk_control_get_groups_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_groups_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got groups in %i", egg_test_elapsed (test));
 
 #if 0
 	/************************************************************/
