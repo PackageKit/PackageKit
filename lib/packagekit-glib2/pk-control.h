@@ -74,7 +74,13 @@ struct _PkControlClass
 	GObjectClass	parent_class;
 
 	/* signals */
-	void		(* changed)			(PkControl	*control);
+	void		(* transaction_list_changed)	(PkControl	*control);
+	void		(* updates_changed)		(PkControl	*control);
+	void		(* repo_list_changed)		(PkControl	*control);
+	void		(* network_state_changed)	(PkControl	*control);
+	void		(* restart_schedule)		(PkControl	*control);
+	void		(* locked)			(PkControl	*control,
+							 gboolean	 is_locked);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

@@ -56,7 +56,12 @@ struct _PkControlPrivate
 };
 
 enum {
-	SIGNAL_CHANGED,
+	SIGNAL_LOCKED,
+	SIGNAL_LIST_CHANGED,
+	SIGNAL_RESTART_SCHEDULE,
+	SIGNAL_UPDATES_CHANGED,
+	SIGNAL_REPO_LIST_CHANGED,
+	SIGNAL_NETWORK_STATE_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -1581,6 +1586,80 @@ out:
 }
 
 /**
+ * pk_control_transaction_list_changed_cb:
+ */
+static void
+pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkControl *control)
+{
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	egg_debug ("emit transaction-list-changed");
+	g_signal_emit (control, signals [SIGNAL_LIST_CHANGED], 0);
+}
+
+/**
+ * pk_control_restart_schedule_cb:
+ */
+static void
+pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
+{
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	egg_debug ("emitting restart-schedule");
+	g_signal_emit (control, signals [SIGNAL_RESTART_SCHEDULE], 0);
+
+}
+
+/**
+ * pk_control_updates_changed_cb:
+ */
+static void
+pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
+{
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	egg_debug ("emitting updates-changed");
+	g_signal_emit (control, signals [SIGNAL_UPDATES_CHANGED], 0);
+
+}
+
+/**
+ * pk_control_repo_list_changed_cb:
+ */
+static void
+pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
+{
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	egg_debug ("emitting repo-list-changed");
+	g_signal_emit (control, signals [SIGNAL_REPO_LIST_CHANGED], 0);
+}
+
+/**
+ * pk_control_network_state_changed_cb:
+ */
+static void
+pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_text, PkControl *control)
+{
+	PkNetworkEnum network;
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	network = pk_network_enum_from_text (network_text);
+	egg_debug ("emitting network-state-changed: %s", network_text);
+	g_signal_emit (control, signals [SIGNAL_NETWORK_STATE_CHANGED], 0, network);
+}
+
+/**
+ * pk_control_locked_cb:
+ */
+static void
+pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
+{
+	egg_debug ("emit locked %i", is_locked);
+	g_signal_emit (control , signals [SIGNAL_LOCKED], 0, is_locked);
+}
+
+/**
  * pk_control_set_properties_collect_cb:
  **/
 static void
@@ -1733,17 +1812,86 @@ pk_control_class_init (PkControlClass *klass)
 	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
 
 	/**
-	 * PkControl::changed:
+	 * PkControl::updates-changed:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::changed signal is emitted when the control data may have changed.
+	 * The ::updates-changed signal is emitted when the update list may have
+	 * changed and the control program may have to update some UI.
 	 **/
-	signals [SIGNAL_CHANGED] =
-		g_signal_new ("changed",
+	signals [SIGNAL_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkControlClass, changed),
+			      G_STRUCT_OFFSET (PkControlClass, updates_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	/**
+	 * PkControl::repo-list-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::repo-list-changed signal is emitted when the repo list may have
+	 * changed and the control program may have to update some UI.
+	 **/
+	signals [SIGNAL_REPO_LIST_CHANGED] =
+		g_signal_new ("repo-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, repo_list_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkControl::network-state-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::network-state-changed signal is emitted when the network has changed speed or
+	 * connections state.
+	 **/
+	signals [SIGNAL_NETWORK_STATE_CHANGED] =
+		g_signal_new ("network-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, network_state_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	/**
+	 * PkControl::restart-schedule:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::restart_schedule signal is emitted when the packagekitd service
+	 * has been restarted because it has been upgraded.
+	 * Client programs should reload themselves when it is convenient to
+	 * do so, as old client tools may not be compatable with the new daemon.
+	 **/
+	signals [SIGNAL_RESTART_SCHEDULE] =
+		g_signal_new ("restart-schedule",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, restart_schedule),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkControl::transaction-list-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::transaction-list-changed signal is emitted when the list
+	 * of transactions handled by the daemon is changed.
+	 **/
+	signals [SIGNAL_LIST_CHANGED] =
+		g_signal_new ("transaction-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, transaction_list_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkControl::locked:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::locked signal is emitted when the backend instance has been
+	 * locked by PackageKit.
+	 * This may mean that other native package tools will not work.
+	 **/
+	signals [SIGNAL_LOCKED] =
+		g_signal_new ("locked",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, locked),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	g_type_class_add_private (klass, sizeof (PkControlPrivate));
 }
@@ -1782,6 +1930,34 @@ pk_control_init (PkControl *control)
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
 
+	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
+				 G_TYPE_STRV, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "TransactionListChanged",
+				     G_CALLBACK(pk_control_transaction_list_changed_cb), control, NULL);
+
+	dbus_g_proxy_add_signal (control->priv->proxy, "UpdatesChanged", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "UpdatesChanged",
+				     G_CALLBACK (pk_control_updates_changed_cb), control, NULL);
+
+	dbus_g_proxy_add_signal (control->priv->proxy, "RepoListChanged", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "RepoListChanged",
+				     G_CALLBACK (pk_control_repo_list_changed_cb), control, NULL);
+
+	dbus_g_proxy_add_signal (control->priv->proxy, "NetworkStateChanged",
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "NetworkStateChanged",
+				     G_CALLBACK (pk_control_network_state_changed_cb), control, NULL);
+
+	dbus_g_proxy_add_signal (control->priv->proxy, "RestartSchedule", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "RestartSchedule",
+				     G_CALLBACK (pk_control_restart_schedule_cb), control, NULL);
+
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
+					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (control->priv->proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
+				     G_CALLBACK (pk_control_locked_cb), control, NULL);
+
 	/* get properties async if they exist */
 if (0)	pk_control_set_properties (control);
 }
@@ -1801,6 +1977,20 @@ pk_control_finalize (GObject *object)
 		egg_warning ("cancel in flight call");
 		dbus_g_proxy_cancel_call (control->priv->proxy, control->priv->call);
 	}
+
+	/* disconnect signal handlers */
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "Locked",
+				        G_CALLBACK (pk_control_locked_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "TransactionListChanged",
+				        G_CALLBACK (pk_control_transaction_list_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "UpdatesChanged",
+				        G_CALLBACK (pk_control_updates_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RepoListChanged",
+				        G_CALLBACK (pk_control_repo_list_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "NetworkStateChanged",
+				        G_CALLBACK (pk_control_network_state_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RestartSchedule",
+				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 
 	g_object_unref (G_OBJECT (priv->proxy));
 
