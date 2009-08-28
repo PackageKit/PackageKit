@@ -643,35 +643,27 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 }
 
 /**
- * pk_client_get_tid_cb:
+ * pk_client_set_locale_cb:
  **/
 static void
-pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	const gchar *tid = NULL;
 	gchar *filters_text = NULL;
 	const gchar *enum_text;
+	GError *error = NULL;
+	gboolean ret;
 
-	tid = pk_control_get_tid_finish (control, res, &error);
-	if (tid == NULL) {
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to set locale: %s", error->message);
 		pk_client_state_finish (state, error);
-		g_error_free (error);
-		return;
+		goto out;
 	}
 
-	egg_debug ("tid = %s", tid);
-	state->tid = g_strdup (tid);
-
-	/* get a connection to the tranaction interface */
-	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
-	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", tid);
-
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
+	/* finished this call */
+	state->call = NULL;
 
 	/* setup the proxies ready for use */
 	pk_client_connect_proxy (state->proxy, state);
@@ -874,9 +866,50 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
-
-	/* deallocate temp state */
+out:
 	g_free (filters_text);
+	return;
+}
+
+/**
+ * pk_client_get_tid_cb:
+ **/
+static void
+pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	const gchar *tid = NULL;
+	const gchar *locale;
+
+	tid = pk_control_get_tid_finish (control, res, &error);
+	if (tid == NULL) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		return;
+	}
+
+	egg_debug ("tid = %s", tid);
+	state->tid = g_strdup (tid);
+
+	/* get a connection to the tranaction interface */
+	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
+						  PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
+	if (state->proxy == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", tid);
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
+
+	/* set locale */
+	locale = (const gchar *) setlocale (LC_ALL, NULL);
+	state->call = dbus_g_proxy_begin_call (state->proxy, "SetLocale",
+					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
+					       G_TYPE_STRING, locale,
+					       G_TYPE_INVALID);
+
+	/* we've sent this async */
+	egg_debug ("sent locale request");
 }
 
 /**
