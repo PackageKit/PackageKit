@@ -49,6 +49,7 @@ struct _PkProgressPrivate
 	gint				 subpercentage;
 	gboolean			 allow_cancel;
 	PkStatusEnum			 status;
+	gboolean			 caller_active;
 };
 
 enum {
@@ -58,6 +59,7 @@ enum {
 	PROP_SUBPERCENTAGE,
 	PROP_ALLOW_CANCEL,
 	PROP_STATUS,
+	PROP_CALLER_ACTIVE,
 	PROP_LAST
 };
 
@@ -87,6 +89,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
+		break;
+	case PROP_CALLER_ACTIVE:
+		g_value_set_boolean (value, priv->caller_active);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -119,6 +124,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
+		break;
+	case PROP_CALLER_ACTIVE:
+		priv->caller_active = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -178,6 +186,14 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, PK_STATUS_ENUM_UNKNOWN, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
+
+	/**
+	 * PkPackage:caller-active:
+	 */
+	pspec = g_param_spec_boolean ("caller-active", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }

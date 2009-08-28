@@ -325,6 +325,22 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClientSta
 }
 
 /**
+ * pk_client_caller_active_changed_cb:
+ */
+static void
+pk_client_caller_active_changed_cb (DBusGProxy *proxy, gboolean is_active, PkClientState *state)
+{
+	/* save progress */
+	g_object_set (state->progress,
+		      "caller-active", is_active,
+		      NULL);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
+}
+
+/**
  * pk_client_details_cb:
  */
 static void
@@ -487,6 +503,8 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_category_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
 				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
+				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
 #if 0
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), state, NULL);
@@ -500,8 +518,6 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_error_code_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Message",
 				     G_CALLBACK (pk_client_message_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
-				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
 #endif
@@ -533,6 +549,8 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_require_restart_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
 					G_CALLBACK (pk_client_allow_cancel_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
+					G_CALLBACK (pk_client_caller_active_changed_cb), state);
 #if 0
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_client_files_cb), state);
@@ -544,9 +562,7 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_error_code_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Message",
 					G_CALLBACK (pk_client_message_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
-					G_CALLBACK (pk_client_caller_active_changed_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
+gi	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
 					G_CALLBACK (pk_client_media_change_required_cb), state);
 #endif
 }
