@@ -404,7 +404,6 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 			     const gchar *summary, PkClientState *state)
 {
 	PkUpdateStateEnum type_enum;
-
 	type_enum = pk_update_state_enum_from_text (type_text);
 	pk_results_add_distro_upgrade (state->results, type_enum, name, summary);
 }
@@ -416,7 +415,6 @@ static void
 pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, const gchar *package_id, PkClientState *state)
 {
 	PkRestartEnum restart_enum;
-
 	restart_enum = pk_restart_enum_from_text (restart_text);
 	pk_results_add_require_restart (state->results, restart_enum, package_id);
 }
@@ -429,6 +427,86 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 		       const gchar *name, const gchar *summary, const gchar *icon, PkClientState *state)
 {
 	pk_results_add_category (state->results, parent_id, cat_id, name, summary, icon);
+}
+
+/**
+ * pk_client_files_cb:
+ */
+static void
+pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClientState *state)
+{
+	gchar **files;
+	files = g_strsplit (filelist, ";", -1);
+//	pk_results_add_files (state->results, package_id, files);
+	g_strfreev (files);
+}
+
+/**
+ * pk_client_repo_signature_required_cb:
+ **/
+static void
+pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *repository_name,
+				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+				      const gchar *key_fingerprint, const gchar *key_timestamp,
+				      const gchar *type_text, PkClientState *state)
+{
+	PkSigTypeEnum type_enum;
+	type_enum = pk_sig_type_enum_from_text (type_text);
+//	pk_results_add_signature_required (state->results, package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_enum);
+}
+
+/**
+ * pk_client_eula_required_cb:
+ **/
+static void
+pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+			    const gchar *vendor_name, const gchar *license_agreement, PkClientState *state)
+{
+//	pk_results_add_eula_required (state->results, eula_id, package_id, vendor_name, license_agreement);
+}
+
+/**
+ * pk_client_media_change_required_cb:
+ **/
+static void
+pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_text,
+				    const gchar *media_id, const gchar *media_text, PkClientState *state)
+{
+	PkMediaTypeEnum media_type_enum;
+	media_type_enum = pk_media_type_enum_from_text (media_type_text);
+//	pk_results_add_media_change_required (state->results, media_type_enum, media_id, media_text);
+}
+
+/**
+ * pk_client_repo_detail_cb:
+ **/
+static void
+pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
+			  const gchar *description, gboolean enabled, PkClientState *state)
+{
+//	pk_results_add_repo_detail (state->results, repo_id, description, enabled);
+}
+
+/**
+ * pk_client_error_code_cb:
+ */
+static void
+pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar *details, PkClientState *state)
+{
+	PkErrorCodeEnum code_enum;
+	code_enum = pk_error_enum_from_text (code_text);
+//	pk_results_add_error_code (state->results, code_enum, details);
+}
+
+/**
+ * pk_client_message_cb:
+ */
+static void
+pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar *details, PkClientState *state)
+{
+	PkMessageEnum message_enum;
+	message_enum = pk_message_enum_from_text (message_text);
+//	pk_results_add_message (state->results, message_enum, details);
 }
 
 /**
@@ -505,7 +583,6 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
 				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
-#if 0
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
@@ -520,7 +597,6 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_message_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
-#endif
 }
 
 /**
@@ -551,7 +627,6 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_allow_cancel_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
 					G_CALLBACK (pk_client_caller_active_changed_cb), state);
-#if 0
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_client_files_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
@@ -562,9 +637,8 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_error_code_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Message",
 					G_CALLBACK (pk_client_message_cb), state);
-gi	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
+	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
 					G_CALLBACK (pk_client_media_change_required_cb), state);
-#endif
 }
 
 /**
