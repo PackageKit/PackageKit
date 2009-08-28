@@ -175,39 +175,65 @@ gboolean	 pk_results_set_exit_code		(PkResults	*results,
 							 PkExitEnum	 exit_enum);
 
 /* add */
-gboolean	 pk_results_add_package			(PkResults	*results,
-							 PkInfoEnum	 info_enum,
-							 const gchar	*package_id,
-							 const gchar	*summary);
-gboolean	 pk_results_add_details			(PkResults	*results,
-							 const gchar	*package_id,
-							 const gchar	*license,
-							 PkGroupEnum	 group_enum,
-							 const gchar	*description,
-							 const gchar	*url,
-							 guint64	 size);
-gboolean	 pk_results_add_update_detail		(PkResults	*results,
-							 const gchar	*package_id,
-							 const gchar	*updates,
-							 const gchar	*obsoletes,
-							 const gchar	*vendor_url,
-							 const gchar	*bugzilla_url,
-							 const gchar	*cve_url,
-							 PkRestartEnum	 restart_enum,
-							 const gchar	*update_text,
-							 const gchar	*changelog,
-							 PkUpdateStateEnum state_enum,
-							 GDate		*issued,
-							 GDate		*updated);
+gboolean	 pk_results_add_package			(PkResults		*results,
+							 PkInfoEnum		 info_enum,
+							 const gchar		*package_id,
+							 const gchar		*summary);
+gboolean	 pk_results_add_details			(PkResults		*results,
+							 const gchar		*package_id,
+							 const gchar		*license,
+							 PkGroupEnum		 group_enum,
+							 const gchar		*description,
+							 const gchar		*url,
+							 guint64		 size);
+gboolean	 pk_results_add_update_detail		(PkResults		*results,
+							 const gchar		*package_id,
+							 const gchar		*updates,
+							 const gchar		*obsoletes,
+							 const gchar		*vendor_url,
+							 const gchar		*bugzilla_url,
+							 const gchar		*cve_url,
+							 PkRestartEnum		 restart_enum,
+							 const gchar		*update_text,
+							 const gchar		*changelog,
+							 PkUpdateStateEnum	 state_enum,
+							 GDate			*issued,
+							 GDate			*updated);
+gboolean	 pk_results_add_category		(PkResults		*results,
+							 const gchar		*parent_id,
+							 const gchar		*cat_id,
+							 const gchar		*name,
+							 const gchar		*summary,
+							 const gchar		*icon);
+gboolean	 pk_results_add_distro_upgrade		(PkResults		*results,
+							 PkUpdateStateEnum	 state_enum,
+							 const gchar		*name,
+							 const gchar		*summary);
+gboolean	 pk_results_add_require_restart		(PkResults		*results,
+							 PkRestartEnum		 restart_enum,
+							 const gchar		*package_id);
+gboolean	 pk_results_add_transaction		(PkResults		*results,
+							 const gchar		*tid,
+							 const gchar		*timespec,
+							 gboolean		 succeeded,
+							 PkRoleEnum		 role_enum,
+							 guint			 duration,
+							 const gchar		*data,
+							 guint			 uid,
+							 const gchar		*cmdline);
 
 /* get single data */
-PkExitEnum	 pk_results_get_exit_code		(PkResults	*results);
-PkPackageSack	*pk_results_get_package_sack		(PkResults	*results);
+PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
+PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
 
 /* get package array objects */
-GPtrArray	*pk_results_get_package_array		(PkResults	*results);
-GPtrArray	*pk_results_get_details_array		(PkResults	*results);
-GPtrArray	*pk_results_get_update_detail_array	(PkResults	*results);
+GPtrArray	*pk_results_get_package_array		(PkResults		*results);
+GPtrArray	*pk_results_get_details_array		(PkResults		*results);
+GPtrArray	*pk_results_get_update_detail_array	(PkResults		*results);
+GPtrArray	*pk_results_get_category_array		(PkResults		*results);
+GPtrArray	*pk_results_get_distro_upgrade_array	(PkResults		*results);
+GPtrArray	*pk_results_get_require_restart_array	(PkResults		*results);
+GPtrArray	*pk_results_get_transaction_array	(PkResults		*results);
 
 G_END_DECLS
 

@@ -67,6 +67,10 @@ struct _PkResultsPrivate
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
 	GPtrArray		*update_detail_array;
+	GPtrArray		*category_array;
+	GPtrArray		*distro_upgrade_array;
+	GPtrArray		*require_restart_array;
+	GPtrArray		*transaction_array;
 };
 
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
@@ -121,7 +125,6 @@ pk_result_item_update_detail_free (PkResultItemUpdateDetail *item)
 		g_date_free (item->updated);
 }
 
-#if 0
 /**
  * pk_result_item_category_free:
  **/
@@ -177,7 +180,6 @@ pk_result_item_transaction_free (PkResultItemTransaction *item)
 	g_free (item->cmdline);
 	g_free (item);
 }
-#endif
 
 /**
  * pk_results_set_exit_code:
@@ -297,6 +299,123 @@ pk_results_add_update_detail (PkResults *results, const gchar *package_id, const
 }
 
 /**
+ * pk_results_add_category:
+ * @results: a valid #PkResults instance
+ *
+ * Adds a category item to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_category (PkResults *results, const gchar *parent_id, const gchar *cat_id, const gchar *name,
+			 const gchar *summary, const gchar *icon)
+{
+	PkResultItemCategory *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemCategory, 1);
+	item->parent_id = g_strdup (parent_id);
+	item->cat_id = g_strdup (cat_id);
+	item->name = g_strdup (name);
+	item->summary = g_strdup (summary);
+	item->icon = g_strdup (icon);
+	g_ptr_array_add (results->priv->category_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_distro_upgrade:
+ * @results: a valid #PkResults instance
+ *
+ * Adds a distribution upgrade item to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_distro_upgrade (PkResults *results, PkUpdateStateEnum state_enum, const gchar *name, const gchar *summary)
+{
+	PkResultItemDistroUpgrade *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (state_enum != PK_UPDATE_STATE_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemDistroUpgrade, 1);
+	item->state = state_enum;
+	item->name = g_strdup (name);
+	item->summary = g_strdup (summary);
+	g_ptr_array_add (results->priv->distro_upgrade_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_require_restart:
+ * @results: a valid #PkResults instance
+ *
+ * Adds a require restart item to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_require_restart (PkResults *results, PkRestartEnum restart_enum, const gchar *package_id)
+{
+	PkResultItemRequireRestart *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (restart_enum != PK_RESTART_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemRequireRestart, 1);
+	item->restart = restart_enum;
+	item->package_id = g_strdup (package_id);
+	g_ptr_array_add (results->priv->require_restart_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_transaction:
+ * @results: a valid #PkResults instance
+ *
+ * Adds a transaction item to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *timespec,
+			    gboolean succeeded, PkRoleEnum role_enum,
+			    guint duration, const gchar *data,
+			    guint uid, const gchar *cmdline)
+{
+	PkResultItemTransaction *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (role_enum != PK_ROLE_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemTransaction, 1);
+	item->tid = g_strdup (tid);
+	item->timespec = g_strdup (timespec);
+	item->succeeded = succeeded;
+	item->role = role_enum;
+	item->duration = duration;
+	item->data = g_strdup (data);
+	item->uid = uid;
+	item->cmdline = g_strdup (cmdline);
+	g_ptr_array_add (results->priv->transaction_array, item);
+
+	return TRUE;
+}
+
+/**
  * pk_results_get_exit_code:
  * @results: a valid #PkResults instance
  *
@@ -405,6 +524,66 @@ pk_results_get_update_detail_array (PkResults *results)
 }
 
 /**
+ * pk_results_get_category_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the categories from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemCategory's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_category_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->category_array);
+}
+
+/**
+ * pk_results_get_distro_upgrade_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the distribution upgrades from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemDistroUpgrade's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_distro_upgrade_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->distro_upgrade_array);
+}
+
+/**
+ * pk_results_get_require_restart_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the require restarts from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemRequireRestart's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_require_restart_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->require_restart_array);
+}
+
+/**
+ * pk_results_get_transaction_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the transactions from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemTransaction's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_transaction_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->transaction_array);
+}
+
+/**
  * pk_results_class_init:
  * @klass: The PkResultsClass
  **/
@@ -428,6 +607,10 @@ pk_results_init (PkResults *results)
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_package_free);
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_details_free);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_update_detail_free);
+	results->priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_category_free);
+	results->priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_distro_upgrade_free);
+	results->priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_require_restart_free);
+	results->priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_transaction_free);
 }
 
 /**
@@ -443,6 +626,10 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->package_array);
 	g_ptr_array_unref (priv->details_array);
 	g_ptr_array_unref (priv->update_detail_array);
+	g_ptr_array_unref (priv->category_array);
+	g_ptr_array_unref (priv->distro_upgrade_array);
+	g_ptr_array_unref (priv->require_restart_array);
+	g_ptr_array_unref (priv->transaction_array);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }
