@@ -51,6 +51,18 @@ typedef struct _PkControlPrivate	PkControlPrivate;
 typedef struct _PkControl		PkControl;
 typedef struct _PkControlClass		PkControlClass;
 
+/**
+ * PkControlError:
+ * @PK_CONTROL_ERROR_FAILED: the transaction failed for an unknown reason
+ *
+ * Errors that can be thrown
+ */
+typedef enum
+{
+	PK_CONTROL_ERROR_FAILED,
+	PK_CONTROL_ERROR_CANNOT_START_DAEMON
+} PkControlError;
+
 struct _PkControl
 {
 	 GObject		 parent;
@@ -148,6 +160,12 @@ void		 pk_control_can_authorize_async		(PkControl		*control,
 							 gpointer		 user_data);
 PkAuthorizeEnum	 pk_control_can_authorize_finish	(PkControl		*control,
 							 GAsyncResult		*res,
+							 GError			**error);
+gchar		*pk_control_get_daemon_state		(PkControl		*control,
+							 GError			**error);
+gboolean	 pk_control_get_backend_detail		(PkControl		*control,
+							 gchar			**name,
+							 gchar			**author,
 							 GError			**error);
 
 G_END_DECLS

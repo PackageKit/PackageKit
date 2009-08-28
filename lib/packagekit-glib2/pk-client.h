@@ -48,6 +48,31 @@ G_BEGIN_DECLS
 #define PK_CLIENT_ERROR		(pk_client_error_quark ())
 #define PK_CLIENT_TYPE_ERROR	(pk_client_error_get_type ())
 
+/**
+ * PkClientError:
+ * @PK_CLIENT_ERROR_FAILED: the transaction failed for an unknown reason
+ * @PK_CLIENT_ERROR_NO_TID: the transaction id was not pre-allocated (internal error)
+ * @PK_CLIENT_ERROR_ALREADY_TID: the transaction id has already been used (internal error)
+ * @PK_CLIENT_ERROR_ROLE_UNKNOWN: the role was not set (internal error)
+ * @PK_CLIENT_ERROR_INVALID_INPUT: the package_id is invalid
+ * @PK_CLIENT_ERROR_INVALID_FILE: the file is invalid
+ * @PK_CLIENT_ERROR_NOT_SUPPORTED: the action is not supported
+ *
+ * Errors that can be thrown
+ */
+typedef enum
+{
+	PK_CLIENT_ERROR_FAILED,
+	PK_CLIENT_ERROR_FAILED_AUTH,
+	PK_CLIENT_ERROR_NO_TID,
+	PK_CLIENT_ERROR_ALREADY_TID,
+	PK_CLIENT_ERROR_ROLE_UNKNOWN,
+	PK_CLIENT_ERROR_CANNOT_START_DAEMON,
+	PK_CLIENT_ERROR_INVALID_INPUT,
+	PK_CLIENT_ERROR_INVALID_FILE,
+	PK_CLIENT_ERROR_NOT_SUPPORTED
+} PkClientError;
+
 typedef struct _PkClientPrivate	PkClientPrivate;
 typedef struct _PkClient		PkClient;
 typedef struct _PkClientClass		PkClientClass;

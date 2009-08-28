@@ -87,6 +87,40 @@ typedef struct {
 	PkNetworkEnum		 network;
 } PkControlState;
 
+/**
+ * pk_control_error_quark:
+ *
+ * We are a GObject that sets errors
+ *
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_control_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("pk_control_error");
+	return quark;
+}
+
+/**
+ * pk_control_fixup_dbus_error:
+ **/
+static void
+pk_control_fixup_dbus_error (GError *error)
+{
+	g_return_if_fail (error != NULL);
+
+	/* hardcode domain */
+	error->domain = PK_CONTROL_ERROR;
+
+	/* find a better failure code */
+	if (error->code == DBUS_GERROR_SPAWN_CHILD_EXITED)
+		error->code = PK_CONTROL_ERROR_CANNOT_START_DAEMON;
+	else
+		error->code = PK_CONTROL_ERROR_FAILED;
+}
+
 /***************************************************************************************************/
 
 /**
@@ -137,6 +171,8 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 				     G_TYPE_STRING, &tid,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_tid_state_finish (state, error);
 		goto out;
@@ -271,6 +307,8 @@ pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 				     G_TYPE_STRING, &temp,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_mime_types_state_finish (state, error);
 		goto out;
@@ -549,6 +587,8 @@ pk_control_get_roles_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 				     G_TYPE_STRING, &roles,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_roles_state_finish (state, error);
 		goto out;
@@ -682,6 +722,8 @@ pk_control_get_filters_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlSta
 				     G_TYPE_STRING, &filters,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_filters_state_finish (state, error);
 		goto out;
@@ -815,6 +857,8 @@ pk_control_get_groups_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlStat
 				     G_TYPE_STRING, &groups,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_groups_state_finish (state, error);
 		goto out;
@@ -948,6 +992,8 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 				     G_TYPE_STRV, &temp,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_transaction_list_state_finish (state, error);
 		goto out;
@@ -1079,6 +1125,8 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 				     G_TYPE_UINT, &seconds,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_time_since_action_state_finish (state, error);
 		goto out;
@@ -1090,7 +1138,7 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 	/* save data */
 	state->time = seconds;
 	if (state->time == 0) {
-		error = g_error_new (1, 0, "could not get time");
+		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get time");
 		pk_control_get_time_since_action_state_finish (state, error);
 		goto out;
 	}
@@ -1218,6 +1266,8 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 				     G_TYPE_STRING, &network_state,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_network_state_state_finish (state, error);
 		goto out;
@@ -1229,7 +1279,7 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 	/* save data */
 	state->network = pk_network_enum_from_text (network_state);
 	if (state->network == PK_NETWORK_ENUM_UNKNOWN) {
-		error = g_error_new (1, 0, "could not get state");
+		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_get_network_state_state_finish (state, error);
 		goto out;
 	}
@@ -1355,6 +1405,8 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 				     G_TYPE_STRING, &authorize_state,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_can_authorize_state_finish (state, error);
 		goto out;
@@ -1366,7 +1418,7 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 	/* save data */
 	state->authorize = pk_authorize_type_enum_from_text (authorize_state);
 	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
-		error = g_error_new (1, 0, "could not get state");
+		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_can_authorize_state_finish (state, error);
 		goto out;
 	}
@@ -1447,6 +1499,88 @@ pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError *
 /***************************************************************************************************/
 
 /**
+ * pk_control_get_daemon_state:
+ * @control: a valid #PkControl instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The engine state debugging output
+ *
+ * Return value: a string of debugging data of unspecified format, unref wih g_free()
+ **/
+gchar *
+pk_control_get_daemon_state (PkControl *control, GError **error)
+{
+	gboolean ret;
+	gchar *state = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* call D-Bus sync */
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetDaemonState", error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &state,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		if (error != NULL)
+			pk_control_fixup_dbus_error (*error);
+		goto out;
+	}
+out:
+	return state;
+}
+
+/**
+ * pk_control_get_backend_detail:
+ * @control: a valid #PkControl instance
+ * @name: the name of the backend
+ * @author: the author of the backend
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The backend detail is useful for the pk-backend-status program, or for
+ * automatic bugreports.
+ *
+ * Return value: %TRUE if the daemon serviced the request
+ **/
+gboolean
+pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author, GError **error)
+{
+	gboolean ret;
+	gchar *tname;
+	gchar *tauthor;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* call D-Bus sync */
+	ret = dbus_g_proxy_call (control->priv->proxy, "GetBackendDetail", error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &tname,
+				 G_TYPE_STRING, &tauthor,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		if (error != NULL)
+			pk_control_fixup_dbus_error (*error);
+		goto out;
+	}
+
+	/* copy needed bits */
+	if (name != NULL)
+		*name = tname;
+	else
+		g_free (tname);
+	/* copy needed bits */
+	if (author != NULL)
+		*author = tauthor;
+	else
+		g_free (tauthor);
+out:
+	return ret;
+}
+
+/**
  * pk_control_set_properties_collect_cb:
  **/
 static void
@@ -1484,6 +1618,8 @@ pk_control_set_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 				     &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed to get properties: %s", error->message);
 		return;
 	}

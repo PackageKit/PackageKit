@@ -129,6 +129,86 @@ static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, gu
 static void pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state);
 
 /**
+ * pk_client_error_quark:
+ *
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_client_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("pk_client_error");
+	return quark;
+}
+
+/**
+ * pk_client_fixup_dbus_error:
+ **/
+static void
+pk_client_fixup_dbus_error (GError *error)
+{
+	const gchar *name;
+
+	g_return_if_fail (error != NULL);
+
+	/* old style PolicyKit failure */
+	if (g_str_has_prefix (error->message, "org.freedesktop.packagekit.")) {
+		egg_debug ("fixing up code for Policykit auth failure");
+		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+		g_free (error->message);
+		error->message = g_strdup ("PolicyKit authorization failure");
+		goto out;
+	}
+
+	/* find a better failure code */
+	if (error->domain == DBUS_GERROR &&
+	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+
+		/* fall back to generic */
+		error->code = PK_CLIENT_ERROR_FAILED;
+
+		/* use one of our local codes */
+		name = dbus_g_error_get_name (error);
+
+		/* trim common prefix */
+		if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
+			name = &name[39];
+
+		/* try to get a better error */
+		if (g_str_has_prefix (name, "PermissionDenied") ||
+		    g_str_has_prefix (name, "RefusedByPolicy")) {
+			error->code = PK_CLIENT_ERROR_FAILED_AUTH;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "PackageIdInvalid") ||
+			 g_str_has_prefix (name, "SearchInvalid") ||
+			 g_str_has_prefix (name, "FilterInvalid") ||
+			 g_str_has_prefix (name, "InvalidProvide") ||
+			 g_str_has_prefix (name, "InputInvalid")) {
+			error->code = PK_CLIENT_ERROR_INVALID_INPUT;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "PackInvalid") ||
+			 g_str_has_prefix (name, "NoSuchFile") ||
+			 g_str_has_prefix (name, "NoSuchDirectory")) {
+			error->code = PK_CLIENT_ERROR_INVALID_FILE;
+			goto out;
+		}
+		if (g_str_has_prefix (name, "NotSupported")) {
+			error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
+			goto out;
+		}
+		egg_warning ("couldn't parse execption '%s', please report", name);
+	}
+
+out:
+	/* hardcode domain */
+	error->domain = PK_CLIENT_ERROR;
+	return;
+}
+
+/**
  * pk_client_state_finish:
  **/
 static void
@@ -207,7 +287,6 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 static void
 pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
-//	PkClient *client = PK_CLIENT (state->client);
 	GError *error = NULL;
 	gboolean ret;
 
@@ -218,6 +297,8 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
@@ -658,6 +739,8 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_client_fixup_dbus_error (error);
 		egg_warning ("failed to set locale: %s", error->message);
 		pk_client_state_finish (state, error);
 		goto out;
