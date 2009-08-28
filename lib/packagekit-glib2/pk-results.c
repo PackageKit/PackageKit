@@ -26,28 +26,9 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-#include <string.h>
-#include <locale.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <sys/wait.h>
-#include <fcntl.h>
-
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-#include <dbus/dbus-glib.h>
+#include <glib-object.h>
 
 #include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 
 #include "egg-debug.h"
@@ -71,6 +52,13 @@ struct _PkResultsPrivate
 	GPtrArray		*distro_upgrade_array;
 	GPtrArray		*require_restart_array;
 	GPtrArray		*transaction_array;
+	GPtrArray		*files_array;
+	GPtrArray		*repo_signature_required_array;
+	GPtrArray		*eula_required_array;
+	GPtrArray		*media_change_required_array;
+	GPtrArray		*repo_detail_array;
+	GPtrArray		*error_code_array;
+	GPtrArray		*message_array;
 };
 
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
@@ -178,6 +166,102 @@ pk_result_item_transaction_free (PkResultItemTransaction *item)
 	g_free (item->timespec);
 	g_free (item->data);
 	g_free (item->cmdline);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_files_free:
+ **/
+static void
+pk_result_item_files_free (PkResultItemFiles *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->package_id);
+	g_strfreev (item->files);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_repo_signature_required_free:
+ **/
+static void
+pk_result_item_repo_signature_required_free (PkResultItemRepoSignatureRequired *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->package_id);
+	g_free (item->repository_name);
+	g_free (item->key_url);
+	g_free (item->key_userid);
+	g_free (item->key_id);
+	g_free (item->key_fingerprint);
+	g_free (item->key_timestamp);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_eula_required_free:
+ **/
+static void
+pk_result_item_eula_required_free (PkResultItemEulaRequired *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->eula_id);
+	g_free (item->package_id);
+	g_free (item->vendor_name);
+	g_free (item->license_agreement);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_media_change_required_free:
+ **/
+static void
+pk_result_item_media_change_required_free (PkResultItemMediaChangeRequired *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->media_id);
+	g_free (item->media_text);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_repo_detail_free:
+ **/
+static void
+pk_result_item_repo_detail_free (PkResultItemRepoDetail *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->repo_id);
+	g_free (item->description);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_error_code_free:
+ **/
+static void
+pk_result_item_error_code_free (PkResultItemErrorCode *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->details);
+	g_free (item);
+}
+
+/**
+ * pk_result_item_message_free:
+ **/
+static void
+pk_result_item_message_free (PkResultItemMessage *item)
+{
+	if (item == NULL)
+		return;
+	g_free (item->details);
 	g_free (item);
 }
 
@@ -416,6 +500,196 @@ pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *t
 }
 
 /**
+ * pk_results_add_files:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some files details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_files (PkResults *results, const gchar *package_id, gchar **files)
+{
+	PkResultItemFiles *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (files != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemFiles, 1);
+	item->package_id = g_strdup (package_id);
+	item->files = g_strdupv (files);
+	g_ptr_array_add (results->priv->files_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_repo_signature_required:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some repository signature details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_repo_signature_required (PkResults *results, const gchar *package_id, const gchar *repository_name,
+					const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+					const gchar *key_fingerprint, const gchar *key_timestamp,
+					PkSigTypeEnum type_enum)
+{
+	PkResultItemRepoSignatureRequired *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemRepoSignatureRequired, 1);
+	item->package_id = g_strdup (package_id);
+	item->repository_name = g_strdup (repository_name);
+	item->key_url = g_strdup (key_url);
+	item->key_userid = g_strdup (key_userid);
+	item->key_id = g_strdup (key_id);
+	item->key_fingerprint = g_strdup (key_fingerprint);
+	item->key_timestamp = g_strdup (key_timestamp);
+	item->type = type_enum;
+	g_ptr_array_add (results->priv->repo_signature_required_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_eula_required:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some EULA details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_eula_required (PkResults *results, const gchar *eula_id, const gchar *package_id,
+			      const gchar *vendor_name, const gchar *license_agreement)
+{
+	PkResultItemEulaRequired *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemEulaRequired, 1);
+	item->eula_id = g_strdup (eula_id);
+	item->package_id = g_strdup (package_id);
+	item->vendor_name = g_strdup (vendor_name);
+	item->license_agreement = g_strdup (license_agreement);
+	g_ptr_array_add (results->priv->eula_required_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_media_change_required:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some media change details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_media_change_required (PkResults *results, PkMediaTypeEnum media_type_enum,
+				      const gchar *media_id, const gchar *media_text)
+{
+	PkResultItemMediaChangeRequired *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (media_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemMediaChangeRequired, 1);
+	item->media_type = media_type_enum;
+	item->media_id = g_strdup (media_id);
+	item->media_text = g_strdup (media_text);
+	g_ptr_array_add (results->priv->media_change_required_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_repo_detail:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some repository details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_repo_detail (PkResults *results, const gchar *repo_id,
+			    const gchar *description, gboolean enabled)
+{
+	PkResultItemRepoDetail *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (repo_id != NULL, FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemRepoDetail, 1);
+	item->repo_id = g_strdup (repo_id);
+	item->description = g_strdup (description);
+	item->enabled = enabled;
+	g_ptr_array_add (results->priv->repo_detail_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_error_code:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some error details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_error_code (PkResults *results, PkErrorCodeEnum code_enum, const gchar *details)
+{
+	PkResultItemErrorCode *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemErrorCode, 1);
+	item->code = code_enum;
+	item->details = g_strdup (details);
+	g_ptr_array_add (results->priv->error_code_array, item);
+
+	return TRUE;
+}
+
+/**
+ * pk_results_add_message:
+ * @results: a valid #PkResults instance
+ *
+ * Adds some message details to the results set.
+ *
+ * Return value: %TRUE if the value was set
+ **/
+gboolean
+pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gchar *details)
+{
+	PkResultItemMessage *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+
+	/* copy and add to array */
+	item = g_new0 (PkResultItemMessage, 1);
+	item->message = message_enum;
+	item->details = g_strdup (details);
+	g_ptr_array_add (results->priv->message_array, item);
+
+	return TRUE;
+}
+
+/**
  * pk_results_get_exit_code:
  * @results: a valid #PkResults instance
  *
@@ -584,8 +858,112 @@ pk_results_get_transaction_array (PkResults *results)
 }
 
 /**
+ * pk_results_get_files_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the files from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemFiles's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_files_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->files_array);
+}
+
+/**
+ * pk_results_get_repo_signature_required_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the repository signatures required from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemRepoSignatureRequired's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_repo_signature_required_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->repo_signature_required_array);
+}
+
+/**
+ * pk_results_get_eula_required_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the eulas required from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemEulaRequired's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_eula_required_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->eula_required_array);
+}
+
+/**
+ * pk_results_get_media_change_required_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the media changes required from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemMediaChangeRequired's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_media_change_required_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->media_change_required_array);
+}
+
+/**
+ * pk_results_get_repo_detail_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the repository details from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemRepoDetail's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_repo_detail_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->repo_detail_array);
+}
+
+/**
+ * pk_results_get_error_code_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the error codes from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemErrorCode's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_error_code_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->error_code_array);
+}
+
+/**
+ * pk_results_get_message_array:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the messages from the transaction.
+ *
+ * Return value: A #GPtrArray array of #PkResultItemMessage's, free with g_ptr_array_unref().
+ **/
+GPtrArray *
+pk_results_get_message_array (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	return g_ptr_array_ref (results->priv->message_array);
+}
+
+/**
  * pk_results_class_init:
- * @klass: The PkResultsClass
  **/
 static void
 pk_results_class_init (PkResultsClass *klass)
@@ -597,7 +975,6 @@ pk_results_class_init (PkResultsClass *klass)
 
 /**
  * pk_results_init:
- * @results: This class instance
  **/
 static void
 pk_results_init (PkResults *results)
@@ -611,11 +988,17 @@ pk_results_init (PkResults *results)
 	results->priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_distro_upgrade_free);
 	results->priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_require_restart_free);
 	results->priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_transaction_free);
+	results->priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_files_free);
+	results->priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_repo_signature_required_free);
+	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_eula_required_free);
+	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_media_change_required_free);
+	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_repo_detail_free);
+	results->priv->error_code_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_error_code_free);
+	results->priv->message_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_message_free);
 }
 
 /**
  * pk_results_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_results_finalize (GObject *object)
@@ -630,6 +1013,13 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->distro_upgrade_array);
 	g_ptr_array_unref (priv->require_restart_array);
 	g_ptr_array_unref (priv->transaction_array);
+	g_ptr_array_unref (priv->files_array);
+	g_ptr_array_unref (priv->repo_signature_required_array);
+	g_ptr_array_unref (priv->eula_required_array);
+	g_ptr_array_unref (priv->media_change_required_array);
+	g_ptr_array_unref (priv->repo_detail_array);
+	g_ptr_array_unref (priv->error_code_array);
+	g_ptr_array_unref (priv->message_array);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }

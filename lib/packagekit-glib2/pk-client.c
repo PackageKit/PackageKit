@@ -437,7 +437,7 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 {
 	gchar **files;
 	files = g_strsplit (filelist, ";", -1);
-//	pk_results_add_files (state->results, package_id, files);
+	pk_results_add_files (state->results, package_id, files);
 	g_strfreev (files);
 }
 
@@ -452,7 +452,8 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	PkSigTypeEnum type_enum;
 	type_enum = pk_sig_type_enum_from_text (type_text);
-//	pk_results_add_signature_required (state->results, package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_enum);
+	pk_results_add_repo_signature_required (state->results, package_id, repository_name, key_url, key_userid,
+						key_id, key_fingerprint, key_timestamp, type_enum);
 }
 
 /**
@@ -462,7 +463,7 @@ static void
 pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
 			    const gchar *vendor_name, const gchar *license_agreement, PkClientState *state)
 {
-//	pk_results_add_eula_required (state->results, eula_id, package_id, vendor_name, license_agreement);
+	pk_results_add_eula_required (state->results, eula_id, package_id, vendor_name, license_agreement);
 }
 
 /**
@@ -474,7 +475,7 @@ pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_t
 {
 	PkMediaTypeEnum media_type_enum;
 	media_type_enum = pk_media_type_enum_from_text (media_type_text);
-//	pk_results_add_media_change_required (state->results, media_type_enum, media_id, media_text);
+	pk_results_add_media_change_required (state->results, media_type_enum, media_id, media_text);
 }
 
 /**
@@ -484,7 +485,7 @@ static void
 pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 			  const gchar *description, gboolean enabled, PkClientState *state)
 {
-//	pk_results_add_repo_detail (state->results, repo_id, description, enabled);
+	pk_results_add_repo_detail (state->results, repo_id, description, enabled);
 }
 
 /**
@@ -495,7 +496,7 @@ pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar 
 {
 	PkErrorCodeEnum code_enum;
 	code_enum = pk_error_enum_from_text (code_text);
-//	pk_results_add_error_code (state->results, code_enum, details);
+	pk_results_add_error_code (state->results, code_enum, details);
 }
 
 /**
@@ -506,7 +507,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 {
 	PkMessageEnum message_enum;
 	message_enum = pk_message_enum_from_text (message_text);
-//	pk_results_add_message (state->results, message_enum, details);
+	pk_results_add_message (state->results, message_enum, details);
 }
 
 /**

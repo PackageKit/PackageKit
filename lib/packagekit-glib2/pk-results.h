@@ -155,7 +155,7 @@ typedef struct
 /**
  * PkResultItemCategory:
  *
- * Object to represent category about the category.
+ * Object to represent details about the category.
  **/
 typedef struct
 {
@@ -165,6 +165,93 @@ typedef struct
 	gchar				*summary;
 	gchar				*icon;
 } PkResultItemCategory;
+
+/**
+ * PkResultItemFiles:
+ *
+ * Object to represent details about the files.
+ **/
+typedef struct
+{
+	gchar				*package_id;
+	gchar				**files;
+} PkResultItemFiles;
+
+/**
+ * PkResultItemRepoSignatureRequired:
+ *
+ * Object to represent details about the repository signature request.
+ **/
+typedef struct
+{
+	gchar				*package_id;
+	gchar				*repository_name;
+	gchar				*key_url;
+	gchar				*key_userid;
+	gchar				*key_id;
+	gchar				*key_fingerprint;
+	gchar				*key_timestamp;
+	PkSigTypeEnum			 type;
+} PkResultItemRepoSignatureRequired;
+
+/**
+ * PkResultItemEulaRequired:
+ *
+ * Object to represent details about the EULA request.
+ **/
+typedef struct
+{
+	gchar				*eula_id;
+	gchar				*package_id;
+	gchar				*vendor_name;
+	gchar				*license_agreement;
+} PkResultItemEulaRequired;
+
+/**
+ * PkResultItemMediaChangeRequired:
+ *
+ * Object to represent details about the media change request.
+ **/
+typedef struct
+{
+	PkMediaTypeEnum			 media_type;
+	gchar				*media_id;
+	gchar				*media_text;
+} PkResultItemMediaChangeRequired;
+
+/**
+ * PkResultItemRepoDetail:
+ *
+ * Object to represent details about the remote repository.
+ **/
+typedef struct
+{
+	gchar				*repo_id;
+	gchar				*description;
+	gboolean			 enabled;
+} PkResultItemRepoDetail;
+
+/**
+ * PkResultItemErrorCode:
+ *
+ * Object to represent details about the error code.
+ **/
+typedef struct
+{
+	PkErrorCodeEnum			 code;
+	gchar				*details;
+} PkResultItemErrorCode;
+
+/**
+ * PkResultItemMessage:
+ *
+ * Object to represent details about the message.
+ **/
+typedef struct
+{
+	PkMessageEnum			 message;
+	gchar				*details;
+} PkResultItemMessage;
 
 GQuark		 pk_results_error_quark			(void);
 GType		 pk_results_get_type		  	(void);
@@ -221,12 +308,43 @@ gboolean	 pk_results_add_transaction		(PkResults		*results,
 							 const gchar		*data,
 							 guint			 uid,
 							 const gchar		*cmdline);
+gboolean	 pk_results_add_files 			(PkResults		*results,
+							 const gchar		*package_id,
+							 gchar			**files);
+gboolean	 pk_results_add_repo_signature_required	(PkResults		*results,
+							 const gchar		*package_id,
+							 const gchar		*repository_name,
+							 const gchar		*key_url,
+							 const gchar		*key_userid,
+							 const gchar		*key_id,
+							 const gchar		*key_fingerprint,
+							 const gchar		*key_timestamp,
+							 PkSigTypeEnum		 type_enum);
+gboolean	 pk_results_add_eula_required		(PkResults		*results,
+							 const gchar		*eula_id,
+							 const gchar		*package_id,
+							 const gchar		*vendor_name,
+							 const gchar		*license_agreement);
+gboolean	 pk_results_add_media_change_required	(PkResults		*results,
+							 PkMediaTypeEnum	 media_type_enum,
+							 const gchar		*media_id,
+							 const gchar		*media_text);
+gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
+							 const gchar		*repo_id,
+							 const gchar		*description,
+							 gboolean		 enabled);
+gboolean	 pk_results_add_error_code 		(PkResults		*results,
+							 PkErrorCodeEnum	 code_enum,
+							 const gchar		*details);
+gboolean	 pk_results_add_message 		(PkResults		*results,
+							 PkMessageEnum		 message_enum,
+							 const gchar		*details);
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
 
-/* get package array objects */
+/* get array objects */
 GPtrArray	*pk_results_get_package_array		(PkResults		*results);
 GPtrArray	*pk_results_get_details_array		(PkResults		*results);
 GPtrArray	*pk_results_get_update_detail_array	(PkResults		*results);
@@ -234,6 +352,13 @@ GPtrArray	*pk_results_get_category_array		(PkResults		*results);
 GPtrArray	*pk_results_get_distro_upgrade_array	(PkResults		*results);
 GPtrArray	*pk_results_get_require_restart_array	(PkResults		*results);
 GPtrArray	*pk_results_get_transaction_array	(PkResults		*results);
+GPtrArray	*pk_results_get_files_array		(PkResults		*results);
+GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
+GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
+GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
+GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
+GPtrArray	*pk_results_get_error_code_array	(PkResults		*results);
+GPtrArray	*pk_results_get_message_array		(PkResults		*results);
 
 G_END_DECLS
 
