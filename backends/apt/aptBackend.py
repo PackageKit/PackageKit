@@ -1360,11 +1360,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         resolver.install_protect()
         try:
             resolver.resolve()
-        except Exception, e:
+        except Exception:
             #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
             #       missing dependecies
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "Dependecies for %s cannot be satisfied: %s" % e)
+                       "Dependencies of the following packages could not "
+                       "be satisfied: %s" % " ".join(broken))
             return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
@@ -1419,9 +1421,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         resolver.install_protect()
         try:
             resolver.resolve()
-        except Exception, e:
+        except Exception:
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "Error removing %s: %s" % (pkg.name, e))
+                       "Removal would break the following packages: %s" % \
+                       " ".join(broken))
             return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
