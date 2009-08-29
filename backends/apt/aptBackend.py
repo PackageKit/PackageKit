@@ -150,7 +150,10 @@ MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 # Required to get translated descriptions
-locale.setlocale(locale.LC_ALL, "")
+try:
+    locale.setlocale(locale.LC_ALL, "")
+except locale.Error:
+    pass
 
 def unlock_cache_afterwards(func):
     """
