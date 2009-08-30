@@ -152,18 +152,24 @@ HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 # Required to get translated descriptions
 locale.setlocale(locale.LC_ALL, "")
 
-def unlock_cache_afterwards(func):
+def lock_cache(func):
+    """Lock the system package cache before excuting the decorated function and
+    release the lock afterwards.
     """
-    Make sure that the package cache is unlocked after the decorated function
-    was called.
-    """
-    def _unlock_cache_afterwards(*args, **kwargs):
+    def _locked_cache(*args, **kwargs):
         backend = args[0]
+        try:
+            apt_pkg.PkgSystemLock()
+        except SystemError:
+            #FIXME: Show the blocking application in the details
+            backend.error(ERROR_CANNOT_GET_LOCK,
+                          "Only use one package management programme at the "
+                          "the same time.")
         try:
             func(*args, **kwargs)
         finally:
             backend._unlock_cache()
-    return _unlock_cache_afterwards
+    return _locked_cache
 
 
 class PKError(Exception):
@@ -785,7 +791,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          format_string(pkg.description),
                          pkg.homepage, pkg.packageSize)
 
-    @unlock_cache_afterwards
+    @lock_cache
     def update_system(self, only_trusted):
         """
         Implement the {backend}-update-system functionality
@@ -794,7 +800,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # FIXME: use only_trusted
 
         pklog.info("Upgrading system")
-        if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
@@ -829,14 +834,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         resolver.Resolve(True)
         if not self._commit_changes(): return False
 
-    @unlock_cache_afterwards
+    @lock_cache
     def remove_packages(self, allowdeps, autoremove, ids):
         """
         Implement the {backend}-remove functionality
         """
         # TODO: use autoremove
         pklog.info("Removing package(s): id %s" % ids)
-        if not self._lock_cache(): return
         self.status(STATUS_REMOVE)
         self.allow_cancel(False)
         self.percentage(0)
@@ -1052,7 +1056,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The repository of the id %s isn't available" % repo_id)
             return
 
-    @unlock_cache_afterwards
+    @lock_cache
     def update_packages(self, only_trusted, ids):
         """
         Implement the {backend}-update functionality
@@ -1061,7 +1065,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # FIXME: use only_trusted
 
         pklog.info("Updating package with id %s" % ids)
-        if not self._lock_cache(): return
         self.status(STATUS_UPDATE)
         self.allow_cancel(False)
         self.percentage(0)
@@ -1165,7 +1168,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         self.percentage(100)
 
-    @unlock_cache_afterwards
+    @lock_cache
     def install_packages(self, only_trusted, ids):
         """
         Implement the {backend}-install functionality
@@ -1174,7 +1177,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # FIXME: use only_trusted
 
         pklog.info("Installing package with id %s" % ids)
-        if not self._lock_cache(): return
         self.status(STATUS_INSTALL)
         self.allow_cancel(False)
         self.percentage(0)
@@ -1224,14 +1226,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_UNKNOWN, "%s was not installed" % p)
                 return
 
-    @unlock_cache_afterwards
+    @lock_cache
     def install_files(self, only_trusted, inst_files):
         """
         Implement install-files for the apt backend
         Install local Debian package files
         """
         pklog.info("Installing package files: %s" % inst_files)
-        if not self._lock_cache(): return
         self.status(STATUS_INSTALL)
         self.allow_cancel(False)
         self.percentage(0)
@@ -1286,14 +1287,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.percentage(100)
 
-    @unlock_cache_afterwards
+    @lock_cache
     def refresh_cache(self, force):
         """
         Implement the {backend}-refresh_cache functionality
         """
         # TODO: use force ?
         pklog.info("Refresh cache")
-        if not self._lock_cache(): return
         self.status(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self.allow_cancel(False);
@@ -1556,20 +1556,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.files(id, files)
 
     # Helpers
-
-    def _lock_cache(self):
-        """
-        Emit an error message and return true if the apt system lock cannot
-        be acquired.
-        """
-        try:
-            apt_pkg.PkgSystemLock()
-        except SystemError:
-            self.error(ERROR_CANNOT_GET_LOCK,
-                       "Only use one package management programme at the "
-                       "the same time.")
-            return False
-        return True
 
     def _unlock_cache(self):
         """
