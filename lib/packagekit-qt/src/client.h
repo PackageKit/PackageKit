@@ -406,6 +406,7 @@ public:
 		MessageConfigFilesChanged,
 		MessagePackageAlreadyInstalled,
 		MessageAutoremoveIgnored,
+		MessageRepoMetadataDownloadFailed,
 		UnknownMessageType
 	} MessageType;
 
