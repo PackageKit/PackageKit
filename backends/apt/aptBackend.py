@@ -1299,13 +1299,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False);
         self.percentage(0)
         self._check_init((0,10))
+        progress = PackageKitFetchProgress(self, prange=(10,95))
         try:
-            self._cache.update(PackageKitFetchProgress(self, prange=(10,95)))
-        except Exception, e:
-            self._open_cache(prange=(95,100))
-            self.error(ERROR_UNKNOWN,
-                       "Refreshing cache failed: %s" % format_string(e.message))
-            return
+            ret = self._cache.update(progress)
+        except Exception, error:
+            # FIXME: Unluckily python-apt doesn't provide a real good error
+            #        reporting. We only receive a failure string.
+            # FIXME: Doesn't detect if all downloads failed - bug in python-apt
+            self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
+                         format_string(error.message))
         self._open_cache(prange=(95,100))
         self.percentage(100)
 
