@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offsack: 8 -*-
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
  *
@@ -26,25 +26,8 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-#include <string.h>
-#include <locale.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <sys/wait.h>
-#include <fcntl.h>
-
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-#include <dbus/dbus-glib.h>
+#include <glib-object.h>
+#include <gio/gio.h>
 
 #include <packagekit-glib2/pk-package-sack.h>
 #include <packagekit-glib2/pk-client.h>
@@ -268,6 +251,93 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_sort_compare_package_id_func:
+ **/
+static gint
+pk_package_sack_sort_compare_package_id_func (PkPackage **a, PkPackage **b)
+{
+	const gchar *package_id1;
+	const gchar *package_id2;
+	package_id1 = pk_package_get_id (*a);
+	package_id2 = pk_package_get_id (*b);
+	return g_strcmp0 (package_id1, package_id2);
+}
+
+/**
+ * pk_package_sack_sort_compare_summary_func:
+ **/
+static gint
+pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
+{
+	gint retval;
+	gchar *summary1;
+	gchar *summary2;
+
+	g_object_get (*a, "summary", &summary1, NULL);
+	g_object_get (*b, "summary", &summary2, NULL);
+	retval = g_strcmp0 (summary1, summary2);
+
+	g_free (summary1);
+	g_free (summary2);
+	return retval;
+}
+
+/**
+ * pk_package_sack_sort_compare_info_func:
+ **/
+static gint
+pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
+{
+	PkInfoEnum *info1;
+	PkInfoEnum *info2;
+
+	g_object_get (*a, "info", &info1, NULL);
+	g_object_get (*b, "info", &info2, NULL);
+
+	if (info1 == info2)
+		return 0;
+	else if (info1 > info2)
+		return -1;
+	return 1;
+}
+
+/**
+ * pk_package_sack_sort_package_id:
+ *
+ * Sorts by Package ID
+ **/
+void
+pk_package_sack_sort_package_id (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
+}
+
+/**
+ * pk_package_sack_sort_summary:
+ *
+ * Sorts by summary
+ **/
+void
+pk_package_sack_sort_summary (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
+}
+
+/**
+ * pk_package_sack_sort_info:
+ *
+ * Sorts by PkInfoEnum
+ **/
+void
+pk_package_sack_sort_info (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
+}
+
+/**
  * pk_package_sack_get_total_bytes:
  * @sack: a valid #PkPackageSack instance
  *
@@ -341,12 +411,6 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	if (state->sack != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -359,6 +423,8 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkPackageSackState, state);
 }
@@ -371,7 +437,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *packages = NULL;
 	const PkResultItemPackage *item;
 	guint i;
@@ -417,13 +483,14 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 		g_object_unref (package);
 	}
 
-
 	/* all okay */
 	state->ret = TRUE;
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
 }
@@ -507,7 +574,7 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *details = NULL;
 	const PkResultItemDetails *item;
 	guint i;
@@ -561,6 +628,8 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (details != NULL)
 		g_ptr_array_unref (details);
 }
@@ -618,7 +687,7 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *update_details = NULL;
 	const PkResultItemUpdateDetail *item;
 	guint i;
@@ -678,6 +747,8 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (update_details != NULL)
 		g_ptr_array_unref (update_details);
 }
@@ -729,7 +800,6 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 
 /**
  * pk_package_sack_class_init:
- * @klass: The PkPackageSackClass
  **/
 static void
 pk_package_sack_class_init (PkPackageSackClass *klass)
@@ -757,7 +827,6 @@ pk_package_sack_class_init (PkPackageSackClass *klass)
 
 /**
  * pk_package_sack_init:
- * @sack: This class instance
  **/
 static void
 pk_package_sack_init (PkPackageSack *sack)
@@ -772,7 +841,6 @@ pk_package_sack_init (PkPackageSack *sack)
 
 /**
  * pk_package_sack_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_package_sack_finalize (GObject *object)

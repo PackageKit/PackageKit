@@ -43,6 +43,83 @@
     </property>
 
     <!--*****************************************************************************************-->
+    <property name="BackendName" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend name, e.g. <doc:tt>"yum"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="BackendDescription" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend description, e.g. <doc:tt>"Yellow Dog Update Modifier"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="BackendAuthor" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The backend author, e.g. <doc:tt>"Joe Bloggs &lt;joe&amp;blogs.com&gt;"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="Roles" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The roles the backend supports, e.g. <doc:tt>"search-name;refresh-cache"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="Groups" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The groups the backend supports, e.g. <doc:tt>"accessories;games"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="Filters" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The filters the backend supports, e.g. <doc:tt>"installed;newest"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="MimeTypes" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The mime-types the backend supports, e.g. <doc:tt>"application/x-rpm;application/x-deb"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
     <method name="CanAuthorize">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -79,6 +156,10 @@
           <doc:para>
             Gets a list of all the actions that are supported by the backend.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="actions" direction="out">
@@ -98,6 +179,10 @@
         <doc:description>
           <doc:para>
             Gets any details about the backend being used by PackageKit
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -128,6 +213,10 @@
           <doc:para>
             Gets the list of filters that the backend supports
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="filters" direction="out">
@@ -148,6 +237,10 @@
           <doc:para>
             Gets the groups that are supported
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="groups" direction="out">
@@ -167,6 +260,10 @@
         <doc:description>
           <doc:para>
             Gets the MIME types of packages that are supported
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>

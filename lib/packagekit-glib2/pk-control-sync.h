@@ -35,7 +35,6 @@
 
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-control.h>
-#include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
 
@@ -66,13 +65,12 @@ GType		 pk_control_sync_get_type		(void);
 PkControlSync	*pk_control_sync_new			(void);
 void		 pk_control_sync_test			(gpointer		 user_data);
 
-PkBitfield	 pk_control_sync_get_roles		(PkControlSync		*control,
+guint		 pk_control_sync_get_time_since_action	(PkControlSync		*control,
+							 PkRoleEnum		 role,
 							 GError			**error);
 gchar		*pk_control_sync_get_daemon_state	(PkControlSync		*control,
 							 GError			**error);
-gboolean	 pk_control_sync_get_backend_detail	(PkControlSync		*control,
-							 gchar			**name,
-							 gchar			**author,
+gboolean	 pk_control_sync_get_properties		(PkControlSync		*control,
 							 GError			**error);
 
 G_END_DECLS

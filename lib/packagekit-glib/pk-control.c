@@ -1102,7 +1102,6 @@ pk_control_collect_props_cb (const char *key, const GValue *value, PkControl *co
 		control->priv->version_micro = g_value_get_uint (value);
 	else {
 		egg_warning ("unhandled property '%s'", key);
-		g_assert_not_reached ();
 	}
 }
 

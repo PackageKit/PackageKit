@@ -37,6 +37,8 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-control.h						\
 	pk-control-sync.h					\
 	pk-package.h						\
+	pk-package-id.h						\
+	pk-package-ids.h					\
 	pk-package-sack.h					\
 	pk-progress.h						\
 	pk-results.h						\
@@ -65,6 +67,10 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-marshal.h						\
 	pk-package.c						\
 	pk-package.h						\
+	pk-package-id.c						\
+	pk-package-id.h						\
+	pk-package-ids.c					\
+	pk-package-ids.h					\
 	pk-package-sack.c					\
 	pk-package-sack.h					\
 	pk-progress.c						\
@@ -102,6 +108,8 @@ pk_self_test_SOURCES =						\
 	$(libpackagekit_glib2_la_SOURCES)			\
 	egg-test.h						\
 	egg-test.c						\
+	pk-task-wrapper.c					\
+	pk-task-wrapper.h					\
 	pk-self-test.c						\
 	$(NULL)
 

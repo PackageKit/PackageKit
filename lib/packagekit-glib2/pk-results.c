@@ -44,6 +44,7 @@ static void     pk_results_finalize	(GObject     *object);
  **/
 struct _PkResultsPrivate
 {
+	PkRoleEnum		 role;
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
@@ -61,7 +62,51 @@ struct _PkResultsPrivate
 	GPtrArray		*message_array;
 };
 
+enum {
+	PROP_0,
+	PROP_ROLE,
+	PROP_LAST
+};
+
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
+
+/**
+ * pk_results_get_property:
+ **/
+static void
+pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_results_set_property:
+ **/
+static void
+pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		priv->role = g_value_get_uint (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
 
 /**
  * pk_result_item_package_free:
@@ -714,7 +759,7 @@ pk_results_get_exit_code (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDetails's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_package_array (const PkResults *results)
+pk_results_get_package_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->package_array);
@@ -777,7 +822,7 @@ pk_results_get_package_sack (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_details_array (const PkResults *results)
+pk_results_get_details_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->details_array);
@@ -792,7 +837,7 @@ pk_results_get_details_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemUpdateDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_update_detail_array (const PkResults *results)
+pk_results_get_update_detail_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->update_detail_array);
@@ -807,7 +852,7 @@ pk_results_get_update_detail_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemCategory's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_category_array (const PkResults *results)
+pk_results_get_category_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->category_array);
@@ -822,7 +867,7 @@ pk_results_get_category_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDistroUpgrade's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_distro_upgrade_array (const PkResults *results)
+pk_results_get_distro_upgrade_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->distro_upgrade_array);
@@ -837,10 +882,44 @@ pk_results_get_distro_upgrade_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRequireRestart's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_require_restart_array (const PkResults *results)
+pk_results_get_require_restart_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->require_restart_array);
+}
+
+/**
+ * pk_results_get_require_restart_worst:
+ * @results: a valid #PkResults instance
+ *
+ * This method returns the 'worst' restart of all the transactions.
+ * It is needed as multiple sub-transactions may emit require-restart with
+ * different values, and we always want to get the most invasive of all.
+ *
+ * For instance, if a transaction emits RequireRestart(system) and then
+ * RequireRestart(session) then pk_client_get_require_restart will return
+ * system as a session restart is implied with a system restart.
+ *
+ * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ **/
+PkRestartEnum
+pk_results_get_require_restart_worst (PkResults *results)
+{
+	GPtrArray *array;
+	PkRestartEnum worst = 0;
+	guint i;
+	const PkResultItemRequireRestart *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
+
+	array = results->priv->require_restart_array;
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		if (item->restart > worst)
+			worst = item->restart;
+	}
+
+	return worst;
 }
 
 /**
@@ -852,7 +931,7 @@ pk_results_get_require_restart_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemTransaction's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_transaction_array (const PkResults *results)
+pk_results_get_transaction_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->transaction_array);
@@ -867,7 +946,7 @@ pk_results_get_transaction_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemFiles's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_files_array (const PkResults *results)
+pk_results_get_files_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->files_array);
@@ -882,7 +961,7 @@ pk_results_get_files_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoSignatureRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_signature_required_array (const PkResults *results)
+pk_results_get_repo_signature_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_signature_required_array);
@@ -897,7 +976,7 @@ pk_results_get_repo_signature_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemEulaRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_eula_required_array (const PkResults *results)
+pk_results_get_eula_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->eula_required_array);
@@ -912,7 +991,7 @@ pk_results_get_eula_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMediaChangeRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_media_change_required_array (const PkResults *results)
+pk_results_get_media_change_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->media_change_required_array);
@@ -927,7 +1006,7 @@ pk_results_get_media_change_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_detail_array (const PkResults *results)
+pk_results_get_repo_detail_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_detail_array);
@@ -942,7 +1021,7 @@ pk_results_get_repo_detail_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemErrorCode's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_error_code_array (const PkResults *results)
+pk_results_get_error_code_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->error_code_array);
@@ -978,7 +1057,7 @@ pk_results_get_error_code (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMessage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_message_array (const PkResults *results)
+pk_results_get_message_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->message_array);
@@ -990,8 +1069,20 @@ pk_results_get_message_array (const PkResults *results)
 static void
 pk_results_class_init (PkResultsClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_results_finalize;
+	object_class->get_property = pk_results_get_property;
+	object_class->set_property = pk_results_set_property;
+
+	/**
+	 * PkResults:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
 }
 

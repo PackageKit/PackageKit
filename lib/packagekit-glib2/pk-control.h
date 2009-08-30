@@ -32,9 +32,9 @@
 #define __PK_CONTROL_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
 
@@ -103,6 +103,13 @@ void		 pk_control_get_tid_async		(PkControl		*control,
 gchar		*pk_control_get_tid_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
+void		 pk_control_get_daemon_state_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gchar		*pk_control_get_daemon_state_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
 void		 pk_control_set_proxy_async		(PkControl		*control,
 							 const gchar		*proxy_http,
 							 const gchar		*proxy_ftp,
@@ -110,34 +117,6 @@ void		 pk_control_set_proxy_async		(PkControl		*control,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_roles_async		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-PkBitfield	*pk_control_get_roles_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_filters_async		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-PkBitfield	*pk_control_get_filters_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_groups_async		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-PkBitfield	*pk_control_get_groups_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_mime_types_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gchar		**pk_control_get_mime_types_finish	(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 void		 pk_control_get_network_state_async	(PkControl		*control,

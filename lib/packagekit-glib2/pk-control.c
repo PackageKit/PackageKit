@@ -26,8 +26,9 @@
 #include <dbus/dbus-glib.h>
 #include <gio/gio.h>
 
-#include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-version.h>
 
 #include "egg-debug.h"
@@ -51,6 +52,13 @@ struct _PkControlPrivate
 	gboolean		 version_major;
 	gboolean		 version_minor;
 	gboolean		 version_micro;
+	gchar			*backend_name;
+	gchar			*backend_description;
+	gchar			*backend_author;
+	PkBitfield		 roles;
+	PkBitfield		 groups;
+	PkBitfield		 filters;
+	gchar			*mime_types;
 };
 
 enum {
@@ -69,6 +77,13 @@ enum {
 	PROP_VERSION_MAJOR,
 	PROP_VERSION_MINOR,
 	PROP_VERSION_MICRO,
+	PROP_BACKEND_NAME,
+	PROP_BACKEND_DESCRIPTION,
+	PROP_BACKEND_AUTHOR,
+	PROP_ROLES,
+	PROP_GROUPS,
+	PROP_FILTERS,
+	PROP_MIME_TYPES,
 	PROP_LAST
 };
 
@@ -79,15 +94,14 @@ G_DEFINE_TYPE (PkControl, pk_control, G_TYPE_OBJECT)
 
 typedef struct {
 	gboolean		 ret;
-	gchar			**mime_types;
 	gchar			*tid;
 	gchar			**transaction_list;
+	gchar			*daemon_state;
 	guint			 time;
 	DBusGProxyCall		*call;
 	GCancellable		*cancellable;
 	GSimpleAsyncResult	*res;
 	PkAuthorizeEnum		 authorize;
-	PkBitfield		*bitfield;
 	PkControl		*control;
 	PkNetworkEnum		 network;
 } PkControlState;
@@ -138,12 +152,6 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->tid != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->tid), g_free);
@@ -159,6 +167,8 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_free (state->tid);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
@@ -245,7 +255,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: the ID, or %NULL if unset, free with g_free()
  **/
 gchar *
 pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -265,30 +275,24 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
 
 /**
- * pk_control_get_mime_types_state_finish:
+ * pk_control_get_daemon_state_state_finish:
  **/
 static void
-pk_control_get_mime_types_state_finish (PkControlState *state, GError *error)
+pk_control_get_daemon_state_state_finish (PkControlState *state, GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
-	if (state->mime_types != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->mime_types), (GDestroyNotify) g_strfreev);
+	if (state->daemon_state != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->daemon_state), g_free);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
@@ -301,19 +305,21 @@ pk_control_get_mime_types_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
-	g_strfreev (state->mime_types);
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
+	g_free (state->daemon_state);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
 
 /**
- * pk_control_get_mime_types_cb:
+ * pk_control_get_daemon_state_cb:
  **/
 static void
-pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+pk_control_get_daemon_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
 {
 	GError *error = NULL;
-	gchar *temp = NULL;
+	gchar *daemon_state = NULL;
 	gboolean ret;
 
 	/* finished this call */
@@ -321,36 +327,36 @@ pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_STRING, &temp,
+				     G_TYPE_STRING, &daemon_state,
 				     G_TYPE_INVALID);
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
-		pk_control_get_mime_types_state_finish (state, error);
+		pk_control_get_daemon_state_state_finish (state, error);
 		goto out;
 	}
 
-	/* save data */
-	state->mime_types = g_strsplit (temp, ";", -1);
+	/* save results */
+	state->daemon_state = g_strdup (daemon_state);
 
 	/* we're done */
-	pk_control_get_mime_types_state_finish (state, error);
+	pk_control_get_daemon_state_state_finish (state, error);
 out:
-	g_free (temp);
+	g_free (daemon_state);
 }
 
 /**
- * pk_control_get_mime_types_async:
+ * pk_control_get_daemon_state_async:
  * @control: a valid #PkControl instance
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * The MIME list is the supported package formats.
+ * Gets the debugging state from the daemon.
  **/
 void
-pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
@@ -358,7 +364,7 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_mime_types_async);
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_daemon_state_async);
 
 	/* save state */
 	state = g_slice_new0 (PkControlState);
@@ -368,9 +374,9 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* call D-Bus get_mime_types async */
-	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetMimeTypes",
-					       (DBusGProxyCallNotify) pk_control_get_mime_types_cb, state,
+	/* call D-Bus method async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetDaemonState",
+					       (DBusGProxyCallNotify) pk_control_get_daemon_state_cb, state,
 					       NULL, G_TYPE_INVALID);
 
 	/* track state */
@@ -380,18 +386,17 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
 }
 
 /**
- * pk_control_get_mime_types_finish:
+ * pk_control_get_daemon_state_finish:
  * @control: a valid #PkControl instance
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: an GStrv list of the formats the backend supports,
- * or %NULL if unknown
+ * Return value: the ID, or %NULL if unset, free with g_free()
  **/
-gchar **
-pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError **error)
+gchar *
+pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 	gpointer source_tag;
@@ -403,12 +408,12 @@ pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
-	g_return_val_if_fail (source_tag == pk_control_get_mime_types_async, NULL);
+	g_return_val_if_fail (source_tag == pk_control_get_daemon_state_async, NULL);
 
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
@@ -422,12 +427,6 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 	/* remove weak ref */
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
 
 	/* get result */
 	if (state->ret) {
@@ -444,6 +443,8 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -557,450 +558,6 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 /***************************************************************************************************/
 
 /**
- * pk_control_bitfield_copy:
- **/
-static PkBitfield *
-pk_control_bitfield_copy (PkBitfield *value)
-{
-	PkBitfield *new;
-	new = g_new0 (PkBitfield, 1);
-	*new = *value;
-	return new;
-}
-
-/**
- * pk_control_get_roles_state_finish:
- **/
-static void
-pk_control_get_roles_state_finish (PkControlState *state, GError *error)
-{
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
-	/* get result */
-	if (state->bitfield != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	g_free (state->bitfield);
-	g_object_unref (state->res);
-	g_slice_free (PkControlState, state);
-}
-
-/**
- * pk_control_get_roles_cb:
- **/
-static void
-pk_control_get_roles_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
-{
-	GError *error = NULL;
-	gchar *roles = NULL;
-	gboolean ret;
-	PkBitfield bitfield;
-
-	/* finished this call */
-	state->call = NULL;
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_STRING, &roles,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
-		pk_control_get_roles_state_finish (state, error);
-		goto out;
-	}
-
-	/* save data */
-	bitfield = pk_role_bitfield_from_text (roles);
-	state->bitfield = pk_control_bitfield_copy (&bitfield);
-
-	/* we're done */
-	pk_control_get_roles_state_finish (state, error);
-out:
-	g_free (roles);
-}
-
-/**
- * pk_control_get_roles_async:
- * @control: a valid #PkControl instance
- * @cancellable: a #GCancellable or %NULL
- * @callback: the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * Get what methods the daemon can do with the current backend.
- **/
-void
-pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkControlState *state;
-
-	g_return_if_fail (PK_IS_CONTROL (control));
-	g_return_if_fail (callback != NULL);
-
-	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_roles_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* call D-Bus get_roles async */
-	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetActions", /* not GetRoles, just get over it... */
-					       (DBusGProxyCallNotify) pk_control_get_roles_cb, state,
-					       NULL, G_TYPE_INVALID);
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_control_get_roles_finish:
- * @control: a valid #PkControl instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: an enumerated list of the actions the backend supports, or 0 for error. Free with g_free()
- **/
-PkBitfield *
-pk_control_get_roles_finish (PkControl *control, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_roles_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_simple_async_result_get_op_res_gpointer (simple);
-}
-
-/***************************************************************************************************/
-/**
- * pk_control_get_filters_state_finish:
- **/
-static void
-pk_control_get_filters_state_finish (PkControlState *state, GError *error)
-{
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
-	/* get result */
-	if (state->bitfield != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	g_free (state->bitfield);
-	g_object_unref (state->res);
-	g_slice_free (PkControlState, state);
-}
-
-/**
- * pk_control_get_filters_cb:
- **/
-static void
-pk_control_get_filters_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
-{
-	GError *error = NULL;
-	gchar *filters = NULL;
-	gboolean ret;
-	PkBitfield bitfield;
-
-	/* finished this call */
-	state->call = NULL;
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_STRING, &filters,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
-		pk_control_get_filters_state_finish (state, error);
-		goto out;
-	}
-
-	/* save data */
-	bitfield = pk_filter_bitfield_from_text (filters);
-	state->bitfield = pk_control_bitfield_copy (&bitfield);
-
-	/* we're done */
-	pk_control_get_filters_state_finish (state, error);
-out:
-	g_free (filters);
-}
-
-/**
- * pk_control_get_filters_async:
- * @control: a valid #PkControl instance
- * @cancellable: a #GCancellable or %NULL
- * @callback: the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * Filters are how the backend can specify what type of package is returned.
- **/
-void
-pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkControlState *state;
-
-	g_return_if_fail (PK_IS_CONTROL (control));
-	g_return_if_fail (callback != NULL);
-
-	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_filters_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* call D-Bus get_filters async */
-	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetFilters",
-					       (DBusGProxyCallNotify) pk_control_get_filters_cb, state,
-					       NULL, G_TYPE_INVALID);
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_control_get_filters_finish:
- * @control: a valid #PkControl instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: an enumerated list of the filters the backend supports, free with g_free()
- **/
-PkBitfield *
-pk_control_get_filters_finish (PkControl *control, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_filters_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_simple_async_result_get_op_res_gpointer (simple);
-}
-
-/***************************************************************************************************/
-/**
- * pk_control_get_groups_state_finish:
- **/
-static void
-pk_control_get_groups_state_finish (PkControlState *state, GError *error)
-{
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
-	/* get result */
-	if (state->bitfield != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res, pk_control_bitfield_copy (state->bitfield), g_free);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	g_free (state->bitfield);
-	g_object_unref (state->res);
-	g_slice_free (PkControlState, state);
-}
-
-/**
- * pk_control_get_groups_cb:
- **/
-static void
-pk_control_get_groups_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
-{
-	GError *error = NULL;
-	gchar *groups = NULL;
-	gboolean ret;
-	PkBitfield bitfield;
-
-	/* finished this call */
-	state->call = NULL;
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_STRING, &groups,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
-		pk_control_get_groups_state_finish (state, error);
-		goto out;
-	}
-
-	/* save data */
-	bitfield = pk_group_bitfield_from_text (groups);
-	state->bitfield = pk_control_bitfield_copy (&bitfield);
-
-	/* we're done */
-	pk_control_get_groups_state_finish (state, error);
-out:
-	g_free (groups);
-}
-
-/**
- * pk_control_get_groups_async:
- * @control: a valid #PkControl instance
- * @cancellable: a #GCancellable or %NULL
- * @callback: the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * The group list is enumerated so it can be localised and have deep
- * integration with desktops.
- * This method allows a frontend to only display the groups that are supported.
- **/
-void
-pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkControlState *state;
-
-	g_return_if_fail (PK_IS_CONTROL (control));
-	g_return_if_fail (callback != NULL);
-
-	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_groups_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* call D-Bus get_groups async */
-	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetGroups",
-					       (DBusGProxyCallNotify) pk_control_get_groups_cb, state,
-					       NULL, G_TYPE_INVALID);
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_control_get_groups_finish:
- * @control: a valid #PkControl instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: an enumerated list of the groups the backend supports, free with g_free()
- **/
-PkBitfield *
-pk_control_get_groups_finish (PkControl *control, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_groups_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_simple_async_result_get_op_res_gpointer (simple);
-}
-
-/***************************************************************************************************/
-
-/**
  * pk_control_get_transaction_list_state_finish:
  **/
 static void
@@ -1009,12 +566,6 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 	/* remove weak ref */
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
 
 	/* get result */
 	if (state->transaction_list != NULL) {
@@ -1031,6 +582,8 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_strfreev (state->transaction_list);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
@@ -1117,7 +670,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: A GStrv list of transaction ID's
+ * Return value: A GStrv list of transaction ID's, free with g_strfreev()
  **/
 gchar **
 pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1137,7 +690,7 @@ pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, G
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdupv (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
@@ -1151,12 +704,6 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 	/* remove weak ref */
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
 
 	/* get result */
 	if (state->time != 0) {
@@ -1173,6 +720,8 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -1302,12 +851,6 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->network != PK_NETWORK_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->network);
@@ -1323,6 +866,8 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -1449,12 +994,6 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->authorize != PK_AUTHORIZE_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
@@ -1470,6 +1009,8 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -1598,12 +1139,6 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -1619,6 +1154,8 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -1629,14 +1166,38 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 static void
 pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
 {
-	if (g_strcmp0 (key, "version-major") == 0 || g_strcmp0 (key, "VersionMajor") == 0)
+	const gchar *tmp;
+
+	if (g_strcmp0 (key, "version-major") == 0 || g_strcmp0 (key, "VersionMajor") == 0) {
 		control->priv->version_major = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-minor") == 0 || g_strcmp0 (key, "VersionMinor") == 0)
+	} else if (g_strcmp0 (key, "version-minor") == 0 || g_strcmp0 (key, "VersionMinor") == 0) {
 		control->priv->version_minor = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-micro") == 0 || g_strcmp0 (key, "VersionMicro") == 0)
+	} else if (g_strcmp0 (key, "version-micro") == 0 || g_strcmp0 (key, "VersionMicro") == 0) {
 		control->priv->version_micro = g_value_get_uint (value);
-	else
+	} else if (g_strcmp0 (key, "BackendName") == 0) {
+		g_free (control->priv->backend_name);
+		control->priv->backend_name = g_strdup (g_value_get_string (value));
+	} else if (g_strcmp0 (key, "BackendDescription") == 0) {
+		g_free (control->priv->backend_description);
+		control->priv->backend_description = g_strdup (g_value_get_string (value));
+	} else if (g_strcmp0 (key, "BackendAuthor") == 0) {
+		g_free (control->priv->backend_author);
+		control->priv->backend_author = g_strdup (g_value_get_string (value));
+	} else if (g_strcmp0 (key, "MimeTypes") == 0) {
+		g_free (control->priv->mime_types);
+		control->priv->mime_types = g_strdup (g_value_get_string (value));
+	} else if (g_strcmp0 (key, "Roles") == 0) {
+		tmp = g_value_get_string (value);
+		control->priv->roles = pk_role_bitfield_from_text (tmp);
+	} else if (g_strcmp0 (key, "Groups") == 0) {
+		tmp = g_value_get_string (value);
+		control->priv->groups = pk_group_bitfield_from_text (tmp);
+	} else if (g_strcmp0 (key, "Filters") == 0) {
+		tmp = g_value_get_string (value);
+		control->priv->filters = pk_filter_bitfield_from_text (tmp);
+	} else {
 		egg_warning ("unhandled property '%s'", key);
+	}
 }
 
 /**
@@ -1906,6 +1467,27 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_VERSION_MICRO:
 		g_value_set_uint (value, priv->version_micro);
 		break;
+	case PROP_BACKEND_NAME:
+		g_value_set_string (value, priv->backend_name);
+		break;
+	case PROP_BACKEND_DESCRIPTION:
+		g_value_set_string (value, priv->backend_description);
+		break;
+	case PROP_BACKEND_AUTHOR:
+		g_value_set_string (value, priv->backend_author);
+		break;
+	case PROP_ROLES:
+		g_value_set_uint64 (value, priv->roles);
+		break;
+	case PROP_GROUPS:
+		g_value_set_uint64 (value, priv->groups);
+		break;
+	case PROP_FILTERS:
+		g_value_set_uint64 (value, priv->filters);
+		break;
+	case PROP_MIME_TYPES:
+		g_value_set_string (value, priv->mime_types);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -1961,6 +1543,62 @@ pk_control_class_init (PkControlClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
+
+	/**
+	 * PkControl:backend-name:
+	 */
+	pspec = g_param_spec_string ("backend-name", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_NAME, pspec);
+
+	/**
+	 * PkControl:backend-description:
+	 */
+	pspec = g_param_spec_string ("backend-description", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_DESCRIPTION, pspec);
+
+	/**
+	 * PkControl:backend-author:
+	 */
+	pspec = g_param_spec_string ("backend-author", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_AUTHOR, pspec);
+
+	/**
+	 * PkControl:roles:
+	 */
+	pspec = g_param_spec_uint64 ("roles", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLES, pspec);
+
+	/**
+	 * PkControl:groups:
+	 */
+	pspec = g_param_spec_uint64 ("groups", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_GROUPS, pspec);
+
+	/**
+	 * PkControl:filters:
+	 */
+	pspec = g_param_spec_uint64 ("filters", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_FILTERS, pspec);
+
+	/**
+	 * PkControl:mime-types:
+	 */
+	pspec = g_param_spec_string ("mime-types", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/**
 	 * PkControl::updates-changed:
@@ -2073,6 +1711,10 @@ pk_control_init (PkControl *control)
 	GError *error = NULL;
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
+	control->priv->mime_types = NULL;
+	control->priv->backend_name = NULL;
+	control->priv->backend_description = NULL;
+	control->priv->backend_author = NULL;
 	control->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
@@ -2179,6 +1821,10 @@ pk_control_finalize (GObject *object)
 	dbus_g_proxy_disconnect_signal (control->priv->proxy_dbus, "NameOwnerChanged",
 				        G_CALLBACK (pk_control_name_owner_changed_cb), control);
 
+	g_free (priv->backend_name);
+	g_free (priv->backend_description);
+	g_free (priv->backend_author);
+	g_free (priv->mime_types);
 	g_object_unref (G_OBJECT (priv->proxy));
 	g_object_unref (G_OBJECT (priv->proxy_props));
 	g_object_unref (G_OBJECT (priv->proxy_dbus));
@@ -2215,7 +1861,7 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	const gchar *tid;
+	gchar *tid;
 
 	/* get the result */
 	tid = pk_control_get_tid_finish (control, res, &error);
@@ -2226,59 +1872,46 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	}
 
 	egg_debug ("tid = %s", tid);
+	g_free (tid);
 	egg_test_loop_quit (test);
 }
 
 static void
-pk_control_test_get_mime_types_cb (GObject *object, GAsyncResult *res, EggTest *test)
+pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	gchar **types;
-	guint len;
-
-	/* get the result */
-	types = pk_control_get_mime_types_finish (control, res, &error);
-	if (types == NULL) {
-		egg_test_failed (test, "failed to get mime types: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* check size */
-	len = g_strv_length (types);
-	if (len != 2) {
-		egg_test_failed (test, "length incorrect: %i", len);
-		return;
-	}
-
-	/* check value */
-	if (g_strcmp0 (types[0], "application/x-rpm") != 0) {
-		egg_test_failed (test, "data incorrect: %s", types[0]);
-		return;
-	}
-
-	egg_test_loop_quit (test);
-}
-
-static void
-pk_control_test_get_roles_cb (GObject *object, GAsyncResult *res, EggTest *test)
-{
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	PkBitfield *roles;
+	gboolean ret;
+	PkBitfield roles;
+	PkBitfield filters;
+	PkBitfield groups;
 	gchar *text;
 
 	/* get the result */
-	roles = pk_control_get_roles_finish (control, res, &error);
-	if (roles == NULL) {
-		egg_test_failed (test, "failed to get roles: %s", error->message);
+	ret = pk_control_get_properties_finish (control, res, &error);
+	if (!ret) {
+		egg_test_failed (test, "failed to get properties: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
-	/* check value */
-	text = pk_role_bitfield_to_text (*roles);
+	/* get values */
+	g_object_get (control,
+		      "mime-types", &text,
+		      "roles", &roles,
+		      "filters", &filters,
+		      "groups", &groups,
+		      NULL);
+
+	/* check mime_types */
+	if (g_strcmp0 (text, "application/x-rpm;application/x-deb") != 0) {
+		egg_test_failed (test, "data incorrect: %s", text);
+		return;
+	}
+	g_free (text);
+
+	/* check roles */
+	text = pk_role_bitfield_to_text (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
@@ -2288,62 +1921,24 @@ pk_control_test_get_roles_cb (GObject *object, GAsyncResult *res, EggTest *test)
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
 	}
-
 	g_free (text);
-	egg_test_loop_quit (test);
-}
 
-static void
-pk_control_test_get_filters_cb (GObject *object, GAsyncResult *res, EggTest *test)
-{
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	PkBitfield *filters;
-	gchar *text;
-
-	/* get the result */
-	filters = pk_control_get_filters_finish (control, res, &error);
-	if (filters == NULL) {
-		egg_test_failed (test, "failed to get filters: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* check value */
-	text = pk_filter_bitfield_to_text (*filters);
+	/* check filters */
+	text = pk_filter_bitfield_to_text (filters);
 	if (g_strcmp0 (text, "installed;devel;gui") != 0) {
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
 	}
-
 	g_free (text);
-	egg_test_loop_quit (test);
-}
 
-static void
-pk_control_test_get_groups_cb (GObject *object, GAsyncResult *res, EggTest *test)
-{
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	PkBitfield *groups;
-	gchar *text;
-
-	/* get the result */
-	groups = pk_control_get_groups_finish (control, res, &error);
-	if (groups == NULL) {
-		egg_test_failed (test, "failed to get groups: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* check value */
-	text = pk_group_bitfield_to_text (*groups);
+	/* check groups */
+	text = pk_group_bitfield_to_text (groups);
 	if (g_strcmp0 (text, "accessibility;games;system") != 0) {
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
 	}
-
 	g_free (text);
+
 	egg_test_loop_quit (test);
 }
 
@@ -2401,24 +1996,6 @@ pk_control_test_can_authorize_cb (GObject *object, GAsyncResult *res, EggTest *t
 	egg_test_loop_quit (test);
 }
 
-static void
-pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *test)
-{
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	gboolean ret;
-
-	/* get the result */
-	ret = pk_control_get_properties_finish (control, res, &error);
-	if (!ret) {
-		egg_test_failed (test, "failed to get properties: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	egg_test_loop_quit (test);
-}
-
 void
 pk_control_test (gpointer user_data)
 {
@@ -2441,28 +2018,16 @@ pk_control_test (gpointer user_data)
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
 
 	/************************************************************/
-	egg_test_title (test, "get mime-types async");
-	pk_control_get_mime_types_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_mime_types_cb, test);
+	egg_test_title (test, "get properties async");
+	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
 	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "got mime types in %i", egg_test_elapsed (test));
+	egg_test_success (test, "got properties types in %i", egg_test_elapsed (test));
 
 	/************************************************************/
-	egg_test_title (test, "get roles async");
-	pk_control_get_roles_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_roles_cb, test);
+	egg_test_title (test, "get properties async (again, to test caching)");
+	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
 	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "got roles in %i", egg_test_elapsed (test));
-
-	/************************************************************/
-	egg_test_title (test, "get filters async");
-	pk_control_get_filters_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_filters_cb, test);
-	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "got filters in %i", egg_test_elapsed (test));
-
-	/************************************************************/
-	egg_test_title (test, "get groups async");
-	pk_control_get_groups_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_groups_cb, test);
-	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "got groups in %i", egg_test_elapsed (test));
+	egg_test_success (test, "got properties in %i", egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "get time since async");
@@ -2482,13 +2047,6 @@ pk_control_test (gpointer user_data)
 					(GAsyncReadyCallback) pk_control_test_can_authorize_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "get auth state in %i", egg_test_elapsed (test));
-
-	/************************************************************/
-	egg_test_title (test, "get properties async");
-	pk_control_get_properties_async (control, NULL,
-					 (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
-	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "get properties in %i", egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "version major");

@@ -263,6 +263,10 @@ pk_progress_bar_end (PkProgressBar *self)
 {
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 
+	/* never drawn */
+	if (self->priv->percentage == G_MININT)
+		return FALSE;
+
 	self->priv->percentage = G_MININT;
 	pk_progress_bar_draw (self, 100);
 	g_print ("\n");

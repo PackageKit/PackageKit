@@ -152,7 +152,6 @@ BUILT_SOURCES =						\
 	pk-marshal.h					\
 	org.freedesktop.PackageKit.h			\
 	org.freedesktop.PackageKit.Transaction.h	\
-	org.freedesktop.PackageKit.Backend.h		\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -175,13 +174,6 @@ org.freedesktop.PackageKit.Transaction.h: org.freedesktop.PackageKit.Transaction
 		--mode=glib-server			\
 		--output=org.freedesktop.PackageKit.Transaction.h	\
 		$(srcdir)/org.freedesktop.PackageKit.Transaction.xml
-
-org.freedesktop.PackageKit.Backend.h: org.freedesktop.PackageKit.Backend.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool	\
-		--prefix=pk_backend			\
-		--mode=glib-server			\
-		--output=org.freedesktop.PackageKit.Backend.h	\
-		$(srcdir)/org.freedesktop.PackageKit.Backend.xml
 
 if SECURITY_TYPE_POLKIT
 # provide a PolicyKit extensions to make the authorization dialogs better
@@ -250,7 +242,6 @@ EXTRA_DIST =						\
 	pk-marshal.list					\
 	org.freedesktop.PackageKit.xml			\
 	org.freedesktop.PackageKit.Transaction.xml	\
-	org.freedesktop.PackageKit.Backend.xml		\
 	$(NULL)
 
 clean-local:

@@ -43,6 +43,7 @@ void emit_files (PkBackend *backend, const PkPackageId *pi);
 */
 vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel);
 
+class pkgProblemResolver;
 class aptcc
 {
 //     typedef int user_tag_reference;
@@ -50,11 +51,23 @@ public:
 	aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list);
 	~aptcc();
 
-	bool init(const char *locale);
+	bool init();
 
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 	bool is_held(const pkgCache::PkgIterator &pkg);
+
+	/**
+	 *  prepare a transaction to install/remove/update packages
+	 *  - for install and update, \p remove should be set to false
+	 *  - if you are going to remove, \p remove should be true
+	 *  - If you don't want to actually install/update/remove
+	 *    simulate should be true, in this case packages with
+	 *    what's going to happen will be emitted.
+	 */
+	bool prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				 bool simulate,
+				 bool remove);
 
 	/**
 	 *  get the state cache of the package
@@ -84,7 +97,8 @@ public:
 			  PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
 	void emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			   PkBitfield filters = PK_FILTER_ENUM_NONE);
+			   PkBitfield filters = PK_FILTER_ENUM_NONE,
+			   PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
 	/**
 	 *  Emits details
@@ -136,6 +150,17 @@ private:
 	 *  need to save the cache).
 	 */
 	bool dirty;
+
+	bool TryToInstall(pkgCache::PkgIterator Pkg,
+			  pkgDepCache &Cache,
+			  pkgProblemResolver &Fix,
+			  bool Remove,
+			  bool BrokenFix,
+			  unsigned int &ExpectedInst/*,
+			  bool AllowFail = true*/);
+	bool DoAutomaticRemove(pkgCacheFile &Cache);
+	void emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				 pkgCacheFile &Cache);
 };
 
 #endif

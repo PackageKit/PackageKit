@@ -52,10 +52,38 @@ aptcc::aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list)
 {
 }
 
-bool aptcc::init(const char *locale)
+bool aptcc::init()
 {
+	gchar *locale;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
+
+	// make sure we do not get a graphical debconf
+	setenv("DEBIAN_FRONTEND", "noninteractive", 1);
+	setenv("APT_LISTCHANGES_FRONTEND", "none", 1);
+
+	// set locale
+	if (locale = pk_backend_get_locale(m_backend)) {
+		setlocale(LC_ALL, locale);
+// TODO why this cuts characthers on ui?
+// 		string _locale(locale);
+// 		size_t found;
+// 		found = _locale.find('.');
+// 		_locale.erase(found);
+// 		_config->Set("APT::Acquire::Translation", _locale);
+	}
+
+	// set http proxy
+	if (proxy_http = pk_backend_get_proxy_http(m_backend)) {
+		_config->Set("Acquire::http::Proxy", proxy_http);
+	}
+
+	// set ftp proxy
+	if (proxy_ftp = pk_backend_get_proxy_ftp(m_backend)) {
+		_config->Set("Acquire::ftp::Proxy", proxy_ftp);
+	}
+
 	// Generate it and map it
-	setlocale(LC_ALL, locale);
 	bool Res = pkgMakeStatusCache(m_pkgSourceList, Progress, &Map, true);
 	Progress.Done();
 	if(!Res) {
@@ -166,8 +194,8 @@ bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
 }
 
 void aptcc::mark_all_upgradable(bool with_autoinst,
-					bool ignore_removed/*,
-					undo_group *undo*/)
+				bool ignore_removed/*,
+				undo_group *undo*/)
 {
 //   if(read_only && !read_only_permission())
 //     {
@@ -247,7 +275,9 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
-		if (pkg->CurrentState == pkgCache::State::Installed) {
+		if(!ver.end() && ver != pkg.CurrentVer()) {
+			state = PK_INFO_ENUM_AVAILABLE;
+		} else if (pkg->CurrentState == pkgCache::State::Installed) {
 			state = PK_INFO_ENUM_INSTALLED;
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
@@ -307,11 +337,13 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 
 		// TODO add Ubuntu handling
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
-			if (!repo_section.compare("contrib") || !repo_section.compare("non-free")) {
+			if (!repo_section.compare("contrib") ||
+			    !repo_section.compare("non-free")) {
 				return;
 			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
-			if (repo_section.compare("contrib") && repo_section.compare("non-free")) {
+			if (repo_section.compare("contrib") &&
+			    repo_section.compare("non-free")) {
 				return;
 			}
 		}
@@ -342,15 +374,22 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 }
 
 void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			  PkBitfield filters)
+			  PkBitfield filters,
+			  PkInfoEnum state)
 {
+	sort(output.begin(), output.end(), compare());
+	output.erase(unique(output.begin(),
+			    output.end(),
+			    result_equality()),
+		     output.end());
+
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
 		if (_cancel) {
 			break;
 		}
-		emit_package(i->first, i->second, filters);
+		emit_package(i->first, i->second, filters, state);
 	}
 }
 
@@ -614,6 +653,131 @@ static bool CheckAuth(pkgAcquire& Fetcher, PkBackend *backend)
    return false;
 }
 
+bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
+			 pkgDepCache &Cache,
+			 pkgProblemResolver &Fix,
+			 bool Remove,
+			 bool BrokenFix,
+			 unsigned int &ExpectedInst)
+{
+	// This is a pure virtual package and there is a single available provides
+	if (Cache[Pkg].CandidateVer == 0 && Pkg->ProvidesList != 0 &&
+	    Pkg.ProvidesList()->NextProvides == 0)
+	{
+		pkgCache::PkgIterator Tmp = Pkg.ProvidesList().OwnerPkg();
+		Pkg = Tmp;
+	}
+
+	// Check if there is something at all to install
+	pkgDepCache::StateCache &State = Cache[Pkg];
+	if (Remove == true && Pkg->CurrentVer == 0)
+	{
+		Fix.Clear(Pkg);
+		Fix.Protect(Pkg);
+		Fix.Remove(Pkg);
+
+		return true;
+	}
+
+	if (State.CandidateVer == 0 && Remove == false)
+	{
+		_error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());
+		return false;
+	}
+
+	Fix.Clear(Pkg);
+	Fix.Protect(Pkg);
+	if (Remove == true)
+	{
+		Fix.Remove(Pkg);
+		Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge",false));
+		return true;
+	}
+
+	// Install it
+	Cache.MarkInstall(Pkg,false);
+	if (State.Install() == false)
+	{
+		if (_config->FindB("APT::Get::ReInstall",false) == true) {
+			if (Pkg->CurrentVer == 0 || Pkg.CurrentVer().Downloadable() == false) {
+		// 	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
+		// 		     Pkg.Name());
+		;
+			} else {
+				Cache.SetReInstall(Pkg,true);
+			}
+		} else {
+	    // 	 if (AllowFail == true)
+	    // 	    ioprintf(c1out,_("%s is already the newest version.\n"),
+	    // 		     Pkg.Name());
+		}
+	} else {
+		ExpectedInst++;
+	}
+
+	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
+	// Install it with autoinstalling enabled (if we not respect the minial
+	// required deps or the policy)
+	if ((State.InstBroken() == true || State.InstPolicyBroken() == true) &&
+	    BrokenFix == false) {
+	    Cache.MarkInstall(Pkg,true);
+	}
+
+	return true;
+}
+
+// emitChangedPackages - Show packages to newly install				/*{{{*/
+// ---------------------------------------------------------------------
+/* */
+void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				pkgCacheFile &Cache)
+{
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > installing,
+								    removing,
+								    updating,
+								    downgrading;
+
+	// Create a set of package names to fast search if the package is in the list
+	set<string> pkgNames;
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
+		    i != pkgs.end();
+		    ++i) {
+		pkgNames.insert(i->first.Name());
+	}
+
+	string VersionsList;
+	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
+	{
+		if (Cache[pkg].NewInstall() == true) {
+			// installing
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				installing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Delete() == true) {
+			// removing
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				removing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Upgrade() == true) {
+			// updating
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				updating.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Downgrade() == true) {
+			// downgrading
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				downgrading.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		}
+	}
+
+	// emit packages tha have changes
+	emit_packages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+	emit_packages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
+	emit_packages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+	emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
+}
+
 									/*}}}*/
 
 // InstallPackages - Actually download and install the packages		/*{{{*/
@@ -666,20 +830,8 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	    return true;
 
 	// No remove flag
-	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false)
-	    return _error->Error("Packages need to be removed but remove is disabled.");
-
-	// Run the simulator ..
-	if (_config->FindB("APT::Get::Simulate") == true)
-	{
-	    pkgSimulate PM(&Cache);
-	    int status_fd = _config->FindI("APT::Status-Fd",-1);
-	    pkgPackageManager::OrderResult Res = PM.DoInstall(status_fd);
-	    if (Res == pkgPackageManager::Failed)
-		return false;
-	    if (Res != pkgPackageManager::Completed)
-		return _error->Error("Internal error, Ordering didn't finish");
-	    return true;
+	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
+		return _error->Error("Packages need to be removed but remove is disabled.");
 	}
 
 	// Create the text record parser
@@ -709,8 +861,9 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	// Create the package manager and prepare to download
 	SPtr<pkgPackageManager> PM= _system->CreatePM(&Cache);
 	if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false ||
-	    _error->PendingError() == true)
-	    return false;
+	    _error->PendingError() == true) {
+		return false;
+	}
 
 
 	// Generate the list of affected packages and sort it
@@ -936,5 +1089,155 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 		return false;
 
 	    _system->Lock();
+	}
+}
+
+// DoAutomaticRemove - Remove all automatic unused packages		/*{{{*/
+// ---------------------------------------------------------------------
+/* Remove unused automatic packages */
+bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
+{
+	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", true);
+	pkgDepCache::ActionGroup group(*Cache);
+
+	if (_config->FindB("APT::Get::Remove",true) == false &&
+	    doAutoRemove == true)
+	{
+		cout << "We are not supposed to delete stuff, can't start "
+			"AutoRemover" << endl;
+		doAutoRemove = false;
+	}
+
+	// look over the cache to see what can be removed
+	for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg)
+	{
+		if (Cache[Pkg].Garbage && doAutoRemove)
+		{
+			if (Pkg.CurrentVer() != 0 &&
+			    Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+				Cache->MarkDelete(Pkg, _config->FindB("APT::Get::Purge", false));
+			} else {
+				Cache->MarkKeep(Pkg, false, false);
+			}
+		}
+	}
+
+	// Now see if we destroyed anything
+	if (Cache->BrokenCount() != 0)
+	{
+		cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
+			    "shouldn't happen. Please file a bug report against apt." << endl;
+		// TODO call show_broken
+	    //       ShowBroken(c1out,Cache,false);
+		return _error->Error("Internal Error, AutoRemover broke stuff");
+	}
+	return true;
+}
+
+bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				bool simulate,
+				bool remove)
+{
+	cout << "==============================================================" << endl;
+	cout << "prepare_transaction" << simulate << remove << endl;
+	bool WithLock = !simulate; // Check to see if we are just simulating,
+				   //since for that no lock is needed
+
+	pkgCacheFile Cache;
+	OpTextProgress Prog(*_config);
+	int timeout = 10;
+	// TODO test this
+	while (Cache.Open(Prog, WithLock) == false) {
+		// failed to open cache, try checkDeps then..
+		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
+		if (WithLock == false || (timeout <= 0)) {
+			pk_backend_error_code(m_backend,
+					      PK_ERROR_ENUM_NO_CACHE,
+					      "Could not open package cache.");
+			return false;
+		} else {
+			pk_backend_set_status (m_backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+			sleep(1);
+			timeout--;
+		}
+	}
+
+	// Enter the special broken fixing mode if the user specified arguments
+	bool BrokenFix = false;
+	if (Cache->BrokenCount() != 0) {
+		BrokenFix = true;
+	}
+
+	unsigned int ExpectedInst = 0;
+	pkgProblemResolver Fix(Cache);
+
+	// new scope for the ActionGroup
+	{
+		cout << "new scope for the ActionGroup" << endl;
+		pkgDepCache::ActionGroup group(Cache);
+		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
+		    i != pkgs.end();
+		    ++i)
+		{
+			pkgCache::PkgIterator Pkg = i->first;
+			if (_cancel) {
+				break;
+			}
+
+			if (TryToInstall(Pkg,
+					 Cache,
+					 Fix,
+					 remove,
+					 BrokenFix,
+					 ExpectedInst) == false) {
+				pk_backend_error_code(m_backend,
+						      PK_ERROR_ENUM_INTERNAL_ERROR,
+						      "Could not open package cache.");
+				return false;
+			}
+		}
+
+		/* If we are in the Broken fixing mode we do not attempt to fix the
+		    problems. This is if the user invoked install without -f and gave
+		    packages */
+		if (BrokenFix == true && Cache->BrokenCount() != 0)
+		{
+			// TODO
+// 			ShowBroken(c1out,Cache,false);
+			cout << "Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)." << endl;
+			return _error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
+		}
+
+		// Call the scored problem resolver
+		Fix.InstallProtect();
+		if (Fix.Resolve(true) == false) {
+			_error->Discard();
+		}
+
+		// Now we check the state of the packages,
+		if (Cache->BrokenCount() != 0)
+		{
+	// 	    c1out << _("The following information may help to resolve the situation:") << endl;
+		    // TODO
+	// 	    ShowBroken(c1out,Cache,false);
+		    return _error->Error("Broken packages");
+		}
+	}
+	// Try to auto-remove packages
+	if (!DoAutomaticRemove(Cache)) {
+		return false;
+	}
+
+	if (simulate) {
+		// Print out a list of packages that are going to be installed extra
+		emitChangedPackages(pkgs, Cache);
+		return true;
+	} else {
+	    // See if we need to prompt
+	//     if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
+	// 	return InstallPackages(Cache,false,false);
+
+	//     return InstallPackages(Cache,false);
+		return true;
 	}
 }

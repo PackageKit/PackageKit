@@ -58,6 +58,56 @@ bin_PROGRAMS =						\
 	pkgenpack					\
 	$(NULL)
 
+# Only build this functionality if we have glib2, and don't yet install it
+if PK_BUILD_GLIB2
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(NULL)
+
+noinst_PROGRAMS = pkcon-test pkmon-test
+
+# TODO: private library
+
+pkcon_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	pk-console-test.c				\
+	pk-task-text.c					\
+	pk-task-text.h					\
+	pk-text.c					\
+	pk-text.h					\
+	pk-progress-bar.c				\
+	pk-progress-bar.h				\
+	$(NULL)
+
+pkcon_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pkcon_test_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
+pkmon_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	pk-monitor-test.c				\
+	$(NULL)
+
+pkmon_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pkmon_test_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+endif
+
 pkcon_SOURCES =						\
 	egg-debug.c					\
 	egg-debug.h					\
@@ -131,8 +181,11 @@ pk_self_test_SOURCES =					\
 	egg-string.h					\
 	egg-test.c					\
 	egg-test.h					\
+	pk-text.c					\
+	pk-text.h					\
+	pk-task-text.c					\
+	pk-task-text.h					\
 	pk-self-test.c					\
-	$(shared_SOURCES)				\
 	$(NULL)
 
 pk_self_test_LDADD =					\
@@ -140,7 +193,7 @@ pk_self_test_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(ARCHIVE_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)

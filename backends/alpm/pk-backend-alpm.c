@@ -73,46 +73,6 @@ typedef enum {
 	PK_ALPM_SEARCH_TYPE_PROVIDES
 } PkAlpmSearchType;
 
-static gchar *
-pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
-{
-	gchar *arch = (gchar *) alpm_pkg_get_arch (pkg);
-	if (arch == NULL)
-		arch = (gchar *) "unknown";
-
-	return pk_package_id_build (alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), arch, repo);
-}
-
-static pmpkg_t *
-pkg_from_package_id_str (const gchar *package_id_str)
-{
-	pmdb_t *repo = NULL;
-	pmpkg_t *pkg;
-	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id_str);
-
-	/* do all this fancy stuff */
-	if (g_strcmp0 (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data(pkg_id)) == 0)
-		repo = alpm_option_get_localdb ();
-	else {
-		alpm_list_t *iterator;
-		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
-			repo = alpm_list_getdata (iterator);
-			if (g_strcmp0 (alpm_db_get_name(repo), pk_package_id_get_data(pkg_id)) == 0)
-				break;
-		}
-	}
-
-	if (repo != NULL)
-		pkg = alpm_db_get_pkg (repo, pk_package_id_get_name (pkg_id));
-	else
-		pkg = NULL;
-
-	/* free package id as we no longer need it */
-	pk_package_id_free (pkg_id);
-
-	return pkg;
-}
-
 static int
 pkg_cmp (pmpkg_t *pkg1, pmpkg_t *pkg2) {
 	int comparison;
@@ -144,10 +104,13 @@ pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
 		return FALSE;
 	return TRUE;
 }
+*/
 
 static gboolean
 pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 {
+	if (pkg == NULL)
+		return FALSE;
 	if (g_strcmp0 (alpm_pkg_get_name (pkg), name) != 0)
 		return FALSE;
 	if (version != NULL)
@@ -155,7 +118,50 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 			return FALSE;
 	return TRUE;
 }
-*/
+
+static gchar *
+pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
+{
+	gchar *arch = (gchar *) alpm_pkg_get_arch (pkg);
+	if (arch == NULL)
+		arch = (gchar *) "unknown";
+
+	return pk_package_id_build (alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), arch, repo);
+}
+
+static pmpkg_t *
+pkg_from_package_id_str (const gchar *package_id_str)
+{
+	pmdb_t *repo = NULL;
+	pmpkg_t *result;
+	PkPackageId *package_id = pk_package_id_new_from_string (package_id_str);
+
+	/* do all this fancy stuff */
+	if (g_strcmp0 (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data (package_id)) == 0)
+		repo = alpm_option_get_localdb ();
+	else {
+		alpm_list_t *iterator;
+		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
+			repo = alpm_list_getdata (iterator);
+			if (g_strcmp0 (alpm_db_get_name(repo), pk_package_id_get_data (package_id)) == 0)
+				break;
+		}
+	}
+
+	if (repo != NULL) {
+		pmpkg_t *pkg = alpm_db_get_pkg (repo, pk_package_id_get_name (package_id));
+		if (pkg_equals_to (pkg, pk_package_id_get_name (package_id), pk_package_id_get_version (package_id)))
+			result = pkg;
+		else
+			result = NULL;
+	} else
+		result = NULL;
+
+	/* free package id as we no longer need it */
+	pk_package_id_free (package_id);
+
+	return result;
+}
 
 static void
 emit_package (PkBackend *backend, pmpkg_t *pkg, const gchar *repo, PkInfoEnum info)
@@ -994,7 +1000,7 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 				match = TRUE;
 				break;
 			case PK_ALPM_SEARCH_TYPE_RESOLVE:
-				match = (g_strcmp0 (alpm_pkg_get_name(pkg), needle) == 0);
+				match = g_strcmp0 (alpm_pkg_get_name(pkg), needle) == 0;
 				break;
 			case PK_ALPM_SEARCH_TYPE_NAME:
 				match = strstr (alpm_pkg_get_name (pkg), needle) != NULL;
@@ -1387,21 +1393,40 @@ backend_resolve_thread (PkBackend *backend)
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkBitfield filters = pk_backend_get_uint (backend, "filters");
 
+	gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		gboolean search_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
-		gboolean search_not_installed = pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+		if (pk_package_id_check (package_ids[iterator])) {
+			/* skip all the db iterations and so on - we already know everything */
+			pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
 
-		if (!search_not_installed) {
-			/* search in local db */
-			backend_search (backend, alpm_option_get_localdb (), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
-		}
+			if (pkg != NULL) {
+				PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
+				const gchar *repo = pk_package_id_get_data (package_id);
 
-		if (!search_installed) {
-			/* search in sync repos */
-			alpm_list_t *repos;
-			/* iterate repos */
-			for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
-				backend_search (backend, alpm_list_getdata (repos), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
+				if (!search_not_installed && g_strcmp0 (repo, ALPM_LOCAL_DB_ALIAS) == 0)
+					emit_package (backend, pkg, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_INSTALLED);
+
+				if (!search_installed && g_strcmp0 (repo, ALPM_LOCAL_DB_ALIAS) != 0)
+					emit_package (backend, pkg, repo, PK_INFO_ENUM_INSTALLED);
+
+				pk_package_id_free (package_id);
+			}
+		} else {
+			/* good old way with backend_search */
+			if (!search_not_installed) {
+				/* search in local db */
+				backend_search (backend, alpm_option_get_localdb (), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
+			}
+
+			if (!search_installed) {
+				/* search in sync repos */
+				alpm_list_t *repos;
+				/* iterate repos */
+				for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
+					backend_search (backend, alpm_list_getdata (repos), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
+			}
 		}
 	}
 

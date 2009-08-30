@@ -27,6 +27,8 @@
 #include "egg-test.h"
 #include "egg-debug.h"
 
+#include "pk-task-text.h"
+
 /* prototypes */
 void pk_genpack_test (EggTest *test);
 
@@ -41,6 +43,7 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	//pk_genpack_test (test);
+	pk_task_text_test (test);
 	
 	return (egg_test_finish (test));
 }

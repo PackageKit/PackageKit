@@ -32,6 +32,7 @@
 #define __PK_CLIENT_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-progress.h>
@@ -318,6 +319,14 @@ void		 pk_client_install_files_async		(PkClient		*client,
 
 void		 pk_client_accept_eula_async		(PkClient		*client,
 							 const gchar		*eula_id,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
+void		 pk_client_rollback_async		(PkClient		*client,
+							 const gchar		*transaction_id,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
