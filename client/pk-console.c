@@ -462,10 +462,23 @@ static void
 pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
+	gchar *enabled_pad;
+	gchar *repo_pad;
+
 	if (awaiting_space)
 		g_print ("\n");
-	/* TRANSLATORS: if the repo is enabled */
-	g_print (" %s\t%s\t%s\n", enabled ? _("True") : _("False"), repo_id, description);
+	if (enabled) {
+		/* TRANSLATORS: if the repo is enabled */
+		enabled_pad = pk_strpad (_("Enabled"), 10);
+	} else {
+		/* TRANSLATORS: if the repo is disabled */
+		enabled_pad = pk_strpad (_("Disabled"), 10);
+	}
+
+	repo_pad = pk_strpad (repo_id, 25);
+	g_print (" %s %s %s\n", enabled_pad, repo_pad, description);
+	g_free (enabled_pad);
+	g_free (repo_pad);
 }
 
 /**
