@@ -14,6 +14,88 @@
     </doc:doc>
 
     <!--*****************************************************************************************-->
+    <property name="role" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The transaction role, e.g. <doc:tt>update-system</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="status" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The transaction status, e.g. <doc:tt>downloading</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="last-package" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The last package_id that was processed, e.g. <doc:tt>hal;0.1.2;i386;fedora</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="uid" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The uid of the user that started the transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="percentage" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The percentage complete of the transaction.
+          </doc:para>
+          <doc:para>
+            Backends should set this value to 101 if the amount complete cannot be calculated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="subpercentage" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The sub-percentage complete of the transaction.
+          </doc:para>
+          <doc:para>
+            Backends should set this value to 101 if the amount complete cannot be calculated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="allow-cancel" type="b" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            If the transaction can be cancelled.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="caller-active" type="b" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            If the original caller of the method is still connected to the system bus.
+            This is usually an indication that the client can handle it's own error handling and
+            EULA callbacks rather than another program taking over.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
     <method name="SetLocale">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -97,6 +179,10 @@
         <doc:description>
           <doc:para>
             Get if cancel is allowed for the transaction
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -267,6 +353,10 @@
             This allows any GUI that is monitoring transactions to accurately reflect the current
             state of the transaction at startup.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="package" direction="out">
@@ -317,6 +407,10 @@
         <doc:description>
           <doc:para>
             This method gets the progress completion of the daemon.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -445,6 +539,10 @@
           <doc:para>
             This method returns the current role of the transaction.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="role" direction="out">
@@ -474,6 +572,10 @@
         <doc:description>
           <doc:para>
             This method returns the status of the transaction.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -749,6 +851,10 @@
             to the session bus.
             This is usually an indication that the client can handle it's own error handling and
             EULA callbacks rather than another program taking over.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>

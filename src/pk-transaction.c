@@ -93,6 +93,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
+	gboolean		 caller_active;
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -186,7 +187,14 @@ enum {
 enum
 {
 	PROP_0,
+	PROP_ROLE,
+	PROP_STATUS,
+	PROP_LAST_PACKAGE,
 	PROP_UID,
+	PROP_PERCENTAGE,
+	PROP_SUBPERCENTAGE,
+	PROP_ALLOW_CANCEL,
+	PROP_CALLER_ACTIVE,
 	PROP_LAST
 };
 
@@ -464,6 +472,10 @@ pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gbool
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* save as a property */
+	transaction->priv->caller_active = is_active;
+
+	/* only send if false, a client can hardly re-connect... */
 	if (is_active == FALSE) {
 		egg_debug ("client disconnected....");
 		g_signal_emit (transaction, signals [PK_TRANSACTION_CALLER_ACTIVE_CHANGED], 0, FALSE);
@@ -4664,8 +4676,29 @@ pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GPar
 	transaction = PK_TRANSACTION (object);
 
 	switch (prop_id) {
+	case PROP_ROLE:
+		g_value_set_string (value, pk_role_enum_to_text (transaction->priv->role));
+		break;
+	case PROP_STATUS:
+		g_value_set_string (value, pk_status_enum_to_text (transaction->priv->status));
+		break;
+	case PROP_LAST_PACKAGE:
+		g_value_set_string (value, transaction->priv->last_package_id);
+		break;
 	case PROP_UID:
 		g_value_set_uint (value, transaction->priv->uid);
+		break;
+	case PROP_PERCENTAGE:
+		g_value_set_uint (value, transaction->priv->percentage);
+		break;
+	case PROP_SUBPERCENTAGE:
+		g_value_set_uint (value, transaction->priv->subpercentage);
+		break;
+	case PROP_ALLOW_CANCEL:
+		g_value_set_boolean (value, transaction->priv->allow_cancel);
+		break;
+	case PROP_CALLER_ACTIVE:
+		g_value_set_boolean (value, transaction->priv->caller_active);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4680,18 +4713,83 @@ pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GPar
 static void
 pk_transaction_class_init (PkTransactionClass *klass)
 {
+	GParamSpec *spec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = pk_transaction_dispose;
 	object_class->finalize = pk_transaction_finalize;
 	object_class->get_property = pk_transaction_get_property;
 
-	g_object_class_install_property (object_class,
-					 PROP_UID,
-					 g_param_spec_uint ("uid",
-							    "UID",
-							    "User ID that created the transaction",
-							    0, G_MAXUINT, 0,
-							    G_PARAM_READABLE));
+	/**
+	 * PkTransaction:role:
+	 */
+	spec = g_param_spec_string ("role",
+				    "Role", "The transaction role",
+				    NULL,
+				    G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_ROLE, spec);
+
+	/**
+	 * PkTransaction:status:
+	 */
+	spec = g_param_spec_string ("status",
+				    "Status", "The transaction status",
+				    NULL,
+				    G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_STATUS, spec);
+
+	/**
+	 * PkTransaction:last-package:
+	 */
+	spec = g_param_spec_string ("last-package",
+				    "Last package", "The transaction last package processed",
+				    NULL,
+				    G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_LAST_PACKAGE, spec);
+
+	/**
+	 * PkTransaction:uid:
+	 */
+	spec = g_param_spec_uint ("uid",
+				  "UID", "User ID that created the transaction",
+				  0, G_MAXUINT, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_UID, spec);
+
+	/**
+	 * PkTransaction:percentage:
+	 */
+	spec = g_param_spec_uint ("percentage",
+				  "Percentage", "Percentage transaction complete",
+				  0, 101, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_PERCENTAGE, spec);
+
+	/**
+	 * PkTransaction:subpercentage:
+	 */
+	spec = g_param_spec_uint ("subpercentage",
+				  "Sub-percentage", "Percentage sub-transaction complete",
+				  0, 101, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, spec);
+
+	/**
+	 * PkTransaction:allow-cancel:
+	 */
+	spec = g_param_spec_boolean ("allow-cancel",
+				     "Allow cancel", "If the transaction can be cancelled",
+				     FALSE,
+				     G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_ALLOW_CANCEL, spec);
+
+	/**
+	 * PkTransaction:caller-active:
+	 */
+	spec = g_param_spec_boolean ("caller-active",
+				     "Caller Active", "If the transaction caller is still active",
+				     TRUE,
+				     G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, spec);
 
 	signals [PK_TRANSACTION_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
@@ -4819,6 +4917,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->emit_media_change_required = FALSE;
+	transaction->priv->caller_active = TRUE;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_only_trusted = TRUE;
 	transaction->priv->cached_key_id = NULL;
