@@ -382,14 +382,6 @@ void		 pk_client_simulate_update_packages_async (PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_cancel_async			(PkClient		*client,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gboolean	 pk_client_cancel_finish		(PkClient		*client,
-							 GAsyncResult		*res,
-							 GError			**error);
-
 G_END_DECLS
 
 #endif /* __PK_CLIENT_H */

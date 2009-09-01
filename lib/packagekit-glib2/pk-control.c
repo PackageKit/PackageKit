@@ -223,7 +223,8 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -364,7 +365,8 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -502,7 +504,8 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -659,7 +662,8 @@ pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyn
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -801,7 +805,8 @@ pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAs
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -943,7 +948,8 @@ pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsy
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -1084,7 +1090,8 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -1230,7 +1237,8 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -1379,7 +1387,8 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
 	state->network = PK_NETWORK_ENUM_UNKNOWN;
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
@@ -1524,7 +1533,8 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
 	state->control = control;
 	state->authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
