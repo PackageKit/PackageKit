@@ -447,6 +447,17 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 }
 
 /**
+ * pk_client_percentage_to_signed:
+ */
+static gint
+pk_client_percentage_to_signed (guint percentage)
+{
+	if (percentage == 101)
+		return -1;
+	return (gint) percentage
+}
+
+/**
  * pk_client_progress_changed_cb:
  */
 static void
@@ -457,14 +468,8 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 	gint subpercentage_new;
 
 	/* convert to signed */
-	percentage_new = (gint) percentage;
-	subpercentage_new = (gint) subpercentage;
-
-	/* daemon is odd, and says that unknown is 101 */
-	if (percentage_new == 101)
-		percentage_new = -1;
-	if (subpercentage_new == 101)
-		subpercentage_new = -1;
+	percentage_new = pk_client_percentage_to_signed (percentage);
+	subpercentage_new = pk_client_percentage_to_signed (subpercentage);
 
 	/* save progress */
 	g_object_set (state->progress,
