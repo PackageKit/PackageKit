@@ -382,6 +382,14 @@ void		 pk_client_simulate_update_packages_async (PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_adopt_async 			(PkClient		*client,
+							 const gchar		**transaction_id,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 G_END_DECLS
 
 #endif /* __PK_CLIENT_H */

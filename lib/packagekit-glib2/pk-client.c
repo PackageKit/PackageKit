@@ -2654,6 +2654,55 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 
 /***************************************************************************************************/
 
+#if 0
+/**
+ * pk_client_adopt_async:
+ * @client: a valid #PkClient instance
+ * @transaction_id: a transaction ID such as "/21_ebcbdaae_data"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Adopt a transaction which allows the caller to monitor the state or cancel it.
+ **/
+void
+pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data,
+		       GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_adopt_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+	}
+	state->client = client;
+	state->transaction_id = g_strdup (transaction_id);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+#endif
+
+/***************************************************************************************************/
+
 /**
  * pk_client_cancel_all_dbus_methods:
  **/
