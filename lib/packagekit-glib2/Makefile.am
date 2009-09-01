@@ -31,36 +31,46 @@ libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 
 libpackagekit_glib2_include_HEADERS =				\
 	packagekit.h						\
+	pk-bitfield.h						\
+	pk-client.h						\
+	pk-common.h						\
+	pk-control.h						\
+	pk-control-sync.h					\
 	pk-package.h						\
+	pk-package-sack.h					\
+	pk-progress.h						\
+	pk-results.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
-	packagekit.h						\
 	egg-debug.c						\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
-	pk-version.h						\
-	pk-enum.c						\
-	pk-enum.h						\
-	pk-package.c						\
-	pk-package.h						\
+	packagekit.h						\
 	pk-bitfield.c						\
 	pk-bitfield.h						\
-	pk-package-sack.c					\
-	pk-package-sack.h					\
-	pk-control.c						\
-	pk-control.h						\
-	pk-common.c						\
-	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-common.c						\
+	pk-common.h						\
+	pk-control.c						\
+	pk-control.h						\
+	pk-control-sync.c					\
+	pk-control-sync.h					\
+	pk-enum.c						\
+	pk-enum.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
-	pk-results.c						\
-	pk-results.h						\
+	pk-package.c						\
+	pk-package.h						\
+	pk-package-sack.c					\
+	pk-package-sack.h					\
 	pk-progress.c						\
 	pk-progress.h						\
+	pk-results.c						\
+	pk-results.h						\
+	pk-version.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_LIBADD =					\

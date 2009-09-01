@@ -687,7 +687,7 @@ pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyn
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: an enumerated list of the actions the backend supports, free with g_free()
+ * Return value: an enumerated list of the actions the backend supports, or 0 for error. Free with g_free()
  **/
 PkBitfield *
 pk_control_get_roles_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1753,88 +1753,6 @@ pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError 
 }
 
 /***************************************************************************************************/
-
-/**
- * pk_control_get_daemon_state:
- * @control: a valid #PkControl instance
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * The engine state debugging output
- *
- * Return value: a string of debugging data of unspecified format, unref wih g_free()
- **/
-gchar *
-pk_control_get_daemon_state (PkControl *control, GError **error)
-{
-	gboolean ret;
-	gchar *state = NULL;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	/* call D-Bus sync */
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetDaemonState", error,
-				 G_TYPE_INVALID,
-				 G_TYPE_STRING, &state,
-				 G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		if (error != NULL)
-			pk_control_fixup_dbus_error (*error);
-		goto out;
-	}
-out:
-	return state;
-}
-
-/**
- * pk_control_get_backend_detail:
- * @control: a valid #PkControl instance
- * @name: the name of the backend
- * @author: the author of the backend
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * The backend detail is useful for the pk-backend-status program, or for
- * automatic bugreports.
- *
- * Return value: %TRUE if the daemon serviced the request
- **/
-gboolean
-pk_control_get_backend_detail (PkControl *control, gchar **name, gchar **author, GError **error)
-{
-	gboolean ret;
-	gchar *tname;
-	gchar *tauthor;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* call D-Bus sync */
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetBackendDetail", error,
-				 G_TYPE_INVALID,
-				 G_TYPE_STRING, &tname,
-				 G_TYPE_STRING, &tauthor,
-				 G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		if (error != NULL)
-			pk_control_fixup_dbus_error (*error);
-		goto out;
-	}
-
-	/* copy needed bits */
-	if (name != NULL)
-		*name = tname;
-	else
-		g_free (tname);
-	/* copy needed bits */
-	if (author != NULL)
-		*author = tauthor;
-	else
-		g_free (tauthor);
-out:
-	return ret;
-}
 
 /**
  * pk_control_transaction_list_changed_cb:

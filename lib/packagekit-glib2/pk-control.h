@@ -169,12 +169,6 @@ void		 pk_control_can_authorize_async		(PkControl		*control,
 PkAuthorizeEnum	 pk_control_can_authorize_finish	(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
-gchar		*pk_control_get_daemon_state		(PkControl		*control,
-							 GError			**error);
-gboolean	 pk_control_get_backend_detail		(PkControl		*control,
-							 gchar			**name,
-							 gchar			**author,
-							 GError			**error);
 void		 pk_control_get_properties_async	(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,

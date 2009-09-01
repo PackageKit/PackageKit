@@ -42,6 +42,7 @@ main (int argc, char **argv)
 	pk_results_test (test);
 	pk_package_test (test);
 	pk_control_test (test);
+	pk_control_sync_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
 
