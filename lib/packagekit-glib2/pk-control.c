@@ -48,6 +48,7 @@ static void     pk_control_finalize	(GObject     *object);
 struct _PkControlPrivate
 {
 	DBusGProxyCall		*call;
+	GPtrArray		*calls;
 	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
 	gboolean		 version_major;
@@ -153,6 +154,9 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 		g_error_free (error);
 	}
 
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
+
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
 
@@ -221,14 +225,16 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 	state->res = g_object_ref (res);
 	state->cancellable = cancellable;
 	state->control = control;
-	state->call = NULL;
-	state->tid = NULL;
 	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTid",
 					       (DBusGProxyCallNotify) pk_control_get_tid_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -288,6 +294,9 @@ pk_control_get_mime_types_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -363,6 +372,10 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetMimeTypes",
 					       (DBusGProxyCallNotify) pk_control_get_mime_types_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -422,6 +435,9 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -496,6 +512,10 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 					       G_TYPE_STRING, proxy_http,
 					       G_TYPE_STRING, proxy_ftp,
 					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -567,6 +587,9 @@ pk_control_get_roles_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -644,6 +667,10 @@ pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyn
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetActions", /* not GetRoles, just get over it... */
 					       (DBusGProxyCallNotify) pk_control_get_roles_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -702,6 +729,9 @@ pk_control_get_filters_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -779,6 +809,10 @@ pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAs
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetFilters",
 					       (DBusGProxyCallNotify) pk_control_get_filters_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -837,6 +871,9 @@ pk_control_get_groups_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -914,6 +951,10 @@ pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsy
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetGroups",
 					       (DBusGProxyCallNotify) pk_control_get_groups_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -973,6 +1014,9 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1048,6 +1092,10 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTransactionList",
 					       (DBusGProxyCallNotify) pk_control_get_transaction_list_cb, state,
 					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -1107,6 +1155,9 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1189,6 +1240,10 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 					       (DBusGProxyCallNotify) pk_control_get_time_since_action_cb, state, NULL,
 					       G_TYPE_STRING, role_text,
 					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -1248,6 +1303,9 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1329,6 +1387,10 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetNetworkState",
 					       (DBusGProxyCallNotify) pk_control_get_network_state_cb, state, NULL,
 					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -1387,6 +1449,9 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1469,6 +1534,10 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 					       (DBusGProxyCallNotify) pk_control_can_authorize_cb, state, NULL,
 					       G_TYPE_STRING, action_id,
 					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
 	g_object_unref (res);
 }
 
@@ -1738,6 +1807,29 @@ pk_control_set_properties (PkControl *control)
 }
 
 /**
+ * pk_control_cancel_all_dbus_methods:
+ **/
+static gboolean
+pk_control_cancel_all_dbus_methods (PkControl *control)
+{
+	const PkControlState *state;
+	guint i;
+	GPtrArray *array;
+
+	/* just cancel the call */
+	array = control->priv->calls;
+	for (i=0; i<array->len; i++) {
+		state = g_ptr_array_index (array, i);
+		if (state->call == NULL)
+			continue;
+		egg_debug ("cancel in flight call: %p", state->call);
+		dbus_g_proxy_cancel_call (control->priv->proxy, state->call);
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_control_get_property:
  **/
 static void
@@ -1908,6 +2000,7 @@ pk_control_init (PkControl *control)
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
 	control->priv->call = NULL;
+	control->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
 	control->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -1979,6 +2072,9 @@ pk_control_finalize (GObject *object)
 		dbus_g_proxy_cancel_call (control->priv->proxy, control->priv->call);
 	}
 
+	/* ensure we cancel any in-flight DBus calls */
+	pk_control_cancel_all_dbus_methods (control);
+
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "Locked",
 				        G_CALLBACK (pk_control_locked_cb), control);
@@ -1994,6 +2090,7 @@ pk_control_finalize (GObject *object)
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 
 	g_object_unref (G_OBJECT (priv->proxy));
+	g_ptr_array_unref (control->priv->calls);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
 }
