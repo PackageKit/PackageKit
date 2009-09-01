@@ -948,6 +948,27 @@ pk_results_get_error_code_array (PkResults *results)
 }
 
 /**
+ * pk_results_get_error_code:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the last error code from the transaction.
+ *
+ * Return value: A #PkResultItemErrorCode, or %NULL
+ **/
+const PkResultItemErrorCode *
+pk_results_get_error_code (PkResults *results)
+{
+	GPtrArray *array;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+
+	array = results->priv->error_code_array;
+	if (array->len == 0)
+		return NULL;
+	return g_ptr_array_index (array, 0);
+}
+
+/**
  * pk_results_get_message_array:
  * @results: a valid #PkResults instance
  *
