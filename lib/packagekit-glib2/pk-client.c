@@ -71,23 +71,7 @@ struct _PkClientPrivate
 	DBusGConnection		*connection;
 	GPtrArray		*calls;
 	PkControl		*control;
-	PkRoleEnum		 role;
-	PkStatusEnum		 status;
 };
-
-enum {
-	SIGNAL_CHANGED,
-	SIGNAL_LAST
-};
-
-enum {
-	PROP_0,
-	PROP_ROLE,
-	PROP_STATUS,
-	PROP_LAST
-};
-
-static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
@@ -498,9 +482,6 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClie
 
 	/* convert from text */
 	status_enum = pk_status_enum_from_text (status_text);
-
-	/* save cached value */
-	state->client->priv->status = status_enum;
 
 	/* save progress */
 	g_object_set (state->progress,
@@ -2875,80 +2856,13 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 }
 
 /**
- * pk_client_get_property:
- **/
-static void
-pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
-{
-	PkClient *client = PK_CLIENT (object);
-	PkClientPrivate *priv = client->priv;
-
-	switch (prop_id) {
-	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
-		break;
-	case PROP_STATUS:
-		g_value_set_uint (value, priv->status);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
- * pk_client_set_property:
- **/
-static void
-pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
-{
-	switch (prop_id) {
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
  * pk_client_class_init:
  **/
 static void
 pk_client_class_init (PkClientClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->get_property = pk_client_get_property;
-	object_class->set_property = pk_client_set_property;
 	object_class->finalize = pk_client_finalize;
-
-	/**
-	 * PkClient:role:
-	 */
-	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ROLE, pspec);
-
-	/**
-	 * PkClient:status:
-	 */
-	pspec = g_param_spec_uint ("status", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_STATUS, pspec);
-
-	/**
-	 * PkClient::changed:
-	 * @client: the #PkClient instance that emitted the signal
-	 *
-	 * The ::changed signal is emitted when the client data may have changed.
-	 **/
-	signals [SIGNAL_CHANGED] =
-		g_signal_new ("changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
@@ -2961,9 +2875,6 @@ pk_client_init (PkClient *client)
 {
 	GError *error = NULL;
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
-
-	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
