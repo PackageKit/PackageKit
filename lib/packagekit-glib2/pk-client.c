@@ -366,6 +366,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 {
 	GError *error = NULL;
 	PkExitEnum exit_enum;
+	const PkResultItemErrorCode *error_item;
 
 	egg_debug ("exit_text=%s", exit_text);
 
@@ -374,9 +375,17 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	pk_results_set_exit_code (state->results, exit_enum);
 
 	/* failed */
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		/* TODO: get error code and error message */
-		error = g_error_new (1, 0, "Failed to run: %s", exit_text);
+	if (exit_enum == PK_EXIT_ENUM_FAILED) {
+
+		/* get error code and error message */
+		error_item = pk_results_get_error_code (state->results);
+		if (error_item != NULL) {
+			/* should only ever have one ErrorCode */
+			error = g_error_new (PK_CLIENT_ERROR, 0xFF + error_item->code, "%s", error_item->details);
+		} else {
+			/* fallback where the daemon didn't sent ErrorCode */
+			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
+		}
 		pk_client_state_finish (state, error);
 		return;
 	}
@@ -3012,6 +3021,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
+	const PkResultItemErrorCode *error_item;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -3024,6 +3034,13 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_CANCELLED)
 		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_text (exit_enum));
+
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item->code != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
+		egg_test_failed (test, "failed to get error code: %i", error_item->code);
+	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
+		egg_test_failed (test, "failed to get error message: %s", error_item->details);
 
 	egg_test_loop_quit (test);
 }
