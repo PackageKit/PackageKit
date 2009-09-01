@@ -454,7 +454,7 @@ pk_client_percentage_to_signed (guint percentage)
 {
 	if (percentage == 101)
 		return -1;
-	return (gint) percentage
+	return (gint) percentage;
 }
 
 /**
