@@ -150,20 +150,15 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield filters;
+	PkPackageId *pi;
 	bool recursive;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	recursive = pk_backend_get_bool (backend, "recursive");
 	_cancel = false;
-	pk_backend_set_allow_cancel (backend, true);
-	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend);
-		return false;
-	}
 
+	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
@@ -207,10 +202,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 		pk_package_id_free (pi);
 	}
-
-	sort(output.begin(), output.end(), compare());
-	output.erase(unique(output.begin(), output.end(), result_equality()),
-		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
 	m_apt->emit_packages(output, filters);
@@ -613,19 +604,8 @@ backend_get_updates_thread (PkBackend *backend)
 				}
 			}
 
-			sort(output.begin(), output.end(), compare());
-			output.erase(unique(output.begin(), output.end(), result_equality()),
-				    output.end());
-
 			// It's faster to emmit the packages here than in the matching part
-			for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = output.begin();
-			    it != output.end(); ++it)
-			{
-				if (_cancel) {
-					break;
-				}
-				m_apt->emit_package(it->first, it->second, filters, state);
-			}
+			m_apt->emit_packages(output, filters, state);
 		}
 	}
 
@@ -866,6 +846,13 @@ backend_resolve_thread (PkBackend *backend)
 		{
 			m_apt->emit_package(pkg, ver, filters);
 		}
+
+		ver = m_apt->find_candidate_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end() == false)
+		{
+			m_apt->emit_package(pkg, ver, filters);
+		}
 	}
 
 	delete m_apt;
@@ -993,8 +980,6 @@ backend_search_group_thread (PkBackend *backend)
 			}
 		}
 	}
-
-	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages here rather than in the matching part
 	m_apt->emit_packages(output, filters);
@@ -1152,10 +1137,6 @@ backend_search_package_thread (PkBackend *backend)
 		}
 	}
 
-	sort(output.begin(), output.end(), compare());
-	output.erase(unique(output.begin(), output.end(), result_equality()),
-		    output.end());
-
 	// It's faster to emmit the packages here than in the matching part
 	m_apt->emit_packages(output, filters);
 
@@ -1186,6 +1167,97 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 {
 	pk_backend_set_bool(backend, "search_details", true);
 	pk_backend_thread_create(backend, backend_search_package_thread);
+}
+
+static gboolean
+backend_manage_packages_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkPackageId *pi;
+	bool simulate;
+	bool remove;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	simulate = pk_backend_get_bool (backend, "simulate");
+	remove = pk_backend_get_bool (backend, "remove");
+
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init(pk_backend_get_locale (backend))) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > pkgs;
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		if (_cancel) {
+			break;
+		}
+
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			delete m_apt;
+			pk_backend_finished (backend);
+			return false;
+		}
+
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
+		// Ignore packages that could not be found or that exist only due to dependencies.
+		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			delete m_apt;
+			pk_backend_finished (backend);
+			return false;
+		}
+
+		pkgCache::VerIterator ver;
+		ver = m_apt->find_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end() == false)
+		{
+			pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		}
+	}
+
+	if (!m_apt->prepare_transaction(pkgs, simulate, remove)) {
+		// Print transaction errors
+		cout << "prepare_transaction failed" << endl;
+	}
+
+	delete m_apt;
+
+	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+ * backend_resolve:
+ */
+static void
+simulate_install_update_packages (PkBackend *backend, gchar **packages)
+{
+	pk_backend_set_bool(backend, "simulate", true);
+	pk_backend_set_bool(backend, "remove", false);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_resolve:
+ */
+static void
+simulate_remove_packages (PkBackend *backend, gchar **packages)
+{
+	pk_backend_set_bool(backend, "simulate", true);
+	pk_backend_set_bool(backend, "remove", true);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 static gboolean
@@ -1351,8 +1423,6 @@ backend_get_packages_thread (PkBackend *backend)
 		}
 	}
 
-	sort(output.begin(), output.end(), compare());
-
 	// It's faster to emmit the packages rather here than in the matching part
 	m_apt->emit_packages(output, filters);
 
@@ -1369,6 +1439,88 @@ static void
 backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
 	pk_backend_thread_create (backend, backend_get_packages_thread);
+}
+
+/**
+ * backend_install_packages:
+ */
+static void
+backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	const gchar *license_agreement;
+	const gchar *eula_id;
+	gboolean has_eula;
+
+	/* FIXME: support only_trusted */
+
+// 	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
+// 		if (_use_gpg && !_has_signature) {
+			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
+							    "http://example.com/gpgkey",
+							    "Test Key (Fedora) fedora@example.com",
+							    "BB7576AC",
+							    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
+							    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+					       "GPG signed package could not be verified");
+			pk_backend_finished (backend);
+			return;
+// 		}
+// 		eula_id = "eula_hughsie_dot_com";
+// 		has_eula = pk_backend_is_eula_valid (backend, eula_id);
+// 		if (_use_eula && !has_eula) {
+// 			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
+// 					    "Captain: What happen ?\n"
+// 					    "Mechanic: Somebody set up us the bomb.\n\n"
+// 					    "Operator: We get signal.\n"
+// 					    "Captain: What !\n"
+// 					    "Operator: Main screen turn on.\n"
+// 					    "Captain: It's you !!\n"
+// 					    "CATS: How are you gentlemen !!\n"
+// 					    "CATS: All your base are belong to us.\n"
+// 					    "CATS: You are on the way to destruction.\n\n"
+// 					    "Captain: What you say !!\n"
+// 					    "CATS: You have no chance to survive make your time.\n"
+// 					    "CATS: Ha Ha Ha Ha ....\n\n"
+// 					    "Operator: Captain!! *\n"
+// 					    "Captain: Take off every 'ZIG' !!\n"
+// 					    "Captain: You know what you doing.\n"
+// 					    "Captain: Move 'ZIG'.\n"
+// 					    "Captain: For great justice.\n";
+// 			pk_backend_eula_required (backend, eula_id, package_ids[0],
+// 						  "CATS Inc.", license_agreement);
+// 			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
+// 					       "licence not installed so cannot install");
+// 			pk_backend_finished (backend);
+// 			return;
+// 		}
+// 		if (_use_media) {
+// 			_use_media = FALSE;
+// 			pk_backend_media_change_required (backend, PK_MEDIA_TYPE_ENUM_DVD, "linux-disk-1of7", "Linux Disc 1 of 7");
+// 			pk_backend_error_code (backend, PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
+// 					       "additional media linux-disk-1of7 required");
+// 			pk_backend_finished (backend);
+// 			return;
+// 		}
+// 	}
+
+// 	pk_backend_set_allow_cancel (backend, TRUE);
+// 	_progress_percentage = 0;
+// 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+// 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+// 			    "An HTML widget for GTK+ 2.0");
+// 	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
+}
+
+/**
+ * backend_remove_packages:
+ */
+static void
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
+	pk_backend_finished (backend);
 }
 
 extern "C" PK_BACKEND_OPTIONS (
@@ -1392,10 +1544,10 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	NULL,						/* install_files */
-	NULL,						/* install_packages */
+	backend_install_packages,						/* install_packages */
 	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
-	NULL,						/* remove_packages */
+	backend_remove_packages,						/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
@@ -1404,11 +1556,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
-	NULL,						/* update_packages */
+	backend_install_packages,						/* update_packages */
 	backend_update_system,				/* update_system */
 	NULL,						/* what_provides */
 	NULL,						/* simulate_install_files */
-	NULL,						/* simulate_install_packages */
-	NULL,						/* simulate_remove_packages */
-	NULL						/* simulate_update_packages */
+	simulate_install_update_packages,		/* simulate_install_packages */
+	simulate_remove_packages,			/* simulate_remove_packages */
+	simulate_install_update_packages		/* simulate_update_packages */
 );

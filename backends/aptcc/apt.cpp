@@ -62,6 +62,8 @@ bool aptcc::init(const char *locale)
 		return false;
 		//"The package lists or status file could not be parsed or opened."
 	}
+// 	_config->Set("Acquire::ftp::Proxy", s);
+// 	_config->Set("Acquire::http::Proxy", s);
 
 	packageCache = new pkgCache(Map);
 	if (_error->PendingError()) {
@@ -166,8 +168,8 @@ bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
 }
 
 void aptcc::mark_all_upgradable(bool with_autoinst,
-					bool ignore_removed/*,
-					undo_group *undo*/)
+				bool ignore_removed/*,
+				undo_group *undo*/)
 {
 //   if(read_only && !read_only_permission())
 //     {
@@ -247,7 +249,9 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
-		if (pkg->CurrentState == pkgCache::State::Installed) {
+		if(!ver.end() && ver != pkg.CurrentVer()) {
+			state = PK_INFO_ENUM_AVAILABLE;
+		} else if (pkg->CurrentState == pkgCache::State::Installed) {
 			state = PK_INFO_ENUM_INSTALLED;
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
@@ -342,15 +346,22 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 }
 
 void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
-			  PkBitfield filters)
+			  PkBitfield filters,
+			  PkInfoEnum state)
 {
+	sort(output.begin(), output.end(), compare());
+	output.erase(unique(output.begin(),
+			    output.end(),
+			    result_equality()),
+		     output.end());
+
 	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
 	    i != output.end(); ++i)
 	{
 		if (_cancel) {
 			break;
 		}
-		emit_package(i->first, i->second, filters);
+		emit_package(i->first, i->second, filters, state);
 	}
 }
 
@@ -614,34 +625,35 @@ static bool CheckAuth(pkgAcquire& Fetcher, PkBackend *backend)
    return false;
 }
 
-bool TryToInstall(pkgCache::PkgIterator Pkg,
-		  pkgDepCache &Cache,
-		  pkgProblemResolver &Fix,
-		  bool Remove,
-		  bool BrokenFix,
-		  unsigned int &ExpectedInst,
-		  bool AllowFail = true)
+bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
+			 pkgDepCache &Cache,
+			 pkgProblemResolver &Fix,
+			 bool Remove,
+			 bool BrokenFix,
+			 unsigned int &ExpectedInst/*,
+			 bool AllowFail = true*/)
 {
+    cout << "TryToInstall PACKAGE: " << Pkg.Name() << endl;
    /* This is a pure virtual package and there is a single available
       provides */
    if (Cache[Pkg].CandidateVer == 0 && Pkg->ProvidesList != 0 &&
        Pkg.ProvidesList()->NextProvides == 0)
    {
       pkgCache::PkgIterator Tmp = Pkg.ProvidesList().OwnerPkg();
-      ioprintf(c1out,_("Note, selecting %s instead of %s\n"),
-	       Tmp.Name(),Pkg.Name());
+//       ioprintf(c1out,_("Note, selecting %s instead of %s\n"),
+// 	       Tmp.Name(),Pkg.Name());
       Pkg = Tmp;
    }
 
    // Handle the no-upgrade case
-   if (_config->FindB("APT::Get::upgrade",true) == false &&
-       Pkg->CurrentVer != 0)
-   {
-      if (AllowFail == true)
-	 ioprintf(c1out,_("Skipping %s, it is already installed and upgrade is not set.\n"),
-		  Pkg.Name());
-      return true;
-   }
+//    if (_config->FindB("APT::Get::upgrade",true) == false &&
+//        Pkg->CurrentVer != 0)
+//    {
+//       if (AllowFail == true)
+// 	 ioprintf(c1out,_("Skipping %s, it is already installed and upgrade is not set.\n"),
+// 		  Pkg.Name());
+//       return true;
+//    }
 
    // Check if there is something at all to install
    pkgDepCache::StateCache &State = Cache[Pkg];
@@ -653,22 +665,22 @@ bool TryToInstall(pkgCache::PkgIterator Pkg,
 
       /* We want to continue searching for regex hits, so we return false here
          otherwise this is not really an error. */
-      if (AllowFail == false)
-	 return false;
+//       if (AllowFail == false)
+// 	 return false;
 
-      ioprintf(c1out,_("Package %s is not installed, so not removed\n"),Pkg.Name());
+//       ioprintf(c1out,_("Package %s is not installed, so not removed\n"),Pkg.Name());
       return true;
    }
 
    if (State.CandidateVer == 0 && Remove == false)
    {
-      if (AllowFail == false)
-	 return false;
+//       if (AllowFail == false)
+// 	 return false;
 
       if (Pkg->ProvidesList != 0)
       {
-	 ioprintf(c1out,_("Package %s is a virtual package provided by:\n"),
-		  Pkg.Name());
+// 	 ioprintf(c1out,_("Package %s is a virtual package provided by:\n"),
+// 		  Pkg.Name());
 
 	 pkgCache::PrvIterator I = Pkg.ProvidesList();
 	 for (; I.end() == false; I++)
@@ -677,21 +689,21 @@ bool TryToInstall(pkgCache::PkgIterator Pkg,
 
 	    if (Cache[Pkg].CandidateVerIter(Cache) == I.OwnerVer())
 	    {
-	       if (Cache[Pkg].Install() == true && Cache[Pkg].NewInstall() == false)
-		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() <<
-		  _(" [Installed]") << endl;
-	       else
-		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() << endl;
+// 	       if (Cache[Pkg].Install() == true && Cache[Pkg].NewInstall() == false)
+// 		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() <<
+// 		  _(" [Installed]") << endl;
+// 	       else
+// 		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() << endl;
 	    }
 	 }
-	 c1out << _("You should explicitly select one to install.") << endl;
+// 	 c1out << _("You should explicitly select one to install.") << endl;
       }
       else
       {
-	 ioprintf(c1out,
-	 _("Package %s is not available, but is referred to by another package.\n"
-	   "This may mean that the package is missing, has been obsoleted, or\n"
-           "is only available from another source\n"),Pkg.Name());
+// 	 ioprintf(c1out,
+// 	 _("Package %s is not available, but is referred to by another package.\n"
+// 	   "This may mean that the package is missing, has been obsoleted, or\n"
+//            "is only available from another source\n"),Pkg.Name());
 
 	 string List;
 	 string VersionsList;
@@ -708,10 +720,10 @@ bool TryToInstall(pkgCache::PkgIterator Pkg,
 	    List += string(Dep.ParentPkg().Name()) + " ";
         //VersionsList += string(Dep.ParentPkg().CurVersion) + "\n"; ???
 	 }
-	 ShowList(c1out,_("However the following packages replace it:"),List,VersionsList);
+// 	 ShowList(c1out,_("However the following packages replace it:"),List,VersionsList);
       }
 
-      _error->Error(_("Package %s has no installation candidate"),Pkg.Name());
+//       _error->Error(_("Package %s has no installation candidate"),Pkg.Name());
       return false;
    }
 
@@ -728,30 +740,85 @@ bool TryToInstall(pkgCache::PkgIterator Pkg,
    Cache.MarkInstall(Pkg,false);
    if (State.Install() == false)
    {
+       cout << "TryToInstall 6" << endl;
       if (_config->FindB("APT::Get::ReInstall",false) == true)
       {
 	 if (Pkg->CurrentVer == 0 || Pkg.CurrentVer().Downloadable() == false)
-	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
-		     Pkg.Name());
+// 	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
+// 		     Pkg.Name());
+;
 	 else
 	    Cache.SetReInstall(Pkg,true);
       }
       else
       {
-	 if (AllowFail == true)
-	    ioprintf(c1out,_("%s is already the newest version.\n"),
-		     Pkg.Name());
+// 	 if (AllowFail == true)
+// 	    ioprintf(c1out,_("%s is already the newest version.\n"),
+// 		     Pkg.Name());
       }
    }
    else
       ExpectedInst++;
 
+   cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
    // Install it with autoinstalling enabled (if we not respect the minial
    // required deps or the policy)
    if ((State.InstBroken() == true || State.InstPolicyBroken() == true) && BrokenFix == false)
       Cache.MarkInstall(Pkg,true);
 
    return true;
+}
+
+// emitChangedPackages - Show packages to newly install				/*{{{*/
+// ---------------------------------------------------------------------
+/* */
+void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				pkgCacheFile &Cache)
+{
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > installing,
+								    removing,
+								    updating,
+								    downgrading;
+
+	// Create a set of package names to fast search if the package is in the list
+	set<string> pkgNames;
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
+		    i != pkgs.end();
+		    ++i) {
+		pkgNames.insert(i->first.Name());
+	}
+
+	string VersionsList;
+	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
+	{
+		if (Cache[pkg].NewInstall() == true) {
+			// installing
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				installing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Delete() == true) {
+			// removing
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				removing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Upgrade() == true) {
+			// updating
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				updating.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		} else if (Cache[pkg].Downgrade() == true) {
+			// downgrading
+			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
+				downgrading.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+			}
+		}
+	}
+
+	// emit packages tha have changes
+	emit_packages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+	emit_packages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
+	emit_packages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
+	emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
 }
 
 									/*}}}*/
@@ -1079,10 +1146,82 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	}
 }
 
-bool aptcc::prepare_transaction(bool simulate, bool remove)
+// DoAutomaticRemove - Remove all automatic unused packages		/*{{{*/
+// ---------------------------------------------------------------------
+/* Remove unused automatic packages */
+bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 {
+   bool Debug = _config->FindI("Debug::pkgAutoRemove",false);
+   bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
+   bool hideAutoRemove = _config->FindB("APT::Get::HideAutoRemove");
+   pkgDepCache::ActionGroup group(*Cache);
+
+//    if(Debug)
+//       std::cout << "DoAutomaticRemove()" << std::endl;
+
+   if (_config->FindB("APT::Get::Remove",true) == false &&
+       doAutoRemove == true)
+   {
+//       c1out << _("We are not supposed to delete stuff, can't start "
+// 		 "AutoRemover") << std::endl;
+      doAutoRemove = false;
+   }
+// c1out << "doAutoRemove" << doAutoRemove << endl;
+   string autoremovelist, autoremoveversions;
+   // look over the cache to see what can be removed
+   for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg)
+   {
+      if (Cache[Pkg].Garbage)
+      {
+// 	 if(Pkg.CurrentVer() != 0 || Cache[Pkg].Install())
+// 	    if(Debug)
+// 	       std::cout << "We could delete %s" <<  Pkg.Name() << std::endl;
+
+	 // only show stuff in the list that is not yet marked for removal
+	 if(Cache[Pkg].Delete() == false)
+	 {
+	    autoremovelist += string(Pkg.Name()) + " ";
+	    autoremoveversions += string(Cache[Pkg].CandVersion) + "\n";
+	 }
+	 if (doAutoRemove)
+	 {
+	    if(Pkg.CurrentVer() != 0 &&
+	       Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+		    Cache->MarkDelete(Pkg, _config->FindB("APT::Get::Purge", false));
+	    } else {
+		    Cache->MarkKeep(Pkg, false, false);
+	    }
+	 }
+      }
+   }
+//    if (!hideAutoRemove)
+//       ShowList(c1out, _("The following packages were automatically installed and are no longer required:"), autoremovelist, autoremoveversions);
+//    if (!doAutoRemove && !hideAutoRemove && autoremovelist.size() > 0)
+//       c1out << _("Use 'apt-get autoremove' to remove them.") << std::endl;
+
+   // Now see if we destroyed anything
+   if (Cache->BrokenCount() != 0)
+   {
+//       c1out << _("Hmm, seems like the AutoRemover destroyed something which really\n"
+// 	         "shouldn't happen. Please file a bug report against apt.") << endl;
+//       c1out << endl;
+//       c1out << _("The following information may help to resolve the situation:") << endl;
+//       c1out << endl;
+//       ShowBroken(c1out,Cache,false);
+
+      return _error->Error("Internal Error, AutoRemover broke stuff");
+   }
+   return true;
+}
+
+bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+				bool simulate,
+				bool remove)
+{
+    cout << "==============================================================" << endl;
+	cout << "prepare_transaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
-			    //since for that no lock is needed
+				   //since for that no lock is needed
 
     //    CacheFile Cache;
 	pkgCacheFile Cache;
@@ -1091,6 +1230,7 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	if (Cache.Open(Prog, WithLock) == false) {
 		// failed to open cache, try checkDeps then..
 		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
+		cout << "Failed to open cache" << endl;
 		return false;
 	}
 
@@ -1105,22 +1245,34 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	unsigned int Packages = 0;
 	pkgProblemResolver Fix(Cache);
 
-	bool DefRemove = remove; // check if we are going to remove, otherwise is false
+// 	bool DefRemove = remove; // check if we are going to remove, otherwise is false
 
 	// new scope for the ActionGroup
 	{
+	    cout << "new scope for the ActionGroup" << endl;
 		pkgDepCache::ActionGroup group(Cache);
-		for (const char **I = CmdL.FileList + 1; *I != 0; I++)
+		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
+		    i != pkgs.end();
+		    ++i)
 		{
+		    pkgCache::PkgIterator Pkg = i->first;
+		    cout << "PACKAGE: " << Pkg.Name() << endl;
+			if (_cancel) {
+				break;
+			}
+			cout << "PACKAGE" << i->first.Name() << endl;
+
+// 		for (const char **I = CmdL.FileList + 1; *I != 0; I++)
+// 		{
 			// Duplicate the string
-			unsigned int Length = strlen(*I);
-			char S[300];
-			if (Length >= sizeof(S))
-			    continue;
-			strcpy(S,*I);
+// 			unsigned int Length = strlen(*I);
+// 			char S[300];
+// 			if (Length >= sizeof(S))
+// 			    continue;
+// 			strcpy(S,*I);
 
 			// See if we are removing and special indicators..
-			bool Remove = DefRemove;
+// 			bool Remove = DefRemove;
 			char *VerTag = 0;
 			bool VerIsRel = false;
 
@@ -1179,7 +1331,8 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
     // 		if (VerTag != 0)
     // 		    if (TryToChangeVer(Pkg,Cache,VerTag,VerIsRel) == false)
     // 			return false;
-			if (TryToInstall(Pkg,Cache,Fix,Remove,BrokenFix,ExpectedInst) == false) {
+			if (TryToInstall(Pkg,Cache,Fix,remove,BrokenFix,ExpectedInst) == false) {
+			    cout << "TryToInstall Failed" << endl;
 				return false;
 			}
 
@@ -1191,10 +1344,12 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	    packages */
 	if (BrokenFix == true && Cache->BrokenCount() != 0)
 	{
-	    c1out << _("You might want to run `apt-get -f install' to correct these:") << endl;
-	    ShowBroken(c1out,Cache,false);
+// 	    c1out << _("You might want to run `apt-get -f install' to correct these:") << endl;
+// TODO
+// 	    ShowBroken(c1out,Cache,false);
+cout << "Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)." << endl;
 
-	    return _error->Error(_("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)."));
+	    return _error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
 	}
 
 	// Call the scored problem resolver
@@ -1205,11 +1360,11 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	// Now we check the state of the packages,
 	if (Cache->BrokenCount() != 0)
 	{
-	    c1out <<
-		_("Some packages could not be installed. This may mean that you have\n"
-		"requested an impossible situation or if you are using the unstable\n"
-		"distribution that some required packages have not yet been created\n"
-		"or been moved out of Incoming.") << endl;
+// 	    c1out <<
+// 		_("Some packages could not be installed. This may mean that you have\n"
+// 		"requested an impossible situation or if you are using the unstable\n"
+// 		"distribution that some required packages have not yet been created\n"
+// 		"or been moved out of Incoming.") << endl;
 	    /*
 	    if (Packages == 1)
 	    {
@@ -1221,131 +1376,42 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	    }
 	    */
 
-	    c1out << _("The following information may help to resolve the situation:") << endl;
-	    c1out << endl;
-	    ShowBroken(c1out,Cache,false);
-	    return _error->Error(_("Broken packages"));
+// 	    c1out << _("The following information may help to resolve the situation:") << endl;
+// 	    c1out << endl;
+// TODO
+// 	    ShowBroken(c1out,Cache,false);
+	    return _error->Error("Broken packages");
 	}
     }
+    cout << "DoAutomaticRemove" << endl;
     if (!DoAutomaticRemove(Cache))
 	return false;
 
     /* Print out a list of packages that are going to be installed extra
 	to what the user asked */
-    if (Cache->InstCount() != ExpectedInst)
-    {
-	string List;
-	string VersionsList;
-	for (unsigned J = 0; J < Cache->Head().PackageCount; J++)
-	{
-	    pkgCache::PkgIterator I(Cache,Cache.List[J]);
-	    if ((*Cache)[I].Install() == false)
-		continue;
-
-	    const char **J;
-	    for (J = CmdL.FileList + 1; *J != 0; J++)
-		if (strcmp(*J,I.Name()) == 0)
-		    break;
-
-	    if (*J == 0) {
-		List += string(I.Name()) + " ";
-		VersionsList += string(Cache[I].CandVersion) + "\n";
-	    }
-	}
-
-	ShowList(c1out,_("The following extra packages will be installed:"),List,VersionsList);
-    }
-
-    /* Print out a list of suggested and recommended packages */
-    {
-	string SuggestsList, RecommendsList, List;
-	string SuggestsVersions, RecommendsVersions;
-	for (unsigned J = 0; J < Cache->Head().PackageCount; J++)
-	{
-	    pkgCache::PkgIterator Pkg(Cache,Cache.List[J]);
-
-	    /* Just look at the ones we want to install */
-	    if ((*Cache)[Pkg].Install() == false)
-	    continue;
-
-	    // get the recommends/suggests for the candidate ver
-	    pkgCache::VerIterator CV = (*Cache)[Pkg].CandidateVerIter(*Cache);
-	    for (pkgCache::DepIterator D = CV.DependsList(); D.end() == false; )
-	    {
-		pkgCache::DepIterator Start;
-		pkgCache::DepIterator End;
-		D.GlobOr(Start,End); // advances D
-
-		// FIXME: we really should display a or-group as a or-group to the user
-		//        the problem is that ShowList is incapable of doing this
-		string RecommendsOrList,RecommendsOrVersions;
-		string SuggestsOrList,SuggestsOrVersions;
-		bool foundInstalledInOrGroup = false;
-		for(;;)
-		{
-		/* Skip if package is  installed already, or is about to be */
-		string target = string(Start.TargetPkg().Name()) + " ";
-
-		if ((*Start.TargetPkg()).SelectedState == pkgCache::State::Install
-		    || Cache[Start.TargetPkg()].Install())
-		{
-		    foundInstalledInOrGroup=true;
-		    break;
-		}
-
-		/* Skip if we already saw it */
-		if (int(SuggestsList.find(target)) != -1 || int(RecommendsList.find(target)) != -1)
-		{
-		    foundInstalledInOrGroup=true;
-		    break;
-		}
-
-		// this is a dep on a virtual pkg, check if any package that provides it
-		// should be installed
-		if(Start.TargetPkg().ProvidesList() != 0)
-		{
-		    pkgCache::PrvIterator I = Start.TargetPkg().ProvidesList();
-		    for (; I.end() == false; I++)
-		    {
-			pkgCache::PkgIterator Pkg = I.OwnerPkg();
-			if (Cache[Pkg].CandidateVerIter(Cache) == I.OwnerVer() &&
-			    Pkg.CurrentVer() != 0)
-			    foundInstalledInOrGroup=true;
-		    }
-		}
-
-		if (Start->Type == pkgCache::Dep::Suggests)
-		{
-		    SuggestsOrList += target;
-		    SuggestsOrVersions += string(Cache[Start.TargetPkg()].CandVersion) + "\n";
-		}
-
-		if (Start->Type == pkgCache::Dep::Recommends)
-		{
-		    RecommendsOrList += target;
-		    RecommendsOrVersions += string(Cache[Start.TargetPkg()].CandVersion) + "\n";
-		}
-
-		if (Start >= End)
-		    break;
-		Start++;
-		}
-
-		if(foundInstalledInOrGroup == false)
-		{
-		RecommendsList += RecommendsOrList;
-		RecommendsVersions += RecommendsOrVersions;
-		SuggestsList += SuggestsOrList;
-		SuggestsVersions += SuggestsOrVersions;
-		}
-
-	    }
-	}
-
-	ShowList(c1out,_("Suggested packages:"),SuggestsList,SuggestsVersions);
-	ShowList(c1out,_("Recommended packages:"),RecommendsList,RecommendsVersions);
-
-    }
+//     if (Cache->InstCount() != ExpectedInst)
+//     {
+// 	string List;
+// 	string VersionsList;
+// 	for (unsigned J = 0; J < Cache->Head().PackageCount; J++)
+// 	{
+// 	    pkgCache::PkgIterator I(Cache,Cache.List[J]);
+// 	    if ((*Cache)[I].Install() == false)
+// 		continue;
+//
+// 	    const char **J;
+// 	    for (J = CmdL.FileList + 1; *J != 0; J++)
+// 		if (strcmp(*J,I.Name()) == 0)
+// 		    break;
+//
+// 	    if (*J == 0) {
+// 		List += string(I.Name()) + " ";
+// 		VersionsList += string(Cache[I].CandVersion) + "\n";
+// 	    }
+// 	}
+//
+// 	ShowList(c1out,_("The following extra packages will be installed:"),List,VersionsList);
+//     }
 
     // if nothing changed in the cache, but only the automark information
     // we write the StateFile here, otherwise it will be written in
@@ -1356,9 +1422,11 @@ bool aptcc::prepare_transaction(bool simulate, bool remove)
 	_config->FindB("APT::Get::Simulate",false) == false)
 	Cache->writeStateFile(NULL);
 
+    emitChangedPackages(pkgs, Cache);
     // See if we need to prompt
-    if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
-	return InstallPackages(Cache,false,false);
+//     if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
+// 	return InstallPackages(Cache,false,false);
 
-    return InstallPackages(Cache,false);
+//     return InstallPackages(Cache,false);
+    return true;
 }
