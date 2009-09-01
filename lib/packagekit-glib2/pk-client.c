@@ -69,6 +69,7 @@ static void     pk_client_finalize	(GObject     *object);
 struct _PkClientPrivate
 {
 	DBusGConnection		*connection;
+	GPtrArray		*calls;
 	PkControl		*control;
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
@@ -250,6 +251,10 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		g_error_free (error);
 	}
 
+	/* remove from list */
+	g_ptr_array_remove (state->client->priv->calls, state);
+
+	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
 	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
@@ -951,6 +956,9 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		g_assert_not_reached ();
 	}
 
+	/* track state */
+	g_ptr_array_add (state->client->priv->calls, state);
+
 	/* we've sent this async */
 	egg_debug ("sent request");
 
@@ -997,6 +1005,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
 					       G_TYPE_STRING, locale,
 					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (state->client->priv->calls, state);
 
 	/* we've sent this async */
 	egg_debug ("sent locale request");
@@ -1444,7 +1455,6 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_update_system_async:
  * @client: a valid #PkClient instance
@@ -1485,7 +1495,6 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_get_depends_async:
@@ -1530,7 +1539,6 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_get_packages_async:
  * @client: a valid #PkClient instance
@@ -1571,9 +1579,6 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
-
-
 
 /**
  * pk_client_get_requires_async:
@@ -1618,7 +1623,6 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_what_provides_async:
  * @client: a valid #PkClient instance
@@ -1662,7 +1666,6 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_get_distro_upgrades_async:
  * @client: a valid #PkClient instance
@@ -1702,7 +1705,6 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_get_files_async:
@@ -1745,7 +1747,6 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_get_categories_async:
  * @client: a valid #PkClient instance
@@ -1785,7 +1786,6 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_remove_packages_async:
@@ -1830,7 +1830,6 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_refresh_cache_async:
  * @client: a valid #PkClient instance
@@ -1871,7 +1870,6 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_install_packages_async:
@@ -1914,7 +1912,6 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_install_signature_async:
@@ -1959,7 +1956,6 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_update_packages_async:
  * @client: a valid #PkClient instance
@@ -2001,7 +1997,6 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_install_files_async:
@@ -2045,7 +2040,6 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_accept_eula_async:
  * @client: a valid #PkClient instance
@@ -2086,7 +2080,6 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_get_repo_list_async:
@@ -2129,7 +2122,6 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_repo_enable_async:
  * @client: a valid #PkClient instance
@@ -2171,7 +2163,6 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_repo_set_data_async:
@@ -2216,7 +2207,6 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_simulate_install_files_async:
  * @client: a valid #PkClient instance
@@ -2257,7 +2247,6 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_simulate_install_packages_async:
@@ -2300,7 +2289,6 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_simulate_remove_packages_async:
  * @client: a valid #PkClient instance
@@ -2341,7 +2329,6 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
-
 
 /**
  * pk_client_simulate_update_packages_async:
@@ -2409,6 +2396,9 @@ pk_client_cancel_state_finish (PkClientState *state, GError *error)
 		g_simple_async_result_set_from_error (state->res, error);
 		g_error_free (error);
 	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->client->priv->calls, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -2519,6 +2509,29 @@ pk_client_cancel_finish (PkClient *client, GAsyncResult *res, GError **error)
 /***************************************************************************************************/
 
 /**
+ * pk_client_cancel_all_dbus_methods:
+ **/
+static gboolean
+pk_client_cancel_all_dbus_methods (PkClient *client)
+{
+	const PkClientState *state;
+	guint i;
+	GPtrArray *array;
+
+	/* just cancel the call */
+	array = client->priv->calls;
+	for (i=0; i<array->len; i++) {
+		state = g_ptr_array_index (array, i);
+		if (state->call == NULL)
+			continue;
+		egg_debug ("cancel in flight call: %p", state->call);
+		dbus_g_proxy_cancel_call (state->proxy, state->call);
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_client_get_property:
  **/
 static void
@@ -2608,6 +2621,7 @@ pk_client_init (PkClient *client)
 
 	client->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
+	client->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -2707,7 +2721,11 @@ pk_client_finalize (GObject *object)
 	PkClient *client = PK_CLIENT (object);
 	PkClientPrivate *priv = client->priv;
 
+	/* ensure we cancel any in-flight DBus calls */
+	pk_client_cancel_all_dbus_methods (client);
+
 	g_object_unref (priv->control);
+	g_ptr_array_unref (priv->calls);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
 }
