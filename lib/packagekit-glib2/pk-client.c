@@ -212,6 +212,62 @@ out:
 }
 
 /**
+ * pk_client_real_path:
+ *
+ * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
+ * TODO: We should use canonicalize_filename() in gio/glocalfile.c as realpath()
+ * is crap.
+ **/
+static gchar *
+pk_client_real_path (const gchar *path)
+{
+	gchar *real = NULL;
+	gchar *temp;
+
+	/* don't trust realpath one little bit */
+	if (path == NULL)
+		return NULL;
+
+#ifndef __FreeBSD__
+	/* ITS4: ignore, glibc allocates us a buffer to try and fix some brain damage */
+	temp = realpath (path, NULL);
+	if (temp != NULL) {
+		real = g_strdup (temp);
+		/* yes, free, not g_free */
+		free (temp);
+	}
+#else /* __FreeBSD__ */
+{
+	gchar abs_path[PATH_MAX];
+	temp = realpath (path, abs_path);
+	if (temp != NULL)
+		real = g_strdup (temp);
+}
+#endif
+	return real;
+}
+
+/**
+ * pk_client_real_paths:
+ **/
+static gchar **
+pk_client_real_paths (gchar **paths)
+{
+	guint i;
+	guint len;
+	gchar **res;
+
+	/* create output array */
+	len = g_strv_length (paths);
+	res = g_new0 (gchar *, len+1);
+
+	/* resolve each path */
+	for (i=0; i<len; i++)
+		res[i] = pk_client_real_path (paths[i]);
+	return res;
+}
+
+/**
  * pk_client_cancel_cb:
  **/
 static void
@@ -1084,13 +1140,17 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 /**
  * pk_client_resolve_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Resolve a package name into a %package_id. This can return installed and
+ * available packages and allows you find out if a package is installed locally
+ * or is available in a repository.
  **/
 void
 pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
@@ -1129,13 +1189,16 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 /**
  * pk_client_search_name_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @search: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Search all the locally installed files and remote repositories for a package
+ * that matches a specific name.
  **/
 void
 pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
@@ -1174,13 +1237,17 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
 /**
  * pk_client_search_details_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @search: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Search all detailed summary information to try and find a keyword.
+ * Think of this as pk_client_search_name(), but trying much harder and
+ * taking longer.
  **/
 void
 pk_client_search_details_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
@@ -1219,13 +1286,15 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
 /**
  * pk_client_search_group_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @search: a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Return all packages in a specific group.
  **/
 void
 pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
@@ -1264,13 +1333,15 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
 /**
  * pk_client_search_file_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @search: file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Search for packages that provide a specific file.
  **/
 void
 pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
@@ -1309,13 +1380,15 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
 /**
  * pk_client_get_details_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get details of a package, so more information can be obtained for GUI
+ * or command line tools.
  **/
 void
 pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1359,7 +1432,8 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get details about the specific update, for instance any CVE urls and
+ * severity information.
  **/
 void
 pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1397,13 +1471,15 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 /**
  * pk_client_download_packages_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @directory: the location where packages are to be downloaded
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Downloads package files to a specified location.
  **/
 void
 pk_client_download_packages_async (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
@@ -1442,13 +1518,14 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 /**
  * pk_client_get_updates_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get a list of all the packages that can be updated for all repositories.
  **/
 void
 pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -1486,13 +1563,14 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 /**
  * pk_client_get_old_transactions_async:
  * @client: a valid #PkClient instance
+ * @number: the number of past transactions to return, or 0 for all
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the old transaction list, mainly used for the rollback viewer.
  **/
 void
 pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellable *cancellable,
@@ -1530,13 +1608,19 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 /**
  * pk_client_update_system_async:
  * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Update all the packages on the system with the highest versions found in all
+ * repositories.
+ * NOTE: you can't choose what repositories to update from, but you can do:
+ * - pk_client_repo_disable()
+ * - pk_client_update_system()
+ * - pk_client_repo_enable()
  **/
 void
 pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
@@ -1574,13 +1658,16 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 /**
  * pk_client_get_depends_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @recursive: If we should search recursively for depends
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the packages that depend this one, i.e. child->parent.
  **/
 void
 pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -1620,13 +1707,14 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 /**
  * pk_client_get_packages_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the list of packages from the backend
  **/
 void
 pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -1664,13 +1752,16 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 /**
  * pk_client_get_requires_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @recursive: If we should search recursively for requires
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the packages that require this one, i.e. parent->child.
  **/
 void
 pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -1710,13 +1801,18 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 /**
  * pk_client_what_provides_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
+ * @search: a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * This should return packages that provide the supplied attributes.
+ * This method is useful for finding out what package(s) provide a modalias
+ * or GStreamer codec string.
  **/
 void
 pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
@@ -1762,7 +1858,8 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * This method should return a list of distribution upgrades that are available.
+ * It should not return updates, only major upgrades.
  **/
 void
 pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable,
@@ -1799,13 +1896,14 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 /**
  * pk_client_get_files_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the file list (i.e. a list of files installed) for the specified package.
  **/
 void
 pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1849,7 +1947,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get a list of all categories supported.
  **/
 void
 pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
@@ -1886,13 +1984,18 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 /**
  * pk_client_remove_packages_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @allow_deps: if other dependant packages are allowed to be removed from the computer
+ * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Remove a package (optionally with dependancies) from the system.
+ * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * then the transaction would fail.
  **/
 void
 pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
@@ -1932,13 +2035,17 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 /**
  * pk_client_refresh_cache_async:
  * @client: a valid #PkClient instance
+ * @force: if we should aggressively drop caches
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Refresh the cache, i.e. download new metadata from a remote URL so that
+ * package lists are up to date.
+ * This action may take a few minutes and should be done when the session and
+ * system are idle.
  **/
 void
 pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *cancellable,
@@ -1976,13 +2083,15 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 /**
  * pk_client_install_packages_async:
  * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Install a package of the newest and most correct version.
  **/
 void
 pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -2021,13 +2130,16 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 /**
  * pk_client_install_signature_async:
  * @client: a valid #PkClient instance
+ * @type: the signature type, e.g. %PK_SIGTYPE_ENUM_GPG
+ * @key_id: a key ID such as "0df23df"
+ * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Install a software source signature of the newest and most correct version.
  **/
 void
 pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
@@ -2067,13 +2179,15 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 /**
  * pk_client_update_packages_async:
  * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Update specific packages to the newest available versions.
  **/
 void
 pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -2112,13 +2226,16 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 /**
  * pk_client_install_files_async:
  * @client: a valid #PkClient instance
+ * @only_trusted: only trusted packages should be installed
+ * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Install a file locally, and get the deps from the repositories.
+ * This is useful for double clicking on a .rpm or .deb file.
  **/
 void
 pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
@@ -2143,7 +2260,7 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	}
 	state->client = client;
 	state->only_trusted = only_trusted;
-	state->files = g_strdupv (files);
+	state->files = pk_client_real_paths (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2157,13 +2274,14 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 /**
  * pk_client_accept_eula_async:
  * @client: a valid #PkClient instance
+ * @eula_id: the <literal>eula_id</literal> we are agreeing to
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * We may want to agree to a EULA dialog if one is presented.
  **/
 void
 pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
@@ -2201,13 +2319,14 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 /**
  * pk_client_get_repo_list_async:
  * @client: a valid #PkClient instance
+ * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Get the list of repositories installed on the system.
  **/
 void
 pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -2245,13 +2364,15 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 /**
  * pk_client_repo_enable_async:
  * @client: a valid #PkClient instance
+ * @repo_id: a repo_id structure such as "livna-devel"
+ * @enabled: if we should enable the repository
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Enable or disable the repository.
  **/
 void
 pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
@@ -2290,13 +2411,17 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 /**
  * pk_client_repo_set_data_async:
  * @client: a valid #PkClient instance
+ * @repo_id: a repo_id structure such as "livna-devel"
+ * @parameter: the parameter to change
+ * @value: what we should change it to
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * We may want to set a repository parameter.
+ * NOTE: this is free text, and is left to the backend to define a format.
  **/
 void
 pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
@@ -2336,13 +2461,14 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 /**
  * pk_client_simulate_install_files_async:
  * @client: a valid #PkClient instance
+ * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Simulate an installation of files.
  **/
 void
 pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancellable *cancellable,
@@ -2366,7 +2492,7 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->client = client;
-	state->files = g_strdupv (files);
+	state->files = pk_client_real_paths (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2380,13 +2506,14 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 /**
  * pk_client_simulate_install_packages_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Simulate an installation of packages.
  **/
 void
 pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2424,13 +2551,14 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 /**
  * pk_client_simulate_remove_packages_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Simulate a removal of packages.
  **/
 void
 pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2468,13 +2596,14 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 /**
  * pk_client_simulate_update_packages_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * TODO
+ * Simulate an update of packages.
  **/
 void
 pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2934,10 +3063,37 @@ pk_client_test (EggTest *test)
 {
 	PkClient *client;
 	gchar **package_ids;
+	gchar *file;
 	GCancellable *cancellable;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
+
+	/************************************************************/
+	egg_test_title (test, "test resolve NULL");
+	file = pk_client_real_path (NULL);
+	if (file == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, NULL);
+
+	/************************************************************/
+	egg_test_title (test, "test resolve /etc/hosts");
+	file = pk_client_real_path ("/etc/hosts");
+	if (file != NULL && g_strcmp0 (file, "/etc/hosts") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got: %s", file);
+	g_free (file);
+
+	/************************************************************/
+	egg_test_title (test, "test resolve /etc/../etc/hosts");
+	file = pk_client_real_path ("/etc/../etc/hosts");
+	if (file != NULL && g_strcmp0 (file, "/etc/hosts") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "got: %s", file);
+	g_free (file);
 
 	/************************************************************/
 	egg_test_title (test, "get client");

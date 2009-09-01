@@ -19,11 +19,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/**
- * SECTION:pk-control
- * @short_description: TODO
- */
-
 #include "config.h"
 
 #include <glib-object.h>
@@ -191,7 +186,7 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 	/* finished this call */
 	state->call = NULL;
 
-	/* TODO: set locale */
+	/* save results */
 	state->tid = g_strdup (tid);
 
 	/* we're done */
@@ -349,7 +344,7 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * The MIME list is the supported package formats.
  **/
 void
 pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -389,7 +384,8 @@ pk_control_get_mime_types_async (PkControl *control, GCancellable *cancellable, 
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: an GStrv list of the formats the backend supports,
+ * or %NULL if unknown
  **/
 gchar **
 pk_control_get_mime_types_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -483,11 +479,13 @@ out:
 /**
  * pk_control_set_proxy_async:
  * @control: a valid #PkControl instance
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * Set a proxy on the PK daemon
  **/
 void
 pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GCancellable *cancellable,
@@ -530,7 +528,7 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: %TRUE for success
+ * Return value: %TRUE if we set the proxy successfully
  **/
 gboolean
 pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -646,7 +644,7 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * Get what methods the daemon can do with the current backend.
  **/
 void
 pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -686,7 +684,7 @@ pk_control_get_roles_async (PkControl *control, GCancellable *cancellable, GAsyn
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: an enumerated list of the actions the backend supports, free with g_free()
  **/
 PkBitfield *
 pk_control_get_roles_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -789,7 +787,7 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * Filters are how the backend can specify what type of package is returned.
  **/
 void
 pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -829,7 +827,7 @@ pk_control_get_filters_async (PkControl *control, GCancellable *cancellable, GAs
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: an enumerated list of the filters the backend supports, free with g_free()
  **/
 PkBitfield *
 pk_control_get_filters_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -932,7 +930,9 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * The group list is enumerated so it can be localised and have deep
+ * integration with desktops.
+ * This method allows a frontend to only display the groups that are supported.
  **/
 void
 pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -972,7 +972,7 @@ pk_control_get_groups_async (PkControl *control, GCancellable *cancellable, GAsy
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: an enumerated list of the groups the backend supports, free with g_free()
  **/
 PkBitfield *
 pk_control_get_groups_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1074,7 +1074,7 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * Gets the transactions currently running in the daemon.
  **/
 void
 pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -1114,7 +1114,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: A GStrv list of transaction ID's
  **/
 gchar **
 pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1220,7 +1220,8 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * We may want to know how long it has been since we refreshed the cache or
+ * retrieved the update list.
  **/
 void
 pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -1263,7 +1264,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: %TRUE if the daemon serviced the request
  **/
 guint
 pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1370,7 +1371,7 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * Gets the network state.
  **/
 void
 pk_control_get_network_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -1411,7 +1412,7 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: an enumerated network state
  **/
 PkNetworkEnum
 pk_control_get_network_state_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1517,7 +1518,8 @@ out:
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Gets a transacton ID from the daemon.
+ * We may want to know before we run a method if we are going to be denied,
+ * accepted or challenged for authentication.
  **/
 void
 pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -1559,7 +1561,7 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: the %PkAuthorizeEnum or %PK_AUTHORIZE_ENUM_UNKNOWN if the method failed
  **/
 PkAuthorizeEnum
 pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError **error)
