@@ -48,6 +48,7 @@ struct _PkProgressPrivate
 	gint				 percentage;
 	gint				 subpercentage;
 	gboolean			 allow_cancel;
+	PkRoleEnum			 role;
 	PkStatusEnum			 status;
 	gboolean			 caller_active;
 };
@@ -58,6 +59,7 @@ enum {
 	PROP_PERCENTAGE,
 	PROP_SUBPERCENTAGE,
 	PROP_ALLOW_CANCEL,
+	PROP_ROLE,
 	PROP_STATUS,
 	PROP_CALLER_ACTIVE,
 	PROP_LAST
@@ -89,6 +91,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
+		break;
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
 		break;
 	case PROP_CALLER_ACTIVE:
 		g_value_set_boolean (value, priv->caller_active);
@@ -124,6 +129,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
+		break;
+	case PROP_ROLE:
+		priv->role = g_value_get_uint (value);
 		break;
 	case PROP_CALLER_ACTIVE:
 		priv->caller_active = g_value_get_boolean (value);
@@ -186,6 +194,14 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, PK_STATUS_ENUM_UNKNOWN, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
+
+	/**
+	 * PkProgress:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
 	 * PkPackage:caller-active:
