@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -36,8 +36,7 @@ typedef struct {
 struct PkProgressBarPrivate
 {
 	guint			 size;
-	guint			 percentage;
-	guint			 value;
+	gint			 percentage;
 	guint			 padding;
 	guint			 timer_id;
 	PkProgressBarPulseState	 pulse_state;
@@ -76,46 +75,29 @@ pk_progress_bar_set_size (PkProgressBar *self, guint size)
  * pk_progress_bar_draw:
  **/
 static gboolean
-pk_progress_bar_draw (PkProgressBar *self, guint value)
+pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 {
 	guint section;
 	guint i;
 
+	/* no value yet */
+	if (percentage == G_MININT)
+		return FALSE;
+
 	/* restore cursor */
 	g_print ("%c8", 0x1B);
 
-	section = (guint) ((gfloat) self->priv->size / (gfloat) 100.0 * (gfloat) value);
+	section = (guint) ((gfloat) self->priv->size / (gfloat) 100.0 * (gfloat) percentage);
 	g_print ("[");
 	for (i=0; i<section; i++)
 		g_print ("=");
 	for (i=0; i<self->priv->size - section; i++)
 		g_print (" ");
 	g_print ("] ");
-	if (self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
+	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
 		g_print ("(%i%%)  ", self->priv->percentage);
 	else
 		g_print ("        ");
-	return TRUE;
-}
-
-/**
- * pk_progress_bar_set_percentage:
- **/
-gboolean
-pk_progress_bar_set_percentage (PkProgressBar *self, guint percentage)
-{
-	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
-	g_return_val_if_fail (percentage <= PK_PROGRESS_BAR_PERCENTAGE_INVALID, FALSE);
-
-	/* check for old value */
-	if (percentage == self->priv->percentage) {
-		egg_debug ("skipping as the same");
-		goto out;
-	}
-
-	self->priv->percentage = percentage;
-	pk_progress_bar_draw (self, self->priv->value);
-out:
 	return TRUE;
 }
 
@@ -149,7 +131,7 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	for (i=0; i<(gint) (self->priv->size - self->priv->pulse_state.position - 1); i++)
 		g_print (" ");
 	g_print ("] ");
-	if (self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
+	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
 		g_print ("(%i%%)  ", self->priv->percentage);
 	else
 		g_print ("        ");
@@ -174,25 +156,25 @@ pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 }
 
 /**
- * pk_progress_bar_set_value:
+ * pk_progress_bar_set_percentage:
  **/
 gboolean
-pk_progress_bar_set_value (PkProgressBar *self, guint value)
+pk_progress_bar_set_percentage (PkProgressBar *self, gint percentage)
 {
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
-	g_return_val_if_fail (value <= PK_PROGRESS_BAR_PERCENTAGE_INVALID, FALSE);
+	g_return_val_if_fail (percentage <= PK_PROGRESS_BAR_PERCENTAGE_INVALID, FALSE);
 
-	/* check for old value */
-	if (value == self->priv->value) {
+	/* check for old percentage */
+	if (percentage == self->priv->percentage) {
 		egg_debug ("skipping as the same");
 		goto out;
 	}
 
 	/* save */
-	self->priv->value = value;
+	self->priv->percentage = percentage;
 
 	/* either pulse or display */
-	if (value == PK_PROGRESS_BAR_PERCENTAGE_INVALID) {
+	if (percentage < 0 || percentage > 100) {
 		pk_progress_bar_draw (self, 0);
 		pk_progress_bar_draw_pulse_bar (self);
 	} else {
@@ -200,7 +182,7 @@ pk_progress_bar_set_value (PkProgressBar *self, guint value)
 			g_source_remove (self->priv->timer_id);
 			self->priv->timer_id = 0;
 		}
-		pk_progress_bar_draw (self, value);
+		pk_progress_bar_draw (self, percentage);
 	}
 out:
 	return TRUE;
@@ -252,13 +234,10 @@ pk_progress_bar_start (PkProgressBar *self, const gchar *text)
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 
 	/* finish old value */
-	if (self->priv->value != 0 && self->priv->value != 100) {
-		pk_progress_bar_draw (self, self->priv->value);
-	}
-
-	/* new item */
-	if (self->priv->value != 0)
+	if (self->priv->percentage != G_MININT) {
+		pk_progress_bar_draw (self, 100);
 		g_print ("\n");
+	}
 
 	/* make these all the same length */
 	text_pad = pk_strpad (text, self->priv->padding);
@@ -268,8 +247,8 @@ pk_progress_bar_start (PkProgressBar *self, const gchar *text)
 	g_print ("%c7", 0x1B);
 
 	/* reset */
-	self->priv->percentage = 0;
-	self->priv->value = 0;
+	if (self->priv->percentage == G_MININT)
+		self->priv->percentage = 0;
 	pk_progress_bar_draw (self, 0);
 
 	g_free (text_pad);
@@ -284,8 +263,7 @@ pk_progress_bar_end (PkProgressBar *self)
 {
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 
-	self->priv->value = 100;
-	self->priv->percentage = 100;
+	self->priv->percentage = G_MININT;
 	pk_progress_bar_draw (self, 100);
 	g_print ("\n");
 
@@ -328,8 +306,7 @@ pk_progress_bar_init (PkProgressBar *self)
 	self->priv = PK_PROGRESS_BAR_GET_PRIVATE (self);
 
 	self->priv->size = 10;
-	self->priv->percentage = 0;
-	self->priv->value = 0;
+	self->priv->percentage = G_MININT;
 	self->priv->padding = 0;
 	self->priv->timer_id = 0;
 }

@@ -54,9 +54,7 @@ gboolean	 pk_progress_bar_set_size		(PkProgressBar	*progress_bar,
 gboolean	 pk_progress_bar_set_padding		(PkProgressBar	*progress_bar,
 							 guint		 padding);
 gboolean	 pk_progress_bar_set_percentage		(PkProgressBar	*progress_bar,
-							 guint		 percentage);
-gboolean	 pk_progress_bar_set_value		(PkProgressBar	*progress_bar,
-							 guint		 value);
+							 gint		 percentage);
 gboolean	 pk_progress_bar_start			(PkProgressBar	*progress_bar,
 							 const gchar	*text);
 gboolean	 pk_progress_bar_end			(PkProgressBar	*progress_bar);
