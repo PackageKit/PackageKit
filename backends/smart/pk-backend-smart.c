@@ -430,20 +430,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_spawn_helper (spawn, BACKEND("repo-set-data"), rid, parameter, value, NULL);
 }
 
-/**
- * pk_backend_what_provides:
- */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
-{
-	gchar *filters_text;
-	const gchar *provides_text;
-	provides_text = pk_provides_enum_to_text (provides);
-	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, BACKEND("what-provides"), filters_text, provides_text, search, NULL);
-	g_free (filters_text);
-}
-
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
@@ -479,7 +465,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	backend_what_provides,				/* what_provides */
+	NULL,						/* what_provides */
 	NULL,						/* simulate_install_files */
 	NULL,						/* simulate_install_packages */
 	NULL,						/* simulate_remove_packages */
