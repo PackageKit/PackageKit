@@ -173,6 +173,13 @@ gboolean	 pk_control_get_backend_detail		(PkControl		*control,
 							 gchar			**name,
 							 gchar			**author,
 							 GError			**error);
+void		 pk_control_get_properties_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gboolean	 pk_control_get_properties_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
 
 G_END_DECLS
 

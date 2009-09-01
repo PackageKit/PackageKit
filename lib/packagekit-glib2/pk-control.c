@@ -42,9 +42,9 @@ static void     pk_control_finalize	(GObject     *object);
  **/
 struct _PkControlPrivate
 {
-	DBusGProxyCall		*call;
 	GPtrArray		*calls;
 	DBusGProxy		*proxy;
+	DBusGProxy		*proxy_props;
 	DBusGConnection		*connection;
 	gboolean		 version_major;
 	gboolean		 version_minor;
@@ -427,7 +427,7 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 	}
 
 	/* get result */
-	if (state->mime_types != NULL) {
+	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
@@ -1586,6 +1586,172 @@ pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError *
 /***************************************************************************************************/
 
 /**
+ * pk_control_get_properties_state_finish:
+ **/
+static void
+pk_control_get_properties_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* cancel */
+	if (state->cancellable != NULL) {
+		g_cancellable_cancel (state->cancellable);
+		g_object_unref (state->cancellable);
+	}
+
+	/* get result */
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_properties_collect_cb:
+ **/
+static void
+pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
+{
+	if (g_strcmp0 (key, "version-major") == 0)
+		control->priv->version_major = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-minor") == 0)
+		control->priv->version_minor = g_value_get_uint (value);
+	else if (g_strcmp0 (key, "version-micro") == 0)
+		control->priv->version_micro = g_value_get_uint (value);
+	else
+		egg_warning ("unhandled property '%s'", key);
+}
+
+/**
+ * pk_control_get_properties_cb:
+ **/
+static void
+pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *tid = NULL;
+	gboolean ret;
+	GHashTable *hash;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to set proxy: %s", error->message);
+		pk_control_get_properties_state_finish (state, error);
+		goto out;
+	}
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* save data */
+	state->ret = TRUE;
+
+	/* process results */
+	if (hash != NULL) {
+		g_hash_table_foreach (hash, (GHFunc) pk_control_get_properties_collect_cb, state->control);
+		g_hash_table_unref (hash);
+	}
+
+	/* we're done */
+	pk_control_get_properties_state_finish (state, error);
+out:
+	g_free (tid);
+}
+
+/**
+ * pk_control_get_properties_async:
+ * @control: a valid #PkControl instance
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Set a proxy on the PK daemon
+ **/
+void
+pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
+			    GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_properties_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus get_properties async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy_props, "GetAll",
+					       (DBusGProxyCallNotify) pk_control_get_properties_cb, state, NULL,
+					       G_TYPE_STRING, "org.freedesktop.PackageKit",
+					       G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_properties_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: %TRUE if we set the proxy successfully
+ **/
+gboolean
+pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_properties_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
+
+/**
  * pk_control_get_daemon_state:
  * @control: a valid #PkControl instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1739,83 +1905,6 @@ pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
 {
 	egg_debug ("emit locked %i", is_locked);
 	g_signal_emit (control , signals [SIGNAL_LOCKED], 0, is_locked);
-}
-
-/**
- * pk_control_set_properties_collect_cb:
- **/
-static void
-pk_control_set_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
-{
-	if (g_strcmp0 (key, "version-major") == 0)
-		control->priv->version_major = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-minor") == 0)
-		control->priv->version_minor = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-micro") == 0)
-		control->priv->version_micro = g_value_get_uint (value);
-	else
-		egg_warning ("unhandled property '%s'", key);
-}
-
-/**
- * pk_control_set_properties_cb:
- **/
-static void
-pk_control_set_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl *control)
-{
-	GError *error = NULL;
-	gboolean ret;
-	GHashTable *hash;
-
-	/* finished call */
-	control->priv->call = NULL;
-
-	/* we've sent this async */
-	egg_debug ("got reply to request");
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE),
-				     &hash,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed to get properties: %s", error->message);
-		return;
-	}
-
-	/* process results */
-	if (hash != NULL) {
-		g_hash_table_foreach (hash, (GHFunc) pk_control_set_properties_collect_cb, control);
-		g_hash_table_unref (hash);
-	}
-	g_object_unref (proxy);
-}
-
-/**
- * pk_control_set_properties:
- **/
-static void
-pk_control_set_properties (PkControl *control)
-{
-	DBusGProxy *proxy;
-
-	/* connect to the correct path for properties */
-	proxy = dbus_g_proxy_new_for_name (control->priv->connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.DBus.Properties");
-	if (proxy == NULL) {
-		egg_warning ("Couldn't connect to proxy");
-		return;
-	}
-
-	/* does an async call, so properties may not be set until some time after the object is setup */
-	control->priv->call = dbus_g_proxy_begin_call (proxy, "GetAll",
-						       (DBusGProxyCallNotify) pk_control_set_properties_cb, control, NULL,
-						       G_TYPE_STRING, "org.freedesktop.PackageKit",
-					               G_TYPE_INVALID);
 }
 
 /**
@@ -2011,7 +2100,6 @@ pk_control_init (PkControl *control)
 	GError *error = NULL;
 
 	control->priv = PK_CONTROL_GET_PRIVATE (control);
-	control->priv->call = NULL;
 	control->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
@@ -2027,10 +2115,18 @@ pk_control_init (PkControl *control)
 	control->priv->version_minor = 0;
 	control->priv->version_micro = 0;
 
-	/* get a connection to the engine object */
+	/* get a connection to the main interface */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
-							  PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
+							  PK_DBUS_SERVICE, PK_DBUS_PATH,
+							  PK_DBUS_INTERFACE);
 	if (control->priv->proxy == NULL)
+		egg_error ("Cannot connect to PackageKit.");
+
+	/* get a connection to collect properties */
+	control->priv->proxy_props = dbus_g_proxy_new_for_name (control->priv->connection,
+								PK_DBUS_SERVICE, PK_DBUS_PATH,
+								"org.freedesktop.DBus.Properties");
+	if (control->priv->proxy_props == NULL)
 		egg_error ("Cannot connect to PackageKit.");
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
@@ -2063,9 +2159,6 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_add_signal (control->priv->proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
 				     G_CALLBACK (pk_control_locked_cb), control, NULL);
-
-	/* get properties async if they exist */
-if (0)	pk_control_set_properties (control);
 }
 
 /**
@@ -2077,12 +2170,6 @@ pk_control_finalize (GObject *object)
 {
 	PkControl *control = PK_CONTROL (object);
 	PkControlPrivate *priv = control->priv;
-
-	/* if we have a request in flight, cancel it */
-	if (control->priv->call != NULL) {
-		egg_warning ("cancel in flight call");
-		dbus_g_proxy_cancel_call (control->priv->proxy, control->priv->call);
-	}
 
 	/* ensure we cancel any in-flight DBus calls */
 	pk_control_cancel_all_dbus_methods (control);
@@ -2102,6 +2189,7 @@ pk_control_finalize (GObject *object)
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 
 	g_object_unref (G_OBJECT (priv->proxy));
+	g_object_unref (G_OBJECT (priv->proxy_props));
 	g_ptr_array_unref (control->priv->calls);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
@@ -2324,6 +2412,24 @@ pk_control_test_can_authorize_cb (GObject *object, GAsyncResult *res, EggTest *t
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkControl *control = PK_CONTROL (object);
+	GError *error = NULL;
+	gboolean ret;
+
+	/* get the result */
+	ret = pk_control_get_properties_finish (control, res, &error);
+	if (!ret) {
+		egg_test_failed (test, "failed to get properties: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	egg_test_loop_quit (test);
+}
+
 void
 pk_control_test (EggTest *test)
 {
@@ -2387,7 +2493,13 @@ pk_control_test (EggTest *test)
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "get auth state in %i", egg_test_elapsed (test));
 
-#if 0
+	/************************************************************/
+	egg_test_title (test, "get properties async");
+	pk_control_get_properties_async (control, NULL,
+					 (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "get properties in %i", egg_test_elapsed (test));
+
 	/************************************************************/
 	egg_test_title (test, "version major");
 	g_object_get (control, "version-major", &version, NULL);
@@ -2402,7 +2514,6 @@ pk_control_test (EggTest *test)
 	egg_test_title (test, "version micro");
 	g_object_get (control, "version-micro", &version, NULL);
 	egg_test_assert (test, (version == PK_MICRO_VERSION));
-#endif
 
 	g_object_unref (control);
 out:
