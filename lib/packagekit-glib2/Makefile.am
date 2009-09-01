@@ -65,6 +65,7 @@ libpackagekit_glib2_la_SOURCES =				\
 
 libpackagekit_glib2_la_LIBADD =					\
 	$(GLIB_LIBS)						\
+	$(GIO_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(ARCHIVE_LIBS)						\
 	$(NULL)

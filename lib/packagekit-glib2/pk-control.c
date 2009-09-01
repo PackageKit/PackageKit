@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <gio/gio.h>
@@ -45,6 +46,7 @@ struct _PkControlPrivate
 	GPtrArray		*calls;
 	DBusGProxy		*proxy;
 	DBusGProxy		*proxy_props;
+	DBusGProxy		*proxy_dbus;
 	DBusGConnection		*connection;
 	gboolean		 version_major;
 	gboolean		 version_minor;
@@ -58,6 +60,7 @@ enum {
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
 	SIGNAL_NETWORK_STATE_CHANGED,
+	SIGNAL_CONNECTION_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -1931,6 +1934,42 @@ pk_control_cancel_all_dbus_methods (PkControl *control)
 }
 
 /**
+ * pk_control_name_owner_changed_cb:
+ **/
+static void
+pk_control_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name, const gchar *prev, const gchar *new, PkControl *control)
+{
+	guint new_len;
+	guint prev_len;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+
+	if (control->priv->proxy_dbus == NULL)
+		return;
+
+	/* not us */
+	if (g_strcmp0 (name, PK_DBUS_SERVICE) != 0)
+		return;
+
+	/* ITS4: ignore, not used for allocation */
+	new_len = strlen (new);
+	/* ITS4: ignore, not used for allocation */
+	prev_len = strlen (prev);
+
+	/* something --> nothing */
+	if (prev_len != 0 && new_len == 0) {
+		g_signal_emit (control, signals [SIGNAL_CONNECTION_CHANGED], 0, FALSE);
+		return;
+	}
+
+	/* nothing --> something */
+	if (prev_len == 0 && new_len != 0) {
+		g_signal_emit (control, signals [SIGNAL_CONNECTION_CHANGED], 0, TRUE);
+		return;
+	}
+}
+
+/**
  * pk_control_get_property:
  **/
 static void
@@ -2087,6 +2126,22 @@ pk_control_class_init (PkControlClass *klass)
 			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
+	/**
+	 * PkControl::connection-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::connection-changed is emitted when packagekitd is added or
+	 * removed from the bus. In this way, a client can know if the daemon
+	 * is running.
+	 **/
+	signals [SIGNAL_CONNECTION_CHANGED] =
+		g_signal_new ("connection-changed",
+			      G_TYPE_FROM_CLASS (object_class),
+			      G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, connection_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
 	g_type_class_add_private (klass, sizeof (PkControlPrivate));
 }
 
@@ -2128,6 +2183,22 @@ pk_control_init (PkControl *control)
 								"org.freedesktop.DBus.Properties");
 	if (control->priv->proxy_props == NULL)
 		egg_error ("Cannot connect to PackageKit.");
+
+	/* get a connection to watch NameOwnerChanged */
+	control->priv->proxy_dbus = dbus_g_proxy_new_for_name_owner (control->priv->connection,
+								     DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+								     DBUS_INTERFACE_DBUS, &error);
+	if (control->priv->proxy_dbus == NULL) {
+		egg_error ("Cannot connect to DBUS: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* connect to NameOwnerChanged */
+	dbus_g_proxy_add_signal (control->priv->proxy_dbus, "NameOwnerChanged",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy_dbus, "NameOwnerChanged",
+				     G_CALLBACK (pk_control_name_owner_changed_cb),
+				     control, NULL);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
@@ -2187,9 +2258,12 @@ pk_control_finalize (GObject *object)
 				        G_CALLBACK (pk_control_network_state_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RestartSchedule",
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy_dbus, "NameOwnerChanged",
+				        G_CALLBACK (pk_control_name_owner_changed_cb), control);
 
 	g_object_unref (G_OBJECT (priv->proxy));
 	g_object_unref (G_OBJECT (priv->proxy_props));
+	g_object_unref (G_OBJECT (priv->proxy_dbus));
 	g_ptr_array_unref (control->priv->calls);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);

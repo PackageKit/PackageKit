@@ -81,6 +81,8 @@ struct _PkControlClass
 	void		(* restart_schedule)		(PkControl	*control);
 	void		(* locked)			(PkControl	*control,
 							 gboolean	 is_locked);
+	void		(* connection_changed)		(PkControl	*control,
+							 gboolean	 connected);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
