@@ -153,11 +153,11 @@ pk_client_fixup_dbus_error (GError *error)
 	if (error->domain == DBUS_GERROR &&
 	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 
-		/* fall back to generic */
-		error->code = PK_CLIENT_ERROR_FAILED;
-
 		/* use one of our local codes */
 		name = dbus_g_error_get_name (error);
+
+		/* fall back to generic */
+		error->code = PK_CLIENT_ERROR_FAILED;
 
 		/* trim common prefix */
 		if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
