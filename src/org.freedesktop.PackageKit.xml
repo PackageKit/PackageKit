@@ -14,7 +14,7 @@
     </doc:doc>
 
     <!--*****************************************************************************************-->
-    <property name="version-major" type="u" access="read">
+    <property name="VersionMajor" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -23,7 +23,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="version-minor" type="u" access="read">
+    <property name="VersionMinor" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -32,7 +32,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="version-micro" type="u" access="read">
+    <property name="VersionMicro" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>

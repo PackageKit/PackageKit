@@ -14,7 +14,7 @@
     </doc:doc>
 
     <!--*****************************************************************************************-->
-    <property name="role" type="s" access="read">
+    <property name="Role" type="s" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -23,7 +23,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="status" type="s" access="read">
+    <property name="Status" type="s" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -32,7 +32,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="last-package" type="s" access="read">
+    <property name="LastPackage" type="s" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -41,7 +41,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="uid" type="u" access="read">
+    <property name="Uid" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -50,7 +50,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="percentage" type="u" access="read">
+    <property name="Percentage" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -62,7 +62,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="subpercentage" type="u" access="read">
+    <property name="Subpercentage" type="u" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -74,7 +74,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="allow-cancel" type="b" access="read">
+    <property name="AllowCancel" type="b" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -83,7 +83,7 @@
         </doc:description>
       </doc:doc>
     </property>
-    <property name="caller-active" type="b" access="read">
+    <property name="CallerActive" type="b" access="read">
       <doc:doc>
         <doc:description>
           <doc:para>
