@@ -23,7 +23,10 @@
  * SECTION:pk-client
  * @short_description: GObject class for PackageKit client access
  *
- * A nice GObject to use for accessing PackageKit asynchronously
+ * A nice GObject to use for accessing PackageKit asynchronously. If you're
+ * using #PkClient to install, remove, or update packages, be prepared that
+ * the eula, gpg and trusted callbacks need to be rescheduled manually, as in
+ * http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html
  */
 
 #include "config.h"
@@ -3277,8 +3280,6 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 		_allow_cancel_cb++;
 	if (type == PK_PROGRESS_TYPE_STATUS)
 		_status_cb++;
-
-//	egg_debug ("percentage now %i", percentage);
 }
 
 static gboolean
