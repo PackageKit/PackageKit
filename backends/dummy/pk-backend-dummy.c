@@ -45,6 +45,7 @@ static gboolean _use_blocked = FALSE;
 static gboolean _use_eula = FALSE;
 static gboolean _use_media = FALSE;
 static gboolean _use_gpg = FALSE;
+static gboolean _use_trusted = TRUE;
 static gboolean _use_distro_upgrade = FALSE;
 static PkBitfield _filters = 0;
 
@@ -514,6 +515,13 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 			pk_backend_finished (backend);
 			return;
 		}
+	}
+
+	if (_use_trusted && only_trusted) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+				       "Can't install as untrusted");
+		pk_backend_finished (backend);
+		return;
 	}
 
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -1073,6 +1081,8 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 		_use_media = atoi (value);
 	else if (g_strcmp0 (parameter, "use-gpg") == 0)
 		_use_gpg = atoi (value);
+	else if (g_strcmp0 (parameter, "use-trusted") == 0)
+		_use_trusted = atoi (value);
 	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)
 		_use_distro_upgrade = atoi (value);
 	else
