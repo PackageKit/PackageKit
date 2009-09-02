@@ -38,9 +38,12 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-text.h"
 #include "pk-tools-common.h"
 
 #define PROGRESS_BAR_SIZE 15
+#define PK_EXIT_CODE_SYNTAX_INVALID	3
+#define PK_EXIT_CODE_FILE_NOT_FOUND	4
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles;
@@ -2016,7 +2019,7 @@ main (int argc, char *argv[])
 	gchar *text;
 	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
-	gint retval = PK_EXIT_CODE_SUCCESS;
+	gint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -2337,7 +2340,7 @@ main (int argc, char *argv[])
 		if (!ret) {
 			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
 			error = g_error_new (1, 0, "%s", _("Failed to get the time since this action was last completed"));
-			retval = PK_EXIT_CODE_FAILED;
+			retval = EXIT_FAILURE;
 			goto out;
 		}
 		g_print ("time since %s is %is\n", value, time_ms);
@@ -2496,8 +2499,8 @@ out:
 			g_print ("%s:  %s\n", _("Command failed"), error->message);
 			g_error_free (error);
 		}
-		if (retval == PK_EXIT_CODE_SUCCESS)
-			retval = PK_EXIT_CODE_FAILED;
+		if (retval == EXIT_SUCCESS)
+			retval = EXIT_FAILURE;
 	}
 
 	g_free (options_help);

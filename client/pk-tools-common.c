@@ -28,6 +28,7 @@
 #include <egg-debug.h>
 
 #include "pk-tools-common.h"
+#include "pk-text.h"
 
 /**
  * pk_console_resolve:
@@ -138,66 +139,5 @@ pk_console_resolve_package_id (const PkPackageList *list, GError **error)
 	obj = pk_package_list_get_obj (list, i-1);
 
 	return pk_package_id_to_string (obj->id);
-}
-
-/**
- * pk_console_get_number:
- **/
-guint
-pk_console_get_number (const gchar *question, guint maxnum)
-{
-	gint answer = 0;
-	gint retval;
-
-	/* pretty print */
-	g_print ("%s", question);
-
-	do {
-		/* get a number */
-		retval = scanf("%u", &answer);
-
-		/* positive */
-		if (retval == 1 && answer > 0 && answer <= (gint) maxnum)
-			break;
-		g_print (_("Please enter a number from 1 to %i: "), maxnum);
-	} while (TRUE);
-	return answer;
-}
-
-/**
- * pk_console_get_prompt:
- **/
-gboolean
-pk_console_get_prompt (const gchar *question, gboolean defaultyes)
-{
-	gchar answer = '\0';
-
-	/* pretty print */
-	g_print ("%s", question);
-	if (defaultyes)
-		g_print (" [Y/n] ");
-	else
-		g_print (" [N/y] ");
-
-	do {
-		/* ITS4: ignore, we are copying into the same variable, not a string */
-		answer = (gchar) getchar();
-
-		/* positive */
-		if (answer == 'y' || answer == 'Y')
-			return TRUE;
-		/* negative */
-		if (answer == 'n' || answer == 'N')
-			return FALSE;
-
-		/* default choice */
-		if (answer == '\n' && defaultyes)
-			return TRUE;
-		if (answer == '\n' && !defaultyes)
-			return FALSE;
-	} while (TRUE);
-
-	/* keep GCC happy */
-	return FALSE;
 }
 

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,16 +19,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_TOOLS_COMMON_H
-#define __PK_TOOLS_COMMON_H
+#ifndef __PK_TEXT_H
+#define __PK_TEXT_H
 
-#include <glib/gi18n.h>
-#include <packagekit-glib/packagekit.h>
+#include <glib.h>
 
-PkPackageList	*pk_console_resolve			(PkBitfield	 filter,
-							 const gchar	*package,
-							 GError		**error);
-gchar		*pk_console_resolve_package_id		(const PkPackageList *list,
-							 GError		**error);
+guint		 pk_console_get_number			(const gchar	*question,
+							 guint		 maxnum);
+gboolean	 pk_console_get_prompt			(const gchar	*question,
+							 gboolean	 defaultyes);
 
-#endif /* __PK_TOOLS_COMMON_H */
+#endif /* __PK_TEXT_H */
+
+
+
