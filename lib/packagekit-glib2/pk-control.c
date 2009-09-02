@@ -174,6 +174,9 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 	gchar *tid = NULL;
 	gboolean ret;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &tid,
@@ -185,9 +188,6 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 		pk_control_get_tid_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save results */
 	state->tid = g_strdup (tid);
@@ -316,6 +316,9 @@ pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 	gchar *temp = NULL;
 	gboolean ret;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &temp,
@@ -327,9 +330,6 @@ pk_control_get_mime_types_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 		pk_control_get_mime_types_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->mime_types = g_strsplit (temp, ";", -1);
@@ -458,6 +458,9 @@ pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 	gchar *tid = NULL;
 	gboolean ret;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
@@ -466,9 +469,6 @@ pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 		pk_control_set_proxy_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->ret = TRUE;
@@ -615,6 +615,9 @@ pk_control_get_roles_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 	gboolean ret;
 	PkBitfield bitfield;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &roles,
@@ -626,9 +629,6 @@ pk_control_get_roles_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 		pk_control_get_roles_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	bitfield = pk_role_bitfield_from_text (roles);
@@ -758,6 +758,9 @@ pk_control_get_filters_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlSta
 	gboolean ret;
 	PkBitfield bitfield;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &filters,
@@ -769,9 +772,6 @@ pk_control_get_filters_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlSta
 		pk_control_get_filters_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	bitfield = pk_filter_bitfield_from_text (filters);
@@ -901,6 +901,9 @@ pk_control_get_groups_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlStat
 	gboolean ret;
 	PkBitfield bitfield;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &groups,
@@ -912,9 +915,6 @@ pk_control_get_groups_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlStat
 		pk_control_get_groups_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	bitfield = pk_group_bitfield_from_text (groups);
@@ -1046,6 +1046,9 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 	gchar **temp = NULL;
 	gboolean ret;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRV, &temp,
@@ -1057,9 +1060,6 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 		pk_control_get_transaction_list_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->transaction_list = g_strdupv (temp);
@@ -1187,6 +1187,9 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 	gboolean ret;
 	guint seconds;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_UINT, &seconds,
@@ -1198,9 +1201,6 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 		pk_control_get_time_since_action_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->time = seconds;
@@ -1337,6 +1337,9 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 	gboolean ret;
 	gchar *network_state = NULL;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &network_state,
@@ -1348,9 +1351,6 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 		pk_control_get_network_state_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->network = pk_network_enum_from_text (network_state);
@@ -1484,6 +1484,9 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 	gboolean ret;
 	gchar *authorize_state = NULL;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_STRING, &authorize_state,
@@ -1495,9 +1498,6 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 		pk_control_can_authorize_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->authorize = pk_authorize_type_enum_from_text (authorize_state);
@@ -1650,6 +1650,9 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 	gboolean ret;
 	GHashTable *hash;
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
@@ -1659,9 +1662,6 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 		pk_control_get_properties_state_finish (state, error);
 		goto out;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* save data */
 	state->ret = TRUE;
