@@ -651,6 +651,20 @@ pk_package_finalize (GObject *object)
 	g_free (priv->id_arch);
 	g_free (priv->id_data);
 	g_free (priv->summary);
+	g_free (priv->license);
+	g_free (priv->description);
+	g_free (priv->url);
+	g_free (priv->update_updates);
+	g_free (priv->update_obsoletes);
+	g_free (priv->update_vendor_url);
+	g_free (priv->update_bugzilla_url);
+	g_free (priv->update_cve_url);
+	g_free (priv->update_text);
+	g_free (priv->update_changelog);
+	if (priv->update_issued != NULL)
+		g_date_free (priv->update_issued);
+	if (priv->update_updated != NULL)
+		g_date_free (priv->update_updated);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);
 }
@@ -675,8 +689,9 @@ pk_package_new (void)
 #include "egg-test.h"
 
 void
-pk_package_test (EggTest *test)
+pk_package_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gboolean ret;
 	PkPackage *package;
 	const gchar *id;
@@ -733,7 +748,6 @@ pk_package_test (EggTest *test)
 	g_free (text);
 
 	g_object_unref (package);
-out:
 	egg_test_end (test);
 }
 #endif

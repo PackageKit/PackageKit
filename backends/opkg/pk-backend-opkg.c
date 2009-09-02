@@ -2,6 +2,7 @@
  * vi: set noexpandtab sts=8 sw=8:
  *
  * Copyright (C) 2007 OpenMoko, Inc
+ * Copyright (C) 2009 Sebastian Krzyszkowiak <seba.dos1@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -423,9 +424,9 @@ backend_install_packages_thread (PkBackend *backend)
 
 	for (i = 0; package_ids[i]; i++)
 	{
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[0], NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[i], NULL);
 
-		pi = pk_package_id_new_from_string (package_ids[0]);
+		pi = pk_package_id_new_from_string (package_ids[i]);
 
 		err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
 		if (err)
@@ -475,8 +476,8 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	for (i = 0; package_ids[i]; i++)
 	{
-		pi = pk_package_id_new_from_string (package_ids[0]);
-		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[0], NULL);
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[i], NULL);
 
 		err = opkg_remove_package (opkg, pi->name, pk_opkg_progress_cb, backend);
 

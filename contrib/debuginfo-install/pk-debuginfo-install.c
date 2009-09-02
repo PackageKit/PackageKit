@@ -434,7 +434,6 @@ pk_debuginfo_install_progress_changed_cb (PkClient *client, guint percentage, gu
 	}
 
 	pk_progress_bar_set_percentage (priv->progress_bar, percentage);
-	pk_progress_bar_set_value (priv->progress_bar, subpercentage);
 out:
 	return;
 }

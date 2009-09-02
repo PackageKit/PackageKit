@@ -33,6 +33,9 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-bitfield.h>
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_CONTROL		(pk_control_get_type ())
@@ -48,6 +51,18 @@ typedef struct _PkControlPrivate	PkControlPrivate;
 typedef struct _PkControl		PkControl;
 typedef struct _PkControlClass		PkControlClass;
 
+/**
+ * PkControlError:
+ * @PK_CONTROL_ERROR_FAILED: the transaction failed for an unknown reason
+ *
+ * Errors that can be thrown
+ */
+typedef enum
+{
+	PK_CONTROL_ERROR_FAILED,
+	PK_CONTROL_ERROR_CANNOT_START_DAEMON
+} PkControlError;
+
 struct _PkControl
 {
 	 GObject		 parent;
@@ -59,7 +74,15 @@ struct _PkControlClass
 	GObjectClass	parent_class;
 
 	/* signals */
-	void		(* changed)			(PkControl	*control);
+	void		(* transaction_list_changed)	(PkControl	*control);
+	void		(* updates_changed)		(PkControl	*control);
+	void		(* repo_list_changed)		(PkControl	*control);
+	void		(* network_state_changed)	(PkControl	*control);
+	void		(* restart_schedule)		(PkControl	*control);
+	void		(* locked)			(PkControl	*control,
+							 gboolean	 is_locked);
+	void		(* connection_changed)		(PkControl	*control,
+							 gboolean	 connected);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -71,12 +94,87 @@ struct _PkControlClass
 GQuark		 pk_control_error_quark			(void);
 GType		 pk_control_get_type		  	(void);
 PkControl	*pk_control_new				(void);
+void		 pk_control_test			(gpointer		 user_data);
 
 void		 pk_control_get_tid_async		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 gchar		*pk_control_get_tid_finish		(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_set_proxy_async		(PkControl		*control,
+							 const gchar		*proxy_http,
+							 const gchar		*proxy_ftp,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_roles_async		(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+PkBitfield	*pk_control_get_roles_finish		(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_filters_async		(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+PkBitfield	*pk_control_get_filters_finish		(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_groups_async		(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+PkBitfield	*pk_control_get_groups_finish		(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_mime_types_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gchar		**pk_control_get_mime_types_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_network_state_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+PkNetworkEnum	 pk_control_get_network_state_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_time_since_action_async	(PkControl		*control,
+							 PkRoleEnum		 role,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+guint		 pk_control_get_time_since_action_finish (PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_transaction_list_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gchar		**pk_control_get_transaction_list_finish (PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_can_authorize_async		(PkControl		*control,
+							 const gchar		*action_id,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+PkAuthorizeEnum	 pk_control_can_authorize_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
+void		 pk_control_get_properties_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gboolean	 pk_control_get_properties_finish	(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
 

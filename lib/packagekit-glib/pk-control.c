@@ -1094,11 +1094,11 @@ out:
 static void
 pk_control_collect_props_cb (const char *key, const GValue *value, PkControl *control)
 {
-	if (g_strcmp0 (key, "version-major") == 0)
+	if (g_strcmp0 (key, "version-major") == 0 || g_strcmp0 (key, "VersionMajor") == 0)
 		control->priv->version_major = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-minor") == 0)
+	else if (g_strcmp0 (key, "version-minor") == 0 || g_strcmp0 (key, "VersionMinor") == 0)
 		control->priv->version_minor = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-micro") == 0)
+	else if (g_strcmp0 (key, "version-micro") == 0 || g_strcmp0 (key, "VersionMicro") == 0)
 		control->priv->version_micro = g_value_get_uint (value);
 	else {
 		egg_warning ("unhandled property '%s'", key);

@@ -238,8 +238,9 @@ egg_strreplace (const gchar *text, const gchar *find, const gchar *replace)
 #include "egg-test.h"
 
 void
-egg_string_test (EggTest *test)
+egg_string_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gboolean ret;
 	gchar *text_safe;
 	const gchar *temp;

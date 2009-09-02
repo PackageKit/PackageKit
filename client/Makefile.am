@@ -64,6 +64,8 @@ pkcon_SOURCES =						\
 	egg-string.c					\
 	egg-string.h					\
 	pk-console.c					\
+	pk-text.c					\
+	pk-text.h					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
@@ -100,6 +102,8 @@ pkgenpack_SOURCES =					\
 	egg-string.c					\
 	egg-string.h					\
 	pk-generate-pack.c				\
+	pk-text.c					\
+	pk-text.h					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)

@@ -51,6 +51,7 @@ PkBitfield	 pk_group_bitfield_from_text 		(const gchar	*groups);
 gchar		*pk_group_bitfield_to_text		(PkBitfield	 groups);
 PkBitfield	 pk_filter_bitfield_from_text 		(const gchar	*filters);
 gchar		*pk_filter_bitfield_to_text		(PkBitfield	 filters);
+void		 pk_bitfield_test			(gpointer	 user_data);
 
 G_END_DECLS
 

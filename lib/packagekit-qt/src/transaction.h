@@ -251,6 +251,7 @@ public:
 		ExitEulaRequired,
 		ExitKilled, /* when we forced the cancel, but had to sigkill */
 		ExitMediaChangeRequired,
+		ExitNeedUntrusted,
 		UnknownExitStatus
 	} ExitStatus;
 

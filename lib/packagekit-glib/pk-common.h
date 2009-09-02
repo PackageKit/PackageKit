@@ -73,6 +73,7 @@ G_BEGIN_DECLS
  */
 #define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
 
+void		 pk_common_test				(gpointer	 user_data);
 gboolean	 pk_strvalidate				(const gchar	*text)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strsafe				(const gchar	*text)

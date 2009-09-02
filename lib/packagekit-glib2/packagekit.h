@@ -24,11 +24,14 @@
 
 #define __PACKAGEKIT_H_INSIDE__
 
-#include <packagekit-glib/pk-version.h>
-#include <packagekit-glib/pk-client.h>
-#include <packagekit-glib/pk-common.h>
-#include <packagekit-glib/pk-control.h>
-#include <packagekit-glib/pk-enum.h>
+#include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-control-sync.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-sack.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-version.h>
 
 #undef __PACKAGEKIT_H_INSIDE__
 

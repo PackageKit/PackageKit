@@ -24,6 +24,7 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -33,6 +34,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-text.h"
 #include "pk-tools-common.h"
 
 static guint last_percentage = 0;

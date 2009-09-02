@@ -32,7 +32,7 @@
 
 #include "egg-debug.h"
 
-#include "pk-tools-common.h"
+#include "pk-text.h"
 
 static PkControl *control = NULL;
 static gboolean verbose = FALSE;
@@ -121,7 +121,7 @@ main (int argc, char *argv[])
 	gboolean program_version = FALSE;
 	gchar *state;
 	GOptionContext *context;
-	gint retval = PK_EXIT_CODE_SUCCESS;
+	gint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -181,7 +181,7 @@ main (int argc, char *argv[])
 	ret = pk_task_list_refresh (tlist);
 	if (!ret) {
 		g_print ("%s\n", _("Cannot show the list of transactions"));
-		retval = PK_EXIT_CODE_FAILED;
+		retval = EXIT_FAILURE;
 		goto out;
 	}
 	pk_task_list_print (tlist);

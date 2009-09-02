@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,30 +19,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __EGG_STRING_H
-#define __EGG_STRING_H
+#ifndef __PK_TEXT_H
+#define __PK_TEXT_H
 
 #include <glib.h>
 
-G_BEGIN_DECLS
+guint		 pk_console_get_number			(const gchar	*question,
+							 guint		 maxnum);
+gboolean	 pk_console_get_prompt			(const gchar	*question,
+							 gboolean	 defaultyes);
 
-guint		 egg_strlen				(const gchar	*text,
-							 guint		 len)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 egg_strzero				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 egg_strvequal				(gchar		**id1,
-							 gchar		**id2)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 egg_strtoint				(const gchar	*text,
-							 gint		*value);
-gboolean	 egg_strtouint				(const gchar	*text,
-							 guint		*value);
-gchar		*egg_strreplace				(const gchar	*text,
-							 const gchar	*find,
-							 const gchar	*replace);
-void		 egg_string_test			(gpointer	 user_data);
+#endif /* __PK_TEXT_H */
 
-G_END_DECLS
 
-#endif /* __EGG_STRING_H */
+

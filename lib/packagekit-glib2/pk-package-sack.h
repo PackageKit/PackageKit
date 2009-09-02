@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined (__PACKAGE_SACKKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
 #error "Only <packagekit.h> can be included directly."
 #endif
 
@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-package.h>
 
 G_BEGIN_DECLS
@@ -74,6 +75,7 @@ struct _PkPackageSackClass
 GQuark		 pk_package_sack_error_quark		(void);
 GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
+void		 pk_package_sack_test			(gpointer		 user_data);
 
 /* managing the array */
 guint		 pk_package_sack_get_size		(PkPackageSack		*sack);
@@ -92,27 +94,33 @@ PkPackage	*pk_package_sack_find_by_id		(PkPackageSack		*sack,
 							 const gchar		*package_id);
 guint64		 pk_package_sack_get_total_bytes	(PkPackageSack		*sack);
 
+gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
+							 GAsyncResult		*res,
+							 GError			**error);
+
 /* merging in data to the array using Resolve() */
 void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using Details() */
 void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
 /* merging in data to the array using UpdateDetail() */
 void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
 							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-
-gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
-							 GAsyncResult		*res,
-							 GError			**error);
 
 G_END_DECLS
 
