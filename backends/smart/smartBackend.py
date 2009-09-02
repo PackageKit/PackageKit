@@ -535,22 +535,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._post_process_package_list(filters)
         self._show_package_list()
 
-    @needs_cache
-    def what_provides(self, filters, provides_type, search):
-        self.status(STATUS_QUERY)
-        self.allow_cancel(True)
-        if provides_type != PROVIDES_ANY:
-            self.error(ERROR_NOT_SUPPORTED,
-                       "provide %s not supported" % provides_type)
-            return
-        providers = self.ctrl.getCache().getProvides(search)
-        for provider in providers:
-            for package in provider.packages:
-                if self._package_passes_filters(package, filters):
-                    self._add_package(package)
-        self._post_process_package_list(filters)
-        self._show_package_list()
-
     def refresh_cache(self, force):
         # TODO: use force ?
         self.status(STATUS_REFRESH_CACHE)
