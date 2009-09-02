@@ -15,4 +15,5 @@ data/packagekit-servicepack.xml.in
 policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
 src/pk-polkit-action-lookup.c
+client/pk-text.c
 

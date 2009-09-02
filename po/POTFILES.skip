@@ -1,2 +1,3 @@
 contrib/command-not-found/pk-tools-common.c
+contrib/command-not-found/pk-text.c
 
