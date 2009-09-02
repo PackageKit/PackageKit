@@ -330,7 +330,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	if (state->proxy_props != NULL)
 		g_object_unref (G_OBJECT (state->proxy_props));
 
-	if (state->results != NULL) {
+	if (state->ret) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
@@ -342,6 +342,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
+	g_object_unref (state->results);
 	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
 }
@@ -389,24 +390,23 @@ static void
 pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
 	GError *error = NULL;
-	gboolean ret;
 
 	/* we've sent this async */
 	egg_debug ("got reply to request");
 
+	/* finished this call */
+	state->call = NULL;
+
 	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_INVALID);
-	if (!ret) {
+	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
+					    G_TYPE_INVALID);
+	if (!state->ret) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
 	}
-
-	/* finished this call */
-	state->call = NULL;
 
 	/* wait for ::Finished() */
 }
