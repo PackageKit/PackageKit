@@ -74,12 +74,6 @@ enum {
 	SIGNAL_LAST
 };
 
-enum {
-	PROP_0,
-	PROP_ID,
-	PROP_LAST
-};
-
 G_DEFINE_TYPE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
 
 /**
@@ -359,7 +353,6 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	} else {
 		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
 		g_simple_async_result_set_from_error (state->res, (GError*) error);
-//		g_error_free (error);
 	}
 
 	/* complete */
@@ -735,64 +728,14 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 /***************************************************************************************************/
 
 /**
- * pk_package_sack_get_property:
- **/
-static void
-pk_package_sack_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
-{
-//	PkPackageSack *sack = PK_PACKAGE_SACK (object);
-//	PkPackageSackPrivate *priv = sack->priv;
-
-	switch (prop_id) {
-	case PROP_ID:
-//		g_value_sack_string (value, priv->id);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
- * pk_package_sack_set_property:
- **/
-static void
-pk_package_sack_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
-{
-//	PkPackageSack *sack = PK_PACKAGE_SACK (object);
-//	PkPackageSackPrivate *priv = sack->priv;
-
-	switch (prop_id) {
-	case PROP_ID:
-//		priv->info = g_value_get_uint (value);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
  * pk_package_sack_class_init:
  * @klass: The PkPackageSackClass
  **/
 static void
 pk_package_sack_class_init (PkPackageSackClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->get_property = pk_package_sack_get_property;
-	object_class->set_property = pk_package_sack_set_property;
 	object_class->finalize = pk_package_sack_finalize;
-
-	/**
-	 * PkPackageSack:id:
-	 */
-	pspec = g_param_spec_string ("id", NULL,
-				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
 
 #if 0
 	/**
