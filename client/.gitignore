@@ -4,9 +4,10 @@
 pk-marshal.h
 pk-marshal.c
 pkcon
+pkcon-test
 pkmon
+pkmon-test
 pkgenpack
-pk-import-specspo
 pk-self-test
 *.glade.bak
 *.gladep
