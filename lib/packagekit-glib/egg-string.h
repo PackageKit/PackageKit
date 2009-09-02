@@ -41,6 +41,7 @@ gboolean	 egg_strtouint				(const gchar	*text,
 gchar		*egg_strreplace				(const gchar	*text,
 							 const gchar	*find,
 							 const gchar	*replace);
+void		 egg_string_test			(gpointer	 user_data);
 
 G_END_DECLS
 

@@ -1048,8 +1048,9 @@ pk_authorize_type_enum_to_text (PkAuthorizeEnum authorize_type)
 #include "egg-test.h"
 
 void
-pk_enum_test (EggTest *test)
+pk_enum_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	const gchar *string;
 	PkRoleEnum role_value;
 	guint i;

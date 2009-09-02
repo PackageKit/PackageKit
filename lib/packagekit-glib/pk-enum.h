@@ -590,6 +590,7 @@ typedef enum {
 } PkAuthorizeEnum;
 
 /* general */
+void		 pk_enum_test				(gpointer	 user_data);
 guint		 pk_enum_find_value			(const PkEnumMatch *table,
 							 const gchar	*string)
 							 G_GNUC_WARN_UNUSED_RESULT;

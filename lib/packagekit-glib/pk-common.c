@@ -599,8 +599,9 @@ pk_va_list_to_argv_test (const gchar *first_element, ...)
 }
 
 void
-pk_common_test (EggTest *test)
+pk_common_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gboolean ret;
 	gchar **array;
 	gchar *text_safe;

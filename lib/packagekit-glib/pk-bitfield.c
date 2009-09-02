@@ -323,11 +323,12 @@ out:
 #include "egg-test.h"
 
 void
-pk_bitfield_test (EggTest *test)
+pk_bitfield_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gchar *text;
 	PkBitfield filter;
-	guint value;
+	gint value;
 	PkBitfield values;
 
 	if (!egg_test_start (test, "PkBitfield"))
