@@ -58,6 +58,38 @@ bin_PROGRAMS =						\
 	pkgenpack					\
 	$(NULL)
 
+# Only build this functionality if we have glib2, and don't yet install it
+if PK_BUILD_GLIB2
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(NULL)
+
+noinst_PROGRAMS = pkcon-test
+
+pkcon_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	egg-string.c					\
+	egg-string.h					\
+	pk-console-test.c				\
+	pk-text.c					\
+	pk-text.h					\
+	pk-progress-bar.c				\
+	pk-progress-bar.h				\
+	$(NULL)
+
+pkcon_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pkcon_test_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+endif
+
 pkcon_SOURCES =						\
 	egg-debug.c					\
 	egg-debug.h					\
