@@ -33,6 +33,7 @@
 #include "pk-enum.h"
 #include "pk-package-sack.h"
 #include "pk-results.h"
+#include "pk-task.h"
 #include "pk-version.h"
 
 int
@@ -56,6 +57,7 @@ main (int argc, char **argv)
 	pk_control_sync_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
+	pk_task_test (test);
 
 	return (egg_test_finish (test));
 }

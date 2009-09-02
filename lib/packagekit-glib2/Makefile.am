@@ -40,6 +40,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-package-sack.h					\
 	pk-progress.h						\
 	pk-results.h						\
+	pk-task.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
@@ -70,6 +71,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-progress.h						\
 	pk-results.c						\
 	pk-results.h						\
+	pk-task.c						\
+	pk-task.h						\
 	pk-version.h						\
 	$(NULL)
 

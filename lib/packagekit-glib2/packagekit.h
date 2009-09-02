@@ -31,6 +31,7 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-package-sack.h>
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-version.h>
 
 #undef __PACKAGEKIT_H_INSIDE__
