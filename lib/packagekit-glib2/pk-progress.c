@@ -260,8 +260,9 @@ pk_progress_new (void)
 #include "egg-test.h"
 
 void
-pk_progress_test (EggTest *test)
+pk_progress_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	PkProgress *progress;
 
 	if (!egg_test_start (test, "PkProgress"))

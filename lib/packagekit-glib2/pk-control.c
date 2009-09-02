@@ -1629,11 +1629,11 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 static void
 pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
 {
-	if (g_strcmp0 (key, "version-major") == 0)
+	if (g_strcmp0 (key, "version-major") == 0 || g_strcmp0 (key, "VersionMajor") == 0)
 		control->priv->version_major = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-minor") == 0)
+	else if (g_strcmp0 (key, "version-minor") == 0 || g_strcmp0 (key, "VersionMinor") == 0)
 		control->priv->version_minor = g_value_get_uint (value);
-	else if (g_strcmp0 (key, "version-micro") == 0)
+	else if (g_strcmp0 (key, "version-micro") == 0 || g_strcmp0 (key, "VersionMicro") == 0)
 		control->priv->version_micro = g_value_get_uint (value);
 	else
 		egg_warning ("unhandled property '%s'", key);
@@ -2267,7 +2267,6 @@ pk_control_test_get_roles_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	PkBitfield *roles;
-	guint len;
 	gchar *text;
 
 	/* get the result */
@@ -2300,7 +2299,6 @@ pk_control_test_get_filters_cb (GObject *object, GAsyncResult *res, EggTest *tes
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	PkBitfield *filters;
-	guint len;
 	gchar *text;
 
 	/* get the result */
@@ -2328,7 +2326,6 @@ pk_control_test_get_groups_cb (GObject *object, GAsyncResult *res, EggTest *test
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
 	PkBitfield *groups;
-	guint len;
 	gchar *text;
 
 	/* get the result */
@@ -2423,8 +2420,9 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 }
 
 void
-pk_control_test (EggTest *test)
+pk_control_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	PkControl *control;
 	guint version;
 
@@ -2508,7 +2506,6 @@ pk_control_test (EggTest *test)
 	egg_test_assert (test, (version == PK_MICRO_VERSION));
 
 	g_object_unref (control);
-out:
 	egg_test_end (test);
 }
 #endif

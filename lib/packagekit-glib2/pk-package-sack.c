@@ -146,7 +146,7 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
 }
 
 /**
- * pk_package_sack_add_package:
+ * pk_package_sack_add_package_by_id:
  * @sack: a valid #PkPackageSack instance
  * @package_id: a package_id descriptor
  * @error: a %GError to put the error code and message in, or %NULL
@@ -168,14 +168,13 @@ pk_package_sack_add_package_by_id (PkPackageSack *sack, const gchar *package_id,
 	/* create new object */
 	package = pk_package_new ();
 	ret = pk_package_set_id (package, package_id, error);
-	if (!ret) {
-		g_object_unref (package);
+	if (!ret)
 		goto out;
-	}
-	
-	/* add to array */
-	g_ptr_array_add (sack->priv->array, package);
+
+	/* add to array, array will own object */
+	g_ptr_array_add (sack->priv->array, g_object_ref (package));
 out:
+	g_object_unref (package);
 	return ret;
 }
 
@@ -342,7 +341,7 @@ typedef struct {
  * pk_package_sack_merge_bool_state_finish:
  **/
 static void
-pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, GError *error)
+pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->sack != NULL)
@@ -358,8 +357,9 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, GError *erro
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
 	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
+		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
+		g_simple_async_result_set_from_error (state->res, (GError*) error);
+//		g_error_free (error);
 	}
 
 	/* complete */
@@ -378,8 +378,8 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *packages;
+	const PkResults *results;
+	GPtrArray *packages = NULL;
 	const PkResultItemPackage *item;
 	guint i;
 	PkPackage *package;
@@ -390,7 +390,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 		egg_warning ("failed to resolve: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* get the packages */
@@ -400,7 +400,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 		error = g_error_new (1, 0, "no packages found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* set data on each item */
@@ -411,23 +411,28 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, item->package_id);
-		if (package != NULL) {
-			g_object_set (package,
-				      "info", item->info_enum,
-				      "summary", item->summary,
-				      NULL);
-			g_object_unref (package);
-		} else {
+		if (package == NULL) {
 			egg_warning ("failed to find %s", item->package_id);
+			continue;
 		}
+
+		/* set data */
+		g_object_set (package,
+			      "info", item->info_enum,
+			      "summary", item->summary,
+			      NULL);
+		g_object_unref (package);
 	}
+
 
 	/* all okay */
 	state->ret = TRUE;
-	g_object_unref (results);
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
+out:
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
 }
 
 /**
@@ -456,7 +461,9 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+	}
 	state->sack = sack;
 	state->ret = FALSE;
 	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
@@ -466,7 +473,6 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
 				 cancellable, progress_callback, progress_user_data,
 				 (GAsyncReadyCallback) pk_package_sack_merge_resolve_cb, state);
-
 	g_strfreev (package_ids);
 	g_object_unref (res);
 }
@@ -508,8 +514,8 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *details;
+	const PkResults *results;
+	GPtrArray *details = NULL;
 	const PkResultItemDetails *item;
 	guint i;
 	PkPackage *package;
@@ -520,17 +526,16 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 		egg_warning ("failed to details: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* get the details */
 	details = pk_results_get_details_array (results);
 	if (details->len == 0) {
-		egg_error ("%i", state->ret);
 		error = g_error_new (1, 0, "no details found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* set data on each item */
@@ -541,26 +546,30 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, item->package_id);
-		if (package != NULL) {
-			g_object_set (package,
-				      "license", item->license,
-				      "group", item->group_enum,
-				      "description", item->description,
-				      "url", item->url,
-				      "size", item->size,
-				      NULL);
-			g_object_unref (package);
-		} else {
+		if (package == NULL) {
 			egg_warning ("failed to find %s", item->package_id);
+			continue;
 		}
+
+		/* set data */
+		g_object_set (package,
+			      "license", item->license,
+			      "group", item->group_enum,
+			      "description", item->description,
+			      "url", item->url,
+			      "size", item->size,
+			      NULL);
+		g_object_unref (package);
 	}
 
 	/* all okay */
 	state->ret = TRUE;
-	g_object_unref (results);
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
+out:
+	if (details != NULL)
+		g_ptr_array_unref (details);
 }
 
 /**
@@ -589,7 +598,9 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+	}
 	state->sack = sack;
 	state->ret = FALSE;
 	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
@@ -614,8 +625,8 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	PkResults *results;
-	GPtrArray *update_details;
+	const PkResults *results;
+	GPtrArray *update_details = NULL;
 	const PkResultItemUpdateDetail *item;
 	guint i;
 	PkPackage *package;
@@ -626,17 +637,16 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 		egg_warning ("failed to update_detail: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* get the update_details */
 	update_details = pk_results_get_update_detail_array (results);
 	if (update_details->len == 0) {
-		egg_error ("%i", state->ret);
 		error = g_error_new (1, 0, "no update details found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	/* set data on each item */
@@ -647,32 +657,36 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, item->package_id);
-		if (package != NULL) {
-			g_object_set (package,
-				      "update-updates", item->updates,
-				      "update-obsoletes", item->obsoletes,
-				      "update-vendor-url", item->vendor_url,
-				      "update-bugzilla-url", item->bugzilla_url,
-				      "update-cve-url", item->cve_url,
-				      "update-restart", item->restart_enum,
-				      "update-text", item->update_text,
-				      "update-changelog", item->changelog,
-				      "update-state", item->state_enum,
-				      "update-issued", item->issued,
-				      "update-updated", item->updated,
-				      NULL);
-			g_object_unref (package);
-		} else {
+		if (package == NULL) {
 			egg_warning ("failed to find %s", item->package_id);
+			continue;
 		}
+
+		/* set data */
+		g_object_set (package,
+			      "update-updates", item->updates,
+			      "update-obsoletes", item->obsoletes,
+			      "update-vendor-url", item->vendor_url,
+			      "update-bugzilla-url", item->bugzilla_url,
+			      "update-cve-url", item->cve_url,
+			      "update-restart", item->restart_enum,
+			      "update-text", item->update_text,
+			      "update-changelog", item->changelog,
+			      "update-state", item->state_enum,
+			      "update-issued", item->issued,
+			      "update-updated", item->updated,
+			      NULL);
+		g_object_unref (package);
 	}
 
 	/* all okay */
 	state->ret = TRUE;
-	g_object_unref (results);
 
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
+out:
+	if (update_details != NULL)
+		g_ptr_array_unref (update_details);
 }
 
 /**
@@ -701,7 +715,9 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
-	state->cancellable = cancellable;
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+	}
 	state->sack = sack;
 	state->ret = FALSE;
 	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
@@ -901,12 +917,12 @@ pk_package_sack_test_update_detail_cb (GObject *object, GAsyncResult *res, EggTe
 }
 
 void
-pk_package_sack_test (EggTest *test)
+pk_package_sack_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gboolean ret;
 	PkPackageSack *sack;
 	PkPackage *package;
-	const gchar *id;
 	gchar *text;
 	guint size;
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
@@ -988,6 +1004,8 @@ pk_package_sack_test (EggTest *test)
 		      "url", &text,
 		      NULL);
 	egg_test_assert (test, (g_strcmp0 (text, "http://live.gnome.org/powertop") == 0));
+	g_object_unref (package);
+	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "merge update detail results");
@@ -1031,7 +1049,6 @@ pk_package_sack_test (EggTest *test)
 	egg_test_assert (test, !ret);
 
 	g_object_unref (sack);
-out:
 	egg_test_end (test);
 }
 #endif

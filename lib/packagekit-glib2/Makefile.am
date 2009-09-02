@@ -111,7 +111,7 @@ pk_self_test_LDADD =						\
 	$(ARCHIVE_LIBS)						\
 	$(NULL)
 
-pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS)
+pk_self_test_CFLAGS = -DEGG_TEST $(AM_CFLAGS) $(WARNINGFLAGS_C)
 
 TESTS = pk-self-test
 endif

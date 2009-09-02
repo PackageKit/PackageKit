@@ -64,6 +64,7 @@ struct _PkControlSyncClass
 GQuark		 pk_control_sync_error_quark		(void);
 GType		 pk_control_sync_get_type		(void);
 PkControlSync	*pk_control_sync_new			(void);
+void		 pk_control_sync_test			(gpointer		 user_data);
 
 PkBitfield	 pk_control_sync_get_roles		(PkControlSync		*control,
 							 GError			**error);

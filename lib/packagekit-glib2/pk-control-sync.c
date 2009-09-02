@@ -266,8 +266,9 @@ pk_control_sync_new (void)
 #include "egg-test.h"
 
 void
-pk_control_sync_test (EggTest *test)
+pk_control_sync_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	PkControlSync *control;
 	GError *error = NULL;
 	PkBitfield bitfield;
@@ -299,7 +300,6 @@ pk_control_sync_test (EggTest *test)
 	g_free (text);
 
 	g_object_unref (control);
-out:
 	egg_test_end (test);
 }
 #endif

@@ -83,6 +83,7 @@ typedef enum {
 typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 							 PkProgressType		 type,
                                                          gpointer		 user_data);
+void		 pk_progress_test			(gpointer		 user_data);
 
 G_END_DECLS
 

@@ -301,18 +301,6 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	PkClientPrivate *priv;
 	priv = state->client->priv;
 
-	g_free (state->directory);
-	g_free (state->eula_id);
-	g_free (state->key_id);
-	g_free (state->package_id);
-	g_free (state->parameter);
-	g_free (state->repo_id);
-	g_free (state->search);
-	g_free (state->value);
-	g_strfreev (state->files);
-	g_strfreev (state->package_ids);
-	g_object_unref (state->progress);
-
 	if (state->client != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
@@ -339,9 +327,24 @@ pk_client_state_finish (PkClientState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->client->priv->calls, state);
+	egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
+
+	/* destroy state */
+	g_free (state->directory);
+	g_free (state->eula_id);
+	g_free (state->key_id);
+	g_free (state->package_id);
+	g_free (state->parameter);
+	g_free (state->repo_id);
+	g_free (state->search);
+	g_free (state->value);
+	g_free (state->tid);
+	g_strfreev (state->files);
+	g_strfreev (state->package_ids);
+	g_object_unref (state->progress);
 	g_object_unref (state->results);
 	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
@@ -1053,9 +1056,6 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		g_assert_not_reached ();
 	}
 
-	/* track state */
-	g_ptr_array_add (state->client->priv->calls, state);
-
 	/* we've sent this async */
 	egg_debug ("sent request");
 
@@ -1105,6 +1105,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
+	egg_debug ("state array add %p", state);
 
 	/* we've sent this async */
 	egg_debug ("sent locale request");
@@ -2925,6 +2926,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 
 	/* track state */
 	g_ptr_array_add (client->priv->calls, state);
+	egg_debug ("state array add %p", state);
 
 	g_object_unref (res);
 }
@@ -3288,8 +3290,9 @@ pk_client_test_cancel (GCancellable *cancellable)
 }
 
 void
-pk_client_test (EggTest *test)
+pk_client_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	PkClient *client;
 	gchar **package_ids;
 	gchar *file;

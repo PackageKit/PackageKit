@@ -75,6 +75,7 @@ struct _PkPackageSackClass
 GQuark		 pk_package_sack_error_quark		(void);
 GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
+void		 pk_package_sack_test			(gpointer		 user_data);
 
 /* managing the array */
 guint		 pk_package_sack_get_size		(PkPackageSack		*sack);

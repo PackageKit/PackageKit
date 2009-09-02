@@ -256,10 +256,11 @@ typedef struct
 GQuark		 pk_results_error_quark			(void);
 GType		 pk_results_get_type		  	(void);
 PkResults	*pk_results_new				(void);
+void		 pk_results_test			(gpointer		 user_data);
 
 /* set */
-gboolean	 pk_results_set_exit_code		(PkResults	*results,
-							 PkExitEnum	 exit_enum);
+gboolean	 pk_results_set_exit_code		(PkResults		*results,
+							 PkExitEnum		 exit_enum);
 
 /* add */
 gboolean	 pk_results_add_package			(PkResults		*results,
@@ -346,20 +347,20 @@ PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
 const PkResultItemErrorCode *pk_results_get_error_code	(PkResults		*results);
 
 /* get array objects */
-GPtrArray	*pk_results_get_package_array		(PkResults		*results);
-GPtrArray	*pk_results_get_details_array		(PkResults		*results);
-GPtrArray	*pk_results_get_update_detail_array	(PkResults		*results);
-GPtrArray	*pk_results_get_category_array		(PkResults		*results);
-GPtrArray	*pk_results_get_distro_upgrade_array	(PkResults		*results);
-GPtrArray	*pk_results_get_require_restart_array	(PkResults		*results);
-GPtrArray	*pk_results_get_transaction_array	(PkResults		*results);
-GPtrArray	*pk_results_get_files_array		(PkResults		*results);
-GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
-GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
-GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
-GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
-GPtrArray	*pk_results_get_error_code_array	(PkResults		*results);
-GPtrArray	*pk_results_get_message_array		(PkResults		*results);
+GPtrArray	*pk_results_get_package_array		(const PkResults	*results);
+GPtrArray	*pk_results_get_details_array		(const PkResults	*results);
+GPtrArray	*pk_results_get_update_detail_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_category_array		(const PkResults	*results);
+GPtrArray	*pk_results_get_distro_upgrade_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_require_restart_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_transaction_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_files_array		(const PkResults	*results);
+GPtrArray	*pk_results_get_repo_signature_required_array (const PkResults	*results);
+GPtrArray	*pk_results_get_eula_required_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_media_change_required_array (const PkResults	*results);
+GPtrArray	*pk_results_get_repo_detail_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_error_code_array	(const PkResults	*results);
+GPtrArray	*pk_results_get_message_array		(const PkResults	*results);
 
 G_END_DECLS
 

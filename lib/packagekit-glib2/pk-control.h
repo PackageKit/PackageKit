@@ -94,6 +94,7 @@ struct _PkControlClass
 GQuark		 pk_control_error_quark			(void);
 GType		 pk_control_get_type		  	(void);
 PkControl	*pk_control_new				(void);
+void		 pk_control_test			(gpointer		 user_data);
 
 void		 pk_control_get_tid_async		(PkControl		*control,
 							 GCancellable		*cancellable,

@@ -111,6 +111,7 @@ pk_result_item_update_detail_free (PkResultItemUpdateDetail *item)
 		g_date_free (item->issued);
 	if (item->updated != NULL)
 		g_date_free (item->updated);
+	g_free (item);
 }
 
 /**
@@ -713,7 +714,7 @@ pk_results_get_exit_code (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDetails's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_package_array (PkResults *results)
+pk_results_get_package_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->package_array);
@@ -776,7 +777,7 @@ pk_results_get_package_sack (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_details_array (PkResults *results)
+pk_results_get_details_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->details_array);
@@ -791,7 +792,7 @@ pk_results_get_details_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemUpdateDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_update_detail_array (PkResults *results)
+pk_results_get_update_detail_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->update_detail_array);
@@ -806,7 +807,7 @@ pk_results_get_update_detail_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemCategory's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_category_array (PkResults *results)
+pk_results_get_category_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->category_array);
@@ -821,7 +822,7 @@ pk_results_get_category_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDistroUpgrade's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_distro_upgrade_array (PkResults *results)
+pk_results_get_distro_upgrade_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->distro_upgrade_array);
@@ -836,7 +837,7 @@ pk_results_get_distro_upgrade_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRequireRestart's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_require_restart_array (PkResults *results)
+pk_results_get_require_restart_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->require_restart_array);
@@ -851,7 +852,7 @@ pk_results_get_require_restart_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemTransaction's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_transaction_array (PkResults *results)
+pk_results_get_transaction_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->transaction_array);
@@ -866,7 +867,7 @@ pk_results_get_transaction_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemFiles's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_files_array (PkResults *results)
+pk_results_get_files_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->files_array);
@@ -881,7 +882,7 @@ pk_results_get_files_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoSignatureRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_signature_required_array (PkResults *results)
+pk_results_get_repo_signature_required_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_signature_required_array);
@@ -896,7 +897,7 @@ pk_results_get_repo_signature_required_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemEulaRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_eula_required_array (PkResults *results)
+pk_results_get_eula_required_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->eula_required_array);
@@ -911,7 +912,7 @@ pk_results_get_eula_required_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMediaChangeRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_media_change_required_array (PkResults *results)
+pk_results_get_media_change_required_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->media_change_required_array);
@@ -926,7 +927,7 @@ pk_results_get_media_change_required_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_detail_array (PkResults *results)
+pk_results_get_repo_detail_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_detail_array);
@@ -941,7 +942,7 @@ pk_results_get_repo_detail_array (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemErrorCode's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_error_code_array (PkResults *results)
+pk_results_get_error_code_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->error_code_array);
@@ -977,7 +978,7 @@ pk_results_get_error_code (PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMessage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_message_array (PkResults *results)
+pk_results_get_message_array (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->message_array);
@@ -1065,8 +1066,9 @@ pk_results_new (void)
 #include "egg-test.h"
 
 void
-pk_results_test (EggTest *test)
+pk_results_test (gpointer user_data)
 {
+	EggTest *test = (EggTest *) user_data;
 	gboolean ret;
 	PkResults *results;
 	PkExitEnum exit_enum;
@@ -1113,7 +1115,6 @@ pk_results_test (EggTest *test)
 	g_ptr_array_unref (packages);
 
 	g_object_unref (results);
-out:
 	egg_test_end (test);
 }
 #endif

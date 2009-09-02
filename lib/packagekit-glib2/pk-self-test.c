@@ -24,6 +24,16 @@
 #include <glib-object.h>
 #include "egg-test.h"
 #include "egg-debug.h"
+#include "egg-string.h"
+
+#include "pk-client.h"
+#include "pk-common.h"
+#include "pk-control.h"
+#include "pk-control-sync.h"
+#include "pk-enum.h"
+#include "pk-package-sack.h"
+#include "pk-results.h"
+#include "pk-version.h"
 
 int
 main (int argc, char **argv)
@@ -35,6 +45,7 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* tests go here */
+	egg_string_test (test);
 	pk_common_test (test);
 	pk_enum_test (test);
 	pk_bitfield_test (test);
