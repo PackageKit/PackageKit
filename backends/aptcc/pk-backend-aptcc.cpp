@@ -1158,7 +1158,6 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 	pk_backend_thread_create(backend, backend_search_package_thread);
 }
 
-
 /**
  * backend_search_details:
  */
@@ -1230,19 +1229,33 @@ backend_manage_packages_thread (PkBackend *backend)
 	if (!m_apt->prepare_transaction(pkgs, simulate, remove)) {
 		// Print transaction errors
 		cout << "prepare_transaction failed" << endl;
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
 	}
 
 	delete m_apt;
-
 	pk_backend_finished (backend);
 	return true;
 }
 
+
 /**
- * backend_resolve:
+ * backend_install_update_packages:
  */
 static void
-simulate_install_update_packages (PkBackend *backend, gchar **packages)
+backend_install_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	pk_backend_set_bool(backend, "simulate", false);
+	pk_backend_set_bool(backend, "remove", false);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_simulate_install_update_packages:
+ */
+static void
+backend_simulate_install_update_packages (PkBackend *backend, gchar **packages)
 {
 	pk_backend_set_bool(backend, "simulate", true);
 	pk_backend_set_bool(backend, "remove", false);
@@ -1250,10 +1263,21 @@ simulate_install_update_packages (PkBackend *backend, gchar **packages)
 }
 
 /**
- * backend_resolve:
+ * backend_remove_packages:
  */
 static void
-simulate_remove_packages (PkBackend *backend, gchar **packages)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	pk_backend_set_bool(backend, "simulate", false);
+	pk_backend_set_bool(backend, "remove", true);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **packages)
 {
 	pk_backend_set_bool(backend, "simulate", true);
 	pk_backend_set_bool(backend, "remove", true);
@@ -1441,88 +1465,6 @@ backend_get_packages (PkBackend *backend, PkBitfield filter)
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
 
-/**
- * backend_install_packages:
- */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-	const gchar *license_agreement;
-	const gchar *eula_id;
-	gboolean has_eula;
-
-	/* FIXME: support only_trusted */
-
-// 	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
-// 		if (_use_gpg && !_has_signature) {
-			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
-							    "http://example.com/gpgkey",
-							    "Test Key (Fedora) fedora@example.com",
-							    "BB7576AC",
-							    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
-							    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
-			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
-					       "GPG signed package could not be verified");
-			pk_backend_finished (backend);
-			return;
-// 		}
-// 		eula_id = "eula_hughsie_dot_com";
-// 		has_eula = pk_backend_is_eula_valid (backend, eula_id);
-// 		if (_use_eula && !has_eula) {
-// 			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
-// 					    "Captain: What happen ?\n"
-// 					    "Mechanic: Somebody set up us the bomb.\n\n"
-// 					    "Operator: We get signal.\n"
-// 					    "Captain: What !\n"
-// 					    "Operator: Main screen turn on.\n"
-// 					    "Captain: It's you !!\n"
-// 					    "CATS: How are you gentlemen !!\n"
-// 					    "CATS: All your base are belong to us.\n"
-// 					    "CATS: You are on the way to destruction.\n\n"
-// 					    "Captain: What you say !!\n"
-// 					    "CATS: You have no chance to survive make your time.\n"
-// 					    "CATS: Ha Ha Ha Ha ....\n\n"
-// 					    "Operator: Captain!! *\n"
-// 					    "Captain: Take off every 'ZIG' !!\n"
-// 					    "Captain: You know what you doing.\n"
-// 					    "Captain: Move 'ZIG'.\n"
-// 					    "Captain: For great justice.\n";
-// 			pk_backend_eula_required (backend, eula_id, package_ids[0],
-// 						  "CATS Inc.", license_agreement);
-// 			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
-// 					       "licence not installed so cannot install");
-// 			pk_backend_finished (backend);
-// 			return;
-// 		}
-// 		if (_use_media) {
-// 			_use_media = FALSE;
-// 			pk_backend_media_change_required (backend, PK_MEDIA_TYPE_ENUM_DVD, "linux-disk-1of7", "Linux Disc 1 of 7");
-// 			pk_backend_error_code (backend, PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
-// 					       "additional media linux-disk-1of7 required");
-// 			pk_backend_finished (backend);
-// 			return;
-// 		}
-// 	}
-
-// 	pk_backend_set_allow_cancel (backend, TRUE);
-// 	_progress_percentage = 0;
-// 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-// 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-// 			    "An HTML widget for GTK+ 2.0");
-// 	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
-}
-
-/**
- * backend_remove_packages:
- */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
-	pk_backend_finished (backend);
-}
-
 extern "C" PK_BACKEND_OPTIONS (
 	"APTcc",					/* description */
 	"Daniel Nicoletti <dantti85-pk@yahoo.com.br>",	/* author */
@@ -1544,10 +1486,10 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	NULL,						/* install_files */
-	backend_install_packages,						/* install_packages */
+	backend_install_update_packages,		/* install_packages */
 	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
-	backend_remove_packages,						/* remove_packages */
+	backend_remove_packages,			/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
@@ -1556,11 +1498,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
-	backend_install_packages,						/* update_packages */
+	backend_install_update_packages,		/* update_packages */
 	backend_update_system,				/* update_system */
 	NULL,						/* what_provides */
 	NULL,						/* simulate_install_files */
-	simulate_install_update_packages,		/* simulate_install_packages */
-	simulate_remove_packages,			/* simulate_remove_packages */
-	simulate_install_update_packages		/* simulate_update_packages */
+	backend_simulate_install_update_packages,	/* simulate_install_packages */
+	backend_simulate_remove_packages,		/* simulate_remove_packages */
+	backend_simulate_install_update_packages	/* simulate_update_packages */
 );

@@ -311,11 +311,13 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 
 		// TODO add Ubuntu handling
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
-			if (!repo_section.compare("contrib") || !repo_section.compare("non-free")) {
+			if (!repo_section.compare("contrib") ||
+			    !repo_section.compare("non-free")) {
 				return;
 			}
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
-			if (repo_section.compare("contrib") && repo_section.compare("non-free")) {
+			if (repo_section.compare("contrib") &&
+			    repo_section.compare("non-free")) {
 				return;
 			}
 		}
@@ -630,143 +632,72 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 			 pkgProblemResolver &Fix,
 			 bool Remove,
 			 bool BrokenFix,
-			 unsigned int &ExpectedInst/*,
-			 bool AllowFail = true*/)
+			 unsigned int &ExpectedInst)
 {
-    cout << "TryToInstall PACKAGE: " << Pkg.Name() << endl;
-   /* This is a pure virtual package and there is a single available
-      provides */
-   if (Cache[Pkg].CandidateVer == 0 && Pkg->ProvidesList != 0 &&
-       Pkg.ProvidesList()->NextProvides == 0)
-   {
-      pkgCache::PkgIterator Tmp = Pkg.ProvidesList().OwnerPkg();
-//       ioprintf(c1out,_("Note, selecting %s instead of %s\n"),
-// 	       Tmp.Name(),Pkg.Name());
-      Pkg = Tmp;
-   }
+	// This is a pure virtual package and there is a single available provides
+	if (Cache[Pkg].CandidateVer == 0 && Pkg->ProvidesList != 0 &&
+	    Pkg.ProvidesList()->NextProvides == 0)
+	{
+		pkgCache::PkgIterator Tmp = Pkg.ProvidesList().OwnerPkg();
+		Pkg = Tmp;
+	}
 
-   // Handle the no-upgrade case
-//    if (_config->FindB("APT::Get::upgrade",true) == false &&
-//        Pkg->CurrentVer != 0)
-//    {
-//       if (AllowFail == true)
-// 	 ioprintf(c1out,_("Skipping %s, it is already installed and upgrade is not set.\n"),
-// 		  Pkg.Name());
-//       return true;
-//    }
+	// Check if there is something at all to install
+	pkgDepCache::StateCache &State = Cache[Pkg];
+	if (Remove == true && Pkg->CurrentVer == 0)
+	{
+		Fix.Clear(Pkg);
+		Fix.Protect(Pkg);
+		Fix.Remove(Pkg);
 
-   // Check if there is something at all to install
-   pkgDepCache::StateCache &State = Cache[Pkg];
-   if (Remove == true && Pkg->CurrentVer == 0)
-   {
-      Fix.Clear(Pkg);
-      Fix.Protect(Pkg);
-      Fix.Remove(Pkg);
+		return true;
+	}
 
-      /* We want to continue searching for regex hits, so we return false here
-         otherwise this is not really an error. */
-//       if (AllowFail == false)
-// 	 return false;
+	if (State.CandidateVer == 0 && Remove == false)
+	{
+		_error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());
+		return false;
+	}
 
-//       ioprintf(c1out,_("Package %s is not installed, so not removed\n"),Pkg.Name());
-      return true;
-   }
+	Fix.Clear(Pkg);
+	Fix.Protect(Pkg);
+	if (Remove == true)
+	{
+		Fix.Remove(Pkg);
+		Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge",false));
+		return true;
+	}
 
-   if (State.CandidateVer == 0 && Remove == false)
-   {
-//       if (AllowFail == false)
-// 	 return false;
+	// Install it
+	Cache.MarkInstall(Pkg,false);
+	if (State.Install() == false)
+	{
+		if (_config->FindB("APT::Get::ReInstall",false) == true) {
+			if (Pkg->CurrentVer == 0 || Pkg.CurrentVer().Downloadable() == false) {
+		// 	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
+		// 		     Pkg.Name());
+		;
+			} else {
+				Cache.SetReInstall(Pkg,true);
+			}
+		} else {
+	    // 	 if (AllowFail == true)
+	    // 	    ioprintf(c1out,_("%s is already the newest version.\n"),
+	    // 		     Pkg.Name());
+		}
+	} else {
+		ExpectedInst++;
+	}
 
-      if (Pkg->ProvidesList != 0)
-      {
-// 	 ioprintf(c1out,_("Package %s is a virtual package provided by:\n"),
-// 		  Pkg.Name());
+	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
+	// Install it with autoinstalling enabled (if we not respect the minial
+	// required deps or the policy)
+	if ((State.InstBroken() == true || State.InstPolicyBroken() == true) &&
+	    BrokenFix == false) {
+	    Cache.MarkInstall(Pkg,true);
+	}
 
-	 pkgCache::PrvIterator I = Pkg.ProvidesList();
-	 for (; I.end() == false; I++)
-	 {
-	    pkgCache::PkgIterator Pkg = I.OwnerPkg();
-
-	    if (Cache[Pkg].CandidateVerIter(Cache) == I.OwnerVer())
-	    {
-// 	       if (Cache[Pkg].Install() == true && Cache[Pkg].NewInstall() == false)
-// 		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() <<
-// 		  _(" [Installed]") << endl;
-// 	       else
-// 		  c1out << "  " << Pkg.Name() << " " << I.OwnerVer().VerStr() << endl;
-	    }
-	 }
-// 	 c1out << _("You should explicitly select one to install.") << endl;
-      }
-      else
-      {
-// 	 ioprintf(c1out,
-// 	 _("Package %s is not available, but is referred to by another package.\n"
-// 	   "This may mean that the package is missing, has been obsoleted, or\n"
-//            "is only available from another source\n"),Pkg.Name());
-
-	 string List;
-	 string VersionsList;
-	 SPtrArray<bool> Seen = new bool[Cache.Head().PackageCount];
-	 memset(Seen,0,Cache.Head().PackageCount*sizeof(*Seen));
-	 pkgCache::DepIterator Dep = Pkg.RevDependsList();
-	 for (; Dep.end() == false; Dep++)
-	 {
-	    if (Dep->Type != pkgCache::Dep::Replaces)
-	       continue;
-	    if (Seen[Dep.ParentPkg()->ID] == true)
-	       continue;
-	    Seen[Dep.ParentPkg()->ID] = true;
-	    List += string(Dep.ParentPkg().Name()) + " ";
-        //VersionsList += string(Dep.ParentPkg().CurVersion) + "\n"; ???
-	 }
-// 	 ShowList(c1out,_("However the following packages replace it:"),List,VersionsList);
-      }
-
-//       _error->Error(_("Package %s has no installation candidate"),Pkg.Name());
-      return false;
-   }
-
-   Fix.Clear(Pkg);
-   Fix.Protect(Pkg);
-   if (Remove == true)
-   {
-      Fix.Remove(Pkg);
-      Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge",false));
-      return true;
-   }
-
-   // Install it
-   Cache.MarkInstall(Pkg,false);
-   if (State.Install() == false)
-   {
-       cout << "TryToInstall 6" << endl;
-      if (_config->FindB("APT::Get::ReInstall",false) == true)
-      {
-	 if (Pkg->CurrentVer == 0 || Pkg.CurrentVer().Downloadable() == false)
-// 	    ioprintf(c1out,_("Reinstallation of %s is not possible, it cannot be downloaded.\n"),
-// 		     Pkg.Name());
-;
-	 else
-	    Cache.SetReInstall(Pkg,true);
-      }
-      else
-      {
-// 	 if (AllowFail == true)
-// 	    ioprintf(c1out,_("%s is already the newest version.\n"),
-// 		     Pkg.Name());
-      }
-   }
-   else
-      ExpectedInst++;
-
-   cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
-   // Install it with autoinstalling enabled (if we not respect the minial
-   // required deps or the policy)
-   if ((State.InstBroken() == true || State.InstPolicyBroken() == true) && BrokenFix == false)
-      Cache.MarkInstall(Pkg,true);
-
-   return true;
+	return true;
 }
 
 // emitChangedPackages - Show packages to newly install				/*{{{*/
@@ -873,20 +804,8 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	    return true;
 
 	// No remove flag
-	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false)
-	    return _error->Error("Packages need to be removed but remove is disabled.");
-
-	// Run the simulator ..
-	if (_config->FindB("APT::Get::Simulate") == true)
-	{
-	    pkgSimulate PM(&Cache);
-	    int status_fd = _config->FindI("APT::Status-Fd",-1);
-	    pkgPackageManager::OrderResult Res = PM.DoInstall(status_fd);
-	    if (Res == pkgPackageManager::Failed)
-		return false;
-	    if (Res != pkgPackageManager::Completed)
-		return _error->Error("Internal error, Ordering didn't finish");
-	    return true;
+	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
+		return _error->Error("Packages need to be removed but remove is disabled.");
 	}
 
 	// Create the text record parser
@@ -916,8 +835,9 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	// Create the package manager and prepare to download
 	SPtr<pkgPackageManager> PM= _system->CreatePM(&Cache);
 	if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false ||
-	    _error->PendingError() == true)
-	    return false;
+	    _error->PendingError() == true) {
+		return false;
+	}
 
 
 	// Generate the list of affected packages and sort it
@@ -1151,87 +1071,69 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 /* Remove unused automatic packages */
 bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 {
-   bool Debug = _config->FindI("Debug::pkgAutoRemove",false);
-   bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
-   bool hideAutoRemove = _config->FindB("APT::Get::HideAutoRemove");
-   pkgDepCache::ActionGroup group(*Cache);
+	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", true);
+	pkgDepCache::ActionGroup group(*Cache);
 
-//    if(Debug)
-//       std::cout << "DoAutomaticRemove()" << std::endl;
+	if (_config->FindB("APT::Get::Remove",true) == false &&
+	    doAutoRemove == true)
+	{
+		cout << "We are not supposed to delete stuff, can't start "
+			"AutoRemover" << endl;
+		doAutoRemove = false;
+	}
 
-   if (_config->FindB("APT::Get::Remove",true) == false &&
-       doAutoRemove == true)
-   {
-//       c1out << _("We are not supposed to delete stuff, can't start "
-// 		 "AutoRemover") << std::endl;
-      doAutoRemove = false;
-   }
-// c1out << "doAutoRemove" << doAutoRemove << endl;
-   string autoremovelist, autoremoveversions;
-   // look over the cache to see what can be removed
-   for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg)
-   {
-      if (Cache[Pkg].Garbage)
-      {
-// 	 if(Pkg.CurrentVer() != 0 || Cache[Pkg].Install())
-// 	    if(Debug)
-// 	       std::cout << "We could delete %s" <<  Pkg.Name() << std::endl;
+	// look over the cache to see what can be removed
+	for (pkgCache::PkgIterator Pkg = Cache->PkgBegin(); ! Pkg.end(); ++Pkg)
+	{
+		if (Cache[Pkg].Garbage && doAutoRemove)
+		{
+			if (Pkg.CurrentVer() != 0 &&
+			    Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+				Cache->MarkDelete(Pkg, _config->FindB("APT::Get::Purge", false));
+			} else {
+				Cache->MarkKeep(Pkg, false, false);
+			}
+		}
+	}
 
-	 // only show stuff in the list that is not yet marked for removal
-	 if(Cache[Pkg].Delete() == false)
-	 {
-	    autoremovelist += string(Pkg.Name()) + " ";
-	    autoremoveversions += string(Cache[Pkg].CandVersion) + "\n";
-	 }
-	 if (doAutoRemove)
-	 {
-	    if(Pkg.CurrentVer() != 0 &&
-	       Pkg->CurrentState != pkgCache::State::ConfigFiles) {
-		    Cache->MarkDelete(Pkg, _config->FindB("APT::Get::Purge", false));
-	    } else {
-		    Cache->MarkKeep(Pkg, false, false);
-	    }
-	 }
-      }
-   }
-//    if (!hideAutoRemove)
-//       ShowList(c1out, _("The following packages were automatically installed and are no longer required:"), autoremovelist, autoremoveversions);
-//    if (!doAutoRemove && !hideAutoRemove && autoremovelist.size() > 0)
-//       c1out << _("Use 'apt-get autoremove' to remove them.") << std::endl;
-
-   // Now see if we destroyed anything
-   if (Cache->BrokenCount() != 0)
-   {
-//       c1out << _("Hmm, seems like the AutoRemover destroyed something which really\n"
-// 	         "shouldn't happen. Please file a bug report against apt.") << endl;
-//       c1out << endl;
-//       c1out << _("The following information may help to resolve the situation:") << endl;
-//       c1out << endl;
-//       ShowBroken(c1out,Cache,false);
-
-      return _error->Error("Internal Error, AutoRemover broke stuff");
-   }
-   return true;
+	// Now see if we destroyed anything
+	if (Cache->BrokenCount() != 0)
+	{
+		cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
+			    "shouldn't happen. Please file a bug report against apt." << endl;
+		// TODO call show_broken
+	    //       ShowBroken(c1out,Cache,false);
+		return _error->Error("Internal Error, AutoRemover broke stuff");
+	}
+	return true;
 }
 
 bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
 				bool simulate,
 				bool remove)
 {
-    cout << "==============================================================" << endl;
+	cout << "==============================================================" << endl;
 	cout << "prepare_transaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
 				   //since for that no lock is needed
 
-    //    CacheFile Cache;
 	pkgCacheFile Cache;
 	OpTextProgress Prog(*_config);
-	// TODO do a loop here waiting for the lock if we need it..
-	if (Cache.Open(Prog, WithLock) == false) {
+	int timeout = 10;
+	// TODO test this
+	while (Cache.Open(Prog, WithLock) == false) {
 		// failed to open cache, try checkDeps then..
 		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
-		cout << "Failed to open cache" << endl;
-		return false;
+		if (WithLock == false || (timeout <= 0)) {
+			pk_backend_error_code(m_backend,
+					      PK_ERROR_ENUM_NO_CACHE,
+					      "Could not open package cache.");
+			return false;
+		} else {
+			pk_backend_set_status (m_backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+			sleep(1);
+			timeout--;
+		}
 	}
 
 	// Enter the special broken fixing mode if the user specified arguments
@@ -1240,193 +1142,76 @@ bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 		BrokenFix = true;
 	}
 
-	unsigned int AutoMarkChanged = 0;
 	unsigned int ExpectedInst = 0;
-	unsigned int Packages = 0;
 	pkgProblemResolver Fix(Cache);
-
-// 	bool DefRemove = remove; // check if we are going to remove, otherwise is false
 
 	// new scope for the ActionGroup
 	{
-	    cout << "new scope for the ActionGroup" << endl;
+		cout << "new scope for the ActionGroup" << endl;
 		pkgDepCache::ActionGroup group(Cache);
 		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
 		    i != pkgs.end();
 		    ++i)
 		{
-		    pkgCache::PkgIterator Pkg = i->first;
-		    cout << "PACKAGE: " << Pkg.Name() << endl;
+			pkgCache::PkgIterator Pkg = i->first;
 			if (_cancel) {
 				break;
 			}
-			cout << "PACKAGE" << i->first.Name() << endl;
 
-// 		for (const char **I = CmdL.FileList + 1; *I != 0; I++)
-// 		{
-			// Duplicate the string
-// 			unsigned int Length = strlen(*I);
-// 			char S[300];
-// 			if (Length >= sizeof(S))
-// 			    continue;
-// 			strcpy(S,*I);
-
-			// See if we are removing and special indicators..
-// 			bool Remove = DefRemove;
-			char *VerTag = 0;
-			bool VerIsRel = false;
-
-		// Locate the package WE SHOULD ALREADY HAVE THE PACKAGE
-    // 	    pkgCache::PkgIterator Pkg = Cache->FindPkg(S);
-    // 	    Packages++;
-    // 	    if (Pkg.end() == true)
-    // 	    {
-    // 		// Check if the name is a regex
-    // 		const char *I;
-    // 		for (I = S; *I != 0; I++)
-    // 		if (*I == '?' || *I == '*' || *I == '|' ||
-    // 		    *I == '[' || *I == '^' || *I == '$')
-    // 		    break;
-    // 		if (*I == 0)
-    // 		return _error->Error(_("Couldn't find package %s"),S);
-    //
-    // 		// Regexs must always be confirmed
-    // 		ExpectedInst += 1000;
-    //
-    // 		// Compile the regex pattern
-    // 		regex_t Pattern;
-    // 		int Res;
-    // 		if ((Res = regcomp(&Pattern,S,REG_EXTENDED | REG_ICASE |
-    // 				REG_NOSUB)) != 0)
-    // 		{
-    // 		char Error[300];
-    // 		regerror(Res,&Pattern,Error,sizeof(Error));
-    // 		return _error->Error(_("Regex compilation error - %s"),Error);
-    // 		}
-    //
-    // 		// Run over the matches
-    // 		bool Hit = false;
-    // 		for (Pkg = Cache->PkgBegin(); Pkg.end() == false; Pkg++)
-    // 		{
-    // 		if (regexec(&Pattern,Pkg.Name(),0,0,0) != 0)
-    // 		    continue;
-    //
-    // 		ioprintf(c1out,_("Note, selecting %s for regex '%s'\n"),
-    // 			    Pkg.Name(),S);
-    //
-    // 		if (VerTag != 0)
-    // 		    if (TryToChangeVer(Pkg,Cache,VerTag,VerIsRel) == false)
-    // 			return false;
-    //
-    // 		Hit |= TryToInstall(Pkg,Cache,Fix,Remove,BrokenFix,
-    // 				    ExpectedInst,false);
-    // 		}
-    // 		regfree(&Pattern);
-    //
-    // 		if (Hit == false)
-    // 		return _error->Error(_("Couldn't find package %s"),S);
-    // 	    }
-    // 	    else
-		{
-    // 		if (VerTag != 0)
-    // 		    if (TryToChangeVer(Pkg,Cache,VerTag,VerIsRel) == false)
-    // 			return false;
-			if (TryToInstall(Pkg,Cache,Fix,remove,BrokenFix,ExpectedInst) == false) {
-			    cout << "TryToInstall Failed" << endl;
+			if (TryToInstall(Pkg,
+					 Cache,
+					 Fix,
+					 remove,
+					 BrokenFix,
+					 ExpectedInst) == false) {
+				pk_backend_error_code(m_backend,
+						      PK_ERROR_ENUM_INTERNAL_ERROR,
+						      "Could not open package cache.");
 				return false;
 			}
+		}
 
+		/* If we are in the Broken fixing mode we do not attempt to fix the
+		    problems. This is if the user invoked install without -f and gave
+		    packages */
+		if (BrokenFix == true && Cache->BrokenCount() != 0)
+		{
+			// TODO
+// 			ShowBroken(c1out,Cache,false);
+			cout << "Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)." << endl;
+			return _error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
+		}
+
+		// Call the scored problem resolver
+		Fix.InstallProtect();
+		if (Fix.Resolve(true) == false) {
+			_error->Discard();
+		}
+
+		// Now we check the state of the packages,
+		if (Cache->BrokenCount() != 0)
+		{
+	// 	    c1out << _("The following information may help to resolve the situation:") << endl;
+		    // TODO
+	// 	    ShowBroken(c1out,Cache,false);
+		    return _error->Error("Broken packages");
 		}
 	}
-
-	/* If we are in the Broken fixing mode we do not attempt to fix the
-	    problems. This is if the user invoked install without -f and gave
-	    packages */
-	if (BrokenFix == true && Cache->BrokenCount() != 0)
-	{
-// 	    c1out << _("You might want to run `apt-get -f install' to correct these:") << endl;
-// TODO
-// 	    ShowBroken(c1out,Cache,false);
-cout << "Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)." << endl;
-
-	    return _error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
+	// Try to auto-remove packages
+	if (!DoAutomaticRemove(Cache)) {
+		return false;
 	}
 
-	// Call the scored problem resolver
-	Fix.InstallProtect();
-	if (Fix.Resolve(true) == false)
-	    _error->Discard();
+	if (simulate) {
+		// Print out a list of packages that are going to be installed extra
+		emitChangedPackages(pkgs, Cache);
+		return true;
+	} else {
+	    // See if we need to prompt
+	//     if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
+	// 	return InstallPackages(Cache,false,false);
 
-	// Now we check the state of the packages,
-	if (Cache->BrokenCount() != 0)
-	{
-// 	    c1out <<
-// 		_("Some packages could not be installed. This may mean that you have\n"
-// 		"requested an impossible situation or if you are using the unstable\n"
-// 		"distribution that some required packages have not yet been created\n"
-// 		"or been moved out of Incoming.") << endl;
-	    /*
-	    if (Packages == 1)
-	    {
-		c1out << endl;
-		c1out <<
-		_("Since you only requested a single operation it is extremely likely that\n"
-		    "the package is simply not installable and a bug report against\n"
-		    "that package should be filed.") << endl;
-	    }
-	    */
-
-// 	    c1out << _("The following information may help to resolve the situation:") << endl;
-// 	    c1out << endl;
-// TODO
-// 	    ShowBroken(c1out,Cache,false);
-	    return _error->Error("Broken packages");
+	//     return InstallPackages(Cache,false);
+		return true;
 	}
-    }
-    cout << "DoAutomaticRemove" << endl;
-    if (!DoAutomaticRemove(Cache))
-	return false;
-
-    /* Print out a list of packages that are going to be installed extra
-	to what the user asked */
-//     if (Cache->InstCount() != ExpectedInst)
-//     {
-// 	string List;
-// 	string VersionsList;
-// 	for (unsigned J = 0; J < Cache->Head().PackageCount; J++)
-// 	{
-// 	    pkgCache::PkgIterator I(Cache,Cache.List[J]);
-// 	    if ((*Cache)[I].Install() == false)
-// 		continue;
-//
-// 	    const char **J;
-// 	    for (J = CmdL.FileList + 1; *J != 0; J++)
-// 		if (strcmp(*J,I.Name()) == 0)
-// 		    break;
-//
-// 	    if (*J == 0) {
-// 		List += string(I.Name()) + " ";
-// 		VersionsList += string(Cache[I].CandVersion) + "\n";
-// 	    }
-// 	}
-//
-// 	ShowList(c1out,_("The following extra packages will be installed:"),List,VersionsList);
-//     }
-
-    // if nothing changed in the cache, but only the automark information
-    // we write the StateFile here, otherwise it will be written in
-    // cache.commit()
-    if (AutoMarkChanged > 0 &&
-	Cache->DelCount() == 0 && Cache->InstCount() == 0 &&
-	Cache->BadCount() == 0 &&
-	_config->FindB("APT::Get::Simulate",false) == false)
-	Cache->writeStateFile(NULL);
-
-    emitChangedPackages(pkgs, Cache);
-    // See if we need to prompt
-//     if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
-// 	return InstallPackages(Cache,false,false);
-
-//     return InstallPackages(Cache,false);
-    return true;
 }
