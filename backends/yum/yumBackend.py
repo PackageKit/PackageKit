@@ -2929,7 +2929,7 @@ class PackageKitYumBase(yum.YumBase):
 
         try:
             manager = MediaManager()
-        except NotImplemented:
+        except NotImplementedError, e:
             # yumRepo will catch this
             raise yum.Errors.MediaError, "media handling is not implemented"
 
