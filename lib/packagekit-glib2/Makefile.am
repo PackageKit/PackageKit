@@ -65,6 +65,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-marshal.h						\
 	pk-package.c						\
 	pk-package.h						\
+	pk-package-id.c						\
+	pk-package-id.h						\
 	pk-package-sack.c					\
 	pk-package-sack.h					\
 	pk-progress.c						\
