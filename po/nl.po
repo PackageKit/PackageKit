@@ -1,16 +1,18 @@
 # translation of packagekit.master.po to Dutch
 # R.E. van der Luit <nippur@fedoraproject.org>, 2009.
+# Geert Warrink <geert.warrink@onsnet.nu>, 2009.
+# Geert Warrink <geert.warrink@onsnet.nu>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.nl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-24 11:06+0100\n"
-"PO-Revision-Date: 2009-06-17 14:16+0200\n"
-"Last-Translator: R.E. van der Luit <nippur@fedoraproject.org>\n"
-"Language-Team: Dutch <nippur@fedoraproject.org>\n"
+"POT-Creation-Date: 2009-09-02 14:45+0000\n"
+"PO-Revision-Date: 2009-09-02 21:48+0200\n"
+"Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
+"Language-Team: nl <nl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding:  \n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Language: Dutch\n"
 "X-Generator: KBabel 1.11.4\n"
@@ -30,12 +32,11 @@ msgstr "Systeemtijd"
 msgid "Succeeded"
 msgstr "Geslaagd"
 
-#. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:239
 msgid "True"
 msgstr "Waar"
 
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:239
 msgid "False"
 msgstr "Niet waar"
 
@@ -58,7 +59,7 @@ msgstr "(seconden)"
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
-msgstr "Commando lijn"
+msgstr "Commando regel"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:252
@@ -77,251 +78,290 @@ msgstr "Werkelijke naam"
 
 #: ../client/pk-console.c:271
 msgid "Affected packages:"
-msgstr "Betreffende Pakketten"
+msgstr "Betreffende pakketten"
 
 #: ../client/pk-console.c:273
 msgid "Affected packages: None"
-msgstr "Betreffende Pakketten: Geen"
+msgstr "Betreffende pakketten: Geen"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: ../client/pk-console.c:334
+msgid "The following packages have to be removed:"
+msgstr "De volgende pakketten moeten worden verwijderd:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: ../client/pk-console.c:337
+msgid "The following packages have to be installed:"
+msgstr "De volgende pakketten moeten worden geïnstalleerd"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: ../client/pk-console.c:340
+msgid "The following packages have to be updated:"
+msgstr "De volgende pakketten moeten worden vernieuwd:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: ../client/pk-console.c:343
+msgid "The following packages have to be reinstalled:"
+msgstr "De volgende pakketten moeten opnieuw geïnstalleerd worden:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: ../client/pk-console.c:346
+msgid "The following packages have to be downgraded:"
+msgstr "De volgende pakketten moeten gedegradeerd worden:"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:298
+#: ../client/pk-console.c:360
 msgid "Distribution"
 msgstr "Distributie"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:300
+#: ../client/pk-console.c:362
 msgid "Type"
 msgstr "Type"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:302 ../client/pk-console.c:325
+#: ../client/pk-console.c:364 ../client/pk-console.c:387
 msgid "Summary"
 msgstr "Samenvatting"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:314
+#: ../client/pk-console.c:376
 msgid "Category"
 msgstr "Categorie"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:316
+#: ../client/pk-console.c:378
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:319
+#: ../client/pk-console.c:381
 msgid "Parent"
 msgstr "Ouder"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:322
+#: ../client/pk-console.c:384
 msgid "Name"
 msgstr "Naam"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:328
+#: ../client/pk-console.c:390
 msgid "Icon"
-msgstr "Afbeelding"
+msgstr "Icoon"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:405
 msgid "Details about the update:"
-msgstr "Details van de update:"
+msgstr "Details van de vernieuwing:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:345 ../src/pk-polkit-action-lookup.c:352
-#, fuzzy
+#: ../client/pk-console.c:407 ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
-msgstr[0] "Pakketten"
+msgstr[0] "Pakket"
 msgstr[1] "Pakketten"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:348
+#: ../client/pk-console.c:410
 msgid "Updates"
-msgstr "Updates"
+msgstr "Vernieuwingen"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:352
+#: ../client/pk-console.c:414
 msgid "Obsoletes"
-msgstr "Verouderde Paketten"
+msgstr "Verouderde pakketten"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:356
+#: ../client/pk-console.c:418
 msgid "Vendor"
 msgstr "Verkoper"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:422
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:364
+#: ../client/pk-console.c:426
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:368
+#: ../client/pk-console.c:430
 msgid "Restart"
 msgstr "Herstarten"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:372
+#: ../client/pk-console.c:434
 msgid "Update text"
-msgstr "Update tekst"
+msgstr "Vernieuw tekst"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:438
 msgid "Changes"
 msgstr "Veranderingen"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:380
+#: ../client/pk-console.c:442
 msgid "State"
 msgstr "Status"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:385
+#: ../client/pk-console.c:447
 msgid "Issued"
 msgstr "Uitgegeven"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:390
+#: ../client/pk-console.c:452
 msgid "Updated"
-msgstr "Ge-update"
+msgstr "Vernieuwd"
 
-#: ../client/pk-console.c:477 ../client/pk-console.c:479
+#. TRANSLATORS: if the repo is enabled
+#: ../client/pk-console.c:472
+msgid "Enabled"
+msgstr "Aangezit"
+
+#. TRANSLATORS: if the repo is disabled
+#: ../client/pk-console.c:475
+msgid "Disabled"
+msgstr "Uitgezet"
+
+#: ../client/pk-console.c:552 ../client/pk-console.c:554
 msgid "Percentage"
 msgstr "Percentage"
 
-#: ../client/pk-console.c:479
+#: ../client/pk-console.c:554
 msgid "Unknown"
 msgstr "Onbekend"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:521
+#: ../client/pk-console.c:596
 msgid "System restart required by:"
 msgstr "Herstart systeem vereist door:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:524
+#: ../client/pk-console.c:599
 msgid "Session restart required:"
 msgstr "Het is vereist het systeem te herstarten:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:527
-#, fuzzy
+#: ../client/pk-console.c:602
 msgid "System restart (security) required by:"
-msgstr "Herstart systeem vereist door:"
+msgstr "Herstart systeem (beveiliging) vereist door:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:530
-#, fuzzy
+#: ../client/pk-console.c:605
 msgid "Session restart (security) required:"
-msgstr "Het is vereist het systeem te herstarten:"
+msgstr "Herstart sessie (beveiliging) vereist door:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:533
+#: ../client/pk-console.c:608
 msgid "Application restart required by:"
-msgstr "Herstart vereist door applicatie:"
+msgstr "Herstart vereist door toepassing:"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:588
+#: ../client/pk-console.c:663
 msgid "Please restart the computer to complete the update."
-msgstr "Herstart u alstublieft de computer om de update af te maken."
+msgstr "Herstart a.u.b de computer om de verneuwing af te maken."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:591
+#: ../client/pk-console.c:666
 msgid "Please logout and login to complete the update."
-msgstr "Logt u alstublieft uit en weer in om de update af te maken."
+msgstr "Log a.u.b uit en weer in om de vernieuwing af te maken."
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:594
+#: ../client/pk-console.c:669
 msgid "Please restart the application as it is being used."
-msgstr "Herstart u alstublieft de applicatie aangezien deze in gebruik was."
+msgstr "Herstart a.ub. de toepassing omdat deze in gebruik was."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:597
-#, fuzzy
+#: ../client/pk-console.c:672
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "Herstart u alstublieft de computer om de update af te maken."
+msgstr ""
+"Herstart a.u.b de computer om de vernieuwing af te maken omdat belangrijke "
+"beveiligings vernieuwingen geïnstaleerd zijn."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:600
-#, fuzzy
+#: ../client/pk-console.c:675
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
-msgstr "Logt u alstublieft uit en weer in om de update af te maken."
+msgstr "Log a.u.b. uit en weer in om de verniewing af te maken."
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:727
+#: ../client/pk-console.c:807
 #, c-format
 msgid "The package %s is already installed"
 msgstr "Het pakket %s is reeds geïnstalleerd"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:735
+#: ../client/pk-console.c:815
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "Het pakket %s kon niet worden geïnstalleerd: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:760 ../client/pk-console.c:783
-#: ../client/pk-console.c:879 ../client/pk-console.c:996
-#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
-#: ../client/pk-tools-common.c:89
+#: ../client/pk-console.c:841 ../client/pk-console.c:889
+#: ../client/pk-console.c:913 ../client/pk-console.c:961
+#: ../client/pk-console.c:1057 ../client/pk-console.c:1170
+#: ../client/pk-console.c:1231 ../client/pk-tools-common.c:62
+#: ../client/pk-tools-common.c:81 ../client/pk-tools-common.c:89
 #, c-format
 msgid "Internal error: %s"
 msgstr "Interne fout: %s"
 
+#. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#: ../client/pk-console.c:873 ../client/pk-console.c:945
+#: ../client/pk-console.c:1263
+msgid "Proceed with changes?"
+msgstr "Doorgaan met veranderingen?"
+
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:878 ../client/pk-console.c:950
+msgid "The package install was canceled!"
+msgstr "De pakket installatie is afgebroken!"
+
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:768 ../client/pk-console.c:1392
+#: ../client/pk-console.c:897 ../client/pk-console.c:1631
 #, c-format
 msgid "This tool could not install the packages: %s"
-msgstr "Dit programma kon niet het pakket %s installeren."
+msgstr "Dit programma kon niet de pakketten %s installeren."
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:791
+#: ../client/pk-console.c:969
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "De bestanden %s konden niet worden geïnstalleerd."
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:847
+#: ../client/pk-console.c:1025
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "Dit programma kon %s niet verwijderen: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:870 ../client/pk-console.c:908
-#: ../client/pk-console.c:941
+#: ../client/pk-console.c:1048 ../client/pk-console.c:1086
+#: ../client/pk-console.c:1115
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Dit programma kon het pakket %s niet verwijderen."
 
-#. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:920
-msgid "The following packages have to be removed:"
-msgstr "De volgende pakketten moeten worden verwijderd:"
-
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:927
-msgid "Proceed removing additional packages?"
-msgstr "Doorgaan met additionele pakketten verwijderen?"
+#: ../client/pk-console.c:1101
+msgid "Proceed with additional packages?"
+msgstr "Doorgaan met additionele pakketten?"
 
-#. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:932
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:1106
 msgid "The package removal was canceled!"
 msgstr "Het verwijderen van pakketten is afgebroken!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:973
+#: ../client/pk-console.c:1147
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr ""
@@ -329,359 +369,364 @@ msgstr ""
 "kon worden."
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1004
+#: ../client/pk-console.c:1178
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "Dit programma kon de pakketten niet downloaden: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1031 ../client/pk-console.c:1040
+#: ../client/pk-console.c:1210 ../client/pk-console.c:1222
+#: ../client/pk-console.c:1277
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Dit programma kon %s niet updaten: %s"
 
+#. TRANSLATORS: There was an error removing the packages. The detailed error follows
+#: ../client/pk-console.c:1268
+msgid "The package update was canceled!"
+msgstr "De pakket vernieuwing is afgebroken!"
+
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1062 ../client/pk-console.c:1070
+#: ../client/pk-console.c:1301 ../client/pk-console.c:1309
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Dit programma kon niet de benodigdheden voor %s vinden: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1092 ../client/pk-console.c:1100
+#: ../client/pk-console.c:1331 ../client/pk-console.c:1339
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "De afhankelijkheden voor %s konden niet worden verkregen: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1122 ../client/pk-console.c:1130
+#: ../client/pk-console.c:1361 ../client/pk-console.c:1369
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Dit programma kon geen pakketdetails vinden voor %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1152
+#: ../client/pk-console.c:1391
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "Dit programma kon de bestanden voor %s niet vinden: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1160
+#: ../client/pk-console.c:1399
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "Dit programma kon de bestandenlijst voor %s niet vinden: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1182
+#: ../client/pk-console.c:1421
 #, c-format
 msgid "File already exists: %s"
 msgstr "Bestand bestaat reeds: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1187 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1318
+#: ../client/pk-console.c:1426 ../client/pk-console.c:1482
+#: ../client/pk-console.c:1557
 msgid "Getting package list"
 msgstr "Ophalen Pakketlijst"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1193 ../client/pk-console.c:1249
-#: ../client/pk-console.c:1324
+#: ../client/pk-console.c:1432 ../client/pk-console.c:1488
+#: ../client/pk-console.c:1563
 #, c-format
 msgid "This tool could not get package list: %s"
 msgstr "Dit programma kon de pakketlijst niet vinden: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1204
+#: ../client/pk-console.c:1443
 #, c-format
 msgid "Failed to save to disk"
 msgstr "Vastleggen op schijf niet gelukt"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1238 ../client/pk-console.c:1313
+#: ../client/pk-console.c:1477 ../client/pk-console.c:1552
 #, c-format
 msgid "File does not exist: %s"
 msgstr "Bestand bestaat niet: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1509
 msgid "Packages to add"
 msgstr "Toe te voegen pakketten"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1278
+#: ../client/pk-console.c:1517
 msgid "Packages to remove"
 msgstr "Te verwijderen pakketten"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1585
 #, c-format
 msgid "No new packages need to be installed"
 msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1352
+#: ../client/pk-console.c:1591
 msgid "To install"
 msgstr "Te installeren"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1364
+#: ../client/pk-console.c:1603
 msgid "Searching for package: "
 msgstr "Pakketten worden gezocht (kan even duren): "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1368
+#: ../client/pk-console.c:1607
 msgid "not found."
 msgstr "niet gevonden."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1379
+#: ../client/pk-console.c:1618
 #, c-format
 msgid "No packages can be found to install"
 msgstr "Er kunnen geen pakketten worden gevonden om te installeren"
 
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1385
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
+#: ../client/pk-console.c:1624
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
 #, c-format
 msgid "Installing packages"
 msgstr "Pakketten installeren"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1660
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "Dit programma kon de update-details voor %s niet vinden: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1429
+#: ../client/pk-console.c:1668
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "Dit programma kon de update-details voor %s niet verkrijgen: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1460
+#: ../client/pk-console.c:1699
 msgid "Error:"
 msgstr "Fout:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1474
+#: ../client/pk-console.c:1713
 msgid "Package description"
 msgstr "Pakketomschrijving"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1490
+#: ../client/pk-console.c:1729
 msgid "Message:"
 msgstr "Bericht:"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1518
+#: ../client/pk-console.c:1757
 msgid "Package files"
 msgstr "Pakketbestanden"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:1765
 msgid "No files"
 msgstr "Geen bestanden"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1549
+#: ../client/pk-console.c:1788
 msgid "Repository signature required"
 msgstr "Repository signatuur vereist"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1559
+#: ../client/pk-console.c:1798
 msgid "Do you accept this signature?"
 msgstr "Accepteert u deze signatuur?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1563
+#: ../client/pk-console.c:1802
 msgid "The signature was not accepted."
 msgstr "De signatuur werd niet geaccepteerd"
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1597
+#: ../client/pk-console.c:1836
 msgid "End user license agreement required"
 msgstr "Eindgebruiker licentie overeenkomst vereist"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1604
+#: ../client/pk-console.c:1843
 msgid "Do you agree to this license?"
 msgstr "Gaat u accoord met deze licentie?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1608
+#: ../client/pk-console.c:1847
 msgid "The license was refused."
 msgstr "De licentie werd geweigerd."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1637
+#: ../client/pk-console.c:1876
 msgid "The daemon crashed mid-transaction!"
 msgstr "De service is midden in de transactie gecrashed!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1690
+#: ../client/pk-console.c:1929
 msgid "PackageKit Console Interface"
 msgstr "PackageKit console-interface"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1692
+#: ../client/pk-console.c:1931
 msgid "Subcommands:"
 msgstr "Subopdrachten:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1785 ../client/pk-generate-pack.c:185
+#: ../client/pk-console.c:2024 ../client/pk-generate-pack.c:185
 #: ../client/pk-monitor.c:128
 #: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:549
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Extra debuginformatie tonen"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1788 ../client/pk-monitor.c:130
+#: ../client/pk-console.c:2027 ../client/pk-monitor.c:130
 msgid "Show the program version and exit"
 msgstr "Programmaversie tonen en sluiten"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1791
+#: ../client/pk-console.c:2030
 msgid "Set the filter, e.g. installed"
 msgstr "Filter instellen, bijvoorbeeld geïnstalleerd"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1794
+#: ../client/pk-console.c:2033
 msgid "Exit without waiting for actions to complete"
 msgstr "Afsluiten zonder te wachten tot de transacties zijn afgerond"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1821
+#: ../client/pk-console.c:2060
 msgid "This tool could not connect to system DBUS."
 msgstr "Er kon geen verbinding worden gelegd met system DBUS"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1911
+#: ../client/pk-console.c:2150
 msgid "The filter specified was invalid"
 msgstr "De opgegeven filter was ongeldig"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1930
+#: ../client/pk-console.c:2169
 msgid "A search type is required, e.g. name"
 msgstr "Een zoektype is verplicht, b.v. naam"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1937 ../client/pk-console.c:1946
-#: ../client/pk-console.c:1955 ../client/pk-console.c:1964
+#: ../client/pk-console.c:2176 ../client/pk-console.c:2185
+#: ../client/pk-console.c:2194 ../client/pk-console.c:2203
 msgid "A search term is required"
 msgstr "Een zoekterm is vereist"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1971
+#: ../client/pk-console.c:2210
 msgid "Invalid search type"
 msgstr "Ongeldig zoektype"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1977
+#: ../client/pk-console.c:2216
 msgid "A package name or filename to install is required"
 msgstr "Een pakketnaam of bestandsnaam om te installeren is vereist"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1986
+#: ../client/pk-console.c:2225
 msgid "A type, key_id and package_id are required"
 msgstr "Er moet een type worden opgegeven, key_id of package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1995
+#: ../client/pk-console.c:2234
 msgid "A package name to remove is required"
 msgstr "Een te verwijderen pakketnaam is vereist"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2003
-#, fuzzy
+#: ../client/pk-console.c:2242
 msgid "A destination directory and the package names to download are required"
-msgstr "Een doelmap en dan de namen van te downloaden pakketten zijn vereist."
+msgstr "Een doelmap en dan de namen van te downloaden pakketten zijn vereist"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2010
+#: ../client/pk-console.c:2249
 msgid "Directory not found"
 msgstr "Map niet gevonden"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2018
+#: ../client/pk-console.c:2257
 msgid "A licence identifier (eula-id) is required"
 msgstr "Een licentie indentificatie (eula-id) is vereis"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2028
+#: ../client/pk-console.c:2267
 msgid "A transaction identifier (tid) is required"
 msgstr "Een transactie indentificatie (tid) is vereist"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2045
+#: ../client/pk-console.c:2284
 msgid "A package name to resolve is required"
 msgstr "Een pakketnaam om te gebruiken is vereist"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2054 ../client/pk-console.c:2063
+#: ../client/pk-console.c:2293 ../client/pk-console.c:2302
 msgid "A repository name is required"
 msgstr "Een naam van een repository is vereist"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2072
+#: ../client/pk-console.c:2311
 msgid "A repo name, parameter and value are required"
 msgstr "Een repo naam, parameter en waarde zijn vereist"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2086
+#: ../client/pk-console.c:2325
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Een actie, b.v. 'update-system' is vereist"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2093
+#: ../client/pk-console.c:2332
 msgid "A correct role is required"
 msgstr "Een correcte rol is vereist"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2100
+#: ../client/pk-console.c:2339
 msgid "Failed to get the time since this action was last completed"
 msgstr ""
 "Verkrijgen van de tijd tussen laatste actie en deze actie is niet gelukt"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2110 ../client/pk-console.c:2122
-#: ../client/pk-console.c:2131 ../client/pk-console.c:2149
-#: ../client/pk-console.c:2158 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2349 ../client/pk-console.c:2361
+#: ../client/pk-console.c:2370 ../client/pk-console.c:2388
+#: ../client/pk-console.c:2397 ../client/pk-generate-pack.c:241
 msgid "A package name is required"
 msgstr "Een pakketnaam is vereist"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2140
+#: ../client/pk-console.c:2379
 msgid "A package provide string is required"
 msgstr "Een pakket geleverde string is vereist"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2167
+#: ../client/pk-console.c:2406
 msgid "A list file name to create is required"
 msgstr "Een lijstbestandsnaam om aan te maken is vereist"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2177 ../client/pk-console.c:2187
+#: ../client/pk-console.c:2416 ../client/pk-console.c:2426
 msgid "A list file to open is required"
 msgstr "Een lijstbestand om te open is vereist"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2241
+#: ../client/pk-console.c:2480
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Optie '%s' wordt niet ondersteund"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2254
+#: ../client/pk-console.c:2493
 msgid "Incorrect privileges for this operation"
 msgstr "Onjuiste privileges voor deze operatie"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2257
+#: ../client/pk-console.c:2496
 msgid "Command failed"
 msgstr "Opdracht mislukt"
 
@@ -815,7 +860,7 @@ msgstr "PackageKit-monitor"
 
 #: ../client/pk-monitor.c:183
 msgid "Cannot show the list of transactions"
-msgstr ""
+msgstr "Kan de lijst van transacties niet laten zien"
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:118
@@ -895,24 +940,22 @@ msgstr "Aan het installeren......"
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:349
 msgid "Downloading details about the software sources."
-msgstr ""
+msgstr "Download details over de software bronnen."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:353
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "Bestands lijsten downloaden (dit kan enige tijd duren)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:357
-#, fuzzy
 msgid "Waiting for package manager lock."
-msgstr "Pakketnaam wordt opgezocht."
+msgstr "Wachten op pakket beheerder blokkering."
 
 #. TRANSLATORS: loading package cache so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:361
-#, fuzzy
 msgid "Loading list of packages."
-msgstr "Pakketten aan het downloaden"
+msgstr "Lijst van pakketten downloaden."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:420
@@ -985,286 +1028,276 @@ msgstr "Kies alstublieft een pakket om te installeren"
 
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
-#, fuzzy
 msgid "Starting install"
-msgstr "Te installeren"
+msgstr "Installeren starten"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "Het pakket %s is reeds geïnstalleerd"
+msgstr "Pakket %s vinden is mislukt, of is reeds geïnstalleerd: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr ""
+"Ik installeer geen pakketten, ik simuleer alleen maar wat geïinstallerd moet "
+"worden"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
 msgid "Do not install dependencies of the core packages"
-msgstr ""
+msgstr "Installeer geen afhankelijkheden van de kern pakketten"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
-msgstr ""
+msgstr "Laat geen informatie zien over de voortgang"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
-#, fuzzy
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
 msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit console-interface"
+msgstr "PackageKit debuginfo installer"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
+#, c-format
 msgid "ERROR: Specify package names to install."
-msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
+msgstr "FOUT: Specificeer de te installeren pakket namen."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
+#, c-format
 msgid "Getting sources list"
-msgstr "Ophalen Pakketlijst"
+msgstr "Ophalen bronnen lijst"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:680
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:954
 #, c-format
 msgid "OK."
-msgstr ""
+msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr ""
+msgstr "Vond %i aangezette en %i uitgezette bronnen."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
 #, c-format
 msgid "Finding debugging sources"
-msgstr ""
+msgstr "Zoeken naar debug bronnen"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
 #, c-format
 msgid "Found %i disabled debuginfo repos."
-msgstr ""
+msgstr "Vond %i uitgezette debuginfo repo's"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
 #, c-format
 msgid "Enabling debugging sources"
-msgstr ""
+msgstr "Debug bronnen aanzetten"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:939
 msgid "FAILED."
-msgstr ""
+msgstr "MISLUKT."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
 #, c-format
 msgid "Enabled %i debugging sources."
-msgstr ""
+msgstr "%i debug bronnen aangezet."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:725
+#, c-format
 msgid "Finding debugging packages"
-msgstr "Pakketnaam wordt opgezocht."
+msgstr "Zoeken naar debug pakketten"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
+#, c-format
 msgid "Failed to find the package %s: %s"
-msgstr "Pakket '%s' niet gevonden: %s"
+msgstr "Pakket %s vinden mislukte: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:760
+#, c-format
 msgid "Failed to find the debuginfo package %s: %s"
-msgstr "Pakket '%s' niet gevonden: %s"
+msgstr "Debug info pakket %s niet gevonden: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
+#, c-format
 msgid "Found no packages to install."
-msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
+msgstr "Geen pakketten gevonden om te installeren."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:802
+#, c-format
 msgid "Found %i packages:"
-msgstr "Pakketten aan het downloaden"
+msgstr "Vond %i pakketten:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
 #, c-format
 msgid "Finding packages that depend on these packages"
-msgstr ""
+msgstr "Zoeken naar pakketten die afhangen van deze pakketten"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:831
+#, c-format
 msgid "Could not find dependant packages: %s"
-msgstr "Pakket '%s' niet gevonden: %s"
+msgstr "Kon geen afhankelijke pakketten vinden: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
-msgstr ""
+msgstr "Vond %i extra pakketten."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
+#, c-format
 msgid "No extra packages required."
-msgstr "Een pakketnaam is vereist"
+msgstr "Geen extra pakketten vereist."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#, c-format
 msgid "Found %i packages to install:"
-msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
+msgstr "Vond %i pakketten om te installeren:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
+#, c-format
 msgid "Not installing packages in simulate mode"
-msgstr "Pakketten installeren"
+msgstr "Pakketten niet installeren in de simulatie mode"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:898
+#, c-format
 msgid "Could not install packages: %s"
-msgstr "Dit programma kon niet het pakket %s installeren."
+msgstr "Kon pakketen %s  niet installeren."
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:930
 #, c-format
 msgid "Disabling sources previously enabled"
-msgstr ""
+msgstr "Uitzetten van bronnen die eerst aangezet waren"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:942
 #, c-format
 msgid "Could not disable the debugging sources: %s"
-msgstr ""
+msgstr "Kon de debug bronnen %s niet uitzetten"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:957
 #, c-format
 msgid "Disabled %i debugging sources."
-msgstr ""
+msgstr "%i debug bronnen uitgezet."
 
 #. TRANSLATORS: couldn't open device to write
 #: ../contrib/device-rebind/pk-device-rebind.c:61
-#, fuzzy
 msgid "Failed to open file"
-msgstr "Zoeken naar bestand niet gelukt"
+msgstr "Bestand openen niet gelukt"
 
 #. TRANSLATORS: could not write to the device
 #: ../contrib/device-rebind/pk-device-rebind.c:70
-#, fuzzy
 msgid "Failed to write to the file"
-msgstr "Zoeken naar bestand niet gelukt"
+msgstr "Naar bestand schrijven niet gelukt"
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:110
 #: ../contrib/device-rebind/pk-device-rebind.c:147
-#, fuzzy
 msgid "Failed to write to device"
-msgstr "Vastleggen op schijf niet gelukt"
+msgstr "Naar schijf schrijven niet gelukt"
 
 #. TRANSLATORS: the device could not be found in sysfs
 #: ../contrib/device-rebind/pk-device-rebind.c:175
-#, fuzzy
 msgid "Device could not be found"
-msgstr "Het pakket kon niet worden gevonden"
+msgstr "Schijf kon niet gevonden worden"
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:202
-#, fuzzy
 msgid "Failed to unregister driver"
-msgstr "Aanmaken map mislukt:"
+msgstr "Driver uitschrijven mislukte"
 
 #. TRANSLATORS: we failed to bind the old driver
 #: ../contrib/device-rebind/pk-device-rebind.c:211
-#, fuzzy
 msgid "Failed to register driver"
-msgstr "Aanmaken map mislukt:"
+msgstr "Driver inschrijven mislukte"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
 #: ../contrib/device-rebind/pk-device-rebind.c:260
-#, fuzzy
 msgid "Device path not found"
-msgstr "Map niet gevonden"
+msgstr "Device pad niet gevonden"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:268
 msgid "Incorrect device path specified"
-msgstr ""
+msgstr "Onjuist device pad opgegeven"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/device-rebind/pk-device-rebind.c:296
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr ""
+msgstr "Ik raak de hardware niet aan, ik simuleer alleen wat er zou gebeuren"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:299
 msgid "Device paths"
-msgstr ""
+msgstr "Device paden"
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:314
-#, fuzzy
 msgid "PackageKit Device Reloader"
-msgstr "PackageKit-servicepack"
+msgstr "PackageKit device herlader"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:322
 msgid "You need to specify at least one valid device path"
-msgstr ""
+msgstr "Je moet tenminste een geldig device pad opgeven"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:332
 msgid "This script can only be used by the root user"
-msgstr ""
+msgstr "Dit script kan alleen door de root gebruiker gebruikt worden"
 
 #. TRANSLATORS: we're going to verify the path first
 #: ../contrib/device-rebind/pk-device-rebind.c:341
 msgid "Verifying device path"
-msgstr ""
+msgstr "Verifiëren van device pad"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
 #: ../contrib/device-rebind/pk-device-rebind.c:346
-#, fuzzy
 msgid "Failed to verify device path"
-msgstr "Zoeken naar bestand niet gelukt"
+msgstr "Device pad verifiëren mislukte"
 
 #. TRANSLATORS: we're going to try
 #: ../contrib/device-rebind/pk-device-rebind.c:360
 msgid "Attempting to rebind device"
-msgstr ""
+msgstr "Probeer opnieuw te berbinden met device"
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:365
-#, fuzzy
 msgid "Failed to rebind device"
-msgstr "Aanmaken map mislukt:"
+msgstr "Opnieuw verbinden met device mislukte"
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
@@ -1324,9 +1357,9 @@ msgid "Authentication is required to refresh the system sources"
 msgstr "Authenticatie is vereist om de systeembronnen te vernieuwen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-#, fuzzy
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Authenticatie is vereist om de systeembronnen te vernieuwen"
+msgstr ""
+"Authenticatie is vereist om het device te herladen met een nieuwe driver"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to remove packages"
@@ -1403,7 +1436,7 @@ msgstr "Herlaad systeembronnen"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Reload a device"
-msgstr ""
+msgstr "Herlaad een device"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1527,43 +1560,50 @@ msgid "Error trying to start:"
 msgstr "Fout bij het proberen te starten:"
 
 #: ../src/pk-polkit-action-lookup.c:147
-#, fuzzy
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
+msgstr ""
+"Om debug pakketten te installeren, moeten extra bronnen aangezet worden"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "De software is niet van een vertrouwde bron."
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr ""
+"Vernieuw dit pakket niet behalve als je zeker weet dat het veilig is om te "
+"doen."
 
 #: ../src/pk-polkit-action-lookup.c:174
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr ""
+"Vernieuw deze pakketten niet behalve als je zeker weet dat het veilig is om "
+"te doen."
 
 #: ../src/pk-polkit-action-lookup.c:192
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
+"Installeer dit pakket niet behalve als je zeker weet dat het veilig is om te "
+"doen."
 
 #: ../src/pk-polkit-action-lookup.c:193
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr ""
+"Installeer deze pakketten niet behalve als je zeker weet dat het veilig is "
+"om te doen."
 
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:199
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
+msgstr "Kwaadwillige software kan je computer beschadigen of ander kwaad doen."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:274
-#, fuzzy
 msgid "Many packages"
-msgstr "Pakketten bijwerken"
+msgstr "Vele pakketten"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
 #: ../src/pk-polkit-action-lookup.c:334
 msgid "Only trusted"
-msgstr ""
+msgstr "Alleen vertrouwde"

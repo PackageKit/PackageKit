@@ -15,4 +15,5 @@ TransactionProxy::~TransactionProxy()
 {
 }
 
+
 #include "transactionproxy.moc"

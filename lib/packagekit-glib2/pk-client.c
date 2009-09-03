@@ -23,7 +23,10 @@
  * SECTION:pk-client
  * @short_description: GObject class for PackageKit client access
  *
- * A nice GObject to use for accessing PackageKit asynchronously
+ * A nice GObject to use for accessing PackageKit asynchronously. If you're
+ * using #PkClient to install, remove, or update packages, be prepared that
+ * the eula, gpg and trusted callbacks need to be rescheduled manually, as in
+ * http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html
  */
 
 #include "config.h"
@@ -1121,7 +1124,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
  *
  * Return value: the #PkResults, or %NULL
  **/
-PkResults *
+const PkResults *
 pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
@@ -3112,7 +3115,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;
@@ -3154,7 +3157,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *details;
 	const PkResultItemDetails *item;
@@ -3196,7 +3199,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	PkPackageSack *sack;
 	guint size;
@@ -3233,7 +3236,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	const PkResultItemErrorCode *error_item;
 
@@ -3277,8 +3280,6 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 		_allow_cancel_cb++;
 	if (type == PK_PROGRESS_TYPE_STATUS)
 		_status_cb++;
-
-//	egg_debug ("percentage now %i", percentage);
 }
 
 static gboolean

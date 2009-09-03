@@ -2136,6 +2136,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_QUERY)
 
+        # if we're RHEL, then we don't have preupgrade
+        if not os.path.exists('/usr/share/preupgrade/releases.list'):
+            return
+
         # parse the releases file
         config = ConfigParser.ConfigParser()
         config.read('/usr/share/preupgrade/releases.list')
@@ -2929,7 +2933,7 @@ class PackageKitYumBase(yum.YumBase):
 
         try:
             manager = MediaManager()
-        except NotImplemented:
+        except NotImplementedError, e:
             # yumRepo will catch this
             raise yum.Errors.MediaError, "media handling is not implemented"
 
