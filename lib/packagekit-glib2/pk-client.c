@@ -428,7 +428,8 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 
 	/* add to results */
 	info_enum = pk_info_enum_from_text (info_text);
-	pk_results_add_package (state->results, info_enum, package_id, summary);
+	if (info_enum != PK_INFO_ENUM_FINISHED)
+		pk_results_add_package (state->results, info_enum, package_id, summary);
 
 	/* save progress */
 	g_object_set (state->progress,
