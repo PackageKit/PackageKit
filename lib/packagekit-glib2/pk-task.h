@@ -102,7 +102,9 @@ void		 pk_task_install_packages_async		(PkTask			*task,
  *    pk_task_remove_packages_async
  *    pk_task_update_packages_async
  */
-gboolean	 pk_task_user_acceptance		(PkTask			*task,
+gboolean	 pk_task_user_accepted			(PkTask			*task,
+							 guint			 request);
+gboolean	 pk_task_user_declined			(PkTask			*task,
 							 guint			 request);
 
 G_END_DECLS

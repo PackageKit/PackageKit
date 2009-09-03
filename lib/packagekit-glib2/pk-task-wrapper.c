@@ -21,11 +21,12 @@
 
 #include "config.h"
 
-#include <packagekit-glib2/pk-task-wrapper.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
 #include "egg-debug.h"
+
+#include "pk-task-wrapper.h"
 
 static void     pk_task_wrapper_finalize	(GObject     *object);
 
@@ -57,7 +58,7 @@ dkp_task_wrapper_untrusted_question (PkTask *task, guint request, const PkResult
 	g_print ("UNTRUSTED\n");
 
 	/* just accept without asking */
-	pk_task_user_acceptance (task, request);
+	pk_task_user_accepted (task, request);
 }
 
 /**
@@ -89,7 +90,7 @@ dkp_task_wrapper_key_question (PkTask *task, guint request, const PkResults *res
 	}
 
 	/* just accept without asking */
-	pk_task_user_acceptance (task, request);
+	pk_task_user_accepted (task, request);
 
 	g_ptr_array_unref (array);
 }
@@ -120,7 +121,7 @@ dkp_task_wrapper_eula_question (PkTask *task, guint request, const PkResults *re
 	}
 
 	/* just accept without asking */
-	pk_task_user_acceptance (task, request);
+	pk_task_user_accepted (task, request);
 
 	g_ptr_array_unref (array);
 }
@@ -150,7 +151,7 @@ dkp_task_wrapper_media_change_question (PkTask *task, guint request, const PkRes
 	}
 
 	/* just accept without asking */
-	pk_task_user_acceptance (task, request);
+	pk_task_user_accepted (task, request);
 
 	g_ptr_array_unref (array);
 }
@@ -286,7 +287,7 @@ pk_task_wrapper_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "install package");
-	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora", ",", -1);
+	package_ids = g_strsplit ("vips-doc;7.12.4-2.fc8;noarch;linva", ",", -1);
 	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
 				        (PkProgressCallback) pk_task_wrapper_test_progress_cb, test,
 				        (GAsyncReadyCallback) pk_task_wrapper_test_install_packages_cb, test);

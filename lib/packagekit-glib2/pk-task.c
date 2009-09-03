@@ -54,7 +54,7 @@ typedef struct {
 	gboolean			 only_trusted;
 	gchar				**package_ids;
 	GSimpleAsyncResult		*res;
-	const PkResults			*results;
+	PkResults			*results;
 	gboolean			 ret;
 	PkTask				*task;
 	GCancellable			*cancellable;
@@ -132,6 +132,8 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_ptr_array_remove (state->task->priv->array, state);
 
 	/* deallocate */
+	if (state->results != NULL)
+		g_object_unref (state->results);
 	g_strfreev (state->package_ids);
 	g_object_unref (state->res);
 	g_slice_free (PkTaskState, state);
@@ -156,29 +158,211 @@ pk_task_do_async_action (PkTaskState *state)
 }
 
 /**
- * pk_task_user_acceptance_idle_cb:
+ * pk_task_install_signatures_ready_cb:
+ **/
+static void
+pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
+{
+	PkTask *task = PK_TASK (source_object);
+	GError *error = NULL;
+	const PkResults *results;
+
+	/* old results no longer valid */
+	if (state->results != NULL)
+		g_object_unref (state->results);
+
+	/* get the results */
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	if (results == NULL) {
+		egg_warning ("failed to install signature: %s", error->message);
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* we own a copy now */
+	state->results = g_object_ref (G_OBJECT(results));
+
+	/* get exit code */
+	state->exit_enum = pk_results_get_exit_code (state->results);
+
+	/* need untrusted */
+	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* now try the action again */
+	pk_task_do_async_action (state);
+out:
+	return;
+}
+
+/**
+ * pk_task_install_signatures:
+ **/
+static void
+pk_task_install_signatures (PkTaskState *state)
+{
+	GError *error = NULL;
+	GPtrArray *array;
+	const PkResultItemRepoSignatureRequired *item;
+
+	/* get results */
+	array = pk_results_get_repo_signature_required_array (state->results);
+	if (array == NULL)
+		egg_error ("failed to get signatures, fatal error");
+
+	/* did we get no results? */
+	if (array->len == 0) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no signatures to install");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* did we get more than result? */
+	if (array->len > 1) {
+		/* TODO: support more than one signature */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "more than one signature to install");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get first item of data */
+	item = g_ptr_array_index (array, 0);
+
+	/* do new async method */
+	pk_client_install_signature_async (PK_CLIENT(state->task), item->type, item->key_id, item->package_id,
+					   state->cancellable, state->progress_callback, state->progress_user_data,
+					   (GAsyncReadyCallback) pk_task_install_signatures_ready_cb, state);
+out:
+	g_ptr_array_unref (array);
+}
+
+/**
+ * pk_task_accept_eulas_ready_cb:
+ **/
+static void
+pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
+{
+	PkTask *task = PK_TASK (source_object);
+	GError *error = NULL;
+	const PkResults *results;
+
+	/* old results no longer valid */
+	if (state->results != NULL)
+		g_object_unref (state->results);
+
+	/* get the results */
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	if (results == NULL) {
+		egg_warning ("failed to accept eula: %s", error->message);
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* we own a copy now */
+	state->results = g_object_ref (G_OBJECT(results));
+
+	/* get exit code */
+	state->exit_enum = pk_results_get_exit_code (state->results);
+
+	/* need untrusted */
+	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* now try the action again */
+	pk_task_do_async_action (state);
+out:
+	return;
+}
+
+/**
+ * pk_task_accept_eulas:
+ **/
+static void
+pk_task_accept_eulas (PkTaskState *state)
+{
+	GError *error = NULL;
+	GPtrArray *array;
+	const PkResultItemEulaRequired *item;
+
+	/* get results */
+	array = pk_results_get_eula_required_array (state->results);
+	if (array == NULL)
+		egg_error ("failed to get eulas, fatal error");
+
+	/* did we get no results? */
+	if (array->len == 0) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no eulas to accept");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* did we get more than result? */
+	if (array->len > 1) {
+		/* TODO: support more than one eula */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "more than one eula to accept");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get first item of data */
+	item = g_ptr_array_index (array, 0);
+
+	/* do new async method */
+	pk_client_accept_eula_async (PK_CLIENT(state->task), item->eula_id,
+				     state->cancellable, state->progress_callback, state->progress_user_data,
+				     (GAsyncReadyCallback) pk_task_accept_eulas_ready_cb, state);
+out:
+	g_ptr_array_unref (array);
+}
+
+/**
+ * pk_task_user_accepted_idle_cb:
  **/
 static gboolean
-pk_task_user_acceptance_idle_cb (PkTaskState *state)
+pk_task_user_accepted_idle_cb (PkTaskState *state)
 {
-	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED)
-		egg_error ("need to do install-sig");
-	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED)
-		egg_error ("need to do accept-eula");
+	/* this needs another step in the dance */
+	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
+		egg_debug ("need to do install-sig");
+		pk_task_install_signatures (state);
+		goto out;
+	}
+
+	/* this needs another step in the dance */
+	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
+		egg_debug ("need to do accept-eula");
+		pk_task_accept_eulas (state);
+		goto out;
+	}
 
 	/* doing task */
 	egg_debug ("continuing with request %i", state->request);
 	pk_task_do_async_action (state);
 
+out:
 	/* never repeat */
 	return FALSE;
 }
 
 /**
- * pk_task_user_acceptance:
+ * pk_task_user_accepted:
  **/
 gboolean
-pk_task_user_acceptance (PkTask *task, guint request)
+pk_task_user_accepted (PkTask *task, guint request)
 {
 	PkTaskState *state;
 
@@ -189,7 +373,44 @@ pk_task_user_acceptance (PkTask *task, guint request)
 		return FALSE;
 	}
 
-	g_idle_add ((GSourceFunc) pk_task_user_acceptance_idle_cb, state);
+	g_idle_add ((GSourceFunc) pk_task_user_accepted_idle_cb, state);
+	return TRUE;
+}
+
+/**
+ * pk_task_user_declined_idle_cb:
+ **/
+static gboolean
+pk_task_user_declined_idle_cb (PkTaskState *state)
+{
+	GError *error;
+
+	/* doing task */
+	egg_debug ("declined request %i", state->request);
+	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined interaction");
+	pk_task_generic_state_finish (state, error);
+	g_error_free (error);
+
+	/* never repeat */
+	return FALSE;
+}
+
+/**
+ * pk_task_user_declined:
+ **/
+gboolean
+pk_task_user_declined (PkTask *task, guint request)
+{
+	PkTaskState *state;
+
+	/* get the not-yet-completed request */
+	state = pk_task_find_by_request (task, request);
+	if (state == NULL) {
+		egg_warning ("request %i not found", request);
+		return FALSE;
+	}
+
+	g_idle_add ((GSourceFunc) pk_task_user_declined_idle_cb, state);
 	return TRUE;
 }
 
@@ -202,15 +423,23 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	PkTask *task = PK_TASK (source_object);
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 	GError *error = NULL;
+	const PkResults *results;
+
+	/* old results no longer valid */
+	if (state->results != NULL)
+		g_object_unref (state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
-	if (state->results == NULL) {
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	if (results == NULL) {
 		egg_warning ("failed to resolve: %s", error->message);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
 	}
+
+	/* we own a copy now */
+	state->results = g_object_ref (G_OBJECT(results));
 
 	/* get exit code */
 	state->exit_enum = pk_results_get_exit_code (state->results);
@@ -221,7 +450,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* no support */
 		if (klass->untrusted_question == NULL) {
-			error = g_error_new (1, 0, "could not do untrusted question as no klass support");
+			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
+					     "could not do untrusted question as no klass support");
 			pk_task_generic_state_finish (state, error);
 			g_error_free (error);
 			goto out;
@@ -236,7 +466,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
 		/* no support */
 		if (klass->key_question == NULL) {
-			error = g_error_new (1, 0, "could not do key question as no klass support");
+			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
+					     "could not do key question as no klass support");
 			pk_task_generic_state_finish (state, error);
 			g_error_free (error);
 			goto out;
@@ -251,7 +482,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
 		/* no support */
 		if (klass->eula_question == NULL) {
-			error = g_error_new (1, 0, "could not do eula question as no klass support");
+			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
+					     "could not do eula question as no klass support");
 			pk_task_generic_state_finish (state, error);
 			g_error_free (error);
 			goto out;
@@ -266,7 +498,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED) {
 		/* no support */
 		if (klass->media_change_question == NULL) {
-			error = g_error_new (1, 0, "could not do media change question as no klass support");
+			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
+					     "could not do media change question as no klass support");
 			pk_task_generic_state_finish (state, error);
 			g_error_free (error);
 			goto out;
