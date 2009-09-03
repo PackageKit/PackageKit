@@ -46,7 +46,7 @@ static PkBitfield roles;
 static gboolean is_console = FALSE;
 static gboolean nowait = FALSE;
 static PkControlSync *control = NULL;
-static PkClient *client = NULL;
+static PkTask *task = NULL;
 PkProgressBar *progressbar = NULL;
 
 /**
@@ -484,7 +484,7 @@ pk_console_files_cb (PkResultItemFiles *obj, gpointer data)
 	PkRoleEnum role;
 
 	/* don't print if we are DownloadPackages */
-	pk_client_get_role (client, &role, NULL, NULL);
+	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
 	if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		egg_debug ("ignoring ::files");
 		return;
@@ -615,7 +615,7 @@ pk_console_finished_cb (PkExitEnum exit_enum, guint runtime, gpointer data)
 	gboolean ret;
 	GError *error = NULL;
 
-	pk_client_get_role (client, &role, NULL, NULL);
+	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
 
 	role_text = pk_role_enum_to_text (role);
 	time_s = (gfloat) runtime / 1000.0;
@@ -647,8 +647,8 @@ pk_console_finished_cb (PkExitEnum exit_enum, guint runtime, gpointer data)
 		egg_debug ("need to handle untrusted");
 
 		/* retry new action with untrusted */
-		pk_client_set_only_trusted (client, FALSE);
-		ret = pk_client_requeue (client, &error);
+		pk_client_set_only_trusted (PK_CLIENT(task), FALSE);
+		ret = pk_client_requeue (PK_CLIENT(task), &error);
 		if (!ret) {
 			egg_warning ("Failed to requeue: %s", error->message);
 			g_error_free (error);
@@ -774,7 +774,7 @@ pk_console_install_stuff (gchar **packages, GError **error)
 				break;
 			}
 			/* try and find a package */
-			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
+			package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 				*error = g_error_new (1, 0, _("The package %s could not be installed: %s"), packages[i], error_local->message);
@@ -844,7 +844,7 @@ pk_console_install_stuff (gchar **packages, GError **error)
 		}
 
 		/* reset */
-		ret = pk_client_reset (client, &error_local);
+		ret = pk_client_reset (PK_CLIENT(task), &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
 			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
@@ -852,7 +852,7 @@ pk_console_install_stuff (gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_packages (client, TRUE, package_ids, &error_local);
+		ret = pk_client_install_packages (PK_CLIENT(task), TRUE, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
@@ -912,7 +912,7 @@ pk_console_install_stuff (gchar **packages, GError **error)
 			}
 		}
 
-		ret = pk_client_install_files (client, TRUE, files, &error_local);
+		ret = pk_client_install_files (PK_CLIENT(task), TRUE, files, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the files. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not install the files: %s"), error_local->message);
@@ -941,10 +941,10 @@ pk_console_remove_only (gchar **package_ids, gboolean force, GError **error)
 	gboolean ret;
 
 	egg_debug ("remove+ %s", package_ids[0]);
-	ret = pk_client_reset (client, error);
+	ret = pk_client_reset (PK_CLIENT(task), error);
 	if (!ret)
 		return ret;
-	return pk_client_remove_packages (client, package_ids, force, FALSE, error);
+	return pk_client_remove_packages (PK_CLIENT(task), package_ids, force, FALSE, error);
 }
 
 /**
@@ -968,7 +968,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	list = pk_package_list_new ();
 	length = g_strv_length (packages);
 	for (i=2; i<length; i++) {
-		package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], &error_local);
+		package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], &error_local);
 		if (package_id == NULL) {
 			/* TRANSLATORS: The package name was not found in the installed list. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not remove %s: %s"), packages[i], error_local->message);
@@ -991,7 +991,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	/* are we dumb and can't check for requires? */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 		/* no, just try to remove it without deps */
-		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
+		ret = pk_console_remove_only (PK_CLIENT(task), package_ids, FALSE, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
@@ -1029,7 +1029,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	length = pk_package_list_get_size (list);
 	if (length == 0) {
 		egg_debug ("no requires");
-		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
+		ret = pk_console_remove_only (PK_CLIENT(task), package_ids, FALSE, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
@@ -1055,7 +1055,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	}
 
 	/* remove all the stuff */
-	ret = pk_console_remove_only (client, package_ids, TRUE, &error_local);
+	ret = pk_console_remove_only (PK_CLIENT(task), package_ids, TRUE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
@@ -1087,7 +1087,7 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 	array_packages = g_ptr_array_new ();
 	length = g_strv_length (packages);
 	for (i=3; i<length; i++) {
-			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], &error_local);
+			package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], &error_local);
 			if (package_id == NULL) {
 				/* TRANSLATORS: The package name was not found in any software sources */
 				*error = g_error_new (1, 0, _("This tool could not download the package %s as it could not be found"), packages[i]);
@@ -1110,7 +1110,7 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
 		/* reset */
-		ret = pk_client_reset (client, &error_local);
+		ret = pk_client_reset (PK_CLIENT(task), &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
 			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
@@ -1118,7 +1118,7 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 			goto out;
 		}
 
-		ret = pk_client_download_packages (client, package_ids, directory, error);
+		ret = pk_client_download_packages (PK_CLIENT(task), package_ids, directory, error);
 		if (!ret) {
 			/* TRANSLATORS: Could not download the packages for some reason. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not download the packages: %s"), error_local->message);
@@ -1150,7 +1150,7 @@ pk_console_update_package (const gchar *package, GError **error)
 	PkPackageSack *list_single;
 
 	list = pk_package_list_new ();
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
@@ -1162,7 +1162,7 @@ pk_console_update_package (const gchar *package, GError **error)
 	/* are we dumb and can't simulate? */
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
 		/* no, just try to update it without deps */
-		ret = pk_client_update_packages (client, TRUE, package_ids, error);
+		ret = pk_client_update_packages (PK_CLIENT(task), TRUE, package_ids, error);
 		if (!ret) {
 			/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 			*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
@@ -1214,7 +1214,7 @@ pk_console_update_package (const gchar *package, GError **error)
 		}
 	}
 
-	ret = pk_client_update_packages (client, TRUE, package_ids, error);
+	ret = pk_client_update_packages (PK_CLIENT(task), TRUE, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
@@ -1238,7 +1238,7 @@ pk_console_get_requires (PkBitfield filters, const gchar *package, GError **erro
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
@@ -1246,7 +1246,7 @@ pk_console_get_requires (PkBitfield filters, const gchar *package, GError **erro
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_requires (client, filters, package_ids, TRUE, &error_local);
+	ret = pk_client_get_requires (PK_CLIENT(task), filters, package_ids, TRUE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
@@ -1268,7 +1268,7 @@ pk_console_get_depends (PkBitfield filters, const gchar *package, GError **error
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
@@ -1276,7 +1276,7 @@ pk_console_get_depends (PkBitfield filters, const gchar *package, GError **error
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_depends (client, filters, package_ids, FALSE, &error_local);
+	ret = pk_client_get_depends (PK_CLIENT(task), filters, package_ids, FALSE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
@@ -1298,7 +1298,7 @@ pk_console_get_details (const gchar *package, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
@@ -1306,7 +1306,7 @@ pk_console_get_details (const gchar *package, GError **error)
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_details (client, package_ids, &error_local);
+	ret = pk_client_get_details (PK_CLIENT(task), package_ids, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
@@ -1328,7 +1328,7 @@ pk_console_get_files (const gchar *package, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the files for %s: %s"), package, error_local->message);
@@ -1336,7 +1336,7 @@ pk_console_get_files (const gchar *package, GError **error)
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_files (client, package_ids, error);
+	ret = pk_client_get_files (PK_CLIENT(task), package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the file list for %s: %s"), package, error_local->message);
@@ -1358,7 +1358,7 @@ pk_console_get_update_detail (const gchar *package, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
+	package_id = pk_console_perhaps_resolve (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
 	if (package_id == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the update details for %s: %s"), package, error_local->message);
@@ -1366,7 +1366,7 @@ pk_console_get_update_detail (const gchar *package, GError **error)
 		return FALSE;
 	}
 	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_update_detail (client, package_ids, &error_local);
+	ret = pk_client_get_update_detail (PK_CLIENT(task), package_ids, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not get the update details for %s: %s"), package, error_local->message);
@@ -1385,7 +1385,7 @@ pk_console_error_code_cb (PkErrorCodeEnum error_code, const gchar *details, gpoi
 {
 	PkRoleEnum role;
 
-	pk_client_get_role (client, &role, NULL, NULL);
+	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
 
 	/* handled */
 	if (need_requeue) {
@@ -1433,9 +1433,9 @@ pk_console_sigint_handler (int sig)
 
 #if 0
 	/* cancel any tasks */
-	pk_client_get_role (client, &role, NULL, NULL);
+	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client, &error);
+		ret = pk_client_cancel (PK_CLIENT(task), &error);
 		if (!ret) {
 			egg_warning ("failed to cancel normal client: %s", error->message);
 			g_error_free (error);
@@ -1594,7 +1594,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 //	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results;
 	PkExitEnum exit_enum;
 	const PkResultItemErrorCode *error_item;
 	GPtrArray *array;
@@ -1603,7 +1603,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	pk_progress_bar_end (progressbar);
 
 	/* get the results */
-	results = pk_client_generic_finish (client, res, &error);
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
 		g_print ("Failed to complete: %s\n", error->message);
 		g_error_free (error);
@@ -1776,7 +1776,7 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
 	/* create transactions */
-	client = pk_client_new ();
+	task = pk_task_new ();
 
 	/* check filter */
 	if (filter != NULL) {
@@ -1815,7 +1815,7 @@ main (int argc, char *argv[])
 			}
 //			pk_progress_bar_start (progressbar, _("Searching"));
 			/* fire off an async request */
-			pk_client_search_name_async (client, filters, details, NULL,
+			pk_client_search_name_async (PK_CLIENT(task), filters, details, NULL,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1827,7 +1827,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_details_async (client, filters, details, NULL,
+			pk_client_search_details_async (PK_CLIENT(task), filters, details, NULL,
 						        (PkProgressCallback) pk_console_progress_cb, NULL,
 						        (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1839,7 +1839,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_group_async (client, filters, details, NULL,
+			pk_client_search_group_async (PK_CLIENT(task), filters, details, NULL,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1851,7 +1851,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_file_async (client, filters, details, NULL,
+			pk_client_search_file_async (PK_CLIENT(task), filters, details, NULL,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
@@ -1867,7 +1867,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_install_stuff (client, argv, &error);
+		ret = pk_console_install_stuff (PK_CLIENT(task), argv, &error);
 #endif
 
 	} else if (strcmp (mode, "install-sig") == 0) {
@@ -1877,7 +1877,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_install_signature_async (client, PK_SIGTYPE_ENUM_GPG, details, parameter, NULL,
+		pk_client_install_signature_async (PK_CLIENT(task), PK_SIGTYPE_ENUM_GPG, details, parameter, NULL,
 						   (PkProgressCallback) pk_console_progress_cb, NULL,
 						   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 #if 0
@@ -1888,7 +1888,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_remove_packages (client, argv, &error);
+		ret = pk_console_remove_packages (PK_CLIENT(task), argv, &error);
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
 			/* TRANSLATORS: the user did not specify anything about what to download or where */
@@ -1903,7 +1903,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		ret = pk_console_download_packages (client, argv, value, &error);
+		ret = pk_console_download_packages (PK_CLIENT(task), argv, value, &error);
 #endif
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
@@ -1912,7 +1912,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_accept_eula_async (client, value, NULL,
+		pk_client_accept_eula_async (PK_CLIENT(task), value, NULL,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1924,18 +1924,18 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_rollback_async (client, value, NULL,
+		pk_client_rollback_async (PK_CLIENT(task), value, NULL,
 					  (PkProgressCallback) pk_console_progress_cb, NULL,
 					  (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			pk_client_update_system_async (client, TRUE, NULL,
+			pk_client_update_system_async (PK_CLIENT(task), TRUE, NULL,
 						       (PkProgressCallback) pk_console_progress_cb, NULL,
 						       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
-			ret = pk_console_update_package (client, value, &error);
+			ret = pk_console_update_package (PK_CLIENT(task), value, &error);
 		}
 #endif
 
@@ -1946,7 +1946,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_resolve_async (client, filters, argv+2, NULL,
+		pk_client_resolve_async (PK_CLIENT(task), filters, argv+2, NULL,
 				         (PkProgressCallback) pk_console_progress_cb, NULL,
 					 (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1957,7 +1957,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_enable_async (client, value, TRUE, NULL,
+		pk_client_repo_enable_async (PK_CLIENT(task), value, TRUE, NULL,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1968,7 +1968,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_enable_async (client, value, FALSE, NULL,
+		pk_client_repo_enable_async (PK_CLIENT(task), value, FALSE, NULL,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1979,12 +1979,12 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_set_data_async (client, value, details, parameter, NULL,
+		pk_client_repo_set_data_async (PK_CLIENT(task), value, details, parameter, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		pk_client_get_repo_list_async (client, filters, NULL,
+		pk_client_get_repo_list_async (PK_CLIENT(task), filters, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 #if 0
@@ -2020,10 +2020,10 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_depends (client, filters, value, &error);
+		ret = pk_console_get_depends (PK_CLIENT(task), filters, value, &error);
 #endif
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
-		pk_client_get_distro_upgrades_async (client, NULL,
+		pk_client_get_distro_upgrades_async (PK_CLIENT(task), NULL,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -2035,7 +2035,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_update_detail (client, value, &error);
+		ret = pk_console_get_update_detail (PK_CLIENT(task), value, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
@@ -2044,7 +2044,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_requires (client, filters, value, &error);
+		ret = pk_console_get_requires (PK_CLIENT(task), filters, value, &error);
 #endif
 
 	} else if (strcmp (mode, "what-provides") == 0) {
@@ -2054,7 +2054,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_what_provides_async (client, filters, PK_PROVIDES_ENUM_CODEC, value, NULL,
+		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_CODEC, value, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 #if 0
@@ -2065,7 +2065,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_details (client, value, &error);
+		ret = pk_console_get_details (PK_CLIENT(task), value, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
@@ -2074,7 +2074,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_files (client, value, &error);
+		ret = pk_console_get_files (PK_CLIENT(task), value, &error);
 
 	} else if (strcmp (mode, "list-create") == 0) {
 		if (value == NULL) {
@@ -2083,7 +2083,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_list_create (client, value, &error);
+		ret = pk_console_list_create (PK_CLIENT(task), value, &error);
 
 	} else if (strcmp (mode, "list-diff") == 0) {
 		if (value == NULL) {
@@ -2092,7 +2092,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_list_diff (client, value, &error);
+		ret = pk_console_list_diff (PK_CLIENT(task), value, &error);
 
 	} else if (strcmp (mode, "list-install") == 0) {
 		if (value == NULL) {
@@ -2101,20 +2101,20 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_list_install (client, value, &error);
+		ret = pk_console_list_install (PK_CLIENT(task), value, &error);
 #endif
 	} else if (strcmp (mode, "get-updates") == 0) {
-		pk_client_get_updates_async (client, filters, NULL,
+		pk_client_get_updates_async (PK_CLIENT(task), filters, NULL,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
-		pk_client_get_categories_async (client, NULL,
+		pk_client_get_categories_async (PK_CLIENT(task), NULL,
 						(PkProgressCallback) pk_console_progress_cb, NULL,
 						(GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
-		pk_client_get_packages_async (client, filters, NULL,
+		pk_client_get_packages_async (PK_CLIENT(task), filters, NULL,
 					      (PkProgressCallback) pk_console_progress_cb, NULL,
 					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 #if 0
@@ -2145,14 +2145,14 @@ main (int argc, char *argv[])
 		ret = TRUE;
 #endif
 	} else if (strcmp (mode, "get-transactions") == 0) {
-		pk_client_get_old_transactions_async (client, 10, NULL,
+		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, NULL,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		/* special case - this takes a long time, and doesn't do packages */
 //		pk_console_start_bar ("refresh-cache");
-		pk_client_refresh_cache_async (client, FALSE, NULL,
+		pk_client_refresh_cache_async (PK_CLIENT(task), FALSE, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -2180,9 +2180,7 @@ out:
 	g_free (summary);
 	g_object_unref (progressbar);
 	g_object_unref (control);
-//	g_object_unref (client);
-//	g_object_unref (client_sync);
-	g_object_unref (client);
+	g_object_unref (task);
 out_last:
 	return retval;
 }
