@@ -135,12 +135,13 @@ Requires: %{name} = %{version}-%{release}
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
 
-%package debuginfo-install
+%package debug-install
 Summary: Facility to install debugging packages using PackageKit
 Group: System Environment/Base
 Requires: %{name} = %{version}-%{release}
+Obsoletes: PackageKit-debuginfo-install <= 0.5.2-0.1.20090902git.fc12
 
-%description debuginfo-install
+%description debug-install
 Provides facility to install debugging packages using PackageKit.
 
 %package glib-devel
