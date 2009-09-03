@@ -53,6 +53,9 @@ typedef struct {
 	PkExitEnum			 exit_enum;
 	gboolean			 only_trusted;
 	gchar				**package_ids;
+	gboolean			 allow_deps;
+	gboolean			 autoremove;
+	gchar				**files;
 	GSimpleAsyncResult		*res;
 	PkResults			*results;
 	gboolean			 ret;
@@ -135,6 +138,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	if (state->results != NULL)
 		g_object_unref (state->results);
 	g_strfreev (state->package_ids);
+	g_strfreev (state->files);
 	g_object_unref (state->res);
 	g_slice_free (PkTaskState, state);
 }
@@ -148,10 +152,34 @@ pk_task_do_async_action (PkTaskState *state)
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		/* start install async */
-		egg_debug ("doing install untrusted");
+		egg_debug ("doing install");
 		pk_client_install_packages_async (PK_CLIENT(state->task), state->only_trusted, state->package_ids,
 						  state->cancellable, state->progress_callback, state->progress_user_data,
 						  (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		/* start update async */
+		egg_debug ("doing update");
+		pk_client_update_packages_async (PK_CLIENT(state->task), state->only_trusted, state->package_ids,
+						 state->cancellable, state->progress_callback, state->progress_user_data,
+						 (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		/* start remove async */
+		egg_debug ("doing remove");
+		pk_client_remove_packages_async (PK_CLIENT(state->task), state->package_ids, state->allow_deps, state->autoremove,
+						 state->cancellable, state->progress_callback, state->progress_user_data,
+						 (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		/* start update async */
+		egg_debug ("doing update system");
+		pk_client_update_system_async (PK_CLIENT(state->task), state->only_trusted,
+					       state->cancellable, state->progress_callback, state->progress_user_data,
+					       (GAsyncReadyCallback) pk_task_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
+		/* start install async */
+		egg_debug ("doing install files");
+		pk_client_install_files_async (PK_CLIENT(state->task), state->only_trusted, state->files,
+					       state->cancellable, state->progress_callback, state->progress_user_data,
+					       (GAsyncReadyCallback) pk_task_ready_cb, state);
 	} else {
 		g_assert_not_reached ();
 	}
@@ -553,6 +581,207 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->ret = FALSE;
 	state->only_trusted = TRUE;
 	state->package_ids = g_strdupv (package_ids);
+	state->request = pk_task_generate_request_id ();
+	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
+
+	egg_warning ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted install async */
+	pk_task_do_async_action (state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_task_update_packages_async:
+ * @task: a valid #PkTask instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Update specific packages to the newest available versions.
+ **/
+void
+pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkTaskState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_packages_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->task = task;
+	state->only_trusted = TRUE;
+	state->package_ids = g_strdupv (package_ids);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->request = pk_task_generate_request_id ();
+	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
+
+	egg_warning ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted install async */
+	pk_task_do_async_action (state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_task_remove_packages_async:
+ * @task: a valid #PkTask instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @allow_deps: if other dependant packages are allowed to be removed from the computer
+ * @autoremove: if other packages installed at the same time should be tried to remove
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Remove a package (optionally with dependancies) from the system.
+ * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * then the transaction would fail.
+ **/
+void
+pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
+			       PkProgressCallback progress_callback, gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkTaskState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_remove_packages_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->allow_deps = allow_deps;
+	state->autoremove = autoremove;
+	state->task = task;
+	state->package_ids = g_strdupv (package_ids);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->request = pk_task_generate_request_id ();
+	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
+
+	egg_warning ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted install async */
+	pk_task_do_async_action (state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_task_install_files_async:
+ * @task: a valid #PkTask instance
+ * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Install a file locally, and get the deps from the repositories.
+ * This is useful for double clicking on a .rpm or .deb file.
+ **/
+void
+pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkTaskState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_files_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_INSTALL_FILES;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->task = task;
+	state->only_trusted = TRUE;
+	state->files = g_strdupv (files);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->request = pk_task_generate_request_id ();
+	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
+
+	egg_warning ("adding state %p", state);
+	g_ptr_array_add (task->priv->array, state);
+
+	/* start trusted install async */
+	pk_task_do_async_action (state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_task_update_system_async:
+ * @task: a valid #PkTask instance
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Update all the packages on the system with the highest versions found in all
+ * repositories.
+ * NOTE: you can't choose what repositories to update from, but you can do:
+ * - pk_task_repo_disable()
+ * - pk_task_update_system()
+ * - pk_task_repo_enable()
+ **/
+void
+pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkTaskState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_system_async);
+
+	/* save state */
+	state = g_slice_new0 (PkTaskState);
+	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->task = task;
+	state->only_trusted = TRUE;
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 

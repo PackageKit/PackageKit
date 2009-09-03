@@ -98,11 +98,36 @@ void		 pk_task_install_packages_async		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
-/* TODO:
- *    pk_task_remove_packages_async
- *    pk_task_update_packages_async
- *    pk_task_update_system_async
- */
+void		 pk_task_update_packages_async		(PkTask			*task,
+							 gchar			**package_ids,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+void		 pk_task_remove_packages_async		(PkTask			*task,
+							 gchar			**package_ids,
+							 gboolean		 allow_deps,
+							 gboolean		 autoremove,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+void		 pk_task_install_files_async		(PkTask			*task,
+							 gchar			**files,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+void		 pk_task_update_system_async		(PkTask			*task,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 gboolean	 pk_task_user_accepted			(PkTask			*task,
 							 guint			 request);
 gboolean	 pk_task_user_declined			(PkTask			*task,
