@@ -1064,6 +1064,10 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      NULL);
+
 out:
 	g_free (filters_text);
 	return;
@@ -2886,7 +2890,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
+	state->role = PK_ROLE_ENUM_UNKNOWN;
 	state->res = g_object_ref (res);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
@@ -2926,6 +2930,9 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      NULL);
 
 	/* track state */
 	g_ptr_array_add (client->priv->calls, state);

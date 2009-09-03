@@ -44,6 +44,7 @@ static void     pk_results_finalize	(GObject     *object);
  **/
 struct _PkResultsPrivate
 {
+	PkRoleEnum		 role;
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
@@ -61,7 +62,51 @@ struct _PkResultsPrivate
 	GPtrArray		*message_array;
 };
 
+enum {
+	PROP_0,
+	PROP_ROLE,
+	PROP_LAST
+};
+
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
+
+/**
+ * pk_results_get_property:
+ **/
+static void
+pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_results_set_property:
+ **/
+static void
+pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		priv->role = g_value_get_uint (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
 
 /**
  * pk_result_item_package_free:
@@ -990,8 +1035,20 @@ pk_results_get_message_array (const PkResults *results)
 static void
 pk_results_class_init (PkResultsClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_results_finalize;
+	object_class->get_property = pk_results_get_property;
+	object_class->set_property = pk_results_set_property;
+
+	/**
+	 * PkResults:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
 }
 
