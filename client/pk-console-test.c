@@ -36,6 +36,7 @@
 //#include "egg-string.h"
 
 #include "pk-text.h"
+#include "pk-task-text.h"
 #include "pk-progress-bar.h"
 
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
@@ -46,7 +47,7 @@ static PkBitfield roles;
 static gboolean is_console = FALSE;
 static gboolean nowait = FALSE;
 static PkControlSync *control = NULL;
-static PkTask *task = NULL;
+static PkTaskText *task = NULL;
 PkProgressBar *progressbar = NULL;
 
 /**
@@ -481,103 +482,6 @@ pk_console_files_cb (PkResultItemFiles *obj, gpointer data)
 	}
 }
 
-/**
- * pk_console_repo_signature_required_cb:
- **/
-static void
-pk_console_repo_signature_required_cb (const PkResultItemRepoSignatureRequired *obj, gpointer data)
-{
-//	gboolean import;
-//	gboolean ret;
-//	GError *error = NULL;
-	gchar *package = NULL;
-
-	/* create printable */
-	package = pk_package_id_to_printable (obj->package_id);
-
-	/* TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later */
-	g_print ("%s\n", _("Repository signature required"));
-	g_print ("Package:     %s\n", package);
-	g_print ("Name:        %s\n", obj->repository_name);
-	g_print ("URL:         %s\n", obj->key_url);
-	g_print ("User:        %s\n", obj->key_userid);
-	g_print ("ID:          %s\n", obj->key_id);
-	g_print ("Fingerprint: %s\n", obj->key_fingerprint);
-	g_print ("Timestamp:   %s\n", obj->key_timestamp);
-
-#if 0
-	/* TRANSLATORS: This a prompt asking the user to import the security key */
-	import = pk_console_get_prompt (_("Do you accept this signature?"), FALSE);
-	if (!import) {
-		need_requeue = FALSE;
-		/* TRANSLATORS: This is where the user declined the security key */
-		g_print ("%s\n", _("The signature was not accepted."));
-		return;
-	}
-
-	/* install signature */
-	egg_debug ("install signature %s", key_id);
-	ret = pk_client_install_signature (client_secondary, PK_SIGTYPE_ENUM_GPG,
-					   key_id, package_id, &error);
-	/* we succeeded, so wait for the requeue */
-	if (!ret) {
-		egg_warning ("failed to install signature: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-#endif
-
-	g_free (package);
-}
-
-/**
- * pk_console_eula_required_cb:
- **/
-static void
-pk_console_eula_required_cb (const PkResultItemEulaRequired *obj, gpointer data)
-{
-//	gboolean import;
-//	gboolean ret;
-//	GError *error = NULL;
-	gchar *package = NULL;
-
-	/* create printable */
-	package = pk_package_id_to_printable (obj->package_id);
-
-	/* TRANSLATORS: This a request for a EULA */
-	g_print ("%s\n", _("End user license agreement required"));
-	g_print ("Eula:        %s\n", obj->eula_id);
-	g_print ("Package:     %s\n", package);
-	g_print ("Vendor:      %s\n", obj->vendor_name);
-	g_print ("Agreement:   %s\n", obj->license_agreement);
-
-#if 0
-	/* TRANSLATORS: This a prompt asking the user to agree to the license */
-	import = pk_console_get_prompt (_("Do you agree to this license?"), FALSE);
-	if (!import) {
-		need_requeue = FALSE;
-		/* TRANSLATORS: This is where the user declined the license */
-		g_print ("%s\n", _("The license was refused."));
-		return;
-	}
-
-	/* accept eula */
-	egg_debug ("accept eula %s", eula_id);
-	ret = pk_client_accept_eula (client_secondary, eula_id, &error);
-	/* we succeeded, so wait for the requeue */
-	if (!ret) {
-		egg_warning ("failed to accept eula: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* we accepted eula */
-	need_requeue = TRUE;
-#endif
-
-	g_free (package);
-}
-
 #if 0
 /**
  * pk_console_finished_cb:
@@ -642,12 +546,6 @@ pk_console_finished_cb (PkExitEnum exit_enum, guint runtime, gpointer data)
 	/* have we failed to install, and the gpg key is now installed */
 	if (exit_enum == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
 		egg_debug ("key now installed");
-		return;
-	}
-
-	/* have we failed to install, and the eula key is now installed */
-	if (exit_enum == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
-		egg_debug ("eula now agreed");
 		return;
 	}
 
@@ -1647,16 +1545,6 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	array = pk_results_get_files_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_files_cb, NULL);
 	g_ptr_array_unref (array);
-
-	/* repo_signature_required */
-	array = pk_results_get_repo_signature_required_array (results);
-	g_ptr_array_foreach (array, (GFunc) pk_console_repo_signature_required_cb, NULL);
-	g_ptr_array_unref (array);
-
-	/* eula_required */
-	array = pk_results_get_eula_required_array (results);
-	g_ptr_array_foreach (array, (GFunc) pk_console_eula_required_cb, NULL);
-	g_ptr_array_unref (array);
 out:
 	g_main_loop_quit (loop);
 }
@@ -1679,7 +1567,7 @@ main (int argc, char *argv[])
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 //	PkBitfield groups;
-//	gchar *text;
+	gchar *text;
 //	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
 	gint retval = EXIT_SUCCESS;
@@ -1718,7 +1606,11 @@ main (int argc, char *argv[])
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_sync_new ();
-	roles = pk_control_sync_get_roles (control, NULL);
+	roles = pk_control_sync_get_roles (control, &error);
+	if (roles == 0) {
+		g_print ("Failed to startup: %s\n", error->message);
+		goto out_last;
+	}
 	summary = pk_console_get_summary ();
 	progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (progressbar, 25);
@@ -1753,7 +1645,7 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
 	/* create transactions */
-	task = pk_task_new ();
+	task = pk_task_text_new ();
 
 	/* check filter */
 	if (filter != NULL) {
@@ -1790,7 +1682,6 @@ main (int argc, char *argv[])
 				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
-//			pk_progress_bar_start (progressbar, _("Searching"));
 			/* fire off an async request */
 			pk_client_search_name_async (PK_CLIENT(task), filters, details, NULL,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
@@ -2052,33 +1943,6 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		ret = pk_console_get_files (PK_CLIENT(task), value, &error);
-
-	} else if (strcmp (mode, "list-create") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to create as a list */
-			error = g_error_new (1, 0, "%s", _("A list file name to create is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_create (PK_CLIENT(task), value, &error);
-
-	} else if (strcmp (mode, "list-diff") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to open as a list */
-			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_diff (PK_CLIENT(task), value, &error);
-
-	} else if (strcmp (mode, "list-install") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to open as a list */
-			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_install (PK_CLIENT(task), value, &error);
 #endif
 	} else if (strcmp (mode, "get-updates") == 0) {
 		pk_client_get_updates_async (PK_CLIENT(task), filters, NULL,
@@ -2094,23 +1958,20 @@ main (int argc, char *argv[])
 		pk_client_get_packages_async (PK_CLIENT(task), filters, NULL,
 					      (PkProgressCallback) pk_console_progress_cb, NULL,
 					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
-#if 0
-	} else if (strcmp (mode, "get-actions") == 0) {
+
+	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_text (roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		/* these can never fail */
-		ret = TRUE;
-
+		nowait = TRUE;
+#if 0
 	} else if (strcmp (mode, "get-filters") == 0) {
 		filters = pk_control_get_filters (control, NULL);
 		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		/* these can never fail */
-		ret = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
 		groups = pk_control_get_groups (control, NULL);
@@ -2118,8 +1979,6 @@ main (int argc, char *argv[])
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		/* these can never fail */
-		ret = TRUE;
 #endif
 	} else if (strcmp (mode, "get-transactions") == 0) {
 		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, NULL,
@@ -2127,8 +1986,6 @@ main (int argc, char *argv[])
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "refresh") == 0) {
-		/* special case - this takes a long time, and doesn't do packages */
-//		pk_console_start_bar ("refresh-cache");
 		pk_client_refresh_cache_async (PK_CLIENT(task), FALSE, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
