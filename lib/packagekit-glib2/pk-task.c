@@ -198,6 +198,8 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
 	GError *error = NULL;
 	const PkResults *results;
+	PkPackageSack *sack = NULL;
+	guint length;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -233,9 +235,32 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		goto out;
 	}
 
+	/* get data */
+	sack = pk_results_get_package_sack (results);
+
+	/* TODO: remove all the PK_ENUM_INFO_CLEANUP packages */
+
+	/* no results from simulate */
+	length = pk_package_list_get_size (list);
+	if (length == 0) {
+		pk_task_do_async_action (state);
+		goto out;
+	}
+
+	/* same number of packages as the input packages */
+	if (length == g_strv_length (state->package_ids)) {
+		pk_task_do_async_action (state);
+		goto out;
+	}
+
+	/* sort the list, as clients will mostly want this */
+	pk_package_sack_sort_info (sack);
+
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
 out:
+	if (sack != NULL)
+		g_object_unref (sack);
 	return;
 }
 
