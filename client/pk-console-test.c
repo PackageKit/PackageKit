@@ -187,76 +187,12 @@ pk_console_transaction_cb (const PkResultItemTransaction *obj, gpointer user_dat
 
 		/* create printable */
 		package = pk_package_id_to_printable (parts[1]);
-		g_print (" - %s %s", parts[0], package);
+		g_print (" - %s %s\n", parts[0], package);
 		g_free (package);
 		g_strfreev (parts);
 	}
 	g_strfreev (lines);
 }
-#if 0
-
-/**
- * pk_console_print_deps_list_info:
- **/
-static guint
-pk_console_print_deps_list_info (PkPackageSack *list, PkInfoEnum info, const gchar *header)
-{
-	const PkResultItemPackage *obj;
-	gboolean ret = FALSE;
-	guint found = 0;
-	guint i;
-	guint length;
-
-	length = pk_package_list_get_size (list);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-
-		/* are we interested in this type */
-		if (obj->info != info)
-			continue;
-
-		/* is this package already local */
-		if (g_strcmp0 (obj->id->data, "local") == 0)
-			continue;
-
-		/* print header if it's not been done before */
-		if (!ret) {
-			g_print ("%s\n", header);
-			ret = TRUE;
-		}
-
-		/* print package */
-		g_print ("%i\t%s\n", ++found, package);
-	}
-	return found;
-}
-
-/**
- * pk_console_print_deps_list:
- **/
-static guint
-pk_console_print_deps_list (PkPackageSack *list)
-{
-	guint found = 0;
-
-	/* TRANSLATORS: When processing, we might have to remove other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REMOVING, _("The following packages have to be removed:"));
-
-	/* TRANSLATORS: When processing, we might have to install other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_INSTALLING, _("The following packages have to be installed:"));
-
-	/* TRANSLATORS: When processing, we might have to update other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_UPDATING, _("The following packages have to be updated:"));
-
-	/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REINSTALLING, _("The following packages have to be reinstalled:"));
-
-	/* TRANSLATORS: When processing, we might have to downgrade other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_DOWNGRADING, _("The following packages have to be downgraded:"));
-
-	return found;
-}
-#endif
 
 /**
  * pk_console_distro_upgrade_cb:

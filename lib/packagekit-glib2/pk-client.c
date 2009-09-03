@@ -910,7 +910,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_UINT, state->number,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",

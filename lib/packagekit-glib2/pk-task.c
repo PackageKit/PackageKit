@@ -241,7 +241,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* TODO: remove all the PK_ENUM_INFO_CLEANUP packages */
 
 	/* no results from simulate */
-	length = pk_package_list_get_size (list);
+	length = pk_package_sack_get_size (sack);
 	if (length == 0) {
 		pk_task_do_async_action (state);
 		goto out;
