@@ -52,18 +52,36 @@ aptcc::aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list)
 {
 }
 
-bool aptcc::init(const char *locale)
+bool aptcc::init()
 {
+	gchar *locale;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
 	// Generate it and map it
-	setlocale(LC_ALL, locale);
+	// set locale
+	if (locale = pk_backend_get_locale(m_backend)) {
+		setlocale(LC_ALL, locale);
+// TODO why this cuts characthers on ui?
+// 		string _locale(locale);
+// 		size_t found;
+// 		found = _locale.find('.');
+// 		_locale.erase(found);
+// 		_config->Set("APT::Acquire::Translation", _locale);
+	}
+	// set http proxy
+	if (proxy_http = pk_backend_get_proxy_http(m_backend)) {
+		_config->Set("Acquire::http::Proxy", proxy_http);
+	}
+	// set ftp proxy
+	if (proxy_ftp = pk_backend_get_proxy_ftp(m_backend)) {
+		_config->Set("Acquire::ftp::Proxy", proxy_ftp);
+	}
 	bool Res = pkgMakeStatusCache(m_pkgSourceList, Progress, &Map, true);
 	Progress.Done();
 	if(!Res) {
 		return false;
 		//"The package lists or status file could not be parsed or opened."
 	}
-// 	_config->Set("Acquire::ftp::Proxy", s);
-// 	_config->Set("Acquire::http::Proxy", s);
 
 	packageCache = new pkgCache(Map);
 	if (_error->PendingError()) {

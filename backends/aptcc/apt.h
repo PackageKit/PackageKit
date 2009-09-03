@@ -51,7 +51,7 @@ public:
 	aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list);
 	~aptcc();
 
-	bool init(const char *locale);
+	bool init();
 
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
