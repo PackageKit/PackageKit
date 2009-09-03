@@ -352,7 +352,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def set_locale(self, code):
         '''
-        Implement the {backend}-set-locale functionality
+        Implement the set-locale functionality
         Needed to be implemented in a sub class
         '''
         self.lang = code
@@ -404,9 +404,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_name(self, filters, key):
         '''
-        Implement the {backend}-search-name functionality
+        Implement the search-name functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -423,9 +427,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(e.code, e.details, exit=False)
     def search_details(self, filters, key):
         '''
-        Implement the {backend}-search-details functionality
+        Implement the search-details functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
         except Exception, e:
@@ -543,9 +551,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_group(self, filters, group_key):
         '''
-        Implement the {backend}-search-group functionality
+        Implement the search-group functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.allow_cancel(True)
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
@@ -655,9 +667,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def search_file(self, filters, key):
         '''
-        Implement the {backend}-search-file functionality
+        Implement the search-file functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -720,9 +736,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def what_provides(self, filters, provides_type, search):
         '''
-        Implement the {backend}-what-provides functionality
+        Implement the what-provides functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -764,7 +784,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_categories(self):
         '''
-        Implement the {backend}-get-categories functionality
+        Implement the get-categories functionality
         '''
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -796,7 +816,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _get_groups(self, cat_id):
         '''
-        Implement the {backend}-get-collections functionality
+        Implement the get-collections functionality
         '''
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -830,7 +850,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def download_packages(self, directory, package_ids):
         '''
-        Implement the {backend}-download-packages functionality
+        Implement the download-packages functionality
         '''
         try:
             self._check_init()
@@ -995,7 +1015,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Print a list of requires for a given package
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -1307,7 +1331,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Print a list of depends for a given package
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -1381,9 +1409,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def update_system(self, only_trusted):
         '''
-        Implement the {backend}-update-system functionality
+        Implement the update-system functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(0)
@@ -1423,7 +1455,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def refresh_cache(self, force):
         '''
-        Implement the {backend}-refresh_cache functionality
+        Implement the refresh_cache functionality
         '''
         # TODO: use force ?
         self.allow_cancel(True)
@@ -1483,9 +1515,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def resolve(self, filters, packages):
         '''
-        Implement the {backend}-resolve functionality
+        Implement the resolve functionality
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.allow_cancel(True)
         self.percentage(None)
         try:
@@ -1531,7 +1567,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def install_packages(self, only_trusted, package_ids):
         '''
-        Implement the {backend}-install-packages functionality
+        Implement the install-packages functionality
         This will only work with yum 3.2.4 or higher
         '''
         try:
@@ -1608,7 +1644,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def install_files(self, only_trusted, inst_files):
         '''
-        Implement the {backend}-install-files functionality
+        Implement the install-files functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
@@ -1835,7 +1871,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def update_packages(self, only_trusted, package_ids):
         '''
-        Implement the {backend}-install functionality
+        Implement the install functionality
         This will only work with yum 3.2.4 or higher
         '''
         try:
@@ -1982,7 +2018,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def remove_packages(self, allowdep, autoremove, package_ids):
         '''
-        Implement the {backend}-remove functionality
+        Implement the remove functionality
         Needed to be implemented in a sub class
         '''
         # TODO: use autoremove
@@ -2040,7 +2076,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Print a detailed details for a given package
         '''
-        self._check_init(lazy_cache=True)
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
@@ -2124,7 +2164,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_distro_upgrades(self):
         '''
-        Implement the {backend}-get-distro-upgrades functionality
+        Implement the get-distro-upgrades functionality
         '''
         try:
             self._check_init()
@@ -2188,7 +2228,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_updates(self, filters):
         '''
-        Implement the {backend}-get-updates functionality
+        Implement the get-updates functionality
         @param filters: package types to show
         '''
         try:
@@ -2248,7 +2288,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def repo_enable(self, repoid, enable):
         '''
-        Implement the {backend}-repo-enable functionality
+        Implement the repo-enable functionality
         '''
         try:
             self._check_init()
@@ -2282,7 +2322,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_repo_list(self, filters):
         '''
-        Implement the {backend}-get-repo-list functionality
+        Implement the get-repo-list functionality
         '''
         self._check_init(repo_setup=False)
         self.yumbase.conf.cache = 0 # Allow new files
@@ -2385,7 +2425,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def get_update_detail(self, package_ids):
         '''
-        Implement the {backend}-get-update_detail functionality
+        Implement the get-update_detail functionality
         '''
         try:
             self._check_init()
@@ -2456,7 +2496,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def repo_set_data(self, repoid, parameter, value):
         '''
-        Implement the {backend}-repo-set-data functionality
+        Implement the repo-set-data functionality
         '''
         try:
             self._check_init()
@@ -2534,7 +2574,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(100)
 
     def install_signature(self, sigtype, key_id, package):
-        self._check_init(repo_setup=False)
+        try:
+            self._check_init(repo_setup=False)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
