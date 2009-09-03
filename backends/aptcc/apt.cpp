@@ -57,7 +57,11 @@ bool aptcc::init()
 	gchar *locale;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
-	// Generate it and map it
+
+	// make sure we do not get a graphical debconf
+	setenv("DEBIAN_FRONTEND", "noninteractive", 1);
+	setenv("APT_LISTCHANGES_FRONTEND", "none", 1);
+
 	// set locale
 	if (locale = pk_backend_get_locale(m_backend)) {
 		setlocale(LC_ALL, locale);
@@ -68,14 +72,18 @@ bool aptcc::init()
 // 		_locale.erase(found);
 // 		_config->Set("APT::Acquire::Translation", _locale);
 	}
+
 	// set http proxy
 	if (proxy_http = pk_backend_get_proxy_http(m_backend)) {
 		_config->Set("Acquire::http::Proxy", proxy_http);
 	}
+
 	// set ftp proxy
 	if (proxy_ftp = pk_backend_get_proxy_ftp(m_backend)) {
 		_config->Set("Acquire::ftp::Proxy", proxy_ftp);
 	}
+
+	// Generate it and map it
 	bool Res = pkgMakeStatusCache(m_pkgSourceList, Progress, &Map, true);
 	Progress.Done();
 	if(!Res) {
