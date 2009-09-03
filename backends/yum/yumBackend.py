@@ -1412,7 +1412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Implement the update-system functionality
         '''
         try:
-            self._check_init(lazy_cache=True)
+            self._check_init()
         except PkError, e:
             self.error(e.code, e.details, exit=False)
             return
@@ -2650,7 +2650,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # should we suggest yum-complete-transaction?
         unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)
-        if unfinished:
+        if unfinished and not lazy_cache:
             raise PkError(ERROR_FAILED_INITIALIZATION, 'There are unfinished transactions remaining. Please run yum-complete-transaction as root.')
 
         # default to 100% unless method overrides
