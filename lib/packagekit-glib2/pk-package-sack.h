@@ -81,6 +81,9 @@ void		 pk_package_sack_test			(gpointer		 user_data);
 guint		 pk_package_sack_get_size		(PkPackageSack		*sack);
 PkPackage	*pk_package_sack_get_index		(PkPackageSack		*sack,
 							 guint			 i);
+void		 pk_package_sack_sort_package_id	(PkPackageSack		*sack);
+void		 pk_package_sack_sort_info		(PkPackageSack		*sack);
+void		 pk_package_sack_sort_summary		(PkPackageSack		*sack);
 gboolean	 pk_package_sack_add_package		(PkPackageSack		*sack,
 							 PkPackage		*package);
 gboolean	 pk_package_sack_add_package_by_id	(PkPackageSack		*sack,

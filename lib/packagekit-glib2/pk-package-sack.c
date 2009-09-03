@@ -268,6 +268,93 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_sort_compare_package_id_func:
+ **/
+static gint
+pk_package_sack_sort_compare_package_id_func (PkPackage **a, PkPackage **b)
+{
+	const gchar *package_id1;
+	const gchar *package_id2;
+	package_id1 = pk_package_get_id (*a);
+	package_id2 = pk_package_get_id (*b);
+	return g_strcmp0 (package_id1, package_id2);
+}
+
+/**
+ * pk_package_sack_sort_compare_summary_func:
+ **/
+static gint
+pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
+{
+	gint retval;
+	gchar *summary1;
+	gchar *summary2;
+
+	g_object_get (*a, "summary", &summary1, NULL);
+	g_object_get (*b, "summary", &summary2, NULL);
+	retval = g_strcmp0 (summary1, summary2);
+
+	g_free (summary1);
+	g_free (summary2);
+	return retval;
+}
+
+/**
+ * pk_package_sack_sort_compare_info_func:
+ **/
+static gint
+pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
+{
+	PkInfoEnum *info1;
+	PkInfoEnum *info2;
+
+	g_object_get (*a, "info", &info1, NULL);
+	g_object_get (*b, "info", &info2, NULL);
+
+	if (info1 == info2)
+		return 0;
+	else if (info1 > info2)
+		return -1;
+	return 1;
+}
+
+/**
+ * pk_package_sack_sort_package_id:
+ *
+ * Sorts by Package ID
+ **/
+void
+pk_package_sack_sort_package_id (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
+}
+
+/**
+ * pk_package_sack_sort_summary:
+ *
+ * Sorts by summary
+ **/
+void
+pk_package_sack_sort_summary (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
+}
+
+/**
+ * pk_package_sack_sort_info:
+ *
+ * Sorts by PkInfoEnum
+ **/
+void
+pk_package_sack_sort_info (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
+}
+
+/**
  * pk_package_sack_get_total_bytes:
  * @sack: a valid #PkPackageSack instance
  *
@@ -416,7 +503,6 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 			      NULL);
 		g_object_unref (package);
 	}
-
 
 	/* all okay */
 	state->ret = TRUE;
