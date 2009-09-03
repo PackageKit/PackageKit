@@ -85,29 +85,6 @@ pk_strpad (const gchar *data, guint length)
 }
 
 /**
- * pk_package_id_get_printable:
- **/
-static gchar *
-pk_package_id_get_printable (const gchar *package_id)
-{
-	gchar **split = NULL;
-	gchar *value = NULL;
-
-	/* invalid */
-	if (package_id == NULL)
-		goto out;
-
-	/* split */
-	split = g_strsplit (package_id, ";", -1);
-	if (g_strv_length (split) != 4)
-		goto out;
-	value = g_strdup_printf ("%s-%s.%s", split[0], split[1], split[2]);
-out:
-	g_strfreev (split);
-	return value;
-}
-
-/**
  * pk_console_package_cb:
  **/
 static void
@@ -131,7 +108,7 @@ pk_console_package_cb (const PkResultItemPackage *obj, gpointer data)
 	info_pad = pk_strpad (pk_info_enum_to_text (obj->info_enum), 12);
 
 	/* create printable */
-	package = pk_package_id_get_printable (obj->package_id);
+	package = pk_package_id_to_printable (obj->package_id);
 
 	/* don't pretty print */
 	if (!is_console) {
@@ -208,7 +185,7 @@ pk_console_transaction_cb (const PkResultItemTransaction *obj, gpointer user_dat
 		parts = g_strsplit (lines[i], "\t", 3);
 
 		/* create printable */
-		package = pk_package_id_get_printable (parts[1]);
+		package = pk_package_id_to_printable (parts[1]);
 		g_print (" - %s %s", parts[0], package);
 		g_free (package);
 		g_strfreev (parts);
@@ -332,7 +309,7 @@ pk_console_update_detail_cb (const PkResultItemUpdateDetail *detail, gpointer da
 	g_print ("%s\n", _("Details about the update:"));
 
 	/* create printable */
-	package = pk_package_id_get_printable (detail->package_id);
+	package = pk_package_id_to_printable (detail->package_id);
 
 	/* TRANSLATORS: details about the update, package name and version */
 	g_print (" %s: %s\n", _("Package"), package);
@@ -419,7 +396,7 @@ pk_console_require_restart_cb (const PkResultItemRequireRestart *obj, gpointer d
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_get_printable (obj->package_id);
+	package = pk_package_id_to_printable (obj->package_id);
 
 	if (obj->restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted */
@@ -449,7 +426,7 @@ pk_console_details_cb (const PkResultItemDetails *obj, gpointer data)
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_get_printable (obj->package_id);
+	package = pk_package_id_to_printable (obj->package_id);
 
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
@@ -516,7 +493,7 @@ pk_console_repo_signature_required_cb (const PkResultItemRepoSignatureRequired *
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_get_printable (obj->package_id);
+	package = pk_package_id_to_printable (obj->package_id);
 
 	/* TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later */
 	g_print ("%s\n", _("Repository signature required"));
@@ -565,7 +542,7 @@ pk_console_eula_required_cb (const PkResultItemEulaRequired *obj, gpointer data)
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_get_printable (obj->package_id);
+	package = pk_package_id_to_printable (obj->package_id);
 
 	/* TRANSLATORS: This a request for a EULA */
 	g_print ("%s\n", _("End user license agreement required"));
@@ -1562,7 +1539,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		g_object_get (progress,
 			      "package-id", &package_id,
 			      NULL);
-		text = pk_package_id_get_printable (package_id);
+		text = pk_package_id_to_printable (package_id);
 		pk_progress_bar_start (progressbar, text);
 		g_free (package_id);
 		g_free (text);
