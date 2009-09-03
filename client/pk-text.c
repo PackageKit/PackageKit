@@ -59,6 +59,7 @@ gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
 	gchar answer = '\0';
+	gboolean ret = FALSE;
 
 	/* pretty print */
 	g_print ("%s", question);
@@ -69,23 +70,31 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 	do {
 		/* ITS4: ignore, we are copying into the same variable, not a string */
-		answer = (gchar) getchar();
+		answer = (gchar) fgetc (stdin);
 
 		/* positive */
-		if (answer == 'y' || answer == 'Y')
-			return TRUE;
+		if (answer == 'y' || answer == 'Y') {
+			ret = TRUE;
+			break;
+		}
 		/* negative */
 		if (answer == 'n' || answer == 'N')
-			return FALSE;
+			break;
 
 		/* default choice */
-		if (answer == '\n' && defaultyes)
-			return TRUE;
+		if (answer == '\n' && defaultyes) {
+			ret = TRUE;
+			break;
+		}
 		if (answer == '\n' && !defaultyes)
-			return FALSE;
+			break;
 	} while (TRUE);
 
-	/* keep GCC happy */
-	return FALSE;
+	/* remove the trailing \n */
+	answer = (gchar) fgetc (stdin);
+	if (answer != '\n')
+		ungetc (answer, stdin);
+
+	return ret;
 }
 

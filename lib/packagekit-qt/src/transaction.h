@@ -126,19 +126,10 @@ public:
 	ProgressInfo progress();
 
 	/**
-	 * The RoleInfo is a describing the current state of a transaction
-	 * \li \c action describes the operation carried on by the transaction
-	 * \li \c terms are the terms (for example search terms) used when creating the transaction
-	 */
-	typedef struct {
-		Client::Action action;
-		QStringList terms;
-	} RoleInfo;
-	/**
 	 * Returns information describing the transaction
-	 * \return a RoleInfo struct describing the current transaction
+	 * \return the current action of the transaction
 	 */
-	RoleInfo role();
+	Client::Action role();
 
 	/**
 	 * \brief Tells the underlying package manager to use the given \p locale

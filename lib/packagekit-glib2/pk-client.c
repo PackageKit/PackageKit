@@ -23,7 +23,10 @@
  * SECTION:pk-client
  * @short_description: GObject class for PackageKit client access
  *
- * A nice GObject to use for accessing PackageKit asynchronously
+ * A nice GObject to use for accessing PackageKit asynchronously. If you're
+ * using #PkClient to install, remove, or update packages, be prepared that
+ * the eula, gpg and trusted callbacks need to be rescheduled manually, as in
+ * http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html
  */
 
 #include "config.h"
@@ -267,6 +270,7 @@ pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* there's not really a lot we can do here */
 		egg_warning ("failed: %s", error->message);
 		g_error_free (error);
 	}
@@ -406,7 +410,6 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	if (!state->ret) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
 	}
@@ -425,7 +428,8 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 
 	/* add to results */
 	info_enum = pk_info_enum_from_text (info_text);
-	pk_results_add_package (state->results, info_enum, package_id, summary);
+	if (info_enum != PK_INFO_ENUM_FINISHED)
+		pk_results_add_package (state->results, info_enum, package_id, summary);
 
 	/* save progress */
 	g_object_set (state->progress,
@@ -847,7 +851,6 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
-		egg_warning ("failed to set locale: %s", error->message);
 		pk_client_state_finish (state, error);
 		goto out;
 	}
@@ -907,7 +910,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
-						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_UINT, state->number,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
@@ -1061,6 +1064,10 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      NULL);
+
 out:
 	g_free (filters_text);
 	return;
@@ -1121,7 +1128,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
  *
  * Return value: the #PkResults, or %NULL
  **/
-PkResults *
+const PkResults *
 pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
@@ -2836,7 +2843,6 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to set proxy: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
 	}
@@ -2883,7 +2889,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
+	state->role = PK_ROLE_ENUM_UNKNOWN;
 	state->res = g_object_ref (res);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
@@ -2923,6 +2929,9 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      NULL);
 
 	/* track state */
 	g_ptr_array_add (client->priv->calls, state);
@@ -2981,7 +2990,6 @@ pk_client_init (PkClient *client)
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
@@ -3112,7 +3120,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;
@@ -3154,7 +3162,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *details;
 	const PkResultItemDetails *item;
@@ -3196,7 +3204,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	PkPackageSack *sack;
 	guint size;
@@ -3233,7 +3241,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	const PkResultItemErrorCode *error_item;
 
@@ -3277,8 +3285,6 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 		_allow_cancel_cb++;
 	if (type == PK_PROGRESS_TYPE_STATUS)
 		_status_cb++;
-
-//	egg_debug ("percentage now %i", percentage);
 }
 
 static gboolean

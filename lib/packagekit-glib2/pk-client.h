@@ -103,7 +103,7 @@ PkClient	*pk_client_new				(void);
 void		 pk_client_test				(gpointer	 user_data);
 
 /* get transaction results */
-PkResults	*pk_client_generic_finish		(PkClient		*client,
+const PkResults	*pk_client_generic_finish		(PkClient		*client,
 							 GAsyncResult		*res,
 							 GError			**error);
 

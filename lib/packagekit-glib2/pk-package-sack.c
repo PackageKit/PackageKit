@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offsack: 8 -*-
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
  *
@@ -72,12 +72,6 @@ struct _PkPackageSackPrivate
 enum {
 	SIGNAL_CHANGED,
 	SIGNAL_LAST
-};
-
-enum {
-	PROP_0,
-	PROP_ID,
-	PROP_LAST
 };
 
 G_DEFINE_TYPE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
@@ -274,6 +268,93 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_sort_compare_package_id_func:
+ **/
+static gint
+pk_package_sack_sort_compare_package_id_func (PkPackage **a, PkPackage **b)
+{
+	const gchar *package_id1;
+	const gchar *package_id2;
+	package_id1 = pk_package_get_id (*a);
+	package_id2 = pk_package_get_id (*b);
+	return g_strcmp0 (package_id1, package_id2);
+}
+
+/**
+ * pk_package_sack_sort_compare_summary_func:
+ **/
+static gint
+pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
+{
+	gint retval;
+	gchar *summary1;
+	gchar *summary2;
+
+	g_object_get (*a, "summary", &summary1, NULL);
+	g_object_get (*b, "summary", &summary2, NULL);
+	retval = g_strcmp0 (summary1, summary2);
+
+	g_free (summary1);
+	g_free (summary2);
+	return retval;
+}
+
+/**
+ * pk_package_sack_sort_compare_info_func:
+ **/
+static gint
+pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
+{
+	PkInfoEnum *info1;
+	PkInfoEnum *info2;
+
+	g_object_get (*a, "info", &info1, NULL);
+	g_object_get (*b, "info", &info2, NULL);
+
+	if (info1 == info2)
+		return 0;
+	else if (info1 > info2)
+		return -1;
+	return 1;
+}
+
+/**
+ * pk_package_sack_sort_package_id:
+ *
+ * Sorts by Package ID
+ **/
+void
+pk_package_sack_sort_package_id (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
+}
+
+/**
+ * pk_package_sack_sort_summary:
+ *
+ * Sorts by summary
+ **/
+void
+pk_package_sack_sort_summary (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
+}
+
+/**
+ * pk_package_sack_sort_info:
+ *
+ * Sorts by PkInfoEnum
+ **/
+void
+pk_package_sack_sort_info (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
+}
+
+/**
  * pk_package_sack_get_total_bytes:
  * @sack: a valid #PkPackageSack instance
  *
@@ -359,7 +440,6 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	} else {
 		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
 		g_simple_async_result_set_from_error (state->res, (GError*) error);
-//		g_error_free (error);
 	}
 
 	/* complete */
@@ -423,7 +503,6 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 			      NULL);
 		g_object_unref (package);
 	}
-
 
 	/* all okay */
 	state->ret = TRUE;
@@ -735,64 +814,13 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 /***************************************************************************************************/
 
 /**
- * pk_package_sack_get_property:
- **/
-static void
-pk_package_sack_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
-{
-//	PkPackageSack *sack = PK_PACKAGE_SACK (object);
-//	PkPackageSackPrivate *priv = sack->priv;
-
-	switch (prop_id) {
-	case PROP_ID:
-//		g_value_sack_string (value, priv->id);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
- * pk_package_sack_set_property:
- **/
-static void
-pk_package_sack_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
-{
-//	PkPackageSack *sack = PK_PACKAGE_SACK (object);
-//	PkPackageSackPrivate *priv = sack->priv;
-
-	switch (prop_id) {
-	case PROP_ID:
-//		priv->info = g_value_get_uint (value);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/**
  * pk_package_sack_class_init:
- * @klass: The PkPackageSackClass
  **/
 static void
 pk_package_sack_class_init (PkPackageSackClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->get_property = pk_package_sack_get_property;
-	object_class->set_property = pk_package_sack_set_property;
 	object_class->finalize = pk_package_sack_finalize;
-
-	/**
-	 * PkPackageSack:id:
-	 */
-	pspec = g_param_spec_string ("id", NULL,
-				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
 
 #if 0
 	/**
@@ -814,7 +842,6 @@ pk_package_sack_class_init (PkPackageSackClass *klass)
 
 /**
  * pk_package_sack_init:
- * @sack: This class instance
  **/
 static void
 pk_package_sack_init (PkPackageSack *sack)
@@ -829,7 +856,6 @@ pk_package_sack_init (PkPackageSack *sack)
 
 /**
  * pk_package_sack_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_package_sack_finalize (GObject *object)

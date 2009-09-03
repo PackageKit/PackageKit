@@ -295,7 +295,11 @@ AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
 		[Disable NetworkManager support]),
 		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
-	PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
+	PKG_CHECK_MODULES(LIBNM, libnm-glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
+	# look for the old name for the library too
+	if test "x$PK_BUILD_NETWORKMANAGER" = "xno"; then
+		PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
+	fi
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
 		networking_apis="${networking_apis},NetworkManager"
 		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])

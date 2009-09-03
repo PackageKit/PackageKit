@@ -71,9 +71,7 @@ Transaction::Transaction(const QString& tid, const QString& timespec, bool succe
 	d->tid = tid;
 	d->timespec = QDateTime::fromString(timespec, Qt::ISODate);
 	d->succeeded = succeeded;
-	RoleInfo r;
-	r.action = (Client::Action)Util::enumFromString<Client>(role, "Action", "Action");
-	d->role = r;
+	d->role = (Client::Action)Util::enumFromString<Client>(role, "Action", "Action");
 	d->duration = duration;
 	d->data = data;
 	d->uid = uid;
@@ -99,12 +97,12 @@ Client::DaemonError Transaction::error () const
 
 bool Transaction::allowCancel()
 {
-	return d->p->GetAllowCancel().value();
+	return d->p->allowCancel ();
 }
 
 bool Transaction::callerActive()
 {
-	return d->p->IsCallerActive().value();
+	return d->p->callerActive ();
 }
 
 void Transaction::cancel()
@@ -117,7 +115,7 @@ void Transaction::cancel()
 
 Package* Transaction::lastPackage()
 {
-	return new Package(d->p->GetPackageLast().value());
+	return new Package(d->p->lastPackage ());
 }
 
 Transaction::ProgressInfo Transaction::progress()
@@ -125,26 +123,20 @@ Transaction::ProgressInfo Transaction::progress()
 	uint p, subp, elaps, rem;
 	p = d->p->GetProgress(subp, elaps, rem);
 	ProgressInfo i;
-	i.percentage = p;
-	i.subpercentage = subp;
+	i.percentage = d->p->percentage ();
+	i.subpercentage = d->p->subpercentage ();
 	i.elapsed = elaps;
 	i.remaining = rem;
 
 	return i;
 }
 
-Transaction::RoleInfo Transaction::role()
+Client::Action Transaction::role()
 {
 	if(d->oldtrans)
 		return d->role;
 
-	QString terms;
-	RoleInfo i;
-
-	i.action = (Client::Action) Util::enumFromString<Client>(d->p->GetRole(terms).value(), "Action", "Action");
-	i.terms = terms.split(";");
-
-	return i;
+	return (Client::Action) Util::enumFromString<Client>(d->p->role (), "Action", "Action");
 }
 
 void Transaction::setLocale(const QString& locale)
@@ -154,7 +146,7 @@ void Transaction::setLocale(const QString& locale)
 
 Transaction::Status Transaction::status()
 {
-	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->GetStatus().value(), "Status", "Status");
+	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->status (), "Status", "Status");
 }
 
 QDateTime Transaction::timespec()
@@ -179,7 +171,7 @@ QString Transaction::data()
 
 uint Transaction::uid()
 {
-	return d->uid;
+	return d->p->uid ();
 }
 
 QString Transaction::cmdline()

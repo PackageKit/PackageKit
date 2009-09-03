@@ -44,6 +44,7 @@ static void     pk_results_finalize	(GObject     *object);
  **/
 struct _PkResultsPrivate
 {
+	PkRoleEnum		 role;
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
@@ -61,7 +62,51 @@ struct _PkResultsPrivate
 	GPtrArray		*message_array;
 };
 
+enum {
+	PROP_0,
+	PROP_ROLE,
+	PROP_LAST
+};
+
 G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
+
+/**
+ * pk_results_get_property:
+ **/
+static void
+pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_results_set_property:
+ **/
+static void
+pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkResults *results = PK_RESULTS (object);
+	PkResultsPrivate *priv = results->priv;
+
+	switch (prop_id) {
+	case PROP_ROLE:
+		priv->role = g_value_get_uint (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
 
 /**
  * pk_result_item_package_free:
@@ -699,7 +744,7 @@ pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gc
  * Return value: The #PkExitEnum or %PK_EXIT_ENUM_UNKNOWN for error or if it was not set
  **/
 PkExitEnum
-pk_results_get_exit_code (PkResults *results)
+pk_results_get_exit_code (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_EXIT_ENUM_UNKNOWN);
 	return results->priv->exit_enum;
@@ -729,7 +774,7 @@ pk_results_get_package_array (const PkResults *results)
  * Return value: A #PkPackageSack of data.
  **/
 PkPackageSack *
-pk_results_get_package_sack (PkResults *results)
+pk_results_get_package_sack (const PkResults *results)
 {
 	PkPackage *package;
 	PkPackageSack *sack;
@@ -957,7 +1002,7 @@ pk_results_get_error_code_array (const PkResults *results)
  * Return value: A #PkResultItemErrorCode, or %NULL
  **/
 const PkResultItemErrorCode *
-pk_results_get_error_code (PkResults *results)
+pk_results_get_error_code (const PkResults *results)
 {
 	GPtrArray *array;
 
@@ -990,8 +1035,20 @@ pk_results_get_message_array (const PkResults *results)
 static void
 pk_results_class_init (PkResultsClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_results_finalize;
+	object_class->get_property = pk_results_get_property;
+	object_class->set_property = pk_results_set_property;
+
+	/**
+	 * PkResults:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
 }
 

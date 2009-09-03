@@ -31,8 +31,12 @@
 #include "pk-control.h"
 #include "pk-control-sync.h"
 #include "pk-enum.h"
+#include "pk-package.h"
+#include "pk-package-id.h"
 #include "pk-package-sack.h"
 #include "pk-results.h"
+#include "pk-task.h"
+#include "pk-task-wrapper.h"
 #include "pk-version.h"
 
 int
@@ -49,6 +53,7 @@ main (int argc, char **argv)
 	pk_common_test (test);
 	pk_enum_test (test);
 	pk_bitfield_test (test);
+	pk_package_id_test (test);
 	pk_progress_test (test);
 	pk_results_test (test);
 	pk_package_test (test);
@@ -56,6 +61,8 @@ main (int argc, char **argv)
 	pk_control_sync_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
+	pk_task_test (test);
+	pk_task_wrapper_test (test);
 
 	return (egg_test_finish (test));
 }

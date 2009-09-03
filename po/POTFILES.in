@@ -2,8 +2,11 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 client/pk-console.c
+client/pk-console-test.c
 client/pk-generate-pack.c
 client/pk-monitor.c
+client/pk-task-text.c
+client/pk-text.c
 client/pk-tools-common.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c

@@ -1,7 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2008 Shishir Goel <crazyontheedge@gmail.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,31 +19,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "config.h"
+#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#error "Only <packagekit.h> can be included directly."
+#endif
 
-#include <glib.h>
+#ifndef __PK_PACKAGE_ID_H
+#define __PK_PACKAGE_ID_H
+
 #include <glib-object.h>
-#include "egg-test.h"
-#include "egg-debug.h"
 
-#include "pk-task-text.h"
+G_BEGIN_DECLS
 
-/* prototypes */
-void pk_genpack_test (EggTest *test);
+void		 pk_package_id_test			(gpointer		 user_data);
+gchar		*pk_package_id_build			(const gchar		*name,
+							 const gchar		*version,
+							 const gchar		*arch,
+							 const gchar		*data);
+gboolean	 pk_package_id_check			(const gchar		*package_id);
+gchar		**pk_package_id_split			(const gchar		*package_id);
+gchar		*pk_package_id_to_printable		(const gchar		*package_id);
+gboolean	 pk_package_id_equal_fuzzy_arch		(const gchar		*package_id1,
+							 const gchar		*package_id2);
+G_END_DECLS
 
-int
-main (int argc, char **argv)
-{
-	EggTest *test;
-
-	g_type_init ();
-	test = egg_test_init ();
-	egg_debug_init (TRUE);
-
-	/* tests go here */
-	//pk_genpack_test (test);
-	pk_task_text_test (test);
-	
-	return (egg_test_finish (test));
-}
+#endif /* __PK_PACKAGE_ID_H */
 

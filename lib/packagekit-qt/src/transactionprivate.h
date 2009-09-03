@@ -44,7 +44,7 @@ public:
 	// Only used for old transactions
 	bool oldtrans;
 	QDateTime timespec;
-	Transaction::RoleInfo role;
+	Client::Action role;
 	bool succeeded;
 	uint duration;
 	QString data;
