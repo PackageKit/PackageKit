@@ -198,6 +198,101 @@ dkp_task_text_media_change_question (PkTask *task, guint request, const PkResult
 }
 
 /**
+ * pk_task_text_simulate_question_type_to_text:
+ **/
+static const gchar *
+dkp_task_text_simulate_question_type_to_text (PkInfoEnum info)
+{
+	if (info == PK_INFO_ENUM_REMOVING) {
+		/* TRANSLATORS: When processing, we might have to remove other dependencies */
+		return _("The following packages have to be removed:");
+	}
+
+	if (info == PK_INFO_ENUM_INSTALLING) {
+		/* TRANSLATORS: When processing, we might have to install other dependencies */
+		return _("The following packages have to be installed:");
+	}
+
+	if (info == PK_INFO_ENUM_UPDATING) {
+		/* TRANSLATORS: When processing, we might have to update other dependencies */
+		return _("The following packages have to be updated:");
+	}
+
+	if (info == PK_INFO_ENUM_REINSTALLING) {
+		/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
+		return _("The following packages have to be reinstalled:");
+	}
+
+	if (info == PK_INFO_ENUM_DOWNGRADING) {
+		/* TRANSLATORS: When processing, we might have to downgrade other dependencies */
+		return _("The following packages have to be downgraded:");
+	}
+
+	/* do not show */
+	return NULL;
+}
+
+/**
+ * pk_task_text_simulate_question:
+ **/
+static void
+dkp_task_text_simulate_question (PkTask *task, guint request, const PkResults *results)
+{
+	guint i;
+	guint len;
+	gboolean ret;
+	const gchar *package_id;
+	const gchar *title;
+	gchar *printable;
+	gchar *summary;
+	PkPackage *package;
+	PkPackageSack *sack;
+	PkInfoEnum info;
+	PkInfoEnum info_last = PK_INFO_ENUM_UNKNOWN;
+	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
+
+	/* set some user data, for no reason */
+	priv->user_data = NULL;
+
+	/* get data */
+	sack = pk_results_get_package_sack (results);
+
+	/* print data */
+	len = pk_package_sack_get_size (sack);
+	for (i=0; i<len; i++) {
+		package = pk_package_sack_get_index (sack, i);
+		g_object_get (package,
+			      "info", &info,
+			      "summary", &summary,
+			      NULL);
+		/* new header */
+		if (info != info_last) {
+			title = dkp_task_text_simulate_question_type_to_text (info);
+			g_print ("%s\n", title);
+			info_last = info;
+		}
+		package_id = pk_package_get_id (package);
+		printable = pk_package_id_to_printable (package_id);
+		g_print (" %s\t%s\n", printable, summary);
+
+		g_free (summary);
+		g_free (printable);
+		g_object_unref (package);
+	}
+
+	/* ask the user */
+	ret = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
+	if (ret) {
+		pk_task_user_accepted (task, request);
+	} else {
+		g_print ("%s\n", _("The transaction did not proceed."));
+		pk_task_user_declined (task, request);
+	}
+
+	g_object_unref (sack);
+}
+
+/**
  * pk_task_text_class_init:
  **/
 static void
@@ -211,6 +306,7 @@ pk_task_text_class_init (PkTaskTextClass *klass)
 	task_class->key_question = dkp_task_text_key_question;
 	task_class->eula_question = dkp_task_text_eula_question;
 	task_class->media_change_question = dkp_task_text_media_change_question;
+	task_class->simulate_question = dkp_task_text_simulate_question;
 
 	g_type_class_add_private (klass, sizeof (PkTaskTextPrivate));
 }
@@ -290,7 +386,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
 	}
 
-	if (packages->len != 5)
+	if (packages->len != 3)
 		egg_test_failed (test, "invalid number of packages: %i", packages->len);
 
 	g_ptr_array_unref (packages);
