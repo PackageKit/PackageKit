@@ -54,7 +54,7 @@ typedef struct {
 	gboolean			 only_trusted;
 	gchar				**package_ids;
 	GSimpleAsyncResult		*res;
-	PkResults			*results;
+	const PkResults			*results;
 	gboolean			 ret;
 	PkTask				*task;
 	GCancellable			*cancellable;
@@ -118,7 +118,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 
 	/* get result */
 	if (state->ret) {
-		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
+		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref ((GObject*) state->results), g_object_unref);
 	} else {
 		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
 		g_simple_async_result_set_from_error (state->res, (GError*) error);
@@ -342,7 +342,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
  *
  * Return value: %TRUE for success
  **/
-PkResults *
+const PkResults *
 pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
@@ -416,7 +416,7 @@ pk_task_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTest *t
 {
 	PkTask *task = PK_TASK (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 
 	/* get the results */
 	results = pk_task_generic_finish (task, res, &error);

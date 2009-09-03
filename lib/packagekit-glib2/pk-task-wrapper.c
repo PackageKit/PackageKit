@@ -22,7 +22,6 @@
 #include "config.h"
 
 #include <packagekit-glib2/pk-task-wrapper.h>
-//#include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
@@ -80,6 +79,13 @@ dkp_task_wrapper_key_question (PkTask *task, guint request, const PkResults *res
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_print ("KEY:\n");
+		g_print (" Package: %s\n", item->package_id);
+		g_print (" Name: %s\n", item->repository_name);
+		g_print (" URL: %s\n", item->key_url);
+		g_print (" User: %s\n", item->key_userid);
+		g_print (" ID: %s\n", item->key_id);
+		g_print (" Fingerprint: %s\n", item->key_fingerprint);
+		g_print (" Timestamp: %s\n", item->key_timestamp);
 	}
 
 	/* just accept without asking */
@@ -107,6 +113,10 @@ dkp_task_wrapper_eula_question (PkTask *task, guint request, const PkResults *re
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_print ("EULA:\n");
+		g_print (" Eula ID: %s\n", item->eula_id);
+		g_print (" Package: %s\n", item->package_id);
+		g_print (" Vendor: %s\n", item->vendor_name);
+		g_print (" Agreement: %s\n", item->license_agreement);
 	}
 
 	/* just accept without asking */
@@ -134,6 +144,9 @@ dkp_task_wrapper_media_change_question (PkTask *task, guint request, const PkRes
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_print ("MEDIA CHANGE:\n");
+		g_print (" Media type: %s\n", pk_media_type_enum_to_text (item->media_type));
+		g_print (" ID: %s\n", item->media_id);
+		g_print (" Text: %s\n", item->media_text);
 	}
 
 	/* just accept without asking */
@@ -207,7 +220,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 {
 	PkTaskWrapper *task = PK_TASK_WRAPPER (object);
 	GError *error = NULL;
-	PkResults *results = NULL;
+	const PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;

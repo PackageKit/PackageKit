@@ -87,7 +87,7 @@ GType		 pk_task_get_type			(void);
 PkTask		*pk_task_new				(void);
 void		 pk_task_test				(gpointer		 user_data);
 
-PkResults	*pk_task_generic_finish			(PkTask			*task,
+const PkResults	*pk_task_generic_finish			(PkTask			*task,
 							 GAsyncResult		*res,
 							 GError			**error);
 

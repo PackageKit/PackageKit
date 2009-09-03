@@ -23,7 +23,6 @@
 #define __PK_TASK_WRAPPER_H
 
 #include <glib-object.h>
-//#include <gio/gio.h>
 #include <packagekit-glib2/pk-task.h>
 
 G_BEGIN_DECLS

@@ -699,7 +699,7 @@ pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gc
  * Return value: The #PkExitEnum or %PK_EXIT_ENUM_UNKNOWN for error or if it was not set
  **/
 PkExitEnum
-pk_results_get_exit_code (PkResults *results)
+pk_results_get_exit_code (const PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_EXIT_ENUM_UNKNOWN);
 	return results->priv->exit_enum;
@@ -729,7 +729,7 @@ pk_results_get_package_array (const PkResults *results)
  * Return value: A #PkPackageSack of data.
  **/
 PkPackageSack *
-pk_results_get_package_sack (PkResults *results)
+pk_results_get_package_sack (const PkResults *results)
 {
 	PkPackage *package;
 	PkPackageSack *sack;
@@ -957,7 +957,7 @@ pk_results_get_error_code_array (const PkResults *results)
  * Return value: A #PkResultItemErrorCode, or %NULL
  **/
 const PkResultItemErrorCode *
-pk_results_get_error_code (PkResults *results)
+pk_results_get_error_code (const PkResults *results)
 {
 	GPtrArray *array;
 
