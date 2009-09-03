@@ -1227,6 +1227,7 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_set_running (PkTransaction *transaction)
 {
 	gboolean ret;
+	guint i;
 	GError *error = NULL;
 	PkBackendDesc *desc;
 	PkStore *store;
@@ -1417,6 +1418,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (desc->simulate_install_packages != NULL) {
 			desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
+			/* we need to emit the original packages before we fall back */
+			for (i=0; priv->cached_package_ids[i] != NULL; i++)
+				pk_backend_package (priv->backend, PK_INFO_ENUM_INSTALLING, priv->cached_package_ids[i], "");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
@@ -1433,6 +1437,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (desc->simulate_update_packages != NULL) {
 			desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
+			/* we need to emit the original packages before we fall back */
+			for (i=0; priv->cached_package_ids[i] != NULL; i++)
+				pk_backend_package (priv->backend, PK_INFO_ENUM_REMOVING, priv->cached_package_ids[i], "");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
