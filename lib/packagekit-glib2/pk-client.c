@@ -270,6 +270,7 @@ pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
+		/* there's not really a lot we can do here */
 		egg_warning ("failed: %s", error->message);
 		g_error_free (error);
 	}
@@ -409,7 +410,6 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	if (!state->ret) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
 	}
@@ -851,7 +851,6 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
-		egg_warning ("failed to set locale: %s", error->message);
 		pk_client_state_finish (state, error);
 		goto out;
 	}
@@ -2844,7 +2843,6 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to set proxy: %s", error->message);
 		pk_client_state_finish (state, error);
 		return;
 	}
@@ -2992,7 +2990,6 @@ pk_client_init (PkClient *client)
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		egg_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}

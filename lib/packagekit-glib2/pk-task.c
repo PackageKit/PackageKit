@@ -51,6 +51,7 @@ typedef struct {
 	guint				 request;
 	PkRoleEnum			 role;
 	PkExitEnum			 exit_enum;
+	gboolean			 simulate;
 	gboolean			 only_trusted;
 	gchar				**package_ids;
 	gboolean			 allow_deps;
@@ -131,7 +132,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* remove from list */
-	egg_warning ("remove state");
+	egg_debug ("remove state %p", state);
 	g_ptr_array_remove (state->task->priv->array, state);
 
 	/* deallocate */
@@ -149,6 +150,9 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 static void
 pk_task_do_async_action (PkTaskState *state)
 {
+	/* so the callback knows if we are serious or not */
+	state->simulate = FALSE;
+
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		/* start install async */
@@ -186,6 +190,95 @@ pk_task_do_async_action (PkTaskState *state)
 }
 
 /**
+ * pk_task_simulate_ready_cb:
+ **/
+static void
+pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
+{
+	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
+	GError *error = NULL;
+	const PkResults *results;
+
+	/* old results no longer valid */
+	if (state->results != NULL)
+		g_object_unref (state->results);
+
+	/* get the results */
+	results = pk_client_generic_finish (PK_CLIENT(state->task), res, &error);
+	if (results == NULL) {
+
+		/* handle case where this is not implemented */
+		if (error->code == PK_CLIENT_ERROR_NOT_SUPPORTED) {
+			pk_task_do_async_action (state);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* just abort */
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* we own a copy now */
+	state->results = g_object_ref (G_OBJECT(results));
+
+	/* get exit code */
+	state->exit_enum = pk_results_get_exit_code (state->results);
+	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+				     "could not do simulate");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* run the callback */
+	klass->simulate_question (state->task, state->request, state->results);
+out:
+	return;
+}
+
+/**
+ * pk_task_do_async_simulate_action:
+ **/
+static void
+pk_task_do_async_simulate_action (PkTaskState *state)
+{
+	/* so the callback knows if we are serious or not */
+	state->simulate = TRUE;
+
+	/* do the correct action */
+	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		/* simulate install async */
+		egg_debug ("doing install");
+		pk_client_simulate_install_packages_async (PK_CLIENT(state->task), state->package_ids,
+							   state->cancellable, state->progress_callback, state->progress_user_data,
+							   (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		/* simulate update async */
+		egg_debug ("doing update");
+		pk_client_simulate_update_packages_async (PK_CLIENT(state->task), state->package_ids,
+							  state->cancellable, state->progress_callback, state->progress_user_data,
+							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		/* simulate remove async */
+		egg_debug ("doing remove");
+		pk_client_simulate_remove_packages_async (PK_CLIENT(state->task), state->package_ids,
+							  state->cancellable, state->progress_callback, state->progress_user_data,
+							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
+	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
+		/* simulate install async */
+		egg_debug ("doing install files");
+		pk_client_simulate_install_files_async (PK_CLIENT(state->task), state->files,
+						        state->cancellable, state->progress_callback, state->progress_user_data,
+						        (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
+	} else {
+		g_assert_not_reached ();
+	}
+}
+
+/**
  * pk_task_install_signatures_ready_cb:
  **/
 static void
@@ -202,7 +295,6 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to install signature: %s", error->message);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -288,7 +380,6 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to accept eula: %s", error->message);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -413,12 +504,21 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 {
 	GError *error;
 
+	/* the introduction is finished */
+	if (state->simulate) {
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined simulation");
+		pk_task_generic_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* doing task */
 	egg_debug ("declined request %i", state->request);
 	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
 	g_error_free (error);
 
+out:
 	/* never repeat */
 	return FALSE;
 }
@@ -460,7 +560,6 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to resolve: %s", error->message);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -563,6 +662,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 {
 	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback != NULL);
@@ -584,11 +684,14 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	egg_warning ("adding state %p", state);
+	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	pk_task_do_async_action (state);
+	if (klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }
@@ -612,6 +715,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 {
 	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -632,11 +736,14 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	egg_warning ("adding state %p", state);
+	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	pk_task_do_async_action (state);
+	if (klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }
@@ -664,6 +771,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 {
 	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -685,11 +793,14 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	egg_warning ("adding state %p", state);
+	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	pk_task_do_async_action (state);
+	if (klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }
@@ -714,6 +825,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 {
 	GSimpleAsyncResult *res;
 	PkTaskState *state;
+	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
@@ -734,11 +846,14 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	egg_warning ("adding state %p", state);
+	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	pk_task_do_async_action (state);
+	if (klass->simulate_question != NULL)
+		pk_task_do_async_simulate_action (state);
+	else
+		pk_task_do_async_action (state);
 
 	g_object_unref (res);
 }
@@ -785,7 +900,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 	state->request = pk_task_generate_request_id ();
 	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	egg_warning ("adding state %p", state);
+	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */

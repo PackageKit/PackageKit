@@ -23,6 +23,7 @@
 
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 
@@ -157,6 +158,51 @@ dkp_task_wrapper_media_change_question (PkTask *task, guint request, const PkRes
 }
 
 /**
+ * pk_task_wrapper_simulate_question:
+ **/
+static void
+dkp_task_wrapper_simulate_question (PkTask *task, guint request, const PkResults *results)
+{
+	guint i;
+	guint len;
+	const gchar *package_id;
+	gchar *printable;
+	gchar *summary;
+	PkPackage *package;
+	PkPackageSack *sack;
+	PkInfoEnum info;
+	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
+
+	/* set some user data, for no reason */
+	priv->user_data = NULL;
+
+	/* get data */
+	sack = pk_results_get_package_sack (results);
+
+	/* print data */
+	len = pk_package_sack_get_size (sack);
+	for (i=0; i<len; i++) {
+		package = pk_package_sack_get_index (sack, i);
+		g_object_get (package,
+			      "info", &info,
+			      "summary", &summary,
+			      NULL);
+		package_id = pk_package_get_id (package);
+		printable = pk_package_id_to_printable (package_id);
+		g_print ("%s\t%s\t%s\n", pk_info_enum_to_text (info), printable, summary);
+
+		g_free (summary);
+		g_free (printable);
+		g_object_unref (package);
+	}
+
+	/* just accept without asking */
+	pk_task_user_accepted (task, request);
+
+	g_object_unref (sack);
+}
+
+/**
  * pk_task_wrapper_class_init:
  **/
 static void
@@ -170,6 +216,7 @@ pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
 	task_class->key_question = dkp_task_wrapper_key_question;
 	task_class->eula_question = dkp_task_wrapper_eula_question;
 	task_class->media_change_question = dkp_task_wrapper_media_change_question;
+	task_class->simulate_question = dkp_task_wrapper_simulate_question;
 
 	g_type_class_add_private (klass, sizeof (PkTaskWrapperPrivate));
 }
@@ -230,14 +277,14 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	/* get the results */
 	results = pk_task_generic_finish (PK_TASK (task), res, &error);
 	if (results == NULL) {
-		egg_test_failed (test, "failed to resolve: %s", error->message);
+		egg_test_failed (test, "failed to install: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to install packages: %s", pk_exit_enum_to_text (exit_enum));
 
 	packages = pk_results_get_package_array (results);
 	if (packages == NULL)
@@ -249,7 +296,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
 	}
 
-	if (packages->len != 5)
+	if (packages->len != 3)
 		egg_test_failed (test, "invalid number of packages: %i", packages->len);
 
 	g_ptr_array_unref (packages);

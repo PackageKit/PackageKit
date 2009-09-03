@@ -74,6 +74,9 @@ struct _PkTaskClass
 	void	 (*media_change_question)		(PkTask			*task,
 							 guint			 request,
 							 const PkResults	*results);
+	void	 (*simulate_question)			(PkTask			*task,
+							 guint			 request,
+							 const PkResults	*results);
 	/* padding for future expansion */
 	void (*_pk_reserved1)	(void);
 	void (*_pk_reserved2)	(void);
