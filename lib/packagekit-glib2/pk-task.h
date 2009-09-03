@@ -101,6 +101,7 @@ void		 pk_task_install_packages_async		(PkTask			*task,
 /* TODO:
  *    pk_task_remove_packages_async
  *    pk_task_update_packages_async
+ *    pk_task_update_system_async
  */
 gboolean	 pk_task_user_accepted			(PkTask			*task,
 							 guint			 request);
