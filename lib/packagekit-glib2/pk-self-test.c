@@ -47,7 +47,6 @@ main (int argc, char **argv)
 	egg_debug_init (TRUE);
 
 	/* tests go here */
-#if 0
 	egg_string_test (test);
 	pk_common_test (test);
 	pk_enum_test (test);
@@ -59,7 +58,6 @@ main (int argc, char **argv)
 	pk_control_sync_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
-#endif
 	pk_task_test (test);
 	pk_task_wrapper_test (test);
 
