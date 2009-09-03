@@ -21,26 +21,6 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-#include <string.h>
-#include <locale.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <sys/wait.h>
-#include <fcntl.h>
-
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-#include <dbus/dbus-glib.h>
-
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -381,7 +361,6 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 
 /**
  * pk_task_class_init:
- * @klass: The PkTaskClass
  **/
 static void
 pk_task_class_init (PkTaskClass *klass)
@@ -394,7 +373,6 @@ pk_task_class_init (PkTaskClass *klass)
 
 /**
  * pk_task_init:
- * @task: This class instance
  **/
 static void
 pk_task_init (PkTask *task)
@@ -405,7 +383,6 @@ pk_task_init (PkTask *task)
 
 /**
  * pk_task_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_task_finalize (GObject *object)
@@ -440,39 +417,22 @@ pk_task_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTest *t
 	PkTask *task = PK_TASK (object);
 	GError *error = NULL;
 	PkResults *results = NULL;
-	PkExitEnum exit_enum;
-	GPtrArray *packages;
-	const PkResultItemPackage *item;
-	guint i;
 
 	/* get the results */
 	results = pk_task_generic_finish (task, res, &error);
-	if (results == NULL) {
-		egg_test_failed (test, "failed to resolve: %s", error->message);
+	if (results != NULL) {
+		egg_test_failed (test, "finish should fail!");
+		return;
+	}
+
+	/* check error */
+	if (g_strcmp0 (error->message, "could not do untrusted question as no klass support") != 0) {
+		egg_test_failed (test, "wrong message: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
-
-	packages = pk_results_get_package_array (results);
-	if (packages == NULL)
-		egg_test_failed (test, "no packages!");
-
-	/* list, just for shits and giggles */
-	for (i=0; i<packages->len; i++) {
-		item = g_ptr_array_index (packages, i);
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
-	}
-
-	if (packages->len != 5)
-		egg_test_failed (test, "invalid number of packages: %i", packages->len);
-
-	g_ptr_array_unref (packages);
-
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	g_error_free (error);
 	egg_test_loop_quit (test);
 }
 

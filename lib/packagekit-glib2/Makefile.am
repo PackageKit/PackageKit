@@ -102,6 +102,8 @@ pk_self_test_SOURCES =						\
 	$(libpackagekit_glib2_la_SOURCES)			\
 	egg-test.h						\
 	egg-test.c						\
+	pk-task-wrapper.c					\
+	pk-task-wrapper.h					\
 	pk-self-test.c						\
 	$(NULL)
 

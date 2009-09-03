@@ -729,7 +729,6 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 
 /**
  * pk_package_sack_class_init:
- * @klass: The PkPackageSackClass
  **/
 static void
 pk_package_sack_class_init (PkPackageSackClass *klass)
@@ -757,7 +756,6 @@ pk_package_sack_class_init (PkPackageSackClass *klass)
 
 /**
  * pk_package_sack_init:
- * @sack: This class instance
  **/
 static void
 pk_package_sack_init (PkPackageSack *sack)
@@ -772,7 +770,6 @@ pk_package_sack_init (PkPackageSack *sack)
 
 /**
  * pk_package_sack_finalize:
- * @object: The object to finalize
  **/
 static void
 pk_package_sack_finalize (GObject *object)

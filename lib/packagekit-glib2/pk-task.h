@@ -52,7 +52,6 @@ G_BEGIN_DECLS
 typedef struct _PkTaskPrivate	PkTaskPrivate;
 typedef struct _PkTask		PkTask;
 typedef struct _PkTaskClass	PkTaskClass;
-typedef struct _PkTaskResults	PkTaskResults;
 
 struct _PkTask
 {
