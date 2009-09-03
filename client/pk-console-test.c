@@ -425,20 +425,7 @@ pk_console_files_cb (PkResultItemFiles *obj, gpointer data)
 static void
 pk_console_finished_cb (PkExitEnum exit_enum, guint runtime, gpointer data)
 {
-	PkRoleEnum role;
-	const gchar *role_text;
-	gfloat time_s;
 	PkRestartEnum restart;
-	gboolean ret;
-	GError *error = NULL;
-
-	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
-
-	role_text = pk_role_enum_to_text (role);
-	time_s = (gfloat) runtime / 1000.0;
-
-	/* do we need to new line? */
-	egg_debug ("%s runtime was %.1f seconds", role_text, time_s);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -458,35 +445,6 @@ pk_console_finished_cb (PkExitEnum exit_enum, guint runtime, gpointer data)
 		/* TRANSLATORS: a package needs to restart the session (due to security) */
 		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
-
-	/* need to handle retry with only_trusted=FALSE */
-	if (exit_enum == PK_EXIT_ENUM_NEED_UNTRUSTED) {
-		egg_debug ("need to handle untrusted");
-
-		/* retry new action with untrusted */
-		pk_client_set_only_trusted (PK_CLIENT(task), FALSE);
-		ret = pk_client_requeue (PK_CLIENT(task), &error);
-		if (!ret) {
-			egg_warning ("Failed to requeue: %s", error->message);
-			g_error_free (error);
-		}
-		return;
-	}
-
-	if ((role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES) &&
-	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
-		egg_warning ("waiting for second install file to finish");
-		return;
-	}
-
-	/* have we failed to install, and the gpg key is now installed */
-	if (exit_enum == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
-		egg_debug ("key now installed");
-		return;
-	}
-
-	/* close the loop */
-	g_main_loop_quit (loop);
 }
 
 /**
@@ -608,61 +566,6 @@ pk_console_install_stuff (gchar **packages, GError **error)
 		/* convert to strv */
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
-		/* can we simulate? */
-		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
-			ret = pk_client_reset (client_sync, &error_local);
-			if (!ret) {
-				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
-
-			egg_debug ("Simulating install for %s", package_ids[0]);
-			ret = pk_client_simulate_install_packages (client_sync, package_ids, error);
-			if (!ret) {
-				egg_warning ("failed to simulate a package install");
-				goto out;
-			}
-
-			/* see how many packages there are */
-			list_single = pk_client_get_package_list (client_sync);
-			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-			g_object_unref (list_single);
-
-			/* one of the simulate-install-packages failed */
-			if (!ret)
-				goto out;
-
-			/* if there are no required packages, just do the remove */
-			length = pk_package_list_get_size (list);
-			if (length != 0) {
-
-				/* print the additional deps to the screen */
-				pk_console_print_deps_list (list);
-
-				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-				/* we chickened out */
-				if (!accept_changes) {
-					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
-					ret = FALSE;
-					goto out;
-				}
-			}
-		}
-
-		/* reset */
-		ret = pk_client_reset (PK_CLIENT(task), &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-
 		ret = pk_client_install_packages (PK_CLIENT(task), TRUE, package_ids, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
@@ -676,52 +579,6 @@ pk_console_install_stuff (gchar **packages, GError **error)
 	if (array_files->len > 0) {
 		/* convert to strv */
 		files = pk_ptr_array_to_strv (array_files);
-
-		/* can we simulate? */
-		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
-			ret = pk_client_reset (client_sync, &error_local);
-			if (!ret) {
-				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
-
-			egg_debug ("Simulating install for %s", files[0]);
-			ret = pk_client_simulate_install_files (client_sync, files, error);
-			if (!ret) {
-				egg_warning ("failed to simulate a package install");
-				goto out;
-			}
-
-			/* see how many packages there are */
-			list_single = pk_client_get_package_list (client_sync);
-			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-			g_object_unref (list_single);
-
-			/* one of the simulate-install-files failed */
-			if (!ret)
-				goto out;
-
-			/* if there are no required packages, just do the remove */
-			length = pk_package_list_get_size (list);
-			if (length != 0) {
-
-				/* print the additional deps to the screen */
-				pk_console_print_deps_list (list);
-
-				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-				/* we chickened out */
-				if (!accept_changes) {
-					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
-					ret = FALSE;
-					goto out;
-				}
-			}
-		}
 
 		ret = pk_client_install_files (PK_CLIENT(task), TRUE, files, &error_local);
 		if (!ret) {
@@ -749,12 +606,6 @@ out:
 static gboolean
 pk_console_remove_only (gchar **package_ids, gboolean force, GError **error)
 {
-	gboolean ret;
-
-	egg_debug ("remove+ %s", package_ids[0]);
-	ret = pk_client_reset (PK_CLIENT(task), error);
-	if (!ret)
-		return ret;
 	return pk_client_remove_packages (PK_CLIENT(task), package_ids, force, FALSE, error);
 }
 
@@ -799,74 +650,8 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	/* convert to strv */
 	package_ids = pk_ptr_array_to_strv (array);
 
-	/* are we dumb and can't check for requires? */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
-		/* no, just try to remove it without deps */
-		ret = pk_console_remove_only (PK_CLIENT(task), package_ids, FALSE, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
-			g_error_free (error_local);
-		}
-		goto out;
-	}
-
-	ret = pk_client_reset (client_sync, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	egg_debug ("Getting installed requires for %s", package_ids[0]);
-	/* see if any packages require this one */
-	ret = pk_client_simulate_remove_packages (client_sync, package_ids, error);
-	if (!ret) {
-		egg_warning ("failed to simulate a package removal");
-		goto out;
-	}
-
-	/* see how many packages there are */
-	list_single = pk_client_get_package_list (client_sync);
-	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-	g_object_unref (list_single);
-
-	/* one of the simulate-remove-packages failed */
-	if (!ret)
-		goto out;
-
-	/* if there are no required packages, just do the remove */
-	length = pk_package_list_get_size (list);
-	if (length == 0) {
-		egg_debug ("no requires");
-		ret = pk_console_remove_only (PK_CLIENT(task), package_ids, FALSE, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
-			g_error_free (error_local);
-		}
-		goto out;
-	}
-
-	/* present this to the user */
-
-	/* print the additional deps to the screen */
-	pk_console_print_deps_list (list);
-
-	/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-	remove_deps = pk_console_get_prompt (_("Proceed with additional packages?"), FALSE);
-
-	/* we chickened out */
-	if (!remove_deps) {
-		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-		*error = g_error_new (1, 0, "%s", _("The package removal was canceled!"));
-		ret = FALSE;
-		goto out;
-	}
-
-	/* remove all the stuff */
-	ret = pk_console_remove_only (PK_CLIENT(task), package_ids, TRUE, &error_local);
+	/* no, just try to remove it without deps */
+	ret = pk_console_remove_only (PK_CLIENT(task), package_ids, FALSE, &error_local);
 	if (!ret) {
 		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
@@ -920,15 +705,6 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 		/* convert to strv */
 		package_ids = pk_ptr_array_to_strv (array_packages);
 
-		/* reset */
-		ret = pk_client_reset (PK_CLIENT(task), &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-
 		ret = pk_client_download_packages (PK_CLIENT(task), package_ids, directory, error);
 		if (!ret) {
 			/* TRANSLATORS: Could not download the packages for some reason. The detailed error follows */
@@ -970,67 +746,15 @@ pk_console_update_package (const gchar *package, GError **error)
 	}
 	package_ids = pk_package_ids_from_id (package_id);
 
-	/* are we dumb and can't simulate? */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
-		/* no, just try to update it without deps */
-		ret = pk_client_update_packages (PK_CLIENT(task), TRUE, package_ids, error);
-		if (!ret) {
-			/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
-			g_error_free (error_local);
-		}
-		goto out;
-	}
-
-	ret = pk_client_reset (client_sync, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	egg_debug ("Simulating update for %s", package_ids[0]);
-	ret = pk_client_simulate_update_packages (client_sync, package_ids, error);
-	if (!ret) {
-		egg_warning ("failed to simulate a package update");
-		goto out;
-	}
-
-	/* see how many packages there are */
-	list_single = pk_client_get_package_list (client_sync);
-	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-	g_object_unref (list_single);
-
-	/* one of the simulate-update-packages failed */
-	if (!ret)
-		goto out;
-
-	/* if there are no required packages, just do the remove */
-	length = pk_package_list_get_size (list);
-	if (length != 0) {
-
-		/* print the additional deps to the screen */
-		pk_console_print_deps_list (list);
-
-		/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-		accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-		/* we chickened out */
-		if (!accept_changes) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, "%s", _("The package update was canceled!"));
-			ret = FALSE;
-			goto out;
-		}
-	}
-
+	/* no, just try to update it without deps */
 	ret = pk_client_update_packages (PK_CLIENT(task), TRUE, package_ids, error);
 	if (!ret) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
 		g_error_free (error_local);
 	}
+	goto out;
+
 out:
 	g_object_unref (list);
 	g_strfreev (package_ids);
@@ -1187,31 +911,6 @@ pk_console_get_update_detail (const gchar *package, GError **error)
 	g_free (package_id);
 	return ret;
 }
-
-/**
- * pk_console_error_code_cb:
- **/
-static void
-pk_console_error_code_cb (PkErrorCodeEnum error_code, const gchar *details, gpointer data)
-{
-	PkRoleEnum role;
-
-	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
-
-	/* handled */
-	if (need_requeue) {
-		if (error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT ||
-		    pk_error_code_is_need_untrusted (error_code)) {
-			egg_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
-			return;
-		}
-		egg_warning ("set requeue, but did not handle error");
-	}
-
-	/* TRANSLATORS: This was an unhandled error, and we don't have _any_ context */
-	g_print ("%s %s: %s\n", _("Error:"), pk_error_enum_to_text (error_code), details);
-}
-
 #endif
 
 /**
@@ -1244,22 +943,11 @@ pk_console_sigint_handler (int sig)
 
 #if 0
 	/* cancel any tasks */
-	pk_client_get_role (PK_CLIENT(task), &role, NULL, NULL);
-	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (PK_CLIENT(task), &error);
-		if (!ret) {
-			egg_warning ("failed to cancel normal client: %s", error->message);
-			g_error_free (error);
-			error = NULL;
-		}
-	}
-	pk_client_get_role (client_sync, &role, NULL, NULL);
-	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client_sync, &error);
-		if (!ret) {
-			egg_warning ("failed to cancel task client: %s", error->message);
-			g_error_free (error);
-		}
+	ret = pk_client_cancel (PK_CLIENT(task), &error);
+	if (!ret) {
+		egg_warning ("failed to cancel normal client: %s", error->message);
+		g_error_free (error);
+		error = NULL;
 	}
 #endif
 
