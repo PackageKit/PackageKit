@@ -26,6 +26,7 @@ PROGRAM_DIR=File.dirname(File.expand_path($PROGRAM_NAME))
 $LOAD_PATH.unshift PROGRAM_DIR
 
 require 'ruby_packagekit/enums'
+require 'ruby_packagekit/prints'
 
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
@@ -460,6 +461,56 @@ def refresh_cache(force)
     percentage(100)
 end
 
+# (security/vxquery)
+VXQUERY = "#{PREFIX}/bin/vxquery"
+
+# http://www.vuxml.org
+VULN_XML = 'vuln.xml'
+
+def _match_range(range, version)
+   cmp = PkgVersion.new(version.to_s) <=> PkgVersion.new(range.text)
+   return true if range.name == 'lt' && cmp <  0
+   return true if range.name == 'le' && cmp <= 0
+   return true if range.name == 'eq' && cmp == 0
+   return true if range.name == 'ge' && cmp >= 0
+   return true if range.name == 'gt' && cmp >  0
+   return false
+end
+
+def _vuxml(name, oldversion=nil, newversion=nil)
+    vulnxml = File.join($portsdb.portdir('security/vuxml'), VULN_XML)
+    vulns = []
+    if File.exist?(VXQUERY) and File.exist?(vulnxml)
+      require 'rexml/document'
+      vuxml = `#{VXQUERY} -t 'vuxml' #{vulnxml} '#{name}'`
+      doc = REXML::Document.new vuxml
+      doc.root.each_element('//vuln') do |vuln|
+        match = false
+        vuln.each_element('affects/package') do |package|
+          package.elements['name'].each do |element|
+            if element == name
+              match = true
+              break
+            end
+          end
+          next unless match
+          if oldversion and newversion
+            match = false
+            package.elements['range'].each do |element|
+              if _match_range(element, oldversion) and
+                 not _match_range(element, newversion)
+                match = true
+                break
+              end
+            end
+          end
+        end
+        vulns << vuln if match
+      end
+    end
+    return vulns
+end
+
 def get_updates(filters)
     status(STATUS_DEP_RESOLVE)
     filterlist = filters.split(';')
@@ -542,7 +593,30 @@ def get_update_detail(package_ids)
         issued = ''
         updated = ''
 
-        # TODO: http://www.vuxml.org
+        vulns = _vuxml(pkg.name, oldpkg.version, pkg.version)
+        vulns.each do |vuln|
+          if topic = vuln.elements['topic']
+            description += topic.text
+          end
+          if vid = vuln.attributes["vid"]
+            vendor_urls << "http://vuxml.freebsd.org/#{vid}.html"
+          end
+          vuln.each_element('references/cvename') do |cve|
+            cve_urls << "http://cve.mitre.org/cgi-bin/cvename.cgi?name=#{cve.text}"
+          end
+          vuln.each_element('references/url') do |element|
+            url = element.text.chomp
+            if url.match(/bugzilla/)
+              bugzilla_urls << url
+            end
+          end
+          if date = vuln.elements['dates/entry']
+            issued = date.text
+          end
+          if date = vuln.elements['dates/modified']
+            updated = date.text
+          end
+        end
 
         vendor_urls = vendor_urls.join(';')
         bugzilla_urls = bugzilla_urls.join(';')
@@ -820,67 +894,6 @@ def remove_packages(allowdep, autoremove, package_ids)
       pkgname = "#{name}-#{version}"
       _resolve(FILTER_NOT_INSTALLED, pkgname)
     end
-end
-
-#######################################################################
-
-def message(typ, msg)
-   $stdout.printf "message\t%s\t%s\n", typ, msg
-   $stdout.flush
-end
-
-def package(package_id, status, summary)
-   $stdout.printf "package\t%s\t%s\t%s\n", status, package_id, summary
-   $stdout.flush
-end
-
-def repo_detail(repoid, name, state)
-   $stdout.printf "repo-detail\t%s\t%s\t%s\n", repoid, name, state
-   $stdout.flush
-end
-
-def update_detail(package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated)
-   $stdout.printf "updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated
-   $stdout.flush
-end
-
-def details(package_id, package_license, group, desc, url, bytes)
-   $stdout.printf "details\t%s\t%s\t%s\t%s\t%s\t%d\n", package_id, package_license, group, desc, url, bytes
-   $stdout.flush
-end
-
-def files(package_id, file_list)
-   $stdout.printf "files\t%s\t%s\n", package_id, file_list
-   $stdout.flush
-end
-
-def status(state)
-   $stdout.printf "status\t%s\n", state
-   $stdout.flush
-end
-
-def error(err, description, exit=true)
-   $stdout.printf "error\t%s\t%s\n", err, description
-   $stdout.flush
-   if exit
-      finished
-      exit(1)
-   end
-end
-
-def percentage(percent=nil)
-   if percent==nil
-      $stdout.printf "finished\n"
-   else percent == 0 or percent > $percentage_old
-      $stdout.printf "percentage\t%i\n", percent
-      $percentage_old = percent
-   end
-   $stdout.flush
-end
-
-def finished
-   $stdout.printf "finished\n"
-   $stdout.flush
 end
 
 #######################################################################

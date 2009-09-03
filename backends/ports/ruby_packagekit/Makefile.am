@@ -4,6 +4,7 @@ NULL =
 
 dist_helper_DATA =                                              \
 	enums.rb                                                \
+	prints.rb                                               \
 	$(NULL)
 
 clean-local :
