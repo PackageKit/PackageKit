@@ -287,8 +287,17 @@ static void
 pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state)
 {
 	/* dbus method has not yet fired */
-	if (state->call != NULL)
-		egg_warning ("DBus method not yet fired, not sure what to do here");
+	if (state->proxy == NULL) {
+		egg_warning ("Cancelled, but no proxy, not sure what to do here");
+		return;
+	}
+
+	/* dbus method is pending now, just cancel */
+	if (state->call != NULL) {
+		dbus_g_proxy_cancel_call (state->proxy, state->call);
+		state->call = NULL;
+		return;
+	}
 
 	/* takeover the call with the cancel method */
 	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
@@ -311,7 +320,6 @@ pk_client_state_finish (PkClientState *state, GError *error)
 
 	if (state->cancellable != NULL) {
 		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
-		g_cancellable_cancel (state->cancellable);
 		g_object_unref (state->cancellable);
 	}
 

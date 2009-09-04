@@ -150,12 +150,6 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->tid != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->tid), g_free);
@@ -171,6 +165,8 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_free (state->tid);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
@@ -292,12 +288,6 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -313,6 +303,8 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -435,12 +427,6 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->transaction_list != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->transaction_list), (GDestroyNotify) g_strfreev);
@@ -456,6 +442,8 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_strfreev (state->transaction_list);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
@@ -577,12 +565,6 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->time != 0) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->time);
@@ -598,6 +580,8 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -727,12 +711,6 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->network != PK_NETWORK_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->network);
@@ -748,6 +726,8 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -874,12 +854,6 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->authorize != PK_AUTHORIZE_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
@@ -895,6 +869,8 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
@@ -1023,12 +999,6 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 	if (state->control != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -1044,6 +1014,8 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkControlState, state);
 }
