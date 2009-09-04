@@ -889,6 +889,40 @@ pk_results_get_require_restart_array (const PkResults *results)
 }
 
 /**
+ * pk_results_get_require_restart_worst:
+ * @results: a valid #PkResults instance
+ *
+ * This method returns the 'worst' restart of all the transactions.
+ * It is needed as multiple sub-transactions may emit require-restart with
+ * different values, and we always want to get the most invasive of all.
+ *
+ * For instance, if a transaction emits RequireRestart(system) and then
+ * RequireRestart(session) then pk_client_get_require_restart will return
+ * system as a session restart is implied with a system restart.
+ *
+ * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ **/
+PkRestartEnum
+pk_results_get_require_restart_worst (const PkResults *results)
+{
+	GPtrArray *array;
+	PkRestartEnum worst = 0;
+	guint i;
+	const PkResultItemRequireRestart *item;
+
+	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
+
+	array = results->priv->require_restart_array;
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		if (item->restart > worst)
+			worst = item->restart;
+	}
+
+	return worst;
+}
+
+/**
  * pk_results_get_transaction_array:
  * @results: a valid #PkResults instance
  *

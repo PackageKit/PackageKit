@@ -345,6 +345,7 @@ gboolean	 pk_results_add_message 		(PkResults		*results,
 PkExitEnum	 pk_results_get_exit_code		(const PkResults	*results);
 PkPackageSack	*pk_results_get_package_sack		(const PkResults	*results);
 const PkResultItemErrorCode *pk_results_get_error_code	(const PkResults	*results);
+PkRestartEnum	 pk_results_get_require_restart_worst	(const PkResults	*results);
 
 /* get array objects */
 GPtrArray	*pk_results_get_package_array		(const PkResults	*results);
