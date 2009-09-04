@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-30 02:50+0000\n"
-"PO-Revision-Date: 2009-08-30 13:01+0300\n"
+"POT-Creation-Date: 2009-09-04 14:33+0000\n"
+"PO-Revision-Date: 2009-09-04 23:14+0300\n"
 "Last-Translator: Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>\n"
 "Language-Team: Finnish <laatu@lokalisointi.org>\n"
 "MIME-Version: 1.0\n"
@@ -16,257 +16,274 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:238 ../client/pk-console-test.c:147
 msgid "Transaction"
 msgstr "Transaktio"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:237
+#: ../client/pk-console.c:240 ../client/pk-console-test.c:149
 msgid "System time"
 msgstr "Järjestelmän aika"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "Succeeded"
 msgstr "Onnistui"
 
-#. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:239 ../client/pk-console.c:468
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "True"
 msgstr "Tosi"
 
-#: ../client/pk-console.c:239 ../client/pk-console.c:468
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "False"
 msgstr "Epätosi"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:241 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:244 ../client/pk-console-test.c:153
+#: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
 msgstr "Rooli"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
 msgid "Duration"
 msgstr "Kesto"
 
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
 msgid "(seconds)"
 msgstr "(sekuntia)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:253 ../client/pk-console-test.c:162
+#: ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
 msgstr "Komentorivi"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:255 ../client/pk-console-test.c:164
 msgid "User ID"
 msgstr "Käyttäjän tunniste"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:259
+#: ../client/pk-console.c:262 ../client/pk-console-test.c:171
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:266 ../client/pk-console-test.c:175
 msgid "Real name"
 msgstr "Oikea nimi"
 
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:274 ../client/pk-console-test.c:183
 msgid "Affected packages:"
 msgstr "Käsiteltävät paketit:"
 
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:276 ../client/pk-console-test.c:185
 msgid "Affected packages: None"
 msgstr "Käsiteltävät paketit: Ei yhtään"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../client/pk-console.c:334
+#: ../client/pk-console.c:337 ../client/pk-task-text.c:220
 msgid "The following packages have to be removed:"
 msgstr "Seuraavat paketit on poistettava:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../client/pk-console.c:337
+#: ../client/pk-console.c:340 ../client/pk-task-text.c:225
 msgid "The following packages have to be installed:"
 msgstr "Seuraavat paketit on asennettava:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:343 ../client/pk-task-text.c:230
 msgid "The following packages have to be updated:"
 msgstr "Seuraavat paketit on päivitettävä:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:346 ../client/pk-task-text.c:235
 msgid "The following packages have to be reinstalled:"
 msgstr "Seuraavat paketit on asennettava uudelleen:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../client/pk-console.c:346
+#: ../client/pk-console.c:349 ../client/pk-task-text.c:240
 msgid "The following packages have to be downgraded:"
 msgstr "Seuraavat paketit on vaihdettava vanhempaan versioon:"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:363 ../client/pk-console-test.c:205
 msgid "Distribution"
 msgstr "Jakeluversio"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:362
+#: ../client/pk-console.c:365 ../client/pk-console-test.c:207
 msgid "Type"
 msgstr "Tyyppi"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:364 ../client/pk-console.c:387
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: ../client/pk-console.c:367 ../client/pk-console.c:390
+#: ../client/pk-console-test.c:209 ../client/pk-console-test.c:230
 msgid "Summary"
 msgstr "Yhteenveto"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:379 ../client/pk-console-test.c:219
 msgid "Category"
 msgstr "Luokka"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:378
+#: ../client/pk-console.c:381 ../client/pk-console-test.c:221
 msgid "ID"
 msgstr "Tunniste"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:381
+#: ../client/pk-console.c:384 ../client/pk-console-test.c:224
 msgid "Parent"
 msgstr "Pääluokka"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:387 ../client/pk-console-test.c:227
 msgid "Name"
 msgstr "Nimi"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:390
+#: ../client/pk-console.c:393 ../client/pk-console-test.c:233
 msgid "Icon"
 msgstr "Kuvake"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:405
+#: ../client/pk-console.c:408 ../client/pk-console-test.c:247
 msgid "Details about the update:"
 msgstr "Tietoja päivityksestä:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:407 ../src/pk-polkit-action-lookup.c:352
+#: ../client/pk-console.c:410 ../client/pk-console-test.c:253
+#: ../client/pk-task-text.c:101 ../client/pk-task-text.c:153
+#: ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Paketti"
 msgstr[1] "Paketit"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:410
+#: ../client/pk-console.c:413 ../client/pk-console-test.c:256
 msgid "Updates"
 msgstr "Päivitykset"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:414
+#: ../client/pk-console.c:417 ../client/pk-console-test.c:260
 msgid "Obsoletes"
 msgstr "Vanhentaa"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:418
+#: ../client/pk-console.c:421 ../client/pk-console-test.c:264
+#: ../client/pk-task-text.c:154
 msgid "Vendor"
 msgstr "Toimittaja"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:422
+#: ../client/pk-console.c:425 ../client/pk-console-test.c:268
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:426
+#: ../client/pk-console.c:429 ../client/pk-console-test.c:272
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:430
+#: ../client/pk-console.c:433 ../client/pk-console-test.c:276
 msgid "Restart"
 msgstr "Uudelleenkäynnistys"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:434
+#: ../client/pk-console.c:437 ../client/pk-console-test.c:280
 msgid "Update text"
 msgstr "Päivityksen kuvaus"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:438
+#: ../client/pk-console.c:441 ../client/pk-console-test.c:284
 msgid "Changes"
 msgstr "Muutokset"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:442
+#: ../client/pk-console.c:445 ../client/pk-console-test.c:288
 msgid "State"
 msgstr "Tila"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:447
+#: ../client/pk-console.c:450 ../client/pk-console-test.c:293
 msgid "Issued"
 msgstr "Julkaistu"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:452
+#: ../client/pk-console.c:455 ../client/pk-console-test.c:298
 msgid "Updated"
 msgstr "Päivitetty"
 
-#: ../client/pk-console.c:539 ../client/pk-console.c:541
+#. TRANSLATORS: if the repo is enabled
+#: ../client/pk-console.c:475 ../client/pk-console-test.c:316
+msgid "Enabled"
+msgstr "Käytössä"
+
+#. TRANSLATORS: if the repo is disabled
+#: ../client/pk-console.c:478 ../client/pk-console-test.c:319
+msgid "Disabled"
+msgstr "Poissa käytöstä"
+
+#: ../client/pk-console.c:555 ../client/pk-console.c:557
 msgid "Percentage"
 msgstr "Prosentti"
 
-#: ../client/pk-console.c:541
+#: ../client/pk-console.c:557
 msgid "Unknown"
 msgstr "Tuntematon"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:583
+#: ../client/pk-console.c:599 ../client/pk-console-test.c:341
 msgid "System restart required by:"
 msgstr "Järjestelmän uudelleenkäynnistyksen tarvitsee:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:586
+#: ../client/pk-console.c:602 ../client/pk-console-test.c:344
 msgid "Session restart required:"
 msgstr "Istunnon uudelleenkäynnistyksen tarvitsee"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:589
+#: ../client/pk-console.c:605 ../client/pk-console-test.c:347
 msgid "System restart (security) required by:"
 msgstr "Järjestelmän uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:592
+#: ../client/pk-console.c:608 ../client/pk-console-test.c:350
 msgid "Session restart (security) required:"
 msgstr "Istunnon uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:595
+#: ../client/pk-console.c:611 ../client/pk-console-test.c:353
 msgid "Application restart required by:"
 msgstr "Sovelluksen uudelleenkäynnistyksen tarvitsee"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:650
+#: ../client/pk-console.c:666 ../client/pk-console-test.c:702
 msgid "Please restart the computer to complete the update."
 msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:653
+#: ../client/pk-console.c:669 ../client/pk-console-test.c:705
 msgid "Please logout and login to complete the update."
 msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi."
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:656
+#: ../client/pk-console.c:672
 msgid "Please restart the application as it is being used."
 msgstr "Ohjelmaa käytetään tällä hetkellä, käynnistä se uudelleen."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:659
+#: ../client/pk-console.c:675 ../client/pk-console-test.c:708
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -275,7 +292,7 @@ msgstr ""
 "turvallisuuspäivityksiä on asennettu."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:662
+#: ../client/pk-console.c:678 ../client/pk-console-test.c:711
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -284,465 +301,526 @@ msgstr ""
 "turvallisuuspäivityksiä on asennettu."
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:794
+#: ../client/pk-console.c:810
 #, c-format
 msgid "The package %s is already installed"
 msgstr "Paketti %s on jo asennettu"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:802
+#: ../client/pk-console.c:818
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "Pakettia %s ei voitu asentaa: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:828 ../client/pk-console.c:876
-#: ../client/pk-console.c:900 ../client/pk-console.c:948
-#: ../client/pk-console.c:1044 ../client/pk-console.c:1157
-#: ../client/pk-console.c:1218 ../client/pk-tools-common.c:62
-#: ../client/pk-tools-common.c:81 ../client/pk-tools-common.c:89
+#: ../client/pk-console.c:844 ../client/pk-console.c:892
+#: ../client/pk-console.c:916 ../client/pk-console.c:964
+#: ../client/pk-console.c:1060 ../client/pk-console.c:1173
+#: ../client/pk-console.c:1234 ../client/pk-tools-common.c:63
+#: ../client/pk-tools-common.c:82 ../client/pk-tools-common.c:90
 #, c-format
 msgid "Internal error: %s"
 msgstr "Sisäinen virhe: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:860 ../client/pk-console.c:932
-#: ../client/pk-console.c:1250
+#. ask the user
+#: ../client/pk-console.c:876 ../client/pk-console.c:948
+#: ../client/pk-console.c:1266 ../client/pk-task-text.c:299
 msgid "Proceed with changes?"
 msgstr "Tehdäänkö muutokset?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:865 ../client/pk-console.c:937
+#: ../client/pk-console.c:881 ../client/pk-console.c:953
 msgid "The package install was canceled!"
 msgstr "Pakettien asennus peruttiin!"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:884 ../client/pk-console.c:1618
+#: ../client/pk-console.c:900 ../client/pk-console.c:1634
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Tämä työkalu ei voinut asentaa paketteja: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:956
+#: ../client/pk-console.c:972
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "Tämä työkalu ei voinut asentaa tiedostoja: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:1012
+#: ../client/pk-console.c:1028
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "Tämä työkalu ei voinut poistaa pakettia %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1035 ../client/pk-console.c:1073
-#: ../client/pk-console.c:1102
+#: ../client/pk-console.c:1051 ../client/pk-console.c:1089
+#: ../client/pk-console.c:1118
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Tämä työkalu ei voinut poistaa paketteja: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:1088
+#: ../client/pk-console.c:1104
 msgid "Proceed with additional packages?"
 msgstr "Poistetaanko lisäpaketteja?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1093
+#: ../client/pk-console.c:1109
 msgid "The package removal was canceled!"
 msgstr "Pakettien poisto peruttiin!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:1134
+#: ../client/pk-console.c:1150
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr "Ladattavaksi pyydettyä pakettia %s ei löytynyt"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1165
+#: ../client/pk-console.c:1181
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "Tämä työkalu ei voinut ladata paketteja: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1197 ../client/pk-console.c:1209
-#: ../client/pk-console.c:1264
+#: ../client/pk-console.c:1213 ../client/pk-console.c:1225
+#: ../client/pk-console.c:1280
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Tämä työkalu ei voinut päivittää pakettia %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1255
+#: ../client/pk-console.c:1271
 msgid "The package update was canceled!"
 msgstr "Pakettien päivitys peruttiin!"
 
 # TODO: tarkista
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1288 ../client/pk-console.c:1296
+#: ../client/pk-console.c:1304 ../client/pk-console.c:1312
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Tämä työkalu ei voinut hakea vaatijoita paketille %s: %s"
 
 # TODO: tarkista
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1318 ../client/pk-console.c:1326
+#: ../client/pk-console.c:1334 ../client/pk-console.c:1342
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "Tämä työkalu ei voinut hakea riippuvuuksia paketille %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1348 ../client/pk-console.c:1356
+#: ../client/pk-console.c:1364 ../client/pk-console.c:1372
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Tämä työkalu ei voinut hakea tietoja paketista %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1378
+#: ../client/pk-console.c:1394
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "Tämä työkalu ei löytänyt paketin %s tiedostoja: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1386
+#: ../client/pk-console.c:1402
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "Tämä työkalu ei voinut hakea paketin %s tiedostoluetteloa: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1408
+#: ../client/pk-console.c:1424
 #, c-format
 msgid "File already exists: %s"
 msgstr "Tiedosto on jo olemassa: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1413 ../client/pk-console.c:1469
-#: ../client/pk-console.c:1544
+#: ../client/pk-console.c:1429 ../client/pk-console.c:1485
+#: ../client/pk-console.c:1560
 msgid "Getting package list"
 msgstr "Haetaan pakettiluetteloa"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1419 ../client/pk-console.c:1475
-#: ../client/pk-console.c:1550
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1491
+#: ../client/pk-console.c:1566
 #, c-format
 msgid "This tool could not get package list: %s"
 msgstr "Tämä työkalu ei voinut hakea pakettiluetteloa: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1430
+#: ../client/pk-console.c:1446
 #, c-format
 msgid "Failed to save to disk"
 msgstr "Tallennus epäonnistui"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1464 ../client/pk-console.c:1539
+#: ../client/pk-console.c:1480 ../client/pk-console.c:1555
 #, c-format
 msgid "File does not exist: %s"
 msgstr "Tiedostoa ei ole olemassa: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1496
+#: ../client/pk-console.c:1512
 msgid "Packages to add"
 msgstr "Lisättävät paketit"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1504
+#: ../client/pk-console.c:1520
 msgid "Packages to remove"
 msgstr "Poistettavat paketit"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1572
+#: ../client/pk-console.c:1588
 #, c-format
 msgid "No new packages need to be installed"
 msgstr "Yhtään uutta pakettia ei tarvitse asentaa"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1578
+#: ../client/pk-console.c:1594
 msgid "To install"
 msgstr "Asennetaan"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1590
+#: ../client/pk-console.c:1606
 msgid "Searching for package: "
 msgstr "Etsitään pakettia: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1610
 msgid "not found."
 msgstr "ei löytynyt."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1605
+#: ../client/pk-console.c:1621
 #, c-format
 msgid "No packages can be found to install"
 msgstr "Asennettavia paketteja ei löytynyt"
 
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1611
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
+#: ../client/pk-console.c:1627
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
 #, c-format
 msgid "Installing packages"
 msgstr "Asennetaan paketteja"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1647
+#: ../client/pk-console.c:1663
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "Tämä työkalu ei löytänyt paketin %s päivitystietoja: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1655
+#: ../client/pk-console.c:1671
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "Tämä työkalu ei voinut hakea paketin %s päivitystietoja: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1686
+#: ../client/pk-console.c:1702
 msgid "Error:"
 msgstr "Virhe:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1700
+#: ../client/pk-console.c:1716 ../client/pk-console-test.c:370
 msgid "Package description"
 msgstr "Paketin kuvaus"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1716
+#: ../client/pk-console.c:1732 ../client/pk-console-test.c:388
 msgid "Message:"
 msgstr "Viesti:"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1744
+#: ../client/pk-console.c:1760 ../client/pk-console-test.c:407
 msgid "Package files"
 msgstr "Paketin tiedostot"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1752
+#: ../client/pk-console.c:1768 ../client/pk-console-test.c:402
 msgid "No files"
 msgstr "Ei tiedostoja"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1775
+#: ../client/pk-console.c:1791
 msgid "Repository signature required"
 msgstr "Asennuslähteen allekirjoitus vaaditaan"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1785
+#. ask the user
+#: ../client/pk-console.c:1801 ../client/pk-task-text.c:113
 msgid "Do you accept this signature?"
 msgstr "Hyväksytkö tämän allekirjoituksen?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1789
+#: ../client/pk-console.c:1805 ../client/pk-task-text.c:117
 msgid "The signature was not accepted."
 msgstr "Allekirjoitusta ei hyväksytty."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1823
+#: ../client/pk-console.c:1839
 msgid "End user license agreement required"
 msgstr "Käyttöoikeussopimus vaaditaan"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1830
+#: ../client/pk-console.c:1846
 msgid "Do you agree to this license?"
 msgstr "Hyväksytkö tämän käyttöoikeussopimuksen?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1834
+#: ../client/pk-console.c:1850
 msgid "The license was refused."
 msgstr "Käyttöoikeussopimusta ei hyväksytty"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1863
+#: ../client/pk-console.c:1879 ../client/pk-console-test.c:968
 msgid "The daemon crashed mid-transaction!"
 msgstr "Taustaprosessi kaatui kesken toimenpiteen"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1916
+#: ../client/pk-console.c:1932 ../client/pk-console-test.c:1002
 msgid "PackageKit Console Interface"
 msgstr "PackageKitin konsolikäyttöliittymä"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1918
+#: ../client/pk-console.c:1934 ../client/pk-console-test.c:1004
 msgid "Subcommands:"
 msgstr "Alikomennot:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:2011 ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:128
+#: ../client/pk-console.c:2027 ../client/pk-console-test.c:1095
+#: ../client/pk-generate-pack.c:187 ../client/pk-monitor.c:128
 #: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:549
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Näytä ylimääräisiä virheenjäljitystietoja"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:2014 ../client/pk-monitor.c:130
+#: ../client/pk-console.c:2030 ../client/pk-console-test.c:1098
+#: ../client/pk-monitor.c:130
 msgid "Show the program version and exit"
 msgstr "Näytä ohjelman versio ja lopeta"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:2017
+#: ../client/pk-console.c:2033 ../client/pk-console-test.c:1101
 msgid "Set the filter, e.g. installed"
 msgstr "Aseta suodin, esim. asennettu"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:2020
+#: ../client/pk-console.c:2036 ../client/pk-console-test.c:1104
 msgid "Exit without waiting for actions to complete"
 msgstr "Lopeta odottamatta toimintojen valmistumista"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:2047
+#: ../client/pk-console.c:2063
 msgid "This tool could not connect to system DBUS."
 msgstr "Tämä työkalu ei voinut yhdistää järjestelmän DBUSiin."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:2137
+#: ../client/pk-console.c:2153 ../client/pk-console-test.c:1179
 msgid "The filter specified was invalid"
 msgstr "Annettu suodin oli virheellinen"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:2156
+#: ../client/pk-console.c:2172 ../client/pk-console-test.c:1198
 msgid "A search type is required, e.g. name"
 msgstr "Haun tyyppi tarvitaan, esim. nimi"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:2163 ../client/pk-console.c:2172
-#: ../client/pk-console.c:2181 ../client/pk-console.c:2190
+#: ../client/pk-console.c:2179 ../client/pk-console.c:2188
+#: ../client/pk-console.c:2197 ../client/pk-console.c:2206
+#: ../client/pk-console-test.c:1205 ../client/pk-console-test.c:1217
+#: ../client/pk-console-test.c:1229 ../client/pk-console-test.c:1241
 msgid "A search term is required"
 msgstr "Hakutermi on annettava"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:2197
+#: ../client/pk-console.c:2213 ../client/pk-console-test.c:1251
 msgid "Invalid search type"
 msgstr "Virheellinen haun tyyppi"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:2203
+#: ../client/pk-console.c:2219
 msgid "A package name or filename to install is required"
 msgstr "Paketin nimi tai asennettavan tiedoston nimi on annettava"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2212
+#: ../client/pk-console.c:2228 ../client/pk-console-test.c:1278
 msgid "A type, key_id and package_id are required"
 msgstr "Tyyppi, key_id ja package_id on annettava"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:2221
+#: ../client/pk-console.c:2237 ../client/pk-console-test.c:1289
 msgid "A package name to remove is required"
 msgstr "Poistettavan paketin nimi on annettava"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2229
+#: ../client/pk-console.c:2245 ../client/pk-console-test.c:1298
 msgid "A destination directory and the package names to download are required"
 msgstr "Kohdehakemisto ja ladattavien pakettien nimet paketit on annettava"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2236
+#: ../client/pk-console.c:2252 ../client/pk-console-test.c:1305
 msgid "Directory not found"
 msgstr "Hakemistoa ei löytynyt"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2244
+#: ../client/pk-console.c:2260 ../client/pk-console-test.c:1314
 msgid "A licence identifier (eula-id) is required"
 msgstr "Lisenssin tunniste (eula-id) on annettava"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2254
+#: ../client/pk-console.c:2270 ../client/pk-console-test.c:1325
 msgid "A transaction identifier (tid) is required"
 msgstr "Transaktion tunniste (tid) on annettava"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2271
+#: ../client/pk-console.c:2287 ../client/pk-console-test.c:1346
 msgid "A package name to resolve is required"
 msgstr "Ratkaistavan paketin nimi on annettava"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2280 ../client/pk-console.c:2289
+#: ../client/pk-console.c:2296 ../client/pk-console.c:2305
+#: ../client/pk-console-test.c:1357 ../client/pk-console-test.c:1368
 msgid "A repository name is required"
 msgstr "Asennuslähteen nimi on annettava"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2298
+#: ../client/pk-console.c:2314 ../client/pk-console-test.c:1379
 msgid "A repo name, parameter and value are required"
 msgstr "Asennuslähteen nimi, parametri ja arvo on annettava"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2312
+#: ../client/pk-console.c:2328 ../client/pk-console-test.c:1397
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Toiminto, esim. ”update-system” on annettava"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2319
+#: ../client/pk-console.c:2335 ../client/pk-console-test.c:1404
 msgid "A correct role is required"
 msgstr "Sopiva rooli on annettava"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2326
+#: ../client/pk-console.c:2342 ../client/pk-console-test.c:1411
 msgid "Failed to get the time since this action was last completed"
 msgstr "Tämän toiminnon edellisen suorittamisen aikaa ei saatu"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2336 ../client/pk-console.c:2348
-#: ../client/pk-console.c:2357 ../client/pk-console.c:2375
-#: ../client/pk-console.c:2384 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2352 ../client/pk-console.c:2364
+#: ../client/pk-console.c:2373 ../client/pk-console.c:2391
+#: ../client/pk-console.c:2400 ../client/pk-console-test.c:1421
+#: ../client/pk-console-test.c:1436 ../client/pk-console-test.c:1445
+#: ../client/pk-console-test.c:1465 ../client/pk-console-test.c:1474
+#: ../client/pk-generate-pack.c:243
 msgid "A package name is required"
 msgstr "Paketin nimi on annettava"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2366
+#: ../client/pk-console.c:2382 ../client/pk-console-test.c:1454
 msgid "A package provide string is required"
 msgstr "Paketin tarjoaja-merkkijono on annettava"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2393
+#: ../client/pk-console.c:2409
 msgid "A list file name to create is required"
 msgstr "Luotavan luettelotiedoston nimi on annetta"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2403 ../client/pk-console.c:2413
+#: ../client/pk-console.c:2419 ../client/pk-console.c:2429
 msgid "A list file to open is required"
 msgstr "Avattavan luettelotiedoston nimi on annettava"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2467
+#: ../client/pk-console.c:2483 ../client/pk-console-test.c:1534
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Valitsinta ”%s” ei tueta"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2480
+#: ../client/pk-console.c:2496
 msgid "Incorrect privileges for this operation"
 msgstr "Sinulla ei ole tähän toimintoon tarvittavia oikeuksia"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2483
+#. /* TRANSLATORS: User does not have permission to do this */
+#. g_print ("%s\n", _("Incorrect privileges for this operation"));
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:2499 ../client/pk-console-test.c:1546
 msgid "Command failed"
 msgstr "Komento epäonnistui"
 
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-console-test.c:521 ../client/pk-tools-common.c:131
+msgid "More than one package matches:"
+msgstr "Useita vastaavia paketteja saatavilla:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-console-test.c:530 ../client/pk-tools-common.c:138
+msgid "Please choose the correct package: "
+msgstr "Valitse oikea paketti:"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:730
+#, c-format
+msgid "This tool could not find the available package: %s"
+msgstr "Tämä työkalu ei löytänyt saatavilla olevaa pakettia: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:758
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Tämä työkalu ei löytänyt asennettua pakettia: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:786 ../client/pk-console-test.c:814
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Tämä työkalu ei löytänyt pakettia: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console-test.c:842 ../client/pk-console-test.c:868
+#: ../client/pk-console-test.c:894 ../client/pk-console-test.c:920
+#: ../client/pk-console-test.c:946
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Tämä työkalu ei löytänyt paketteja: %s"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1257
+msgid "A package name to install is required"
+msgstr "Asennettavan paketin nimi on annettava"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1266
+msgid "A filename to install is required"
+msgstr "Asennettavan tiedoston nimi on annettava"
+
 #. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:101
+#: ../client/pk-generate-pack.c:103
 msgid "Downloading"
 msgstr "Ladataan"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:121
+#: ../client/pk-generate-pack.c:123
 msgid "Downloading packages"
 msgstr "Ladataan paketteja"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:126
+#: ../client/pk-generate-pack.c:128
 msgid "Downloading dependencies"
 msgstr "Ladataan riippuvuuksia"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:188
+#: ../client/pk-generate-pack.c:190
 msgid "Set the file name of dependencies to be excluded"
 msgstr ""
 "Aseta pois jätettävien riippuvuuksien luettelon sisältävän tiedoston nimi"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:191
+#: ../client/pk-generate-pack.c:193
 msgid ""
 "The output file or directory (the current directory is used if ommitted)"
 msgstr ""
@@ -750,38 +828,38 @@ msgstr ""
 "automaattisesti nykyinen hakemisto."
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:194
+#: ../client/pk-generate-pack.c:196
 msgid "The package to be put into the service pack"
 msgstr "Paketti joka laitetaan huoltopakkaukseen"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:197
+#: ../client/pk-generate-pack.c:199
 msgid "Put all updates available in the service pack"
 msgstr "Laita kaikki saatavilla olevat päivitykset huoltopakkaukseen"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:227
 msgid "Neither --package or --updates option selected."
 msgstr "Kumpaakaan valitsimista --package tai --updates ei ole käytetty."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:233
+#: ../client/pk-generate-pack.c:235
 msgid "Both options selected."
 msgstr "Molempia valitsimia on käytetty."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:249
+#: ../client/pk-generate-pack.c:251
 msgid "A output directory or file name is required"
 msgstr "Kohdehakemiston tai -tiedoston nimi on annettava"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack.c:269 ../client/pk-generate-pack.c:275
 msgid "The package manager cannot perform this type of operation."
 msgstr "Paketinhallinta ei voi suorittaa tämäntyyppistä toimintoa."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:280
+#: ../client/pk-generate-pack.c:282
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
@@ -790,54 +868,54 @@ msgstr ""
 "tuella."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:291
+#: ../client/pk-generate-pack.c:293
 msgid "If specifying a file, the service pack name must end with"
 msgstr "Annettaessa tiedosto nimen on päätyttävä"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:307
+#: ../client/pk-generate-pack.c:309
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Samalla nimellä on jo olemassa pakkaus, haluatko korvata sen?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:310
+#: ../client/pk-generate-pack.c:312
 msgid "The pack was not overwritten."
 msgstr "Pakkausta ei korvattu."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:323
+#: ../client/pk-generate-pack.c:325
 msgid "Failed to create directory:"
 msgstr "Hakemiston luominen epäonnistui:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:333
+#: ../client/pk-generate-pack.c:335
 msgid "Failed to open package list."
 msgstr "Pakettiluettelon luominen epäonnistui."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:344
+#: ../client/pk-generate-pack.c:346
 msgid "Finding package name."
 msgstr "Etsitään paketin nimeä."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:348
+#: ../client/pk-generate-pack.c:350
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Pakettia ”%s” ei löytynyt: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:365
+#: ../client/pk-generate-pack.c:367
 msgid "Creating service pack..."
 msgstr "Luodaan huoltopakkausta..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:372
+#: ../client/pk-generate-pack.c:374
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "Huoltopakkaus ”%s” on luotu"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:377
+#: ../client/pk-generate-pack.c:379
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "Huoltopakkauksen ”%s” luominen epäonnistui: %s"
@@ -851,26 +929,103 @@ msgstr "PackageKit-tarkkailija"
 msgid "Cannot show the list of transactions"
 msgstr "Transaktioluetteloa ei voida näyttää"
 
-#. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:118
-#, c-format
-msgid "The package could not be found"
-msgstr "Pakettia ei löytynyt"
+#. ask the user
+#: ../client/pk-task-text.c:64
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Sallitaanko allekirjoittamattomien ohjelmistojen asentaminen?"
 
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:130
-msgid "More than one package matches:"
-msgstr "Useita vastaavia paketteja saatavilla:"
+#: ../client/pk-task-text.c:68
+msgid "The unsigned software will not be installed."
+msgstr "Allekirjoittamatonta ohjelmistoa ei asenneta."
 
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:137
-msgid "Please choose the correct package: "
-msgstr "Valitse oikea paketti:"
+#: ../client/pk-task-text.c:100
+msgid "Software source signature required"
+msgstr "Ohjelmistolähteen allekirjoitus vaaditaan"
 
-#: ../client/pk-tools-common.c:162
+#: ../client/pk-task-text.c:102
+msgid "Software source name"
+msgstr "Ohjelmistolähteen nimi"
+
+#: ../client/pk-task-text.c:103
+msgid "Key URL"
+msgstr "Avaimen osoite"
+
+#: ../client/pk-task-text.c:104
+msgid "Key user"
+msgstr "Avaimen käyttäjä"
+
+#: ../client/pk-task-text.c:105
+msgid "Key ID"
+msgstr "Avaimen tunniste"
+
+#: ../client/pk-task-text.c:106
+msgid "Key fingerprint"
+msgstr "Avaimen sormenjälki"
+
+#: ../client/pk-task-text.c:107
+msgid "Key Timestamp"
+msgstr "Avaimen aikaleima"
+
+#: ../client/pk-task-text.c:151
+msgid "End user licence agreement required"
+msgstr "Käyttöoikeussopimus vaaditaan"
+
+#: ../client/pk-task-text.c:152
+msgid "EULA ID"
+msgstr "Käyttöoikeussopimuksen tunniste"
+
+#: ../client/pk-task-text.c:155
+msgid "Agreement"
+msgstr "Sopimus"
+
+#. ask the user
+#: ../client/pk-task-text.c:161
+msgid "Do you accept this agreement?"
+msgstr "Hyväksytkö tämän sopimuksen?"
+
+#: ../client/pk-task-text.c:165
+msgid "The agreement was not accepted."
+msgstr "Sopimusta ei hyväksytty."
+
+#: ../client/pk-task-text.c:194
+msgid "Media change required"
+msgstr "Tallennusvälinettä on vaihdettava"
+
+#: ../client/pk-task-text.c:195
+msgid "Media type"
+msgstr "Tallennusvälineen tyyppi"
+
+#: ../client/pk-task-text.c:196
+msgid "Media ID"
+msgstr "Tallennusvälineen tunniste"
+
+#: ../client/pk-task-text.c:197
+msgid "Text"
+msgstr "Teksti"
+
+#. ask the user
+#: ../client/pk-task-text.c:201
+msgid "Please insert the correct media"
+msgstr "Syötä oikea tallennusväline"
+
+#: ../client/pk-task-text.c:205
+msgid "The correct media was not inserted."
+msgstr "Oikeaa tallennusvälinettä ei syötetty."
+
+#: ../client/pk-task-text.c:303
+msgid "The transaction did not proceed."
+msgstr "Transaktiota ei jatkettu."
+
+#: ../client/pk-text.c:50
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Anna numero väliltä 1-%i: "
+
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:119
+#, c-format
+msgid "The package could not be found"
+msgstr "Pakettia ei löytynyt"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/pk-plugin-install.c:466
@@ -1027,175 +1182,175 @@ msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Pakettia %s ei löytynyt tai se on jo asennettu: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr "Älä oikeasti asenna paketteja, simuloi asennus"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
 msgid "Do not install dependencies of the core packages"
 msgstr "Älä asenna annettujen pakettien riippuvuuksia"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
 msgstr "Älä näytä tietoja tai edistymistä"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKitin debuginfo-asennin"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "VIRHE: Asennettavien pakettien nimet on annettava"
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
 #, c-format
 msgid "Getting sources list"
 msgstr "Haetaan lähdeluetteloa"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:680
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:954
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Löydettiin %i käytössä olevaa ja %i käytöstä poistettua lähdettä."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Etsitään virheenjäljityslähteitä"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Löydettiin %i käytöstä poistettua debuginfo-asennuslähdettä."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Otetaan virheenjäljityslähteet käyttöön"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:939
 msgid "FAILED."
 msgstr "EPÄONNISTUI."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Otettiin %i virheenjäljityslähdettä käyttöön."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:725
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Etsitään virheenjäljityspaketteja"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Pakettia ”%s” ei löytynyt: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:760
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Debuginfo-pakettia ”%s” ei löytynyt: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
 #, c-format
 msgid "Found no packages to install."
 msgstr "Yhtään asennettavaa pakettia ei löytynyt."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:802
 #, c-format
 msgid "Found %i packages:"
 msgstr "Löytyi %i pakettia:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Etsitään näistä paketeista riippuvia paketteja"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:831
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Riippuvia paketteja ei löytynyt: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Löydettiin %i lisäpakettia."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
 #, c-format
 msgid "No extra packages required."
 msgstr "Lisäpaketteja ei tarvita."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Löydettiin %i asennettavaa pakettia:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Simulointitilassa ei asenneta paketteja"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:898
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Paketteja ei voitu asentaa: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:930
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Poistetaan käytöstä aiemmin käyttöönotetut lähteet"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:942
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Virheenjäljityslähteitä ei voitu poistaa käytöstä: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:957
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Poistettiin käytöstä %i virheenjäljityslähdettä."
@@ -1345,7 +1500,8 @@ msgstr "Järjestelmälähteiden virkistäminen vaatii tunnistautumisen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
+msgstr ""
+"Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to remove packages"

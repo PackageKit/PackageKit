@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-03 08:34+0000\n"
-"PO-Revision-Date: 2009-09-03 09:35-0300\n"
-"Last-Translator: Domingo Becker <domingobecker@gmail.com>\n"
+"POT-Creation-Date: 2009-09-04 08:25+0000\n"
+"PO-Revision-Date: 2009-09-04 10:25-0300\n"
+"Last-Translator: Héctor Daniel Cabrera <h.daniel.cabrera@gmail.com>\n"
 "Language-Team: Fedora Spanish <fedora-trans-es@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,148 +21,182 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:238
+#: ../client/pk-console-test.c:146
 msgid "Transaction"
 msgstr "Transacción"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:240
+#: ../client/pk-console-test.c:148
 msgid "System time"
 msgstr "Hora del sistema"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:242
+#: ../client/pk-console-test.c:150
 msgid "Succeeded"
 msgstr "Existosa"
 
 #: ../client/pk-console.c:242
+#: ../client/pk-console-test.c:150
 msgid "True"
 msgstr "Verdadero"
 
 #: ../client/pk-console.c:242
+#: ../client/pk-console-test.c:150
 msgid "False"
 msgstr "Falso"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
 #: ../client/pk-console.c:244
+#: ../client/pk-console-test.c:152
 #: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
 msgstr "Rol"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:249
+#: ../client/pk-console-test.c:157
 msgid "Duration"
 msgstr "Duración"
 
 #: ../client/pk-console.c:249
+#: ../client/pk-console-test.c:157
 msgid "(seconds)"
 msgstr "(segundos)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
 #: ../client/pk-console.c:253
+#: ../client/pk-console-test.c:161
 #: ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
 msgstr "Línea de comandos"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:255
+#: ../client/pk-console-test.c:163
 msgid "User ID"
 msgstr "ID del usuario"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:262
+#: ../client/pk-console-test.c:170
 msgid "Username"
 msgstr "Nombre de usuario"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:266
+#: ../client/pk-console-test.c:174
 msgid "Real name"
 msgstr "Nombre real"
 
 #: ../client/pk-console.c:274
+#: ../client/pk-console-test.c:182
 msgid "Affected packages:"
 msgstr "Paquete afectados:"
 
 #: ../client/pk-console.c:276
+#: ../client/pk-console-test.c:184
 msgid "Affected packages: None"
 msgstr "Paquetes afectados: Ninguno"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../client/pk-console.c:337
+#: ../client/pk-task-text.c:208
 msgid "The following packages have to be removed:"
 msgstr "Se eliminarán los siguientes paquetes:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: ../client/pk-console.c:340
+#: ../client/pk-task-text.c:213
 msgid "The following packages have to be installed:"
 msgstr "Los siguientes paquetes se deben instalar:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: ../client/pk-console.c:343
+#: ../client/pk-task-text.c:218
 msgid "The following packages have to be updated:"
 msgstr "Los siguientes paquetes se deben actualizar:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: ../client/pk-console.c:346
+#: ../client/pk-task-text.c:223
 msgid "The following packages have to be reinstalled:"
 msgstr "Los siguientes paquetes se deben reinstalar:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../client/pk-console.c:349
+#: ../client/pk-task-text.c:228
 msgid "The following packages have to be downgraded:"
 msgstr "Los siguientes paquetes se deben desactualizar:"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:363
+#: ../client/pk-console-test.c:204
 msgid "Distribution"
 msgstr "Distribución"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:365
+#: ../client/pk-console-test.c:206
 msgid "Type"
 msgstr "Tipo"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
 #: ../client/pk-console.c:367
 #: ../client/pk-console.c:390
+#: ../client/pk-console-test.c:208
+#: ../client/pk-console-test.c:229
 msgid "Summary"
 msgstr "Resúmen"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:379
+#: ../client/pk-console-test.c:218
 msgid "Category"
 msgstr "Categoría"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:381
+#: ../client/pk-console-test.c:220
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:384
+#: ../client/pk-console-test.c:223
 msgid "Parent"
 msgstr "Padre"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:387
+#: ../client/pk-console-test.c:226
 msgid "Name"
 msgstr "Nombre"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:393
+#: ../client/pk-console-test.c:232
 msgid "Icon"
 msgstr "Icono"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:408
+#: ../client/pk-console-test.c:246
 msgid "Details about the update:"
 msgstr "Detalles acerca de la actualización:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:410
+#: ../client/pk-console-test.c:252
+#: ../client/pk-task-text.c:95
+#: ../client/pk-task-text.c:144
 #: ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
@@ -171,66 +205,80 @@ msgstr[1] "Paquetes"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:413
+#: ../client/pk-console-test.c:255
 msgid "Updates"
 msgstr "Actualizaciones"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:417
+#: ../client/pk-console-test.c:259
 msgid "Obsoletes"
 msgstr "Sustituye"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #: ../client/pk-console.c:421
+#: ../client/pk-console-test.c:263
+#: ../client/pk-task-text.c:145
 msgid "Vendor"
 msgstr "Fabricante"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:425
+#: ../client/pk-console-test.c:267
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: ../client/pk-console.c:429
+#: ../client/pk-console-test.c:271
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:433
+#: ../client/pk-console-test.c:275
 msgid "Restart"
 msgstr "Reiniciar"
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:437
+#: ../client/pk-console-test.c:279
 msgid "Update text"
 msgstr "Texto de actualización"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:441
+#: ../client/pk-console-test.c:283
 msgid "Changes"
 msgstr "Cambios"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:445
+#: ../client/pk-console-test.c:287
 msgid "State"
 msgstr "Estado"
 
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:450
+#: ../client/pk-console-test.c:292
 msgid "Issued"
 msgstr "Emitido"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #: ../client/pk-console.c:455
+#: ../client/pk-console-test.c:297
 msgid "Updated"
 msgstr "Actualizado"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:475
+#: ../client/pk-console-test.c:315
 msgid "Enabled"
 msgstr "Habilitado"
 
 #. TRANSLATORS: if the repo is disabled
 #: ../client/pk-console.c:478
+#: ../client/pk-console-test.c:318
 msgid "Disabled"
 msgstr "Deshabilitado"
 
@@ -245,62 +293,74 @@ msgstr "Desconocido"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:599
+#: ../client/pk-console-test.c:340
 msgid "System restart required by:"
 msgstr "Se necesita reiniciar el sistema debido a:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:602
+#: ../client/pk-console-test.c:343
 msgid "Session restart required:"
 msgstr "Se necesita reiniciar la sesión:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:605
+#: ../client/pk-console-test.c:346
 msgid "System restart (security) required by:"
 msgstr "Reinicio del sistema (seguridad) solicitado por:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
 #: ../client/pk-console.c:608
+#: ../client/pk-console-test.c:349
 msgid "Session restart (security) required:"
 msgstr "Reinicio de la sesión (seguridad) solicitado por:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:611
+#: ../client/pk-console-test.c:352
 msgid "Application restart required by:"
 msgstr "Se necesita reiniciar una aplicación debido a:"
 
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:666
+#: ../client/pk-console-test.c:434
 msgid "Please restart the computer to complete the update."
 msgstr "Reinicie el equipo para completar la actualización."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:669
+#: ../client/pk-console-test.c:437
 msgid "Please logout and login to complete the update."
 msgstr "Cierre la sesión y vuelva a entrar para completar la actualización."
 
 #. TRANSLATORS: a package needs to restart the application
 #: ../client/pk-console.c:672
+#: ../client/pk-console-test.c:440
 msgid "Please restart the application as it is being used."
 msgstr "Reinicie la aplicación que está usando."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:675
+#: ../client/pk-console-test.c:443
 msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr "Por favor, reinicie el equipo para completar la actualización, ya que se han instalado actualizaciones de seguridad importantes."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:678
+#: ../client/pk-console-test.c:446
 msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr "Por favor, cierre la sesión y vuelva a registrarse para completar la actualización, ya que se han instalado actualizaciones de seguridad importantes."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:810
+#: ../client/pk-console-test.c:541
 #, c-format
 msgid "The package %s is already installed"
 msgstr "El paquete %s ya está instalado"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:818
+#: ../client/pk-console-test.c:549
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "No se pudo instalar el paquete %s: %s"
@@ -321,9 +381,11 @@ msgid "Internal error: %s"
 msgstr "Error interno: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
+#. ask the user
 #: ../client/pk-console.c:876
 #: ../client/pk-console.c:948
 #: ../client/pk-console.c:1266
+#: ../client/pk-task-text.c:284
 msgid "Proceed with changes?"
 msgstr "¿Proceder con los cambios?"
 
@@ -336,18 +398,21 @@ msgstr "¡Se canceló la instalación del paquete!"
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:900
 #: ../client/pk-console.c:1634
+#: ../client/pk-console-test.c:572
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Esta herramienta no pudo instalar los paquetes: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
 #: ../client/pk-console.c:972
+#: ../client/pk-console-test.c:586
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "Esta herramienta no pudo instalar los archivos: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:1028
+#: ../client/pk-console-test.c:636
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "Esta herramienta no pudo eliminar %s: %s"
@@ -356,6 +421,7 @@ msgstr "Esta herramienta no pudo eliminar %s: %s"
 #: ../client/pk-console.c:1051
 #: ../client/pk-console.c:1089
 #: ../client/pk-console.c:1118
+#: ../client/pk-console-test.c:657
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Esta herramienta no pudo eliminar los paquetes: %s"
@@ -372,12 +438,14 @@ msgstr "Se canceló la eliminación de paquetes"
 
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:1150
+#: ../client/pk-console-test.c:689
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr "Esta herramienta no pudo descargar el paquete %s debido a que no se encontró"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:1181
+#: ../client/pk-console-test.c:711
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "Esta herramienta no pudo descargar los paquetes: %s"
@@ -386,6 +454,8 @@ msgstr "Esta herramienta no pudo descargar los paquetes: %s"
 #: ../client/pk-console.c:1213
 #: ../client/pk-console.c:1225
 #: ../client/pk-console.c:1280
+#: ../client/pk-console-test.c:743
+#: ../client/pk-console-test.c:753
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Esta herramienta no pudo actualizar %s: %s"
@@ -398,6 +468,8 @@ msgstr "¡Se canceló la actualización del paquete!"
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1304
 #: ../client/pk-console.c:1312
+#: ../client/pk-console-test.c:779
+#: ../client/pk-console-test.c:787
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Esta herramienta no pudo obtener los requerimientos de %s: %s"
@@ -405,6 +477,8 @@ msgstr "Esta herramienta no pudo obtener los requerimientos de %s: %s"
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #: ../client/pk-console.c:1334
 #: ../client/pk-console.c:1342
+#: ../client/pk-console-test.c:809
+#: ../client/pk-console-test.c:817
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "Esta herramienta no pudo obtener las dependencias de %s: %s"
@@ -412,18 +486,22 @@ msgstr "Esta herramienta no pudo obtener las dependencias de %s: %s"
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #: ../client/pk-console.c:1364
 #: ../client/pk-console.c:1372
+#: ../client/pk-console-test.c:839
+#: ../client/pk-console-test.c:847
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Esta herramienta no pudo obtener los detalles del paquete %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1394
+#: ../client/pk-console-test.c:869
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "Esta herramienta no pudo encontrar los archivos de %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1402
+#: ../client/pk-console-test.c:877
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "Esta herramienta no pudo obtener la lista de archivos de %s: %s"
@@ -509,12 +587,14 @@ msgstr "Instalando paquetes"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1663
+#: ../client/pk-console-test.c:899
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "Esta herramienta no pudo encontrar los detalles de actualización de %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
 #: ../client/pk-console.c:1671
+#: ../client/pk-console-test.c:907
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "Esta herramienta no pudo obtener los detalles de actualización de %s: %s"
@@ -526,21 +606,25 @@ msgstr "Error:"
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:1716
+#: ../client/pk-console-test.c:369
 msgid "Package description"
 msgstr "Descripción del paquete"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
 #: ../client/pk-console.c:1732
+#: ../client/pk-console-test.c:387
 msgid "Message:"
 msgstr "Mensaje:"
 
 #. TRANSLATORS: This a list files contained in the package
 #: ../client/pk-console.c:1760
+#: ../client/pk-console-test.c:415
 msgid "Package files"
 msgstr "Archivos del paquete"
 
 #. TRANSLATORS: This where the package has no files
 #: ../client/pk-console.c:1768
+#: ../client/pk-console-test.c:410
 msgid "No files"
 msgstr "No hay archivos"
 
@@ -550,12 +634,15 @@ msgid "Repository signature required"
 msgstr "Se requiere la firma del repositorio"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
+#. ask the user
 #: ../client/pk-console.c:1801
+#: ../client/pk-task-text.c:107
 msgid "Do you accept this signature?"
 msgstr "¿Acepta esta firma?"
 
 #. TRANSLATORS: This is where the user declined the security key
 #: ../client/pk-console.c:1805
+#: ../client/pk-task-text.c:111
 msgid "The signature was not accepted."
 msgstr "No se aceptó la firma."
 
@@ -576,22 +663,26 @@ msgstr "Se rechazó la licencia."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
 #: ../client/pk-console.c:1879
+#: ../client/pk-console-test.c:925
 msgid "The daemon crashed mid-transaction!"
 msgstr "El demonio se colgó en medio de una transacción."
 
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1932
+#: ../client/pk-console-test.c:969
 msgid "PackageKit Console Interface"
 msgstr "Interfaz de consola de PackageKit"
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1934
+#: ../client/pk-console-test.c:971
 msgid "Subcommands:"
 msgstr "Subcomandos:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:2027
+#: ../client/pk-console-test.c:1202
 #: ../client/pk-generate-pack.c:187
 #: ../client/pk-monitor.c:128
 #: ../contrib/command-not-found/pk-command-not-found.c:616
@@ -603,17 +694,20 @@ msgstr "Mostrar información extra de depuración"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:2030
+#: ../client/pk-console-test.c:1205
 #: ../client/pk-monitor.c:130
 msgid "Show the program version and exit"
 msgstr "Mostrar la versión del programa y salir"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:2033
+#: ../client/pk-console-test.c:1208
 msgid "Set the filter, e.g. installed"
 msgstr "Establecer el filtro, ej. instalado"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:2036
+#: ../client/pk-console-test.c:1211
 msgid "Exit without waiting for actions to complete"
 msgstr "Salir sin esperar que las acciones se completen"
 
@@ -624,11 +718,13 @@ msgstr "Esta herramienta no se pudo conectar al DBUS del sistema."
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:2153
+#: ../client/pk-console-test.c:1279
 msgid "The filter specified was invalid"
 msgstr "El filtro especificado fue inválido"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:2172
+#: ../client/pk-console-test.c:1298
 msgid "A search type is required, e.g. name"
 msgstr "Se necesita un tipo de búsqueda, por ejemplo, nombre"
 
@@ -637,77 +733,96 @@ msgstr "Se necesita un tipo de búsqueda, por ejemplo, nombre"
 #: ../client/pk-console.c:2188
 #: ../client/pk-console.c:2197
 #: ../client/pk-console.c:2206
+#: ../client/pk-console-test.c:1305
+#: ../client/pk-console-test.c:1317
+#: ../client/pk-console-test.c:1329
+#: ../client/pk-console-test.c:1341
 msgid "A search term is required"
 msgstr "Se necesita un término de búsqueda"
 
 #. TRANSLATORS: the search type was provided, but invalid
 #: ../client/pk-console.c:2213
+#: ../client/pk-console-test.c:1351
 msgid "Invalid search type"
 msgstr "Tipo de búsqueda inválido"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
 #: ../client/pk-console.c:2219
+#: ../client/pk-console-test.c:1358
 msgid "A package name or filename to install is required"
 msgstr "Se requiere un nombre de paquete o nombre de archivo para instalar"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:2228
+#: ../client/pk-console-test.c:1368
 msgid "A type, key_id and package_id are required"
 msgstr "Se necesita un tipo, key_id y package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:2237
+#: ../client/pk-console-test.c:1379
 msgid "A package name to remove is required"
 msgstr "Necesita un nombre de paquete para eliminar"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:2245
+#: ../client/pk-console-test.c:1387
 msgid "A destination directory and the package names to download are required"
 msgstr "Se necesita un directorio de destino y los nombres de los paquetes a descargar"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:2252
+#: ../client/pk-console-test.c:1394
 msgid "Directory not found"
 msgstr "Directorio no encontrado"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:2260
+#: ../client/pk-console-test.c:1403
 msgid "A licence identifier (eula-id) is required"
 msgstr "Se necesita un identificador de licencia (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:2270
+#: ../client/pk-console-test.c:1415
 msgid "A transaction identifier (tid) is required"
 msgstr "Se necesita un identificador de transacción (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:2287
+#: ../client/pk-console-test.c:1437
 msgid "A package name to resolve is required"
 msgstr "Se necesita un nombre de paquete para resolver"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2296
 #: ../client/pk-console.c:2305
+#: ../client/pk-console-test.c:1448
+#: ../client/pk-console-test.c:1459
 msgid "A repository name is required"
 msgstr "Se necesita un nombre de repositorio"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2314
+#: ../client/pk-console-test.c:1470
 msgid "A repo name, parameter and value are required"
 msgstr "Debe especificar un nombre de repositorio, parámetro y valor"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:2328
+#: ../client/pk-console-test.c:1488
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Debe especificar una acción, por ejemplo, «update-system»"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2335
+#: ../client/pk-console-test.c:1495
 msgid "A correct role is required"
 msgstr "Se necesita un rol correcto"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2342
+#: ../client/pk-console-test.c:1502
 msgid "Failed to get the time since this action was last completed"
 msgstr "Falló al obtener la hora de la última vez que se completó esta acción"
 
@@ -718,12 +833,18 @@ msgstr "Falló al obtener la hora de la última vez que se completó esta acció
 #: ../client/pk-console.c:2373
 #: ../client/pk-console.c:2391
 #: ../client/pk-console.c:2400
+#: ../client/pk-console-test.c:1511
+#: ../client/pk-console-test.c:1526
+#: ../client/pk-console-test.c:1535
+#: ../client/pk-console-test.c:1556
+#: ../client/pk-console-test.c:1565
 #: ../client/pk-generate-pack.c:243
 msgid "A package name is required"
 msgstr "Se necesita un nombre de paquete"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2382
+#: ../client/pk-console-test.c:1545
 msgid "A package provide string is required"
 msgstr "Se necesita la cadena de lo que proporciona el paquete"
 
@@ -740,6 +861,7 @@ msgstr "Se necesita un archivo de lista para abrir"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:2483
+#: ../client/pk-console-test.c:1619
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "La opción «%s» no está soportada"
@@ -750,7 +872,11 @@ msgid "Incorrect privileges for this operation"
 msgstr "Privilegios incorrectos para esta operación"
 
 #. TRANSLATORS: Generic failure of what they asked to do
+#. /* TRANSLATORS: User does not have permission to do this */
+#. g_print ("%s\n", _("Incorrect privileges for this operation"));
+#. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:2499
+#: ../client/pk-console-test.c:1631
 msgid "Command failed"
 msgstr "Falló el comando"
 
@@ -877,6 +1003,98 @@ msgstr "Monitor de PackageKit"
 #: ../client/pk-monitor.c:183
 msgid "Cannot show the list of transactions"
 msgstr "No es posible mostrar la lista de transacciones"
+
+#. ask the user
+#: ../client/pk-task-text.c:61
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "¿Desea permitir la instalación de software que no esté identificado?"
+
+#: ../client/pk-task-text.c:65
+msgid "The unsigned software will not be installed."
+msgstr "El software no identificado no será instalado."
+
+#: ../client/pk-task-text.c:94
+msgid "Software source signature required"
+msgstr "Se necesita la firma de la fuente del software"
+
+#: ../client/pk-task-text.c:96
+msgid "Software source name"
+msgstr "Nombre de la fuente del software"
+
+#: ../client/pk-task-text.c:97
+msgid "Key URL"
+msgstr "URL de la clave"
+
+#: ../client/pk-task-text.c:98
+msgid "Key user"
+msgstr "Usuario de la clave"
+
+#: ../client/pk-task-text.c:99
+msgid "Key ID"
+msgstr "ID de la clave"
+
+#: ../client/pk-task-text.c:100
+msgid "Key fingerprint"
+msgstr "Huella digital de la clave"
+
+#: ../client/pk-task-text.c:101
+msgid "Key Timestamp"
+msgstr "Fecha y hora de la clave"
+
+#: ../client/pk-task-text.c:142
+msgid "End user licence agreement required"
+msgstr "Se necesita un acuerdo de licencia de usuario final"
+
+#: ../client/pk-task-text.c:143
+msgid "EULA ID"
+msgstr "ID del acuerdo de licencia de usuario final (EULA) "
+
+#: ../client/pk-task-text.c:146
+msgid "Agreement"
+msgstr "Acuerdo"
+
+#. ask the user
+#: ../client/pk-task-text.c:152
+msgid "Do you accept this agreement?"
+msgstr "¿Acepta este acuerdo?"
+
+#: ../client/pk-task-text.c:156
+msgid "The agreement was not accepted."
+msgstr "El acuerdo no fue aceptado."
+
+#: ../client/pk-task-text.c:182
+msgid "Media change required"
+msgstr "Es necesario cambiar el medio"
+
+#: ../client/pk-task-text.c:183
+msgid "Media type"
+msgstr "Tipo de medio"
+
+#: ../client/pk-task-text.c:184
+msgid "Media ID"
+msgstr "ID de medio"
+
+#: ../client/pk-task-text.c:185
+msgid "Text"
+msgstr "TExto"
+
+#. ask the user
+#: ../client/pk-task-text.c:189
+msgid "Please insert the correct media"
+msgstr "Por favor, inserte el medio correcto "
+
+#: ../client/pk-task-text.c:193
+msgid "The correct media was not inserted."
+msgstr "El medio correcto no fue insertado."
+
+#: ../client/pk-task-text.c:288
+msgid "The transaction did not proceed."
+msgstr "La transacción no pudo realizarse."
+
+#: ../client/pk-text.c:50
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Introduzca un número de 1 a %i: "
 
 #. TRANSLATORS: The package was not found in any software sources
 #: ../client/pk-tools-common.c:119
@@ -1590,11 +1808,6 @@ msgstr "Varios paquetes"
 #: ../src/pk-polkit-action-lookup.c:334
 msgid "Only trusted"
 msgstr "Solo confiable"
-
-#: ../client/pk-text.c:50
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Introduzca un número de 1 a %i: "
 
 #~ msgid "Main cache file to use (if not specififed, default is used)"
 #~ msgstr ""
