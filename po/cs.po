@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master.cs\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-04 08:25+0000\n"
-"PO-Revision-Date: 2009-09-04 15:30+0100\n"
+"PO-Revision-Date: 2009-09-04 15:38+0100\n"
 "Last-Translator: Dušan Hokův <dusan@mirc.cz>\n"
 "Language-Team: Czech <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -344,16 +344,14 @@ msgstr "Prosím restartujte aplikaci, protože je právě používána."
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:675
 #: ../client/pk-console-test.c:443
-#, fuzzy
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Prosím restartujte počítač pro dokončení aktualizace."
+msgstr "Prosím restartujte počítač pro dokončení aktualizace kvůli nainstalovaným důležitým bezpečnostním aktualizacím ."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:678
 #: ../client/pk-console-test.c:446
-#, fuzzy
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Prosím odhlaste se a znovu se přihlašte pro dokončení aktualizace."
+msgstr "Prosím odhlaste se a znovu se přihlašte pro dokončení aktualizace kvůli nainstalovaným důležitým bezpečnostním aktualizacím."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:810
@@ -443,9 +441,9 @@ msgstr "Odstranění baličku bylo zrušeno!"
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:1150
 #: ../client/pk-console-test.c:689
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Tento nástroj nemůže stáhnout balík '%s', protože nemůže být nalezen"
+msgstr "Tento nástroj nemůže stáhnout balík %s, protože nemůže být nalezen"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:1181
@@ -460,15 +458,14 @@ msgstr "Tento nástroj nemůže stáhnout balíky: %s"
 #: ../client/pk-console.c:1280
 #: ../client/pk-console-test.c:743
 #: ../client/pk-console-test.c:753
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not update %s: %s"
-msgstr "Tento nástroj nemůže aktualizovat '%s': %s"
+msgstr "Tento nástroj nemůže aktualizovat %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:1271
-#, fuzzy
 msgid "The package update was canceled!"
-msgstr "Odstranění baličku bylo zrušeno!"
+msgstr "Aktualizace balíčku byla zrušena!"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1304
@@ -547,15 +544,13 @@ msgstr "Soubor neexistuje: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1512
-#, fuzzy
 msgid "Packages to add"
-msgstr "PackageKit Monitor"
+msgstr "Balíčky k přidání"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1520
-#, fuzzy
 msgid "Packages to remove"
-msgstr "Služba PackageKit"
+msgstr "Balíčky k odebrání"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1588
@@ -1079,7 +1074,7 @@ msgstr "EULA ID"
 
 #: ../client/pk-task-text.c:146
 msgid "Agreement"
-msgstr ""
+msgstr "Ujednání"
 
 #. ask the user
 #: ../client/pk-task-text.c:152
@@ -1097,11 +1092,11 @@ msgstr "Nemohu zjistit, které balíky jsou vyžadovány"
 
 #: ../client/pk-task-text.c:183
 msgid "Media type"
-msgstr ""
+msgstr "typ Média"
 
 #: ../client/pk-task-text.c:184
 msgid "Media ID"
-msgstr ""
+msgstr "ID Média"
 
 #: ../client/pk-task-text.c:185
 msgid "Text"
@@ -1316,7 +1311,7 @@ msgstr ""
 #. command line argument, do we operate quietly
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
-msgstr ""
+msgstr "nezobrazovat informace nebo půběh"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
@@ -1433,7 +1428,7 @@ msgstr "Nemohu najít odpovídající balík"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
-msgstr ""
+msgstr "Nalezeno %i extra balíčků."
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
@@ -1832,7 +1827,7 @@ msgstr "Balík '%s' nemůže být nainstalován: %s"
 #: ../src/pk-polkit-action-lookup.c:168
 #: ../src/pk-polkit-action-lookup.c:187
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "Software není z důvěryhodného zdroje."
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
@@ -1853,7 +1848,7 @@ msgstr ""
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:199
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
+msgstr "Škodlivý software může poškodit váš počítač nebo způsobit jiné škody."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:274
