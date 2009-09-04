@@ -140,7 +140,8 @@ def init_global
     $pkg_arch = PkgConfig::OS_PLATFORM
 end
 
-def get_packages(filters)
+class PackageKitPortsBackend < PackageKitBaseBackend
+  def get_packages(filters)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
     begin
@@ -185,7 +186,7 @@ def resolve(filters, packages)
     _resolve(filters, packages)
 end
 
-def _resolve(filters, packages)
+  def _resolve(filters, packages)
     filterlist = filters.split(';')
     packages.each do |package|
       portnames = $portsdb.glob(package)
@@ -213,9 +214,9 @@ def _resolve(filters, packages)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
-def search_group(filters, key)
+  def search_group(filters, key)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
     if key == GROUP_NEWEST
@@ -251,9 +252,9 @@ def search_group(filters, key)
         package(package_id, status, summary)
       end
     end
-end
+  end
 
-def search_name(filters, key)
+  def search_name(filters, key)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
     name = key
@@ -273,9 +274,9 @@ def search_name(filters, key)
         package(package_id, status, summary)
       end
     end
-end
+  end
 
-def search_details(filters, key)
+  def search_details(filters, key)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
     begin
@@ -297,9 +298,9 @@ def search_details(filters, key)
         end
       end
     end
-end
+  end
 
-def search_file(filters, key)
+  def search_file(filters, key)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
     if filterlist.include? FILTER_NOT_INSTALLED
@@ -344,9 +345,9 @@ def search_file(filters, key)
         package(package_id, status, summary)
       end
     end
-end
+  end
 
-def get_depends(filters, package_ids, recursive)
+  def get_depends(filters, package_ids, recursive)
     status(STATUS_INFO)
     filterlist = filters.split(';')
     package_ids.each do |package|
@@ -372,9 +373,9 @@ def get_depends(filters, package_ids, recursive)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
-def get_details(package_ids)
+  def get_details(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -407,9 +408,9 @@ def get_details(package_ids)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
-def get_files(package_ids)
+  def get_files(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -429,9 +430,9 @@ def get_files(package_ids)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
-def get_requires(filters, package_ids, recursive)
+  def get_requires(filters, package_ids, recursive)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -452,12 +453,12 @@ def get_requires(filters, package_ids, recursive)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
 # (ports-mgmt/portaudit)
 PORTAUDIT="#{PREFIX}/sbin/portaudit"
 
-def refresh_cache(force)
+  def refresh_cache(force)
     percentage(0)
     status(STATUS_DOWNLOAD_PACKAGELIST)
     $portsdb.update(fetch=true)
@@ -469,7 +470,7 @@ def refresh_cache(force)
     status(STATUS_REFRESH_CACHE)
     $portsdb.update_db(force)
     percentage(100)
-end
+  end
 
 # (security/vxquery)
 VXQUERY = "#{PREFIX}/bin/vxquery"
@@ -477,7 +478,7 @@ VXQUERY = "#{PREFIX}/bin/vxquery"
 # http://www.vuxml.org
 VULN_XML = 'vuln.xml'
 
-def _match_range(range, version)
+  def _match_range(range, version)
    cmp = PkgVersion.new(version.to_s) <=> PkgVersion.new(range.text)
    return true if range.name == 'lt' && cmp <  0
    return true if range.name == 'le' && cmp <= 0
@@ -485,9 +486,9 @@ def _match_range(range, version)
    return true if range.name == 'ge' && cmp >= 0
    return true if range.name == 'gt' && cmp >  0
    return false
-end
+  end
 
-def _vuxml(name, oldversion=nil, newversion=nil)
+  def _vuxml(name, oldversion=nil, newversion=nil)
     vulnxml = File.join($portsdb.portdir('security/vuxml'), VULN_XML)
     vulns = []
     if File.exist?(VXQUERY) and File.exist?(vulnxml)
@@ -519,9 +520,9 @@ def _vuxml(name, oldversion=nil, newversion=nil)
       end
     end
     return vulns
-end
+  end
 
-def get_updates(filters)
+  def get_updates(filters)
     status(STATUS_DEP_RESOLVE)
     filterlist = filters.split(';')
     list = []
@@ -559,9 +560,9 @@ def get_updates(filters)
             end
         end
     end
-end
+  end
 
-def get_update_detail(package_ids)
+  def get_update_detail(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -644,7 +645,7 @@ def get_update_detail(package_ids)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{package} was not found")
       end
     end
-end
+  end
 
 # (ports-mgmt/portupgrade)
 PORTUPGRADE="#{PREFIX}/sbin/portupgrade"
@@ -673,7 +674,7 @@ USE_PKG = true
 # build packages
 BIN_PKG = true
 
-def update_system(only_trusted)
+  def update_system(only_trusted)
     if only_trusted
         error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
@@ -710,9 +711,9 @@ def update_system(only_trusted)
           message(MESSAGE_BACKEND_ERROR, line.chomp)
         end
     end
-end
+  end
 
-def download_packages(directory, package_ids)
+  def download_packages(directory, package_ids)
     pkgnames = []
     package_ids.each do |package|
       name, version, arch, data = split_package_id(package)
@@ -759,9 +760,9 @@ def download_packages(directory, package_ids)
         end
     end
     ENV['PACKAGES'] = packages
-end
+  end
 
-def install_files(only_trusted, inst_files)
+  def install_files(only_trusted, inst_files)
     if only_trusted
         error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
@@ -791,9 +792,9 @@ def install_files(only_trusted, inst_files)
     ENV['PKG_PATH'] = path.join(':')
     _install(pkgnames)
     ENV['PKG_PATH'] = pkg_path
-end
+  end
 
-def install_packages(only_trusted, package_ids)
+  def install_packages(only_trusted, package_ids)
     if only_trusted
         error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
         return
@@ -815,9 +816,9 @@ def install_packages(only_trusted, package_ids)
         end
     end
     _install(pkgnames)
-end
+  end
 
-def _install(pkgnames)
+  def _install(pkgnames)
     return if pkgnames.empty?
     args = ['-M', 'DIALOG='+DIALOG]
     args << '-P' if USE_PKG
@@ -854,9 +855,9 @@ def _install(pkgnames)
     pkgnames.each do |pkgname|
       _resolve(FILTER_INSTALLED, pkgname)
     end
-end
+  end
 
-def remove_packages(allowdep, autoremove, package_ids)
+  def remove_packages(allowdep, autoremove, package_ids)
     if autoremove
         error(ERROR_NOT_SUPPORTED, "Automatic removal not available.", exit=false)
     end
@@ -907,6 +908,9 @@ def remove_packages(allowdep, autoremove, package_ids)
       pkgname = "#{name}-#{version}"
       _resolve(FILTER_NOT_INSTALLED, pkgname)
     end
+  end
+
+  protected :_resolve, :_match_range, :_vuxml, :_install
 end
 
 #######################################################################
@@ -919,7 +923,8 @@ def to_b(string)
     raise ArgumentError.new("invalid value for bool: \"#{string}\"")
 end
 
-def dispatch_command(cmd, args)
+class PackageKitBaseBackend
+  def dispatch_command(cmd, args)
     case
     when cmd == 'download-packages'
         directory = args[0]
@@ -1016,9 +1021,9 @@ def dispatch_command(cmd, args)
         error(ERROR_INTERNAL_ERROR, errmsg, exit=false)
         finished()
     end
-end
+  end
 
-def dispatcher(args)
+  def dispatcher(args)
     if args.size > 0
       dispatch_command(args[0], args[1..-1])
     else
@@ -1027,6 +1032,7 @@ def dispatcher(args)
         dispatch_command(args[0], args[1..-1])
       end
     end
+  end
 end
 
 #######################################################################
@@ -1034,7 +1040,8 @@ end
 def main(argv)
     init_global
     init_pkgtools_global
-    dispatcher(argv)
+    backend = PackageKitPortsBackend.new
+    backend.dispatcher(argv)
     0
 end
 
