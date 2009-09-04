@@ -41,6 +41,12 @@ def split_package_id(id)
     return id.split(';', 4)
 end
 
+def init_global
+    $pkg_arch = PkgConfig::OS_PLATFORM
+end
+
+class PackageKitPortsBackend < PackageKitBaseBackend
+
 # maps Ports group to PackageKit group
 GROUPS = {
 "accessibility" => GROUP_ACCESSIBILITY,
@@ -136,11 +142,6 @@ GROUPS = {
 "zope" => GROUP_UNKNOWN,
 }
 
-def init_global
-    $pkg_arch = PkgConfig::OS_PLATFORM
-end
-
-class PackageKitPortsBackend < PackageKitBaseBackend
   def get_packages(filters)
     status(STATUS_QUERY)
     filterlist = filters.split(';')
@@ -924,6 +925,7 @@ def to_b(string)
 end
 
 class PackageKitBaseBackend
+
   def dispatch_command(cmd, args)
     case
     when cmd == 'download-packages'
@@ -1033,6 +1035,7 @@ class PackageKitBaseBackend
       end
     end
   end
+
 end
 
 #######################################################################
