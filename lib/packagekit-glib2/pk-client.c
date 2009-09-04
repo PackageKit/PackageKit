@@ -2821,7 +2821,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 		return;
 
 	/* role */
-	if (g_strcmp0 (key, "role") == 0) {
+	if (g_strcmp0 (key, "Role") == 0) {
 		tmp_str = g_value_get_string (value);
 		tmp = pk_role_enum_from_text (tmp_str);
 		g_object_set (state->progress, "role", tmp, NULL);
@@ -2830,7 +2830,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	}
 
 	/* status */
-	if (g_strcmp0 (key, "status") == 0) {
+	if (g_strcmp0 (key, "Status") == 0) {
 		tmp_str = g_value_get_string (value);
 		tmp = pk_status_enum_from_text (tmp_str);
 		g_object_set (state->progress, "status", tmp, NULL);
@@ -2839,7 +2839,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	}
 
 	/* last-package */
-	if (g_strcmp0 (key, "last-package") == 0) {
+	if (g_strcmp0 (key, "LastPackage") == 0) {
 		tmp_str = g_value_get_string (value);
 		g_object_set (state->progress, "package-id", tmp_str, NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
@@ -2848,7 +2848,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 
 #if 0
 	/* uid */
-	if (g_strcmp0 (key, "uid") == 0) {
+	if (g_strcmp0 (key, "Uid") == 0) {
 		tmp = g_value_get_uint (value);
 		g_object_set (state->progress, "uid", tmp, NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_UID, state->progress_user_data);
@@ -2857,7 +2857,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 #endif
 
 	/* percentage */
-	if (g_strcmp0 (key, "percentage") == 0) {
+	if (g_strcmp0 (key, "Percentage") == 0) {
 		tmp = g_value_get_uint (value);
 		g_object_set (state->progress, "percentage", pk_client_percentage_to_signed (tmp), NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
@@ -2865,7 +2865,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	}
 
 	/* subpercentage */
-	if (g_strcmp0 (key, "subpercentage") == 0) {
+	if (g_strcmp0 (key, "Subpercentage") == 0) {
 		tmp = g_value_get_uint (value);
 		g_object_set (state->progress, "subpercentage", pk_client_percentage_to_signed (tmp), NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
@@ -2873,7 +2873,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	}
 
 	/* allow-cancel */
-	if (g_strcmp0 (key, "allow-cancel") == 0) {
+	if (g_strcmp0 (key, "AllowCancel") == 0) {
 		ret = g_value_get_boolean (value);
 		g_object_set (state->progress, "allow-cancel", ret, NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
@@ -2881,7 +2881,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	}
 
 	/* caller-active */
-	if (g_strcmp0 (key, "caller-active") == 0) {
+	if (g_strcmp0 (key, "CallerActive") == 0) {
 		ret = g_value_get_boolean (value);
 		g_object_set (state->progress, "caller-active", ret, NULL);
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
