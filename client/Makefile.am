@@ -65,15 +65,13 @@ PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 	$(NULL)
 
-noinst_PROGRAMS = pkcon-test
+noinst_PROGRAMS = pkcon-test pkmon-test
 
 # TODO: private library
 
 pkcon_test_SOURCES =					\
 	egg-debug.c					\
 	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
 	pk-console-test.c				\
 	pk-task-text.c					\
 	pk-task-text.h					\
@@ -90,6 +88,22 @@ pkcon_test_LDADD =					\
 	$(NULL)
 
 pkcon_test_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
+pkmon_test_SOURCES =					\
+	egg-debug.c					\
+	egg-debug.h					\
+	pk-monitor-test.c				\
+	$(NULL)
+
+pkmon_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pkmon_test_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 endif

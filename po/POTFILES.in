@@ -5,6 +5,7 @@ client/pk-console.c
 client/pk-console-test.c
 client/pk-generate-pack.c
 client/pk-monitor.c
+client/pk-monitor-test.c
 client/pk-task-text.c
 client/pk-text.c
 client/pk-tools-common.c
