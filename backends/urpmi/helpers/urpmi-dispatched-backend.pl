@@ -771,7 +771,7 @@ sub _print_package_update_details {
     "http://qa.mandriva.com",
     "http://qa.mandriva.com",
     "http://qa.mandriva.com",
-    $restart ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_APPLICATION,
+    $restart ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_NONE,
     $desc);
 }
 
