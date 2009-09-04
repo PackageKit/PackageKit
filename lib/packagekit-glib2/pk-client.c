@@ -2898,14 +2898,13 @@ static void
 pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
 	GError *error = NULL;
-	gboolean ret;
 	GHashTable *hash;
 
 	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
-				     G_TYPE_INVALID);
-	if (!ret) {
+	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
+					    dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
+					    G_TYPE_INVALID);
+	if (!state->ret) {
 		pk_client_state_finish (state, error);
 		return;
 	}
