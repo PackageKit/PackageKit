@@ -95,6 +95,7 @@ typedef struct {
 	gboolean		 ret;
 	gchar			*tid;
 	gchar			**transaction_list;
+	gchar			*daemon_state;
 	guint			 time;
 	DBusGProxyCall		*call;
 	GCancellable		*cancellable;
@@ -269,6 +270,144 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 	source_tag = g_simple_async_result_get_source_tag (simple);
 
 	g_return_val_if_fail (source_tag == pk_control_get_tid_async, NULL);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_simple_async_result_get_op_res_gpointer (simple);
+}
+
+/***************************************************************************************************/
+
+/**
+ * pk_control_get_daemon_state_state_finish:
+ **/
+static void
+pk_control_get_daemon_state_state_finish (PkControlState *state, GError *error)
+{
+	/* remove weak ref */
+	if (state->control != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* get result */
+	if (state->daemon_state != NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->daemon_state), g_free);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
+	g_free (state->daemon_state);
+	g_object_unref (state->res);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_get_daemon_state_cb:
+ **/
+static void
+pk_control_get_daemon_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *daemon_state = NULL;
+	gboolean ret;
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     G_TYPE_STRING, &daemon_state,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		/* fix up the D-Bus error */
+		pk_control_fixup_dbus_error (error);
+		egg_warning ("failed: %s", error->message);
+		pk_control_get_daemon_state_state_finish (state, error);
+		goto out;
+	}
+
+	/* save results */
+	state->daemon_state = g_strdup (daemon_state);
+
+	/* we're done */
+	pk_control_get_daemon_state_state_finish (state, error);
+out:
+	g_free (daemon_state);
+}
+
+/**
+ * pk_control_get_daemon_state_async:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Gets the debugging state from the daemon.
+ **/
+void
+pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_daemon_state_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->control = control;
+	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
+
+	/* call D-Bus method async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetDaemonState",
+					       (DBusGProxyCallNotify) pk_control_get_daemon_state_cb, state,
+					       NULL, G_TYPE_INVALID);
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_get_daemon_state_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the ID, or %NULL if unset
+ **/
+gchar *
+pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_get_daemon_state_async, NULL);
 
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;

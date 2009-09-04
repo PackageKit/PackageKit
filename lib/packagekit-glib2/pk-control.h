@@ -103,6 +103,13 @@ void		 pk_control_get_tid_async		(PkControl		*control,
 gchar		*pk_control_get_tid_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
+void		 pk_control_get_daemon_state_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gchar		*pk_control_get_daemon_state_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
 void		 pk_control_set_proxy_async		(PkControl		*control,
 							 const gchar		*proxy_http,
 							 const gchar		*proxy_ftp,
