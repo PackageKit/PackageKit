@@ -68,12 +68,13 @@ gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_ftp);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
-							 gchar		**name,
-							 gchar		**author);
+gchar		*pk_backend_get_description		(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_backend_get_author			(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
-PkBitfield	 pk_backend_get_actions			(PkBackend	*backend);
+PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 PkStore		*pk_backend_get_store			(PkBackend	*backend);
 gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
 

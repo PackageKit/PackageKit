@@ -191,10 +191,10 @@ pk_backend_get_filters (PkBackend *backend)
 }
 
 /**
- * pk_backend_get_actions:
+ * pk_backend_get_roles:
  **/
 PkBitfield
-pk_backend_get_actions (PkBackend *backend)
+pk_backend_get_roles (PkBackend *backend)
 {
 	PkBitfield roles = 0;
 	PkBackendDesc *desc;
@@ -578,16 +578,6 @@ pk_backend_unlock (PkBackend *backend)
 		backend->desc->destroy (backend);
 	backend->priv->locked = FALSE;
 	return TRUE;
-}
-
-/**
- * pk_backend_get_name:
- **/
-gchar *
-pk_backend_get_name (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return g_strdup (backend->priv->name);
 }
 
 /**
@@ -1802,20 +1792,39 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 }
 
 /**
- * pk_backend_get_backend_detail:
- */
-gboolean
-pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
+ * pk_backend_get_name:
+ **/
+gchar *
+pk_backend_get_name (PkBackend *backend)
 {
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	return g_strdup (backend->priv->name);
+}
 
-	if (name != NULL && backend->desc->description != NULL)
-		*name = g_strdup (backend->desc->description);
-	if (author != NULL && backend->desc->author != NULL)
-		*author = g_strdup (backend->desc->author);
-	return TRUE;
+/**
+ * pk_backend_get_description:
+ **/
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	return g_strdup (backend->desc->description);
+}
+
+/**
+ * pk_backend_get_author:
+ **/
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	return g_strdup (backend->desc->author);
 }
 
 /**

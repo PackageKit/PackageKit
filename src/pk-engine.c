@@ -81,10 +81,13 @@ struct PkEnginePrivate
 	PkDbus			*dbus;
 	PkFileMonitor		*file_monitor_conf;
 	PkFileMonitor		*file_monitor_binary;
-	PkBitfield		 actions;
+	PkBitfield		 roles;
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			*mime_types;
+	gchar			*backend_name;
+	gchar			*backend_description;
+	gchar			*backend_author;
 	guint			 timeout_priority;
 	guint			 timeout_normal;
 	guint			 timeout_priority_id;
@@ -113,6 +116,13 @@ enum {
 	PROP_VERSION_MAJOR,
 	PROP_VERSION_MINOR,
 	PROP_VERSION_MICRO,
+	PROP_BACKEND_NAME,
+	PROP_BACKEND_DESCRIPTION,
+	PROP_BACKEND_AUTHOR,
+	PROP_ROLES,
+	PROP_GROUPS,
+	PROP_FILTERS,
+	PROP_MIME_TYPES,
 	PROP_LAST,
 };
 
@@ -415,10 +425,10 @@ out:
  * pk_engine_get_actions:
  **/
 gboolean
-pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
+pk_engine_get_actions (PkEngine *engine, gchar **roles, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*actions = pk_role_bitfield_to_text (engine->priv->actions);
+	*roles = pk_role_bitfield_to_text (engine->priv->roles);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -488,7 +498,8 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GE
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	egg_debug ("GetBackendDetail method called");
-	pk_backend_get_backend_detail (engine->priv->backend, name, author);
+	*name = pk_backend_get_description (engine->priv->backend);
+	*author = pk_backend_get_author (engine->priv->backend);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -831,6 +842,9 @@ pk_engine_can_authorize (PkEngine *engine, const gchar *action_id, DBusGMethodIn
 static void
 pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
+	PkEngine *engine = PK_ENGINE(object);
+	gchar *tmp = NULL;
+
 	switch (prop_id) {
 	case PROP_VERSION_MAJOR:
 		g_value_set_uint (value, PK_MAJOR_VERSION);
@@ -841,10 +855,35 @@ pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_VERSION_MICRO:
 		g_value_set_uint (value, PK_MICRO_VERSION);
 		break;
+	case PROP_BACKEND_NAME:
+		g_value_set_string (value, engine->priv->backend_name);
+		break;
+	case PROP_BACKEND_DESCRIPTION:
+		g_value_set_string (value, engine->priv->backend_description);
+		break;
+	case PROP_BACKEND_AUTHOR:
+		g_value_set_string (value, engine->priv->backend_author);
+		break;
+	case PROP_ROLES:
+		tmp = pk_role_bitfield_to_text (engine->priv->roles);
+		g_value_set_string (value, tmp);
+		break;
+	case PROP_GROUPS:
+		tmp = pk_group_bitfield_to_text (engine->priv->groups);
+		g_value_set_string (value, tmp);
+		break;
+	case PROP_FILTERS:
+		tmp = pk_filter_bitfield_to_text (engine->priv->filters);
+		g_value_set_string (value, tmp);
+		break;
+	case PROP_MIME_TYPES:
+		g_value_set_string (value, engine->priv->mime_types);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
+	g_free (tmp);
 }
 
 /**
@@ -897,6 +936,62 @@ pk_engine_class_init (PkEngineClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
+
+	/**
+	 * PkEngine:backend-name:
+	 */
+	pspec = g_param_spec_string ("backend-name", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_NAME, pspec);
+
+	/**
+	 * PkEngine:backend-description:
+	 */
+	pspec = g_param_spec_string ("backend-description", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_DESCRIPTION, pspec);
+
+	/**
+	 * PkEngine:backend-author:
+	 */
+	pspec = g_param_spec_string ("backend-author", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_BACKEND_AUTHOR, pspec);
+
+	/**
+	 * PkEngine:roles:
+	 */
+	pspec = g_param_spec_string ("roles", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLES, pspec);
+
+	/**
+	 * PkEngine:groups:
+	 */
+	pspec = g_param_spec_string ("groups", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_GROUPS, pspec);
+
+	/**
+	 * PkEngine:filters:
+	 */
+	pspec = g_param_spec_string ("filters", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_FILTERS, pspec);
+
+	/**
+	 * PkEngine:mime-types:
+	 */
+	pspec = g_param_spec_string ("mime-types", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/* signals */
 	signals [PK_ENGINE_LOCKED] =
@@ -989,6 +1084,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->notify_clients_of_upgrade = FALSE;
 	engine->priv->shutdown_as_soon_as_possible = FALSE;
 	engine->priv->mime_types = NULL;
+	engine->priv->backend_name = NULL;
+	engine->priv->backend_description = NULL;
+	engine->priv->backend_author = NULL;
 	engine->priv->sender = NULL;
 
 	/* use the config file */
@@ -1016,10 +1114,13 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
 
 	/* create a new backend so we can get the static stuff */
-	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
+	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
 	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
 	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
 	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
+	engine->priv->backend_name = pk_backend_get_name (engine->priv->backend);
+	engine->priv->backend_description = pk_backend_get_description (engine->priv->backend);
+	engine->priv->backend_author = pk_backend_get_author (engine->priv->backend);
 
 	engine->priv->timer = g_timer_new ();
 
@@ -1137,6 +1238,9 @@ pk_engine_finalize (GObject *object)
 	g_free (engine->priv->proxy_http);
 	g_free (engine->priv->proxy_ftp);
 	g_free (engine->priv->sender);
+	g_free (engine->priv->backend_name);
+	g_free (engine->priv->backend_description);
+	g_free (engine->priv->backend_author);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

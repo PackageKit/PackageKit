@@ -76,7 +76,7 @@ guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 /* dbus methods */
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
-							 gchar		**actions,
+							 gchar		**roles,
 							 GError		**error);
 gboolean	 pk_engine_get_backend_detail		(PkEngine	*engine,
 							 gchar		**name,
