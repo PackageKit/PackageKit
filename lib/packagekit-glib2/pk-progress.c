@@ -117,24 +117,31 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
 		priv->package_id = g_strdup (g_value_get_string (value));
+		egg_debug ("package_id now %s", priv->package_id);
 		break;
 	case PROP_PERCENTAGE:
 		priv->percentage = g_value_get_int (value);
+		egg_debug ("percentage now %i", priv->percentage);
 		break;
 	case PROP_SUBPERCENTAGE:
 		priv->subpercentage = g_value_get_int (value);
+		egg_debug ("subpercentage now %i", priv->subpercentage);
 		break;
 	case PROP_ALLOW_CANCEL:
 		priv->allow_cancel = g_value_get_boolean (value);
+		egg_debug ("allow-cancel now %i", priv->allow_cancel);
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
+		egg_debug ("status now %s", pk_status_enum_to_text (priv->status));
 		break;
 	case PROP_ROLE:
 		priv->role = g_value_get_uint (value);
+		egg_debug ("role now %s", pk_role_enum_to_text (priv->role));
 		break;
 	case PROP_CALLER_ACTIVE:
 		priv->caller_active = g_value_get_boolean (value);
+		egg_debug ("caller-active now %i", priv->caller_active);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
