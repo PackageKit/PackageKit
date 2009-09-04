@@ -96,6 +96,7 @@ typedef struct {
 	gchar				*repo_id;
 	gchar				*search;
 	gchar				*tid;
+	gchar				*transaction_id;
 	gchar				*value;
 	gpointer			 progress_user_data;
 	gpointer			 user_data;
@@ -346,6 +347,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_free (state->search);
 	g_free (state->value);
 	g_free (state->tid);
+	g_free (state->transaction_id);
 	g_strfreev (state->files);
 	g_strfreev (state->package_ids);
 	g_object_unref (state->progress);
@@ -1015,6 +1017,11 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		state->call = dbus_g_proxy_begin_call (state->proxy, "AcceptEula",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, state->eula_id,
+						       G_TYPE_INVALID);
+	} else if (state->role == PK_ROLE_ENUM_ROLLBACK) {
+		state->call = dbus_g_proxy_begin_call (state->proxy, "Rollback",
+						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_STRING, state->transaction_id,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
@@ -2385,6 +2392,54 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	}
 	state->client = client;
 	state->eula_id = g_strdup (eula_id);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	state->progress = pk_progress_new ();
+	g_object_set (state->progress,
+		      "role", state->role,
+		      NULL);
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get tid */
+	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	g_object_unref (res);
+}
+
+/**
+ * pk_client_rollback_async:
+ * @client: a valid #PkClient instance
+ * @transaction_id: the <literal>transaction_id</literal> we want to return to
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * We may want to agree to a EULA dialog if one is presented.
+ **/
+void
+pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
+			  PkProgressCallback progress_callback, gpointer progress_user_data,
+			  GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_accept_eula_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->role = PK_ROLE_ENUM_ROLLBACK;
+	state->res = g_object_ref (res);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+	}
+	state->client = client;
+	state->transaction_id = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
