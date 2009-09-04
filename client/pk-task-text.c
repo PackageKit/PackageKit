@@ -49,7 +49,7 @@ G_DEFINE_TYPE (PkTaskText, pk_task_text, PK_TYPE_TASK)
  * pk_task_text_untrusted_question:
  **/
 static void
-dkp_task_text_untrusted_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_text_untrusted_question (PkTask *task, guint request, PkResults *results)
 {
 	gboolean ret;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
@@ -74,7 +74,7 @@ dkp_task_text_untrusted_question (PkTask *task, guint request, const PkResults *
  * pk_task_text_key_question:
  **/
 static void
-dkp_task_text_key_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_text_key_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -125,7 +125,7 @@ dkp_task_text_key_question (PkTask *task, guint request, const PkResults *result
  * pk_task_text_eula_question:
  **/
 static void
-dkp_task_text_eula_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -173,7 +173,7 @@ dkp_task_text_eula_question (PkTask *task, guint request, const PkResults *resul
  * pk_task_text_media_change_question:
  **/
 static void
-dkp_task_text_media_change_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_text_media_change_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -248,7 +248,7 @@ dkp_task_text_simulate_question_type_to_text (PkInfoEnum info)
  * pk_task_text_simulate_question:
  **/
 static void
-dkp_task_text_simulate_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	guint len;
@@ -373,7 +373,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 {
 	PkTaskText *task = PK_TASK_TEXT (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;
@@ -384,7 +384,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -407,6 +407,9 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 	g_ptr_array_unref (packages);
 
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 

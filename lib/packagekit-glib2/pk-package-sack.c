@@ -454,7 +454,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *packages = NULL;
 	const PkResultItemPackage *item;
 	guint i;
@@ -506,6 +506,8 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
 }
@@ -589,7 +591,7 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *details = NULL;
 	const PkResultItemDetails *item;
 	guint i;
@@ -643,6 +645,8 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (details != NULL)
 		g_ptr_array_unref (details);
 }
@@ -700,7 +704,7 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	GPtrArray *update_details = NULL;
 	const PkResultItemUpdateDetail *item;
 	guint i;
@@ -760,6 +764,8 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	/* we're done */
 	pk_package_sack_merge_bool_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (update_details != NULL)
 		g_ptr_array_unref (update_details);
 }

@@ -254,7 +254,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: the ID, or %NULL if unset, free with g_free()
  **/
 gchar *
 pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -274,7 +274,7 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
@@ -392,7 +392,7 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the ID, or %NULL if unset
+ * Return value: the ID, or %NULL if unset, free with g_free()
  **/
 gchar *
 pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -412,7 +412,7 @@ pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GErro
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
@@ -669,7 +669,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: A GStrv list of transaction ID's
+ * Return value: A GStrv list of transaction ID's, free with g_strfreev()
  **/
 gchar **
 pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -689,7 +689,7 @@ pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, G
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_strdupv (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /***************************************************************************************************/
@@ -1860,7 +1860,7 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	const gchar *tid;
+	gchar *tid;
 
 	/* get the result */
 	tid = pk_control_get_tid_finish (control, res, &error);
@@ -1871,6 +1871,7 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	}
 
 	egg_debug ("tid = %s", tid);
+	g_free (tid);
 	egg_test_loop_quit (test);
 }
 

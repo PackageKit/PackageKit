@@ -49,7 +49,7 @@ G_DEFINE_TYPE (PkTaskWrapper, pk_task_wrapper, PK_TYPE_TASK)
  * pk_task_wrapper_untrusted_question:
  **/
 static void
-dkp_task_wrapper_untrusted_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_wrapper_untrusted_question (PkTask *task, guint request, PkResults *results)
 {
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
@@ -66,7 +66,7 @@ dkp_task_wrapper_untrusted_question (PkTask *task, guint request, const PkResult
  * pk_task_wrapper_key_question:
  **/
 static void
-dkp_task_wrapper_key_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	GPtrArray *array;
@@ -100,7 +100,7 @@ dkp_task_wrapper_key_question (PkTask *task, guint request, const PkResults *res
  * pk_task_wrapper_eula_question:
  **/
 static void
-dkp_task_wrapper_eula_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	GPtrArray *array;
@@ -131,7 +131,7 @@ dkp_task_wrapper_eula_question (PkTask *task, guint request, const PkResults *re
  * pk_task_wrapper_media_change_question:
  **/
 static void
-dkp_task_wrapper_media_change_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	GPtrArray *array;
@@ -161,7 +161,7 @@ dkp_task_wrapper_media_change_question (PkTask *task, guint request, const PkRes
  * pk_task_wrapper_simulate_question:
  **/
 static void
-dkp_task_wrapper_simulate_question (PkTask *task, guint request, const PkResults *results)
+dkp_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	guint len;
@@ -268,7 +268,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 {
 	PkTaskWrapper *task = PK_TASK_WRAPPER (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;
@@ -279,7 +279,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	if (results == NULL) {
 		egg_test_failed (test, "failed to install: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -302,6 +302,9 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	g_ptr_array_unref (packages);
 
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 

@@ -193,7 +193,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 {
 	PkTaskClass *klass = PK_TASK_GET_CLASS (state->task);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
 
@@ -255,6 +255,8 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (sack != NULL)
 		g_object_unref (sack);
 	return;
@@ -307,7 +309,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 {
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -338,6 +340,8 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	/* now try the action again */
 	pk_task_do_async_action (state);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	return;
 }
 
@@ -392,7 +396,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 {
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -423,6 +427,8 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	/* now try the action again */
 	pk_task_do_async_action (state);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	return;
 }
 
@@ -572,7 +578,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	PkTask *task = PK_TASK (source_object);
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 	GError *error = NULL;
-	const PkResults *results;
+	PkResults *results;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -664,6 +670,8 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	/* we're done */
 	pk_task_generic_state_finish (state, error);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	return;
 }
 
@@ -940,7 +948,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
  *
  * Return value: %TRUE for success
  **/
-const PkResults *
+PkResults *
 pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
@@ -954,7 +962,7 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 	if (g_simple_async_result_propagate_error (simple, error))
 		return FALSE;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /**
@@ -1014,23 +1022,25 @@ pk_task_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTest *t
 {
 	PkTask *task = PK_TASK (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results;
 
 	/* get the results */
 	results = pk_task_generic_finish (task, res, &error);
 	if (results != NULL) {
 		egg_test_failed (test, "finish should fail!");
-		return;
+		goto out;
 	}
 
 	/* check error */
 	if (g_strcmp0 (error->message, "could not do untrusted question as no klass support") != 0) {
 		egg_test_failed (test, "wrong message: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
-
+out:
 	g_error_free (error);
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 

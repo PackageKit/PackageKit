@@ -744,7 +744,7 @@ pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gc
  * Return value: The #PkExitEnum or %PK_EXIT_ENUM_UNKNOWN for error or if it was not set
  **/
 PkExitEnum
-pk_results_get_exit_code (const PkResults *results)
+pk_results_get_exit_code (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_EXIT_ENUM_UNKNOWN);
 	return results->priv->exit_enum;
@@ -759,7 +759,7 @@ pk_results_get_exit_code (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDetails's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_package_array (const PkResults *results)
+pk_results_get_package_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->package_array);
@@ -774,7 +774,7 @@ pk_results_get_package_array (const PkResults *results)
  * Return value: A #PkPackageSack of data.
  **/
 PkPackageSack *
-pk_results_get_package_sack (const PkResults *results)
+pk_results_get_package_sack (PkResults *results)
 {
 	PkPackage *package;
 	PkPackageSack *sack;
@@ -822,7 +822,7 @@ pk_results_get_package_sack (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_details_array (const PkResults *results)
+pk_results_get_details_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->details_array);
@@ -837,7 +837,7 @@ pk_results_get_details_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemUpdateDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_update_detail_array (const PkResults *results)
+pk_results_get_update_detail_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->update_detail_array);
@@ -852,7 +852,7 @@ pk_results_get_update_detail_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemCategory's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_category_array (const PkResults *results)
+pk_results_get_category_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->category_array);
@@ -867,7 +867,7 @@ pk_results_get_category_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemDistroUpgrade's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_distro_upgrade_array (const PkResults *results)
+pk_results_get_distro_upgrade_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->distro_upgrade_array);
@@ -882,7 +882,7 @@ pk_results_get_distro_upgrade_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRequireRestart's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_require_restart_array (const PkResults *results)
+pk_results_get_require_restart_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->require_restart_array);
@@ -903,7 +903,7 @@ pk_results_get_require_restart_array (const PkResults *results)
  * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
  **/
 PkRestartEnum
-pk_results_get_require_restart_worst (const PkResults *results)
+pk_results_get_require_restart_worst (PkResults *results)
 {
 	GPtrArray *array;
 	PkRestartEnum worst = 0;
@@ -931,7 +931,7 @@ pk_results_get_require_restart_worst (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemTransaction's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_transaction_array (const PkResults *results)
+pk_results_get_transaction_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->transaction_array);
@@ -946,7 +946,7 @@ pk_results_get_transaction_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemFiles's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_files_array (const PkResults *results)
+pk_results_get_files_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->files_array);
@@ -961,7 +961,7 @@ pk_results_get_files_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoSignatureRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_signature_required_array (const PkResults *results)
+pk_results_get_repo_signature_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_signature_required_array);
@@ -976,7 +976,7 @@ pk_results_get_repo_signature_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemEulaRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_eula_required_array (const PkResults *results)
+pk_results_get_eula_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->eula_required_array);
@@ -991,7 +991,7 @@ pk_results_get_eula_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMediaChangeRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_media_change_required_array (const PkResults *results)
+pk_results_get_media_change_required_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->media_change_required_array);
@@ -1006,7 +1006,7 @@ pk_results_get_media_change_required_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemRepoDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_repo_detail_array (const PkResults *results)
+pk_results_get_repo_detail_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->repo_detail_array);
@@ -1021,7 +1021,7 @@ pk_results_get_repo_detail_array (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemErrorCode's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_error_code_array (const PkResults *results)
+pk_results_get_error_code_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->error_code_array);
@@ -1036,7 +1036,7 @@ pk_results_get_error_code_array (const PkResults *results)
  * Return value: A #PkResultItemErrorCode, or %NULL
  **/
 const PkResultItemErrorCode *
-pk_results_get_error_code (const PkResults *results)
+pk_results_get_error_code (PkResults *results)
 {
 	GPtrArray *array;
 
@@ -1057,7 +1057,7 @@ pk_results_get_error_code (const PkResults *results)
  * Return value: A #GPtrArray array of #PkResultItemMessage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
-pk_results_get_message_array (const PkResults *results)
+pk_results_get_message_array (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	return g_ptr_array_ref (results->priv->message_array);

@@ -64,19 +64,19 @@ struct _PkTaskClass
 	PkClientClass		parent_class;
 	void	 (*untrusted_question)			(PkTask			*task,
 							 guint			 request,
-							 const PkResults	*results);
+							 PkResults		*results);
 	void	 (*key_question)			(PkTask			*task,
 							 guint			 request,
-							 const PkResults	*results);
+							 PkResults		*results);
 	void	 (*eula_question)			(PkTask			*task,
 							 guint			 request,
-							 const PkResults	*results);
+							 PkResults		*results);
 	void	 (*media_change_question)		(PkTask			*task,
 							 guint			 request,
-							 const PkResults	*results);
+							 PkResults		*results);
 	void	 (*simulate_question)			(PkTask			*task,
 							 guint			 request,
-							 const PkResults	*results);
+							 PkResults		*results);
 	/* padding for future expansion */
 	void (*_pk_reserved1)	(void);
 	void (*_pk_reserved2)	(void);
@@ -90,7 +90,7 @@ GType		 pk_task_get_type			(void);
 PkTask		*pk_task_new				(void);
 void		 pk_task_test				(gpointer		 user_data);
 
-const PkResults	*pk_task_generic_finish			(PkTask			*task,
+PkResults	*pk_task_generic_finish			(PkTask			*task,
 							 GAsyncResult		*res,
 							 GError			**error);
 

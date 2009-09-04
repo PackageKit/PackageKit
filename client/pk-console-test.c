@@ -423,11 +423,13 @@ typedef struct {
 static void
 pk_console_sync_resolve_cb (PkClient *client, GAsyncResult *res, PkConsoleSyncHelper *helper)
 {
-	const PkResults *results;
+	PkResults *results;
 	/* get the result */
 	results = pk_client_generic_finish (client, res, helper->error);
-	if (results != NULL)
+	if (results != NULL) {
+		g_object_unref (results);
 		helper->results = g_object_ref (G_OBJECT (results));
+	}
 	g_main_loop_quit (helper->loop);
 }
 
@@ -606,7 +608,7 @@ static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	const PkResultItemErrorCode *error_item;
-	const PkResults *results;
+	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
 	PkExitEnum exit_enum;
@@ -711,6 +713,8 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	g_main_loop_quit (loop);
 }
 

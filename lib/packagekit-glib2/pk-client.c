@@ -1096,24 +1096,22 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	const gchar *tid = NULL;
 	const gchar *locale;
 
-	tid = pk_control_get_tid_finish (control, res, &error);
-	if (tid == NULL) {
+	state->tid = pk_control_get_tid_finish (control, res, &error);
+	if (state->tid == NULL) {
 		pk_client_state_finish (state, error);
 		g_error_free (error);
 		return;
 	}
 
-	egg_debug ("tid = %s", tid);
-	state->tid = g_strdup (tid);
+	egg_debug ("tid = %s", state->tid);
 
 	/* get a connection to the transaction interface */
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
-						  PK_DBUS_SERVICE, tid, PK_DBUS_INTERFACE_TRANSACTION);
+						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
 	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", tid);
+		egg_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
@@ -1141,9 +1139,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the #PkResults, or %NULL
+ * Return value: the #PkResults, or %NULL. Free with g_object_unref()
  **/
-const PkResults *
+PkResults *
 pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
@@ -1156,7 +1154,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 	if (g_simple_async_result_propagate_error (simple, error))
 		return NULL;
 
-	return g_simple_async_result_get_op_res_gpointer (simple);
+	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
 /**
@@ -3182,7 +3180,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
 	const PkResultItemPackage *item;
@@ -3193,7 +3191,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -3216,6 +3214,9 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	g_ptr_array_unref (packages);
 
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 
@@ -3224,7 +3225,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *details;
 	const PkResultItemDetails *item;
@@ -3235,7 +3236,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -3258,6 +3259,9 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	g_ptr_array_unref (details);
 
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 
@@ -3266,7 +3270,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	PkPackageSack *sack;
 	guint size;
@@ -3276,7 +3280,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -3295,6 +3299,9 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 	g_object_unref (sack);
 
 	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 
@@ -3303,7 +3310,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
-	const PkResults *results = NULL;
+	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	const PkResultItemErrorCode *error_item;
 
@@ -3312,7 +3319,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	if (results == NULL) {
 		egg_test_failed (test, "failed to resolve: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
 
 	exit_enum = pk_results_get_exit_code (results);
@@ -3325,7 +3332,9 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 		egg_test_failed (test, "failed to get error code: %i", error_item->code);
 	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
 		egg_test_failed (test, "failed to get error message: %s", error_item->details);
-
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	egg_test_loop_quit (test);
 }
 
