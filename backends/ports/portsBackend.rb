@@ -31,6 +31,16 @@ require 'ruby_packagekit/prints'
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
 
+# Returns a package id.
+def get_package_id(name, version, arch, data)
+    return [name, version, arch, data].join(';')
+end
+
+# Returns an array with the name, version, arch, data of a package id.
+def split_package_id(id)
+    return id.split(';', 4)
+end
+
 # maps Ports group to PackageKit group
 GROUPS = {
 "accessibility" => GROUP_ACCESSIBILITY,
@@ -144,7 +154,7 @@ def get_packages(filters)
             next
         end
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = port.comment
         if summary
@@ -189,7 +199,7 @@ def _resolve(filters, packages)
             next
         end
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = port.comment
         if summary
@@ -229,7 +239,7 @@ def search_group(filters, key)
             next
         end
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = port.comment
         if summary
@@ -252,7 +262,7 @@ def search_name(filters, key)
         pkg = PkgInfo.new(port.pkgname)
         installed = pkg.installed?
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = port.comment
         if summary
@@ -275,7 +285,7 @@ def search_details(filters, key)
         if port.comment and port.comment.match(key)
         installed = pkg.installed?
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = pkg.comment
         if summary
@@ -303,7 +313,7 @@ def search_file(filters, key)
         pkg = $pkgdb.pkg(pkgname)
         installed = true
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = pkg.comment
         if summary
@@ -323,7 +333,7 @@ def search_file(filters, key)
         next unless match
         installed = true
         data = installed ? "installed" : "ports"
-        package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+        package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
         status = installed ? INFO_INSTALLED : INFO_AVAILABLE
         summary = pkg.comment
         if summary
@@ -340,7 +350,7 @@ def get_depends(filters, package_ids, recursive)
     status(STATUS_INFO)
     filterlist = filters.split(';')
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
 
       pkgnames = $portsdb.glob(name)
       if pkgnames
@@ -367,7 +377,7 @@ end
 def get_details(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
 
       pkgnames = $portsdb.glob(name)
       if pkgnames
@@ -402,7 +412,7 @@ end
 def get_files(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
 
       pkgnames = $portsdb.glob(name)
       if pkgnames
@@ -424,7 +434,7 @@ end
 def get_requires(filters, package_ids, recursive)
     status(STATUS_INFO)
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
 
      pkgnames = $portsdb.glob(name)
       if pkgnames
@@ -533,7 +543,7 @@ def get_updates(filters)
             end
             if newpkg.version > pkg.version
               data = "ports"
-              package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+              package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
               status = INFO_NORMAL
               if File.exist?(PORTAUDIT)
                 system("PATH=/sbin:$PATH #{PORTAUDIT} -q '#{pkg.fullname}'") # /sbin/md5
@@ -554,7 +564,7 @@ end
 def get_update_detail(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
 
      pkgnames = $portsdb.glob(name)
       if pkgnames
@@ -569,9 +579,9 @@ def get_update_detail(package_ids)
         if oldpkg
           next if oldpkg.version != version
           data = 'ports'
-          package = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+          package = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
           data = oldpkg.installed? ? 'installed' : 'ports'
-          updates = sprintf "%s;%s;%s;%s", oldpkg.name, oldpkg.version, $pkg_arch, data
+          updates = get_package_id(oldpkg.name, oldpkg.version, $pkg_arch, data)
         else
           pkgnames = $portsdb.glob(name)
           pkgnames.each do |oldport|
@@ -579,7 +589,7 @@ def get_update_detail(package_ids)
             next if oldpkg.version != version
           end
           data = oldpkg.installed? ? 'installed' : 'ports'
-          obsoletes = sprintf "%s;%s;%s;%s", oldpkg.name, oldpkg.version, $pkg_arch, data
+          obsoletes = get_package_id(oldpkg.name, oldpkg.version, $pkg_arch, data)
         end
 
         state = UPDATE_STATE_STABLE
@@ -702,7 +712,7 @@ end
 def download_packages(directory, package_ids)
     pkgnames = []
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
       if not $portsdb.glob(name)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
         next
@@ -729,7 +739,7 @@ def download_packages(directory, package_ids)
                 pkg = PkgInfo.new(pkgname)
                 file_list = $1
                 data = pkg.installed? ? "installed" : "ports"
-                package_id = sprintf "%s;%s;%s;%s", pkg.name, pkg.version, $pkg_arch, data
+                package_id = get_package_id(pkg.name, pkg.version, $pkg_arch, data)
                 files(package_id, file_list)
                 pkgname = nil
             end
@@ -787,7 +797,7 @@ def install_packages(only_trusted, package_ids)
     end
     pkgnames = []
     package_ids.each do |package|
-        name, version, arch, data = package.split(';')
+        name, version, arch, data = split_package_id(package)
         if $portsdb.glob(name)
             pkgname = "#{name}-#{version}"
             pkg = PkgInfo.new(pkgname)
@@ -849,7 +859,7 @@ def remove_packages(allowdep, autoremove, package_ids)
     end
     pkgnames = []
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
       if not $portsdb.glob(name)
         error(ERROR_PACKAGE_NOT_FOUND, "Package #{name} was not found", exit=false)
         next
@@ -890,7 +900,7 @@ def remove_packages(allowdep, autoremove, package_ids)
         end
     end
     package_ids.each do |package|
-      name, version, arch, data = package.split(';')
+      name, version, arch, data = split_package_id(package)
       pkgname = "#{name}-#{version}"
       _resolve(FILTER_NOT_INSTALLED, pkgname)
     end
