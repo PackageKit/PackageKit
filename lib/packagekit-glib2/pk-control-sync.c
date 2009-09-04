@@ -106,6 +106,7 @@ typedef struct {
 	GError		**error;
 	GMainLoop	*loop;
 	gboolean	 ret;
+	guint		 seconds;
 } PkControlSyncHelper;
 
 /**
@@ -155,6 +156,54 @@ pk_control_sync_get_properties (PkControlSync *control, GError **error)
 	g_free (sync);
 
 	return ret;
+}
+
+/**
+ * pk_control_sync_time_since_action_cb:
+ **/
+static void
+pk_control_sync_time_since_action_cb (PkControlSync *control, GAsyncResult *res, PkControlSyncHelper *sync)
+{
+	/* get the result */
+	sync->seconds = pk_control_get_time_since_action_finish (PK_CONTROL(control), res, sync->error);
+	g_main_loop_quit (sync->loop);
+}
+
+/**
+ * pk_control_sync_get_time_since_action:
+ * @control: a valid #PkControlSync instance
+ * @error: A #GError or %NULL
+ *
+ * We may want to know how long it has been since we refreshed the cache or
+ * retrieved the update list.
+ *
+ * Return value: The number of seconds, or 0 for error
+ **/
+guint
+pk_control_sync_get_time_since_action (PkControlSync *control, PkRoleEnum role, GError **error)
+{
+	guint seconds;
+	PkControlSyncHelper *sync;
+
+	g_return_val_if_fail (PK_IS_CONTROL_SYNC (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	sync = g_new0 (PkControlSyncHelper, 1);
+	sync->loop = g_main_loop_new (NULL, FALSE);
+	sync->error = error;
+
+	/* run async method */
+	pk_control_get_time_since_action_async (PK_CONTROL(control), role, NULL, (GAsyncReadyCallback) pk_control_sync_time_since_action_cb, sync);
+	g_main_loop_run (sync->loop);
+
+	seconds = sync->seconds;
+
+	/* free temp object */
+	g_main_loop_unref (sync->loop);
+	g_free (sync);
+
+	return seconds;
 }
 
 /**

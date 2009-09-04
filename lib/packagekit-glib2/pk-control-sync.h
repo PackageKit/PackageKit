@@ -66,6 +66,9 @@ GType		 pk_control_sync_get_type		(void);
 PkControlSync	*pk_control_sync_new			(void);
 void		 pk_control_sync_test			(gpointer		 user_data);
 
+guint		 pk_control_sync_get_time_since_action	(PkControlSync		*control,
+							 PkRoleEnum		 role,
+							 GError			**error);
 gchar		*pk_control_sync_get_daemon_state	(PkControlSync		*control,
 							 GError			**error);
 gboolean	 pk_control_sync_get_properties		(PkControlSync		*control,

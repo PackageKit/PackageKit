@@ -428,12 +428,6 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	if (state->sack != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -446,6 +440,8 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
 	g_slice_free (PkPackageSackState, state);
 }

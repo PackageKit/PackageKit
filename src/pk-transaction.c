@@ -1332,6 +1332,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* we are no longer waiting, we are setting up */
 	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
+	pk_backend_set_percentage (priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* set all possible arguments for backend */
 	store = pk_backend_get_store (priv->backend);
@@ -1866,6 +1867,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* emit status for GUIs */
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
+	pk_transaction_progress_changed_emit (transaction, PK_BACKEND_PERCENTAGE_INVALID, PK_BACKEND_PERCENTAGE_INVALID, 0, 0);
 
 	/* check subject */
 	transaction->priv->waiting_for_auth = TRUE;
@@ -4102,6 +4104,8 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	egg_debug ("SetLocale method called: %s", code);
+
 	/* check if the sender is the same */
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
@@ -4767,7 +4771,7 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	 */
 	spec = g_param_spec_uint ("percentage",
 				  "Percentage", "Percentage transaction complete",
-				  0, 101, 0,
+				  0, PK_BACKEND_PERCENTAGE_INVALID, 0,
 				  G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, spec);
 
@@ -4776,7 +4780,7 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	 */
 	spec = g_param_spec_uint ("subpercentage",
 				  "Sub-percentage", "Percentage sub-transaction complete",
-				  0, 101, 0,
+				  0, PK_BACKEND_PERCENTAGE_INVALID, 0,
 				  G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_SUBPERCENTAGE, spec);
 

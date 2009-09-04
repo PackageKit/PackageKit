@@ -114,12 +114,6 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	if (state->task != NULL)
 		g_object_remove_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
-	/* cancel */
-	if (state->cancellable != NULL) {
-		g_cancellable_cancel (state->cancellable);
-		g_object_unref (state->cancellable);
-	}
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref ((GObject*) state->results), g_object_unref);
@@ -136,6 +130,8 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_ptr_array_remove (state->task->priv->array, state);
 
 	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
 	if (state->results != NULL)
 		g_object_unref (state->results);
 	g_strfreev (state->package_ids);

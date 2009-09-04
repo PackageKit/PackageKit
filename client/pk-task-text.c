@@ -57,6 +57,9 @@ dkp_task_text_untrusted_question (PkTask *task, guint request, const PkResults *
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
 
+	/* clear new line */
+	g_print ("\n");
+
 	/* ask the user */
 	ret = pk_console_get_prompt (_("Do you want to allow installing of unsigned software?"), FALSE);
 	if (ret) {
@@ -82,6 +85,9 @@ dkp_task_text_key_question (PkTask *task, guint request, const PkResults *result
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
+
+	/* clear new line */
+	g_print ("\n");
 
 	/* get data */
 	array = pk_results_get_repo_signature_required_array (results);
@@ -131,6 +137,9 @@ dkp_task_text_eula_question (PkTask *task, guint request, const PkResults *resul
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
 
+	/* clear new line */
+	g_print ("\n");
+
 	/* get data */
 	array = pk_results_get_eula_required_array (results);
 	for (i=0; i<array->len; i++) {
@@ -174,6 +183,9 @@ dkp_task_text_media_change_question (PkTask *task, guint request, const PkResult
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
+
+	/* clear new line */
+	g_print ("\n");
 
 	/* get data */
 	array = pk_results_get_media_change_required_array (results);
@@ -253,6 +265,9 @@ dkp_task_text_simulate_question (PkTask *task, guint request, const PkResults *r
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
+
+	/* clear new line */
+	g_print ("\n");
 
 	/* get data */
 	sack = pk_results_get_package_sack (results);
