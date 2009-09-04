@@ -652,9 +652,6 @@ PORTUPGRADE="#{PREFIX}/sbin/portupgrade"
 # use a non-interactive (default) dialog program
 DIALOG="#{PROGRAM_DIR}/helpers/default-dialog"
 
-USE_PKG = true # use packages
-BIN_PKG = true # build packages
-
 # Here are the extra subphases used, when:
 # ---> Using the port instead of a package
 
@@ -669,6 +666,12 @@ BIN_PKG = true # build packages
 # ===> Installing for #{pkgname}
 # ===> Building package for #{pkgname}
 # ===> Cleaning for #{pkgname}
+
+# use packages
+USE_PKG = true
+
+# build packages
+BIN_PKG = true
 
 def update_system(only_trusted)
     if only_trusted
