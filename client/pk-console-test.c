@@ -1486,7 +1486,7 @@ main (int argc, char *argv[])
 		pk_client_get_repo_list_async (PK_CLIENT(task), filters, NULL,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
-#if 0
+
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
 		guint time_ms;
@@ -1503,15 +1503,16 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
-		if (!ret) {
+		time_ms = pk_control_sync_get_time_since_action (control, role, &error);
+		if (time_ms == 0) {
 			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
-			error = g_error_new (1, 0, "%s", _("Failed to get the time since this action was last completed"));
+			error = g_error_new (1, 0, "%s: %s", _("Failed to get the time since this action was last completed"), error->message);
 			retval = EXIT_FAILURE;
 			goto out;
 		}
 		g_print ("time since %s is %is\n", value, time_ms);
-
+		nowait = TRUE;
+#if 0
 	} else if (strcmp (mode, "get-depends") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
