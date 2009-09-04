@@ -1179,6 +1179,7 @@ out:
 int
 main (int argc, char *argv[])
 {
+	gboolean ret;
 	GError *error = NULL;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
@@ -1190,7 +1191,7 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-//	PkBitfield groups;
+	PkBitfield groups;
 	gchar *text;
 //	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
@@ -1230,11 +1231,17 @@ main (int argc, char *argv[])
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_sync_new ();
-	roles = pk_control_sync_get_roles (control, &error);
-	if (roles == 0) {
+	ret = pk_control_sync_get_properties (control, &error);
+	if (!ret) {
 		g_print ("Failed to startup: %s\n", error->message);
 		goto out_last;
 	}
+
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
+
 	summary = pk_console_get_summary ();
 	progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (progressbar, 25);
@@ -1589,21 +1596,27 @@ main (int argc, char *argv[])
 		g_print ("%s\n", text);
 		g_free (text);
 		nowait = TRUE;
-#if 0
+
 	} else if (strcmp (mode, "get-filters") == 0) {
-		filters = pk_control_get_filters (control, NULL);
+		g_object_get (control,
+			      "filters", &filters,
+			      NULL);
 		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
+		nowait = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
-		groups = pk_control_get_groups (control, NULL);
+		g_object_get (control,
+			      "groups", &groups,
+			      NULL);
 		text = pk_group_bitfield_to_text (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-#endif
+		nowait = TRUE;
+
 	} else if (strcmp (mode, "get-transactions") == 0) {
 		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, NULL,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,

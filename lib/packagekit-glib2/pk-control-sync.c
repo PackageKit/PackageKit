@@ -69,46 +69,6 @@ pk_control_sync_fixup_dbus_error (GError *error)
 }
 
 /**
- * pk_control_sync_get_roles:
- * @control_sync: a valid #PkControlSync instance
- * @error: A #GError or %NULL
- *
- * Gets the roles the daemon supports.
- * Warning: this function is synchronous, and may block. Do not use it in GUI
- * applications.
- *
- * Return value: an enumerated list of the actions the backend supports, or 0 for error
- **/
-PkBitfield
-pk_control_sync_get_roles (PkControlSync *control, GError **error)
-{
-	gboolean ret;
-	gchar *roles;
-	PkBitfield roles_enum = 0;
-
-	g_return_val_if_fail (PK_IS_CONTROL_SYNC (control), PK_GROUP_ENUM_UNKNOWN);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* not GetRoles, get over it */
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetActions", error,
-				 G_TYPE_INVALID,
-				 G_TYPE_STRING, &roles,
-				 G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		if (error != NULL)
-			pk_control_sync_fixup_dbus_error (*error);
-		goto out;
-	}
-
-	/* convert to enumerated types */
-	roles_enum = pk_role_bitfield_from_text (roles);
-	g_free (roles);
-out:
-	return roles_enum;
-}
-
-/**
  * pk_control_sync_get_daemon_state:
  * @control_sync: a valid #PkControlSync instance
  * @error: a %GError to put the error code and message in, or %NULL
@@ -141,52 +101,59 @@ out:
 	return state;
 }
 
+/* tiny helper to help us do the async operation */
+typedef struct {
+	GError		**error;
+	GMainLoop	*loop;
+	gboolean	 ret;
+} PkControlSyncHelper;
+
 /**
- * pk_control_sync_get_backend_detail:
- * @control_sync: a valid #PkControlSync instance
- * @name: the name of the backend
- * @author: the author of the backend
- * @error: a %GError to put the error code and message in, or %NULL
+ * pk_control_sync_properties_cb:
+ **/
+static void
+pk_control_sync_properties_cb (PkControlSync *control, GAsyncResult *res, PkControlSyncHelper *sync)
+{
+	/* get the result */
+	sync->ret = pk_control_get_properties_finish (PK_CONTROL(control), res, sync->error);
+	g_main_loop_quit (sync->loop);
+}
+
+/**
+ * pk_control_sync_get_properties:
+ * @control: a valid #PkControlSync instance
+ * @error: A #GError or %NULL
  *
- * The backend detail is useful for the pk-backend-status program, or for
- * automatic bugreports.
+ * Gets the properties the daemon supports.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
  *
- * Return value: %TRUE if the daemon serviced the request
+ * Return value: %TRUE if the properties were set correctly
  **/
 gboolean
-pk_control_sync_get_backend_detail (PkControlSync *control, gchar **name, gchar **author, GError **error)
+pk_control_sync_get_properties (PkControlSync *control, GError **error)
 {
 	gboolean ret;
-	gchar *tname;
-	gchar *tauthor;
+	PkControlSyncHelper *sync;
 
 	g_return_val_if_fail (PK_IS_CONTROL_SYNC (control), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* call D-Bus sync */
-	ret = dbus_g_proxy_call (control->priv->proxy, "GetBackendDetail", error,
-				 G_TYPE_INVALID,
-				 G_TYPE_STRING, &tname,
-				 G_TYPE_STRING, &tauthor,
-				 G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		if (error != NULL)
-			pk_control_sync_fixup_dbus_error (*error);
-		goto out;
-	}
+	/* create temp object */
+	sync = g_new0 (PkControlSyncHelper, 1);
+	sync->loop = g_main_loop_new (NULL, FALSE);
+	sync->error = error;
 
-	/* copy needed bits */
-	if (name != NULL)
-		*name = tname;
-	else
-		g_free (tname);
-	/* copy needed bits */
-	if (author != NULL)
-		*author = tauthor;
-	else
-		g_free (tauthor);
-out:
+	/* run async method */
+	pk_control_get_properties_async (PK_CONTROL(control), NULL, (GAsyncReadyCallback) pk_control_sync_properties_cb, sync);
+	g_main_loop_run (sync->loop);
+
+	ret = sync->ret;
+
+	/* free temp object */
+	g_main_loop_unref (sync->loop);
+	g_free (sync);
+
 	return ret;
 }
 
@@ -271,8 +238,9 @@ pk_control_sync_test (gpointer user_data)
 	EggTest *test = (EggTest *) user_data;
 	PkControlSync *control;
 	GError *error = NULL;
-	PkBitfield bitfield;
+	gboolean ret;
 	gchar *text;
+	PkBitfield roles;
 
 	if (!egg_test_start (test, "PkControlSync"))
 		return;
@@ -283,11 +251,18 @@ pk_control_sync_test (gpointer user_data)
 	egg_test_assert (test, control != NULL);
 
 	/************************************************************/
-	egg_test_title (test, "get roles sync");
-	bitfield = pk_control_sync_get_roles (control, &error);
-	if (bitfield == 0)
-		egg_test_failed (test, "no data: %s", error->message);
-	text = pk_role_bitfield_to_text (bitfield);
+	egg_test_title (test, "get properties sync");
+	ret = pk_control_sync_get_properties (control, &error);
+	if (!ret)
+		egg_test_failed (test, "failed to get properties: %s", error->message);
+
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
+
+	/* check data */
+	text = pk_role_bitfield_to_text (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
@@ -296,7 +271,7 @@ pk_control_sync_test (gpointer user_data)
 			     "simulate-remove-packages;simulate-update-packages") != 0) {
 		egg_test_failed (test, "data incorrect: %s", text);
 	}
-	egg_test_success (test, "got roles");
+	egg_test_success (test, "got correct roles");
 	g_free (text);
 
 	g_object_unref (control);
