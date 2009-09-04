@@ -37,7 +37,6 @@
 
 #include <config.h>
 
-#include <locale.h>
 #include <errno.h>
 #include <stdio.h>
 
@@ -150,24 +149,19 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield filters;
+	PkPackageId *pi;
 	bool recursive;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	recursive = pk_backend_get_bool (backend, "recursive");
 	_cancel = false;
-	pk_backend_set_allow_cancel (backend, true);
-	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend);
-		return false;
-	}
 
+	pk_backend_set_allow_cancel (backend, true);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -207,10 +201,6 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 
 		pk_package_id_free (pi);
 	}
-
-	sort(output.begin(), output.end(), compare());
-	output.erase(unique(output.begin(), output.end(), result_equality()),
-		    output.end());
 
 	// It's faster to emmit the packages here than in the matching part
 	m_apt->emit_packages(output, filters);
@@ -259,7 +249,7 @@ backend_get_files_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -322,7 +312,7 @@ backend_get_details_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -393,7 +383,7 @@ backend_update_system_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -450,7 +440,7 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -613,19 +603,8 @@ backend_get_updates_thread (PkBackend *backend)
 				}
 			}
 
-			sort(output.begin(), output.end(), compare());
-			output.erase(unique(output.begin(), output.end(), result_equality()),
-				    output.end());
-
 			// It's faster to emmit the packages here than in the matching part
-			for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = output.begin();
-			    it != output.end(); ++it)
-			{
-				if (_cancel) {
-					break;
-				}
-				m_apt->emit_package(it->first, it->second, filters, state);
-			}
+			m_apt->emit_packages(output, filters, state);
 		}
 	}
 
@@ -660,7 +639,7 @@ backend_download_packages_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -766,7 +745,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 	// we re-read it here since it might have changed
 	apt_source_list->ReadMainList();
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -840,7 +819,7 @@ backend_resolve_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -861,6 +840,13 @@ backend_resolve_thread (PkBackend *backend)
 
 		pkgCache::VerIterator ver;
 		ver = m_apt->find_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end() == false)
+		{
+			m_apt->emit_package(pkg, ver, filters);
+		}
+
+		ver = m_apt->find_candidate_ver(pkg);
 		// check to see if the provided package isn't virtual too
 		if (ver.end() == false)
 		{
@@ -899,7 +885,7 @@ backend_search_file_thread (PkBackend *backend)
 	// as we can only search for installed files lets avoid the opposite
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-		if (m_apt->init(pk_backend_get_locale (backend))) {
+		if (m_apt->init()) {
 			egg_debug ("Failed to create apt cache");
 			delete m_apt;
 			pk_backend_finished (backend);
@@ -961,7 +947,7 @@ backend_search_group_thread (PkBackend *backend)
 	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -993,8 +979,6 @@ backend_search_group_thread (PkBackend *backend)
 			}
 		}
 	}
-
-	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages here rather than in the matching part
 	m_apt->emit_packages(output, filters);
@@ -1038,7 +1022,7 @@ backend_search_package_thread (PkBackend *backend)
 	}
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_matcher;
 		delete m_apt;
@@ -1152,10 +1136,6 @@ backend_search_package_thread (PkBackend *backend)
 		}
 	}
 
-	sort(output.begin(), output.end(), compare());
-	output.erase(unique(output.begin(), output.end(), result_equality()),
-		    output.end());
-
 	// It's faster to emmit the packages here than in the matching part
 	m_apt->emit_packages(output, filters);
 
@@ -1177,7 +1157,6 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 	pk_backend_thread_create(backend, backend_search_package_thread);
 }
 
-
 /**
  * backend_search_details:
  */
@@ -1186,6 +1165,122 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 {
 	pk_backend_set_bool(backend, "search_details", true);
 	pk_backend_thread_create(backend, backend_search_package_thread);
+}
+
+static gboolean
+backend_manage_packages_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	PkPackageId *pi;
+	bool simulate;
+	bool remove;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	simulate = pk_backend_get_bool (backend, "simulate");
+	remove = pk_backend_get_bool (backend, "remove");
+
+	_cancel = false;
+	pk_backend_set_allow_cancel (backend, true);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
+	if (m_apt->init()) {
+		egg_debug ("Failed to create apt cache");
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > pkgs;
+	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+		if (_cancel) {
+			break;
+		}
+
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			delete m_apt;
+			pk_backend_finished (backend);
+			return false;
+		}
+
+		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
+		// Ignore packages that could not be found or that exist only due to dependencies.
+		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		{
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+			pk_package_id_free (pi);
+			delete m_apt;
+			pk_backend_finished (backend);
+			return false;
+		}
+
+		pkgCache::VerIterator ver;
+		ver = m_apt->find_ver(pkg);
+		// check to see if the provided package isn't virtual too
+		if (ver.end() == false)
+		{
+			pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		}
+	}
+
+	if (!m_apt->prepare_transaction(pkgs, simulate, remove)) {
+		// Print transaction errors
+		cout << "prepare_transaction failed" << endl;
+		delete m_apt;
+		pk_backend_finished (backend);
+		return false;
+	}
+
+	delete m_apt;
+	pk_backend_finished (backend);
+	return true;
+}
+
+
+/**
+ * backend_install_update_packages:
+ */
+static void
+backend_install_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	pk_backend_set_bool(backend, "simulate", false);
+	pk_backend_set_bool(backend, "remove", false);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_simulate_install_update_packages:
+ */
+static void
+backend_simulate_install_update_packages (PkBackend *backend, gchar **packages)
+{
+	pk_backend_set_bool(backend, "simulate", true);
+	pk_backend_set_bool(backend, "remove", false);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_remove_packages:
+ */
+static void
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	pk_backend_set_bool(backend, "simulate", false);
+	pk_backend_set_bool(backend, "remove", true);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
+}
+
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **packages)
+{
+	pk_backend_set_bool(backend, "simulate", true);
+	pk_backend_set_bool(backend, "remove", true);
+	pk_backend_thread_create (backend, backend_manage_packages_thread);
 }
 
 static gboolean
@@ -1325,7 +1420,7 @@ backend_get_packages_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
-	if (m_apt->init(pk_backend_get_locale (backend))) {
+	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -1350,8 +1445,6 @@ backend_get_packages_thread (PkBackend *backend)
 			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 		}
 	}
-
-	sort(output.begin(), output.end(), compare());
 
 	// It's faster to emmit the packages rather here than in the matching part
 	m_apt->emit_packages(output, filters);
@@ -1392,10 +1485,10 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	NULL,						/* install_files */
-	NULL,						/* install_packages */
+	backend_install_update_packages,		/* install_packages */
 	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
-	NULL,						/* remove_packages */
+	backend_remove_packages,			/* remove_packages */
 	backend_repo_enable,				/* repo_enable */
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
@@ -1404,11 +1497,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
-	NULL,						/* update_packages */
+	backend_install_update_packages,		/* update_packages */
 	backend_update_system,				/* update_system */
 	NULL,						/* what_provides */
 	NULL,						/* simulate_install_files */
-	NULL,						/* simulate_install_packages */
-	NULL,						/* simulate_remove_packages */
-	NULL						/* simulate_update_packages */
+	backend_simulate_install_update_packages,	/* simulate_install_packages */
+	backend_simulate_remove_packages,		/* simulate_remove_packages */
+	backend_simulate_install_update_packages	/* simulate_update_packages */
 );
