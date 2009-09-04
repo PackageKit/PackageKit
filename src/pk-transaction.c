@@ -4104,6 +4104,8 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	egg_debug ("SetLocale method called: %s", code);
+
 	/* check if the sender is the same */
 	ret = pk_transaction_verify_sender (transaction, context, &error);
 	if (!ret) {
