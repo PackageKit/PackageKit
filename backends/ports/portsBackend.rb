@@ -275,21 +275,21 @@ GROUPS = {
        STDERR.puts e.message
        exit 1
     end
-rescue PortsDB::IndexFileError
-  error(ERROR_INTERNAL_ERROR, "Error reading the ports INDEX.", false)
-rescue PortsDB::DBError
-  error(ERROR_INTERNAL_ERROR, "Error reading the ports database.", false)
-end
+  rescue PortsDB::IndexFileError
+    error(ERROR_INTERNAL_ERROR, "Error reading the ports INDEX.", false)
+  rescue PortsDB::DBError
+    error(ERROR_INTERNAL_ERROR, "Error reading the ports database.", false)
+  end
 
-def get_repo_list(filters)
+  def get_repo_list(filters)
     status(STATUS_INFO)
     repo_detail("ports", "FreeBSD Ports", enabled=true)
-end
+  end
 
-def resolve(filters, packages)
+  def resolve(filters, packages)
     status(STATUS_QUERY)
     _resolve(filters, packages)
-end
+  end
 
   def _resolve(filters, packages)
     filterlist = filters.split(';')
@@ -584,13 +584,13 @@ VXQUERY = "#{PREFIX}/bin/vxquery"
 VULN_XML = 'vuln.xml'
 
   def _match_range(range, version)
-   cmp = PkgVersion.new(version.to_s) <=> PkgVersion.new(range.text)
-   return true if range.name == 'lt' && cmp <  0
-   return true if range.name == 'le' && cmp <= 0
-   return true if range.name == 'eq' && cmp == 0
-   return true if range.name == 'ge' && cmp >= 0
-   return true if range.name == 'gt' && cmp >  0
-   return false
+    cmp = PkgVersion.new(version.to_s) <=> PkgVersion.new(range.text)
+    return true if range.name == 'lt' && cmp <  0
+    return true if range.name == 'le' && cmp <= 0
+    return true if range.name == 'eq' && cmp == 0
+    return true if range.name == 'ge' && cmp >= 0
+    return true if range.name == 'gt' && cmp >  0
+    return false
   end
 
   def _vuxml(name, oldversion=nil, newversion=nil)
@@ -1021,31 +1021,31 @@ end
 #######################################################################
 
 def to_b(string)
-    return true if string == true || string =~ /^true$/i
-    return false if string == false || string.nil? || string =~ /^false$/i
-    return true if string == "yes"
-    return false if string == "no"
-    raise ArgumentError.new("invalid value for bool: \"#{string}\"")
+  return true if string == true || string =~ /^true$/i
+  return false if string == false || string.nil? || string =~ /^false$/i
+  return true if string == "yes"
+  return false if string == "no"
+  raise ArgumentError.new("invalid value for bool: \"#{string}\"")
 end
 
 # Returns a package id.
 def get_package_id(name, version, arch, data)
-    return [name, version, arch, data].join(';')
+  return [name, version, arch, data].join(';')
 end
 
 # Returns an array with the name, version, arch, data of a package id.
 def split_package_id(id)
-    return id.split(';', 4)
+  return id.split(';', 4)
 end
 
 #######################################################################
 
 def main(argv)
-    init_global
-    init_pkgtools_global
-    backend = PackageKitPortsBackend.new
-    backend.dispatcher(argv)
-    0
+  init_global
+  init_pkgtools_global
+  backend = PackageKitPortsBackend.new
+  backend.dispatcher(argv)
+  0
 end
 
 if $0 == __FILE__
