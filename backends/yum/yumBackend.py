@@ -1058,6 +1058,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if len(self.yumbase.tsInfo) > 0  and recursive:
             try:
                 rc, msgs =  self.yumbase.buildTransaction()
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
@@ -1302,6 +1304,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if len(self.yumbase.tsInfo) > 0 and recursive:
             try:
                 rc, msgs =  self.yumbase.buildTransaction()
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
@@ -2558,6 +2562,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # do the depsolve to pull in deps
         try:
             rc, msgs =  self.yumbase.buildTransaction()
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if rc != 2:
