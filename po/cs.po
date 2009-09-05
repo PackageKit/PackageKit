@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master.cs\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-04 08:25+0000\n"
-"PO-Revision-Date: 2009-09-04 15:04+0100\n"
+"PO-Revision-Date: 2009-09-04 15:38+0100\n"
 "Last-Translator: Dušan Hokův <dusan@mirc.cz>\n"
 "Language-Team: Czech <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -93,9 +93,8 @@ msgstr "Skutečné jméno"
 
 #: ../client/pk-console.c:274
 #: ../client/pk-console-test.c:182
-#, fuzzy
 msgid "Affected packages:"
-msgstr "Aktualizovat balík"
+msgstr "Ovlivněné balíky:"
 
 #: ../client/pk-console.c:276
 #: ../client/pk-console-test.c:184
@@ -111,30 +110,26 @@ msgstr "Následující balíky musí být odstraněny:"
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: ../client/pk-console.c:340
 #: ../client/pk-task-text.c:213
-#, fuzzy
 msgid "The following packages have to be installed:"
-msgstr "Následující balíky musí být odstraněny:"
+msgstr "Následující balíky musí být instalovány:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: ../client/pk-console.c:343
 #: ../client/pk-task-text.c:218
-#, fuzzy
 msgid "The following packages have to be updated:"
-msgstr "Následující balíky musí být odstraněny:"
+msgstr "Následující balíky musí být aktualizovány:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: ../client/pk-console.c:346
 #: ../client/pk-task-text.c:223
-#, fuzzy
 msgid "The following packages have to be reinstalled:"
-msgstr "Následující balíky musí být odstraněny:"
+msgstr "Následující balíky musí být reinstalovány:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../client/pk-console.c:349
 #: ../client/pk-task-text.c:228
-#, fuzzy
 msgid "The following packages have to be downgraded:"
-msgstr "Následující balíky musí být odstraněny:"
+msgstr "Následující balíky musí být vráceny na předchozí verzi:"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:363
@@ -210,9 +205,8 @@ msgstr[1] "Balíky"
 #. TRANSLATORS: details about the update, any packages that this update updates
 #: ../client/pk-console.c:413
 #: ../client/pk-console-test.c:255
-#, fuzzy
 msgid "Updates"
-msgstr "Aktualizovat balík"
+msgstr "Aktualizace"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:417
@@ -248,9 +242,8 @@ msgstr "Restart"
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:437
 #: ../client/pk-console-test.c:279
-#, fuzzy
 msgid "Update text"
-msgstr "Aktualizovat podrobnosti"
+msgstr "Text aktualizace"
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:441
@@ -273,9 +266,8 @@ msgstr ""
 #. TRANSLATORS: details about the update, date the update was updated
 #: ../client/pk-console.c:455
 #: ../client/pk-console-test.c:297
-#, fuzzy
 msgid "Updated"
-msgstr "Aktualizovat podrobnosti"
+msgstr "Aktualizován"
 
 #. TRANSLATORS: if the repo is enabled
 #: ../client/pk-console.c:475
@@ -301,9 +293,8 @@ msgstr "Neznámý"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:599
 #: ../client/pk-console-test.c:340
-#, fuzzy
 msgid "System restart required by:"
-msgstr "Je požadován restart systému"
+msgstr "Restart systému požaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:602
@@ -329,9 +320,8 @@ msgstr "Je požadován restart systému"
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:611
 #: ../client/pk-console-test.c:352
-#, fuzzy
 msgid "Application restart required by:"
-msgstr "Je vyžadován restart aplikace"
+msgstr "Restart aplikace vyžaduje:"
 
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:666
@@ -354,30 +344,28 @@ msgstr "Prosím restartujte aplikaci, protože je právě používána."
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:675
 #: ../client/pk-console-test.c:443
-#, fuzzy
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Prosím restartujte počítač pro dokončení aktualizace."
+msgstr "Prosím restartujte počítač pro dokončení aktualizace kvůli nainstalovaným důležitým bezpečnostním aktualizacím ."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:678
 #: ../client/pk-console-test.c:446
-#, fuzzy
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Prosím odhlaste se a znovu se přihlašte pro dokončení aktualizace."
+msgstr "Prosím odhlaste se a znovu se přihlašte pro dokončení aktualizace kvůli nainstalovaným důležitým bezpečnostním aktualizacím."
 
 #. TRANSLATORS: The package is already installed on the system
 #: ../client/pk-console.c:810
 #: ../client/pk-console-test.c:541
-#, fuzzy, c-format
+#, c-format
 msgid "The package %s is already installed"
-msgstr "Balík '%s' je již nainstalován"
+msgstr "Balík %s je již nainstalován"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:818
 #: ../client/pk-console-test.c:549
-#, fuzzy, c-format
+#, c-format
 msgid "The package %s could not be installed: %s"
-msgstr "Balík '%s' nemůže být nainstalován: %s"
+msgstr "Balík %s nemůže být nainstalován: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
 #: ../client/pk-console.c:844
@@ -406,9 +394,8 @@ msgstr ""
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:881
 #: ../client/pk-console.c:953
-#, fuzzy
 msgid "The package install was canceled!"
-msgstr "Odstranění baličku bylo zrušeno!"
+msgstr "Instalace baličku byla zrušena!"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
 #: ../client/pk-console.c:900
@@ -428,9 +415,9 @@ msgstr "Tento nástroj není schopen nainstalovat soubory: %s"
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
 #: ../client/pk-console.c:1028
 #: ../client/pk-console-test.c:636
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not remove %s: %s"
-msgstr "Tento nástroj nemůže odstranit '%s': %s"
+msgstr "Tento nástroj nemůže odstranit %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:1051
@@ -443,9 +430,8 @@ msgstr "Tento nástroj nemůže odstranit balíky: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
 #: ../client/pk-console.c:1104
-#, fuzzy
 msgid "Proceed with additional packages?"
-msgstr "Souhlasíte s odstraněním doplňkových balíků? "
+msgstr "Pokračovat s doplňkovými balíky? "
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:1109
@@ -455,9 +441,9 @@ msgstr "Odstranění baličku bylo zrušeno!"
 #. TRANSLATORS: The package name was not found in any software sources
 #: ../client/pk-console.c:1150
 #: ../client/pk-console-test.c:689
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Tento nástroj nemůže stáhnout balík '%s', protože nemůže být nalezen"
+msgstr "Tento nástroj nemůže stáhnout balík %s, protože nemůže být nalezen"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
 #: ../client/pk-console.c:1181
@@ -472,15 +458,14 @@ msgstr "Tento nástroj nemůže stáhnout balíky: %s"
 #: ../client/pk-console.c:1280
 #: ../client/pk-console-test.c:743
 #: ../client/pk-console-test.c:753
-#, fuzzy, c-format
+#, c-format
 msgid "This tool could not update %s: %s"
-msgstr "Tento nástroj nemůže aktualizovat '%s': %s"
+msgstr "Tento nástroj nemůže aktualizovat %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:1271
-#, fuzzy
 msgid "The package update was canceled!"
-msgstr "Odstranění baličku bylo zrušeno!"
+msgstr "Aktualizace balíčku byla zrušena!"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #: ../client/pk-console.c:1304
@@ -559,15 +544,13 @@ msgstr "Soubor neexistuje: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
 #: ../client/pk-console.c:1512
-#, fuzzy
 msgid "Packages to add"
-msgstr "PackageKit Monitor"
+msgstr "Balíčky k přidání"
 
 #. TRANSLATORS: header to a list of packages removed
 #: ../client/pk-console.c:1520
-#, fuzzy
 msgid "Packages to remove"
-msgstr "Služba PackageKit"
+msgstr "Balíčky k odebrání"
 
 #. TRANSLATORS: We didn't find any differences
 #: ../client/pk-console.c:1588
@@ -587,9 +570,8 @@ msgstr ""
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1610
-#, fuzzy
 msgid "not found."
-msgstr "Adresář nenalezen"
+msgstr "nenalezen."
 
 #. TRANSLATORS: We didn't find any packages to install
 #: ../client/pk-console.c:1621
@@ -601,9 +583,9 @@ msgstr "Pro váš systém nebyly nalezeny žádné balíky"
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #: ../client/pk-console.c:1627
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
-#, fuzzy, c-format
+#, c-format
 msgid "Installing packages"
-msgstr "Nainstalovat balík"
+msgstr "Instalace balíků"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
 #: ../client/pk-console.c:1663
@@ -1088,11 +1070,11 @@ msgstr "Vyžaduje souhlas s licencí koncového uživatele"
 
 #: ../client/pk-task-text.c:143
 msgid "EULA ID"
-msgstr ""
+msgstr "EULA ID"
 
 #: ../client/pk-task-text.c:146
 msgid "Agreement"
-msgstr ""
+msgstr "Ujednání"
 
 #. ask the user
 #: ../client/pk-task-text.c:152
@@ -1110,15 +1092,15 @@ msgstr "Nemohu zjistit, které balíky jsou vyžadovány"
 
 #: ../client/pk-task-text.c:183
 msgid "Media type"
-msgstr ""
+msgstr "typ Média"
 
 #: ../client/pk-task-text.c:184
 msgid "Media ID"
-msgstr ""
+msgstr "ID Média"
 
 #: ../client/pk-task-text.c:185
 msgid "Text"
-msgstr ""
+msgstr "Text"
 
 #. ask the user
 #: ../client/pk-task-text.c:189
@@ -1263,7 +1245,7 @@ msgstr "Podobný příkaz je:"
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:674
 msgid "Run similar command:"
-msgstr ""
+msgstr "Spustit podobný příkaz:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
@@ -1275,7 +1257,7 @@ msgstr "Podobné příkazy jsou:"
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:702
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "Prosím vyberte příkaz ke spuštění"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:721
@@ -1308,7 +1290,7 @@ msgstr "Nemohu najít balík, který se má instalovat"
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
 msgid "Starting install"
-msgstr ""
+msgstr "Spouším instalaci"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
@@ -1329,7 +1311,7 @@ msgstr ""
 #. command line argument, do we operate quietly
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
-msgstr ""
+msgstr "nezobrazovat informace nebo půběh"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
@@ -1446,7 +1428,7 @@ msgstr "Nemohu najít odpovídající balík"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
-msgstr ""
+msgstr "Nalezeno %i extra balíčků."
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
@@ -1545,7 +1527,7 @@ msgstr ""
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:299
 msgid "Device paths"
-msgstr ""
+msgstr "Cesty zařízení"
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:314
@@ -1562,7 +1544,7 @@ msgstr "Je nutné určit časový termín"
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:332
 msgid "This script can only be used by the root user"
-msgstr ""
+msgstr "Tento skript může být použit pouze uživatelem root"
 
 #. TRANSLATORS: we're going to verify the path first
 #: ../contrib/device-rebind/pk-device-rebind.c:341
@@ -1845,7 +1827,7 @@ msgstr "Balík '%s' nemůže být nainstalován: %s"
 #: ../src/pk-polkit-action-lookup.c:168
 #: ../src/pk-polkit-action-lookup.c:187
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "Software není z důvěryhodného zdroje."
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
@@ -1866,7 +1848,7 @@ msgstr ""
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:199
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
+msgstr "Škodlivý software může poškodit váš počítač nebo způsobit jiné škody."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:274

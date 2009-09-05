@@ -826,12 +826,20 @@ backend_resolve_thread (PkBackend *backend)
 		return false;
 	}
 
+	PkPackageId *pi;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		if (_cancel) {
 			break;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(package_ids[i]);
+		pkgCache::PkgIterator pkg;
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pkg = m_apt->packageCache->FindPkg(package_ids[i]);
+		} else {
+			pkg = m_apt->packageCache->FindPkg(pi->name);
+		}
+
 		// Ignore packages that could not be found or that exist only due to dependencies.
 		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
 		{
@@ -843,14 +851,26 @@ backend_resolve_thread (PkBackend *backend)
 		// check to see if the provided package isn't virtual too
 		if (ver.end() == false)
 		{
-			m_apt->emit_package(pkg, ver, filters);
+			if (pi == NULL) {
+				m_apt->emit_package(pkg, ver, filters);
+			} else {
+				if (strcmp(ver.VerStr(), pi->version) == 0) {
+					m_apt->emit_package(pkg, ver, filters);
+				}
+			}
 		}
 
 		ver = m_apt->find_candidate_ver(pkg);
 		// check to see if the provided package isn't virtual too
 		if (ver.end() == false)
 		{
-			m_apt->emit_package(pkg, ver, filters);
+			if (pi == NULL) {
+				m_apt->emit_package(pkg, ver, filters);
+			} else {
+				if (strcmp(ver.VerStr(), pi->version) == 0) {
+					m_apt->emit_package(pkg, ver, filters);
+				}
+			}
 		}
 	}
 
