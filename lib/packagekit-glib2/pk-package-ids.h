@@ -19,24 +19,36 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PACKAGEKIT_H__
-#define __PACKAGEKIT_H__
+#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#error "Only <packagekit.h> can be included directly."
+#endif
 
-#define __PACKAGEKIT_H_INSIDE__
+#ifndef __PK_PACKAGE_IDS_H
+#define __PK_PACKAGE_IDS_H
 
-#include <packagekit-glib2/pk-client.h>
-#include <packagekit-glib2/pk-common.h>
-#include <packagekit-glib2/pk-control.h>
-#include <packagekit-glib2/pk-control-sync.h>
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-package-id.h>
-#include <packagekit-glib2/pk-package-ids.h>
-#include <packagekit-glib2/pk-package-sack.h>
-#include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-task.h>
-#include <packagekit-glib2/pk-version.h>
+#include <glib.h>
 
-#undef __PACKAGEKIT_H_INSIDE__
+G_BEGIN_DECLS
 
-#endif /* __PACKAGEKIT_H__ */
+/* rationalle:
+ *
+ * '%': breaks printf
+ * '|': used as the filename seporator
+ * '~': conary
+ * '@': conary
+ *
+ * If this has to be changed, also change:
+ * - backends/urpmi/helpers/urpmi-dispatched-backend.pl
+ * - python/packagekit/backend.py
+ */
+#define PK_PACKAGE_IDS_DELIM	"&"
 
+void		 pk_package_ids_test			(gpointer	 user_data);
+gchar		**pk_package_ids_from_id		(const gchar	*package_id);
+gchar		**pk_package_ids_from_text		(const gchar	*package_id);
+gboolean	 pk_package_ids_check			(gchar		**package_ids);
+gchar		*pk_package_ids_to_text			(gchar		**package_ids);
+
+G_END_DECLS
+
+#endif /* __PK_PACKAGE_IDS_H */

@@ -33,6 +33,7 @@
 #include "pk-enum.h"
 #include "pk-package.h"
 #include "pk-package-id.h"
+#include "pk-package-ids.h"
 #include "pk-package-sack.h"
 #include "pk-results.h"
 #include "pk-task.h"
@@ -54,6 +55,7 @@ main (int argc, char **argv)
 	pk_enum_test (test);
 	pk_bitfield_test (test);
 	pk_package_id_test (test);
+	pk_package_ids_test (test);
 	pk_progress_test (test);
 	pk_results_test (test);
 	pk_package_test (test);
