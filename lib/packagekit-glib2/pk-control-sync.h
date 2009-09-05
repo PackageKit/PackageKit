@@ -35,7 +35,6 @@
 
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-control.h>
-#include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
 

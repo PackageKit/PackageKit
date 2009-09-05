@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#include <string.h>
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <gio/gio.h>
@@ -29,6 +28,7 @@
 #include <packagekit-glib2/pk-control-sync.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-version.h>
+#include <packagekit-glib2/pk-bitfield.h>
 
 #include "egg-debug.h"
 

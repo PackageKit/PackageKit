@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include <gio/gio.h>
+
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>

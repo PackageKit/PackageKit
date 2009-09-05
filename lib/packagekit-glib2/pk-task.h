@@ -34,6 +34,7 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
+
 #include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-client.h>

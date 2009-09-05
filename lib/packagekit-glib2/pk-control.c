@@ -26,8 +26,9 @@
 #include <dbus/dbus-glib.h>
 #include <gio/gio.h>
 
-#include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-version.h>
 
 #include "egg-debug.h"

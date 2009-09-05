@@ -29,6 +29,7 @@
 #include "egg-debug.h"
 
 #include <glib.h>
+
 #include <packagekit-glib2/pk-package-id.h>
 
 /**

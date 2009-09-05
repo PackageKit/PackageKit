@@ -26,7 +26,7 @@
 #ifndef __PK_PACKAGE_ID_H
 #define __PK_PACKAGE_ID_H
 
-#include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

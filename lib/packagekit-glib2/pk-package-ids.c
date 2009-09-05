@@ -140,7 +140,7 @@ pk_package_ids_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "verify size");
-	egg_test_assert (test, (g_strv_length (package_ids) == 2);
+	egg_test_assert (test, (g_strv_length (package_ids) == 2));
 
 	/************************************************************/
 	egg_test_title (test, "verify blank");

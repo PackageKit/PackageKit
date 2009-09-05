@@ -32,9 +32,9 @@
 #define __PK_CONTROL_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-bitfield.h>
 
 G_BEGIN_DECLS
 
