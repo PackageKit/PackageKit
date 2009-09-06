@@ -48,6 +48,14 @@ gchar		**pk_package_ids_from_id		(const gchar	*package_id);
 gchar		**pk_package_ids_from_text		(const gchar	*package_id);
 gboolean	 pk_package_ids_check			(gchar		**package_ids);
 gchar		*pk_package_ids_to_text			(gchar		**package_ids);
+gboolean	 pk_package_ids_present_id		(gchar		**package_ids,
+							 const gchar	*package_id);
+gchar		**pk_package_ids_add_id			(gchar		**package_ids,
+							 const gchar	*package_id);
+gchar		**pk_package_ids_add_ids		(gchar		**package_ids,
+							 gchar		**package_ids_new);
+gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
+							 const gchar	*package_id);
 
 G_END_DECLS
 

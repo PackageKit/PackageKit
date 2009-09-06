@@ -113,6 +113,123 @@ pk_package_ids_to_text (gchar **package_ids)
 	return g_strjoinv (PK_PACKAGE_IDS_DELIM, package_ids);
 }
 
+/**
+ * pk_package_ids_present_id:
+ * @package_ids: a string array of package_id's
+ * @package_id: a single package_id
+ *
+ * Finds out if a package ID is present in the list.
+ *
+ * Return value: %TRUE if the package ID is present
+ **/
+gboolean
+pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
+{
+	guint i;
+
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* iterate */
+	for (i=0; package_ids[i] != NULL; i++) {
+		if (g_strcmp0 (package_id, package_ids[i]) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_package_ids_add_id:
+ * @package_ids: a string array of package_id's
+ * @package_id: a single package_id
+ *
+ * Adds a package_id to an existing list.
+ *
+ * Return value: the new list, free g_strfreev()
+ **/
+gchar **
+pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
+{
+	guint i;
+	guint len;
+	gchar **result;
+
+	g_return_val_if_fail (package_ids != NULL, NULL);
+	g_return_val_if_fail (package_id != NULL, NULL);
+
+	len = g_strv_length (package_ids);
+	result = g_new0 (gchar *, len+2);
+
+	/* iterate */
+	for (i=0; package_ids[i] != NULL; i++)
+		result[i] = g_strdup (package_ids[i]);
+	result[i] = g_strdup (package_id);
+	return result;
+}
+
+/**
+ * pk_package_ids_add_ids:
+ * @package_ids: a string array of package_id's
+ * @package_ids_new: a string array of package_id's
+ *
+ * Adds a package_id to an existing list.
+ *
+ * Return value: the new list, free g_strfreev()
+ **/
+gchar **
+pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
+{
+	guint i;
+	guint j = 0;
+	guint len;
+	gchar **result;
+
+	g_return_val_if_fail (package_ids != NULL, NULL);
+	g_return_val_if_fail (package_ids_new != NULL, NULL);
+
+	/* get length of both arrays */
+	len = g_strv_length (package_ids) + g_strv_length (package_ids_new);
+	result = g_new0 (gchar *, len+1);
+
+	/* iterate */
+	for (i=0; package_ids[i] != NULL; i++)
+		result[j++] = g_strdup (package_ids[i]);
+	for (i=0; package_ids_new[i] != NULL; i++)
+		result[j++] = g_strdup (package_ids_new[i]);
+	return result;
+}
+
+/**
+ * pk_package_ids_remove_id:
+ * @package_ids: a string array of package_id's
+ * @package_id: a single package_id
+ *
+ * Removes a package ID from the the list.
+ *
+ * Return value: the new list, free g_strfreev()
+ **/
+gchar **
+pk_package_ids_remove_id (gchar **package_ids, const gchar *package_id)
+{
+	guint i;
+	guint j = 0;
+	guint len;
+	gchar **result;
+
+	g_return_val_if_fail (package_ids != NULL, NULL);
+	g_return_val_if_fail (package_id != NULL, NULL);
+
+	len = g_strv_length (package_ids);
+	result = g_new0 (gchar *, len+1);
+
+	/* iterate */
+	for (i=0; package_ids[i] != NULL; i++) {
+		if (g_strcmp0 (package_id, package_ids[i]) != 0)
+			result[j++] = g_strdup (package_ids[i]);
+	}
+	return result;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
