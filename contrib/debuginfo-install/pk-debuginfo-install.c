@@ -357,7 +357,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	gchar *package_id = NULL;
 	PkPackageList *list = NULL;
 	GError *error_local = NULL;
-	gchar **package_ids;
+	gchar **package_ids = NULL;
 	gchar *name_debuginfo;
 	guint len;
 	guint i;

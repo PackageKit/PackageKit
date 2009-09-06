@@ -165,7 +165,7 @@ pk_device_rebind (GUdevClient *client, const gchar *path, GError **error)
 	gboolean ret = FALSE;
 	const gchar *driver;
 	const gchar *subsystem;
-	gchar *bus_id;
+	gchar *bus_id = NULL;
 	GError *error_local = NULL;
 
 	/* get device */
