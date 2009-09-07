@@ -1224,6 +1224,8 @@ out:
 gboolean
 pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1234,11 +1236,19 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 		return FALSE;
 	}
 
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
+
 	egg_debug ("emit files %s, %s", package_id, filelist);
 	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
 		       package_id, filelist);
 
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
