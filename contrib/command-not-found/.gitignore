@@ -2,5 +2,6 @@
 .libs
 *.o
 pk-command-not-found
+pk-command-not-found-test
 PackageKit.sh
 

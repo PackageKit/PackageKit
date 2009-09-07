@@ -37,6 +37,33 @@ pk_command_not_found_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
+# Only build this functionality if we have glib2, and don't yet install it
+if PK_BUILD_GLIB2
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(NULL)
+
+noinst_PROGRAMS = pk-command-not-found-test
+
+pk_command_not_found_test_SOURCES =			\
+	pk-command-not-found-test.c			\
+	$(NULL)
+
+pk_command_not_found_test_LDADD =			\
+	../../client/libpkconsole.a			\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pk_command_not_found_test_CFLAGS =			\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
+endif
+
+
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh
 
