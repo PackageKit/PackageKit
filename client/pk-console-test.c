@@ -999,7 +999,9 @@ main (int argc, char *argv[])
 	control = pk_control_new ();
 	ret = pk_control_get_properties_sync (control, &error);
 	if (!ret) {
-		g_print ("Failed to startup: %s\n", error->message);
+		/* TRANSLATORS: we failed to contact the daemon */
+		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
+		g_error_free (error);
 		goto out_last;
 	}
 

@@ -77,8 +77,14 @@ libpkconsole_a_SOURCES =				\
 	pk-task-text.h					\
 	pk-console-shared.c				\
 	pk-console-shared.h				\
+	pk-client-sync.c				\
+	pk-client-sync.h				\
 	pk-progress-bar.c				\
 	pk-progress-bar.h				\
+	$(NULL)
+
+libpkconsole_a_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
 pkcon_test_SOURCES =					\

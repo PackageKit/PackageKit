@@ -28,6 +28,7 @@
 
 #include "egg-debug.h"
 
+#include "pk-client-sync.h"
 #include "pk-console-shared.h"
 
 /**
@@ -100,67 +101,6 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 	return ret;
 }
 
-/* tiny helper to help us do the async operation */
-typedef struct {
-	GError		**error;
-	GMainLoop	*loop;
-	PkResults	*results;
-} PkConsoleSyncHelper;
-
-/**
- * pk_console_sync_resolve_cb:
- **/
-static void
-pk_console_sync_resolve_cb (PkClient *client, GAsyncResult *res, PkConsoleSyncHelper *helper)
-{
-	PkResults *results;
-	/* get the result */
-	results = pk_client_generic_finish (client, res, helper->error);
-	if (results != NULL) {
-		g_object_unref (results);
-		helper->results = g_object_ref (G_OBJECT (results));
-	}
-	g_main_loop_quit (helper->loop);
-}
-
-/**
- * pk_console_sync_resolve:
- * @console: a valid #PkClient instance
- * @error: A #GError or %NULL
- *
- * Resolves a package to a Package ID.
- * Warning: this function is synchronous, and may block. Do not use it in GUI
- * applications.
- *
- * Return value: a %PkResults object, or NULL for error
- **/
-static PkResults *
-pk_console_sync_resolve (PkClient *client, PkFilterEnum filter, gchar **packages, GError **error)
-{
-	PkConsoleSyncHelper *helper;
-	PkResults *results;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* create temp object */
-	helper = g_new0 (PkConsoleSyncHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
-
-	/* run async method */
-	pk_client_resolve_async (client, filter, packages, NULL, NULL, NULL,
-				 (GAsyncReadyCallback) pk_console_sync_resolve_cb, helper);
-	g_main_loop_run (helper->loop);
-
-	results = helper->results;
-
-	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
-
-	return results;
-}
-
 /**
  * pk_console_resolve_package:
  **/
@@ -185,7 +125,7 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	tmp = g_strsplit (package, ",", -1);
 
 	/* get the list of possibles */
-	results = pk_console_sync_resolve (client, filter, tmp, error);
+	results = pk_client_resolve_sync (client, filter, tmp, NULL, NULL, NULL, error);
 	if (results == NULL)
 		goto out;
 
