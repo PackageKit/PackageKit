@@ -1,5 +1,6 @@
 .deps
 .libs
+*.a
 *.o
 pk-marshal.h
 pk-marshal.c
@@ -8,6 +9,7 @@ pkcon-test
 pkmon
 pkmon-test
 pkgenpack
+pkgenpack-test
 pk-self-test
 *.glade.bak
 *.gladep

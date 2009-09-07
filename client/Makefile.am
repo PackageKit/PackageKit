@@ -65,23 +65,28 @@ PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 	$(NULL)
 
-noinst_PROGRAMS = pkcon-test pkmon-test
+noinst_PROGRAMS = pkcon-test pkmon-test pkgenpack-test
 
-# TODO: private library
-
-pkcon_test_SOURCES =					\
+noinst_LIBRARIES = libpkconsole.a
+libpkconsole_a_SOURCES =				\
 	egg-debug.c					\
 	egg-debug.h					\
-	pk-console-test.c				\
+	egg-string.c					\
+	egg-string.h					\
 	pk-task-text.c					\
 	pk-task-text.h					\
-	pk-text.c					\
-	pk-text.h					\
+	pk-console-shared.c				\
+	pk-console-shared.h				\
 	pk-progress-bar.c				\
 	pk-progress-bar.h				\
 	$(NULL)
 
+pkcon_test_SOURCES =					\
+	pk-console-test.c				\
+	$(NULL)
+
 pkcon_test_LDADD =					\
+	libpkconsole.a					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -92,12 +97,11 @@ pkcon_test_CFLAGS =					\
 	$(NULL)
 
 pkmon_test_SOURCES =					\
-	egg-debug.c					\
-	egg-debug.h					\
 	pk-monitor-test.c				\
 	$(NULL)
 
 pkmon_test_LDADD =					\
+	libpkconsole.a					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -106,6 +110,23 @@ pkmon_test_LDADD =					\
 pkmon_test_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
+
+pkgenpack_test_SOURCES =				\
+	pk-generate-pack-test.c				\
+	$(NULL)
+
+pkgenpack_test_LDADD = 					\
+	libpkconsole.a					\
+	$(ARCHIVE_LIBS)					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+pkgenpack_test_CFLAGS =					\
+	$(WARNINGFLAGS_C)				\
+	$(NULL)
+
 endif
 
 pkcon_SOURCES =						\
@@ -114,8 +135,6 @@ pkcon_SOURCES =						\
 	egg-string.c					\
 	egg-string.h					\
 	pk-console.c					\
-	pk-text.c					\
-	pk-text.h					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
@@ -152,8 +171,6 @@ pkgenpack_SOURCES =					\
 	egg-string.c					\
 	egg-string.h					\
 	pk-generate-pack.c				\
-	pk-text.c					\
-	pk-text.h					\
 	pk-tools-common.c				\
 	pk-tools-common.h				\
 	$(NULL)
@@ -181,8 +198,6 @@ pk_self_test_SOURCES =					\
 	egg-string.h					\
 	egg-test.c					\
 	egg-test.h					\
-	pk-text.c					\
-	pk-text.h					\
 	pk-task-text.c					\
 	pk-task-text.h					\
 	pk-self-test.c					\
