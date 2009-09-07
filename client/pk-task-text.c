@@ -27,7 +27,7 @@
 #include "egg-debug.h"
 
 #include "pk-task-text.h"
-#include "pk-text.h"
+#include "pk-console-shared.h"
 
 static void     pk_task_text_finalize	(GObject     *object);
 

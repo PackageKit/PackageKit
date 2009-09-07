@@ -32,7 +32,7 @@
 
 #include "egg-debug.h"
 
-#include "pk-text.h"
+#include "pk-tools-common.h"
 
 static PkControl *control = NULL;
 static gboolean verbose = FALSE;

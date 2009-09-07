@@ -19,17 +19,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_TEXT_H
-#define __PK_TEXT_H
+#ifndef __PK_CONSOLE_SHARED_H
+#define __PK_CONSOLE_SHARED_H
 
 #include <glib.h>
+#include <packagekit-glib2/packagekit.h>
 
 guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
 gboolean	 pk_console_get_prompt			(const gchar	*question,
 							 gboolean	 defaultyes);
+gchar		*pk_console_resolve_package		(PkClient	*client,
+							 PkBitfield	 filter,
+							 const gchar	*package,
+							 GError		**error);
+gchar		**pk_console_resolve_packages		(PkClient	*client,
+							 PkBitfield	 filter,
+							 gchar		**packages,
+							 GError		**error);
 
-#endif /* __PK_TEXT_H */
+#endif /* __PK_CONSOLE_SHARED_H */
 
 
 

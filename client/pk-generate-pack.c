@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2008 Shishir Goel <crazyontheedge@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
@@ -26,7 +26,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <locale.h>
-#include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <packagekit-glib/packagekit.h>
@@ -34,7 +33,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-text.h"
 #include "pk-tools-common.h"
 
 static guint last_percentage = 0;

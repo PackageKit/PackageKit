@@ -22,9 +22,13 @@
 #ifndef __PK_TOOLS_COMMON_H
 #define __PK_TOOLS_COMMON_H
 
-#include <glib/gi18n.h>
+#include <glib.h>
 #include <packagekit-glib/packagekit.h>
 
+guint		 pk_console_get_number			(const gchar	*question,
+							 guint		 maxnum);
+gboolean	 pk_console_get_prompt			(const gchar	*question,
+							 gboolean	 defaultyes);
 PkPackageList	*pk_console_resolve			(PkBitfield	 filter,
 							 const gchar	*package,
 							 GError		**error);

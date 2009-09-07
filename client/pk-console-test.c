@@ -33,9 +33,8 @@
 #include <locale.h>
 
 #include "egg-debug.h"
-//#include "egg-string.h"
 
-#include "pk-text.h"
+#include "pk-console-shared.h"
 #include "pk-task-text.h"
 #include "pk-progress-bar.h"
 
@@ -410,168 +409,6 @@ pk_console_files_cb (PkResultItemFiles *obj, gpointer data)
 	}
 }
 
-/* tiny helper to help us do the async operation */
-typedef struct {
-	GError		**error;
-	GMainLoop	*loop;
-	PkResults	*results;
-} PkConsoleSyncHelper;
-
-/**
- * pk_console_sync_resolve_cb:
- **/
-static void
-pk_console_sync_resolve_cb (PkClient *client, GAsyncResult *res, PkConsoleSyncHelper *helper)
-{
-	PkResults *results;
-	/* get the result */
-	results = pk_client_generic_finish (client, res, helper->error);
-	if (results != NULL) {
-		g_object_unref (results);
-		helper->results = g_object_ref (G_OBJECT (results));
-	}
-	g_main_loop_quit (helper->loop);
-}
-
-/**
- * pk_console_sync_resolve:
- * @console: a valid #PkClient instance
- * @error: A #GError or %NULL
- *
- * Resolves a package to a Package ID.
- * Warning: this function is synchronous, and may block. Do not use it in GUI
- * applications.
- *
- * Return value: a %PkResults object, or NULL for error
- **/
-static PkResults *
-pk_console_sync_resolve (PkClient *client, PkFilterEnum filter, gchar **packages, GError **error)
-{
-	PkConsoleSyncHelper *helper;
-	PkResults *results;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* create temp object */
-	helper = g_new0 (PkConsoleSyncHelper, 1);
-	helper->loop = g_main_loop_new (NULL, FALSE);
-	helper->error = error;
-
-	/* run async method */
-	pk_client_resolve_async (client, filter, packages, cancellable, NULL, NULL,
-				 (GAsyncReadyCallback) pk_console_sync_resolve_cb, helper);
-	g_main_loop_run (helper->loop);
-
-	results = helper->results;
-
-	/* free temp object */
-	g_main_loop_unref (helper->loop);
-	g_free (helper);
-
-	return results;
-}
-
-/**
- * pk_console_perhaps_resolve_package:
- **/
-static gchar *
-pk_console_perhaps_resolve_package (PkBitfield filter, const gchar *package, GError **error)
-{
-	gchar *package_id = NULL;
-	gboolean valid;
-	gchar **tmp;
-	PkResults *results;
-	GPtrArray *array = NULL;
-	guint i;
-	gchar *printable;
-	const PkResultItemPackage *item;
-
-	/* have we passed a complete package_id? */
-	valid = pk_package_id_check (package);
-	if (valid)
-		return g_strdup (package);
-
-	/* split */
-	tmp = g_strsplit (package, ",", -1);
-
-	/* get the list of possibles */
-	results = pk_console_sync_resolve (PK_CLIENT(task), filter, tmp, error);
-	if (results == NULL)
-		goto out;
-
-	/* get the packages returned */
-	array = pk_results_get_package_array (results);
-	if (array == NULL) {
-		*error = g_error_new (1, 0, "did not get package struct for %s", package);
-		goto out;
-	}
-
-	/* nothing found */
-	if (array->len == 0) {
-		*error = g_error_new (1, 0, "could not find %s", package);
-		goto out;
-	}
-
-	/* just one thing found */
-	if (array->len == 1) {
-		item = g_ptr_array_index (array, 0);
-		package_id = g_strdup (item->package_id);
-		goto out;
-	}
-
-	/* TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages  */
-	g_print ("%s\n", _("More than one package matches:"));
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		printable = pk_package_id_to_printable (item->package_id);
-		g_print ("%i. %s\n", i+1, printable);
-		g_free (printable);
-	}
-
-	/* TRANSLATORS: This finds out which package in the list to use */
-	i = pk_console_get_number (_("Please choose the correct package: "), array->len);
-	item = g_ptr_array_index (array, i-1);
-	package_id = g_strdup (item->package_id);
-out:
-	if (results != NULL)
-		g_object_unref (results);
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	g_strfreev (tmp);
-	return package_id;
-}
-
-/**
- * pk_console_perhaps_resolve:
- **/
-static gchar **
-pk_console_perhaps_resolve (PkBitfield filter, gchar **packages, GError **error)
-{
-	gchar **package_ids;
-	guint i;
-	guint len;
-
-	/* get length */
-	len = g_strv_length (packages);
-	egg_debug ("resolving %i packages", len);
-
-	/* create output array*/
-	package_ids = g_new0 (gchar *, len+1);
-
-	/* resolve each package */
-	for (i=0; i<len; i++) {
-		package_ids[i] = pk_console_perhaps_resolve_package (filter, packages[i], error);
-		if (package_ids[i] == NULL) {
-			/* destroy state */
-			g_strfreev (package_ids);
-			package_ids = NULL;
-			break;
-		}
-	}
-	return package_ids;
-}
-
-
 /**
  * pk_console_progress_cb:
  **/
@@ -728,7 +565,7 @@ pk_console_install_packages (gchar **packages, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the available package: %s"), error_local->message);
@@ -756,7 +593,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the installed package: %s"), error_local->message);
@@ -784,7 +621,7 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);
@@ -812,7 +649,7 @@ pk_console_update_packages (gchar **packages, GError **error)
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);
@@ -840,7 +677,7 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -868,7 +705,7 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -896,7 +733,7 @@ pk_console_get_details (gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -924,7 +761,7 @@ pk_console_get_files (gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -952,7 +789,7 @@ pk_console_get_update_detail (gchar **packages, GError **error)
 	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
@@ -985,10 +822,10 @@ pk_connection_changed_cb (PkControl *control_, gboolean connected, gpointer data
 }
 
 /**
- * pk_console_sigint_handler:
+ * pk_console_sigint_cb:
  **/
 static void
-pk_console_sigint_handler (int sig)
+pk_console_sigint_cb (int sig)
 {
 	egg_debug ("Handling SIGINT");
 
@@ -1129,7 +966,7 @@ main (int argc, char *argv[])
 	g_type_init ();
 
 	/* do stuff on ctrl-c */
-	signal (SIGINT, pk_console_sigint_handler);
+	signal (SIGINT, pk_console_sigint_cb);
 
 	/* check if we are on console */
 	if (isatty (fileno (stdout)) == 1)

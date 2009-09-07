@@ -38,7 +38,6 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-text.h"
 #include "pk-tools-common.h"
 
 #define PROGRESS_BAR_SIZE 15
