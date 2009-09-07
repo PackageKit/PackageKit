@@ -42,6 +42,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-marshal.h>
+#include <packagekit-glib2/pk-package-ids.h>
 
 #include "egg-debug.h"
 
@@ -324,7 +325,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	}
 
 	/* remove from list */
-	g_ptr_array_remove (state->client->priv->calls, state);
+	g_ptr_array_remove (priv->calls, state);
 	egg_debug ("state array remove %p", state);
 
 	/* complete */
@@ -911,7 +912,6 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_STRING, state->directory,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
@@ -3396,7 +3396,7 @@ pk_client_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "resolve package");
-	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora,powertop", ",", -1);
+	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
 				 (PkProgressCallback) pk_client_test_progress_cb, test,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
@@ -3425,7 +3425,7 @@ pk_client_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "get details about package");
-	package_ids = g_strsplit ("powertop;1.8-1.fc8;i386;fedora", ",", -1);
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
 	pk_client_get_details_async (client, package_ids, NULL,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_get_details_cb, test);
