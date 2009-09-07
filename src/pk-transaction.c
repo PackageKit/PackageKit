@@ -527,8 +527,24 @@ static void
 pk_transaction_files_cb (PkBackend *backend, const gchar *package_id,
 			 const gchar *filelist, PkTransaction *transaction)
 {
+	gchar **files = NULL;
+	guint i;
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* ensure the files have the correct prefix */
+	if (transaction->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		files = g_strsplit (filelist, ";", -1);
+		for (i=0; files[i] != NULL; i++) {
+			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
+				pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+						    "%s does not have the correct prefix (%s)",
+						    files[i], transaction->priv->cached_directory);
+			}
+		}
+		g_strfreev (files);
+	}
 
 	egg_debug ("emitting files %s, %s", package_id, filelist);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FILES], 0, package_id, filelist);
