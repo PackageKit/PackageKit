@@ -836,8 +836,8 @@ out:
 static gboolean
 pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
 	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
@@ -845,13 +845,15 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* do the async action */
 	pk_client_get_requires_async (PK_CLIENT(task), filters, package_ids, TRUE, cancellable,
 				      (PkProgressCallback) pk_console_progress_cb, NULL,
 				      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -862,8 +864,8 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 static gboolean
 pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
 	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
@@ -871,13 +873,15 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* do the async action */
 	pk_client_get_depends_async (PK_CLIENT(task), filters, package_ids, FALSE, cancellable,
 				     (PkProgressCallback) pk_console_progress_cb, NULL,
 				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -888,8 +892,8 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 static gboolean
 pk_console_get_details (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
 	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
@@ -897,13 +901,15 @@ pk_console_get_details (gchar **packages, GError **error)
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* do the async action */
 	pk_client_get_details_async (PK_CLIENT(task), package_ids, cancellable,
 				     (PkProgressCallback) pk_console_progress_cb, NULL,
 				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -914,8 +920,8 @@ pk_console_get_details (gchar **packages, GError **error)
 static gboolean
 pk_console_get_files (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
 	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
@@ -923,13 +929,15 @@ pk_console_get_files (gchar **packages, GError **error)
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* do the async action */
 	pk_client_get_files_async (PK_CLIENT(task), package_ids, cancellable,
 				   (PkProgressCallback) pk_console_progress_cb, NULL,
 				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -940,8 +948,8 @@ pk_console_get_files (gchar **packages, GError **error)
 static gboolean
 pk_console_get_update_detail (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
 	package_ids = pk_console_perhaps_resolve (pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
@@ -949,13 +957,15 @@ pk_console_get_update_detail (gchar **packages, GError **error)
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* do the async action */
 	pk_client_get_update_detail_async (PK_CLIENT(task), package_ids, cancellable,
 					   (PkProgressCallback) pk_console_progress_cb, NULL,
 					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -1310,7 +1320,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		nowait = !pk_console_download_packages (argv+2, value, &error);
+		nowait = !pk_console_download_packages (argv+3, value, &error);
 
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
