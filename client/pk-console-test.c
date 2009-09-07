@@ -45,7 +45,7 @@ static GMainLoop *loop = NULL;
 static PkBitfield roles;
 static gboolean is_console = FALSE;
 static gboolean nowait = FALSE;
-static PkControlSync *control = NULL;
+static PkControl *control = NULL;
 static PkTaskText *task = NULL;
 static PkProgressBar *progressbar = NULL;
 static GCancellable *cancellable = NULL;
@@ -918,6 +918,29 @@ pk_console_get_summary (void)
 }
 
 /**
+ * pk_console_get_time_since_action_cb:
+ **/
+static void
+pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	guint time_ms;
+	GError *error = NULL;
+//	PkControl *control = PK_CONTROL(object);
+
+	/* get the results */
+	time_ms = pk_control_get_time_since_action_finish (control, res, &error);
+	if (time_ms == 0) {
+		/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
+		g_print ("%s: %s\n", _("Failed to get the time since this action was last completed"), error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_print ("time is %is\n", time_ms);
+out:
+	g_main_loop_quit (loop);
+}
+
+/**
  * main:
  **/
 int
@@ -973,8 +996,8 @@ main (int argc, char *argv[])
 		is_console = TRUE;
 
 	/* we need the roles early, as we only show the user only what they can do */
-	control = pk_control_sync_new ();
-	ret = pk_control_sync_get_properties (control, &error);
+	control = pk_control_new ();
+	ret = pk_control_get_properties_sync (control, &error);
 	if (!ret) {
 		g_print ("Failed to startup: %s\n", error->message);
 		goto out_last;
@@ -1242,7 +1265,6 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
-		guint time_ms;
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify what action to use */
 			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-system' is required"));
@@ -1256,15 +1278,8 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		time_ms = pk_control_sync_get_time_since_action (control, role, &error);
-		if (time_ms == 0) {
-			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
-			error = g_error_new (1, 0, "%s: %s", _("Failed to get the time since this action was last completed"), error->message);
-			retval = EXIT_FAILURE;
-			goto out;
-		}
-		g_print ("time since %s is %is\n", value, time_ms);
-		nowait = TRUE;
+		pk_control_get_time_since_action_async (control, role, cancellable,
+							(GAsyncReadyCallback) pk_console_get_time_since_action_cb, NULL);
 
 	} else if (strcmp (mode, "get-depends") == 0) {
 		if (value == NULL) {

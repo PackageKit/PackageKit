@@ -33,7 +33,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-text.h"
+#include "pk-tools-common.h"
 
 #define PK_MAX_PATH_LEN 1023
 

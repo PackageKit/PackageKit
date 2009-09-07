@@ -22,8 +22,8 @@ pk_command_not_found_SOURCES =				\
 	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
-	pk-text.c					\
-	pk-text.h					\
+	pk-tools-common.c				\
+	pk-tools-common.h				\
 	pk-command-not-found.c				\
 	$(NULL)
 

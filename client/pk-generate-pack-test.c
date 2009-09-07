@@ -204,7 +204,7 @@ main (int argc, char *argv[])
 	gboolean ret;
 	gchar *filename = NULL;
 	PkClient *client = NULL;
-	PkControlSync *control = NULL;
+	PkControl *control = NULL;
 	PkBitfield roles;
 	gchar *tempdir = NULL;
 	gboolean exists;
@@ -307,8 +307,8 @@ main (int argc, char *argv[])
 		directory = g_get_current_dir ();
 
 	/* are we dumb and can't do some actions */
-	control = pk_control_sync_new ();
-	ret = pk_control_sync_get_properties (control, &error);
+	control = pk_control_new ();
+	ret = pk_control_get_properties_sync (control, &error);
 	if (!ret) {
 		g_print ("Failed to startup: %s\n", error->message);
 		goto out;
