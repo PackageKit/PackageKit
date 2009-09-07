@@ -40,6 +40,7 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 
 #include "egg-debug.h"
@@ -419,66 +420,12 @@ pk_service_pack_set_temp_directory (PkServicePack *pack, const gchar *directory)
 	return TRUE;
 }
 
-#if 0
-/**
- * pk_service_pack_download_package_ids:
- **/
-static gboolean
-pk_service_pack_download_package_ids (PkServicePack *pack, gchar **package_ids, GError **error)
-{
-	gboolean ret;
-	GError *error_local = NULL;
-
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (package_ids != NULL, FALSE);
-	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
-
-	egg_debug ("download+ %s", package_ids[0]);
-	ret = pk_client_download_packages (pack->priv->client, package_ids, pack->priv->directory, &error_local);
-	if (!ret) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_DOWNLOAD,
-				      "failed to download: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-out:
-	return ret;
-}
-#endif
-
-#if 0
-/**
- * pk_service_pack_exclude_packages:
- **/
-static gboolean
-pk_service_pack_exclude_packages (PkServicePack *pack, gchar **package_ids)
-{
-	guint i;
-	guint length;
-	gboolean found;
-
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (package_ids != NULL, FALSE);
-
-	/* do not just download everything, uselessly */
-	length = pk_package_list_get_size (package_ids);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (package_ids, i);
-		/* will just ignore if the obj is not there */
-		found = pk_obj_list_remove (PK_OBJ_LIST(list), obj);
-		if (found)
-			egg_debug ("removed %s", obj->id->name);
-	}
-	return TRUE;
-}
-#endif
-
 #ifdef HAVE_ARCHIVE_H
 /**
  * pk_service_pack_create_metadata_file:
  **/
 static gboolean
-pk_service_pack_create_metadata_file (PkServicePackState *state)
+pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *filename)
 {
 	gboolean ret = FALSE;
 	gchar *distro_id = NULL;
@@ -517,13 +464,12 @@ pk_service_pack_create_metadata_file (PkServicePackState *state)
 	}
 
 	/* save contents */
-	ret = g_file_set_contents (state->filename, data, -1, &error);
+	ret = g_file_set_contents (filename, data, -1, &error);
 	if (!ret) {
 		egg_warning ("failed to save file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
-
 out:
 	g_key_file_free (file);
 	g_free (data);
@@ -620,7 +566,7 @@ pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array
 
 	/* create a file with metadata in it */
 	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
-	ret = pk_service_pack_create_metadata_file (state);
+	ret = pk_service_pack_create_metadata_file (state, filename);
 	if (!ret) {
 		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to generate metadata file %s", filename);
@@ -672,123 +618,6 @@ pk_service_pack_create_from_files (PkServicePackState *state, GPtrArray *file_ar
 }
 #endif
 
-#if 0
-/**
- * pk_service_pack_scan_files_in_directory:
- **/
-static GPtrArray *
-pk_service_pack_scan_files_in_directory (PkServicePack *pack)
-{
-	gchar *src;
-	GPtrArray *file_array = NULL;
-	GDir *dir;
-	const gchar *filename;
-
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), NULL);
-	g_return_val_if_fail (pack->priv->directory != NULL, NULL);
-
-	/* try and open the directory */
-	dir = g_dir_open (pack->priv->directory, 0, NULL);
-	if (dir == NULL) {
-		egg_warning ("failed to get directory for %s", pack->priv->directory);
-		goto out;
-	}
-
-	/* add each file to an array */
-	file_array = g_ptr_array_new ();
-	while ((filename = g_dir_read_name (dir))) {
-		src = g_build_filename (pack->priv->directory, filename, NULL);
-		g_ptr_array_add (file_array, src);
-	}
-	g_dir_close (dir);
-out:
-	return file_array;
-}
-#endif
-
-#if 0
-/**
- * pk_service_pack_package_cb:
- **/
-static void
-pk_service_pack_package_cb (PkClient *client, const PkPackageObj *obj, PkServicePack *pack)
-{
-	g_return_if_fail (PK_IS_SERVICE_PACK (pack));
-
-	/* only shown downloading */
-	if (obj->info != PK_INFO_ENUM_DOWNLOADING)
-		return;
-}
-
-/**
- * pk_service_pack_create_for_package_ids_internal:
- **/
-static gboolean
-pk_service_pack_create_for_package_ids_internal (PkServicePack *pack, gchar **package_ids, GError **error)
-{
-	gchar **package_ids_deps = NULL;
-	PkPackageList *list = NULL;
-	guint length;
-	GPtrArray *file_array = NULL;
-	GError *error_local = NULL;
-	gboolean ret = FALSE;
-
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
-	g_return_val_if_fail (package_ids != NULL, FALSE);
-	g_return_val_if_fail (error != NULL, FALSE);
-	g_return_val_if_fail (state->filename != NULL, FALSE);
-	g_return_val_if_fail (pack->priv->directory != NULL, FALSE);
-
-	/* remove some deps */
-	pk_package_list_set_fuzzy_arch (list, TRUE);
-	pk_service_pack_exclude_packages (pack, list);
-
-	/* get the deps */
-	length = pk_package_list_get_size (list);
-	if (length != 0) {
-		/* download additional package_ids */
-		package_ids_deps = pk_package_list_to_strv (list);
-		pk_service_pack_status_changed (pack, PK_SERVICE_PACK_STATUS_DOWNLOAD_DEPENDENCIES);
-		ret = pk_service_pack_download_package_ids (pack, package_ids_deps, &error_local);
-		g_strfreev (package_ids_deps);
-
-		/* failed to get deps */
-		if (!ret) {
-			*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
-					      "failed to download deps of package: %s", error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-	}
-
-	/* find packages that were downloaded */
-	file_array = pk_service_pack_scan_files_in_directory (pack);
-	if (file_array == NULL) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
-				      "failed to scan directory: %s", pack->priv->directory);
-		goto out;
-	}
-
-	/* generate pack file */
-	ret = pk_service_pack_create_from_files (pack, file_array, &error_local);
-	if (!ret) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
-				      "failed to create archive: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-out:
-	if (list != NULL)
-		g_object_unref (list);
-	if (file_array != NULL) {
-		g_ptr_array_foreach (file_array, (GFunc) g_free, NULL);
-		g_ptr_array_free (file_array, TRUE);
-	}
-	return ret;
-}
-#endif
-
 /**
  * pk_service_pack_generic_state_finish:
  **/
@@ -821,20 +650,48 @@ pk_service_pack_generic_state_finish (PkServicePackState *state, const GError *e
 }
 
 /**
+ * pk_service_pack_get_files_from_array:
+ **/
+static gchar **
+pk_service_pack_get_files_from_array (const GPtrArray *array)
+{
+	gchar **files = NULL;
+	guint i;
+	const PkResultItemFiles *item;
+
+	/* internal error */
+	if (array == NULL) {
+		egg_warning ("internal error");
+		goto out;
+	}
+
+	/* get GStr of all the files */
+	files = g_new0 (gchar *, array->len + 1);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		/* assume only one file per package */
+		files[i] = g_strdup (item->files[0]);
+	}
+out:
+	return files;
+}
+
+/**
  * pk_service_pack_download_ready_cb:
  **/
 static void
 pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, PkServicePackState *state)
 {
-	PkServicePack *pack = PK_SERVICE_PACK (source_object);
+	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
 	PkExitEnum exit_enum;
 	gboolean ret;
 	gchar **files = NULL;
+	GPtrArray *array = NULL;
 
 	/* get the results */
-	results = pk_client_generic_finish (PK_CLIENT(pack), res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
@@ -850,8 +707,11 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 		goto out;
 	}
 
+	/* get the files data */
+	array = pk_results_get_files_array (results);
+
 	/* now create pack */
-	egg_error ("todo");
+	files = pk_service_pack_get_files_from_array (array);
 	ret = pk_service_pack_create_from_files (state, files, &error);
 	if (!ret) {
 		pk_service_pack_generic_state_finish (state, error);
@@ -866,9 +726,28 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	pk_service_pack_generic_state_finish (state, error);
 out:
 	g_strfreev (files);
+	if (array != NULL)
+		g_ptr_array_unref (array);
 	if (results != NULL)
 		g_object_unref (results);
 	return;
+}
+
+/**
+ * pk_service_pack_in_excludes_list:
+ **/
+static gboolean
+pk_service_pack_in_excludes_list (PkServicePackState *state, const gchar *package_id)
+{
+	guint i;
+	if (state->package_ids_exclude == NULL)
+		goto out;
+	for (i=0; state->package_ids_exclude[i] != NULL; i++) {
+		if (pk_package_id_equal_fuzzy_arch (state->package_ids_exclude[i], package_id))
+			return TRUE;
+	}
+out:
+	return FALSE;
 }
 
 /**
@@ -877,18 +756,19 @@ out:
 static void
 pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res, PkServicePackState *state)
 {
-	PkServicePack *pack = PK_SERVICE_PACK (source_object);
+	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *array = NULL;
 	guint i;
+	guint j = 0;
 	const PkResultItemPackage *package;
 	gchar **package_ids = NULL;
 	gchar **package_ids_to_download = NULL;
 
 	/* get the results */
-	results = pk_client_generic_finish (PK_CLIENT(pack), res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
@@ -909,12 +789,14 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	package_ids = g_new0 (gchar *, array->len + 1);
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		package_ids[i] = g_strdup (package->package_id);
+		/* only add if the ID is not in the excludes list */
+		if (!pk_service_pack_in_excludes_list (state, package->package_id))
+			package_ids[j++] = g_strdup (package->package_id);
 	}
 	package_ids_to_download = pk_package_ids_add_ids (state->package_ids, package_ids);
 
 	/* now download */
-	pk_client_download_packages_async (PK_CLIENT(state->pack), package_ids_to_download, pack->priv->directory,
+	pk_client_download_packages_async (state->pack->priv->client, package_ids_to_download, state->pack->priv->directory,
 					   state->cancellable, state->progress_callback, state->progress_user_data,
 					   (GAsyncReadyCallback) pk_service_pack_download_ready_cb, state);
 out:
@@ -932,7 +814,7 @@ out:
  * @pack: a valid #PkServicePack instance
  * @filename: the filename of the service pack
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
- * @package_ids_exclude: An array of packages to exclude
+ * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @progress_callback: the function to run when the progress changes
@@ -970,7 +852,7 @@ pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *
 	g_object_add_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
 
 	/* get deps, TODO: use NEWEST? */
-	pk_client_get_depends_async (PK_CLIENT(state->pack), PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
+	pk_client_get_depends_async (pack->priv->client, PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 
@@ -983,7 +865,7 @@ pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *
 static void
 pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res, PkServicePackState *state)
 {
-	PkServicePack *pack = PK_SERVICE_PACK (source_object);
+	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
 	PkExitEnum exit_enum;
@@ -992,7 +874,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	const PkResultItemPackage *package;
 
 	/* get the results */
-	results = pk_client_generic_finish (PK_CLIENT(pack), res, &error);
+	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
@@ -1017,7 +899,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* get deps, TODO: use NEWEST? */
-	pk_client_get_depends_async (PK_CLIENT(state->pack), PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
+	pk_client_get_depends_async (state->pack->priv->client, PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 out:
@@ -1032,7 +914,7 @@ out:
  * pk_service_pack_create_for_updates_async:
  * @pack: a valid #PkServicePack instance
  * @filename: the filename of the service pack
- * @package_ids_exclude: An array of packages to exclude
+ * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @progress_callback: the function to run when the progress changes
@@ -1069,7 +951,7 @@ pk_service_pack_create_for_updates_async (PkServicePack *pack, const gchar *file
 	g_object_add_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
 
 	/* get deps, TODO: use NEWEST? */
-	pk_client_get_updates_async (PK_CLIENT(state->pack), PK_FILTER_ENUM_NONE,
+	pk_client_get_updates_async (pack->priv->client, PK_FILTER_ENUM_NONE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_updates_ready_cb, state);
 
