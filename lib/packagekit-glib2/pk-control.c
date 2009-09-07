@@ -106,6 +106,14 @@ typedef struct {
 	PkNetworkEnum		 network;
 } PkControlState;
 
+/* tiny helper to help us do the async operation */
+typedef struct {
+	GError		**error;
+	GMainLoop	*loop;
+	gboolean	 ret;
+	guint		 seconds;
+} PkControlHelper;
+
 /**
  * pk_control_error_quark:
  *
@@ -1313,6 +1321,55 @@ pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError 
 	return g_simple_async_result_get_op_res_gboolean (simple);
 }
 
+/**
+ * pk_control_get_properties_sync_cb:
+ **/
+static void
+pk_control_get_properties_sync_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
+{
+	/* get the result */
+	helper->ret = pk_control_get_properties_finish (control, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_control_get_properties_sync:
+ * @control: a valid #PkControl instance
+ * @error: A #GError or %NULL
+ *
+ * Gets the properties the daemon supports.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: %TRUE if the properties were set correctly
+ **/
+gboolean
+pk_control_get_properties_sync (PkControl *control, GError **error)
+{
+	gboolean ret;
+	PkControlHelper *helper;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkControlHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_get_properties_sync_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	ret = helper->ret;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return ret;
+}
+
 /***************************************************************************************************/
 
 /**
@@ -2002,6 +2059,10 @@ pk_control_test (gpointer user_data)
 	EggTest *test = (EggTest *) user_data;
 	PkControl *control;
 	guint version;
+	GError *error = NULL;
+	gboolean ret;
+	gchar *text;
+	PkBitfield roles;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
@@ -2062,6 +2123,30 @@ pk_control_test (gpointer user_data)
 	egg_test_title (test, "version micro");
 	g_object_get (control, "version-micro", &version, NULL);
 	egg_test_assert (test, (version == PK_MICRO_VERSION));
+
+	/************************************************************/
+	egg_test_title (test, "get properties sync");
+	ret = pk_control_get_properties_sync (control, &error);
+	if (!ret)
+		egg_test_failed (test, "failed to get properties: %s", error->message);
+
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
+
+	/* check data */
+	text = pk_role_bitfield_to_text (roles);
+	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
+			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
+			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
+			     "search-details;search-file;search-group;search-name;update-packages;update-system;"
+			     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
+			     "simulate-remove-packages;simulate-update-packages") != 0) {
+		egg_test_failed (test, "data incorrect: %s", text);
+	}
+	egg_test_success (test, "got correct roles");
+	g_free (text);
 
 	g_object_unref (control);
 	egg_test_end (test);

@@ -35,7 +35,6 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-client.h						\
 	pk-common.h						\
 	pk-control.h						\
-	pk-control-sync.h					\
 	pk-package.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
@@ -60,8 +59,6 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-common.h						\
 	pk-control.c						\
 	pk-control.h						\
-	pk-control-sync.c					\
-	pk-control-sync.h					\
 	pk-enum.c						\
 	pk-enum.h						\
 	pk-marshal.c						\

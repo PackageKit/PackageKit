@@ -29,7 +29,6 @@
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-control.h"
-#include "pk-control-sync.h"
 #include "pk-enum.h"
 #include "pk-package.h"
 #include "pk-package-id.h"
@@ -60,7 +59,6 @@ main (int argc, char **argv)
 	pk_results_test (test);
 	pk_package_test (test);
 	pk_control_test (test);
-	pk_control_sync_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
 	pk_task_test (test);
