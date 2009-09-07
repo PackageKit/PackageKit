@@ -1,283 +1,291 @@
-# translation of packagekit.master.kn.po to Kannada
+# translation of packagekit.master.PackageKit.po to Kannada
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Shankar Prasad <svenkate@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.kn\n"
+"Project-Id-Version: packagekit.master.PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-01 02:36+0000\n"
-"PO-Revision-Date: 2009-09-07 17:40+0530\n"
+"POT-Creation-Date: 2009-09-07 19:02+0000\n"
+"PO-Revision-Date: 2009-09-08 00:46+0530\n"
 "Last-Translator: Shankar Prasad <svenkate@redhat.com>\n"
 "Language-Team: Kannada <en@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:237 ../client/pk-console-test.c:146
 msgid "Transaction"
 msgstr "ವ್ಯವಹಾರ"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:237
+#: ../client/pk-console.c:239 ../client/pk-console-test.c:148
 msgid "System time"
 msgstr "ಗಣಕದ ಸಮಯ"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:241 ../client/pk-console-test.c:150
 msgid "Succeeded"
 msgstr "ಯಶಸ್ವಿಯಾಗಿದೆ"
 
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:241 ../client/pk-console-test.c:150
 msgid "True"
 msgstr "ಸತ್ಯ"
 
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:241 ../client/pk-console-test.c:150
 msgid "False"
 msgstr "ಅಸತ್ಯ"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:241 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:243 ../client/pk-console-test.c:152
+#: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
 msgstr "ಪಾತ್ರ"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:248 ../client/pk-console-test.c:157
 msgid "Duration"
 msgstr "ಕಾಲಾವಧಿ"
 
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:248 ../client/pk-console-test.c:157
 msgid "(seconds)"
 msgstr "(ಸೆಕೆಂಡುಗಳು)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:252 ../client/pk-console-test.c:161
+#: ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
 msgstr "ಆಜ್ಞಾ ಸಾಲು"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:254 ../client/pk-console-test.c:163
 msgid "User ID"
 msgstr "ಬಳಕೆದಾರ ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:259
+#: ../client/pk-console.c:261 ../client/pk-console-test.c:170
 msgid "Username"
 msgstr "ಬಳಕೆದಾರ ಹೆಸರು"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:265 ../client/pk-console-test.c:174
 msgid "Real name"
 msgstr "ನಿಜವಾದ ಹೆಸರು"
 
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:273 ../client/pk-console-test.c:182
 msgid "Affected packages:"
 msgstr "ಪರಿಣಾಮ ಬೀರಲ್ಪಡುವ ಪ್ಯಾಕೇಜಿಗಳು:"
 
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:275 ../client/pk-console-test.c:184
 msgid "Affected packages: None"
 msgstr "ಪರಿಣಾಮ ಬೀರಲ್ಪಡುವ ಪ್ಯಾಕೇಜಿಗಳು: ಯಾವುದೂ ಇಲ್ಲ"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../client/pk-console.c:334
+#: ../client/pk-console.c:336 ../client/pk-task-text.c:220
 msgid "The following packages have to be removed:"
 msgstr "ಈ ಕೆಳಗಿನ ಪ್ಯಾಕೇಜುಗಳನ್ನು ತೆಗೆದು ಹಾಕಬೇಕು:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../client/pk-console.c:337
+#: ../client/pk-console.c:339 ../client/pk-task-text.c:225
 msgid "The following packages have to be installed:"
 msgstr "ಈ ಕೆಳಗಿನ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಬೇಕು:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:342 ../client/pk-task-text.c:230
 msgid "The following packages have to be updated:"
 msgstr "ಈ ಕೆಳಗಿನ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಬೇಕು:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:345 ../client/pk-task-text.c:235
 msgid "The following packages have to be reinstalled:"
 msgstr "ಈ ಕೆಳಗಿನ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಮರಳಿ ಅನುಸ್ಥಾಪಿಸಬೇಕು:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../client/pk-console.c:346
+#: ../client/pk-console.c:348 ../client/pk-task-text.c:240
 msgid "The following packages have to be downgraded:"
 msgstr "ಈ ಕೆಳಗಿನ ಪ್ಯಾಕೇಜುಗಳ ಆವೃತ್ತಿಯನ್ನು ಕೆಳಕ್ಕೆ ಇಳಿಸಲಾಗುತ್ತದೆ:"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:362 ../client/pk-console-test.c:204
 msgid "Distribution"
 msgstr "ವಿತರಣೆ"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:362
+#: ../client/pk-console.c:364 ../client/pk-console-test.c:206
 msgid "Type"
 msgstr "ಬಗೆ"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:364 ../client/pk-console.c:387
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: ../client/pk-console.c:366 ../client/pk-console.c:389
+#: ../client/pk-console-test.c:208 ../client/pk-console-test.c:229
 msgid "Summary"
 msgstr "ಸಾರಾಂಶ"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:378 ../client/pk-console-test.c:218
 msgid "Category"
-msgstr "ಪಂಗಡ"
+msgstr "ವರ್ಗ"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:378
+#: ../client/pk-console.c:380 ../client/pk-console-test.c:220
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:381
+#: ../client/pk-console.c:383 ../client/pk-console-test.c:223
 msgid "Parent"
 msgstr "ಮೂಲ"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:386 ../client/pk-console-test.c:226
 msgid "Name"
 msgstr "ಹೆಸರು"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:390
+#: ../client/pk-console.c:392 ../client/pk-console-test.c:232
 msgid "Icon"
 msgstr "ಚಿಹ್ನೆ"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:405
+#: ../client/pk-console.c:407 ../client/pk-console-test.c:246
 msgid "Details about the update:"
 msgstr "ಅಪ್‌ಡೇಟ್‌ ಬಗೆಗಿನ ವಿವರಣೆಗಳು:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:407 ../src/pk-polkit-action-lookup.c:352
+#: ../client/pk-console.c:409 ../client/pk-console-test.c:252
+#: ../client/pk-task-text.c:101 ../client/pk-task-text.c:153
+#: ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "ಪ್ಯಾಕೇಜ್"
-msgstr[1] "ಪ್ಯಾಕೇಜುಗಳು"
+msgstr[1] "ಪ್ಯಾಕೇಜ್"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:410
+#: ../client/pk-console.c:412 ../client/pk-console-test.c:255
 msgid "Updates"
 msgstr "ಅಪ್‍ಡೇಟ್‍ಗಳು"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:414
+#: ../client/pk-console.c:416 ../client/pk-console-test.c:259
 msgid "Obsoletes"
 msgstr "ಪ್ರಚಲಿತವಿಲ್ಲದವು"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:418
+#: ../client/pk-console.c:420 ../client/pk-console-test.c:263
+#: ../client/pk-task-text.c:154
 msgid "Vendor"
 msgstr "ಒದಗಿಸಿದವರು"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:422
+#: ../client/pk-console.c:424 ../client/pk-console-test.c:267
 msgid "Bugzilla"
 msgstr "ಬಗ್‌ಝಿಲ್ಲಾ"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:426
+#: ../client/pk-console.c:428 ../client/pk-console-test.c:271
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:430
+#: ../client/pk-console.c:432 ../client/pk-console-test.c:275
 msgid "Restart"
-msgstr "ಮರಳಿ ಆರಂಭಿಸು"
+msgstr "ಪುನರಾರಂಭಿಸು"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:434
+#: ../client/pk-console.c:436 ../client/pk-console-test.c:279
 msgid "Update text"
 msgstr "ಪಠ್ಯವನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:438
+#: ../client/pk-console.c:440 ../client/pk-console-test.c:283
 msgid "Changes"
 msgstr "ಬದಲಾವಣೆಗಳು"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:442
+#: ../client/pk-console.c:444 ../client/pk-console-test.c:287
 msgid "State"
 msgstr "ಸ್ಥಿತಿ"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:447
+#: ../client/pk-console.c:449 ../client/pk-console-test.c:292
 msgid "Issued"
 msgstr "ಒದಗಿಸಲಾದವರು"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:452
+#: ../client/pk-console.c:454 ../client/pk-console-test.c:297
 msgid "Updated"
 msgstr "ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದ್ದು"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:472
+#: ../client/pk-console.c:474 ../client/pk-console-test.c:315
 msgid "Enabled"
-msgstr "ಶಕ್ತಗೊಂಡ"
+msgstr "ಸಕ್ರಿಯಗೊಂಡ"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:475
+#: ../client/pk-console.c:477 ../client/pk-console-test.c:318
 msgid "Disabled"
 msgstr "ಅಶಕ್ತಗೊಂಡ"
 
-#: ../client/pk-console.c:552 ../client/pk-console.c:554
+#: ../client/pk-console.c:554 ../client/pk-console.c:556
 msgid "Percentage"
 msgstr "ಪ್ರತಿಶತ"
 
-#: ../client/pk-console.c:554
+#: ../client/pk-console.c:556
 msgid "Unknown"
 msgstr "ಗೊತ್ತಿರದ"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:596
+#: ../client/pk-console.c:598 ../client/pk-console-test.c:340
 msgid "System restart required by:"
 msgstr "ಇದಕ್ಕಾಗಿ ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:599
+#: ../client/pk-console.c:601 ../client/pk-console-test.c:343
 msgid "Session restart required:"
 msgstr "ಇದಕ್ಕಾಗಿ ಅಧಿವೇಶವನವನ್ನು ಮರಳಿ ಆರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:602
+#: ../client/pk-console.c:604 ../client/pk-console-test.c:346
 msgid "System restart (security) required by:"
 msgstr "ಇದಕ್ಕಾಗಿ ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸುವ (ಸುರಕ್ಷತೆ) ಅಗತ್ಯವಿದೆ:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:605
+#: ../client/pk-console.c:607 ../client/pk-console-test.c:349
 msgid "Session restart (security) required:"
 msgstr "ಇದಕ್ಕಾಗಿ ಅಧಿವೇಶವನವನ್ನು ಮರಳಿ ಆರಂಭಿಸುವ(ಸುರಕ್ಷತೆ) ಅಗತ್ಯವಿದೆ:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:608
+#: ../client/pk-console.c:610 ../client/pk-console-test.c:352
 msgid "Application restart required by:"
 msgstr "ಇದಕ್ಕಾಗಿ ಅನ್ವಯವನ್ನು ಮರಳಿ ಆರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ:"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:663
+#: ../client/pk-console.c:665 ../client/pk-console-test.c:541
 msgid "Please restart the computer to complete the update."
 msgstr "ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:666
+#: ../client/pk-console.c:668 ../client/pk-console-test.c:544
 msgid "Please logout and login to complete the update."
 msgstr "ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ನಿರ್ಗಮಿಸಿ ನಂತರ ಮರಳಿ ಪ್ರವೇಶಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:669
+#: ../client/pk-console.c:671
 msgid "Please restart the application as it is being used."
 msgstr "ಅನ್ವಯವನ್ನು ಪ್ರಸಕ್ತ ಬಳಸಲಾಗುತ್ತಿರುವುದರಿಂದ ದಯವಿಟ್ಟು ಅದನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:672
+#: ../client/pk-console.c:674 ../client/pk-console-test.c:547
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -286,7 +294,7 @@ msgstr ""
 "ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:675
+#: ../client/pk-console.c:677 ../client/pk-console-test.c:550
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -295,439 +303,506 @@ msgstr ""
 "ದಯವಿಟ್ಟು ನಿರ್ಗಮಿಸಿ ನಂತರ ಮರಳಿ ಪ್ರವೇಶಿಸಿ."
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:807
+#: ../client/pk-console.c:809
 #, c-format
 msgid "The package %s is already installed"
 msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಈಗಾಗಲೆ ಅನುಸ್ಥಾಪಿಸಲಾಗಿದೆ"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:815
+#: ../client/pk-console.c:817
 #, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:841 ../client/pk-console.c:889
-#: ../client/pk-console.c:913 ../client/pk-console.c:961
-#: ../client/pk-console.c:1057 ../client/pk-console.c:1170
-#: ../client/pk-console.c:1231 ../client/pk-tools-common.c:62
-#: ../client/pk-tools-common.c:81 ../client/pk-tools-common.c:89
+#: ../client/pk-console.c:843 ../client/pk-console.c:891
+#: ../client/pk-console.c:915 ../client/pk-console.c:963
+#: ../client/pk-console.c:1059 ../client/pk-console.c:1172
+#: ../client/pk-console.c:1233 ../client/pk-tools-common.c:132
+#: ../client/pk-tools-common.c:151 ../client/pk-tools-common.c:159
 #, c-format
 msgid "Internal error: %s"
 msgstr "ಆಂತರಿಕ ದೋಷ: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:873 ../client/pk-console.c:945
-#: ../client/pk-console.c:1263
+#. ask the user
+#: ../client/pk-console.c:875 ../client/pk-console.c:947
+#: ../client/pk-console.c:1265 ../client/pk-task-text.c:299
 msgid "Proceed with changes?"
 msgstr "ಬದಲಾವಣೆಗಳೊಂದಿಗೆ ಮುಂದುವರೆಯಬೇಕೆ?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:878 ../client/pk-console.c:950
+#: ../client/pk-console.c:880 ../client/pk-console.c:952
 msgid "The package install was canceled!"
 msgstr "ಪ್ಯಾಕೇಜನ್ನು ಅನುಸ್ಥಾಪನೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ!"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:897 ../client/pk-console.c:1631
+#: ../client/pk-console.c:899 ../client/pk-console.c:1633
 #, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:969
+#: ../client/pk-console.c:971
 #, c-format
 msgid "This tool could not install the files: %s"
 msgstr "ಕಡತಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:1025
+#: ../client/pk-console.c:1027
 #, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "%s ಅನ್ನು ತೆಗೆದು ಹಾಕಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1048 ../client/pk-console.c:1086
-#: ../client/pk-console.c:1115
+#: ../client/pk-console.c:1050 ../client/pk-console.c:1088
+#: ../client/pk-console.c:1117
 #, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ತೆಗೆದು ಹಾಕಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:1101
+#: ../client/pk-console.c:1103
 msgid "Proceed with additional packages?"
 msgstr "ಹೆಚ್ಚುವರಿ ಪ್ಯಾಕೇಜುಗಳೊಂದಿಗೆ ಮುಂದುವರೆಯಬೇಕೆ?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1106
+#: ../client/pk-console.c:1108
 msgid "The package removal was canceled!"
 msgstr "ಪ್ಯಾಕೇಜನ್ನು ತೆಗೆದುಹಾಕುವಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:1147
+#: ../client/pk-console.c:1149
 #, c-format
 msgid "This tool could not download the package %s as it could not be found"
 msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ ಏಕೆಂದರೆ ಅದು ಕಂಡು ಬಂದಿಲ್ಲ"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1178
+#: ../client/pk-console.c:1180
 #, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1210 ../client/pk-console.c:1222
-#: ../client/pk-console.c:1277
+#: ../client/pk-console.c:1212 ../client/pk-console.c:1224
+#: ../client/pk-console.c:1279
 #, c-format
 msgid "This tool could not update %s: %s"
 msgstr "%s ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1270
 msgid "The package update was canceled!"
 msgstr "ಪ್ಯಾಕೇಜಿನ ಅಪ್‌ಡೇಟ್ ಮಾಡುವಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ!"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1301 ../client/pk-console.c:1309
+#: ../client/pk-console.c:1303 ../client/pk-console.c:1311
 #, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "%s ಗಾಗಿನ ಅವಶ್ಯಕತೆಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1331 ../client/pk-console.c:1339
+#: ../client/pk-console.c:1333 ../client/pk-console.c:1341
 #, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "%s ಗಾಗಿನ ಅವಲಂಬನೆಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1369
+#: ../client/pk-console.c:1363 ../client/pk-console.c:1371
 #, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "%s ಗಾಗಿನ ಪ್ಯಾಕೇಜಿನ ವಿವರಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1391
+#: ../client/pk-console.c:1393
 #, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "%s ಗಾಗಿನ ಕಡತದ ಪಟ್ಟಿಯನ್ನು ಕಂಡುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1399
+#: ../client/pk-console.c:1401
 #, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "%s ಗಾಗಿನ ಕಡತದ ಪಟ್ಟಿಯನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1423
 #, c-format
 msgid "File already exists: %s"
 msgstr "ಕಡತವು ಈಗಾಗಲೆ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1426 ../client/pk-console.c:1482
-#: ../client/pk-console.c:1557
+#: ../client/pk-console.c:1428 ../client/pk-console.c:1484
+#: ../client/pk-console.c:1559
 msgid "Getting package list"
 msgstr "ಪ್ಯಾಕೇಜಿನ ಪಟ್ಟಿಯನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1432 ../client/pk-console.c:1488
-#: ../client/pk-console.c:1563
+#: ../client/pk-console.c:1434 ../client/pk-console.c:1490
+#: ../client/pk-console.c:1565
 #, c-format
 msgid "This tool could not get package list: %s"
 msgstr "ಪ್ಯಾಕೇಜು ಪಟ್ಟಿಯನ್ನು ಪಡೆಯುವಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1443
+#: ../client/pk-console.c:1445
 #, c-format
 msgid "Failed to save to disk"
 msgstr "ಡಿಸ್ಕಿಗೆ ಉಳಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1477 ../client/pk-console.c:1552
+#: ../client/pk-console.c:1479 ../client/pk-console.c:1554
 #, c-format
 msgid "File does not exist: %s"
 msgstr "ಕಡತವು ಅಸ್ತಿತ್ವದಲ್ಲಿಲ್ಲ: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1509
+#: ../client/pk-console.c:1511
 msgid "Packages to add"
 msgstr "ಸೇರಿಸಬೇಕಿರುವ ಪ್ಯಾಕೇಜುಗಳು"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1517
+#: ../client/pk-console.c:1519
 msgid "Packages to remove"
 msgstr "ತೆಗೆದು ಹಾಕಬೇಕಿರುವ ಪ್ಯಾಕೇಜುಗಳು"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1585
+#: ../client/pk-console.c:1587
 #, c-format
 msgid "No new packages need to be installed"
 msgstr "ಯಾವುದೆ ಹೊಸ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1591
+#: ../client/pk-console.c:1593
 msgid "To install"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1603
+#: ../client/pk-console.c:1605
 msgid "Searching for package: "
 msgstr "ಪ್ಯಾಕೇಜಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ: "
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1607
+#: ../client/pk-console.c:1609
 msgid "not found."
 msgstr "ಕಂಡುಬಂದಿಲ್ಲ."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1618
+#: ../client/pk-console.c:1620
 #, c-format
 msgid "No packages can be found to install"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಯಾವುದೆ ಪ್ಯಾಕೇಜುಗಳು ಕಂಡುಬಂದಿಲ್ಲ"
 
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1624
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
+#: ../client/pk-console.c:1626
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
 #, c-format
 msgid "Installing packages"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1660
+#: ../client/pk-console.c:1662
 #, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "%s ಗಾಗಿನ ಅಪ್‌ಡೇಟ್ ವಿವರಗಳನ್ನು ಕಂಡುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1668
+#: ../client/pk-console.c:1670
 #, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "%s ಗಾಗಿನ ಅಪ್‌ಡೇಟ್ ವಿವರಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1699
+#: ../client/pk-console.c:1701
 msgid "Error:"
 msgstr "ದೋಷ:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1713
+#: ../client/pk-console.c:1715 ../client/pk-console-test.c:369
 msgid "Package description"
 msgstr "ಪ್ಯಾಕೇಜ್ ವಿವರಣೆ"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1729
+#: ../client/pk-console.c:1731 ../client/pk-console-test.c:387
 msgid "Message:"
 msgstr "ಸಂದೇಶ:"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1757
+#: ../client/pk-console.c:1759 ../client/pk-console-test.c:406
 msgid "Package files"
 msgstr "ಪ್ಯಾಕೇಜ್ ಕಡತಗಳು"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1765
+#: ../client/pk-console.c:1767 ../client/pk-console-test.c:401
 msgid "No files"
 msgstr "ಯಾವುದೆ ಕಡತಗಳಿಲ್ಲ"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1788
+#: ../client/pk-console.c:1790
 msgid "Repository signature required"
 msgstr "ರೆಪೋಸಿಟರಿ ಸಹಿಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1798
+#. ask the user
+#: ../client/pk-console.c:1800 ../client/pk-task-text.c:113
 msgid "Do you accept this signature?"
 msgstr "ಸಹಿಯನ್ನು ನೀವು ಒಪ್ಪಿಕೊಳ್ಳುತ್ತೀರೆ?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1802
+#: ../client/pk-console.c:1804 ../client/pk-task-text.c:117
 msgid "The signature was not accepted."
 msgstr "ಸಹಿಯನ್ನು ಒಪ್ಪಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1836
+#: ../client/pk-console.c:1838
 msgid "End user license agreement required"
 msgstr "ಎಂಡ್ ಯೂಸರ್ ಪರವಾನಗಿ ಒಪ್ಪಂದದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1843
+#: ../client/pk-console.c:1845
 msgid "Do you agree to this license?"
 msgstr "ನೀವು ಈ ಪರವಾನಗಿಯನ್ನು ಒಪ್ಪುತ್ತೀರೆ?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1847
+#: ../client/pk-console.c:1849
 msgid "The license was refused."
 msgstr "ಪರವಾನಗಿಯನ್ನು ತಿರಸ್ಕರಿಸಲಾಗಿದೆ."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1876
+#: ../client/pk-console.c:1878 ../client/pk-console-test.c:819
 msgid "The daemon crashed mid-transaction!"
 msgstr "ವ್ಯವಹಾರದ ಮಧ್ಯದಲ್ಲಿ ಡೀಮನ್ ಕುಸಿದು ಹೋಗಿದೆ!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1929
+#: ../client/pk-console.c:1931 ../client/pk-console-test.c:853
 msgid "PackageKit Console Interface"
 msgstr "PackageKit ಕನ್ಸೋಲ್ ಸಂಪರ್ಕಸಾಧನ"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1931
+#: ../client/pk-console.c:1933 ../client/pk-console-test.c:855
 msgid "Subcommands:"
 msgstr "ಉಪಆಜ್ಞೆಗಳು:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:2024 ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:128
+#: ../client/pk-console.c:2026 ../client/pk-console-test.c:969
+#: ../client/pk-generate-pack.c:185 ../client/pk-generate-pack-test.c:225
+#: ../client/pk-monitor.c:128 ../client/pk-monitor-test.c:282
 #: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:549
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "ಹೆಚ್ಚಿನ ದೋಷ ನಿವಾರಣಾ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸು"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:2027 ../client/pk-monitor.c:130
+#: ../client/pk-console.c:2029 ../client/pk-console-test.c:972
+#: ../client/pk-monitor.c:130 ../client/pk-monitor-test.c:284
 msgid "Show the program version and exit"
 msgstr "ಪ್ರೊಗ್ರಾಂ ಆವೃತ್ತಿಯನ್ನು ತೋರಿಸಿ ನಿರ್ಗಮಿಸು"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:2030
+#: ../client/pk-console.c:2032 ../client/pk-console-test.c:975
 msgid "Set the filter, e.g. installed"
 msgstr "ಫಿಲ್ಟರನ್ನು ಸಿದ್ಧಗೊಳಿಸಿ, ಉದಾ. ಅನುಸ್ಥಾಪಿಸಲಾದ"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:2033
+#: ../client/pk-console.c:2035 ../client/pk-console-test.c:978
 msgid "Exit without waiting for actions to complete"
 msgstr "ಕ್ರಿಯೆಗಳು ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ ಕಾಯದೆ ನಿರ್ಗಮಿಸು"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:2060
+#: ../client/pk-console.c:2062
 msgid "This tool could not connect to system DBUS."
 msgstr "ವ್ಯವಸ್ಥೆಯ DBUS ನೊಂದಿಗೆ ಸಂಪರ್ಕಸಾಧಿಸಲುಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:2150
+#: ../client/pk-console.c:2152 ../client/pk-console-test.c:1053
 msgid "The filter specified was invalid"
 msgstr "ಸೂಚಿಸಲಾದ ಫಿಲ್ಟರ್ ಅಮಾನ್ಯವಾಗಿದೆ"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:2169
+#: ../client/pk-console.c:2171 ../client/pk-console-test.c:1072
 msgid "A search type is required, e.g. name"
 msgstr "ಒಂದು ಹುಡುಕು ಬಗೆಯ ಅಗತ್ಯವಿದೆ, ಉದಾ. ಹೆಸರು"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:2176 ../client/pk-console.c:2185
-#: ../client/pk-console.c:2194 ../client/pk-console.c:2203
+#: ../client/pk-console.c:2178 ../client/pk-console.c:2187
+#: ../client/pk-console.c:2196 ../client/pk-console.c:2205
+#: ../client/pk-console-test.c:1079 ../client/pk-console-test.c:1091
+#: ../client/pk-console-test.c:1103 ../client/pk-console-test.c:1115
 msgid "A search term is required"
 msgstr "ಒಂದು ಹುಡುಕು ಪದದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:2210
+#: ../client/pk-console.c:2212 ../client/pk-console-test.c:1125
 msgid "Invalid search type"
 msgstr "ಅಮಾನ್ಯವಾದ ಹುಡುಕು ಬಗೆ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:2216
+#: ../client/pk-console.c:2218
 msgid "A package name or filename to install is required"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರು ಅಥವ ಕಡತದ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2225
+#: ../client/pk-console.c:2227 ../client/pk-console-test.c:1152
 msgid "A type, key_id and package_id are required"
 msgstr "ಬಗೆ, key_id ಹಾಗು package_id ಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:2234
+#: ../client/pk-console.c:2236 ../client/pk-console-test.c:1163
 msgid "A package name to remove is required"
 msgstr "ತೆಗೆದು ಹಾಕಬೇಕಿರುವ ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2242
+#: ../client/pk-console.c:2244 ../client/pk-console-test.c:1172
 msgid "A destination directory and the package names to download are required"
 msgstr "ಒಂದು ನಿರ್ದೇಶಿತ ಕೋಶ ಹಾಗು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಪ್ಯಾಕೇಜಿನ ಹೆಸರುಗಳ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2249
+#: ../client/pk-console.c:2251 ../client/pk-console-test.c:1179
 msgid "Directory not found"
 msgstr "ಕೋಶವು ಕಂಡುಬಂದಿಲ್ಲ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2257
+#: ../client/pk-console.c:2259 ../client/pk-console-test.c:1188
 msgid "A licence identifier (eula-id) is required"
 msgstr "ಪರವಾನಗಿ ಪತ್ತೆಗಾರನ (eula-id) ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2267
+#: ../client/pk-console.c:2269 ../client/pk-console-test.c:1199
 msgid "A transaction identifier (tid) is required"
 msgstr "ವ್ಯವಹಾರ ಪತ್ತೆಗಾರನ (tid) ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2284
+#: ../client/pk-console.c:2286 ../client/pk-console-test.c:1220
 msgid "A package name to resolve is required"
 msgstr "ಪರಿಹರಿಸಬೇಕಿರುವ ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2293 ../client/pk-console.c:2302
+#: ../client/pk-console.c:2295 ../client/pk-console.c:2304
+#: ../client/pk-console-test.c:1231 ../client/pk-console-test.c:1242
 msgid "A repository name is required"
 msgstr "ಒಂದು ರೆಪೋಸಿಟರಿ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2311
+#: ../client/pk-console.c:2313 ../client/pk-console-test.c:1253
 msgid "A repo name, parameter and value are required"
 msgstr "ಒಂದು ರೆಪೊ ಹೆಸರು, ನಿಯತಾಂಕ ಹಾಗು ಮೌಲ್ಯದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2325
+#: ../client/pk-console.c:2327 ../client/pk-console-test.c:1270
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ಒಂದು ಕ್ರಿಯೆಯ, ಉದಾ. 'update-system' ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2332
+#: ../client/pk-console.c:2334 ../client/pk-console-test.c:1277
 msgid "A correct role is required"
 msgstr "ಸೂಕ್ತವಾದ ಪಾತ್ರದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2339
+#: ../client/pk-console.c:2341 ../client/pk-console-test.c:934
 msgid "Failed to get the time since this action was last completed"
 msgstr "ಈ ಕಾರ್ಯವನ್ನು ಕೊನೆಯ ಬಾರಿಗೆ ಪೂರ್ಣಗೊಳಿಸದ ನಂತರ ಸಮಯವನ್ನು ಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2349 ../client/pk-console.c:2361
-#: ../client/pk-console.c:2370 ../client/pk-console.c:2388
-#: ../client/pk-console.c:2397 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2351 ../client/pk-console.c:2363
+#: ../client/pk-console.c:2372 ../client/pk-console.c:2390
+#: ../client/pk-console.c:2399 ../client/pk-console-test.c:1287
+#: ../client/pk-console-test.c:1302 ../client/pk-console-test.c:1311
+#: ../client/pk-console-test.c:1331 ../client/pk-console-test.c:1340
+#: ../client/pk-generate-pack.c:241 ../client/pk-generate-pack-test.c:288
 msgid "A package name is required"
 msgstr "ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2379
+#: ../client/pk-console.c:2381 ../client/pk-console-test.c:1320
 msgid "A package provide string is required"
 msgstr "ಪ್ಯಾಕೇಜನ್ನು ಒದಗಿಸುವ ವಾಕ್ಯದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2406
+#: ../client/pk-console.c:2408
 msgid "A list file name to create is required"
 msgstr "ರಚಿಸಬೇಕಿರುವ ಕಡತದ ಹೆಸರಿನ ಒಂದು ಪಟ್ಟಿಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2416 ../client/pk-console.c:2426
+#: ../client/pk-console.c:2418 ../client/pk-console.c:2428
 msgid "A list file to open is required"
 msgstr "ತೆರೆಯಬೇಕಿರುವ ಕಡತದ ಒಂದು ಪಟ್ಟಿಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2480
+#: ../client/pk-console.c:2482 ../client/pk-console-test.c:1400
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ಆಯ್ಕೆ '%s' ಯು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2493
+#: ../client/pk-console.c:2495
 msgid "Incorrect privileges for this operation"
 msgstr "ಈ ಕಾರ್ಯಕ್ಕಾಗಿನ ಸರಿಯಲ್ಲದ ಸವಲತ್ತುಗಳು"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2496
+#. /* TRANSLATORS: User does not have permission to do this */
+#. g_print ("%s\n", _("Incorrect privileges for this operation"));
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:2498 ../client/pk-console-test.c:1412
 msgid "Command failed"
 msgstr "ಆಜ್ಞೆಯು ವಿಫಲಗೊಂಡಿದೆ"
+
+#: ../client/pk-console-shared.c:52 ../client/pk-tools-common.c:51
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "1 ರಿಂದ %i ಒಳಗಿನ ಒಂದು ಅಂಕೆಯನ್ನು ನಮೂದಿಸಿ: "
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-console-shared.c:213 ../client/pk-tools-common.c:200
+msgid "More than one package matches:"
+msgstr "ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಪ್ಯಾಕೇಜುಗಳು ತಾಳೆಯಾಗುತ್ತವೆ:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-console-shared.c:222 ../client/pk-tools-common.c:207
+msgid "Please choose the correct package: "
+msgstr "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪ್ಯಾಕೇಜನ್ನು ಆಯ್ಕೆ ಮಾಡಿ: "
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:571
+#, c-format
+msgid "This tool could not find the available package: %s"
+msgstr "ಲಭ್ಯವಿರುವ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಈ ಉಪಕರಣದಿಂದ ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:599
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "ಅನುಸ್ಥಾಪಿಸಲಾದ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಈ ಉಪಕರಣದಿಂದ ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:627 ../client/pk-console-test.c:655
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "ಈ ಉಪಕರಣದಿಂದ ಪ್ಯಾಕೇಜನ್ನು ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console-test.c:683 ../client/pk-console-test.c:711
+#: ../client/pk-console-test.c:739 ../client/pk-console-test.c:767
+#: ../client/pk-console-test.c:795
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "ಈ ಉಪಕರಣದಿಂದ ಎಲ್ಲಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1131
+msgid "A package name to install is required"
+msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1140
+msgid "A filename to install is required"
+msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಕಡತದ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: This is the state of the transaction
 #: ../client/pk-generate-pack.c:101
@@ -745,110 +820,111 @@ msgid "Downloading dependencies"
 msgstr "ಅವಲಂಬನೆಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:188
+#: ../client/pk-generate-pack.c:188 ../client/pk-generate-pack-test.c:228
 msgid "Set the file name of dependencies to be excluded"
 msgstr "ಹೊರತು ಪಡಿಸಲು ಅವಲಂಬನೆಗಳ ಕಡತದ ಹೆಸರುಗಳನ್ನು ಸಿದ್ಧಗೊಳಿಸು"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:191
+#: ../client/pk-generate-pack.c:191 ../client/pk-generate-pack-test.c:231
 msgid "The output file or directory (the current directory is used if ommitted)"
 msgstr "ಔಟ್‌ಪುಟ್ ಕಡತ ಅಥವ ಕೋಶ (ಹೊರತುಪಡಿಸಿದರೆ ಪ್ರಸಕ್ತ ಕೋಶವನ್ನು ಬಳಸಲಾಗುವುದು)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:194
+#: ../client/pk-generate-pack.c:194 ../client/pk-generate-pack-test.c:234
 msgid "The package to be put into the service pack"
 msgstr "ಸರ್ವಿಸ್ ಪ್ಯಾಕಿನಲ್ಲಿ ಇರಿಸಬೇಕಿರುವ ಪ್ಯಾಕೇಜು"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:197
+#: ../client/pk-generate-pack.c:197 ../client/pk-generate-pack-test.c:237
 msgid "Put all updates available in the service pack"
 msgstr "ಲಭ್ಯವಿರುವ ಎಲ್ಲಾ ಅಪ್‌ಡೇಟುಗಳನ್ನು ಸರ್ವಿಸ್‌ ಪ್ಯಾಕಿನಲ್ಲಿ ಇರಿಸು"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:225 ../client/pk-generate-pack-test.c:272
 msgid "Neither --package or --updates option selected."
 msgstr "--package ಆಗಲಿ ಅಥವ --updates ಆಯ್ಕೆಯನ್ನು ಆರಿಸಲಾಗಿಲ್ಲ."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:233
+#: ../client/pk-generate-pack.c:233 ../client/pk-generate-pack-test.c:280
 msgid "Both options selected."
 msgstr "ಎರಡೂ ಆಯ್ಕೆಗಳನ್ನು ಆರಿಸಲಾಗಿದೆ."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:249
+#: ../client/pk-generate-pack.c:249 ../client/pk-generate-pack-test.c:296
 msgid "A output directory or file name is required"
 msgstr "ಔಟ್‌ಪುಟ್ ಕೋಶ ಅಥವ ಕಡತದ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
+#. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
+#. TRANSLATORS: This is when the backend doesn't have the capability to download
 #: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack-test.c:324 ../client/pk-generate-pack-test.c:330
 msgid "The package manager cannot perform this type of operation."
 msgstr "ಪ್ಯಾಕೇಜ್ ವ್ಯವಸ್ಥಾಪಕ ಈ ಬಗೆಯ ಕಾರ್ಯವನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:280
+#: ../client/pk-generate-pack.c:280 ../client/pk-generate-pack-test.c:337
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr ""
-"PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ ಪ್ಯಾಕ್‌ಗಳನ್ನು "
-"ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
+msgstr "PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ ಪ್ಯಾಕ್‌ಗಳನ್ನು ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:291
+#: ../client/pk-generate-pack.c:291 ../client/pk-generate-pack-test.c:348
 msgid "If specifying a file, the service pack name must end with"
 msgstr "ಒಂದು ಕಡತವನ್ನು ಸೂಚಿಸುವಂತಿದ್ದರೆ, ಸರ್ವಿಸ್‌ ಪ್ಯಾಕ್ ಹೆಸರು ಇದರೊಂದಿಗೆ ಪೂರ್ಣಗೊಳ್ಳಬೇಕು"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:307
+#: ../client/pk-generate-pack.c:307 ../client/pk-generate-pack-test.c:364
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "ಇದೆ ಹೆಸರಿನ ಒಂದು ಪ್ಯಾಕ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ, ನೀವದನ್ನು ತಿದ್ದಿ ಬರೆಯಲು ಬಯಸುತ್ತೀರೆ?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:310
+#: ../client/pk-generate-pack.c:310 ../client/pk-generate-pack-test.c:367
 msgid "The pack was not overwritten."
 msgstr "ಪ್ಯಾಕ್ ಅನ್ನು ತಿದ್ದಿ ಬರೆಯಲಾಗಿಲ್ಲ."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:323
+#: ../client/pk-generate-pack.c:323 ../client/pk-generate-pack-test.c:380
 msgid "Failed to create directory:"
 msgstr "ಕೋಶವನ್ನು ನಿರ್ಮಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:333
+#: ../client/pk-generate-pack.c:333 ../client/pk-generate-pack-test.c:392
 msgid "Failed to open package list."
 msgstr "ಪ್ಯಾಕೇಜುಗಳ ಪಟ್ಟಿಯನ್ನು ತೆರೆಯುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:344
+#: ../client/pk-generate-pack.c:344 ../client/pk-generate-pack-test.c:401
 msgid "Finding package name."
 msgstr "ಪ್ಯಾಕೇಜಿನ ಹೆಸರನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗುತ್ತಿದೆ."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:348
+#: ../client/pk-generate-pack.c:348 ../client/pk-generate-pack-test.c:405
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "ಪ್ಯಾಕೇಜ್ '%s' ಅನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗಲಿಲ್ಲ: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:365
+#: ../client/pk-generate-pack.c:365 ../client/pk-generate-pack-test.c:413
 msgid "Creating service pack..."
 msgstr "ಸರ್ವಿಸ್‌ ಪ್ಯಾಕನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:372
+#: ../client/pk-generate-pack.c:372 ../client/pk-generate-pack-test.c:428
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "ಸರ್ವಿಸ್‌ ಪ್ಯಾಕನ್ನು ರಚಿಸಲಾಗಿದೆ '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:377
+#: ../client/pk-generate-pack.c:377 ../client/pk-generate-pack-test.c:433
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s' ಅನ್ನು ರಚಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ: %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:146
+#: ../client/pk-monitor.c:146 ../client/pk-monitor-test.c:299
 msgid "PackageKit Monitor"
 msgstr "PackageKit ಮೇಲ್ವಿಚಾರಕ"
 
@@ -856,26 +932,106 @@ msgstr "PackageKit ಮೇಲ್ವಿಚಾರಕ"
 msgid "Cannot show the list of transactions"
 msgstr "ವ್ಯವಹಾರಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ"
 
+#: ../client/pk-monitor-test.c:204
+msgid "Failed to get transaction list"
+msgstr "ವ್ಯವಹಾರದ ಪಟ್ಟಿಯನ್ನು ಪಡೆಯುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
+
+#: ../client/pk-monitor-test.c:235
+msgid "Failed to get daemon state"
+msgstr "ಡೆಮನ್ ಸ್ಥಿತಿಯನ್ನು ಪಡೆಯುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
+
+#. ask the user
+#: ../client/pk-task-text.c:64
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "ಸಹಿ ಮಾಡದೆ ಇರುವ ತಂತ್ರಾಂಶವನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ನೀವು ಬಯಸುತ್ತೀರೆ?"
+
+#: ../client/pk-task-text.c:68
+msgid "The unsigned software will not be installed."
+msgstr "ಸಹಿ ಮಾಡದೆ ಇರುವ ತಂತ್ರಾಂಶವನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ."
+
+#: ../client/pk-task-text.c:100
+msgid "Software source signature required"
+msgstr "ತಂತ್ರಾಂಶ ಆಕರದ ಸಹಿಯ ಅಗತ್ಯವಿದೆ"
+
+#: ../client/pk-task-text.c:102
+msgid "Software source name"
+msgstr "ತಂತ್ರಾಂಶ ಆಕರದ ಹೆಸರು"
+
+#: ../client/pk-task-text.c:103
+msgid "Key URL"
+msgstr "ಕೀಲಿ URL"
+
+#: ../client/pk-task-text.c:104
+msgid "Key user"
+msgstr "ಕೀಲಿ ಬಳಕೆದಾರ"
+
+#: ../client/pk-task-text.c:105
+msgid "Key ID"
+msgstr "ಕೀಲಿ ಐಡಿ"
+
+#: ../client/pk-task-text.c:106
+msgid "Key fingerprint"
+msgstr "ಕೀಲಿ ಫಿಂಗರ್ಪ್ರಿಂಟ್"
+
+#: ../client/pk-task-text.c:107
+msgid "Key Timestamp"
+msgstr "ಕೀಲಿ ಸಮಯ ಮುದ್ರೆ"
+
+#: ../client/pk-task-text.c:151
+msgid "End user licence agreement required"
+msgstr "ಬಳಕೆದಾರ ಲೈಸೆನ್ಸ್ ಕರಾರಿನ ಅಗತ್ಯವಿದೆ"
+
+#: ../client/pk-task-text.c:152
+msgid "EULA ID"
+msgstr "EULA ID"
+
+#: ../client/pk-task-text.c:155
+msgid "Agreement"
+msgstr "ಕರಾರು"
+
+#. ask the user
+#: ../client/pk-task-text.c:161
+msgid "Do you accept this agreement?"
+msgstr "ನೀವು ಈ ಕರಾರನ್ನು ಒಪ್ಪುತ್ತೀರೆ?"
+
+#: ../client/pk-task-text.c:165
+msgid "The agreement was not accepted."
+msgstr "ಕರಾರನ್ನು ಒಪ್ಪಲಾಗಿಲ್ಲ."
+
+#: ../client/pk-task-text.c:194
+msgid "Media change required"
+msgstr "ಮಾಧ್ಯಮವನ್ನು ಬದಲಾಯಿಸುವ ಅಗತ್ಯವಿದೆ"
+
+#: ../client/pk-task-text.c:195
+msgid "Media type"
+msgstr "ಮಾಧ್ಯಮದ ಬಗೆ"
+
+#: ../client/pk-task-text.c:196
+msgid "Media ID"
+msgstr "ಮಾಧ್ಯಮ ಐಡಿ"
+
+#: ../client/pk-task-text.c:197
+msgid "Text"
+msgstr "ಪಠ್ಯ"
+
+#. ask the user
+#: ../client/pk-task-text.c:201
+msgid "Please insert the correct media"
+msgstr "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಮಾಧಮವನ್ನು ತೂರಿಸಿ"
+
+#: ../client/pk-task-text.c:205
+msgid "The correct media was not inserted."
+msgstr "ಸರಿಯಾದ ಮಾಧಮವನ್ನು ತೂರಿಸಲಾಗಿಲ್ಲ."
+
+#: ../client/pk-task-text.c:303
+msgid "The transaction did not proceed."
+msgstr "ವ್ಯವಹಾರವು ಮುಂದುವರೆಯಲಿಲ್ಲ."
+
 #. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:118
+#: ../client/pk-tools-common.c:188
 #, c-format
 msgid "The package could not be found"
 msgstr "ಪ್ಯಾಕೇಜು ಕಂಡು ಬಂದಿಲ್ಲ"
-
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:130
-msgid "More than one package matches:"
-msgstr "ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಪ್ಯಾಕೇಜುಗಳು ತಾಳೆಯಾಗುತ್ತವೆ:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:137
-msgid "Please choose the correct package: "
-msgstr "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪ್ಯಾಕೇಜನ್ನು ಆಯ್ಕೆ ಮಾಡಿ: "
-
-#: ../client/pk-tools-common.c:162
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "1 ರಿಂದ %i ಒಳಗಿನ ಒಂದು ಅಂಕೆಯನ್ನು ನಮೂದಿಸಿ: "
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/pk-plugin-install.c:466
@@ -1032,174 +1188,174 @@ msgid "Failed to find the package %s, or already installed: %s"
 msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಹುಡುಕಲು ವಿಫಲಗೊಂಡಿದೆ, ಅಥವ ಈಗಾಗಲೆ ಅನುಸ್ಥಾಪಿಸಲಾಗಿದೆ: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
 msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ನಿಜವಾಗಿಯೂ ಅನುಸ್ಥಾಪಿಸಬೇಡ, ಏನನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ ಎನ್ನುವುದನ್ನು ತೋರಿಸು"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
 msgid "Do not install dependencies of the core packages"
 msgstr "ಪ್ರಮುಖ ಪ್ಯಾಕೇಜುಗಳ ಅವಲಂಭನೆಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಬೇಡ"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
 msgstr "ಮಾಹಿತಿಯನ್ನು ಅಥವ ಪ್ರಗತಿಯನ್ನು ತೋರಿಸಬೇಡ"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit Debuginfo ಅನುಸ್ಥಾಪಕ"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ERROR: ಅನುಸ್ಥಾಪಿಸಲು ಪ್ಯಾಕೇಜಿನ ಹೆಸರುಗಳನ್ನು ಸೂಚಿಸಿ."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
 #, c-format
 msgid "Getting sources list"
 msgstr "ಆಕರಗಳ ಪಟ್ಟಿಯನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:680
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:954
 #, c-format
 msgid "OK."
 msgstr "ಸರಿ."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "%i ಶಕ್ತಗೊಂಡ ಹಾಗು %i ಅಶಕ್ತಗೊಂಡ ಆಕರಗಳು ಕಂಡುಬಂದಿವೆ."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
 #, c-format
 msgid "Finding debugging sources"
 msgstr "ದೋಷ ನಿವಾರಣಾ ಆಕರಗಳು ಕಂಡುಬಂದಿವೆ"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "%i ಅಶಕ್ತಗೊಂಡ debuginfo ರೆಪೊಗಳು ಕಂಡುಬಂದಿವೆ."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "ದೋಷ ನಿವಾರಣಾ ಆಕರಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:939
 msgid "FAILED."
 msgstr "FAILED."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "%i ದೋಷನಿವಾರಣಾ ಆಕರಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:725
 #, c-format
 msgid "Finding debugging packages"
 msgstr "ದೋಷನಿವಾರಣಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಪತ್ತೆ ಮಾಡುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:760
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "debuginfo ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಪತ್ತೆ ಮಾಡುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
 #, c-format
 msgid "Found no packages to install."
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಯಾವುದೆ ಪ್ಯಾಕೇಜುಗಳು ಕಂಡುಬಂದಿಲ್ಲ."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:802
 #, c-format
 msgid "Found %i packages:"
 msgstr "%i ಪ್ಯಾಕೇಜುಗಳು ಕಂಡುಬಂದಿವೆ:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳ ಮೇಲೆ ಅವಲಂಬಿತವಾದ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:831
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "ಅವಲಂಬಿತ ಪ್ಯಾಕೇಜುಗಳು ಕಂಡು ಬಂದಿಲ್ಲ: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
 msgstr "%i ಹೆಚ್ಚುವರಿ ಪ್ಯಾಕೇಜುಗಳು ಕಂಡುಬಂದಿವೆ."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
 #, c-format
 msgid "No extra packages required."
 msgstr "ಯಾವುದೆ ಹೆಚ್ಚಿನ ಪ್ಯಾಕೇಜುಗಳ ಅಗತ್ಯವಿಲ್ಲ."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು %i ಪ್ಯಾಕೇಜುಗಳು ಕಂಡುಬಂದಿವೆ :"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "ಅನುಕರಣಾ ಕ್ರಮದಲ್ಲಿ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತಿಲ್ಲ"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:898
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:930
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "ಈ ಮೊದಲು ಶಕ್ತಗೊಳಿಸಲಾಗಿದ್ದ ಆಕರಗಳನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗುತ್ತಿದೆ"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:942
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "ದೋಷನಿವಾರಣಾ ಆಕರಗಳನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗಲಿಲ್ಲ: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:957
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "%i ದೋಷನಿವಾರಣಾ ಆಕರಗಳನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
@@ -1558,7 +1714,7 @@ msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ 
 
 #: ../src/pk-polkit-action-lookup.c:192
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜನ್ನು ಅನುಸ್ಥಾಪಿಸುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr "ಸುರಕ್ಷಿತವಾಗಿದೆ ಎಂದು ನಿಮಗೆ ಖಚಿತವಾಗಿರದ ಹೊರತು ಈ ಪ್ಯಾಕೇಜನ್ನು ನೀವು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #: ../src/pk-polkit-action-lookup.c:193
 msgid "Do not install these packages unless you are sure it is safe to do so."
