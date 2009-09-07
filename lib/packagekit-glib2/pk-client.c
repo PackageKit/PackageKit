@@ -3351,6 +3351,50 @@ pk_client_test_cancel (GCancellable *cancellable)
 	return FALSE;
 }
 
+static void
+pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	const PkResultItemFiles *item;
+	GPtrArray *array = NULL;
+	guint len;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		egg_test_failed (test, "failed to download: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		egg_test_failed (test, "failed to download: %s", pk_exit_enum_to_text (exit_enum));
+
+	/* check number */
+	array = pk_results_get_files_array (results);
+	if (array->len != 1)
+		egg_test_failed (test, "invalid number of files: %i", array->len);
+
+	/* check a result */
+	item = g_ptr_array_index (array, 0);
+	if (item->package_id != NULL)
+		egg_test_failed (test, "invalid package_id: %s, expecting NULL", item->package_id);
+	len = g_strv_length (item->files);
+	if (len != 2)
+		egg_test_failed (test, "invalid number of files: %i", len);
+	if (g_strcmp0 (item->files[0], "/tmp/powertop-1.8-1.fc8.rpm") != 0)
+		egg_test_failed (test, "invalid filename: %s, maybe not rewritten", item->files[0]);
+out:
+	g_ptr_array_unref (array);
+	if (results != NULL)
+		g_object_unref (results);
+	egg_test_loop_quit (test);
+}
+
 void
 pk_client_test (gpointer user_data)
 {
@@ -3476,6 +3520,15 @@ pk_client_test (gpointer user_data)
 	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "cancelled in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "do downloads");
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	pk_client_download_packages_async (client, package_ids, "/tmp", cancellable,
+					   (PkProgressCallback) pk_client_test_progress_cb, test,
+					   (GAsyncReadyCallback) pk_client_test_download_cb, test);
+	g_strfreev (package_ids);
+	egg_test_loop_wait (test, 15000);
 
 	g_object_unref (cancellable);
 	g_object_unref (client);
