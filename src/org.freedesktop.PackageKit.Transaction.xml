@@ -160,6 +160,19 @@
           <doc:para>
             This method downloads packages into a temporary directory.
           </doc:para>
+          <doc:para>
+            This method should emit one
+            <doc:tt>Files</doc:tt> signal for each package that is downloaded,
+            with the file list set as the name of the complete downloaded file
+            and directory, so for example:
+          </doc:para>
+          <doc:para>
+            <doc:tt>DownloadPackages('hal;0.1.2;i386;fedora','hal-info;2009-09-07;no-arch;updates')</doc:tt>
+            should send two signals, e.g.
+            <doc:tt>Files('hal;0.1.2;i386;fedora', '/tmp/hal-0.1.2.i386.rpm')</doc:tt>
+            and
+            <doc:tt>Files('hal-info;2009-09-07;no-arch;updates', '/tmp/hal-info-2009-09-07.noarch.rpm')</doc:tt>.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="as" name="package_ids" direction="in">

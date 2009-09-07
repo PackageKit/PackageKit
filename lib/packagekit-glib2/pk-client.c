@@ -42,6 +42,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-marshal.h>
+#include <packagekit-glib2/pk-package-ids.h>
 
 #include "egg-debug.h"
 
@@ -100,6 +101,7 @@ typedef struct {
 	PkResults			*results;
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
+	guint				 refcount;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -324,7 +326,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	}
 
 	/* remove from list */
-	g_ptr_array_remove (state->client->priv->calls, state);
+	g_ptr_array_remove (priv->calls, state);
 	egg_debug ("state array remove %p", state);
 
 	/* complete */
@@ -347,6 +349,163 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_object_unref (state->results);
 	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
+}
+
+/**
+ * pk_client_copy_finished_remove_old_files:
+ *
+ * Removes all the files that do not have the prefix destination path.
+ * This should remove all the old /var/cache/PackageKit/$TMP/powertop-1.8-1.fc8.rpm
+ * and leave the $DESTDIR/powertop-1.8-1.fc8.rpm files.
+ */
+static void
+pk_client_copy_finished_remove_old_files (PkClientState *state)
+{
+	const PkResultItemFiles *item;
+	GPtrArray *array = NULL;
+	guint i;
+
+	/* get the data */
+	array = pk_results_get_files_array (state->results);
+	if (array == NULL)
+		egg_error ("internal error");
+
+	/* remove any without dest path */
+	for (i=0; i < array->len; ) {
+		item = g_ptr_array_index (array, i);
+		if (!g_str_has_prefix (item->files[0], state->directory))
+			g_ptr_array_remove_index_fast (array, i);
+		else
+			i++;
+	}
+
+	/* we're done modifying the data */
+	g_ptr_array_unref (array);
+}
+
+/**
+ * pk_client_copy_finished_cb:
+ */
+static void
+pk_client_copy_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
+{
+	gboolean ret;
+	gchar *path;
+	GError *error = NULL;
+
+	/* debug */
+	path = g_file_get_path (file);
+	egg_debug ("finished copy of %s", path);
+
+	/* get the result */
+	ret = g_file_copy_finish (file, res, &error);
+	if (!ret) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* no more copies pending? */
+	if (--state->refcount == 0) {
+		pk_client_copy_finished_remove_old_files (state);
+		pk_client_state_finish (state, error);
+	}
+out:
+	g_free (path);
+}
+
+/**
+ * pk_client_copy_progress_cb:
+ */
+static void
+pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, PkClientState *state)
+{
+	PkStatusEnum status_enum = PK_STATUS_ENUM_REPACKAGING;
+
+	/* save progress */
+	g_object_set (state->progress,
+		      "status", status_enum,
+		      NULL);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+}
+
+/**
+ * pk_client_copy_downloaded_file:
+ */
+static void
+pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, const gchar *source_file)
+{
+	gchar *basename;
+	gchar *path;
+	gchar **files;
+	GFile *source;
+	GFile *destination;
+
+	/* generate the destination location */
+	basename = g_path_get_basename (source_file);
+	path = g_build_filename (state->directory, basename, NULL);
+
+	/* copy async */
+	egg_debug ("copy %s to %s", source_file, path);
+	source = g_file_new_for_path (source_file);
+	destination = g_file_new_for_path (path);
+	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
+			   (GFileProgressCallback) pk_client_copy_progress_cb, state,
+			   (GAsyncReadyCallback) pk_client_copy_finished_cb, state);
+
+	/* Add the result (as a GStrv) to the results set */
+	files = g_strsplit (path, ",", -1);
+	pk_results_add_files (state->results, package_id, files);
+
+	/* free everything we've used */
+	g_object_unref (source);
+	g_object_unref (destination);
+	g_strfreev (files);
+	g_free (basename);
+	g_free (path);
+}
+
+/**
+ * pk_client_copy_downloaded:
+ *
+ * We have to copy the files from the temporary directory into the user-specified
+ * directory. There should only be one file for each package, although this is
+ * not encoded in the spec.
+ */
+static void
+pk_client_copy_downloaded (PkClientState *state)
+{
+	guint i;
+	guint j;
+	guint len;
+	const PkResultItemFiles *item;
+	GPtrArray *array = NULL;
+
+	/* get data */
+	array = pk_results_get_files_array (state->results);
+	if (array == NULL)
+		egg_error ("internal error");
+
+	/* get the number of files to copy */
+	for (i=0; i < array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		state->refcount += g_strv_length (item->files);
+	}
+	egg_debug ("%i files to copy", state->refcount);
+
+	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
+	len = array->len;
+
+	/* do the copies pipelined */
+	for (i=0; i < len; i++) {
+		item = g_ptr_array_index (array, i);
+		for (j=0; item->files[j] != NULL; j++)
+			pk_client_copy_downloaded_file (state, item->package_id, item->files[j]);
+	}
+	g_ptr_array_unref (array);
 }
 
 /**
@@ -378,6 +537,12 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
 		}
 		pk_client_state_finish (state, error);
+		return;
+	}
+
+	/* do we have to copy results? */
+	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		pk_client_copy_downloaded (state);
 		return;
 	}
 
@@ -911,7 +1076,6 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
-						       G_TYPE_STRING, state->directory,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
@@ -3351,6 +3515,50 @@ pk_client_test_cancel (GCancellable *cancellable)
 	return FALSE;
 }
 
+static void
+pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	const PkResultItemFiles *item;
+	GPtrArray *array = NULL;
+	guint len;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		egg_test_failed (test, "failed to download: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
+		egg_test_failed (test, "failed to download: %s", pk_exit_enum_to_text (exit_enum));
+
+	/* check number */
+	array = pk_results_get_files_array (results);
+	if (array->len != 2)
+		egg_test_failed (test, "invalid number of files: %i", array->len);
+
+	/* check a result */
+	item = g_ptr_array_index (array, 0);
+	if (g_strcmp0 (item->package_id, "powertop-common;1.8-1.fc8;i386;fedora") != 0)
+		egg_test_failed (test, "invalid package_id: %s", item->package_id);
+	len = g_strv_length (item->files);
+	if (len != 1)
+		egg_test_failed (test, "invalid number of files: %i", len);
+	if (g_strcmp0 (item->files[0], "/tmp/powertop-common-1.8-1.fc8.rpm") != 0)
+		egg_test_failed (test, "invalid filename: %s, maybe not rewritten", item->files[0]);
+out:
+	g_ptr_array_unref (array);
+	if (results != NULL)
+		g_object_unref (results);
+	egg_test_loop_quit (test);
+}
+
 void
 pk_client_test (gpointer user_data)
 {
@@ -3396,7 +3604,7 @@ pk_client_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "resolve package");
-	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora,powertop", ",", -1);
+	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
 				 (PkProgressCallback) pk_client_test_progress_cb, test,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
@@ -3425,7 +3633,7 @@ pk_client_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "get details about package");
-	package_ids = g_strsplit ("powertop;1.8-1.fc8;i386;fedora", ",", -1);
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
 	pk_client_get_details_async (client, package_ids, NULL,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_get_details_cb, test);
@@ -3476,6 +3684,18 @@ pk_client_test (gpointer user_data)
 	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "cancelled in %i", egg_test_elapsed (test));
+
+	g_cancellable_reset (cancellable);
+
+	/************************************************************/
+	egg_test_title (test, "do downloads");
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	pk_client_download_packages_async (client, package_ids, "/tmp", cancellable,
+					   (PkProgressCallback) pk_client_test_progress_cb, test,
+					   (GAsyncReadyCallback) pk_client_test_download_cb, test);
+	g_strfreev (package_ids);
+	egg_test_loop_wait (test, 15000);
+	egg_test_success (test, "downloaded and copied in %i", egg_test_elapsed (test));
 
 	g_object_unref (cancellable);
 	g_object_unref (client);

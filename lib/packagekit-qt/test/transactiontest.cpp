@@ -44,7 +44,7 @@ void TransactionTest::resolveAndInstallAndRemove()
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("resolve", success);
 
-	t = c->installPackage(currentPackage);
+	t = c->installPackage(FALSE, currentPackage);
 	CPPUNIT_ASSERT_MESSAGE("installPackages", t != NULL);
 	qDebug() << "Installing";
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));

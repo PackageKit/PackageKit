@@ -862,15 +862,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_DOWNLOAD)
         percentage = 0
         bump = 100 / len(package_ids)
-        files = []
 
         # download each package
-        for package in package_ids:
+        for package_id in package_ids:
             self.percentage(percentage)
-            pkg, inst = self._findPackage(package)
+            pkg, inst = self._findPackage(package_id)
             # if we couldn't map package_id -> pkg
             if not pkg:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % package)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % package_id)
                 continue
 
             n, a, e, v, r = pkg.pkgtup
@@ -884,7 +883,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
             # if we couldn't map package_id -> pkg
             if len(packs) == 0:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find a match for package %s" % package)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find a match for package %s" % package_id)
                 continue
 
             # should have only one...
@@ -908,15 +907,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkg_download.localpath = local #Hack:To set the localpath we want
                 try:
                     path = repo.getPackage(pkg_download)
-                    files.append(path)
+
+                    # emit the file we downloaded
+                    package_id_tmp = self._pkg_to_id(pkg_download)
+                    self.files(package_id_tmp, path)
+
                 except IOError, e:
                     self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
                     return
             percentage += bump
-
-        # emit the file list we downloaded
-        file_list = ";".join(files)
-        self.files(package_ids[0], file_list)
 
         # in case we don't sum to 100
         self.percentage(100)

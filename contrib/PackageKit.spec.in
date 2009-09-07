@@ -377,7 +377,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
 
-%files debuginfo-install
+%files debug-install
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_bindir}/pk-debuginfo-install

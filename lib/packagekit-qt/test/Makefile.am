@@ -4,6 +4,7 @@ NULL =
 
 INCLUDES =						\
 	$(QTCORE_CFLAGS)				\
+	$(QTGUI_CFLAGS)					\
 	$(QTDBUS_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	$(CPPUNIT_CFLAGS)				\
@@ -36,6 +37,7 @@ $(pk_self_test_OBJECTS) :				\
 
 pk_self_test_LDADD =					\
 	$(QTCORE_LIBS)					\
+	$(QTGUI_LIBS)					\
 	$(QTDBUS_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(CPPUNIT_LIBS)					\
