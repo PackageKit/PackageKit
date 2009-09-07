@@ -566,7 +566,7 @@ PORTAUDIT="#{PREFIX}/sbin/portaudit"
   def refresh_cache(force)
     percentage(0)
     status(STATUS_DOWNLOAD_PACKAGELIST)
-    $portsdb.update(fetch=true)
+    system "cd #{$portsdb.abs_ports_dir} && make update"
     if File.exist?(PORTAUDIT)
       status(STATUS_DOWNLOAD_UPDATEINFO)
       system(PORTAUDIT, '-q', '-F')

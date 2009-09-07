@@ -98,6 +98,7 @@ struct _PkBackendPrivate
 	gboolean		 simultaneous;
 	gboolean		 has_sent_package;
 	gboolean		 use_time;
+	guint			 download_files;
 	PkNetwork		*network;
 	PkStore			*store;
 	PkPackageObj		*last_package;
@@ -1224,6 +1225,8 @@ out:
 gboolean
 pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1234,11 +1237,19 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 		return FALSE;
 	}
 
+	/* check we are valid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		egg_warning ("package_id invalid and cannot be processed: %s", package_id);
+		goto out;
+	}
+
 	egg_debug ("emit files %s, %s", package_id, filelist);
 	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
 		       package_id, filelist);
-
-	return TRUE;
+	backend->priv->download_files++;
+out:
+	return ret;
 }
 
 /**
@@ -1690,6 +1701,14 @@ pk_backend_finished (PkBackend *backend)
 				    "Backends should send a Package() for %s!", role_text);
 	}
 
+	/* ensure the same number of ::Files() were sent as packages for DownloadPackages */
+	if (!backend->priv->set_error &&
+	    backend->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
+	    backend->priv->download_files == 0) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+				    "Backends should send multiple Files() for each package_id!");
+	}
+
 	/* if we set an error code notifier, clear */
 	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
@@ -2092,6 +2111,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->set_eula = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->has_sent_package = FALSE;
+	backend->priv->download_files = 0;
 	backend->priv->thread = NULL;
 	backend->priv->last_package = NULL;
 	backend->priv->allow_cancel = PK_BACKEND_TRISTATE_UNSET;
