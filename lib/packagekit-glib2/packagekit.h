@@ -27,6 +27,7 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-desktop.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-item.h>
 #include <packagekit-glib2/pk-package-id.h>

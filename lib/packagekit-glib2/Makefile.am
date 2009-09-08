@@ -35,13 +35,16 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-client.h						\
 	pk-common.h						\
 	pk-control.h						\
+	pk-desktop.h						\
+	pk-enum.h						\
+	pk-item.h						\
 	pk-package.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-sack.h					\
 	pk-progress.h						\
-	pk-service-pack.h					\
 	pk-results.h						\
+	pk-service-pack.h					\
 	pk-task.h						\
 	$(NULL)
 
@@ -59,6 +62,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-common.h						\
 	pk-control.c						\
 	pk-control.h						\
+	pk-desktop.c						\
+	pk-desktop.h						\
 	pk-enum.c						\
 	pk-enum.h						\
 	pk-marshal.c						\
@@ -89,6 +94,7 @@ libpackagekit_glib2_la_LIBADD =					\
 	$(GIO_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(ARCHIVE_LIBS)						\
+	$(SQLITE_LIBS)						\
 	$(NULL)
 
 libpackagekit_glib2_la_LDFLAGS =				\
