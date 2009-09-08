@@ -81,7 +81,7 @@ pk_transaction_extra_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTr
  * pk_transaction_extra_package_cb:
  **/
 static void
-pk_transaction_extra_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransactionExtra *extra)
+pk_transaction_extra_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTransactionExtra *extra)
 {
 	pk_obj_list_add (PK_OBJ_LIST(extra->priv->list), obj);
 }
@@ -119,10 +119,10 @@ pk_transaction_extra_set_progress_changed (PkTransactionExtra *extra, guint perc
 /**
  * pk_transaction_extra_get_installed_package_for_file:
  **/
-static const PkPackageObj *
+static const PkItemPackage *
 pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, const gchar *filename)
 {
-	const PkPackageObj *obj = NULL;
+	const PkItemPackage *obj = NULL;
 	PkStore *store;
 
 	/* use PK to find the correct package */
@@ -279,7 +279,7 @@ pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar
 	gchar *md5 = NULL;
 	gchar *package = NULL;
 	gint rc = -1;
-	const PkPackageObj *obj;
+	const PkItemPackage *obj;
 
 	/* if we've got it, use old data */
 	if (md5_opt != NULL)
@@ -856,7 +856,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 	gchar *package_id;
 	GPtrArray *files_session;
 	GPtrArray *files_system;
-	const PkPackageObj *obj;
+	const PkItemPackage *obj;
 	GPtrArray *pids;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);

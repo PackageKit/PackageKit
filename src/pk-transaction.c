@@ -470,7 +470,7 @@ pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gbool
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, PkDetailsObj *obj, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend, PkItemDetails *obj, PkTransaction *transaction)
 {
 	const gchar *group_text;
 	gchar *package_id;
@@ -478,7 +478,7 @@ pk_transaction_details_cb (PkBackend *backend, PkDetailsObj *obj, PkTransaction 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	group_text = pk_group_enum_to_text (obj->group);
+	group_text = pk_group_enum_to_text (obj->group_enum);
 	package_id = pk_package_id_to_string (obj->id);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0, package_id,
 		       obj->license, group_text, obj->description, obj->url, obj->size);
@@ -579,7 +579,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	guint i, length;
 	GPtrArray *list;
 	GPtrArray *package_list;
-	const PkPackageObj *obj;
+	const PkItemPackage *obj;
 	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -821,7 +821,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
  * pk_transaction_package_cb:
  **/
 static void
-pk_transaction_package_cb (PkBackend *backend, const PkPackageObj *obj, PkTransaction *transaction)
+pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTransaction *transaction)
 {
 	const gchar *info_text;
 	const gchar *role_text;
@@ -1061,7 +1061,7 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
  * pk_transaction_update_detail_cb:
  **/
 static void
-pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *detail, PkTransaction *transaction)
+pk_transaction_update_detail_cb (PkBackend *backend, const PkItemUpdateDetail *detail, PkTransaction *transaction)
 {
 	const gchar *restart_text;
 	const gchar *state_text;
@@ -1098,7 +1098,7 @@ static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
 {
 	GPtrArray *updates;
-	const PkPackageObj *obj;
+	const PkItemPackage *obj;
 	guint i;
 	guint j;
 	guint length;
@@ -3039,7 +3039,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
 	if (updates_cache != NULL) {
-		const PkPackageObj *obj;
+		const PkItemPackage *obj;
 		const gchar *info_text;
 		guint i;
 

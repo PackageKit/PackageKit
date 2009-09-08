@@ -101,7 +101,7 @@ struct _PkBackendPrivate
 	guint			 download_files;
 	PkNetwork		*network;
 	PkStore			*store;
-	PkPackageObj		*last_package;
+	PkItemPackage		*last_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -789,37 +789,35 @@ pk_backend_get_status (PkBackend *backend)
 static gboolean
 pk_backend_package_emulate_finished (PkBackend *backend)
 {
-	PkInfoEnum info;
-	gchar *package_id;
 	gboolean ret = FALSE;
+	const PkItemPackage *item;
 
 	/* simultaneous handles this on it's own */
 	if (backend->priv->simultaneous)
-		return FALSE;
+		goto out;
 
 	/* first package in transaction */
-	if (backend->priv->last_package == NULL)
-		return FALSE;
+	item = backend->priv->last_package;
+	if (item == NULL)
+		goto out;
 
 	/* already finished */
-	if (backend->priv->last_package->info == PK_INFO_ENUM_FINISHED)
-		return FALSE;
+	if (item->info_enum == PK_INFO_ENUM_FINISHED)
+		goto out;
 
 	/* only makes sense for some values */
-	info = backend->priv->last_package->info;
-	if (info == PK_INFO_ENUM_DOWNLOADING ||
-	    info == PK_INFO_ENUM_UPDATING ||
-	    info == PK_INFO_ENUM_INSTALLING ||
-	    info == PK_INFO_ENUM_REMOVING ||
-	    info == PK_INFO_ENUM_CLEANUP ||
-	    info == PK_INFO_ENUM_OBSOLETING ||
-	    info == PK_INFO_ENUM_REINSTALLING ||
-	    info == PK_INFO_ENUM_DOWNGRADING) {
-		package_id = pk_package_id_to_string (backend->priv->last_package->id);
-		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, package_id, backend->priv->last_package->summary);
-		g_free (package_id);
+	if (item->info_enum == PK_INFO_ENUM_DOWNLOADING ||
+	    item->info_enum == PK_INFO_ENUM_UPDATING ||
+	    item->info_enum == PK_INFO_ENUM_INSTALLING ||
+	    item->info_enum == PK_INFO_ENUM_REMOVING ||
+	    item->info_enum == PK_INFO_ENUM_CLEANUP ||
+	    item->info_enum == PK_INFO_ENUM_OBSOLETING ||
+	    item->info_enum == PK_INFO_ENUM_REINSTALLING ||
+	    item->info_enum == PK_INFO_ENUM_DOWNGRADING) {
+		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, item->package_id, item->summary);
 		ret = TRUE;
 	}
+out:
 	return ret;
 }
 
@@ -827,7 +825,7 @@ pk_backend_package_emulate_finished (PkBackend *backend)
  * pk_backend_package_emulate_finished_for_package:
  **/
 static gboolean
-pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkPackageObj *obj)
+pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkItemPackage *obj)
 {
 	/* simultaneous handles this on it's own */
 	if (backend->priv->simultaneous)
@@ -838,11 +836,11 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkPac
 		return FALSE;
 
 	/* sending finished already */
-	if (obj->info == PK_INFO_ENUM_FINISHED)
+	if (obj->info_enum == PK_INFO_ENUM_FINISHED)
 		return FALSE;
 
 	/* same package, just info change */
-	if (pk_package_id_equal (backend->priv->last_package->id, obj->id))
+	if (g_strcmp0 (backend->priv->last_package->package_id, obj->package_id))
 		return FALSE;
 
 	/* emit the old package as finished */
@@ -856,7 +854,7 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe = NULL;
-	PkPackageObj *obj = NULL;
+	PkItemPackage *obj = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -885,13 +883,16 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* create a new package object AFTER we emulate the info value */
-	obj = pk_package_obj_new (info, package_id, summary_safe);
+	obj = pk_item_package_new (info, package_id, summary_safe);
 	if (obj == NULL) {
 		egg_warning ("Failed to create object summary: '%s'", summary_safe);
 		ret = FALSE;
 		goto out;
 	}
-	ret = pk_package_obj_equal (obj, backend->priv->last_package);
+
+	/* is it the same? */
+	ret = (obj->info_enum == backend->priv->last_package->info_enum &&
+	       g_strcmp0 (obj->package_id, backend->priv->last_package->package_id) == 0);
 	if (ret) {
 		egg_debug ("skipping duplicate %s", package_id);
 		ret = FALSE;
@@ -902,8 +903,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	pk_backend_package_emulate_finished_for_package (backend, obj);
 
 	/* update the 'last' package */
-	pk_package_obj_free (backend->priv->last_package);
-	backend->priv->last_package = pk_package_obj_copy (obj);
+	pk_item_package_unref (backend->priv->last_package);
+	backend->priv->last_package = pk_item_package_ref (obj);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -938,7 +939,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* success */
 	ret = TRUE;
 out:
-	pk_package_obj_free (obj);
+	if (obj != NULL)
+		pk_item_package_unref (obj);
 	g_free (summary_safe);
 	return ret;
 }
@@ -956,7 +958,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updated_text)
 {
 	gchar *update_text_safe = NULL;
-	PkUpdateDetailObj *detail = NULL;
+	PkItemUpdateDetail *detail = NULL;
 	GDate *issued = NULL;
 	GDate *updated = NULL;
 	gboolean ret = FALSE;
@@ -978,8 +980,8 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	/* form PkUpdateDetailObj struct */
-	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url,
+	/* form PkItemUpdateDetail struct */
+	detail = pk_item_update_detail_new (package_id, updates, obsoletes, vendor_url,
 						     bugzilla_url, cve_url, restart,
 						     update_text_safe, changelog,
 						     state, issued, updated);
@@ -1156,7 +1158,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe = NULL;
-	PkDetailsObj *details = NULL;
+	PkItemDetails *details = NULL;
 	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -1172,8 +1174,8 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	/* form PkDetailsObj struct */
-	details = pk_details_obj_new_from_data (package_id, license, group, description_safe, url, size);
+	/* form PkItemDetails struct */
+	details = pk_item_details_new (package_id, license, group, description_safe, url, size);
 	if (details == NULL) {
 		egg_warning ("Failed to parse details object");
 		goto out;
@@ -2077,7 +2079,7 @@ pk_backend_reset (PkBackend *backend)
 		backend->priv->signal_error_timeout = 0;
 	}
 
-	pk_package_obj_free (backend->priv->last_package);
+	pk_item_package_unref (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
@@ -2217,7 +2219,7 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
  * pk_backend_test_package_cb:
  **/
 static void
-pk_backend_test_package_cb (PkBackend *backend, const PkPackageObj *obj, EggTest *test)
+pk_backend_test_package_cb (PkBackend *backend, const PkItemPackage *obj, EggTest *test)
 {
 	egg_debug ("package:%s", obj->id->name);
 	number_packages++;
