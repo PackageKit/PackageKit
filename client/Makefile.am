@@ -186,8 +186,6 @@ pk_self_test_SOURCES =					\
 	egg-string.h					\
 	egg-test.c					\
 	egg-test.h					\
-	pk-task-text.c					\
-	pk-task-text.h					\
 	pk-self-test.c					\
 	$(NULL)
 
