@@ -1164,6 +1164,7 @@ pk_results_test (gpointer user_data)
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
+	const PkResultItemPackage *item;
 
 	if (!egg_test_start (test, "PkResults"))
 		return;
@@ -1203,6 +1204,14 @@ pk_results_test (gpointer user_data)
 	egg_test_title (test, "get package list of set results");
 	packages = pk_results_get_package_array (results);
 	egg_test_assert (test, (packages->len == 1));
+
+	/************************************************************/
+	egg_test_title (test, "check data");
+	item = g_ptr_array_index (packages, 0);
+	egg_test_assert (test, (item->info_enum == PK_INFO_ENUM_AVAILABLE &&
+				g_strcmp0 ("gnome-power-manager;0.1.2;i386;fedora", item->package_id) == 0 &&
+				g_strcmp0 ("Power manager for GNOME", item->summary) == 0));
+
 	g_ptr_array_unref (packages);
 
 	g_object_unref (results);
