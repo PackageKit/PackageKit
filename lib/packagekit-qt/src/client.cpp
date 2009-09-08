@@ -422,7 +422,7 @@ Transaction* Client::simulateInstallFile(const QString& file)
 
 Transaction* Client::simulateInstallPackages(const QList<Package*>& packages)
 {
-	RUN_TRANSACTION(SimulateInstallFiles(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
 }
 
 Transaction* Client::simulateInstallPackage(Package* package)
