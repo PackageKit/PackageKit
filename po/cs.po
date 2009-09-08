@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master.cs\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-04 08:25+0000\n"
-"PO-Revision-Date: 2009-09-04 15:38+0100\n"
+"PO-Revision-Date: 2009-09-07 16:56+0100\n"
 "Last-Translator: Dušan Hokův <dusan@mirc.cz>\n"
 "Language-Team: Czech <fedora-cs-list@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -34,17 +34,17 @@ msgstr "Systémový čas"
 #: ../client/pk-console.c:242
 #: ../client/pk-console-test.c:150
 msgid "Succeeded"
-msgstr ""
+msgstr "Úspěšné"
 
 #: ../client/pk-console.c:242
 #: ../client/pk-console-test.c:150
 msgid "True"
-msgstr ""
+msgstr "Pravda"
 
 #: ../client/pk-console.c:242
 #: ../client/pk-console-test.c:150
 msgid "False"
-msgstr ""
+msgstr "Nepravda"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
@@ -52,13 +52,13 @@ msgstr ""
 #: ../client/pk-console-test.c:152
 #: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
-msgstr ""
+msgstr "Role"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:249
 #: ../client/pk-console-test.c:157
 msgid "Duration"
-msgstr ""
+msgstr "Doba trvání"
 
 #: ../client/pk-console.c:249
 #: ../client/pk-console-test.c:157
@@ -99,7 +99,7 @@ msgstr "Ovlivněné balíky:"
 #: ../client/pk-console.c:276
 #: ../client/pk-console-test.c:184
 msgid "Affected packages: None"
-msgstr ""
+msgstr "Ovlivněné balíčky: Žádné"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../client/pk-console.c:337
@@ -170,7 +170,7 @@ msgstr "ID"
 #: ../client/pk-console.c:384
 #: ../client/pk-console-test.c:223
 msgid "Parent"
-msgstr ""
+msgstr "Nadřazený"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:387
@@ -249,7 +249,7 @@ msgstr "Text aktualizace"
 #: ../client/pk-console.c:441
 #: ../client/pk-console-test.c:283
 msgid "Changes"
-msgstr ""
+msgstr "Změny"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
 #: ../client/pk-console.c:445
@@ -273,18 +273,18 @@ msgstr "Aktualizován"
 #: ../client/pk-console.c:475
 #: ../client/pk-console-test.c:315
 msgid "Enabled"
-msgstr ""
+msgstr "Povoleno"
 
 #. TRANSLATORS: if the repo is disabled
 #: ../client/pk-console.c:478
 #: ../client/pk-console-test.c:318
 msgid "Disabled"
-msgstr ""
+msgstr "Zakázáno"
 
 #: ../client/pk-console.c:555
 #: ../client/pk-console.c:557
 msgid "Percentage"
-msgstr ""
+msgstr "Procentuální"
 
 #: ../client/pk-console.c:557
 msgid "Unknown"
@@ -299,23 +299,20 @@ msgstr "Restart systému požaduje:"
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:602
 #: ../client/pk-console-test.c:343
-#, fuzzy
 msgid "Session restart required:"
-msgstr "Je požadován restart systému"
+msgstr "Je požadován restart sezení:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:605
 #: ../client/pk-console-test.c:346
-#, fuzzy
 msgid "System restart (security) required by:"
-msgstr "Je požadován restart systému"
+msgstr "Restart (bezpečnostní) systému požaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
 #: ../client/pk-console.c:608
 #: ../client/pk-console-test.c:349
-#, fuzzy
 msgid "Session restart (security) required:"
-msgstr "Je požadován restart systému"
+msgstr "Je požadován restart (bezpečnostní) sezení:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:611
@@ -389,7 +386,7 @@ msgstr "Interní chyba: %s"
 #: ../client/pk-console.c:1266
 #: ../client/pk-task-text.c:284
 msgid "Proceed with changes?"
-msgstr ""
+msgstr "Pokračovat se změnami?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
 #: ../client/pk-console.c:881
@@ -561,12 +558,12 @@ msgstr "Balík '%s' nemůže být nainstalován: %s"
 #. TRANSLATORS: follows a list of packages to install
 #: ../client/pk-console.c:1594
 msgid "To install"
-msgstr ""
+msgstr "K instalaci"
 
 #. TRANSLATORS: searching takes some time....
 #: ../client/pk-console.c:1606
 msgid "Searching for package: "
-msgstr ""
+msgstr "Hledání balíčku:"
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
 #: ../client/pk-console.c:1610
@@ -723,7 +720,7 @@ msgstr "Tento nástroj se nemůže připojit k systému DBUS"
 #: ../client/pk-console.c:2153
 #: ../client/pk-console-test.c:1279
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "Určený filtr byl neplatný"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
 #: ../client/pk-console.c:2172
@@ -807,9 +804,8 @@ msgstr "Následující balíky musí být odstraněny"
 #: ../client/pk-console.c:2305
 #: ../client/pk-console-test.c:1448
 #: ../client/pk-console-test.c:1459
-#, fuzzy
 msgid "A repository name is required"
-msgstr "Vyžaduje podpis repozitáře"
+msgstr "Je třeba určit název repozitáře"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:2314
@@ -828,9 +824,8 @@ msgstr "Je nutné zadat akci, např. 'update-system'"
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:2335
 #: ../client/pk-console-test.c:1495
-#, fuzzy
 msgid "A correct role is required"
-msgstr "Je požadováno odhlášení a přihlášení"
+msgstr "Je požadována správná role"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:2342
@@ -851,9 +846,8 @@ msgstr ""
 #: ../client/pk-console-test.c:1556
 #: ../client/pk-console-test.c:1565
 #: ../client/pk-generate-pack.c:243
-#, fuzzy
 msgid "A package name is required"
-msgstr "Je požadováno odhlášení a přihlášení"
+msgstr "Je požadován název balíčku"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:2382
@@ -883,9 +877,8 @@ msgstr "Volba '%s' není podporována "
 
 #. TRANSLATORS: User does not have permission to do this
 #: ../client/pk-console.c:2496
-#, fuzzy
 msgid "Incorrect privileges for this operation"
-msgstr "Nemáte nezbytné oprávnění pro tuto operaci"
+msgstr "Nesprávná oprávnění pro tuto operaci"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #. /* TRANSLATORS: User does not have permission to do this */
@@ -944,9 +937,8 @@ msgstr "Obě volby vybrány."
 
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:251
-#, fuzzy
 msgid "A output directory or file name is required"
-msgstr "Je požadováno odhlášení a přihlášení"
+msgstr "Je požadován výstupní adresář nebo název souboru"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
@@ -1020,17 +1012,16 @@ msgstr "PackageKit Monitor"
 
 #: ../client/pk-monitor.c:183
 msgid "Cannot show the list of transactions"
-msgstr ""
+msgstr "Nelze zobrazit seznam transakcí"
 
 #. ask the user
 #: ../client/pk-task-text.c:61
 msgid "Do you want to allow installing of unsigned software?"
-msgstr ""
+msgstr "Chcete povolit instalování nepodepsaného softwaru?"
 
 #: ../client/pk-task-text.c:65
-#, fuzzy
 msgid "The unsigned software will not be installed."
-msgstr "Balík '%s' nemůže být nainstalován: %s"
+msgstr "Nepodepsaný software nebude nainstalován."
 
 #: ../client/pk-task-text.c:94
 #, fuzzy
@@ -1044,27 +1035,25 @@ msgstr "Změnit parametry zdrojů softwaru"
 
 #: ../client/pk-task-text.c:97
 msgid "Key URL"
-msgstr ""
+msgstr "URL klíče"
 
 #: ../client/pk-task-text.c:98
 msgid "Key user"
-msgstr ""
+msgstr "Uživatel klíče"
 
 #: ../client/pk-task-text.c:99
-#, fuzzy
 msgid "Key ID"
-msgstr "Uživatelské ID"
+msgstr "ID klíče"
 
 #: ../client/pk-task-text.c:100
 msgid "Key fingerprint"
-msgstr ""
+msgstr "Fingerprint klíče"
 
 #: ../client/pk-task-text.c:101
 msgid "Key Timestamp"
-msgstr ""
+msgstr "Časová značka klíče"
 
 #: ../client/pk-task-text.c:142
-#, fuzzy
 msgid "End user licence agreement required"
 msgstr "Vyžaduje souhlas s licencí koncového uživatele"
 
@@ -1086,9 +1075,8 @@ msgid "The agreement was not accepted."
 msgstr "Ujednání nebylo přijato."
 
 #: ../client/pk-task-text.c:182
-#, fuzzy
 msgid "Media change required"
-msgstr "Nemohu zjistit, které balíky jsou vyžadovány"
+msgstr "Je vyžadována změna média"
 
 #: ../client/pk-task-text.c:183
 msgid "Media type"
@@ -1104,18 +1092,16 @@ msgstr "Text"
 
 #. ask the user
 #: ../client/pk-task-text.c:189
-#, fuzzy
 msgid "Please insert the correct media"
-msgstr "Prosím vyberte správný balík: "
+msgstr "Prosím vlžte správné médium"
 
 #: ../client/pk-task-text.c:193
-#, fuzzy
 msgid "The correct media was not inserted."
-msgstr "Podpis nebyl přijat."
+msgstr "Nebylo vloženo správné médium."
 
 #: ../client/pk-task-text.c:288
 msgid "The transaction did not proceed."
-msgstr ""
+msgstr "Transakce nemohla pokračovat."
 
 #: ../client/pk-text.c:50
 #, c-format
@@ -1195,18 +1181,17 @@ msgstr "Instaluji..."
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:349
 msgid "Downloading details about the software sources."
-msgstr ""
+msgstr "Stahuji detaily o zdrojích software."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:353
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "Stahuji seznamy souborů (dokončení může chvíli trvat)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:357
-#, fuzzy
 msgid "Waiting for package manager lock."
-msgstr "Hledám jméno balíku."
+msgstr "Čekám na zámek správce balíčků."
 
 #. TRANSLATORS: loading package cache so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:361
@@ -1233,9 +1218,8 @@ msgstr "PackageKit Monitor"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:658
-#, fuzzy
 msgid "Command not found."
-msgstr "Adresář nenalezen"
+msgstr "Příkaz nenalezen."
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:665
@@ -1262,7 +1246,7 @@ msgstr "Prosím vyberte příkaz ke spuštění"
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:721
 msgid "The package providing this file is:"
-msgstr ""
+msgstr "Balík poskytující tento soubor je:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: ../contrib/command-not-found/pk-command-not-found.c:726
@@ -1273,19 +1257,18 @@ msgstr ""
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Packages providing this file are:"
-msgstr ""
+msgstr "Balíky poskytující tento soubor jsou:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:756
 msgid "Suitable packages are:"
-msgstr ""
+msgstr "Možné balíky jsou:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:764
-#, fuzzy
 msgid "Please choose a package to install"
-msgstr "Nemohu najít balík, který se má instalovat"
+msgstr "Prosím vyberte balíček k instalaci"
 
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
@@ -1327,9 +1310,9 @@ msgstr "Vyberte balík nebo soubor, která se bude instalovat"
 
 #. TRANSLATORS: we are getting the list of repositories
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
-#, fuzzy, c-format
+#, c-format
 msgid "Getting sources list"
-msgstr "Zjišťuji informace o balících..."
+msgstr "Získávám seznam zdrojů"
 
 #. TRANSLATORS: all completed 100%
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
@@ -1347,7 +1330,7 @@ msgstr "OK."
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr ""
+msgstr "Nalezeno %i povolených a %i zakázaných zdrojů."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
@@ -1432,9 +1415,9 @@ msgstr "Nalezeno %i extra balíčků."
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
-#, fuzzy, c-format
+#, c-format
 msgid "No extra packages required."
-msgstr "Nemohu zjistit, které balíky jsou vyžadovány"
+msgstr "Nejsou potřeba žádné extra balíčky."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
@@ -1517,7 +1500,7 @@ msgstr "Adresář nenalezen"
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:268
 msgid "Incorrect device path specified"
-msgstr ""
+msgstr "Určena nesprávná cesta zařízení"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/device-rebind/pk-device-rebind.c:296
@@ -1549,7 +1532,7 @@ msgstr "Tento skript může být použit pouze uživatelem root"
 #. TRANSLATORS: we're going to verify the path first
 #: ../contrib/device-rebind/pk-device-rebind.c:341
 msgid "Verifying device path"
-msgstr ""
+msgstr "Ověřuji cestu zařízení"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
 #: ../contrib/device-rebind/pk-device-rebind.c:346
@@ -1689,7 +1672,7 @@ msgstr "Nainstalovat místní nedůvěryhodný soubor"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Refresh system sources"
-msgstr ""
+msgstr "Obnovit systémové zdroje"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1852,9 +1835,8 @@ msgstr "Škodlivý software může poškodit váš počítač nebo způsobit jin
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:274
-#, fuzzy
 msgid "Many packages"
-msgstr "Aktualizovat balík"
+msgstr "Mnoho balíčků"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
 #: ../src/pk-polkit-action-lookup.c:334
