@@ -1,14 +1,14 @@
-# translation of packagekit.master.PackageKit.po to Kannada
+# translation of packagekit.master.kn.po to Kannada
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Shankar Prasad <svenkate@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.PackageKit\n"
+"Project-Id-Version: packagekit.master.kn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-07 19:02+0000\n"
-"PO-Revision-Date: 2009-09-08 00:46+0530\n"
+"POT-Creation-Date: 2009-09-08 04:30+0000\n"
+"PO-Revision-Date: 2009-09-08 12:53+0530\n"
 "Last-Translator: Shankar Prasad <svenkate@redhat.com>\n"
 "Language-Team: Kannada <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -290,8 +290,8 @@ msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr ""
-"ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು "
-"ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
+"ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು "
+"ದಯವಿಟ್ಟು ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:677 ../client/pk-console-test.c:550
@@ -617,25 +617,25 @@ msgid "This tool could not connect to system DBUS."
 msgstr "ವ್ಯವಸ್ಥೆಯ DBUS ನೊಂದಿಗೆ ಸಂಪರ್ಕಸಾಧಿಸಲುಈ ಉಪಕರಣದಿಂದ ಸಾಧ್ಯವಾಗಿಲ್ಲ."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:2152 ../client/pk-console-test.c:1053
+#: ../client/pk-console.c:2152 ../client/pk-console-test.c:1055
 msgid "The filter specified was invalid"
 msgstr "ಸೂಚಿಸಲಾದ ಫಿಲ್ಟರ್ ಅಮಾನ್ಯವಾಗಿದೆ"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:2171 ../client/pk-console-test.c:1072
+#: ../client/pk-console.c:2171 ../client/pk-console-test.c:1074
 msgid "A search type is required, e.g. name"
 msgstr "ಒಂದು ಹುಡುಕು ಬಗೆಯ ಅಗತ್ಯವಿದೆ, ಉದಾ. ಹೆಸರು"
 
 #. TRANSLATORS: the user needs to provide a search term
 #: ../client/pk-console.c:2178 ../client/pk-console.c:2187
 #: ../client/pk-console.c:2196 ../client/pk-console.c:2205
-#: ../client/pk-console-test.c:1079 ../client/pk-console-test.c:1091
-#: ../client/pk-console-test.c:1103 ../client/pk-console-test.c:1115
+#: ../client/pk-console-test.c:1081 ../client/pk-console-test.c:1093
+#: ../client/pk-console-test.c:1105 ../client/pk-console-test.c:1117
 msgid "A search term is required"
 msgstr "ಒಂದು ಹುಡುಕು ಪದದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:2212 ../client/pk-console-test.c:1125
+#: ../client/pk-console.c:2212 ../client/pk-console-test.c:1127
 msgid "Invalid search type"
 msgstr "ಅಮಾನ್ಯವಾದ ಹುಡುಕು ಬಗೆ"
 
@@ -645,58 +645,58 @@ msgid "A package name or filename to install is required"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರು ಅಥವ ಕಡತದ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2227 ../client/pk-console-test.c:1152
+#: ../client/pk-console.c:2227 ../client/pk-console-test.c:1154
 msgid "A type, key_id and package_id are required"
 msgstr "ಬಗೆ, key_id ಹಾಗು package_id ಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:2236 ../client/pk-console-test.c:1163
+#: ../client/pk-console.c:2236 ../client/pk-console-test.c:1165
 msgid "A package name to remove is required"
 msgstr "ತೆಗೆದು ಹಾಕಬೇಕಿರುವ ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2244 ../client/pk-console-test.c:1172
+#: ../client/pk-console.c:2244 ../client/pk-console-test.c:1174
 msgid "A destination directory and the package names to download are required"
 msgstr "ಒಂದು ನಿರ್ದೇಶಿತ ಕೋಶ ಹಾಗು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಪ್ಯಾಕೇಜಿನ ಹೆಸರುಗಳ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2251 ../client/pk-console-test.c:1179
+#: ../client/pk-console.c:2251 ../client/pk-console-test.c:1181
 msgid "Directory not found"
 msgstr "ಕೋಶವು ಕಂಡುಬಂದಿಲ್ಲ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2259 ../client/pk-console-test.c:1188
+#: ../client/pk-console.c:2259 ../client/pk-console-test.c:1190
 msgid "A licence identifier (eula-id) is required"
 msgstr "ಪರವಾನಗಿ ಪತ್ತೆಗಾರನ (eula-id) ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2269 ../client/pk-console-test.c:1199
+#: ../client/pk-console.c:2269 ../client/pk-console-test.c:1201
 msgid "A transaction identifier (tid) is required"
 msgstr "ವ್ಯವಹಾರ ಪತ್ತೆಗಾರನ (tid) ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2286 ../client/pk-console-test.c:1220
+#: ../client/pk-console.c:2286 ../client/pk-console-test.c:1222
 msgid "A package name to resolve is required"
 msgstr "ಪರಿಹರಿಸಬೇಕಿರುವ ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:2295 ../client/pk-console.c:2304
-#: ../client/pk-console-test.c:1231 ../client/pk-console-test.c:1242
+#: ../client/pk-console-test.c:1233 ../client/pk-console-test.c:1244
 msgid "A repository name is required"
 msgstr "ಒಂದು ರೆಪೋಸಿಟರಿ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2313 ../client/pk-console-test.c:1253
+#: ../client/pk-console.c:2313 ../client/pk-console-test.c:1255
 msgid "A repo name, parameter and value are required"
 msgstr "ಒಂದು ರೆಪೊ ಹೆಸರು, ನಿಯತಾಂಕ ಹಾಗು ಮೌಲ್ಯದ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2327 ../client/pk-console-test.c:1270
+#: ../client/pk-console.c:2327 ../client/pk-console-test.c:1272
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ಒಂದು ಕ್ರಿಯೆಯ, ಉದಾ. 'update-system' ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2334 ../client/pk-console-test.c:1277
+#: ../client/pk-console.c:2334 ../client/pk-console-test.c:1279
 msgid "A correct role is required"
 msgstr "ಸೂಕ್ತವಾದ ಪಾತ್ರದ ಅಗತ್ಯವಿದೆ"
 
@@ -709,15 +709,15 @@ msgstr "ಈ ಕಾರ್ಯವನ್ನು ಕೊನೆಯ ಬಾರಿಗೆ �
 #. TRANSLATORS: This is when the user fails to supply the package name
 #: ../client/pk-console.c:2351 ../client/pk-console.c:2363
 #: ../client/pk-console.c:2372 ../client/pk-console.c:2390
-#: ../client/pk-console.c:2399 ../client/pk-console-test.c:1287
-#: ../client/pk-console-test.c:1302 ../client/pk-console-test.c:1311
-#: ../client/pk-console-test.c:1331 ../client/pk-console-test.c:1340
+#: ../client/pk-console.c:2399 ../client/pk-console-test.c:1289
+#: ../client/pk-console-test.c:1304 ../client/pk-console-test.c:1313
+#: ../client/pk-console-test.c:1333 ../client/pk-console-test.c:1342
 #: ../client/pk-generate-pack.c:241 ../client/pk-generate-pack-test.c:288
 msgid "A package name is required"
 msgstr "ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2381 ../client/pk-console-test.c:1320
+#: ../client/pk-console.c:2381 ../client/pk-console-test.c:1322
 msgid "A package provide string is required"
 msgstr "ಪ್ಯಾಕೇಜನ್ನು ಒದಗಿಸುವ ವಾಕ್ಯದ ಅಗತ್ಯವಿದೆ"
 
@@ -732,7 +732,7 @@ msgid "A list file to open is required"
 msgstr "ತೆರೆಯಬೇಕಿರುವ ಕಡತದ ಒಂದು ಪಟ್ಟಿಯ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2482 ../client/pk-console-test.c:1400
+#: ../client/pk-console.c:2482 ../client/pk-console-test.c:1402
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ಆಯ್ಕೆ '%s' ಯು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ"
@@ -746,22 +746,22 @@ msgstr "ಈ ಕಾರ್ಯಕ್ಕಾಗಿನ ಸರಿಯಲ್ಲದ ಸವ
 #. /* TRANSLATORS: User does not have permission to do this */
 #. g_print ("%s\n", _("Incorrect privileges for this operation"));
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2498 ../client/pk-console-test.c:1412
+#: ../client/pk-console.c:2498 ../client/pk-console-test.c:1414
 msgid "Command failed"
 msgstr "ಆಜ್ಞೆಯು ವಿಫಲಗೊಂಡಿದೆ"
 
-#: ../client/pk-console-shared.c:52 ../client/pk-tools-common.c:51
+#: ../client/pk-console-shared.c:53 ../client/pk-tools-common.c:51
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "1 ರಿಂದ %i ಒಳಗಿನ ಒಂದು ಅಂಕೆಯನ್ನು ನಮೂದಿಸಿ: "
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-console-shared.c:213 ../client/pk-tools-common.c:200
+#: ../client/pk-console-shared.c:153 ../client/pk-tools-common.c:200
 msgid "More than one package matches:"
 msgstr "ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಪ್ಯಾಕೇಜುಗಳು ತಾಳೆಯಾಗುತ್ತವೆ:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-console-shared.c:222 ../client/pk-tools-common.c:207
+#: ../client/pk-console-shared.c:162 ../client/pk-tools-common.c:207
 msgid "Please choose the correct package: "
 msgstr "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪ್ಯಾಕೇಜನ್ನು ಆಯ್ಕೆ ಮಾಡಿ: "
 
@@ -794,13 +794,18 @@ msgstr "ಈ ಉಪಕರಣದಿಂದ ಪ್ಯಾಕೇಜನ್ನು ಪತ
 msgid "This tool could not find all the packages: %s"
 msgstr "ಈ ಉಪಕರಣದಿಂದ ಎಲ್ಲಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
+#. TRANSLATORS: we failed to contact the daemon
+#: ../client/pk-console-test.c:1003
+msgid "Failed to contact PackageKit"
+msgstr "PackageKit ಅನ್ನು ಸಂಪರ್ಕಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
+
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console-test.c:1131
+#: ../client/pk-console-test.c:1133
 msgid "A package name to install is required"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಪ್ಯಾಕೇಜಿನ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console-test.c:1140
+#: ../client/pk-console-test.c:1142
 msgid "A filename to install is required"
 msgstr "ಅನುಸ್ಥಾಪಿಸಲು ಒಂದು ಕಡತದ ಹೆಸರಿನ ಅಗತ್ಯವಿದೆ"
 
@@ -868,7 +873,9 @@ msgstr "ಪ್ಯಾಕೇಜ್ ವ್ಯವಸ್ಥಾಪಕ ಈ ಬಗೆಯ
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr "PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ ಪ್ಯಾಕ್‌ಗಳನ್ನು ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
+msgstr ""
+"PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ ಪ್ಯಾಕ್‌ಗಳನ್ನು "
+"ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:291 ../client/pk-generate-pack-test.c:348
@@ -1190,7 +1197,9 @@ msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಹುಡುಕಲು ವಿ
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
 msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ನಿಜವಾಗಿಯೂ ಅನುಸ್ಥಾಪಿಸಬೇಡ, ಏನನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ ಎನ್ನುವುದನ್ನು ತೋರಿಸು"
+msgstr ""
+"ಪ್ಯಾಕೇಜುಗಳನ್ನು ನಿಜವಾಗಿಯೂ ಅನುಸ್ಥಾಪಿಸಬೇಡ, ಏನನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ ಎನ್ನುವುದನ್ನು "
+"ತೋರಿಸು"
 
 #. command line argument, do we skip packages that depend on the ones specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
@@ -1710,7 +1719,9 @@ msgstr "ಈ ಪ್ಯಾಕೇಜನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡ
 
 #: ../src/pk-polkit-action-lookup.c:174
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #: ../src/pk-polkit-action-lookup.c:192
 msgid "Do not install this package unless you are sure it is safe to do so."
@@ -1718,7 +1729,9 @@ msgstr "ಸುರಕ್ಷಿತವಾಗಿದೆ ಎಂದು ನಿಮಗೆ 
 
 #: ../src/pk-polkit-action-lookup.c:193
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:199
