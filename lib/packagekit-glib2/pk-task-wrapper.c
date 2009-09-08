@@ -70,7 +70,7 @@ dkp_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	GPtrArray *array;
-	PkResultItemRepoSignatureRequired *item;
+	PkItemRepoSignatureRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
@@ -104,7 +104,7 @@ dkp_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	GPtrArray *array;
-	PkResultItemEulaRequired *item;
+	PkItemEulaRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
@@ -135,7 +135,7 @@ dkp_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *
 {
 	guint i;
 	GPtrArray *array;
-	PkResultItemMediaChangeRequired *item;
+	PkItemMediaChangeRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
@@ -271,7 +271,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 	guint i;
 
 	/* get the results */

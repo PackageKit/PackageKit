@@ -657,7 +657,7 @@ pk_service_pack_get_files_from_array (const GPtrArray *array)
 {
 	gchar **files = NULL;
 	guint i;
-	const PkResultItemFiles *item;
+	const PkItemFiles *item;
 
 	/* internal error */
 	if (array == NULL) {
@@ -763,7 +763,7 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	GPtrArray *array = NULL;
 	guint i;
 	guint j = 0;
-	const PkResultItemPackage *package;
+	const PkItemPackage *package;
 	gchar **package_ids = NULL;
 	gchar **package_ids_to_download = NULL;
 
@@ -871,7 +871,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	PkExitEnum exit_enum;
 	GPtrArray *array = NULL;
 	guint i;
-	const PkResultItemPackage *package;
+	const PkItemPackage *package;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);

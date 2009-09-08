@@ -86,7 +86,7 @@ pk_strpad (const gchar *data, guint length)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (const PkResultItemPackage *obj, gpointer data)
+pk_console_package_cb (const PkItemPackage *obj, gpointer data)
 {
 	gchar *package = NULL;
 	gchar *package_pad = NULL;
@@ -129,7 +129,7 @@ out:
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (const PkResultItemTransaction *obj, gpointer user_data)
+pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
 {
 	struct passwd *pw;
 	const gchar *role_text;
@@ -195,7 +195,7 @@ pk_console_transaction_cb (const PkResultItemTransaction *obj, gpointer user_dat
  * pk_console_distro_upgrade_cb:
  **/
 static void
-pk_console_distro_upgrade_cb (const PkResultItemDistroUpgrade *obj, gpointer user_data)
+pk_console_distro_upgrade_cb (const PkItemDistroUpgrade *obj, gpointer user_data)
 {
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
 	g_print ("%s: %s\n", _("Distribution"), obj->name);
@@ -209,7 +209,7 @@ pk_console_distro_upgrade_cb (const PkResultItemDistroUpgrade *obj, gpointer use
  * pk_console_category_cb:
  **/
 static void
-pk_console_category_cb (const PkResultItemCategory *obj, gpointer user_data)
+pk_console_category_cb (const PkItemCategory *obj, gpointer user_data)
 {
 	/* TRANSLATORS: this is the group category name */
 	g_print ("%s: %s\n", _("Category"), obj->name);
@@ -233,7 +233,7 @@ pk_console_category_cb (const PkResultItemCategory *obj, gpointer user_data)
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (const PkResultItemUpdateDetail *detail, gpointer data)
+pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
 {
 	gchar *issued;
 	gchar *updated;
@@ -302,7 +302,7 @@ pk_console_update_detail_cb (const PkResultItemUpdateDetail *detail, gpointer da
  * pk_console_repo_detail_cb:
  **/
 static void
-pk_console_repo_detail_cb (const PkResultItemRepoDetail *obj, gpointer data)
+pk_console_repo_detail_cb (const PkItemRepoDetail *obj, gpointer data)
 {
 	gchar *enabled_pad;
 	gchar *repo_pad;
@@ -325,7 +325,7 @@ pk_console_repo_detail_cb (const PkResultItemRepoDetail *obj, gpointer data)
  * pk_console_require_restart_cb:
  **/
 static void
-pk_console_require_restart_cb (const PkResultItemRequireRestart *obj, gpointer data)
+pk_console_require_restart_cb (const PkItemRequireRestart *obj, gpointer data)
 {
 	gchar *package = NULL;
 
@@ -355,7 +355,7 @@ pk_console_require_restart_cb (const PkResultItemRequireRestart *obj, gpointer d
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (const PkResultItemDetails *obj, gpointer data)
+pk_console_details_cb (const PkItemDetails *obj, gpointer data)
 {
 	gchar *package = NULL;
 
@@ -378,7 +378,7 @@ pk_console_details_cb (const PkResultItemDetails *obj, gpointer data)
  * pk_console_message_cb:
  **/
 static void
-pk_console_message_cb (const PkResultItemMessage *obj, gpointer data)
+pk_console_message_cb (const PkItemMessage *obj, gpointer data)
 {
 	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
 	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (obj->message), obj->details);
@@ -388,7 +388,7 @@ pk_console_message_cb (const PkResultItemMessage *obj, gpointer data)
  * pk_console_files_cb:
  **/
 static void
-pk_console_files_cb (PkResultItemFiles *obj, gpointer data)
+pk_console_files_cb (PkItemFiles *obj, gpointer data)
 {
 	guint i;
 
@@ -441,7 +441,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	const PkResultItemErrorCode *error_item;
+	const PkItemErrorCode *error_item;
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;

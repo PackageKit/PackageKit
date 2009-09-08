@@ -80,7 +80,7 @@ dkp_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	gboolean ret;
 	GPtrArray *array;
 	gchar *package = NULL;
-	PkResultItemRepoSignatureRequired *item;
+	PkItemRepoSignatureRequired *item;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -131,7 +131,7 @@ dkp_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	gboolean ret;
 	gchar *package = NULL;
 	GPtrArray *array;
-	PkResultItemEulaRequired *item;
+	PkItemEulaRequired *item;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -178,7 +178,7 @@ dkp_task_text_media_change_question (PkTask *task, guint request, PkResults *res
 	guint i;
 	gboolean ret;
 	GPtrArray *array;
-	PkResultItemMediaChangeRequired *item;
+	PkItemMediaChangeRequired *item;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -376,7 +376,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 	guint i;
 
 	/* get the results */

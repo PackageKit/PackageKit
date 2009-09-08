@@ -34,6 +34,7 @@
 #include <glib-object.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-package-sack.h>
+#include <packagekit-glib2/pk-item.h>
 
 G_BEGIN_DECLS
 
@@ -66,192 +67,6 @@ struct _PkResultsClass
 	void (*_pk_reserved4) (void);
 	void (*_pk_reserved5) (void);
 };
-
-/**
- * PkResultItemRequireRestart:
- *
- * Object to represent details about the require_restart.
- **/
-typedef struct
-{
-	PkRestartEnum			 restart;
-	gchar				*package_id;
-} PkResultItemRequireRestart;
-
-/**
- * PkResultItemTransaction:
- *
- * Object to represent details about the transaction.
- **/
-typedef struct
-{
-	gchar				*tid;
-	gchar				*timespec;
-	gboolean			 succeeded;
-	PkRoleEnum			 role;
-	guint				 duration;
-	gchar				*data;
-	guint				 uid;
-	gchar				*cmdline;
-} PkResultItemTransaction;
-
-/**
- * PkResultItemDetails:
- *
- * Object to represent details about the update.
- **/
-typedef struct {
-	gchar		*package_id;
-	gchar		*license;
-	PkGroupEnum	 group_enum;
-	gchar		*description;
-	gchar		*url;
-	guint64		 size;
-} PkResultItemDetails;
-
-/**
- * PkResultItemUpdateDetail:
- *
- * Object to represent details about the update.
- **/
-typedef struct {
-	gchar		*package_id;
-	gchar		*updates;
-	gchar		*obsoletes;
-	gchar		*vendor_url;
-	gchar		*bugzilla_url;
-	gchar		*cve_url;
-	PkRestartEnum	 restart_enum;
-	gchar		*update_text;
-	gchar		*changelog;
-	PkUpdateStateEnum state_enum;
-	GDate		*issued;
-	GDate		*updated;
-} PkResultItemUpdateDetail;
-
-/**
- * PkResultItemPackage:
- *
- * Object to represent details about a package.
- **/
-typedef struct {
-	PkInfoEnum	 info_enum;
-	gchar		*package_id;
-	gchar		*summary;
-} PkResultItemPackage;
-
-/**
- * PkResultItemDistroUpgrade:
- *
- * Object to represent details about the distribution update.
- **/
-typedef struct
-{
-	PkUpdateStateEnum		 state;
-	gchar				*name;
-	gchar				*summary;
-} PkResultItemDistroUpgrade;
-
-/**
- * PkResultItemCategory:
- *
- * Object to represent details about the category.
- **/
-typedef struct
-{
-	gchar				*parent_id;
-	gchar				*cat_id;
-	gchar				*name;
-	gchar				*summary;
-	gchar				*icon;
-} PkResultItemCategory;
-
-/**
- * PkResultItemFiles:
- *
- * Object to represent details about the files.
- **/
-typedef struct
-{
-	gchar				*package_id;
-	gchar				**files;
-} PkResultItemFiles;
-
-/**
- * PkResultItemRepoSignatureRequired:
- *
- * Object to represent details about the repository signature request.
- **/
-typedef struct
-{
-	gchar				*package_id;
-	gchar				*repository_name;
-	gchar				*key_url;
-	gchar				*key_userid;
-	gchar				*key_id;
-	gchar				*key_fingerprint;
-	gchar				*key_timestamp;
-	PkSigTypeEnum			 type;
-} PkResultItemRepoSignatureRequired;
-
-/**
- * PkResultItemEulaRequired:
- *
- * Object to represent details about the EULA request.
- **/
-typedef struct
-{
-	gchar				*eula_id;
-	gchar				*package_id;
-	gchar				*vendor_name;
-	gchar				*license_agreement;
-} PkResultItemEulaRequired;
-
-/**
- * PkResultItemMediaChangeRequired:
- *
- * Object to represent details about the media change request.
- **/
-typedef struct
-{
-	PkMediaTypeEnum			 media_type;
-	gchar				*media_id;
-	gchar				*media_text;
-} PkResultItemMediaChangeRequired;
-
-/**
- * PkResultItemRepoDetail:
- *
- * Object to represent details about the remote repository.
- **/
-typedef struct
-{
-	gchar				*repo_id;
-	gchar				*description;
-	gboolean			 enabled;
-} PkResultItemRepoDetail;
-
-/**
- * PkResultItemErrorCode:
- *
- * Object to represent details about the error code.
- **/
-typedef struct
-{
-	PkErrorCodeEnum			 code;
-	gchar				*details;
-} PkResultItemErrorCode;
-
-/**
- * PkResultItemMessage:
- *
- * Object to represent details about the message.
- **/
-typedef struct
-{
-	PkMessageEnum			 message;
-	gchar				*details;
-} PkResultItemMessage;
 
 GQuark		 pk_results_error_quark			(void);
 GType		 pk_results_get_type		  	(void);
@@ -344,7 +159,7 @@ gboolean	 pk_results_add_message 		(PkResults		*results,
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-const PkResultItemErrorCode *pk_results_get_error_code	(PkResults		*results);
+const PkItemErrorCode *pk_results_get_error_code	(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

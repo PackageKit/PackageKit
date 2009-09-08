@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-item.h>
 #include <packagekit-glib2/pk-enum.h>
 
 #include "egg-debug.h"
@@ -109,209 +110,6 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 }
 
 /**
- * pk_result_item_package_free:
- **/
-static void
-pk_result_item_package_free (PkResultItemPackage *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_free (item->summary);
-	g_free (item);
-}
-
-/**
- * pk_result_item_details_free:
- **/
-static void
-pk_result_item_details_free (PkResultItemDetails *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_free (item->license);
-	g_free (item->description);
-	g_free (item->url);
-	g_free (item);
-}
-
-/**
- * pk_result_item_update_detail_free:
- **/
-static void
-pk_result_item_update_detail_free (PkResultItemUpdateDetail *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_free (item->updates);
-	g_free (item->obsoletes);
-	g_free (item->vendor_url);
-	g_free (item->bugzilla_url);
-	g_free (item->cve_url);
-	g_free (item->update_text);
-	g_free (item->changelog);
-	if (item->issued != NULL)
-		g_date_free (item->issued);
-	if (item->updated != NULL)
-		g_date_free (item->updated);
-	g_free (item);
-}
-
-/**
- * pk_result_item_category_free:
- **/
-static void
-pk_result_item_category_free (PkResultItemCategory *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->parent_id);
-	g_free (item->cat_id);
-	g_free (item->name);
-	g_free (item->summary);
-	g_free (item->icon);
-	g_free (item);
-}
-
-/**
- * pk_result_item_distro_upgrade_free:
- **/
-static void
-pk_result_item_distro_upgrade_free (PkResultItemDistroUpgrade *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->name);
-	g_free (item->summary);
-	g_free (item);
-}
-
-/**
- * pk_result_item_require_restart_free:
- **/
-static void
-pk_result_item_require_restart_free (PkResultItemRequireRestart *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_free (item);
-}
-
-/**
- * pk_result_item_transaction_free:
- **/
-static void
-pk_result_item_transaction_free (PkResultItemTransaction *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->tid);
-	g_free (item->timespec);
-	g_free (item->data);
-	g_free (item->cmdline);
-	g_free (item);
-}
-
-/**
- * pk_result_item_files_free:
- **/
-static void
-pk_result_item_files_free (PkResultItemFiles *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_strfreev (item->files);
-	g_free (item);
-}
-
-/**
- * pk_result_item_repo_signature_required_free:
- **/
-static void
-pk_result_item_repo_signature_required_free (PkResultItemRepoSignatureRequired *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->package_id);
-	g_free (item->repository_name);
-	g_free (item->key_url);
-	g_free (item->key_userid);
-	g_free (item->key_id);
-	g_free (item->key_fingerprint);
-	g_free (item->key_timestamp);
-	g_free (item);
-}
-
-/**
- * pk_result_item_eula_required_free:
- **/
-static void
-pk_result_item_eula_required_free (PkResultItemEulaRequired *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->eula_id);
-	g_free (item->package_id);
-	g_free (item->vendor_name);
-	g_free (item->license_agreement);
-	g_free (item);
-}
-
-/**
- * pk_result_item_media_change_required_free:
- **/
-static void
-pk_result_item_media_change_required_free (PkResultItemMediaChangeRequired *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->media_id);
-	g_free (item->media_text);
-	g_free (item);
-}
-
-/**
- * pk_result_item_repo_detail_free:
- **/
-static void
-pk_result_item_repo_detail_free (PkResultItemRepoDetail *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->repo_id);
-	g_free (item->description);
-	g_free (item);
-}
-
-/**
- * pk_result_item_error_code_free:
- **/
-static void
-pk_result_item_error_code_free (PkResultItemErrorCode *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->details);
-	g_free (item);
-}
-
-/**
- * pk_result_item_message_free:
- **/
-static void
-pk_result_item_message_free (PkResultItemMessage *item)
-{
-	if (item == NULL)
-		return;
-	g_free (item->details);
-	g_free (item);
-}
-
-/**
  * pk_results_set_exit_code:
  * @results: a valid #PkResults instance
  * @exit_enum: the exit code
@@ -342,14 +140,14 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 gboolean
 pk_results_add_package (PkResults *results, PkInfoEnum info_enum, const gchar *package_id, const gchar *summary)
 {
-	PkResultItemPackage *item;
+	PkItemPackage *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (info_enum != PK_INFO_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemPackage, 1);
+	item = g_new0 (PkItemPackage, 1);
 	item->info_enum = info_enum;
 	item->package_id = g_strdup (package_id);
 	item->summary = g_strdup (summary);
@@ -370,13 +168,13 @@ gboolean
 pk_results_add_details (PkResults *results, const gchar	*package_id, const gchar *license,
 			PkGroupEnum group_enum, const gchar *description, const gchar *url, guint64 size)
 {
-	PkResultItemDetails *item;
+	PkItemDetails *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemDetails, 1);
+	item = g_new0 (PkItemDetails, 1);
 	item->package_id = g_strdup (package_id);
 	item->license = g_strdup (license);
 	item->group_enum = group_enum;
@@ -402,13 +200,13 @@ pk_results_add_update_detail (PkResults *results, const gchar *package_id, const
 			      const gchar *cve_url, PkRestartEnum restart_enum, const gchar *update_text,
 			      const gchar *changelog, PkUpdateStateEnum state_enum, GDate *issued, GDate *updated)
 {
-	PkResultItemUpdateDetail *item;
+	PkItemUpdateDetail *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemUpdateDetail, 1);
+	item = g_new0 (PkItemUpdateDetail, 1);
 	item->package_id = g_strdup (package_id);
 	item->updates = g_strdup (updates);
 	item->obsoletes = g_strdup (obsoletes);
@@ -440,13 +238,13 @@ gboolean
 pk_results_add_category (PkResults *results, const gchar *parent_id, const gchar *cat_id, const gchar *name,
 			 const gchar *summary, const gchar *icon)
 {
-	PkResultItemCategory *item;
+	PkItemCategory *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemCategory, 1);
+	item = g_new0 (PkItemCategory, 1);
 	item->parent_id = g_strdup (parent_id);
 	item->cat_id = g_strdup (cat_id);
 	item->name = g_strdup (name);
@@ -468,14 +266,14 @@ pk_results_add_category (PkResults *results, const gchar *parent_id, const gchar
 gboolean
 pk_results_add_distro_upgrade (PkResults *results, PkUpdateStateEnum state_enum, const gchar *name, const gchar *summary)
 {
-	PkResultItemDistroUpgrade *item;
+	PkItemDistroUpgrade *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (state_enum != PK_UPDATE_STATE_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemDistroUpgrade, 1);
+	item = g_new0 (PkItemDistroUpgrade, 1);
 	item->state = state_enum;
 	item->name = g_strdup (name);
 	item->summary = g_strdup (summary);
@@ -495,14 +293,14 @@ pk_results_add_distro_upgrade (PkResults *results, PkUpdateStateEnum state_enum,
 gboolean
 pk_results_add_require_restart (PkResults *results, PkRestartEnum restart_enum, const gchar *package_id)
 {
-	PkResultItemRequireRestart *item;
+	PkItemRequireRestart *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (restart_enum != PK_RESTART_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemRequireRestart, 1);
+	item = g_new0 (PkItemRequireRestart, 1);
 	item->restart = restart_enum;
 	item->package_id = g_strdup (package_id);
 	g_ptr_array_add (results->priv->require_restart_array, item);
@@ -524,14 +322,14 @@ pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *t
 			    guint duration, const gchar *data,
 			    guint uid, const gchar *cmdline)
 {
-	PkResultItemTransaction *item;
+	PkItemTransaction *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (role_enum != PK_ROLE_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemTransaction, 1);
+	item = g_new0 (PkItemTransaction, 1);
 	item->tid = g_strdup (tid);
 	item->timespec = g_strdup (timespec);
 	item->succeeded = succeeded;
@@ -556,14 +354,14 @@ pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *t
 gboolean
 pk_results_add_files (PkResults *results, const gchar *package_id, gchar **files)
 {
-	PkResultItemFiles *item;
+	PkItemFiles *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (files != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemFiles, 1);
+	item = g_new0 (PkItemFiles, 1);
 	item->package_id = g_strdup (package_id);
 	item->files = g_strdupv (files);
 	g_ptr_array_add (results->priv->files_array, item);
@@ -585,13 +383,13 @@ pk_results_add_repo_signature_required (PkResults *results, const gchar *package
 					const gchar *key_fingerprint, const gchar *key_timestamp,
 					PkSigTypeEnum type_enum)
 {
-	PkResultItemRepoSignatureRequired *item;
+	PkItemRepoSignatureRequired *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemRepoSignatureRequired, 1);
+	item = g_new0 (PkItemRepoSignatureRequired, 1);
 	item->package_id = g_strdup (package_id);
 	item->repository_name = g_strdup (repository_name);
 	item->key_url = g_strdup (key_url);
@@ -617,13 +415,13 @@ gboolean
 pk_results_add_eula_required (PkResults *results, const gchar *eula_id, const gchar *package_id,
 			      const gchar *vendor_name, const gchar *license_agreement)
 {
-	PkResultItemEulaRequired *item;
+	PkItemEulaRequired *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemEulaRequired, 1);
+	item = g_new0 (PkItemEulaRequired, 1);
 	item->eula_id = g_strdup (eula_id);
 	item->package_id = g_strdup (package_id);
 	item->vendor_name = g_strdup (vendor_name);
@@ -645,13 +443,13 @@ gboolean
 pk_results_add_media_change_required (PkResults *results, PkMediaTypeEnum media_type_enum,
 				      const gchar *media_id, const gchar *media_text)
 {
-	PkResultItemMediaChangeRequired *item;
+	PkItemMediaChangeRequired *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (media_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemMediaChangeRequired, 1);
+	item = g_new0 (PkItemMediaChangeRequired, 1);
 	item->media_type = media_type_enum;
 	item->media_id = g_strdup (media_id);
 	item->media_text = g_strdup (media_text);
@@ -672,13 +470,13 @@ gboolean
 pk_results_add_repo_detail (PkResults *results, const gchar *repo_id,
 			    const gchar *description, gboolean enabled)
 {
-	PkResultItemRepoDetail *item;
+	PkItemRepoDetail *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (repo_id != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemRepoDetail, 1);
+	item = g_new0 (PkItemRepoDetail, 1);
 	item->repo_id = g_strdup (repo_id);
 	item->description = g_strdup (description);
 	item->enabled = enabled;
@@ -698,12 +496,12 @@ pk_results_add_repo_detail (PkResults *results, const gchar *repo_id,
 gboolean
 pk_results_add_error_code (PkResults *results, PkErrorCodeEnum code_enum, const gchar *details)
 {
-	PkResultItemErrorCode *item;
+	PkItemErrorCode *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemErrorCode, 1);
+	item = g_new0 (PkItemErrorCode, 1);
 	item->code = code_enum;
 	item->details = g_strdup (details);
 	g_ptr_array_add (results->priv->error_code_array, item);
@@ -722,12 +520,12 @@ pk_results_add_error_code (PkResults *results, PkErrorCodeEnum code_enum, const 
 gboolean
 pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gchar *details)
 {
-	PkResultItemMessage *item;
+	PkItemMessage *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkResultItemMessage, 1);
+	item = g_new0 (PkItemMessage, 1);
 	item->message = message_enum;
 	item->details = g_strdup (details);
 	g_ptr_array_add (results->priv->message_array, item);
@@ -756,7 +554,7 @@ pk_results_get_exit_code (PkResults *results)
  *
  * Gets the packages from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemDetails's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemDetails's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
@@ -780,7 +578,7 @@ pk_results_get_package_sack (PkResults *results)
 	PkPackageSack *sack;
 	GPtrArray *array;
 	guint i;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
@@ -819,7 +617,7 @@ pk_results_get_package_sack (PkResults *results)
  *
  * Gets the package details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemPackage's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemPackage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_details_array (PkResults *results)
@@ -834,7 +632,7 @@ pk_results_get_details_array (PkResults *results)
  *
  * Gets the update details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemUpdateDetail's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemUpdateDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_update_detail_array (PkResults *results)
@@ -849,7 +647,7 @@ pk_results_get_update_detail_array (PkResults *results)
  *
  * Gets the categories from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemCategory's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemCategory's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_category_array (PkResults *results)
@@ -864,7 +662,7 @@ pk_results_get_category_array (PkResults *results)
  *
  * Gets the distribution upgrades from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemDistroUpgrade's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemDistroUpgrade's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_distro_upgrade_array (PkResults *results)
@@ -879,7 +677,7 @@ pk_results_get_distro_upgrade_array (PkResults *results)
  *
  * Gets the require restarts from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemRequireRestart's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemRequireRestart's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_require_restart_array (PkResults *results)
@@ -908,7 +706,7 @@ pk_results_get_require_restart_worst (PkResults *results)
 	GPtrArray *array;
 	PkRestartEnum worst = 0;
 	guint i;
-	const PkResultItemRequireRestart *item;
+	const PkItemRequireRestart *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
 
@@ -928,7 +726,7 @@ pk_results_get_require_restart_worst (PkResults *results)
  *
  * Gets the transactions from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemTransaction's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemTransaction's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_transaction_array (PkResults *results)
@@ -943,7 +741,7 @@ pk_results_get_transaction_array (PkResults *results)
  *
  * Gets the files from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemFiles's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemFiles's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_files_array (PkResults *results)
@@ -958,7 +756,7 @@ pk_results_get_files_array (PkResults *results)
  *
  * Gets the repository signatures required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemRepoSignatureRequired's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemRepoSignatureRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_repo_signature_required_array (PkResults *results)
@@ -973,7 +771,7 @@ pk_results_get_repo_signature_required_array (PkResults *results)
  *
  * Gets the eulas required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemEulaRequired's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemEulaRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_eula_required_array (PkResults *results)
@@ -988,7 +786,7 @@ pk_results_get_eula_required_array (PkResults *results)
  *
  * Gets the media changes required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemMediaChangeRequired's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemMediaChangeRequired's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_media_change_required_array (PkResults *results)
@@ -1003,7 +801,7 @@ pk_results_get_media_change_required_array (PkResults *results)
  *
  * Gets the repository details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemRepoDetail's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemRepoDetail's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_repo_detail_array (PkResults *results)
@@ -1018,7 +816,7 @@ pk_results_get_repo_detail_array (PkResults *results)
  *
  * Gets the error codes from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemErrorCode's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemErrorCode's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_error_code_array (PkResults *results)
@@ -1033,9 +831,9 @@ pk_results_get_error_code_array (PkResults *results)
  *
  * Gets the last error code from the transaction.
  *
- * Return value: A #PkResultItemErrorCode, or %NULL
+ * Return value: A #PkItemErrorCode, or %NULL
  **/
-const PkResultItemErrorCode *
+const PkItemErrorCode *
 pk_results_get_error_code (PkResults *results)
 {
 	GPtrArray *array;
@@ -1054,7 +852,7 @@ pk_results_get_error_code (PkResults *results)
  *
  * Gets the messages from the transaction.
  *
- * Return value: A #GPtrArray array of #PkResultItemMessage's, free with g_ptr_array_unref().
+ * Return value: A #GPtrArray array of #PkItemMessage's, free with g_ptr_array_unref().
  **/
 GPtrArray *
 pk_results_get_message_array (PkResults *results)
@@ -1094,20 +892,20 @@ pk_results_init (PkResults *results)
 {
 	results->priv = PK_RESULTS_GET_PRIVATE (results);
 	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
-	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_package_free);
-	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_details_free);
-	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_update_detail_free);
-	results->priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_category_free);
-	results->priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_distro_upgrade_free);
-	results->priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_require_restart_free);
-	results->priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_transaction_free);
-	results->priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_files_free);
-	results->priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_repo_signature_required_free);
-	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_eula_required_free);
-	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_media_change_required_free);
-	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_repo_detail_free);
-	results->priv->error_code_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_error_code_free);
-	results->priv->message_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_result_item_message_free);
+	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
+	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_details_unref);
+	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_update_detail_unref);
+	results->priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_category_unref);
+	results->priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_distro_upgrade_unref);
+	results->priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_require_restart_unref);
+	results->priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_transaction_unref);
+	results->priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_files_unref);
+	results->priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_repo_signature_required_unref);
+	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_eula_required_unref);
+	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_media_change_required_unref);
+	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_repo_detail_unref);
+	results->priv->error_code_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_error_code_unref);
+	results->priv->message_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_message_unref);
 }
 
 /**
@@ -1164,7 +962,7 @@ pk_results_test (gpointer user_data)
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 
 	if (!egg_test_start (test, "PkResults"))
 		return;

@@ -77,6 +77,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-service-pack.h					\
 	pk-results.c						\
 	pk-results.h						\
+	pk-item.c						\
+	pk-item.h						\
 	pk-task.c						\
 	pk-task.h						\
 	pk-version.h						\

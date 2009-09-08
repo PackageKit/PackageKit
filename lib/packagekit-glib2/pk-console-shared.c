@@ -114,7 +114,7 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	GPtrArray *array = NULL;
 	guint i;
 	gchar *printable;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);

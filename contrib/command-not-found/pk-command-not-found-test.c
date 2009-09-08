@@ -389,7 +389,7 @@ pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename,
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 
 	/* get the list of possibles */
 	results = pk_client_search_file_sync (client_, filter, filename, cancellable,

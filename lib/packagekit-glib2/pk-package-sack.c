@@ -439,7 +439,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *packages = NULL;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 	guint i;
 	PkPackage *package;
 
@@ -576,7 +576,7 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *details = NULL;
-	const PkResultItemDetails *item;
+	const PkItemDetails *item;
 	guint i;
 	PkPackage *package;
 
@@ -689,7 +689,7 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *update_details = NULL;
-	const PkResultItemUpdateDetail *item;
+	const PkItemUpdateDetail *item;
 	guint i;
 	PkPackage *package;
 

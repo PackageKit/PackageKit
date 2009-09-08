@@ -361,7 +361,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 static void
 pk_client_copy_finished_remove_old_files (PkClientState *state)
 {
-	const PkResultItemFiles *item;
+	const PkItemFiles *item;
 	GPtrArray *array = NULL;
 	guint i;
 
@@ -481,7 +481,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint i;
 	guint j;
 	guint len;
-	const PkResultItemFiles *item;
+	const PkItemFiles *item;
 	GPtrArray *array = NULL;
 
 	/* get data */
@@ -516,7 +516,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 {
 	GError *error = NULL;
 	PkExitEnum exit_enum;
-	const PkResultItemErrorCode *error_item;
+	const PkItemErrorCode *error_item;
 
 	egg_debug ("exit_text=%s", exit_text);
 
@@ -3332,7 +3332,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkResultItemPackage *item;
+	const PkItemPackage *item;
 	guint i;
 
 	/* get the results */
@@ -3377,7 +3377,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *details;
-	const PkResultItemDetails *item;
+	const PkItemDetails *item;
 	guint i;
 
 	/* get the results */
@@ -3461,7 +3461,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
-	const PkResultItemErrorCode *error_item;
+	const PkItemErrorCode *error_item;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -3522,7 +3522,7 @@ pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
-	const PkResultItemFiles *item;
+	const PkItemFiles *item;
 	GPtrArray *array = NULL;
 	guint len;
 

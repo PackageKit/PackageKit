@@ -355,7 +355,7 @@ pk_task_install_signatures (PkTaskState *state)
 {
 	GError *error = NULL;
 	GPtrArray *array;
-	const PkResultItemRepoSignatureRequired *item;
+	const PkItemRepoSignatureRequired *item;
 
 	/* get results */
 	array = pk_results_get_repo_signature_required_array (state->results);
@@ -442,7 +442,7 @@ pk_task_accept_eulas (PkTaskState *state)
 {
 	GError *error = NULL;
 	GPtrArray *array;
-	const PkResultItemEulaRequired *item;
+	const PkItemEulaRequired *item;
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
