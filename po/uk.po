@@ -7,153 +7,165 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-25 14:38+0000\n"
-"PO-Revision-Date: 2009-08-26 18:00+0300\n"
+"POT-Creation-Date: 2009-09-05 08:29+0000\n"
+"PO-Revision-Date: 2009-09-05 16:46+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Lokalize 0.3\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:238 ../client/pk-console-test.c:147
 msgid "Transaction"
 msgstr "Операція"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:237
+#: ../client/pk-console.c:240 ../client/pk-console-test.c:149
 msgid "System time"
 msgstr "Системний час"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "Succeeded"
 msgstr "Успішне"
 
-#. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:239 ../client/pk-console.c:465
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "True"
 msgstr "Так"
 
-#: ../client/pk-console.c:239 ../client/pk-console.c:465
+#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
 msgid "False"
 msgstr "Ні"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:241 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:244 ../client/pk-console-test.c:153
+#: ../src/pk-polkit-action-lookup.c:327
 msgid "Role"
 msgstr "Роль"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
 msgid "Duration"
 msgstr "Тривалість"
 
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
 msgid "(seconds)"
 msgstr "(секунд)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:253 ../client/pk-console-test.c:162
+#: ../src/pk-polkit-action-lookup.c:341
 msgid "Command line"
 msgstr "Командний рядок"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:255 ../client/pk-console-test.c:164
 msgid "User ID"
 msgstr "ІД користувача"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:259
+#: ../client/pk-console.c:262 ../client/pk-console-test.c:171
 msgid "Username"
 msgstr "Користувач"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:266 ../client/pk-console-test.c:175
 msgid "Real name"
 msgstr "Справжнє ім’я"
 
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:274 ../client/pk-console-test.c:183
 msgid "Affected packages:"
 msgstr "Задіяні пакунки:"
 
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:276 ../client/pk-console-test.c:185
 msgid "Affected packages: None"
 msgstr "Задіяні пакунки: Немає"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../client/pk-console.c:334
+#: ../client/pk-console.c:337 ../client/pk-task-text.c:220
 msgid "The following packages have to be removed:"
 msgstr "Наведені нижче пакунки буде вилучено:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../client/pk-console.c:337
+#: ../client/pk-console.c:340 ../client/pk-task-text.c:225
 msgid "The following packages have to be installed:"
 msgstr "Слід встановити такі пакунки:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:343 ../client/pk-task-text.c:230
 msgid "The following packages have to be updated:"
 msgstr "Слід оновити такі пакунки:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:346 ../client/pk-task-text.c:235
 msgid "The following packages have to be reinstalled:"
 msgstr "Слід перевстановити такі пакунки:"
 
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: ../client/pk-console.c:349 ../client/pk-task-text.c:240
+msgid "The following packages have to be downgraded:"
+msgstr "Слід встановити старіші версії таких пакунків:"
+
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:357
+#: ../client/pk-console.c:363 ../client/pk-console-test.c:205
 msgid "Distribution"
 msgstr "Дистрибутив"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:359
+#: ../client/pk-console.c:365 ../client/pk-console-test.c:207
 msgid "Type"
 msgstr "Тип"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:361 ../client/pk-console.c:384
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: ../client/pk-console.c:367 ../client/pk-console.c:390
+#: ../client/pk-console-test.c:209 ../client/pk-console-test.c:230
 msgid "Summary"
 msgstr "Резюме"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:373
+#: ../client/pk-console.c:379 ../client/pk-console-test.c:219
 msgid "Category"
 msgstr "Категорія"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:375
+#: ../client/pk-console.c:381 ../client/pk-console-test.c:221
 msgid "ID"
 msgstr "ІД"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:378
+#: ../client/pk-console.c:384 ../client/pk-console-test.c:224
 msgid "Parent"
 msgstr "Батьківська"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:381
+#: ../client/pk-console.c:387 ../client/pk-console-test.c:227
 msgid "Name"
 msgstr "Назва"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:387
+#: ../client/pk-console.c:393 ../client/pk-console-test.c:233
 msgid "Icon"
 msgstr "Значок"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:408 ../client/pk-console-test.c:247
 msgid "Details about the update:"
 msgstr "Подробиці щодо оновлення:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:404 ../src/pk-polkit-action-lookup.c:352
+#: ../client/pk-console.c:410 ../client/pk-console-test.c:253
+#: ../client/pk-task-text.c:101 ../client/pk-task-text.c:153
+#: ../src/pk-polkit-action-lookup.c:352
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Пакунок"
@@ -161,649 +173,756 @@ msgstr[1] "Пакунки"
 msgstr[2] "Пакунки"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:407
+#: ../client/pk-console.c:413 ../client/pk-console-test.c:256
 msgid "Updates"
 msgstr "Оновлює"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:411
+#: ../client/pk-console.c:417 ../client/pk-console-test.c:260
 msgid "Obsoletes"
 msgstr "Робить застарілим"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:415
+#: ../client/pk-console.c:421 ../client/pk-console-test.c:264
+#: ../client/pk-task-text.c:154
 msgid "Vendor"
 msgstr "Постачальник"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:419
+#: ../client/pk-console.c:425 ../client/pk-console-test.c:268
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:423
+#: ../client/pk-console.c:429 ../client/pk-console-test.c:272
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:427
+#: ../client/pk-console.c:433 ../client/pk-console-test.c:276
 msgid "Restart"
 msgstr "Перезапуск"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:431
+#: ../client/pk-console.c:437 ../client/pk-console-test.c:280
 msgid "Update text"
 msgstr "Текст оновлення"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:435
+#: ../client/pk-console.c:441 ../client/pk-console-test.c:284
 msgid "Changes"
 msgstr "Зміни"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:439
+#: ../client/pk-console.c:445 ../client/pk-console-test.c:288
 msgid "State"
 msgstr "Стан"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:444
+#: ../client/pk-console.c:450 ../client/pk-console-test.c:293
 msgid "Issued"
 msgstr "Випущено"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:449
+#: ../client/pk-console.c:455 ../client/pk-console-test.c:298
 msgid "Updated"
 msgstr "Оновлено"
 
-#: ../client/pk-console.c:536 ../client/pk-console.c:538
+#. TRANSLATORS: if the repo is enabled
+#: ../client/pk-console.c:475 ../client/pk-console-test.c:316
+msgid "Enabled"
+msgstr "Увімкнено"
+
+#. TRANSLATORS: if the repo is disabled
+#: ../client/pk-console.c:478 ../client/pk-console-test.c:319
+msgid "Disabled"
+msgstr "Вимкнено"
+
+#: ../client/pk-console.c:555 ../client/pk-console.c:557
 msgid "Percentage"
 msgstr "Відсотки"
 
-#: ../client/pk-console.c:538
+#: ../client/pk-console.c:557
 msgid "Unknown"
 msgstr "Невідомо"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:580
+#: ../client/pk-console.c:599 ../client/pk-console-test.c:341
 msgid "System restart required by:"
 msgstr "Перезавантаження системи потрібне для:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:583
+#: ../client/pk-console.c:602 ../client/pk-console-test.c:344
 msgid "Session restart required:"
 msgstr "Перезапуск сеансу потрібен:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:586
+#: ../client/pk-console.c:605 ../client/pk-console-test.c:347
 msgid "System restart (security) required by:"
 msgstr "Потрібне перезавантаження системи (безпека) для:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:589
+#: ../client/pk-console.c:608 ../client/pk-console-test.c:350
 msgid "Session restart (security) required:"
 msgstr "Потрібен перезапуск сеансу (безпека):"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:592
+#: ../client/pk-console.c:611 ../client/pk-console-test.c:353
 msgid "Application restart required by:"
 msgstr "Потрібен перезапуск програми для:"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:647
+#: ../client/pk-console.c:666 ../client/pk-console-test.c:704
 msgid "Please restart the computer to complete the update."
 msgstr "Щоб завершити оновлення, перезавантажте систему."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:650
+#: ../client/pk-console.c:669 ../client/pk-console-test.c:707
 msgid "Please logout and login to complete the update."
 msgstr "Щоб завершити оновлення, вийдіть з облікового запису і увійдіть знову."
 
 #. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:653
+#: ../client/pk-console.c:672
 msgid "Please restart the application as it is being used."
 msgstr "Перезапустіть програму, оскільки вона зараз використовується."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:656
+#: ../client/pk-console.c:675 ../client/pk-console-test.c:710
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "перезавантажте систему, щоб завершити встановлення важливих оновлень безпеки."
+msgstr ""
+"перезавантажте систему, щоб завершити встановлення важливих оновлень безпеки."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:659
+#: ../client/pk-console.c:678 ../client/pk-console-test.c:713
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
 msgstr ""
-"Щоб завершити встановлення важливих оновлень "
-"безпеки вийдіть з облікового запису і увійдіть до нього знову."
+"Щоб завершити встановлення важливих оновлень безпеки вийдіть з облікового "
+"запису і увійдіть до нього знову."
 
 #. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:791, c-format
+#: ../client/pk-console.c:810
+#, c-format
 msgid "The package %s is already installed"
 msgstr "Пакунок %s вже встановлено"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:799, c-format
+#: ../client/pk-console.c:818
+#, c-format
 msgid "The package %s could not be installed: %s"
 msgstr "Не вдалося встановити пакунок %s: %s"
 
 #. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:825 ../client/pk-console.c:873
-#: ../client/pk-console.c:897 ../client/pk-console.c:945
-#: ../client/pk-console.c:1041 ../client/pk-console.c:1154
-#: ../client/pk-console.c:1215 ../client/pk-tools-common.c:62
-#: ../client/pk-tools-common.c:81 ../client/pk-tools-common.c:89, c-format
+#: ../client/pk-console.c:844 ../client/pk-console.c:892
+#: ../client/pk-console.c:916 ../client/pk-console.c:964
+#: ../client/pk-console.c:1060 ../client/pk-console.c:1173
+#: ../client/pk-console.c:1234 ../client/pk-tools-common.c:63
+#: ../client/pk-tools-common.c:82 ../client/pk-tools-common.c:90
+#, c-format
 msgid "Internal error: %s"
 msgstr "Внутрішня помилка: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:857 ../client/pk-console.c:929
-#: ../client/pk-console.c:1247
+#. ask the user
+#: ../client/pk-console.c:876 ../client/pk-console.c:948
+#: ../client/pk-console.c:1266 ../client/pk-task-text.c:299
 msgid "Proceed with changes?"
 msgstr "Внести зміни:"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:862 ../client/pk-console.c:934
+#: ../client/pk-console.c:881 ../client/pk-console.c:953
 msgid "The package install was canceled!"
 msgstr "Встановлення пакунка скасовано!"
 
 #. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:881 ../client/pk-console.c:1615, c-format
+#: ../client/pk-console.c:900 ../client/pk-console.c:1634
+#, c-format
 msgid "This tool could not install the packages: %s"
 msgstr "Програмі не вдалося встановити пакунки: %s"
 
 #. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:953, c-format
+#: ../client/pk-console.c:972
+#, c-format
 msgid "This tool could not install the files: %s"
 msgstr "Програмі не вдалося встановити файли: %s"
 
 #. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:1009, c-format
+#: ../client/pk-console.c:1028
+#, c-format
 msgid "This tool could not remove %s: %s"
 msgstr "Програмі не вдалося вилучити %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1032 ../client/pk-console.c:1070
-#: ../client/pk-console.c:1099, c-format
+#: ../client/pk-console.c:1051 ../client/pk-console.c:1089
+#: ../client/pk-console.c:1118
+#, c-format
 msgid "This tool could not remove the packages: %s"
 msgstr "Програмі не вдалося вилучити пакунки: %s"
 
 #. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:1085
+#: ../client/pk-console.c:1104
 msgid "Proceed with additional packages?"
 msgstr "Вилучити додаткові пакунки?"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1090
+#: ../client/pk-console.c:1109
 msgid "The package removal was canceled!"
 msgstr "Вилучення пакунка скасовано!"
 
 #. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:1131, c-format
+#: ../client/pk-console.c:1150
+#, c-format
 msgid "This tool could not download the package %s as it could not be found"
-msgstr "Програмі не вдалося звантажити пакунок %s, оскільки відповідний пакунок не було знайдено"
+msgstr ""
+"Програмі не вдалося звантажити пакунок %s, оскільки відповідний пакунок не "
+"було знайдено"
 
 #. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1162, c-format
+#: ../client/pk-console.c:1181
+#, c-format
 msgid "This tool could not download the packages: %s"
 msgstr "Програмі не вдалося звантажити пакунки: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1194 ../client/pk-console.c:1206
-#: ../client/pk-console.c:1261, c-format
+#: ../client/pk-console.c:1213 ../client/pk-console.c:1225
+#: ../client/pk-console.c:1280
+#, c-format
 msgid "This tool could not update %s: %s"
 msgstr "Програмі не вдалося оновити %s: %s"
 
 #. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1252
+#: ../client/pk-console.c:1271
 msgid "The package update was canceled!"
 msgstr "Оновлення пакунка скасовано!"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1285 ../client/pk-console.c:1293, c-format
+#: ../client/pk-console.c:1304 ../client/pk-console.c:1312
+#, c-format
 msgid "This tool could not get the requirements for %s: %s"
 msgstr "Програмі не вдалося отримати список файлів для %s: %s"
 
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1315 ../client/pk-console.c:1323, c-format
+#: ../client/pk-console.c:1334 ../client/pk-console.c:1342
+#, c-format
 msgid "This tool could not get the dependencies for %s: %s"
 msgstr "Програмі не вдалося отримати залежності для %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1345 ../client/pk-console.c:1353, c-format
+#: ../client/pk-console.c:1364 ../client/pk-console.c:1372
+#, c-format
 msgid "This tool could not get package details for %s: %s"
 msgstr "Програмі не вдалося отримати параметри пакунка %s: %s"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1375, c-format
+#: ../client/pk-console.c:1394
+#, c-format
 msgid "This tool could not find the files for %s: %s"
 msgstr "Програмі не вдалося знайти файли %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1383, c-format
+#: ../client/pk-console.c:1402
+#, c-format
 msgid "This tool could not get the file list for %s: %s"
 msgstr "Програмі не вдалося отримати список файлів %s: %s"
 
 #. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1405, c-format
+#: ../client/pk-console.c:1424
+#, c-format
 msgid "File already exists: %s"
 msgstr "Файл вже існує: %s"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1410 ../client/pk-console.c:1466
-#: ../client/pk-console.c:1541
+#: ../client/pk-console.c:1429 ../client/pk-console.c:1485
+#: ../client/pk-console.c:1560
 msgid "Getting package list"
 msgstr "Отримання списку пакунків"
 
 #. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1416 ../client/pk-console.c:1472
-#: ../client/pk-console.c:1547, c-format
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1491
+#: ../client/pk-console.c:1566
+#, c-format
 msgid "This tool could not get package list: %s"
 msgstr "Програмі не вдалося отримати список пакунків: %s"
 
 #. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1427, c-format
+#: ../client/pk-console.c:1446
+#, c-format
 msgid "Failed to save to disk"
 msgstr "Не вдалося зберегти на диск"
 
 #. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1461 ../client/pk-console.c:1536, c-format
+#: ../client/pk-console.c:1480 ../client/pk-console.c:1555
+#, c-format
 msgid "File does not exist: %s"
 msgstr "Файла не існує: %s"
 
 #. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1493
+#: ../client/pk-console.c:1512
 msgid "Packages to add"
 msgstr "Пакунки, які буде додано"
 
 #. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1501
+#: ../client/pk-console.c:1520
 msgid "Packages to remove"
 msgstr "Пакунки, які буде вилучено"
 
 #. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1569, c-format
+#: ../client/pk-console.c:1588
+#, c-format
 msgid "No new packages need to be installed"
 msgstr "У встановленні нових пакунків немає потреби"
 
 #. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1575
+#: ../client/pk-console.c:1594
 msgid "To install"
 msgstr "Пакунки, які буде встановлено"
 
 #. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1587
+#: ../client/pk-console.c:1606
 msgid "Searching for package: "
 msgstr "Пошук пакунка:"
 
 #. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1591
+#: ../client/pk-console.c:1610
 msgid "not found."
 msgstr "не знайдено."
 
 #. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1602, c-format
+#: ../client/pk-console.c:1621
+#, c-format
 msgid "No packages can be found to install"
 msgstr "Пакунків для встановлення не знайдено"
 
 #. TRANSLATORS: installing new packages from package list
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1608
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886, c-format
+#: ../client/pk-console.c:1627
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#, c-format
 msgid "Installing packages"
 msgstr "Встановлення пакунків"
 
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1644, c-format
+#: ../client/pk-console.c:1663
+#, c-format
 msgid "This tool could not find the update details for %s: %s"
 msgstr "Програмі не вдалося знайти параметри оновлення %s: %s"
 
 #. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1652, c-format
+#: ../client/pk-console.c:1671
+#, c-format
 msgid "This tool could not get the update details for %s: %s"
 msgstr "Програмі не вдалося отримати параметри оновлення %s: %s"
 
 #. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1683
+#: ../client/pk-console.c:1702
 msgid "Error:"
 msgstr "Помилка:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1697
+#: ../client/pk-console.c:1716 ../client/pk-console-test.c:370
 msgid "Package description"
 msgstr "Опис пакунка"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1713
+#: ../client/pk-console.c:1732 ../client/pk-console-test.c:388
 msgid "Message:"
 msgstr "Повідомлення:"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1741
+#: ../client/pk-console.c:1760 ../client/pk-console-test.c:407
 msgid "Package files"
 msgstr "Файли пакунка"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1749
+#: ../client/pk-console.c:1768 ../client/pk-console-test.c:402
 msgid "No files"
 msgstr "Без файлів"
 
 #. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1772
+#: ../client/pk-console.c:1791
 msgid "Repository signature required"
 msgstr "Потрібен підпис сховища"
 
 #. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1782
+#. ask the user
+#: ../client/pk-console.c:1801 ../client/pk-task-text.c:113
 msgid "Do you accept this signature?"
 msgstr "Чи підтверджуєте ви цей підпис?"
 
 #. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1786
+#: ../client/pk-console.c:1805 ../client/pk-task-text.c:117
 msgid "The signature was not accepted."
 msgstr "Підпис не було підтверджено."
 
 #. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1820
+#: ../client/pk-console.c:1839
 msgid "End user license agreement required"
-msgstr "Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
+msgstr ""
+"Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
 
 #. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1827
+#: ../client/pk-console.c:1846
 msgid "Do you agree to this license?"
 msgstr "Чи погоджуєтеся ви з цими умовами ліцензування?"
 
 #. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1831
+#: ../client/pk-console.c:1850
 msgid "The license was refused."
 msgstr "Умови ліцензування було відкинуто."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1860
+#: ../client/pk-console.c:1879 ../client/pk-console-test.c:972
 msgid "The daemon crashed mid-transaction!"
 msgstr "Аварійне завершення фонової служби під час операції!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1913
+#: ../client/pk-console.c:1932 ../client/pk-console-test.c:1006
 msgid "PackageKit Console Interface"
 msgstr "Консольний інтерфейс PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1915
+#: ../client/pk-console.c:1934 ../client/pk-console-test.c:1008
 msgid "Subcommands:"
 msgstr "Підкоманди:"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:2008 ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:128
+#: ../client/pk-console.c:2027 ../client/pk-console-test.c:1099
+#: ../client/pk-generate-pack.c:187 ../client/pk-monitor.c:128
+#: ../client/pk-monitor-test.c:282
 #: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:549
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Показувати додаткові дані для усування вад"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:2011 ../client/pk-monitor.c:130
+#: ../client/pk-console.c:2030 ../client/pk-console-test.c:1102
+#: ../client/pk-monitor.c:130 ../client/pk-monitor-test.c:284
 msgid "Show the program version and exit"
 msgstr "Показати версію програми і завершити роботу"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:2014
+#: ../client/pk-console.c:2033 ../client/pk-console-test.c:1105
 msgid "Set the filter, e.g. installed"
 msgstr "Встановити фільтр, наприклад, встановлені"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:2017
+#: ../client/pk-console.c:2036 ../client/pk-console-test.c:1108
 msgid "Exit without waiting for actions to complete"
 msgstr "Завершити роботу, не чекаючи на завершення дії"
 
 #. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:2044
+#: ../client/pk-console.c:2063
 msgid "This tool could not connect to system DBUS."
 msgstr "Цьому інструменту не вдалося з’єднатися з DBUS системи."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:2134
+#: ../client/pk-console.c:2153 ../client/pk-console-test.c:1183
 msgid "The filter specified was invalid"
 msgstr "Вказано некоректний фільтр"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:2153
+#: ../client/pk-console.c:2172 ../client/pk-console-test.c:1202
 msgid "A search type is required, e.g. name"
 msgstr "Тип пошуку, якщо такий потрібен, наприклад, назва"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:2160 ../client/pk-console.c:2169
-#: ../client/pk-console.c:2178 ../client/pk-console.c:2187
+#: ../client/pk-console.c:2179 ../client/pk-console.c:2188
+#: ../client/pk-console.c:2197 ../client/pk-console.c:2206
+#: ../client/pk-console-test.c:1209 ../client/pk-console-test.c:1221
+#: ../client/pk-console-test.c:1233 ../client/pk-console-test.c:1245
 msgid "A search term is required"
 msgstr "Потрібен ключ пошуку"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:2194
+#: ../client/pk-console.c:2213 ../client/pk-console-test.c:1255
 msgid "Invalid search type"
 msgstr "Некоректний тип пошуку"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:2200
+#: ../client/pk-console.c:2219
 msgid "A package name or filename to install is required"
 msgstr "Слід вказати назву пакунка або назву файла, який слід встановити"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2209
+#: ../client/pk-console.c:2228 ../client/pk-console-test.c:1282
 msgid "A type, key_id and package_id are required"
 msgstr "Слід вказати тип, ідентифікатор ключа і ідентифікатор пакунка"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:2218
+#: ../client/pk-console.c:2237 ../client/pk-console-test.c:1293
 msgid "A package name to remove is required"
 msgstr "Слід вказати назву пакунка, який потрібно вилучити"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2226
+#: ../client/pk-console.c:2245 ../client/pk-console-test.c:1302
 msgid "A destination directory and the package names to download are required"
-msgstr "Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
+msgstr ""
+"Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2233
+#: ../client/pk-console.c:2252 ../client/pk-console-test.c:1309
 msgid "Directory not found"
 msgstr "Каталог не знайдено"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2241
+#: ../client/pk-console.c:2260 ../client/pk-console-test.c:1318
 msgid "A licence identifier (eula-id) is required"
 msgstr "Слід вказати ідентифікатор ліцензії (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2251
+#: ../client/pk-console.c:2270 ../client/pk-console-test.c:1329
 msgid "A transaction identifier (tid) is required"
 msgstr "Слід вказати ідентифікатор операції (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2268
+#: ../client/pk-console.c:2287 ../client/pk-console-test.c:1350
 msgid "A package name to resolve is required"
 msgstr "Слід вказати назву пакунка для розв’язання конфлікту"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2277 ../client/pk-console.c:2286
+#: ../client/pk-console.c:2296 ../client/pk-console.c:2305
+#: ../client/pk-console-test.c:1361 ../client/pk-console-test.c:1372
 msgid "A repository name is required"
 msgstr "Слід вказати назву сховища"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2295
+#: ../client/pk-console.c:2314 ../client/pk-console-test.c:1383
 msgid "A repo name, parameter and value are required"
 msgstr "Слід вказати назву сховища, параметр і значення"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2309
+#: ../client/pk-console.c:2328 ../client/pk-console-test.c:1401
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Слід вказати дію, наприклад «update-system»"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2316
+#: ../client/pk-console.c:2335 ../client/pk-console-test.c:1408
 msgid "A correct role is required"
 msgstr "Слід вказати належну роль"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2323
+#: ../client/pk-console.c:2342 ../client/pk-console-test.c:1415
 msgid "Failed to get the time since this action was last completed"
 msgstr "Не вдалося визначити час, коли цю дію було виконано востаннє"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2333 ../client/pk-console.c:2345
-#: ../client/pk-console.c:2354 ../client/pk-console.c:2372
-#: ../client/pk-console.c:2381 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:2352 ../client/pk-console.c:2364
+#: ../client/pk-console.c:2373 ../client/pk-console.c:2391
+#: ../client/pk-console.c:2400 ../client/pk-console-test.c:1425
+#: ../client/pk-console-test.c:1440 ../client/pk-console-test.c:1449
+#: ../client/pk-console-test.c:1469 ../client/pk-console-test.c:1478
+#: ../client/pk-generate-pack.c:243
 msgid "A package name is required"
 msgstr "Слід вказати назву пакунка"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2363
+#: ../client/pk-console.c:2382 ../client/pk-console-test.c:1458
 msgid "A package provide string is required"
 msgstr "Слід вказати рядок вмісту"
 
 #. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2390
+#: ../client/pk-console.c:2409
 msgid "A list file name to create is required"
 msgstr "Слід вказати список назв файлів, які слід створити"
 
 #. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2400 ../client/pk-console.c:2410
+#: ../client/pk-console.c:2419 ../client/pk-console.c:2429
 msgid "A list file to open is required"
 msgstr "Слід вказати список файлів, які слід відкрити"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2464, c-format
+#: ../client/pk-console.c:2483 ../client/pk-console-test.c:1538
+#, c-format
 msgid "Option '%s' is not supported"
 msgstr "Підтримки параметра «%s» не передбачено"
 
 #. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2477
+#: ../client/pk-console.c:2496
 msgid "Incorrect privileges for this operation"
 msgstr "Для цієї операції вказано неправильні права доступу"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2480
+#. /* TRANSLATORS: User does not have permission to do this */
+#. g_print ("%s\n", _("Incorrect privileges for this operation"));
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:2499 ../client/pk-console-test.c:1550
 msgid "Command failed"
 msgstr "Спроба виконання команди зазнала невдачі"
 
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../client/pk-console-test.c:523 ../client/pk-tools-common.c:131
+msgid "More than one package matches:"
+msgstr "З ключем пошуку збігається декілька пакунків:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../client/pk-console-test.c:532 ../client/pk-tools-common.c:138
+msgid "Please choose the correct package: "
+msgstr "Будь ласка, оберіть належний пакунок:"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:734, c-format
+msgid "This tool could not find the available package: %s"
+msgstr "Програмі не вдалося знайти доступний пакунок: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:762, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Програмі не вдалося знайти встановлений пакунок: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console-test.c:790 ../client/pk-console-test.c:818, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Програмі не вдалося знайти пакунок: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console-test.c:846 ../client/pk-console-test.c:872
+#: ../client/pk-console-test.c:898 ../client/pk-console-test.c:924
+#: ../client/pk-console-test.c:950, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Програмі не вдалося знайти всі пакунки: %s"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1261
+msgid "A package name to install is required"
+msgstr "Слід вказати назву пакунка, який слід встановити"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console-test.c:1270
+msgid "A filename to install is required"
+msgstr "Слід вказати назву файла, який слід встановити"
+
 #. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:101
+#: ../client/pk-generate-pack.c:103
 msgid "Downloading"
 msgstr "Звантаження"
 
 #. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:121
+#: ../client/pk-generate-pack.c:123
 msgid "Downloading packages"
 msgstr "Звантаження пакунків"
 
 #. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:126
+#: ../client/pk-generate-pack.c:128
 msgid "Downloading dependencies"
 msgstr "Звантаження залежностей"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:188
+#: ../client/pk-generate-pack.c:190
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Вкажіть назви файлів залежностей, які слід виключити"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:191
-msgid "The output file or directory (the current directory is used if ommitted)"
-msgstr "Файл або каталог виведення даних (якщо пропустити, буде використано поточний каталог)"
+#: ../client/pk-generate-pack.c:193
+msgid ""
+"The output file or directory (the current directory is used if ommitted)"
+msgstr ""
+"Файл або каталог виведення даних (якщо пропустити, буде використано поточний "
+"каталог)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:194
+#: ../client/pk-generate-pack.c:196
 msgid "The package to be put into the service pack"
 msgstr "Пакунок, призначений для створення пакунка обслуговування"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:197
+#: ../client/pk-generate-pack.c:199
 msgid "Put all updates available in the service pack"
 msgstr "Додати всі можливі оновлення до пакунка з обслуговування"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:227
 msgid "Neither --package or --updates option selected."
 msgstr "Не обрано ні параметра --package, ні параметра --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:233
+#: ../client/pk-generate-pack.c:235
 msgid "Both options selected."
 msgstr "Обрано обидва параметра."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:249
+#: ../client/pk-generate-pack.c:251
 msgid "A output directory or file name is required"
 msgstr "Слід вказати каталог або файл для виведення даних"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack.c:269 ../client/pk-generate-pack.c:275
 msgid "The package manager cannot perform this type of operation."
 msgstr "Керування пакунками не може виконувати дії цього типу."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:280
+#: ../client/pk-generate-pack.c:282
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr "Створення пакунків з обслуговування неможливе, оскільки PackageKit було зібрано без підтримки libarchive."
+msgstr ""
+"Створення пакунків з обслуговування неможливе, оскільки PackageKit було "
+"зібрано без підтримки libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:291
+#: ../client/pk-generate-pack.c:293
 msgid "If specifying a file, the service pack name must end with"
 msgstr "Якщо вказано файл, назва пакунка з обслуговування має завершуватися на"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:307
+#: ../client/pk-generate-pack.c:309
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Вже існує пакунок з тією самою назвою, бажаєте перезаписати його?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:310
+#: ../client/pk-generate-pack.c:312
 msgid "The pack was not overwritten."
 msgstr "Пакунок не було перезаписано."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:323
+#: ../client/pk-generate-pack.c:325
 msgid "Failed to create directory:"
 msgstr "Спроба створення каталогу завершилася невдало:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:333
+#: ../client/pk-generate-pack.c:335
 msgid "Failed to open package list."
 msgstr "Не вдалося відкрити список пакунків."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:344
+#: ../client/pk-generate-pack.c:346
 msgid "Finding package name."
 msgstr "Пошук назви пакунка."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:348, c-format
+#: ../client/pk-generate-pack.c:350
+#, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Не вдалося знайти пакунок «%s»: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:365
+#: ../client/pk-generate-pack.c:367
 msgid "Creating service pack..."
 msgstr "Створення пакунка з обслуговування..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:372, c-format
+#: ../client/pk-generate-pack.c:374
+#, c-format
 msgid "Service pack created '%s'"
 msgstr "Створено пакунок з обслуговування «%s»"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:377, c-format
+#: ../client/pk-generate-pack.c:379
+#, c-format
 msgid "Failed to create '%s': %s"
 msgstr "Не вдалося створити «%s»: %s"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:146
+#: ../client/pk-monitor.c:146 ../client/pk-monitor-test.c:299
 msgid "PackageKit Monitor"
 msgstr "Монітор PackageKit"
 
@@ -811,24 +930,112 @@ msgstr "Монітор PackageKit"
 msgid "Cannot show the list of transactions"
 msgstr "Показ списку операції неможливий"
 
-#. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:118, c-format
-msgid "The package could not be found"
-msgstr "Не вдалося знайти пакунок"
+#: ../client/pk-monitor-test.c:204
+msgid "Failed to get transaction list"
+msgstr "Спроба отримання списку операцій завершилася невдало"
 
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:130
-msgid "More than one package matches:"
-msgstr "З ключем пошуку збігається декілька пакунків:"
+#: ../client/pk-monitor-test.c:235
+msgid "Failed to get daemon state"
+msgstr "Спроба визначення стану фонової служби завершилася невдало"
 
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:137
-msgid "Please choose the correct package: "
-msgstr "Будь ласка, оберіть належний пакунок:"
+#. ask the user
+#: ../client/pk-task-text.c:64
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Бажаєте дозволити встановлення непідписаного програмного забезпечення?"
 
-#: ../client/pk-tools-common.c:162, c-format
+#: ../client/pk-task-text.c:68
+msgid "The unsigned software will not be installed."
+msgstr "Непідписане програмне забезпечення встановлено не буде."
+
+#: ../client/pk-task-text.c:100
+msgid "Software source signature required"
+msgstr "Потрібен підпис джерела програмного забезпечення"
+
+#: ../client/pk-task-text.c:102
+msgid "Software source name"
+msgstr "Назва джерела програмного забезпечення"
+
+#: ../client/pk-task-text.c:103
+msgid "Key URL"
+msgstr "Адреса URL ключа"
+
+#: ../client/pk-task-text.c:104
+msgid "Key user"
+msgstr "Користувач ключа"
+
+#: ../client/pk-task-text.c:105
+msgid "Key ID"
+msgstr "Ідентифікатор ключа"
+
+#: ../client/pk-task-text.c:106
+msgid "Key fingerprint"
+msgstr "Відбиток ключа"
+
+#: ../client/pk-task-text.c:107
+msgid "Key Timestamp"
+msgstr "Часова позначка ключа"
+
+#: ../client/pk-task-text.c:151
+msgid "End user licence agreement required"
+msgstr ""
+"Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
+
+#: ../client/pk-task-text.c:152
+msgid "EULA ID"
+msgstr "Ідентифікатор EULA"
+
+#: ../client/pk-task-text.c:155
+msgid "Agreement"
+msgstr "Угода"
+
+#. ask the user
+#: ../client/pk-task-text.c:161
+msgid "Do you accept this agreement?"
+msgstr "Чи згодвні ви дотримуватися цієї угоди?"
+
+#: ../client/pk-task-text.c:165
+msgid "The agreement was not accepted."
+msgstr "Угоду не було підтверджено."
+
+#: ../client/pk-task-text.c:194
+msgid "Media change required"
+msgstr "Потрібна зміна носія"
+
+#: ../client/pk-task-text.c:195
+msgid "Media type"
+msgstr "Тип носія"
+
+#: ../client/pk-task-text.c:196
+msgid "Media ID"
+msgstr "Ідентифікатор носія"
+
+#: ../client/pk-task-text.c:197
+msgid "Text"
+msgstr "Текст"
+
+#. ask the user
+#: ../client/pk-task-text.c:201
+msgid "Please insert the correct media"
+msgstr "Будь ласка, вставте відповідний носій"
+
+#: ../client/pk-task-text.c:205
+msgid "The correct media was not inserted."
+msgstr "Не було вставлено відповідного носія."
+
+#: ../client/pk-task-text.c:303
+msgid "The transaction did not proceed."
+msgstr "Операцію не було продовжено."
+
+#: ../client/pk-text.c:50
+#, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Будь ласка, введіть число від 1 до %i: "
+
+#. TRANSLATORS: The package was not found in any software sources
+#: ../client/pk-tools-common.c:119
+#, c-format
+msgid "The package could not be found"
+msgstr "Не вдалося знайти пакунок"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/pk-plugin-install.c:466
@@ -836,7 +1043,8 @@ msgid "Getting package information..."
 msgstr "Отримання даних щодо пакунка..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:472, c-format
+#: ../contrib/browser-plugin/pk-plugin-install.c:472
+#, c-format
 msgid "Run %s"
 msgstr "Виконати %s"
 
@@ -846,7 +1054,8 @@ msgid "Installed version"
 msgstr "Встановлена версія"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:486, c-format
+#: ../contrib/browser-plugin/pk-plugin-install.c:486
+#, c-format
 msgid "Run version %s now"
 msgstr "Виконати версію %s"
 
@@ -856,12 +1065,14 @@ msgid "Run now"
 msgstr "Виконати зараз"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:498, c-format
+#: ../contrib/browser-plugin/pk-plugin-install.c:498
+#, c-format
 msgid "Update to version %s"
 msgstr "Оновити до версії %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:504, c-format
+#: ../contrib/browser-plugin/pk-plugin-install.c:504
+#, c-format
 msgid "Install %s now"
 msgstr "Встановити %s"
 
@@ -888,7 +1099,8 @@ msgstr "Звантаження даних щодо джерел програмн
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:353
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
+msgstr ""
+"Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:357
@@ -948,7 +1160,8 @@ msgid "The package providing this file is:"
 msgstr "Пакунком, що містити цей файл є:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:726, c-format
+#: ../contrib/command-not-found/pk-command-not-found.c:726
+#, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Встановити пакунок «%s», щоб забезпечити виконання команди «%s»?"
 
@@ -974,167 +1187,181 @@ msgid "Starting install"
 msgstr "Розпочинаємо встановлення"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
+#, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Не вдалося знайти пакунок %s або пакунок вже встановлено: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
-msgid "Don't actually install any packages, only simulate what would be installed"
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Не встановлювати пакунків, лише імітувати їх встановлення"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
 msgid "Do not install dependencies of the core packages"
 msgstr "Не встановлювати залежностей основних пакунків"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
 msgid "Do not display information or progress"
 msgstr "Не показувати повідомлень та даних про поступ"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
 msgid "PackageKit Debuginfo Installer"
 msgstr "Встановлення даних для зневаджування PackageKit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
+#, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ПОМИЛКА: вкажіть назви пакунків, які слід встановити."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
+#, c-format
 msgid "Getting sources list"
 msgstr "Отримання списку джерел"
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:680
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:954
+#, c-format
 msgid "OK."
 msgstr "Гаразд."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
+#, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Знайдено %i увімкнених і %i вимкнених джерела."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
+#, c-format
 msgid "Finding debugging sources"
 msgstr "Пошук джерел даних для усування вад"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
+#, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Знайдено %i вимкнених сховища даних для усування вад."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#, c-format
 msgid "Enabling debugging sources"
 msgstr "Вмикання джерел даних для усування вад"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:939
 msgid "FAILED."
 msgstr "НЕВДАЛО."
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
+#, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Увімкнено %i джерел даних для усування вад."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:725
+#, c-format
 msgid "Finding debugging packages"
 msgstr "Пошук пакунків для усування вад"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
+#, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Не вдалося знайти пакунок %s: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:760
+#, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Не вдалося знайти пакунок з даними для усування вад %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
+#, c-format
 msgid "Found no packages to install."
 msgstr "Не знайдено жодного пакунка для встановлення."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:802
 #, c-format
 msgid "Found %i packages:"
 msgstr "Знайдено %i пакунків:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Пошук пакунків, які залежать від цих пакунків"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:831
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Не вдалося знайти залежних пакунків: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Знайдено %i додаткових пакунків."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
 #, c-format
 msgid "No extra packages required."
 msgstr "Потреби у додаткових пакунках немає."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Знайдено %i пакунків для встановлення:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Не встановлювати пакунки у режимі імітації"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:898
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Не вдалося встановити пакунки: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:930
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Вимикання раніше увімкнених джерел"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:942
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Не вдалося вимкнути джерела для усування вад: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:957
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Вимкнено %i джерел для усування вад."
@@ -1252,18 +1479,23 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Для підтвердження EULA слід виконати розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Для скасування дії, започаткованої не вами, слід пройти автентифікацію"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Для зміни параметрів джерел програмного забезпечення слід пройти автентифікацію"
+msgstr ""
+"Для зміни параметрів джерел програмного забезпечення слід пройти "
+"автентифікацію"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
-msgstr "Для визнання ключа, використаного для підписування пакунків, як надійного слід пройти автентифікацію"
+msgstr ""
+"Для визнання ключа, використаного для підписування пакунків, як надійного "
+"слід пройти автентифікацію"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to install a signed package"
@@ -1279,7 +1511,8 @@ msgstr "Для оновлення списку джерел системи сл�
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Для перезавантаження пристрою з новим драйвером слід пройти автентифікацію"
+msgstr ""
+"Для перезавантаження пристрою з новим драйвером слід пройти автентифікацію"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to remove packages"
@@ -1293,7 +1526,9 @@ msgstr "Для скасування дії слід пройти автенти�
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
-msgstr "Для визначення проксі-сервера, який буде використано для звантаження пакунків, слід пройти автентифікацію"
+msgstr ""
+"Для визначення проксі-сервера, який буде використано для звантаження "
+"пакунків, слід пройти автентифікацію"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Authentication is required to update packages"
@@ -1410,7 +1645,8 @@ msgstr "Оновлення пакунків"
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Спроба запуску зазнала невдачі через обмеження безпеки на цьому комп’ютері."
+msgstr ""
+"Спроба запуску зазнала невдачі через обмеження безпеки на цьому комп’ютері."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1420,14 +1656,16 @@ msgstr "Таке може трапитися з двох причин:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Виконуваний файл було запущено не тим користувачем (його мав запустити root)"
+msgstr ""
+"Виконуваний файл було запущено не тим користувачем (його мав запустити root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system "
 "directory:"
-msgstr "У системному каталозі файл org.freedesktop.PackageKit.conf не встановлено:"
+msgstr ""
+"У системному каталозі файл org.freedesktop.PackageKit.conf не встановлено:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:205
@@ -1476,7 +1714,9 @@ msgstr "Помилка під час спроби запуску:"
 
 #: ../src/pk-polkit-action-lookup.c:147
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Для встановлення пакунків для усування вад слід увімкнути додаткові джерела програмного забезпечення"
+msgstr ""
+"Для встановлення пакунків для усування вад слід увімкнути додаткові джерела "
+"програмного забезпечення"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
@@ -1485,7 +1725,8 @@ msgstr "Програмне забезпечення надійшло з нена
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
+msgstr ""
+"Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
 
 #: ../src/pk-polkit-action-lookup.c:174
 msgid "Do not update these packages unless you are sure it is safe to do so."
@@ -1493,16 +1734,20 @@ msgstr "Не оновлюйте ці пакунки, якщо не певні, �
 
 #: ../src/pk-polkit-action-lookup.c:192
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є безпечним."
+msgstr ""
+"Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є безпечним."
 
 #: ../src/pk-polkit-action-lookup.c:193
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
+msgstr ""
+"Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
 
 #. TRANSLATORS: warn the user that all bets are off
 #: ../src/pk-polkit-action-lookup.c:199
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr "Зловмисне програмне забезпечення може пошкодити ваш комп’ютер або завдати інших неприємностей."
+msgstr ""
+"Зловмисне програмне забезпечення може пошкодити ваш комп’ютер або завдати "
+"інших неприємностей."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:274
@@ -1513,5 +1758,4 @@ msgstr "Багато пакунків"
 #: ../src/pk-polkit-action-lookup.c:334
 msgid "Only trusted"
 msgstr "Лише надійні"
-
 
