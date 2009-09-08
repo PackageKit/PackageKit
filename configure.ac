@@ -551,6 +551,9 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(glib2, AS_HELP_STRING([--enable-glib2],[Build glib2 library (experimental)]),
 	      build_glib2=$enableval,build_glib2=no)
 AM_CONDITIONAL(PK_BUILD_GLIB2, test $build_glib2 = "yes")
+if test x$build_glib2 = xyes; then
+	AC_DEFINE(PK_BUILD_GLIB2,1,[Build glib2 code])
+fi
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
