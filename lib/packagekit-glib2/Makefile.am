@@ -100,6 +100,26 @@ libpackagekit_glib2_la_CFLAGS =					\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)
 
+noinst_LIBRARIES = libpackagekitprivate.a
+libpackagekitprivate_a_SOURCES =				\
+	egg-debug.c						\
+	egg-debug.h						\
+	egg-string.c						\
+	egg-string.h						\
+	pk-task-text.c						\
+	pk-task-text.h						\
+	pk-client-sync.c					\
+	pk-client-sync.h					\
+	pk-console-shared.c					\
+	pk-console-shared.h					\
+	pk-progress-bar.c					\
+	pk-progress-bar.h					\
+	$(NULL)
+
+libpackagekitprivate_a_CFLAGS =					\
+	$(WARNINGFLAGS_C)					\
+	$(NULL)
+
 if EGG_BUILD_TESTS
 check_PROGRAMS =						\
 	pk-self-test
@@ -110,6 +130,8 @@ pk_self_test_SOURCES =						\
 	egg-test.c						\
 	pk-task-wrapper.c					\
 	pk-task-wrapper.h					\
+	pk-task-text.c						\
+	pk-task-text.h						\
 	pk-self-test.c						\
 	$(NULL)
 

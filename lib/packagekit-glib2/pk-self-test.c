@@ -36,6 +36,7 @@
 #include "pk-package-sack.h"
 #include "pk-results.h"
 #include "pk-task.h"
+#include "pk-task-text.h"
 #include "pk-task-wrapper.h"
 #include "pk-version.h"
 
@@ -63,6 +64,7 @@ main (int argc, char **argv)
 	pk_package_sack_test (test);
 	pk_task_test (test);
 	pk_task_wrapper_test (test);
+	pk_task_text_test (test);
 
 	return (egg_test_finish (test));
 }

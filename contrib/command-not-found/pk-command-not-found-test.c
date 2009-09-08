@@ -29,12 +29,10 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
-
-#include "../../client/pk-client-sync.h"
-#include "../../client/pk-console-shared.h"
 
 #define PK_MAX_PATH_LEN 1023
 

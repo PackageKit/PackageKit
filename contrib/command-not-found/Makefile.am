@@ -42,6 +42,7 @@ if PK_BUILD_GLIB2
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
 	$(NULL)
 
 noinst_PROGRAMS = pk-command-not-found-test
@@ -51,7 +52,6 @@ pk_command_not_found_test_SOURCES =			\
 	$(NULL)
 
 pk_command_not_found_test_LDADD =			\
-	../../client/libpkconsole.a			\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\

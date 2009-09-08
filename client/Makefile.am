@@ -63,25 +63,10 @@ if PK_BUILD_GLIB2
 
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
 	$(NULL)
 
 noinst_PROGRAMS = pkcon-test pkmon-test pkgenpack-test
-
-noinst_LIBRARIES = libpkconsole.a
-libpkconsole_a_SOURCES =				\
-	egg-debug.c					\
-	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
-	pk-task-text.c					\
-	pk-task-text.h					\
-	pk-console-shared.c				\
-	pk-console-shared.h				\
-	pk-client-sync.c				\
-	pk-client-sync.h				\
-	pk-progress-bar.c				\
-	pk-progress-bar.h				\
-	$(NULL)
 
 libpkconsole_a_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
@@ -92,7 +77,6 @@ pkcon_test_SOURCES =					\
 	$(NULL)
 
 pkcon_test_LDADD =					\
-	libpkconsole.a					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -107,7 +91,6 @@ pkmon_test_SOURCES =					\
 	$(NULL)
 
 pkmon_test_LDADD =					\
-	libpkconsole.a					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -122,7 +105,6 @@ pkgenpack_test_SOURCES =				\
 	$(NULL)
 
 pkgenpack_test_LDADD = 					\
-	libpkconsole.a					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\

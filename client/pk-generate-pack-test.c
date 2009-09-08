@@ -30,12 +30,9 @@
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 
 #include "egg-debug.h"
-#include "egg-string.h"
-
-#include "pk-console-shared.h"
-#include "pk-progress-bar.h"
 
 static PkProgressBar *progressbar = NULL;
 static GCancellable *cancellable = NULL;
@@ -283,7 +280,7 @@ main (int argc, char *argv[])
 	}
 
 	/* no argument given to --package */
-	if (package != NULL && egg_strzero (package)) {
+	if (package != NULL && package[0] == '\0') {
 		/* TRANSLATORS: This is when the user fails to supply the package name */
 		g_print ("%s\n", _("A package name is required"));
 		retval = 1;
@@ -291,7 +288,7 @@ main (int argc, char *argv[])
 	}
 
 	/* no argument given to --output */
-	if (directory != NULL && egg_strzero (directory)) {
+	if (directory != NULL && directory[0] == '\0') {
 		/* TRANSLATORS: This is when the user fails to supply the output */
 		g_print ("%s\n", _("A output directory or file name is required"));
 		retval = 1;

@@ -28,15 +28,12 @@
 #include <stdio.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <locale.h>
 
 #include "egg-debug.h"
-
-#include "pk-console-shared.h"
-#include "pk-task-text.h"
-#include "pk-progress-bar.h"
 
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
