@@ -33,42 +33,301 @@
 
 #include "egg-debug.h"
 
+
+/**
+ * pk_item_package_ref:
+ * @item: the #PkItemPackage
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemPackage *
+pk_item_package_ref (PkItemPackage *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_details_ref:
+ * @item: the #PkItemDetails
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemDetails *
+pk_item_details_ref (PkItemDetails *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_update_detail_ref:
+ * @item: the #PkItemUpdateDetail
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemUpdateDetail *
+pk_item_update_detail_ref (PkItemUpdateDetail *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_category_ref:
+ * @item: the #PkItemCategory
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemCategory *
+pk_item_category_ref (PkItemCategory *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_distro_upgrade_ref:
+ * @item: the #PkItemDistroUpgrade
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemDistroUpgrade *
+pk_item_distro_upgrade_ref (PkItemDistroUpgrade *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_require_restart_ref:
+ * @item: the #PkItemRequireRestart
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemRequireRestart *
+pk_item_require_restart_ref (PkItemRequireRestart *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_transaction_ref:
+ * @item: the #PkItemTransaction
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemTransaction *
+pk_item_transaction_ref (PkItemTransaction *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_files_ref:
+ * @item: the #PkItemFiles
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemFiles *
+pk_item_files_ref (PkItemFiles *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
+	g_strfreev (item->files);
+	return NULL;
+}
+
+/**
+ * pk_item_repo_signature_required_ref:
+ * @item: the #PkItemRepoSignatureRequired
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemRepoSignatureRequired *
+pk_item_repo_signature_required_ref (PkItemRepoSignatureRequired *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_eula_required_ref:
+ * @item: the #PkItemEulaRequired
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemEulaRequired *
+pk_item_eula_required_ref (PkItemEulaRequired *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_media_change_required_ref:
+ * @item: the #PkItemMediaChangeRequired
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemMediaChangeRequired *
+pk_item_media_change_required_ref (PkItemMediaChangeRequired *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_repo_detail_ref:
+ * @item: the #PkItemRepoDetail
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemRepoDetail *
+pk_item_repo_detail_ref (PkItemRepoDetail *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_error_code_ref:
+ * @item: the #PkItemErrorCode
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemErrorCode *
+pk_item_error_code_ref (PkItemErrorCode *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
+/**
+ * pk_item_message_ref:
+ * @item: the #PkItemMessage
+ *
+ * Increases the reference count by one.
+ *
+ * Return value: the @item
+ **/
+PkItemMessage *
+pk_item_message_ref (PkItemMessage *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	item->refcount++;
+	return item;
+}
+
 /**
  * pk_item_package_unref:
+ * @item: the #PkItemPackage
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemPackage *
 pk_item_package_unref (PkItemPackage *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_free (item->summary);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_details_unref:
+ * @item: the #PkItemDetails
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemDetails *
 pk_item_details_unref (PkItemDetails *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_free (item->license);
 	g_free (item->description);
 	g_free (item->url);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_update_detail_unref:
+ * @item: the #PkItemUpdateDetail
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemUpdateDetail *
 pk_item_update_detail_unref (PkItemUpdateDetail *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_free (item->updates);
 	g_free (item->obsoletes);
@@ -82,85 +341,145 @@ pk_item_update_detail_unref (PkItemUpdateDetail *item)
 	if (item->updated != NULL)
 		g_date_free (item->updated);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_category_unref:
+ * @item: the #PkItemCategory
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemCategory *
 pk_item_category_unref (PkItemCategory *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->parent_id);
 	g_free (item->cat_id);
 	g_free (item->name);
 	g_free (item->summary);
 	g_free (item->icon);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_distro_upgrade_unref:
+ * @item: the #PkItemDistroUpgrade
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemDistroUpgrade *
 pk_item_distro_upgrade_unref (PkItemDistroUpgrade *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->name);
 	g_free (item->summary);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_require_restart_unref:
+ * @item: the #PkItemRequireRestart
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemRequireRestart *
 pk_item_require_restart_unref (PkItemRequireRestart *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_transaction_unref:
+ * @item: the #PkItemTransaction
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemTransaction *
 pk_item_transaction_unref (PkItemTransaction *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->tid);
 	g_free (item->timespec);
 	g_free (item->data);
 	g_free (item->cmdline);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_files_unref:
+ * @item: the #PkItemFiles
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemFiles *
 pk_item_files_unref (PkItemFiles *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_strfreev (item->files);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_repo_signature_required_unref:
+ * @item: the #PkItemRepoSignatureRequired
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemRepoSignatureRequired *
 pk_item_repo_signature_required_unref (PkItemRepoSignatureRequired *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->package_id);
 	g_free (item->repository_name);
 	g_free (item->key_url);
@@ -169,71 +488,122 @@ pk_item_repo_signature_required_unref (PkItemRepoSignatureRequired *item)
 	g_free (item->key_fingerprint);
 	g_free (item->key_timestamp);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_eula_required_unref:
+ * @item: the #PkItemEulaRequired
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemEulaRequired *
 pk_item_eula_required_unref (PkItemEulaRequired *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->eula_id);
 	g_free (item->package_id);
 	g_free (item->vendor_name);
 	g_free (item->license_agreement);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_media_change_required_unref:
+ * @item: the #PkItemMediaChangeRequired
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemMediaChangeRequired *
 pk_item_media_change_required_unref (PkItemMediaChangeRequired *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->media_id);
 	g_free (item->media_text);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_repo_detail_unref:
+ * @item: the #PkItemRepoDetail
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemRepoDetail *
 pk_item_repo_detail_unref (PkItemRepoDetail *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->repo_id);
 	g_free (item->description);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_error_code_unref:
+ * @item: the #PkItemErrorCode
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemErrorCode *
 pk_item_error_code_unref (PkItemErrorCode *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->details);
 	g_free (item);
+	return NULL;
 }
 
 /**
  * pk_item_message_unref:
+ * @item: the #PkItemMessage
+ *
+ * Decreases the reference count by one.
+ *
+ * Return value: the @item, or %NULL if the object is no longer valid
  **/
-void
+PkItemMessage *
 pk_item_message_unref (PkItemMessage *item)
 {
-	if (item == NULL)
-		return;
+	g_return_val_if_fail (item != NULL, NULL);
+
+	/* post decrement */
+	if (item->refcount-- != 0)
+		return item;
+
 	g_free (item->details);
 	g_free (item);
+	return NULL;
 }
 
 /***************************************************************************
@@ -246,28 +616,9 @@ void
 pk_item_test (gpointer user_data)
 {
 	EggTest *test = (EggTest *) user_data;
-#if 0
-	gboolean ret;
-	PkResults *results;
-	PkExitEnum exit_enum;
-	GPtrArray *packages;
-	const PkItemPackage *item;
 
 	if (!egg_test_start (test, "PkResults"))
 		return;
-
-	/************************************************************/
-	egg_test_title (test, "get results");
-	results = pk_results_new ();
-	egg_test_assert (test, results != NULL);
-
-	/************************************************************/
-	egg_test_title (test, "get exit code of unset results");
-	exit_enum = pk_results_get_exit_code (results);
-	egg_test_assert (test, (exit_enum == PK_EXIT_ENUM_UNKNOWN));
-
-	g_object_unref (results);
-#endif
 
 	egg_test_end (test);
 }

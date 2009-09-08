@@ -43,6 +43,7 @@ G_BEGIN_DECLS
  **/
 typedef struct
 {
+	guint				 refcount;
 	PkRestartEnum			 restart;
 	gchar				*package_id;
 } PkItemRequireRestart;
@@ -54,6 +55,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*tid;
 	gchar				*timespec;
 	gboolean			 succeeded;
@@ -70,6 +72,7 @@ typedef struct
  * Object to represent details about the update.
  **/
 typedef struct {
+	guint				 refcount;
 	gchar				*package_id;
 	gchar				*license;
 	PkGroupEnum			 group_enum;
@@ -84,6 +87,7 @@ typedef struct {
  * Object to represent details about the update.
  **/
 typedef struct {
+	guint				 refcount;
 	gchar				*package_id;
 	gchar				*updates;
 	gchar				*obsoletes;
@@ -104,6 +108,7 @@ typedef struct {
  * Object to represent details about a package.
  **/
 typedef struct {
+	guint				 refcount;
 	PkInfoEnum			 info_enum;
 	gchar				*package_id;
 	gchar				*summary;
@@ -116,6 +121,7 @@ typedef struct {
  **/
 typedef struct
 {
+	guint				 refcount;
 	PkUpdateStateEnum		 state;
 	gchar				*name;
 	gchar				*summary;
@@ -128,6 +134,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*parent_id;
 	gchar				*cat_id;
 	gchar				*name;
@@ -142,6 +149,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*package_id;
 	gchar				**files;
 } PkItemFiles;
@@ -153,6 +161,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*package_id;
 	gchar				*repository_name;
 	gchar				*key_url;
@@ -170,6 +179,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*eula_id;
 	gchar				*package_id;
 	gchar				*vendor_name;
@@ -183,6 +193,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	PkMediaTypeEnum			 media_type;
 	gchar				*media_id;
 	gchar				*media_text;
@@ -195,6 +206,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	gchar				*repo_id;
 	gchar				*description;
 	gboolean			 enabled;
@@ -207,6 +219,7 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	PkErrorCodeEnum			 code;
 	gchar				*details;
 } PkItemErrorCode;
@@ -218,26 +231,40 @@ typedef struct
  **/
 typedef struct
 {
+	guint				 refcount;
 	PkMessageEnum			 message;
 	gchar				*details;
 } PkItemMessage;
 
-//GPtrArray	*pk_results_get_message_array		(PkResults		*results);
-void		 pk_item_test				(gpointer		 user_data);
-void		 pk_item_package_unref		(PkItemPackage	*item);
-void		 pk_item_details_unref		(PkItemDetails	*item);
-void		 pk_item_update_detail_unref		(PkItemUpdateDetail	*item);
-void		 pk_item_category_unref		(PkItemCategory	*item);
-void		 pk_item_distro_upgrade_unref		(PkItemDistroUpgrade	*item);
-void		 pk_item_require_restart_unref		(PkItemRequireRestart	*item);
-void		 pk_item_transaction_unref		(PkItemTransaction	*item);
-void		 pk_item_files_unref		(PkItemFiles	*item);
-void		 pk_item_repo_signature_required_unref		(PkItemRepoSignatureRequired	*item);
-void		 pk_item_eula_required_unref		(PkItemEulaRequired	*item);
-void		 pk_item_media_change_required_unref		(PkItemMediaChangeRequired	*item);
-void		 pk_item_repo_detail_unref		(PkItemRepoDetail	*item);
-void		 pk_item_error_code_unref		(PkItemErrorCode	*item);
-void		 pk_item_message_unref		(PkItemMessage	*item);
+void			 pk_item_test				(gpointer		 user_data);
+PkItemPackage		*pk_item_package_ref			(PkItemPackage		*item);
+PkItemPackage		*pk_item_package_unref			(PkItemPackage		*item);
+PkItemDetails		*pk_item_details_ref			(PkItemDetails		*item);
+PkItemDetails		*pk_item_details_unref			(PkItemDetails		*item);
+PkItemUpdateDetail	*pk_item_update_detail_ref		(PkItemUpdateDetail	*item);
+PkItemUpdateDetail	*pk_item_update_detail_unref		(PkItemUpdateDetail	*item);
+PkItemCategory		*pk_item_category_ref			(PkItemCategory		*item);
+PkItemCategory		*pk_item_category_unref			(PkItemCategory		*item);
+PkItemDistroUpgrade	*pk_item_distro_upgrade_ref		(PkItemDistroUpgrade	*item);
+PkItemDistroUpgrade	*pk_item_distro_upgrade_unref		(PkItemDistroUpgrade	*item);
+PkItemRequireRestart	*pk_item_require_restart_ref		(PkItemRequireRestart	*item);
+PkItemRequireRestart	*pk_item_require_restart_unref		(PkItemRequireRestart	*item);
+PkItemTransaction	*pk_item_transaction_ref		(PkItemTransaction	*item);
+PkItemTransaction	*pk_item_transaction_unref		(PkItemTransaction	*item);
+PkItemFiles		*pk_item_files_ref			(PkItemFiles		*item);
+PkItemFiles		*pk_item_files_unref			(PkItemFiles		*item);
+PkItemRepoSignatureRequired	*pk_item_repo_signature_required_ref	(PkItemRepoSignatureRequired	*item);
+PkItemRepoSignatureRequired	*pk_item_repo_signature_required_unref	(PkItemRepoSignatureRequired	*item);
+PkItemEulaRequired	*pk_item_eula_required_ref		(PkItemEulaRequired	*item);
+PkItemEulaRequired	*pk_item_eula_required_unref		(PkItemEulaRequired	*item);
+PkItemMediaChangeRequired	*pk_item_media_change_required_ref	(PkItemMediaChangeRequired	*item);
+PkItemMediaChangeRequired	*pk_item_media_change_required_unref	(PkItemMediaChangeRequired	*item);
+PkItemRepoDetail	*pk_item_repo_detail_ref		(PkItemRepoDetail	*item);
+PkItemRepoDetail	*pk_item_repo_detail_unref		(PkItemRepoDetail	*item);
+PkItemErrorCode		*pk_item_error_code_ref			(PkItemErrorCode	*item);
+PkItemErrorCode		*pk_item_error_code_unref		(PkItemErrorCode	*item);
+PkItemMessage		*pk_item_message_ref			(PkItemMessage		*item);
+PkItemMessage		*pk_item_message_unref			(PkItemMessage		*item);
 
 G_END_DECLS
 
