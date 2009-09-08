@@ -891,7 +891,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* is it the same? */
-	ret = (obj->info_enum == backend->priv->last_package->info_enum &&
+	ret = (backend->priv->last_package != NULL &&
+	       obj->info_enum == backend->priv->last_package->info_enum &&
 	       g_strcmp0 (obj->package_id, backend->priv->last_package->package_id) == 0);
 	if (ret) {
 		egg_debug ("skipping duplicate %s", package_id);
@@ -903,7 +904,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	pk_backend_package_emulate_finished_for_package (backend, obj);
 
 	/* update the 'last' package */
-	pk_item_package_unref (backend->priv->last_package);
+	if (backend->priv->last_package != NULL)
+		pk_item_package_unref (backend->priv->last_package);
 	backend->priv->last_package = pk_item_package_ref (obj);
 
 	/* have we already set an error? */
@@ -995,7 +997,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	ret = TRUE;
 
 out:
-	pk_update_detail_obj_free (detail);
+	pk_item_update_detail_unref (detail);
 	g_free (update_text_safe);
 	if (issued != NULL)
 		g_date_free (issued);
@@ -1186,7 +1188,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	ret = TRUE;
 
 out:
-	pk_details_obj_free (details);
+	pk_item_details_unref (details);
 	g_free (description_safe);
 	return ret;
 }
@@ -2079,7 +2081,8 @@ pk_backend_reset (PkBackend *backend)
 		backend->priv->signal_error_timeout = 0;
 	}
 
-	pk_item_package_unref (backend->priv->last_package);
+	if (backend->priv->last_package != NULL)
+		pk_item_package_unref (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
@@ -2219,9 +2222,9 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
  * pk_backend_test_package_cb:
  **/
 static void
-pk_backend_test_package_cb (PkBackend *backend, const PkItemPackage *obj, EggTest *test)
+pk_backend_test_package_cb (PkBackend *backend, PkItemPackage *obj, EggTest *test)
 {
-	egg_debug ("package:%s", obj->id->name);
+	egg_debug ("package:%s", obj->package_id);
 	number_packages++;
 }
 

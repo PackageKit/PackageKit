@@ -81,8 +81,7 @@ pk_cache_set_updates (PkCache *cache, GPtrArray *list)
 	pk_cache_invalidate (cache);
 
 	egg_debug ("reffing updates cache");
-	cache->priv->updates_cache = g_object_ref (list);
-	g_object_add_weak_pointer (G_OBJECT (cache->priv->updates_cache), (gpointer) &cache->priv->updates_cache);
+	cache->priv->updates_cache = g_ptr_array_ref (list);
 	return TRUE;
 }
 
@@ -96,7 +95,7 @@ pk_cache_invalidate (PkCache *cache)
 
 	egg_debug ("unreffing updates cache");
 	if (cache->priv->updates_cache != NULL) {
-		g_object_unref (cache->priv->updates_cache);
+		g_ptr_array_unref (cache->priv->updates_cache);
 		cache->priv->updates_cache = NULL;
 	}
 	return TRUE;
@@ -113,7 +112,7 @@ pk_cache_finalize (GObject *object)
 	cache = PK_CACHE (object);
 
 	if (cache->priv->updates_cache != NULL)
-		g_object_unref (cache->priv->updates_cache);
+		g_ptr_array_unref (cache->priv->updates_cache);
 
 	G_OBJECT_CLASS (pk_cache_parent_class)->finalize (object);
 }

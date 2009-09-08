@@ -473,16 +473,13 @@ static void
 pk_transaction_details_cb (PkBackend *backend, PkItemDetails *obj, PkTransaction *transaction)
 {
 	const gchar *group_text;
-	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	group_text = pk_group_enum_to_text (obj->group_enum);
-	package_id = pk_package_id_to_string (obj->id);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0, package_id,
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0, obj->package_id,
 		       obj->license, group_text, obj->description, obj->url, obj->size);
-	g_free (package_id);
 }
 
 /**
@@ -567,6 +564,30 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgradeEnum type,
 }
 
 /**
+ * pk_transaction_package_list_to_string:
+ **/
+static gchar *
+pk_transaction_package_list_to_string (GPtrArray *array)
+{
+	guint i;
+	const PkItemPackage *item;
+	GString *string;
+
+	string = g_string_new ("");
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		g_string_append_printf (string, "%s\t%s\t%s\n",
+					pk_info_enum_to_text (item->info_enum),
+					item->package_id, item->summary);
+	}
+
+	/* remove trailing newline */
+	if (string->len != 0)
+		g_string_set_size (string, string->len-1);
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -576,11 +597,12 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	guint time_ms;
 	gchar *packages;
 	gchar **package_ids;
-	guint i, length;
+	guint i;
 	GPtrArray *list;
 	GPtrArray *package_list;
 	const PkItemPackage *obj;
 	gchar *package_id;
+	gchar **split;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -619,18 +641,20 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			package_list = transaction->priv->package_list;
 			for (i=0; i<package_list->len; i++) {
 				obj = g_ptr_array_index (package_list, i);
-				if (obj->info == PK_INFO_ENUM_UPDATING) {
+				if (obj->info_enum == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' as this means
 					 * we can use the local package database for GetFiles rather than
 					 * downloading new remote metadata */
-					package_id = pk_package_id_build (obj->id->name, obj->id->version, obj->id->arch, "installed");
+					split = pk_package_id_split (obj->package_id);
+					package_id = pk_package_id_build (split[0], split[1], split[2], "installed");
+					g_strfreev (split);
 					g_ptr_array_add (list, package_id);
 				}
 			}
 
 			/* process file lists on these packages */
 			if (list->len > 0) {
-				package_ids = pk_package_ids_from_array (list);
+				package_ids = pk_ptr_array_to_strv (list);
 				pk_transaction_extra_check_running_process (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
@@ -652,17 +676,20 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			package_list = transaction->priv->package_list;
 			for (i=0; i<package_list->len; i++) {
 				obj = g_ptr_array_index (package_list, i);
-				if (obj->info == PK_INFO_ENUM_INSTALLING || obj->info == PK_INFO_ENUM_UPDATING) {
+				if (obj->info_enum == PK_INFO_ENUM_INSTALLING ||
+				    obj->info_enum == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' */
-					package_id = pk_package_id_build (obj->id->name, obj->id->version, obj->id->arch, "installed");
+					split = pk_package_id_split (obj->package_id);
+					package_id = pk_package_id_build (split[0], split[1], split[2], "installed");
+					g_strfreev (split);
 					g_ptr_array_add (list, package_id);
 				}
 			}
 
-			egg_debug ("processing %i packags for desktop files", PK_OBJ_LIST(list)->len);
+			egg_debug ("processing %i packags for desktop files", list->len);
 			/* process file lists on these packages */
 			if (list->len > 0) {
-				package_ids = pk_package_ids_from_array (list);
+				package_ids = pk_ptr_array_to_strv (list);
 				pk_transaction_extra_check_desktop_files (transaction->priv->transaction_extra, package_ids);
 				g_strfreev (package_ids);
 			}
@@ -736,7 +763,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		packages = pk_obj_list_to_string (PK_OBJ_LIST(transaction->priv->package_list));
+		GPtrArray *array;
+		packages = pk_transaction_package_list_to_string (transaction->priv->package_list);
 
 		/* save to database */
 		if (!egg_strzero (packages))
@@ -744,17 +772,15 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		g_free (packages);
 
 		/* report to syslog */
-		length = PK_OBJ_LIST(transaction->priv->package_list)->len;
-		for (i=0; i<length; i++) {
-			obj = g_ptr_array_index (transaction->priv->package_list, i);
-			if (obj->info == PK_INFO_ENUM_REMOVING ||
-			    obj->info == PK_INFO_ENUM_INSTALLING ||
-			    obj->info == PK_INFO_ENUM_UPDATING) {
-				packages = pk_package_id_to_string (obj->id);
+		array = transaction->priv->package_list;
+		for (i=0; i<array->len; i++) {
+			obj = g_ptr_array_index (array, i);
+			if (obj->info_enum == PK_INFO_ENUM_REMOVING ||
+			    obj->info_enum == PK_INFO_ENUM_INSTALLING ||
+			    obj->info_enum == PK_INFO_ENUM_UPDATING) {
 				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
 					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role),
-					       packages, pk_info_enum_to_text (obj->info), transaction->priv->uid);
-				g_free (packages);
+					       obj->package_id, pk_info_enum_to_text (obj->info_enum), transaction->priv->uid);
 			}
 		}
 	}
@@ -821,7 +847,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
  * pk_transaction_package_cb:
  **/
 static void
-pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTransaction *transaction)
+pk_transaction_package_cb (PkBackend *backend, PkItemPackage *obj, PkTransaction *transaction)
 {
 	const gchar *info_text;
 	const gchar *role_text;
@@ -842,7 +868,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTrans
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		if (obj->info == PK_INFO_ENUM_INSTALLED) {
+		if (obj->info_enum == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action", role_text);
@@ -852,7 +878,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTrans
 
 	/* check we are respecting the filters */
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		if (obj->info == PK_INFO_ENUM_INSTALLED) {
+		if (obj->info_enum == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was installed when "
 					    "the ~installed filter is in place", role_text);
@@ -860,7 +886,7 @@ pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTrans
 		}
 	}
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
-		if (obj->info == PK_INFO_ENUM_AVAILABLE) {
+		if (obj->info_enum == PK_INFO_ENUM_AVAILABLE) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was ~installed when "
 					    "the installed filter is in place", role_text);
@@ -869,15 +895,15 @@ pk_transaction_package_cb (PkBackend *backend, const PkItemPackage *obj, PkTrans
 	}
 
 	/* add to package cache even if we already got a result */
-	if (obj->info != PK_INFO_ENUM_FINISHED)
-		pk_obj_list_add (PK_OBJ_LIST(transaction->priv->package_list), obj);
+	if (obj->info_enum != PK_INFO_ENUM_FINISHED)
+		g_ptr_array_add (transaction->priv->package_list, pk_item_package_ref (obj));
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
-	transaction->priv->last_package_id = pk_package_id_to_string (obj->id);
-	info_text = pk_info_enum_to_text (obj->info);
+	transaction->priv->last_package_id = g_strdup (obj->package_id);
+	info_text = pk_info_enum_to_text (obj->info_enum);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0, info_text,
-		       transaction->priv->last_package_id, obj->summary);
+		       obj->package_id, obj->summary);
 }
 
 /**
@@ -1065,27 +1091,24 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkItemUpdateDetail *d
 {
 	const gchar *restart_text;
 	const gchar *state_text;
-	gchar *package_id;
 	gchar *issued;
 	gchar *updated;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	restart_text = pk_restart_enum_to_text (detail->restart);
-	package_id = pk_package_id_to_string (detail->id);
-	state_text = pk_update_state_enum_to_text (detail->state);
+	restart_text = pk_restart_enum_to_text (detail->restart_enum);
+	state_text = pk_update_state_enum_to_text (detail->state_enum);
 	issued = pk_iso8601_from_date (detail->issued);
 	updated = pk_iso8601_from_date (detail->updated);
 
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
-		       package_id, detail->updates, detail->obsoletes, detail->vendor_url,
+		       detail->package_id, detail->updates, detail->obsoletes, detail->vendor_url,
 		       detail->bugzilla_url, detail->cve_url, restart_text, detail->update_text,
 		       detail->changelog, state_text, issued, updated);
 
 	g_free (issued);
 	g_free (updated);
-	g_free (package_id);
 }
 
 /**
@@ -1101,12 +1124,9 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	const PkItemPackage *obj;
 	guint i;
 	guint j;
-	guint length;
+	guint length = 0;
 	gboolean ret = FALSE;
-	gchar *package_id;
 	gchar **package_ids_security = NULL;
-	GPtrArray *list = NULL;
-	const gchar *package_id_tmp;
 
 	/* only do this for update actions */
 	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
@@ -1131,31 +1151,37 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	}
 
 	/* find security update packages */
-	list = g_ptr_array_new ();
 	for (i=0; i<updates->len; i++) {
 		obj = g_ptr_array_index (updates, i);
-		if (obj->info == PK_INFO_ENUM_SECURITY) {
-			package_id = pk_package_id_to_string (obj->id);
-			egg_debug ("security update: %s", package_id);
-			g_ptr_array_add (list, package_id);
+		if (obj->info_enum == PK_INFO_ENUM_SECURITY) {
+			egg_debug ("security update: %s", obj->package_id);
+			length++;
 		}
 	}
 
 	/* nothing to scan for */
-	if (list->len == 0) {
+	if (length == 0) {
 		egg_debug ("no security updates");
 		goto out;
 	}
+
+	/* create list of security packages */
+	package_ids_security = g_new (gchar *, length+1);
+	for (i=0; i<updates->len; i++) {
+		obj = g_ptr_array_index (updates, i);
+		if (obj->info_enum == PK_INFO_ENUM_SECURITY)
+			package_ids_security[i] = g_strdup (obj->package_id);
+	}
+
 
 	/* is a security update we are installing */
 	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		ret = FALSE;
 
 		/* do any of the packages we are updating match */
-		for (i=0; i < list->len; i++) {
-			package_id_tmp = g_ptr_array_index (list, i);
+		for (i=0; package_ids_security[i] != NULL; i++) {
 			for (j=0; package_ids[j] != NULL; j++) {
-				if (g_strcmp0 (package_id_tmp, package_ids[j]) == 0) {
+				if (g_strcmp0 (package_ids_security[i], package_ids[j]) == 0) {
 					ret = TRUE;
 					break;
 				}
@@ -1170,14 +1196,9 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	}
 
 	/* find files in security updates */
-	package_ids_security = pk_package_ids_from_array (list);
 	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
 out:
 	g_strfreev (package_ids_security);
-	if (list != NULL) {
-		g_ptr_array_foreach (list, (GFunc) g_free, NULL);
-		g_ptr_array_free (list, TRUE);
-	}
 	return ret;
 }
 
@@ -3000,7 +3021,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	gboolean ret;
 	GError *error;
 	GPtrArray *updates_cache;
-	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3048,11 +3068,9 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		/* emulate the backend */
 		for (i=0; i<updates_cache->len; i++) {
 			obj = g_ptr_array_index (updates_cache, i);
-			info_text = pk_info_enum_to_text (obj->info);
-			package_id = pk_package_id_to_string (obj->id);
+			info_text = pk_info_enum_to_text (obj->info_enum);
 			g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0,
-				       info_text, package_id, obj->summary);
-			g_free (package_id);
+				       info_text, obj->package_id, obj->summary);
 		}
 
 		/* set finished */
@@ -3215,8 +3233,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 		/* valid */
 		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
 			service_pack = pk_service_pack_new ();
-			pk_service_pack_set_filename (service_pack, full_paths[i]);
-			ret = pk_service_pack_check_valid (service_pack, &error_local);
+			ret = pk_service_pack_check_valid (service_pack, full_paths[i], &error_local);
 			g_object_unref (service_pack);
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
@@ -4205,8 +4222,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 		/* valid */
 		if (g_str_has_suffix (full_paths[i], ".servicepack")) {
 			service_pack = pk_service_pack_new ();
-			pk_service_pack_set_filename (service_pack, full_paths[i]);
-			ret = pk_service_pack_check_valid (service_pack, &error_local);
+			ret = pk_service_pack_check_valid (service_pack, full_paths[i], &error_local);
 			g_object_unref (service_pack);
 			if (!ret) {
 				error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACK_INVALID, "%s", error_local->message);
@@ -4960,7 +4976,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
-	transaction->priv->package_list = g_ptr_array_new_with_free_funcxxx ();
+	transaction->priv->package_list = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
 	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->syslog = pk_syslog_new ();
 	transaction->priv->dbus = pk_dbus_new ();
@@ -5053,13 +5069,13 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->sender);
 	g_free (transaction->priv->cmdline);
 
+	g_ptr_array_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->conf);
 	g_object_unref (transaction->priv->dbus);
 	g_object_unref (transaction->priv->cache);
 	g_object_unref (transaction->priv->inhibit);
 	g_object_unref (transaction->priv->backend);
 	g_object_unref (transaction->priv->monitor);
-	g_object_unref (transaction->priv->package_list);
 	g_object_unref (transaction->priv->transaction_list);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->notify);
