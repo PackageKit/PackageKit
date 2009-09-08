@@ -79,87 +79,38 @@ gboolean	 pk_results_set_exit_code		(PkResults		*results,
 
 /* add */
 gboolean	 pk_results_add_package			(PkResults		*results,
-							 PkInfoEnum		 info_enum,
-							 const gchar		*package_id,
-							 const gchar		*summary);
+							 PkItemPackage		*item);
 gboolean	 pk_results_add_details			(PkResults		*results,
-							 const gchar		*package_id,
-							 const gchar		*license,
-							 PkGroupEnum		 group_enum,
-							 const gchar		*description,
-							 const gchar		*url,
-							 guint64		 size);
+							 PkItemDetails		*item);
 gboolean	 pk_results_add_update_detail		(PkResults		*results,
-							 const gchar		*package_id,
-							 const gchar		*updates,
-							 const gchar		*obsoletes,
-							 const gchar		*vendor_url,
-							 const gchar		*bugzilla_url,
-							 const gchar		*cve_url,
-							 PkRestartEnum		 restart_enum,
-							 const gchar		*update_text,
-							 const gchar		*changelog,
-							 PkUpdateStateEnum	 state_enum,
-							 GDate			*issued,
-							 GDate			*updated);
+							 PkItemUpdateDetail	*item);
 gboolean	 pk_results_add_category		(PkResults		*results,
-							 const gchar		*parent_id,
-							 const gchar		*cat_id,
-							 const gchar		*name,
-							 const gchar		*summary,
-							 const gchar		*icon);
+							 PkItemCategory		*item);
 gboolean	 pk_results_add_distro_upgrade		(PkResults		*results,
-							 PkUpdateStateEnum	 state_enum,
-							 const gchar		*name,
-							 const gchar		*summary);
+							 PkItemDistroUpgrade	*item);
 gboolean	 pk_results_add_require_restart		(PkResults		*results,
-							 PkRestartEnum		 restart_enum,
-							 const gchar		*package_id);
+							 PkItemRequireRestart	*item);
 gboolean	 pk_results_add_transaction		(PkResults		*results,
-							 const gchar		*tid,
-							 const gchar		*timespec,
-							 gboolean		 succeeded,
-							 PkRoleEnum		 role_enum,
-							 guint			 duration,
-							 const gchar		*data,
-							 guint			 uid,
-							 const gchar		*cmdline);
+							 PkItemTransaction	*item);
 gboolean	 pk_results_add_files 			(PkResults		*results,
-							 const gchar		*package_id,
-							 gchar			**files);
+							 PkItemFiles		*item);
 gboolean	 pk_results_add_repo_signature_required	(PkResults		*results,
-							 const gchar		*package_id,
-							 const gchar		*repository_name,
-							 const gchar		*key_url,
-							 const gchar		*key_userid,
-							 const gchar		*key_id,
-							 const gchar		*key_fingerprint,
-							 const gchar		*key_timestamp,
-							 PkSigTypeEnum		 type_enum);
+							 PkItemRepoSignatureRequired	*item);
 gboolean	 pk_results_add_eula_required		(PkResults		*results,
-							 const gchar		*eula_id,
-							 const gchar		*package_id,
-							 const gchar		*vendor_name,
-							 const gchar		*license_agreement);
+							 PkItemEulaRequired	*item);
 gboolean	 pk_results_add_media_change_required	(PkResults		*results,
-							 PkMediaTypeEnum	 media_type_enum,
-							 const gchar		*media_id,
-							 const gchar		*media_text);
+							 PkItemMediaChangeRequired	*item);
 gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
-							 const gchar		*repo_id,
-							 const gchar		*description,
-							 gboolean		 enabled);
+							 PkItemRepoDetail	*item);
 gboolean	 pk_results_add_error_code 		(PkResults		*results,
-							 PkErrorCodeEnum	 code_enum,
-							 const gchar		*details);
+							 PkItemErrorCode	*item);
 gboolean	 pk_results_add_message 		(PkResults		*results,
-							 PkMessageEnum		 message_enum,
-							 const gchar		*details);
+							 PkItemMessage		*item);
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-const PkItemErrorCode *pk_results_get_error_code	(PkResults		*results);
+PkItemErrorCode *pk_results_get_error_code		(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

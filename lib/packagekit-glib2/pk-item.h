@@ -237,6 +237,8 @@ typedef struct
 } PkItemMessage;
 
 void			 pk_item_test				(gpointer		 user_data);
+
+/* refcount */
 PkItemPackage		*pk_item_package_ref			(PkItemPackage		*item);
 PkItemPackage		*pk_item_package_unref			(PkItemPackage		*item);
 PkItemDetails		*pk_item_details_ref			(PkItemDetails		*item);
@@ -265,6 +267,71 @@ PkItemErrorCode		*pk_item_error_code_ref			(PkItemErrorCode	*item);
 PkItemErrorCode		*pk_item_error_code_unref		(PkItemErrorCode	*item);
 PkItemMessage		*pk_item_message_ref			(PkItemMessage		*item);
 PkItemMessage		*pk_item_message_unref			(PkItemMessage		*item);
+
+/* create */
+PkItemPackage		*pk_item_package_new			(PkInfoEnum		 info_enum,
+								 const gchar		*package_id,
+								 const gchar		*summary);
+PkItemDetails		*pk_item_details_new			(const gchar		*package_id,
+								 const gchar		*license,
+								 PkGroupEnum		 group_enum,
+								 const gchar		*description,
+								 const gchar		*url,
+								 guint64		 size);
+PkItemUpdateDetail	*pk_item_update_detail_new		(const gchar		*package_id,
+								 const gchar		*updates,
+								 const gchar		*obsoletes,
+								 const gchar		*vendor_url,
+								 const gchar		*bugzilla_url,
+								 const gchar		*cve_url,
+								 PkRestartEnum		 restart_enum,
+								 const gchar		*update_text,
+								 const gchar		*changelog,
+								 PkUpdateStateEnum	 state_enum,
+								 GDate			*issued,
+								 GDate			*updated);
+PkItemCategory		*pk_item_category_new			(const gchar		*parent_id,
+								 const gchar		*cat_id,
+								 const gchar		*name,
+								 const gchar		*summary,
+								 const gchar		*icon);
+PkItemDistroUpgrade	*pk_item_distro_upgrade_new		(PkUpdateStateEnum	 state_enum,
+								 const gchar		*name,
+								 const gchar		*summary);
+PkItemRequireRestart	*pk_item_require_restart_new		(PkRestartEnum		 restart_enum,
+								 const gchar		*package_id);
+PkItemTransaction	*pk_item_transaction_new		(const gchar		*tid,
+								 const gchar		*timespec,
+								 gboolean		 succeeded,
+								 PkRoleEnum		 role_enum,
+								 guint			 duration,
+								 const gchar		*data,
+								 guint			 uid,
+								 const gchar		*cmdline);
+PkItemFiles		*pk_item_files_new			(const gchar		*package_id,
+								 gchar			**files);
+PkItemRepoSignatureRequired *pk_item_repo_signature_required_new (const gchar		*package_id,
+								 const gchar		*repository_name,
+								 const gchar		*key_url,
+								 const gchar		*key_userid,
+								 const gchar		*key_id,
+								 const gchar		*key_fingerprint,
+								 const gchar		*key_timestamp,
+								 PkSigTypeEnum		 type_enum);
+PkItemEulaRequired	*pk_item_eula_required_new		(const gchar		*eula_id,
+								 const gchar		*package_id,
+								 const gchar		*vendor_name,
+								 const gchar		*license_agreement);
+PkItemMediaChangeRequired *pk_item_media_change_required_new	(PkMediaTypeEnum	 media_type_enum,
+								 const gchar		*media_id,
+								 const gchar		*media_text);
+PkItemRepoDetail	*pk_item_repo_detail_new		(const gchar		*repo_id,
+								 const gchar		*description,
+								 gboolean		 enabled);
+PkItemErrorCode		*pk_item_error_code_new			(PkErrorCodeEnum	 code_enum,
+								 const gchar		*details);
+PkItemMessage		*pk_item_message_new			(PkMessageEnum		 message_enum,
+								 const gchar		*details);
 
 G_END_DECLS
 

@@ -132,26 +132,20 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 /**
  * pk_results_add_package:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds a package to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_package (PkResults *results, PkInfoEnum info_enum, const gchar *package_id, const gchar *summary)
+pk_results_add_package (PkResults *results, PkItemPackage *item)
 {
-	PkItemPackage *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (info_enum != PK_INFO_ENUM_UNKNOWN, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemPackage, 1);
-	item->info_enum = info_enum;
-	item->package_id = g_strdup (package_id);
-	item->summary = g_strdup (summary);
-	g_ptr_array_add (results->priv->package_array, item);
+	g_ptr_array_add (results->priv->package_array, pk_item_package_ref (item));
 
 	return TRUE;
 }
@@ -159,29 +153,20 @@ pk_results_add_package (PkResults *results, PkInfoEnum info_enum, const gchar *p
 /**
  * pk_results_add_details:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some package details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_details (PkResults *results, const gchar	*package_id, const gchar *license,
-			PkGroupEnum group_enum, const gchar *description, const gchar *url, guint64 size)
+pk_results_add_details (PkResults *results, PkItemDetails *item)
 {
-	PkItemDetails *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemDetails, 1);
-	item->package_id = g_strdup (package_id);
-	item->license = g_strdup (license);
-	item->group_enum = group_enum;
-	item->description = g_strdup (description);
-	item->url = g_strdup (url);
-	item->size = size;
-	g_ptr_array_add (results->priv->details_array, item);
+	g_ptr_array_add (results->priv->details_array, pk_item_details_ref (item));
 
 	return TRUE;
 }
@@ -189,39 +174,20 @@ pk_results_add_details (PkResults *results, const gchar	*package_id, const gchar
 /**
  * pk_results_add_update_detail:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some update details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_update_detail (PkResults *results, const gchar *package_id, const gchar *updates,
-			      const gchar *obsoletes, const gchar *vendor_url, const gchar *bugzilla_url,
-			      const gchar *cve_url, PkRestartEnum restart_enum, const gchar *update_text,
-			      const gchar *changelog, PkUpdateStateEnum state_enum, GDate *issued, GDate *updated)
+pk_results_add_update_detail (PkResults *results, PkItemUpdateDetail *item)
 {
-	PkItemUpdateDetail *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemUpdateDetail, 1);
-	item->package_id = g_strdup (package_id);
-	item->updates = g_strdup (updates);
-	item->obsoletes = g_strdup (obsoletes);
-	item->vendor_url = g_strdup (vendor_url);
-	item->bugzilla_url = g_strdup (bugzilla_url);
-	item->cve_url = g_strdup (cve_url);
-	item->restart_enum = restart_enum;
-	item->update_text = g_strdup (update_text);
-	item->changelog = g_strdup (changelog);
-	item->state_enum = state_enum;
-	if (issued != NULL)
-		item->issued = g_date_new_dmy (issued->day, issued->month, issued->year);
-	if (updated != NULL)
-		item->updated = g_date_new_dmy (updated->day, updated->month, updated->year);
-	g_ptr_array_add (results->priv->update_detail_array, item);
+	g_ptr_array_add (results->priv->update_detail_array, pk_item_update_detail_ref (item));
 
 	return TRUE;
 }
@@ -229,28 +195,20 @@ pk_results_add_update_detail (PkResults *results, const gchar *package_id, const
 /**
  * pk_results_add_category:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds a category item to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_category (PkResults *results, const gchar *parent_id, const gchar *cat_id, const gchar *name,
-			 const gchar *summary, const gchar *icon)
+pk_results_add_category (PkResults *results, PkItemCategory *item)
 {
-	PkItemCategory *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemCategory, 1);
-	item->parent_id = g_strdup (parent_id);
-	item->cat_id = g_strdup (cat_id);
-	item->name = g_strdup (name);
-	item->summary = g_strdup (summary);
-	item->icon = g_strdup (icon);
-	g_ptr_array_add (results->priv->category_array, item);
+	g_ptr_array_add (results->priv->category_array, pk_item_category_ref (item));
 
 	return TRUE;
 }
@@ -258,26 +216,20 @@ pk_results_add_category (PkResults *results, const gchar *parent_id, const gchar
 /**
  * pk_results_add_distro_upgrade:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds a distribution upgrade item to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_distro_upgrade (PkResults *results, PkUpdateStateEnum state_enum, const gchar *name, const gchar *summary)
+pk_results_add_distro_upgrade (PkResults *results, PkItemDistroUpgrade *item)
 {
-	PkItemDistroUpgrade *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (state_enum != PK_UPDATE_STATE_ENUM_UNKNOWN, FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemDistroUpgrade, 1);
-	item->state = state_enum;
-	item->name = g_strdup (name);
-	item->summary = g_strdup (summary);
-	g_ptr_array_add (results->priv->distro_upgrade_array, item);
+	g_ptr_array_add (results->priv->distro_upgrade_array, pk_item_distro_upgrade_ref (item));
 
 	return TRUE;
 }
@@ -285,25 +237,20 @@ pk_results_add_distro_upgrade (PkResults *results, PkUpdateStateEnum state_enum,
 /**
  * pk_results_add_require_restart:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds a require restart item to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_require_restart (PkResults *results, PkRestartEnum restart_enum, const gchar *package_id)
+pk_results_add_require_restart (PkResults *results, PkItemRequireRestart *item)
 {
-	PkItemRequireRestart *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (restart_enum != PK_RESTART_ENUM_UNKNOWN, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemRequireRestart, 1);
-	item->restart = restart_enum;
-	item->package_id = g_strdup (package_id);
-	g_ptr_array_add (results->priv->require_restart_array, item);
+	g_ptr_array_add (results->priv->require_restart_array, pk_item_require_restart_ref (item));
 
 	return TRUE;
 }
@@ -311,34 +258,20 @@ pk_results_add_require_restart (PkResults *results, PkRestartEnum restart_enum, 
 /**
  * pk_results_add_transaction:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds a transaction item to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *timespec,
-			    gboolean succeeded, PkRoleEnum role_enum,
-			    guint duration, const gchar *data,
-			    guint uid, const gchar *cmdline)
+pk_results_add_transaction (PkResults *results, PkItemTransaction *item)
 {
-	PkItemTransaction *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (role_enum != PK_ROLE_ENUM_UNKNOWN, FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemTransaction, 1);
-	item->tid = g_strdup (tid);
-	item->timespec = g_strdup (timespec);
-	item->succeeded = succeeded;
-	item->role = role_enum;
-	item->duration = duration;
-	item->data = g_strdup (data);
-	item->uid = uid;
-	item->cmdline = g_strdup (cmdline);
-	g_ptr_array_add (results->priv->transaction_array, item);
+	g_ptr_array_add (results->priv->transaction_array, pk_item_transaction_ref (item));
 
 	return TRUE;
 }
@@ -346,25 +279,20 @@ pk_results_add_transaction (PkResults *results, const gchar *tid, const gchar *t
 /**
  * pk_results_add_files:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some files details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_files (PkResults *results, const gchar *package_id, gchar **files)
+pk_results_add_files (PkResults *results, PkItemFiles *item)
 {
-	PkItemFiles *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (files != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemFiles, 1);
-	item->package_id = g_strdup (package_id);
-	item->files = g_strdupv (files);
-	g_ptr_array_add (results->priv->files_array, item);
+	g_ptr_array_add (results->priv->files_array, pk_item_files_ref (item));
 
 	return TRUE;
 }
@@ -372,33 +300,20 @@ pk_results_add_files (PkResults *results, const gchar *package_id, gchar **files
 /**
  * pk_results_add_repo_signature_required:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some repository signature details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_repo_signature_required (PkResults *results, const gchar *package_id, const gchar *repository_name,
-					const gchar *key_url, const gchar *key_userid, const gchar *key_id,
-					const gchar *key_fingerprint, const gchar *key_timestamp,
-					PkSigTypeEnum type_enum)
+pk_results_add_repo_signature_required (PkResults *results, PkItemRepoSignatureRequired *item)
 {
-	PkItemRepoSignatureRequired *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemRepoSignatureRequired, 1);
-	item->package_id = g_strdup (package_id);
-	item->repository_name = g_strdup (repository_name);
-	item->key_url = g_strdup (key_url);
-	item->key_userid = g_strdup (key_userid);
-	item->key_id = g_strdup (key_id);
-	item->key_fingerprint = g_strdup (key_fingerprint);
-	item->key_timestamp = g_strdup (key_timestamp);
-	item->type = type_enum;
-	g_ptr_array_add (results->priv->repo_signature_required_array, item);
+	g_ptr_array_add (results->priv->repo_signature_required_array, pk_item_repo_signature_required_ref (item));
 
 	return TRUE;
 }
@@ -406,27 +321,20 @@ pk_results_add_repo_signature_required (PkResults *results, const gchar *package
 /**
  * pk_results_add_eula_required:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some EULA details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_eula_required (PkResults *results, const gchar *eula_id, const gchar *package_id,
-			      const gchar *vendor_name, const gchar *license_agreement)
+pk_results_add_eula_required (PkResults *results, PkItemEulaRequired *item)
 {
-	PkItemEulaRequired *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (eula_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemEulaRequired, 1);
-	item->eula_id = g_strdup (eula_id);
-	item->package_id = g_strdup (package_id);
-	item->vendor_name = g_strdup (vendor_name);
-	item->license_agreement = g_strdup (license_agreement);
-	g_ptr_array_add (results->priv->eula_required_array, item);
+	g_ptr_array_add (results->priv->eula_required_array, pk_item_eula_required_ref (item));
 
 	return TRUE;
 }
@@ -434,26 +342,20 @@ pk_results_add_eula_required (PkResults *results, const gchar *eula_id, const gc
 /**
  * pk_results_add_media_change_required:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some media change details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_media_change_required (PkResults *results, PkMediaTypeEnum media_type_enum,
-				      const gchar *media_id, const gchar *media_text)
+pk_results_add_media_change_required (PkResults *results, PkItemMediaChangeRequired *item)
 {
-	PkItemMediaChangeRequired *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (media_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemMediaChangeRequired, 1);
-	item->media_type = media_type_enum;
-	item->media_id = g_strdup (media_id);
-	item->media_text = g_strdup (media_text);
-	g_ptr_array_add (results->priv->media_change_required_array, item);
+	g_ptr_array_add (results->priv->media_change_required_array, pk_item_media_change_required_ref (item));
 
 	return TRUE;
 }
@@ -461,26 +363,20 @@ pk_results_add_media_change_required (PkResults *results, PkMediaTypeEnum media_
 /**
  * pk_results_add_repo_detail:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some repository details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_repo_detail (PkResults *results, const gchar *repo_id,
-			    const gchar *description, gboolean enabled)
+pk_results_add_repo_detail (PkResults *results, PkItemRepoDetail *item)
 {
-	PkItemRepoDetail *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (repo_id != NULL, FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemRepoDetail, 1);
-	item->repo_id = g_strdup (repo_id);
-	item->description = g_strdup (description);
-	item->enabled = enabled;
-	g_ptr_array_add (results->priv->repo_detail_array, item);
+	g_ptr_array_add (results->priv->repo_detail_array, pk_item_repo_detail_ref (item));
 
 	return TRUE;
 }
@@ -488,23 +384,20 @@ pk_results_add_repo_detail (PkResults *results, const gchar *repo_id,
 /**
  * pk_results_add_error_code:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some error details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_error_code (PkResults *results, PkErrorCodeEnum code_enum, const gchar *details)
+pk_results_add_error_code (PkResults *results, PkItemErrorCode *item)
 {
-	PkItemErrorCode *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemErrorCode, 1);
-	item->code = code_enum;
-	item->details = g_strdup (details);
-	g_ptr_array_add (results->priv->error_code_array, item);
+	g_ptr_array_add (results->priv->error_code_array, pk_item_error_code_ref (item));
 
 	return TRUE;
 }
@@ -512,23 +405,20 @@ pk_results_add_error_code (PkResults *results, PkErrorCodeEnum code_enum, const 
 /**
  * pk_results_add_message:
  * @results: a valid #PkResults instance
+ * @item: the object to add to the array
  *
  * Adds some message details to the results set.
  *
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_message (PkResults *results, PkMessageEnum message_enum, const gchar *details)
+pk_results_add_message (PkResults *results, PkItemMessage *item)
 {
-	PkItemMessage *item;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	item = g_new0 (PkItemMessage, 1);
-	item->message = message_enum;
-	item->details = g_strdup (details);
-	g_ptr_array_add (results->priv->message_array, item);
+	g_ptr_array_add (results->priv->message_array, pk_item_message_ref (item));
 
 	return TRUE;
 }
@@ -831,19 +721,21 @@ pk_results_get_error_code_array (PkResults *results)
  *
  * Gets the last error code from the transaction.
  *
- * Return value: A #PkItemErrorCode, or %NULL
+ * Return value: A #PkItemErrorCode, or %NULL, free with pk_item_error_code_unref()
  **/
-const PkItemErrorCode *
+PkItemErrorCode *
 pk_results_get_error_code (PkResults *results)
 {
 	GPtrArray *array;
+	PkItemErrorCode *item;
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 
 	array = results->priv->error_code_array;
 	if (array->len == 0)
 		return NULL;
-	return g_ptr_array_index (array, 0);
+	item = g_ptr_array_index (array, 0);
+	return pk_item_error_code_ref (item);
 }
 
 /**
@@ -995,7 +887,9 @@ pk_results_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "add package");
-	ret = pk_results_add_package (results, PK_INFO_ENUM_AVAILABLE, "gnome-power-manager;0.1.2;i386;fedora", "Power manager for GNOME");
+	item = pk_item_package_new (PK_INFO_ENUM_AVAILABLE, "gnome-power-manager;0.1.2;i386;fedora", "Power manager for GNOME");
+	ret = pk_results_add_package (results, item);
+	pk_item_package_unref (item);
 	egg_test_assert (test, ret);
 
 	/************************************************************/
