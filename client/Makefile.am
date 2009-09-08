@@ -79,6 +79,7 @@ pkcon_test_SOURCES =					\
 pkcon_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
@@ -93,6 +94,7 @@ pkmon_test_SOURCES =					\
 pkmon_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
@@ -108,6 +110,7 @@ pkgenpack_test_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 

@@ -29,6 +29,7 @@
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-control.h"
+#include "pk-desktop.h"
 #include "pk-enum.h"
 #include "pk-package.h"
 #include "pk-package-id.h"
@@ -53,6 +54,7 @@ main (int argc, char **argv)
 	egg_string_test (test);
 	pk_common_test (test);
 	pk_enum_test (test);
+	pk_desktop_test (test);
 	pk_bitfield_test (test);
 	pk_package_id_test (test);
 	pk_package_ids_test (test);
