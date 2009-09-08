@@ -27,7 +27,7 @@
 
 #include <glib/gi18n.h>
 #include <glib.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
 #include "pk-cache.h"
@@ -39,7 +39,7 @@ struct PkCachePrivate
 {
 	PkConf			*conf;
 	gboolean		 use_update_cache;
-	PkPackageList		*updates_cache;
+	GPtrArray		*updates_cache;
 };
 
 G_DEFINE_TYPE (PkCache, pk_cache, G_TYPE_OBJECT)
@@ -48,7 +48,7 @@ static gpointer pk_cache_object = NULL;
 /**
  * pk_cache_get_updates:
  **/
-PkPackageList *
+GPtrArray *
 pk_cache_get_updates (PkCache *cache)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), NULL);
@@ -66,7 +66,7 @@ pk_cache_get_updates (PkCache *cache)
  * pk_cache_set_updates:
  **/
 gboolean
-pk_cache_set_updates (PkCache *cache, PkPackageList *list)
+pk_cache_set_updates (PkCache *cache, GPtrArray *list)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 	g_return_val_if_fail (list != NULL, FALSE);

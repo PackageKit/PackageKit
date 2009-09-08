@@ -31,7 +31,7 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -857,7 +857,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 {
 	gchar *summary_safe = NULL;
 	PkPackageObj *obj = NULL;
-	PkPackageId *id = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -874,14 +873,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	/* check against the old one */
-	id = pk_package_id_new_from_string (package_id);
-	if (id == NULL) {
-		egg_warning ("Failed to parse package_id: '%s'", package_id);
-		ret = FALSE;
-		goto out;
-	}
-
 	/* fix up available and installed when doing simulate roles */
 	if (backend->priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
 	    backend->priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
@@ -894,7 +885,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* create a new package object AFTER we emulate the info value */
-	obj = pk_package_obj_new (info, id, summary_safe);
+	obj = pk_package_obj_new (info, package_id, summary_safe);
 	if (obj == NULL) {
 		egg_warning ("Failed to create object summary: '%s'", summary_safe);
 		ret = FALSE;
@@ -947,7 +938,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* success */
 	ret = TRUE;
 out:
-	pk_package_id_free (id);
 	pk_package_obj_free (obj);
 	g_free (summary_safe);
 	return ret;
@@ -967,7 +957,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 {
 	gchar *update_text_safe = NULL;
 	PkUpdateDetailObj *detail = NULL;
-	PkPackageId *id = NULL;
 	GDate *issued = NULL;
 	GDate *updated = NULL;
 	gboolean ret = FALSE;
@@ -989,15 +978,8 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	/* form PkPackageId struct */
-	id = pk_package_id_new_from_string (package_id);
-	if (id == NULL) {
-		egg_warning ("Failed to parse package_id: '%s'", package_id);
-		goto out;
-	}
-
 	/* form PkUpdateDetailObj struct */
-	detail = pk_update_detail_obj_new_from_data (id, updates, obsoletes, vendor_url,
+	detail = pk_update_detail_obj_new_from_data (package_id, updates, obsoletes, vendor_url,
 						     bugzilla_url, cve_url, restart,
 						     update_text_safe, changelog,
 						     state, issued, updated);
@@ -1011,7 +993,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	ret = TRUE;
 
 out:
-	pk_package_id_free (id);
 	pk_update_detail_obj_free (detail);
 	g_free (update_text_safe);
 	if (issued != NULL)
@@ -1176,7 +1157,6 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 {
 	gchar *description_safe = NULL;
 	PkDetailsObj *details = NULL;
-	PkPackageId *id = NULL;
 	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -1192,15 +1172,8 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	/* form PkPackageId struct */
-	id = pk_package_id_new_from_string (package_id);
-	if (id == NULL) {
-		egg_warning ("Failed to parse package_id: '%s'", package_id);
-		goto out;
-	}
-
 	/* form PkDetailsObj struct */
-	details = pk_details_obj_new_from_data (id, license, group, description_safe, url, size);
+	details = pk_details_obj_new_from_data (package_id, license, group, description_safe, url, size);
 	if (details == NULL) {
 		egg_warning ("Failed to parse details object");
 		goto out;
@@ -1211,7 +1184,6 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	ret = TRUE;
 
 out:
-	pk_package_id_free (id);
 	pk_details_obj_free (details);
 	g_free (description_safe);
 	return ret;

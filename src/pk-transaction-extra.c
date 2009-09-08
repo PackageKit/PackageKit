@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 #include <gio/gdesktopappinfo.h>
 #include <sqlite3.h>
 
@@ -48,7 +48,7 @@ struct PkTransactionExtraPrivate
 	PkBackend		*backend;
 	GMainLoop		*loop;
 	PkObjList		*running_exec_list;
-	PkPackageList		*list;
+	GPtrArray		*list;
 	PkLsof			*lsof;
 	guint			 finished_id;
 	guint			 package_id;
@@ -122,7 +122,6 @@ pk_transaction_extra_set_progress_changed (PkTransactionExtra *extra, guint perc
 static const PkPackageObj *
 pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, const gchar *filename)
 {
-	guint size;
 	const PkPackageObj *obj = NULL;
 	PkStore *store;
 
@@ -138,14 +137,13 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 	g_main_loop_run (extra->priv->loop);
 
 	/* check that we only matched one package */
-	size = pk_package_list_get_size (extra->priv->list);
-	if (size != 1) {
+	if (extra->priv->list->len != 1) {
 		egg_warning ("not correct size, %i", size);
 		goto out;
 	}
 
 	/* get the obj */
-	obj = pk_package_list_get_obj (extra->priv->list, 0);
+	obj = g_ptr_array_index (extra->priv->list, 0);
 	if (obj == NULL) {
 		egg_warning ("cannot get obj");
 		goto out;
@@ -519,9 +517,7 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gc
 	guint len;
 	gboolean ret;
 	gchar **files;
-	PkPackageId *id;
 
-	id = pk_package_id_new_from_string (package_id);
 	files = g_strsplit (filelist, ";", 0);
 
 	/* check each file */
@@ -541,11 +537,10 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gc
 		 * suggest an application restart instead */
 
 		/* send signal about session restart */
-		egg_debug ("package %s updated, and %s is running", id->name, files[i]);
+		egg_debug ("package %s updated, and %s is running", package_id, files[i]);
 		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SESSION, package_id);
 	}
 	g_strfreev (files);
-	pk_package_id_free (id);
 }
 
 #ifdef USE_SECURITY_POLKIT
@@ -696,12 +691,10 @@ pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gc
 	gboolean ret;
 	gchar **files;
 	gchar **package;
-	PkPackageId *id;
 	gchar *md5;
 
-	id = pk_package_id_new_from_string (package_id);
 	files = g_strsplit (filelist, ";", 0);
-	package = g_strsplit (package_id, ";", 0);
+	package = pk_package_id_split (package_id);
 
 	/* check each file */
 	len = g_strv_length (files);
@@ -723,7 +716,6 @@ pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gc
 	}
 	g_strfreev (files);
 	g_strfreev (package);
-	pk_package_id_free (id);
 }
 
 /**
@@ -1123,7 +1115,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv = PK_POST_TRANS_GET_PRIVATE (extra);
 	extra->priv->running_exec_list = pk_transaction_extra_string_list_new ();
 	extra->priv->loop = g_main_loop_new (NULL, FALSE);
-	extra->priv->list = pk_package_list_new ();
+	extra->priv->list = g_ptr_array_new_with_free_funcxxx ();
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
 	extra->priv->db = NULL;

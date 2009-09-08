@@ -41,7 +41,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <gio/gio.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 #ifdef USE_SECURITY_POLKIT
 #include <polkit/polkit.h>
 #endif
@@ -117,7 +117,7 @@ struct PkTransactionPrivate
 	gchar			*sender;
 	gchar			*cmdline;
 	GPtrArray		*require_restart_list;
-	PkPackageList		*package_list;
+	GPtrArray		*package_list;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 
@@ -290,7 +290,6 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 static gchar *
 pk_transaction_get_text (PkTransaction *transaction)
 {
-	PkPackageId *id;
 	gchar *text = NULL;
 	const gchar *data;
 
@@ -299,25 +298,10 @@ pk_transaction_get_text (PkTransaction *transaction)
 
 	if (transaction->priv->cached_package_id != NULL) {
 		data = transaction->priv->cached_package_id;
-		/* is a package id? */
-		if (pk_package_id_check (data)) {
-			id = pk_package_id_new_from_string (data);
-			text = g_strdup (id->name);
-			pk_package_id_free (id);
-		} else {
-			text = g_strdup (data);
-		}
+		text = pk_package_id_to_printable (data);
 	} else if (transaction->priv->cached_package_ids != NULL) {
 		data = transaction->priv->cached_package_ids[0];
-		/* is a package id? */
-		if (pk_package_id_check (data)) {
-			/* FIXME: join all with ';' */
-			id = pk_package_id_new_from_string (data);
-			text = g_strdup (id->name);
-			pk_package_id_free (id);
-		} else {
-			text = g_strdup (data);
-		}
+		text = pk_package_id_to_printable (data);
 	} else if (transaction->priv->cached_search != NULL) {
 		text = g_strdup (transaction->priv->cached_search);
 	}
@@ -594,6 +578,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	gchar **package_ids;
 	guint i, length;
 	GPtrArray *list;
+	GPtrArray *package_list;
 	const PkPackageObj *obj;
 	gchar *package_id;
 
@@ -631,9 +616,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 			/* filter on UPDATING */
 			list = g_ptr_array_new ();
-			length = pk_package_list_get_size (transaction->priv->package_list);
-			for (i=0; i<length; i++) {
-				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+			package_list = transaction->priv->package_list;
+			for (i=0; i<package_list->len; i++) {
+				obj = g_ptr_array_index (package_list, i);
 				if (obj->info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' as this means
 					 * we can use the local package database for GetFiles rather than
@@ -664,9 +649,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 			/* filter on INSTALLING | UPDATING */
 			list = g_ptr_array_new ();
-			length = pk_package_list_get_size (transaction->priv->package_list);
-			for (i=0; i<length; i++) {
-				obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+			package_list = transaction->priv->package_list;
+			for (i=0; i<package_list->len; i++) {
+				obj = g_ptr_array_index (package_list, i);
 				if (obj->info == PK_INFO_ENUM_INSTALLING || obj->info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' */
 					package_id = pk_package_id_build (obj->id->name, obj->id->version, obj->id->arch, "installed");
@@ -761,7 +746,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* report to syslog */
 		length = PK_OBJ_LIST(transaction->priv->package_list)->len;
 		for (i=0; i<length; i++) {
-			obj = pk_package_list_get_obj (transaction->priv->package_list, i);
+			obj = g_ptr_array_index (transaction->priv->package_list, i);
 			if (obj->info == PK_INFO_ENUM_REMOVING ||
 			    obj->info == PK_INFO_ENUM_INSTALLING ||
 			    obj->info == PK_INFO_ENUM_UPDATING) {
@@ -1112,7 +1097,7 @@ pk_transaction_update_detail_cb (PkBackend *backend, const PkUpdateDetailObj *de
 static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
 {
-	PkPackageList *updates;
+	GPtrArray *updates;
 	const PkPackageObj *obj;
 	guint i;
 	guint j;
@@ -1147,9 +1132,8 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* find security update packages */
 	list = g_ptr_array_new ();
-	length = pk_package_list_get_size (updates);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (updates, i);
+	for (i=0; i<updates->len; i++) {
+		obj = g_ptr_array_index (updates, i);
 		if (obj->info == PK_INFO_ENUM_SECURITY) {
 			package_id = pk_package_id_to_string (obj->id);
 			egg_debug ("security update: %s", package_id);
@@ -3015,7 +2999,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 {
 	gboolean ret;
 	GError *error;
-	PkPackageList *updates_cache;
+	GPtrArray *updates_cache;
 	gchar *package_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3058,14 +3042,12 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		const PkPackageObj *obj;
 		const gchar *info_text;
 		guint i;
-		guint length;
 
-		length = pk_package_list_get_size (updates_cache);
-		egg_debug ("we have cached data (%i) we should use!", length);
+		egg_debug ("we have cached data (%i) we should use!", updates_cache->len);
 
 		/* emulate the backend */
-		for (i=0; i<length; i++) {
-			obj = pk_package_list_get_obj (updates_cache, i);
+		for (i=0; i<updates_cache->len; i++) {
+			obj = g_ptr_array_index (updates_cache, i);
 			info_text = pk_info_enum_to_text (obj->info);
 			package_id = pk_package_id_to_string (obj->id);
 			g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0,
@@ -4978,7 +4960,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->conf = pk_conf_new ();
 	transaction->priv->notify = pk_notify_new ();
 	transaction->priv->inhibit = pk_inhibit_new ();
-	transaction->priv->package_list = pk_package_list_new ();
+	transaction->priv->package_list = g_ptr_array_new_with_free_funcxxx ();
 	transaction->priv->transaction_list = pk_transaction_list_new ();
 	transaction->priv->syslog = pk_syslog_new ();
 	transaction->priv->dbus = pk_dbus_new ();
