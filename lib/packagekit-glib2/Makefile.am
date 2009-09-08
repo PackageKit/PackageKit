@@ -132,6 +132,10 @@ pk_self_test_SOURCES =						\
 	pk-task-wrapper.h					\
 	pk-task-text.c						\
 	pk-task-text.h						\
+	pk-console-shared.c					\
+	pk-console-shared.h					\
+	pk-client-sync.c					\
+	pk-client-sync.h					\
 	pk-self-test.c						\
 	$(NULL)
 
