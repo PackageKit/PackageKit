@@ -26,9 +26,8 @@
 #include <string.h>
 #include <locale.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib/packagekit.h>
-
-#include "pk-progress-bar.h"
+#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 
 #include "egg-debug.h"
 
@@ -93,18 +92,6 @@ out:
 }
 
 /**
- * pk_debuginfo_install_repo_details_cb:
- **/
-static void
-pk_debuginfo_install_repo_details_cb (PkClient *client, const gchar *repo_id, const gchar *description, gboolean enabled, PkDebuginfoInstallPrivate *priv)
-{
-	if (enabled)
-		g_ptr_array_add (priv->enabled, g_strdup (repo_id));
-	else
-		g_ptr_array_add (priv->disabled, g_strdup (repo_id));
-}
-
-/**
  * pk_debuginfo_install_in_array:
  **/
 static gboolean
@@ -133,32 +120,60 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 {
 	guint i;
 	gboolean ret = TRUE;
+	PkResults *results = NULL;
 	const gchar *repo_id;
 	GError *error_local = NULL;
+	PkExitEnum exit_enum;
 
 	/* enable all debuginfo repos we found */
 	for (i=0; i<array->len; i++) {
 		repo_id = g_ptr_array_index (array, i);
 
-		/* reset client */
-		ret = pk_client_reset (priv->client, &error_local);
-		if (!ret) {
-			*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+		/* enable this repo */
+		results = pk_client_repo_enable_sync (priv->client, repo_id, enable, NULL, NULL, NULL, &error_local);
+		if (results == NULL) {
+			*error = g_error_new (1, 0, "failed to enable %s: %s", repo_id, error_local->message);
+			g_error_free (error_local);
+			ret = FALSE;
+			goto out;
+		}
+
+		/* test exit code */
+		exit_enum = pk_results_get_exit_code (results);
+		if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+			*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
 			g_error_free (error_local);
 			goto out;
 		}
 
-		/* enable this repo */
-		ret = pk_client_repo_enable (priv->client, repo_id, enable, &error_local);
-		if (!ret) {
-			*error = g_error_new (1, 0, "failed to enable %s: %s", repo_id, error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
 		egg_debug ("setting %s: %i", repo_id, enable);
+		g_object_unref (results);
 	}
 out:
 	return ret;
+}
+
+/**
+ * pk_debuginfo_install_progress_cb:
+ **/
+static void
+pk_debuginfo_install_progress_cb (PkProgress *progress, PkProgressType type, PkDebuginfoInstallPrivate *priv)
+{
+	gint percentage;
+	gchar *package_id = NULL;
+
+	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
+		g_object_get (progress, "percentage", &percentage, NULL);
+		pk_progress_bar_set_percentage (priv->progress_bar, percentage);
+		goto out;
+	}
+	if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
+		g_object_get (progress, "package-id", &package_id, NULL);
+		egg_debug ("now downloading %s", package_id);
+		goto out;
+	}
+out:
+	g_free (package_id);
 }
 
 /**
@@ -168,51 +183,41 @@ static gboolean
 pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArray *array, GError **error)
 {
 	gboolean ret = TRUE;
+	PkResults *results = NULL;
 	gchar **package_ids;
 	GError *error_local = NULL;
-	PkExitEnum exit;
+	PkExitEnum exit_enum;
 
 	/* mush back into a char** */
-	package_ids = pk_package_ids_from_array (array);
-
-	/* reset client */
-	ret = pk_client_reset (priv->client, &error_local);
-	if (!ret) {
-		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
+	package_ids = pk_ptr_array_to_strv (array);
 
 	/* TRANSLATORS: we are starting to install the packages */
 	pk_progress_bar_start (priv->progress_bar, _("Starting install"));
 
 	/* enable this repo */
-	ret = pk_client_install_packages (priv->client, TRUE, package_ids, &error_local);
-	if (!ret) {
-		/* need to handle retry with only_trusted=FALSE */
-		g_object_get (priv->client, "exit", &exit, NULL);
-		if (exit == PK_EXIT_ENUM_NEED_UNTRUSTED) {
-			egg_debug ("need to handle untrusted");
+	results = pk_task_install_packages_sync (PK_TASK(priv->client), package_ids, NULL,
+						 (PkProgressCallback) pk_debuginfo_install_progress_cb, priv, &error_local);
+	if (results == NULL) {
+		*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
+		g_error_free (error_local);
+		ret = FALSE;
+		goto out;
+	}
 
-			/* retry new action with untrusted */
-			pk_client_set_only_trusted (priv->client, FALSE);
-			g_clear_error (&error_local);
-			ret = pk_client_requeue (priv->client, &error_local);
-			if (!ret) {
-				*error = g_error_new (1, 0, "failed to requeue transaction: %s", error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
-		} else {
-			*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
+	/* test exit code */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
+		g_error_free (error_local);
+		ret = FALSE;
+		goto out;
 	}
 
 	/* end progressbar output */
 	pk_progress_bar_end (priv->progress_bar);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	g_strfreev (package_ids);
 	return ret;
 }
@@ -223,53 +228,52 @@ out:
 static gchar *
 pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const gchar *package_name, GError **error)
 {
-	gboolean ret;
-	const PkPackageObj *obj;
-	const PkPackageId *id;
+	PkResults *results = NULL;
+	const PkItemPackage *item;
 	gchar *package_id = NULL;
-	PkPackageList *list = NULL;
+	GPtrArray *list = NULL;
 	GError *error_local = NULL;
 	gchar **names;
-	guint len;
+	PkExitEnum exit_enum;
 
 	/* resolve takes a char** */
 	names = g_strsplit (package_name, ";", -1);
 
-	/* reset client */
-	ret = pk_client_reset (priv->client, &error_local);
-	if (!ret) {
-		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
 	/* resolve */
-	ret = pk_client_resolve (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, &error_local);
-	if (!ret) {
+	results = pk_client_resolve_sync (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, NULL, NULL, NULL, &error_local);
+	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to resolve: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
 
+	/* test exit code */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
+		g_error_free (error_local);
+		goto out;
+	}
+
 	/* check we only got one match */
-	list = pk_client_get_package_list (priv->client);
-	len = PK_OBJ_LIST(list)->len;
-	if (len == 0) {
+	list = pk_results_get_package_array (results);
+	if (list->len == 0) {
 		*error = g_error_new (1, 0, "no package %s found", package_name);
 		goto out;
 	}
-	if (len > 1) {
+	if (list->len > 1) {
 		*error = g_error_new (1, 0, "more than one package found for %s", package_name);
 		goto out;
 	}
 
 	/* get the package id */
-	obj = pk_package_list_get_obj (list, 0);
-	id = pk_package_obj_get_id (obj);
-	package_id = pk_package_id_to_string (id);
+	item = g_ptr_array_index (list, 0);
+	package_id = g_strdup (item->package_id);
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (list != NULL)
-		g_object_unref (list);
+		g_ptr_array_unref (list);
 	g_strfreev (names);
 	return package_id;
 }
@@ -308,14 +312,14 @@ static void
 pk_debuginfo_install_print_array (GPtrArray *array)
 {
 	guint i;
-	PkPackageId *id;
 	const gchar *package_id;
+	gchar **split;
 
 	for (i=0; i<array->len; i++) {
 		package_id = g_ptr_array_index (array, i);
-		id = pk_package_id_new_from_string (package_id);
-		g_print ("%i\t%s-%s(%s)\t%s\n", i+1, id->name, id->version, id->arch, id->data);
-		pk_package_id_free (id);
+		split = pk_package_id_split (package_id);
+		g_print ("%i\t%s-%s(%s)\t%s\n", i+1, split[0], split[1], split[2], split[3]);
+		g_strfreev (split);
 	}
 }
 
@@ -350,43 +354,45 @@ out:
 static gboolean
 pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packages_search, GPtrArray *packages_results, GError **error)
 {
-	gboolean ret;
-	const PkPackageObj *obj;
-	const PkPackageId *id;
+	gboolean ret = TRUE;
+	PkResults *results = NULL;
+	const PkItemPackage *item;
 	gchar *package_id = NULL;
-	PkPackageList *list = NULL;
+	GPtrArray *list = NULL;
 	GError *error_local = NULL;
 	gchar **package_ids = NULL;
 	gchar *name_debuginfo;
-	guint len;
 	guint i;
+	gchar **split;
+	PkExitEnum exit_enum;
 
-	/* reset client */
-	ret = pk_client_reset (priv->client, &error_local);
-	if (!ret) {
-		*error = g_error_new (1, 0, "failed to reset: %s", error_local->message);
+	/* get depends for them all, not adding dup's */
+	package_ids = pk_ptr_array_to_strv (packages_search);
+	results = pk_client_get_depends_sync (priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, NULL, NULL, NULL, &error_local);
+	if (results == NULL) {
+		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
 		g_error_free (error_local);
+		ret = FALSE;
 		goto out;
 	}
 
-	/* get depends for them all, not adding dup's */
-	package_ids = pk_package_ids_from_array (packages_search);
-	ret = pk_client_get_depends (priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, &error_local);
-	if (!ret) {
-		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
+	/* test exit code */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
 		g_error_free (error_local);
+		ret = FALSE;
 		goto out;
 	}
 
 	/* add dependant packages */
-	list = pk_client_get_package_list (priv->client);
-	len = PK_OBJ_LIST(list)->len;
-	for (i=0; i<len; i++) {
-		obj = pk_package_list_get_obj (list, 0);
-		id = pk_package_obj_get_id(obj);
-
+	list = pk_results_get_package_array (results);
+	for (i=0; i<list->len; i++) {
+		item = g_ptr_array_index (list, 0);
+		split = pk_package_id_split (item->package_id);
 		/* add -debuginfo */
-		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (id->name);
+		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[0]);
+		g_strfreev (split);
 
 		/* resolve name */
 		egg_debug ("resolving: %s", name_debuginfo);
@@ -410,110 +416,57 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		g_free (name_debuginfo);
 	}
 out:
+	if (results != NULL)
+		g_object_unref (results);
 	if (list != NULL)
-		g_object_unref (list);
+		g_ptr_array_unref (list);
 	g_strfreev (package_ids);
 	return ret;
 }
 
 /**
- * pk_debuginfo_install_progress_changed_cb:
+ * pk_debuginfo_install_get_repo_list:
  **/
-static void
-pk_debuginfo_install_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
-				guint elapsed, guint remaining, PkDebuginfoInstallPrivate *priv)
+static gboolean
+pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **error)
 {
-	PkRoleEnum role;
-	pk_client_get_role (client, &role, NULL, NULL);
+	gboolean ret = FALSE;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	guint i;
+	GPtrArray *array;
+	GError *error_local = NULL;
+	const PkItemRepoDetail *item;
 
-	/* ignore everything except InstallPackages */
-	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		egg_debug ("ignoring %s progress", pk_role_enum_to_text (role));
+	/* get all repo details */
+	results = pk_client_get_repo_list_sync (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
+	if (results == NULL) {
+		*error = g_error_new (1, 0, "failed to get repo list: %s", error_local->message);
+		g_error_free (error_local);
 		goto out;
 	}
 
-	pk_progress_bar_set_percentage (priv->progress_bar, percentage);
-out:
-	return;
-}
-
-/**
- * pk_strpad:
- * @data: the input string
- * @length: the desired length of the output string, with padding
- *
- * Returns the text padded to a length with spaces. If the string is
- * longer than length then a longer string is returned.
- *
- * Return value: The padded string
- **/
-static gchar *
-pk_strpad (const gchar *data, guint length)
-{
-	gint size;
-	guint data_len;
-	gchar *text;
-	gchar *padding;
-
-	if (data == NULL)
-		return g_strnfill (length, ' ');
-
-	/* ITS4: ignore, only used for formatting */
-	data_len = strlen (data);
-
-	/* calculate */
-	size = (length - data_len);
-	if (size <= 0)
-		return g_strdup (data);
-
-	padding = g_strnfill (size, ' ');
-	text = g_strdup_printf ("%s%s", data, padding);
-	g_free (padding);
-	return text;
-}
-
-/**
- * pk_debuginfo_install_package_cb:
- **/
-static void
-pk_debuginfo_install_package_cb (PkClient *client, const PkPackageObj *obj, PkDebuginfoInstallPrivate *priv)
-{
-	PkRoleEnum role;
-	gchar *package = NULL;
-	gchar *info_pad = NULL;
-	gchar *text = NULL;
-
-	/* get role */
-	pk_client_get_role (client, &role, NULL, NULL);
-
-	/* ignore some */
-	if (obj->info == PK_INFO_ENUM_FINISHED)
-		goto out;
-	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES)
-		goto out;
-
-	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
-
-	/* don't pretty print if not on console */
-	if (FALSE) {
-		g_print ("%s %s-%s.%s\n", info_pad, obj->id->name, obj->id->version, obj->id->arch);
+	/* test exit code */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		g_print ("failed to get repo list: %s", pk_exit_enum_to_text (exit_enum));
 		goto out;
 	}
 
-	/* pad the name-version */
-	if (obj->id->version == NULL ||
-	    obj->id->version[0] == '\0')
-		package = g_strdup (obj->id->name);
-	else
-		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
-	text = g_strdup_printf ("%s\t%s", info_pad, package);
-	pk_progress_bar_start (priv->progress_bar, text);
-
+	/* get results */
+	array = pk_results_get_repo_detail_array (results);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		if (item->enabled)
+			g_ptr_array_add (priv->enabled, g_strdup (item->repo_id));
+		else
+			g_ptr_array_add (priv->disabled, g_strdup (item->repo_id));
+	}
+	ret = TRUE;
 out:
-	g_free (text);
-	g_free (package);
-	g_free (info_pad);
+	if (results != NULL)
+		g_object_unref (results);
+	return ret;
 }
 
 /**
@@ -539,8 +492,7 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	const gchar *repo_id;
 	gchar *repo_id_debuginfo;
-	PkDebuginfoInstallPrivate _priv;
-	PkDebuginfoInstallPrivate *priv = &_priv;
+	PkDebuginfoInstallPrivate *priv = NULL;
 	guint step = 1;
 
 	const GOptionEntry options[] = {
@@ -557,9 +509,6 @@ main (int argc, char *argv[])
 		  _("Do not display information or progress"), NULL },
 		{ NULL}
 	};
-
-	/* clear private struct */
-	memset (priv, 0, sizeof (PkDebuginfoInstallPrivate));
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -592,6 +541,9 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* clear private struct */
+	priv = g_new0 (PkDebuginfoInstallPrivate, 1);
+
 	/* store as strings */
 	priv->enabled = g_ptr_array_new ();
 	priv->disabled = g_ptr_array_new ();
@@ -600,12 +552,7 @@ main (int argc, char *argv[])
 	package_ids_recognised = g_ptr_array_new ();
 
 	/* create #PkClient */
-	priv->client = pk_client_new ();
-	g_signal_connect (priv->client, "repo-detail", G_CALLBACK (pk_debuginfo_install_repo_details_cb), priv);
-	g_signal_connect (priv->client, "progress-changed", G_CALLBACK (pk_debuginfo_install_progress_changed_cb), priv);
-	g_signal_connect (priv->client, "package", G_CALLBACK (pk_debuginfo_install_package_cb), priv);
-	pk_client_set_synchronous (priv->client, TRUE, NULL);
-	pk_client_set_use_buffer (priv->client, TRUE, NULL);
+	priv->client = PK_CLIENT(pk_task_text_new ());
 
 	/* use text progressbar */
 	priv->progress_bar = pk_progress_bar_new ();
@@ -623,13 +570,20 @@ main (int argc, char *argv[])
 	}
 
 	/* get all enabled repos */
-	ret = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, &error);
+	ret = pk_debuginfo_install_get_repo_list (priv, &error);
 	if (!ret) {
-		g_print ("failed to get repo list: %s", error->message);
+		/* should be vocal? */
+		if (!quiet) {
+			/* TRANSLATORS: operation was not successful */
+			g_print ("%s ", _("FAILED."));
+		}
+		/* TRANSLATORS: we're failed to enable the sources, detailed error follows */
+		g_print ("Failed to enable sources list: %s", error->message);
+		g_print ("\n");
 		g_error_free (error);
 
 		/* return correct failure retval */
-		retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_GET_REPOLIST;
+		retval = PK_DEBUGINFO_EXIT_CODE_FAILED_TO_ENABLE;
 		goto out;
 	}
 
@@ -973,6 +927,7 @@ out:
 		g_object_unref (priv->client);
 	if (priv->progress_bar != NULL)
 		g_object_unref (priv->progress_bar);
+	g_free (priv);
 	return retval;
 }
 

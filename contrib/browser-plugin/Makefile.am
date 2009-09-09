@@ -14,7 +14,15 @@ packagekit_plugin_la_CFLAGS =			\
 
 packagekit_plugin_la_LIBADD =			\
 	$(PK_BROWSER_PLUGIN_LIBS)		\
+	$(NULL)
+
+if PK_BUILD_GLIB2
+packagekit_plugin_la_LIBADD +=			\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
+else
+packagekit_plugin_la_LIBADD +=			\
 	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
+endif
 
 packagekit_plugin_la_SOURCES =			\
 	pk-plugin.c				\

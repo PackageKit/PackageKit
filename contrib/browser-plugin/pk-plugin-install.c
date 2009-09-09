@@ -33,6 +33,12 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <math.h>
+#ifdef PK_BUILD_GLIB2
+#include <packagekit-glib2/packagekit.h>
+#else
+#include <packagekit-glib/packagekit.h>
+#endif
+
 #include "pk-main.h"
 #include "pk-plugin-install.h"
 
@@ -58,7 +64,11 @@ struct PkPluginInstallPrivate
 	gchar			*display_name;
 	gchar			**package_names;
 	PangoLayout		*pango_layout;
+#ifdef PK_BUILD_GLIB2
+	PkClient		*client;
+#else
 	PkClientPool		*client_pool;
+#endif
 	DBusGProxy		*install_package_proxy;
 	DBusGProxyCall		*install_package_call;
 	gint			timeout;
@@ -228,6 +238,175 @@ out:
 	return data;
 }
 
+#ifdef PK_BUILD_GLIB2
+
+/**
+ * pk_plugin_install_finished_cb:
+ **/
+static void
+pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInstall *self)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	PkExitEnum exit_enum;
+	GPtrArray *packages = NULL;
+	const PkItemPackage *item;
+	guint i;
+	gchar *filename;
+	gchar **split = NULL;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		g_warning ("failed to resolve: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* check status */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		g_warning ("failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+		goto out;
+	}
+
+	/* get packages */
+	packages = pk_results_get_package_array (results);
+	if (packages == NULL) {
+		g_error ("internal error, no packages!");
+		goto out;
+	}
+
+	/* list, just for shits and giggles */
+	for (i=0; i<packages->len; i++) {
+		item = g_ptr_array_index (packages, i);
+		g_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+	}
+
+	/* no results */
+	if (packages->len == 0)
+		goto out;
+
+	/* no results */
+	if (packages->len > 1)
+		g_warning ("more than one result (%i), just choosing first", packages->len);
+
+	/* choose first package */
+	item = g_ptr_array_index (packages, 0);
+
+	/* if we didn't use displayname, use the summary */
+	if (self->priv->display_name == NULL)
+		self->priv->display_name = g_strdup (item->summary);
+
+	/* parse the data */
+	if (item->info_enum == PK_INFO_ENUM_AVAILABLE) {
+		if (self->priv->status == IN_PROGRESS)
+			pk_plugin_install_set_status (self, AVAILABLE);
+		else if (self->priv->status == INSTALLED)
+			pk_plugin_install_set_status (self, UPGRADABLE);
+		split = pk_package_id_split (item->package_id);
+		pk_plugin_install_set_available_package_name (self, split[0]);
+		pk_plugin_install_set_available_version (self, split[1]);
+		g_strfreev (split);
+#if 0
+		/* if we have data from the repo, override the user:
+		 *  * we don't want the remote site pretending to install another package
+		 *  * it might be localised if the backend supports it */
+		if (item->summary != NULL && item->summary[0] != '\0')
+			self->priv->display_name = g_strdup (item->summary);
+#endif
+
+		pk_plugin_install_clear_layout (self);
+		pk_plugin_install_refresh (self);
+
+	} else if (item->info_enum == PK_INFO_ENUM_INSTALLED) {
+		if (self->priv->status == IN_PROGRESS)
+			pk_plugin_install_set_status (self, INSTALLED);
+		else if (self->priv->status == AVAILABLE)
+			pk_plugin_install_set_status (self, UPGRADABLE);
+		split = pk_package_id_split (item->package_id);
+		pk_plugin_install_set_installed_package_name (self, split[0]);
+		pk_plugin_install_set_installed_version (self, split[1]);
+		g_strfreev (split);
+
+		/* get desktop file information */
+		filename = pk_plugin_install_get_best_desktop_file (self);
+		if (filename != NULL) {
+			self->priv->app_info = G_APP_INFO (g_desktop_app_info_new_from_filename (filename));
+#if 0
+			/* override, as this will have translation */
+			self->priv->display_name = g_strdup (g_app_info_get_name (self->priv->app_info));
+#endif
+		}
+		g_free (filename);
+
+		if (self->priv->app_info != 0)
+			pk_plugin_install_set_status (self, INSTALLED);
+
+		pk_plugin_install_clear_layout (self);
+		pk_plugin_install_refresh (self);
+	}
+out:
+	/* we didn't get any results, or we failed */
+	if (self->priv->status == IN_PROGRESS) {
+		pk_plugin_install_set_status (self, UNAVAILABLE);
+		pk_plugin_install_clear_layout (self);
+		pk_plugin_install_refresh (self);
+	}
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
+	if (results != NULL)
+		g_object_unref (results);
+}
+
+/**
+ * pk_plugin_install_recheck:
+ **/
+static void
+pk_plugin_install_recheck (PkPluginInstall *self)
+{
+//	guint i;
+	const gchar *data;
+//	gchar **package_ids;
+
+	self->priv->status = IN_PROGRESS;
+	pk_plugin_install_set_available_version (self, NULL);
+	pk_plugin_install_set_available_package_name (self, NULL);
+	pk_plugin_install_set_installed_version (self, NULL);
+	pk_plugin_install_set_installed_package_name (self, NULL);
+
+	/* get data, if if does not exist */
+	if (self->priv->package_names == NULL) {
+		data = pk_plugin_get_data (PK_PLUGIN (self), "displayname");
+		self->priv->display_name = g_strdup (data);
+		data = pk_plugin_get_data (PK_PLUGIN (self), "packagenames");
+		self->priv->package_names = g_strsplit (data, " ", -1);
+	}
+
+#if 0
+	for (i=0; self->priv->package_names[i] != NULL; i++) {
+		package_ids = pk_package_ids_from_id (self->priv->package_names[i]);
+
+		/* do async resolve */
+		pk_client_resolve_async (self->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), package_ids, NULL,
+					 (PkProgressCallback) pk_plugin_install_progress_cb, self,
+					 (GAsyncReadyCallback) pk_plugin_install_finished_cb, self);
+
+		g_strfreev (package_ids);
+	}
+#endif
+
+	/* do async resolve */
+	pk_client_resolve_async (self->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1),
+				 self->priv->package_names, NULL, NULL, NULL,
+				 (GAsyncReadyCallback) pk_plugin_install_finished_cb, self);
+}
+
+//	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
+
+#else
+
 /**
  * pk_plugin_install_package_cb:
  **/
@@ -363,6 +542,7 @@ pk_plugin_install_recheck (PkPluginInstall *self)
 		pk_plugin_install_refresh (self);
 	}
 }
+#endif
 
 /**
  * pk_plugin_install_append_markup:
@@ -1109,7 +1289,11 @@ pk_plugin_install_finalize (GObject *object)
 	}
 
 	/* remove clients */
+#ifdef PK_BUILD_GLIB2
+	g_object_unref (self->priv->client);
+#else
 	g_object_unref (self->priv->client_pool);
+#endif
 
 	G_OBJECT_CLASS (pk_plugin_install_parent_class)->finalize (object);
 }
@@ -1152,11 +1336,15 @@ pk_plugin_install_init (PkPluginInstall *self)
 	self->priv->install_package_proxy = NULL;
 	self->priv->install_package_call = NULL;
 
+#ifdef PK_BUILD_GLIB2
+	self->priv->client = pk_client_new ();
+#else
 	/* use a client pool to do everything async */
 	self->priv->client_pool = pk_client_pool_new ();
 	pk_client_pool_connect (self->priv->client_pool, "package", G_CALLBACK (pk_plugin_install_package_cb), G_OBJECT (self));
 	pk_client_pool_connect (self->priv->client_pool, "error-code", G_CALLBACK (pk_plugin_install_error_code_cb), G_OBJECT (self));
 	pk_client_pool_connect (self->priv->client_pool, "finished", G_CALLBACK (pk_plugin_install_finished_cb), G_OBJECT (self));
+#endif
 }
 
 /**

@@ -244,7 +244,7 @@ user to restart the computer or remove and re-insert the device.
 %setup -q
 
 %build
-%configure --disable-static --enable-yum --enable-smart --with-default-backend=yum --disable-local
+%configure --disable-static --enable-yum --enable-smart --enable-glib2 --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
@@ -421,10 +421,11 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/libpackagekit-glib*.so
-%{_libdir}/pkgconfig/packagekit-glib.pc
+%{_libdir}/pkgconfig/packagekit-glib*.pc
 %dir %{_includedir}/PackageKit
 %dir %{_includedir}/PackageKit/packagekit-glib
-%{_includedir}/PackageKit/packagekit-glib/*.h
+%dir %{_includedir}/PackageKit/packagekit-glib2
+%{_includedir}/PackageKit/packagekit-glib*/*.h
 
 %files qt-devel
 %defattr(-,root,root,-)

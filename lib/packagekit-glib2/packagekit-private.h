@@ -25,6 +25,7 @@
 #define __PACKAGEKIT_PRIVATE_H_INSIDE__
 
 #include <packagekit-glib2/pk-client-sync.h>
+#include <packagekit-glib2/pk-task-sync.h>
 #include <packagekit-glib2/pk-task-text.h>
 #include <packagekit-glib2/pk-console-shared.h>
 #include <packagekit-glib2/pk-progress-bar.h>

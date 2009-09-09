@@ -114,14 +114,17 @@ libpackagekitprivate_a_SOURCES =				\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
-	pk-task-text.c						\
-	pk-task-text.h						\
+	packagekit-private.h					\
 	pk-client-sync.c					\
 	pk-client-sync.h					\
 	pk-console-shared.c					\
 	pk-console-shared.h					\
 	pk-progress-bar.c					\
 	pk-progress-bar.h					\
+	pk-task-sync.c						\
+	pk-task-sync.h						\
+	pk-task-text.c						\
+	pk-task-text.h						\
 	$(NULL)
 
 libpackagekitprivate_a_CFLAGS =					\

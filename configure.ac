@@ -546,12 +546,24 @@ AC_ARG_ENABLE(ruck, AS_HELP_STRING([--enable-ruck],[Build ruck client]),
 AM_CONDITIONAL(PK_BUILD_RUCK, test $build_ruck = "yes")
 
 dnl ---------------------------------------------------------------------------
+dnl - Able to build GLib (legacy) library
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(glib, AS_HELP_STRING([--enable-glib],[Build glib library (legacy)]),
+	      build_glib=$enableval,build_glib=yes)
+AM_CONDITIONAL(PK_BUILD_GLIB, test $build_glib = "yes")
+if test x$build_glib = xyes; then
+	AC_DEFINE(PK_BUILD_GLIB,1,[Build glib code])
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl - Able to build GLib2 library
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(glib2, AS_HELP_STRING([--enable-glib2],[Build glib2 library (experimental)]),
 	      build_glib2=$enableval,build_glib2=no)
 AM_CONDITIONAL(PK_BUILD_GLIB2, test $build_glib2 = "yes")
 if test x$build_glib2 = xyes; then
+	# needed for g_cancellable_connect() and g_ptr_array_ref()
+	PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.22.0)
 	AC_DEFINE(PK_BUILD_GLIB2,1,[Build glib2 code])
 fi
 
@@ -870,6 +882,7 @@ echo "
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
+        GLib:                      ${build_glib}
         GLib2:                     ${build_glib2}
 	Managed bindings:          ${build_managed}
 

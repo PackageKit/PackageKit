@@ -28,9 +28,32 @@ INCLUDES =						\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/lib
 
-PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
-
 bin_PROGRAMS = pk-debuginfo-install
+
+if PK_BUILD_GLIB2
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
+	$(NULL)
+
+pk_debuginfo_install_SOURCES =				\
+	egg-debug.c					\
+	egg-debug.h					\
+	pk-debuginfo-install-test.c			\
+	$(NULL)
+
+pk_debuginfo_install_LDADD =				\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+else
+
+PK_GLIB_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
+	$(NULL)
 
 pk_debuginfo_install_SOURCES =				\
 	egg-debug.c					\
@@ -45,6 +68,8 @@ pk_debuginfo_install_LDADD =				\
 	$(DBUS_LIBS)					\
 	$(PK_GLIB_LIBS)					\
 	$(NULL)
+
+endif
 
 pk_debuginfo_install_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
