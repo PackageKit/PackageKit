@@ -13,9 +13,30 @@ INCLUDES =						\
 	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/lib
 
-PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
-
 libexec_PROGRAMS = pk-command-not-found
+
+if PK_BUILD_GLIB2
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
+	$(NULL)
+
+pk_command_not_found_SOURCES =				\
+	pk-command-not-found-test.c			\
+	$(NULL)
+
+pk_command_not_found_LDADD =				\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
+	$(NULL)
+
+else
+
+PK_GLIB_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
+	$(NULL)
 
 pk_command_not_found_SOURCES =				\
 	egg-debug.c					\
@@ -33,36 +54,11 @@ pk_command_not_found_LDADD =				\
 	$(PK_GLIB_LIBS)					\
 	$(NULL)
 
+endif
+
 pk_command_not_found_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
-
-# Only build this functionality if we have glib2, and don't yet install it
-if PK_BUILD_GLIB2
-
-PK_GLIB2_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
-	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(NULL)
-
-noinst_PROGRAMS = pk-command-not-found-test
-
-pk_command_not_found_test_SOURCES =			\
-	pk-command-not-found-test.c			\
-	$(NULL)
-
-pk_command_not_found_test_LDADD =			\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-pk_command_not_found_test_CFLAGS =			\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-endif
-
 
 bashprofiledir = ${SYSCONFDIR}/profile.d
 dist_bashprofile_DATA = PackageKit.sh

@@ -48,10 +48,6 @@ INCLUDES =						\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
-PK_GLIB_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
-	$(NULL)
-
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
@@ -66,47 +62,41 @@ PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
 	$(NULL)
 
-noinst_PROGRAMS = pkcon-test pkmon-test pkgenpack-test
-
-libpkconsole_a_CFLAGS =					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-pkcon_test_SOURCES =					\
+pkcon_SOURCES =						\
 	pk-console-test.c				\
 	$(NULL)
 
-pkcon_test_LDADD =					\
+pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
-pkcon_test_CFLAGS =					\
+pkcon_CFLAGS =						\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
-pkmon_test_SOURCES =					\
+pkmon_SOURCES =						\
 	pk-monitor-test.c				\
 	$(NULL)
 
-pkmon_test_LDADD =					\
+pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
-pkmon_test_CFLAGS =					\
+pkmon_CFLAGS =						\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
-pkgenpack_test_SOURCES =				\
+pkgenpack_SOURCES =				\
 	pk-generate-pack-test.c				\
 	$(NULL)
 
-pkgenpack_test_LDADD = 					\
+pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
@@ -114,11 +104,15 @@ pkgenpack_test_LDADD = 					\
 	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
-pkgenpack_test_CFLAGS =					\
+pkgenpack_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
 
-endif
+else
+
+PK_GLIB_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
+	$(NULL)
 
 pkcon_SOURCES =						\
 	egg-debug.c					\
@@ -176,6 +170,8 @@ pkgenpack_LDADD = 					\
 pkgenpack_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
+
+endif
 
 if EGG_BUILD_TESTS
 
