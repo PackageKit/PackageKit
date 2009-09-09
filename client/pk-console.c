@@ -444,7 +444,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	const PkItemErrorCode *error_item;
+	PkItemErrorCode *error_item;
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
@@ -458,7 +458,8 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
 	if (results == NULL) {
-		g_print ("Failed to complete: %s\n", error->message);
+		/* TRANSLATORS: we failed to get any results, which is pretty fatal in my book */
+		g_print ("%s: %s\n", _("Fatal error"), error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -467,11 +468,23 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	exit_enum = pk_results_get_exit_code (results);
-//	if (exit_enum != PK_EXIT_ENUM_CANCELLED)
-//		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_text (exit_enum));
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		error_item = pk_results_get_error_code (results);
+		if (error_item == NULL) {
+			/* TRANSLATORS: we failed, but there was no error set */
+			g_print ("%s: %s\n", _("Transaction failed with no error"), pk_exit_enum_to_text (exit_enum));
+			goto out;
+		}
 
-	/* check error code */
-	error_item = pk_results_get_error_code (results);
+		/* TRANSLATORS: the transaction failed in a way we could not expect */
+		g_print ("%s: %s (%s)\n", _("The transaction failed"), pk_exit_enum_to_text (exit_enum), error_item->details);
+
+		/* check error code */
+		pk_item_error_code_unref (error_item);
+		goto out;
+	}
+
+
 //	if (error_item->code != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
 //		egg_test_failed (test, "failed to get error code: %i", error_item->code);
 //	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
@@ -568,7 +581,7 @@ pk_console_install_packages (gchar **packages, GError **error)
 	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not find the available package: %s"), error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find any available package: %s"), error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -1409,7 +1422,7 @@ main (int argc, char *argv[])
 out:
 	if (error != NULL) {
 		/* TRANSLATORS: Generic failure of what they asked to do */
-		g_print ("%s:  %s\n", _("Command failed"), error->message);
+		g_print ("%s: %s\n", _("Command failed"), error->message);
 		if (retval == EXIT_SUCCESS)
 			retval = EXIT_FAILURE;
 	}
