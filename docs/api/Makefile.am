@@ -16,7 +16,7 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
 # The directory containing the source code. Relative to $(srcdir).
 # gtk-doc will search all .c & .h files beneath here for inline comments
 # documenting the functions and macros.
-DOC_SOURCE_DIR=../../lib/packagekit-glib
+DOC_SOURCE_DIR=../../lib/packagekit-glib2
 
 # Extra options to pass to gtkdoc-scangobj. Not normally needed.
 SCANGOBJ_OPTIONS=
@@ -34,15 +34,13 @@ MKTMPL_OPTIONS=
 FIXXREF_OPTIONS=
 
 # Used for dependencies. The docs will be rebuilt if any of these change.
-HFILE_GLOB=$(top_srcdir)/lib/packagekit-glib/pk-*.h
-CFILE_GLOB=$(top_srcdir)/lib/packagekit-glib/pk-*.c
+HFILE_GLOB=$(top_srcdir)/lib/packagekit-glib2/pk-*.h
+CFILE_GLOB=$(top_srcdir)/lib/packagekit-glib2/pk-*.c
 
 # Header files to ignore when scanning.
 IGNORE_HFILES =						\
 	config.h					\
 	pk-marshal.h					\
-	egg-dbus-monitor.h				\
-	pk-obj-list.h					\
 	$(NULL)
 
 # Images to copy into HTML directory.
@@ -78,17 +76,20 @@ INCLUDES =						\
 	$(POLKIT_CFLAGS)				\
 	$(DBUS_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
-	-I$(top_builddir)/lib/packagekit-glib		\
-	-I$(top_srcdir)/lib/packagekit-glib		\
+	-I$(top_builddir)/lib/packagekit-glib2		\
+	-I$(top_srcdir)/lib/packagekit-glib2		\
 	$(NULL)
 
-PK_GLIB_LIBS = $(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
+	$(NULL)
 
 GTKDOC_LIBS =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(PK_GLIB2_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 

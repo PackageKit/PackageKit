@@ -125,6 +125,8 @@ libpackagekitprivate_a_SOURCES =				\
 	pk-task-sync.h						\
 	pk-task-text.c						\
 	pk-task-text.h						\
+	pk-task-wrapper.c					\
+	pk-task-wrapper.h					\
 	$(NULL)
 
 libpackagekitprivate_a_CFLAGS =					\
