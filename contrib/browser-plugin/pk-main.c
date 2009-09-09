@@ -166,7 +166,6 @@ pk_main_destroy (NPP instance, NPSavedData **save)
 	PkPlugin *plugin = PK_PLUGIN (instance->pdata);
 
 	pk_debug ("pk_main_destroy [%p]", instance);
-	g_object_unref (plugin);
 
 	/* free content instance */
 	g_signal_handlers_disconnect_by_func (plugin, G_CALLBACK (pk_main_refresh_cb), instance);
