@@ -25,7 +25,6 @@
 
 #include <glib-object.h>
 #include <cairo-xlib.h>
-#include <packagekit-glib/packagekit.h>
 
 #include "pk-plugin.h"
 
