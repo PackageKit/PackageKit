@@ -552,6 +552,8 @@ AC_ARG_ENABLE(glib2, AS_HELP_STRING([--enable-glib2],[Build glib2 library (exper
 	      build_glib2=$enableval,build_glib2=no)
 AM_CONDITIONAL(PK_BUILD_GLIB2, test $build_glib2 = "yes")
 if test x$build_glib2 = xyes; then
+	# needed for g_cancellable_connect() and g_ptr_array_ref()
+	PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.22.0)
 	AC_DEFINE(PK_BUILD_GLIB2,1,[Build glib2 code])
 fi
 
