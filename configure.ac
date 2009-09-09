@@ -561,6 +561,7 @@ AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend])
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
 AC_ARG_ENABLE(ports, AS_HELP_STRING([--enable-ports],[use the ports backend]),enable_ports=$enableval,enable_ports=no)
 AC_ARG_ENABLE(razor, AS_HELP_STRING([--enable-razor],[use the razor backend]),enable_razor=$enableval,enable_razor=no)
+AC_ARG_ENABLE(slapt, AS_HELP_STRING([--enable-slapt],[use the slapt backend]),enable_slapt=$enableval,enable_slapt=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
@@ -579,6 +580,7 @@ AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTS, [test x$enable_ports = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_RAZOR, [test x$enable_razor = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_SLAPT, [test x$enable_slapt = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
@@ -645,7 +647,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,opkg,pisi,portage,ports,razor,smart,urpmi,yum,zypp (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,opkg,pisi,portage,ports,razor,slapt,smart,urpmi,yum,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -658,6 +660,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=conary
 	elif test -f /usr/bin/box-repos ; then
 		with_default_backend=box
+	elif test -f /usr/sbin/slapt-get ; then
+		with_default_backend=slapt
 	elif test -f /usr/bin/smart ; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
@@ -757,6 +761,26 @@ if test x$enable_razor = xyes; then
 	AC_SUBST(RAZOR_LIBS)
 fi
 
+if test x$enable_slapt = xyes; then
+	with_default_backend=dummy
+	AC_CHECK_HEADER([slapt.h],
+			[with_default_backend=slapt],
+			[AC_MSG_WARN([No slapt headers found - falling back to dummy backend])])
+	AC_CHECK_LIB(curl, curl_version, [
+	    CURL_CFLAGS="`curl-config --cflags`"
+	    CURL_LIBS="`curl-config --libs`"
+	    ], [AC_MSG_ERROR([Can't find curl])])
+	AC_CHECK_LIB(gpgme, gpgme_check_version, [
+		AC_DEFINE(SLAPT_HAS_GPGME, 1, [Define to 1 if GPGME is available to Slapt])
+	    GPGME_CFLAGS="`gpgme-config --cflags`"
+	    GPGME_LIBS="`gpgme-config --libs`"
+	    ], [AC_MSG_WARN([Can't find gpgme])])
+	SLAPT_CFLAGS="$CURL_CFLAGS $GPGME_CFLAGS"
+	SLAPT_LIBS="$CURL_LIBS $GPGME_LIBS -lslapt"
+	AC_SUBST(SLAPT_CFLAGS)
+	AC_SUBST(SLAPT_LIBS)
+fi
+
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
 AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
@@ -799,6 +823,7 @@ backends/box/Makefile
 backends/conary/Makefile
 backends/dummy/Makefile
 backends/opkg/Makefile
+backends/slapt/Makefile
 backends/smart/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
@@ -879,6 +904,7 @@ echo "
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
         Ports backend:             ${enable_ports}
+        Slapt backend:             ${enable_slapt}
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
