@@ -60,11 +60,12 @@ dkp_task_text_untrusted_question (PkTask *task, guint request, PkResults *result
 	/* clear new line */
 	g_print ("\n");
 
-	/* ask the user */
+	/* TRANSLATORS: ask the user if they are comfortable installing insecure packages */
 	ret = pk_console_get_prompt (_("Do you want to allow installing of unsigned software?"), FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
+		/* TRANSLATORS: tell the user we've not done anything */
 		g_print ("%s\n", _("The unsigned software will not be installed."));
 		pk_task_user_declined (task, request);
 	}
@@ -97,23 +98,39 @@ dkp_task_text_key_question (PkTask *task, guint request, PkResults *results)
 		/* create printable */
 		package = pk_package_id_to_printable (item->package_id);
 
+		/* TRANSLATORS: the package repository is signed by a key that is not recognised */
 		g_print ("%s\n", _("Software source signature required"));
+
+		/* TRANSLATORS: the package that is not signed by a known key */
 		g_print (" %s: %s\n", _("Package"), package);
+
+		/* TRANSLATORS: the package repository name */
 		g_print (" %s: %s\n", _("Software source name"), item->repository_name);
+
+		/* TRANSLATORS: the key URL */
 		g_print (" %s: %s\n", _("Key URL"), item->key_url);
+
+		/* TRANSLATORS: the username of the key */
 		g_print (" %s: %s\n", _("Key user"), item->key_userid);
+
+		/* TRANSLATORS: the key ID, usually a few hex digits */
 		g_print (" %s: %s\n", _("Key ID"), item->key_id);
+
+		/* TRANSLATORS: the key fingerprint, again, yet more hex */
 		g_print (" %s: %s\n", _("Key fingerprint"), item->key_fingerprint);
+
+		/* TRANSLATORS: the timestamp (a bit like a machine readable time) */
 		g_print (" %s: %s\n", _("Key Timestamp"), item->key_timestamp);
 
 		g_free (package);
 	}
 
-	/* ask the user */
+	/* TRANSLATORS: ask the user if they want to import */
 	ret = pk_console_get_prompt (_("Do you accept this signature?"), FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
+		/* TRANSLATORS: tell the user we've not done anything */
 		g_print ("%s\n", _("The signature was not accepted."));
 		pk_task_user_declined (task, request);
 	}
@@ -148,20 +165,27 @@ dkp_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 		/* create printable */
 		package = pk_package_id_to_printable (item->package_id);
 
+		/* TRANSLATORS: this is another name for a software licence that has to be read before installing */
 		g_print ("%s\n", _("End user licence agreement required"));
-		g_print (" %s: %s\n", _("EULA ID"), item->eula_id);
+
+		/* TRANSLATORS: the package name that was trying to be installed */
 		g_print (" %s: %s\n", _("Package"), package);
+
+		/* TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA */
 		g_print (" %s: %s\n", _("Vendor"), item->vendor_name);
+
+		/* TRANSLATORS: the EULA text itself (long and boring) */
 		g_print (" %s: %s\n", _("Agreement"), item->license_agreement);
 
 		g_free (package);
 	}
 
-	/* ask the user */
+	/* TRANSLATORS: ask the user if they've read and accepted the EULA */
 	ret = pk_console_get_prompt (_("Do you accept this agreement?"), FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
+		/* TRANSLATORS: tell the user we've not done anything */
 		g_print ("%s\n", _("The agreement was not accepted."));
 		pk_task_user_declined (task, request);
 	}
@@ -191,17 +215,25 @@ dkp_task_text_media_change_question (PkTask *task, guint request, PkResults *res
 	array = pk_results_get_media_change_required_array (results);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		/* TRANSLATORS: the user needs to change media inserted into the computer */
 		g_print ("%s\n", _("Media change required"));
+
+		/* TRANSLATORS: the type, e.g. DVD, CD, etc */
 		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_text (item->media_type));
-		g_print (" %s: %s\n", _("Media ID"), item->media_id);
+
+		/* TRANSLATORS: the media label, usually like 'disk-1of3' */
+		g_print (" %s: %s\n", _("Media label"), item->media_id);
+
+		/* TRANSLATORS: the media description, usually like 'Fedora 12 disk 5' */
 		g_print (" %s: %s\n", _("Text"), item->media_text);
 	}
 
-	/* ask the user */
+	/* TRANSLATORS: ask the user to insert the media */
 	ret = pk_console_get_prompt (_("Please insert the correct media"), FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
+		/* TRANSLATORS: tell the user we've not done anything as they are lazy */
 		g_print ("%s\n", _("The correct media was not inserted."));
 		pk_task_user_declined (task, request);
 	}
@@ -295,11 +327,12 @@ dkp_task_text_simulate_question (PkTask *task, guint request, PkResults *results
 		g_object_unref (package);
 	}
 
-	/* ask the user */
+	/* TRANSLATORS: ask the user if the proposed changes are okay */
 	ret = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
+		/* TRANSLATORS: tell the user we didn't do anything */
 		g_print ("%s\n", _("The transaction did not proceed."));
 		pk_task_user_declined (task, request);
 	}
