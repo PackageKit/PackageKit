@@ -23,11 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-package-sack
- * @short_description: An abstract package sack GObject
- */
-
 #ifndef __PK_PACKAGE_SACK_H
 #define __PK_PACKAGE_SACK_H
 

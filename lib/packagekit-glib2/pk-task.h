@@ -23,12 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-task
- * @short_description: An abstract package task GObject, dealing with unsigned
- * transactions, GPG keys and EULA requests.
- */
-
 #ifndef __PK_TASK_H
 #define __PK_TASK_H
 

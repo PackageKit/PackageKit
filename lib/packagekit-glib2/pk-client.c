@@ -21,9 +21,9 @@
 
 /**
  * SECTION:pk-client
- * @short_description: GObject class for PackageKit client access
+ * @short_description: For creating new transactions
  *
- * A nice GObject to use for accessing PackageKit asynchronously. If you're
+ * A GObject to use for accessing PackageKit asynchronously. If you're
  * using #PkClient to install, remove, or update packages, be prepared that
  * the eula, gpg and trusted callbacks need to be rescheduled manually, as in
  * http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html
@@ -1686,6 +1686,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 /**
  * pk_client_get_update_detail_async:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

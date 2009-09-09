@@ -317,6 +317,7 @@ pk_progress_bar_init (PkProgressBar *self)
 
 /**
  * pk_progress_bar_new:
+ *
  * Return value: A new progress_bar class instance.
  **/
 PkProgressBar *

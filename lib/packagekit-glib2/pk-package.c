@@ -31,6 +31,7 @@
 #include <packagekit-glib2/pk-package.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 
@@ -46,10 +47,6 @@ static void     pk_package_finalize	(GObject     *object);
 struct _PkPackagePrivate
 {
 	gchar			*id;
-	gchar			*id_name;
-	gchar			*id_version;
-	gchar			*id_arch;
-	gchar			*id_data;
 	gchar			*summary;
 	PkInfoEnum		 info;
 	gchar			*license;
@@ -78,10 +75,6 @@ enum {
 enum {
 	PROP_0,
 	PROP_ID,
-	PROP_ID_NAME,
-	PROP_ID_VERSION,
-	PROP_ID_ARCH,
-	PROP_ID_DATA,
 	PROP_SUMMARY,
 	PROP_INFO,
 	PROP_LICENSE,
@@ -110,7 +103,7 @@ G_DEFINE_TYPE (PkPackage, pk_package, G_TYPE_OBJECT)
 /**
  * pk_package_set_id:
  * @package: a valid #PkPackage instance
- * @id: the valid package_id
+ * @package_id: the valid package_id
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Sets the package object to have the given ID
@@ -154,10 +147,6 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 
 	/* save */
 	priv->id = g_strdup (package_id);
-	priv->id_name = g_strdup (sections[0]);
-	priv->id_version = g_strdup (sections[1]);
-	priv->id_arch = g_strdup (sections[2]);
-	priv->id_data = g_strdup (sections[3]);
 out:
 	g_strfreev (sections);
 	return ret;
@@ -187,11 +176,12 @@ pk_package_get_id (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	PkPackagePrivate *priv;
+	gchar **split;
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
-	priv = package->priv;
-	g_print ("%s-%s.%s\t%s\t%s\n", priv->id_name, priv->id_version, priv->id_arch, priv->id_data, priv->summary);
+	split = pk_package_id_split (package->priv->id);
+	g_print ("%s-%s.%s\t%s\t%s\n", split[0], split[1], split[2], split[3], package->priv->summary);
+	g_strfreev (split);
 }
 
 /**
@@ -206,18 +196,6 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	switch (prop_id) {
 	case PROP_ID:
 		g_value_set_string (value, priv->id);
-		break;
-	case PROP_ID_NAME:
-		g_value_set_string (value, priv->id_name);
-		break;
-	case PROP_ID_VERSION:
-		g_value_set_string (value, priv->id_version);
-		break;
-	case PROP_ID_ARCH:
-		g_value_set_string (value, priv->id_arch);
-		break;
-	case PROP_ID_DATA:
-		g_value_set_string (value, priv->id_data);
 		break;
 	case PROP_SUMMARY:
 		g_value_set_string (value, priv->summary);
@@ -394,42 +372,6 @@ pk_package_class_init (PkPackageClass *klass)
 				     NULL,
 				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_ID, pspec);
-
-	/**
-	 * PkPackage:id-name:
-	 */
-	pspec = g_param_spec_string ("id-name", NULL,
-				     "The package name, e.g. 'gnome-power-manager'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID_NAME, pspec);
-
-	/**
-	 * PkPackage:id-version:
-	 */
-	pspec = g_param_spec_string ("id-version", NULL,
-				     "The package version, e.g. '0.1.2'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID_VERSION, pspec);
-
-	/**
-	 * PkPackage:id-arch:
-	 */
-	pspec = g_param_spec_string ("id-arch", NULL,
-				     "The package architecture, e.g. 'i386'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID_ARCH, pspec);
-
-	/**
-	 * PkPackage:id-data:
-	 */
-	pspec = g_param_spec_string ("id-data", NULL,
-				     "The package data, e.g. 'fedora'",
-				     NULL,
-				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID_DATA, pspec);
 
 	/**
 	 * PkPackage:summary:
@@ -628,10 +570,6 @@ pk_package_finalize (GObject *object)
 	PkPackagePrivate *priv = package->priv;
 
 	g_free (priv->id);
-	g_free (priv->id_name);
-	g_free (priv->id_version);
-	g_free (priv->id_arch);
-	g_free (priv->id_data);
 	g_free (priv->summary);
 	g_free (priv->license);
 	g_free (priv->description);
@@ -693,8 +631,8 @@ pk_package_test (gpointer user_data)
 	egg_test_assert (test, (id == NULL));
 
 	/************************************************************/
-	egg_test_title (test, "get name of unset package");
-	g_object_get (package, "id-name", &text, NULL);
+	egg_test_title (test, "get id of unset package");
+	g_object_get (package, "id", &text, NULL);
 	egg_test_assert (test, (text == NULL));
 	g_free (text);
 
@@ -719,14 +657,14 @@ pk_package_test (gpointer user_data)
 	egg_test_assert (test, ret);
 
 	/************************************************************/
-	egg_test_title (test, "get id of unset package");
+	egg_test_title (test, "get id of set package");
 	id = pk_package_get_id (package);
 	egg_test_assert (test, (g_strcmp0 (id, "gnome-power-manager;0.1.2;i386;fedora") == 0));
 
 	/************************************************************/
-	egg_test_title (test, "get name of unset package");
-	g_object_get (package, "id-name", &text, NULL);
-	egg_test_assert (test, (g_strcmp0 (text, "gnome-power-manager") == 0));
+	egg_test_title (test, "get name of set package");
+	g_object_get (package, "id", &text, NULL);
+	egg_test_assert (test, (g_strcmp0 (text, "gnome-power-manager;0.1.2;i386;fedora") == 0));
 	g_free (text);
 
 	g_object_unref (package);

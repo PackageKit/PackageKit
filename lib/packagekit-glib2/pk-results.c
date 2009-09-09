@@ -21,7 +21,12 @@
 
 /**
  * SECTION:pk-results
- * @short_description: TODO
+ * @short_description: Transaction results
+ *
+ * This GObject allows a client program to query the results sent from
+ * PackageKit. This will include Package(), ErrorCode() and all the other types
+ * of objects. Everything is refcounted, so ensure you unref when done with the
+ * data.
  */
 
 #include "config.h"

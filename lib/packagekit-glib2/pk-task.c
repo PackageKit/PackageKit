@@ -19,6 +19,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-task
+ * @short_description: An abstract package task GObject, dealing with unsigned
+ * transactions, GPG keys and EULA requests.
+ */
+
 #include "config.h"
 
 #include <gio/gio.h>
@@ -680,7 +686,10 @@ out:
 /**
  * pk_task_install_packages_async:
  * @task: a valid #PkTask instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *

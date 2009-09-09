@@ -46,8 +46,6 @@ G_BEGIN_DECLS
 /* the file extension to a servicepack */
 #define PK_SERVICE_PACK_FILE_EXTENSION	"servicepack"
 
-typedef struct PkServicePackPrivate PkServicePackPrivate;
-
 typedef enum
 {
 	PK_SERVICE_PACK_ERROR_FAILED_SETUP,
@@ -58,13 +56,17 @@ typedef enum
 	PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE
 } PkServicePackError;
 
-typedef struct
+typedef struct _PkServicePackPrivate	PkServicePackPrivate;
+typedef struct _PkServicePack		PkServicePack;
+typedef struct _PkServicePackClass	PkServicePackClass;
+
+struct _PkServicePack
 {
 	GObject			 parent;
 	PkServicePackPrivate	*priv;
-} PkServicePack;
+};
 
-typedef struct
+struct _PkServicePackClass
 {
 	GObjectClass	parent_class;
 	/* Padding for future expansion */
@@ -72,7 +74,7 @@ typedef struct
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
-} PkServicePackClass;
+};
 
 GQuark		 pk_service_pack_error_quark		(void);
 GType		 pk_service_pack_error_get_type		(void);

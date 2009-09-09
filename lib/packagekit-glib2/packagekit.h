@@ -33,6 +33,7 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-package-sack.h>
+#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-service-pack.h>
 #include <packagekit-glib2/pk-task.h>
