@@ -114,6 +114,7 @@ libpackagekitprivate_a_SOURCES =				\
 	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
+	packagekit-private.h					\
 	pk-task-text.c						\
 	pk-task-text.h						\
 	pk-client-sync.c					\
