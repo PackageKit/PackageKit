@@ -21,7 +21,11 @@
 
 /**
  * SECTION:pk-package-sack
- * @short_description: TODO
+ * @short_description: A sack of packages that can be manipulated
+ *
+ * A package sack is a set of packages that can have operations done on them
+ * in parallel. This might be adding summary text for bare package ID's, or
+ * to add package or update details.
  */
 
 #include "config.h"
@@ -159,7 +163,6 @@ out:
  * pk_package_sack_remove_package:
  * @sack: a valid #PkPackageSack instance
  * @package: a valid #PkPackage instance
- * @package_id: a package_id descriptor
  *
  * Removes a package reference from the sack. The pointers have to match exactly.
  *
@@ -303,6 +306,7 @@ pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
 
 /**
  * pk_package_sack_sort_package_id:
+ * @sack: a valid #PkPackageSack instance
  *
  * Sorts by Package ID
  **/
@@ -315,6 +319,7 @@ pk_package_sack_sort_package_id (PkPackageSack *sack)
 
 /**
  * pk_package_sack_sort_summary:
+ * @sack: a valid #PkPackageSack instance
  *
  * Sorts by summary
  **/
@@ -327,6 +332,7 @@ pk_package_sack_sort_summary (PkPackageSack *sack)
 
 /**
  * pk_package_sack_sort_info:
+ * @sack: a valid #PkPackageSack instance
  *
  * Sorts by PkInfoEnum
  **/
@@ -497,8 +503,10 @@ out:
 
 /**
  * pk_package_sack_merge_resolve_async:
- * @package_sack: a valid #PkPackageSack instance
+ * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
@@ -539,7 +547,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 
 /**
  * pk_package_sack_merge_generic_finish:
- * @package_sack: a valid #PkPackageSack instance
+ * @sack: a valid #PkPackageSack instance
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
@@ -548,11 +556,11 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
  * Return value: %TRUE for success
  **/
 gboolean
-pk_package_sack_merge_generic_finish (PkPackageSack *package_sack, GAsyncResult *res, GError **error)
+pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (package_sack), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -636,8 +644,10 @@ out:
 
 /**
  * pk_package_sack_merge_details_async:
- * @package_sack: a valid #PkPackageSack instance
+ * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
@@ -755,8 +765,10 @@ out:
 
 /**
  * pk_package_sack_merge_update_detail_async:
- * @package_sack: a valid #PkPackageSack instance
+ * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *

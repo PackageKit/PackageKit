@@ -22,7 +22,7 @@
 
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 G_BEGIN_DECLS
 

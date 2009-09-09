@@ -33,11 +33,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <math.h>
-#ifdef PK_BUILD_GLIB2
 #include <packagekit-glib2/packagekit.h>
-#else
-#include <packagekit-glib/packagekit.h>
-#endif
 
 #include "pk-main.h"
 #include "pk-plugin-install.h"
@@ -64,11 +60,7 @@ struct PkPluginInstallPrivate
 	gchar			*display_name;
 	gchar			**package_names;
 	PangoLayout		*pango_layout;
-#ifdef PK_BUILD_GLIB2
 	PkClient		*client;
-#else
-	PkClientPool		*client_pool;
-#endif
 	DBusGProxy		*install_package_proxy;
 	DBusGProxyCall		*install_package_call;
 	gint			timeout;
@@ -238,8 +230,6 @@ out:
 	return data;
 }
 
-#ifdef PK_BUILD_GLIB2
-
 /**
  * pk_plugin_install_finished_cb:
  **/
@@ -402,147 +392,6 @@ pk_plugin_install_recheck (PkPluginInstall *self)
 				 self->priv->package_names, NULL, NULL, NULL,
 				 (GAsyncReadyCallback) pk_plugin_install_finished_cb, self);
 }
-
-//	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
-
-#else
-
-/**
- * pk_plugin_install_package_cb:
- **/
-static void
-pk_plugin_install_package_cb (PkClient *client, const PkPackageObj *obj, PkPluginInstall *self)
-{
-	gchar *filename;
-
-	/* if we didn't use displayname, use the summary */
-	if (self->priv->display_name == NULL)
-		self->priv->display_name = g_strdup (obj->summary);
-
-	/* parse the data */
-	if (obj->info == PK_INFO_ENUM_AVAILABLE) {
-		if (self->priv->status == IN_PROGRESS)
-			pk_plugin_install_set_status (self, AVAILABLE);
-		else if (self->priv->status == INSTALLED)
-			pk_plugin_install_set_status (self, UPGRADABLE);
-		pk_plugin_install_set_available_version (self, obj->id->version);
-		pk_plugin_install_set_available_package_name (self, obj->id->name);
-
-#if 0
-		/* if we have data from the repo, override the user:
-		 *  * we don't want the remote site pretending to install another package
-		 *  * it might be localised if the backend supports it */
-		if (obj->summary != NULL && obj->summary[0] != '\0')
-			self->priv->display_name = g_strdup (obj->summary);
-#endif
-
-		pk_plugin_install_clear_layout (self);
-		pk_plugin_install_refresh (self);
-
-	} else if (obj->info == PK_INFO_ENUM_INSTALLED) {
-		if (self->priv->status == IN_PROGRESS)
-			pk_plugin_install_set_status (self, INSTALLED);
-		else if (self->priv->status == AVAILABLE)
-			pk_plugin_install_set_status (self, UPGRADABLE);
-		pk_plugin_install_set_installed_version (self, obj->id->version);
-		pk_plugin_install_set_installed_package_name (self, obj->id->name);
-
-		/* get desktop file information */
-		filename = pk_plugin_install_get_best_desktop_file (self);
-		if (filename != NULL) {
-			self->priv->app_info = G_APP_INFO (g_desktop_app_info_new_from_filename (filename));
-#if 0
-			/* override, as this will have translation */
-			self->priv->display_name = g_strdup (g_app_info_get_name (self->priv->app_info));
-#endif
-		}
-		g_free (filename);
-
-		if (self->priv->app_info != 0)
-			pk_plugin_install_set_status (self, INSTALLED);
-
-		pk_plugin_install_clear_layout (self);
-		pk_plugin_install_refresh (self);
-	}
-}
-
-/**
- * pk_plugin_install_error_code_cb:
- **/
-static void
-pk_plugin_install_error_code_cb (PkClient *client, PkErrorCodeEnum code, const gchar *details, PkPluginInstall *self)
-{
-	pk_warning ("Error getting data from PackageKit: %s\n", details);
-
-	if (self->priv->status == IN_PROGRESS) {
-		pk_plugin_install_set_status (self, UNAVAILABLE);
-		pk_plugin_install_clear_layout (self);
-		pk_plugin_install_refresh (self);
-	}
-}
-
-/**
- * pk_plugin_install_finished_cb:
- **/
-static void
-pk_plugin_install_finished_cb (PkClient *client, PkExitEnum exit_code, guint runtime, PkPluginInstall *self)
-{
-	if (self->priv->status == IN_PROGRESS) {
-		pk_plugin_install_set_status (self, UNAVAILABLE);
-		pk_plugin_install_clear_layout (self);
-		pk_plugin_install_refresh (self);
-	}
-}
-
-/**
- * pk_plugin_install_recheck:
- **/
-static void
-pk_plugin_install_recheck (PkPluginInstall *self)
-{
-	guint i;
-	const gchar *data;
-	gchar **package_ids;
-	GError *error = NULL;
-	PkClient *client;
-	gboolean ret;
-
-	self->priv->status = IN_PROGRESS;
-	pk_plugin_install_set_available_version (self, NULL);
-	pk_plugin_install_set_available_package_name (self, NULL);
-	pk_plugin_install_set_installed_version (self, NULL);
-	pk_plugin_install_set_installed_package_name (self, NULL);
-
-	/* get data, if if does not exist */
-	if (self->priv->package_names == NULL) {
-		data = pk_plugin_get_data (PK_PLUGIN (self), "displayname");
-		self->priv->display_name = g_strdup (data);
-		data = pk_plugin_get_data (PK_PLUGIN (self), "packagenames");
-		self->priv->package_names = g_strsplit (data, " ", -1);
-	}
-
-	for (i=0; self->priv->package_names[i] != NULL; i++) {
-		package_ids = pk_package_ids_from_id (self->priv->package_names[i]);
-		client = pk_client_pool_create (self->priv->client_pool);
-
-		/* do async resolve */
-		ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, package_ids, &error);
-		if (!ret) {
-			pk_warning ("%s", error->message);
-			g_clear_error (&error);
-			pk_client_pool_remove (self->priv->client_pool, client);
-		}
-		g_strfreev (package_ids);
-		g_object_unref (client);
-	}
-
-	if (pk_client_pool_get_size (self->priv->client_pool) == 0 && self->priv->status == IN_PROGRESS) {
-		pk_plugin_install_set_status (self, UNAVAILABLE);
-		pk_plugin_install_clear_layout (self);
-		pk_plugin_install_refresh (self);
-	}
-}
-#endif
 
 /**
  * pk_plugin_install_append_markup:
@@ -1289,11 +1138,7 @@ pk_plugin_install_finalize (GObject *object)
 	}
 
 	/* remove clients */
-#ifdef PK_BUILD_GLIB2
 	g_object_unref (self->priv->client);
-#else
-	g_object_unref (self->priv->client_pool);
-#endif
 
 	G_OBJECT_CLASS (pk_plugin_install_parent_class)->finalize (object);
 }
@@ -1335,16 +1180,7 @@ pk_plugin_install_init (PkPluginInstall *self)
 	self->priv->pango_layout = NULL;
 	self->priv->install_package_proxy = NULL;
 	self->priv->install_package_call = NULL;
-
-#ifdef PK_BUILD_GLIB2
 	self->priv->client = pk_client_new ();
-#else
-	/* use a client pool to do everything async */
-	self->priv->client_pool = pk_client_pool_new ();
-	pk_client_pool_connect (self->priv->client_pool, "package", G_CALLBACK (pk_plugin_install_package_cb), G_OBJECT (self));
-	pk_client_pool_connect (self->priv->client_pool, "error-code", G_CALLBACK (pk_plugin_install_error_code_cb), G_OBJECT (self));
-	pk_client_pool_connect (self->priv->client_pool, "finished", G_CALLBACK (pk_plugin_install_finished_cb), G_OBJECT (self));
-#endif
 }
 
 /**

@@ -23,7 +23,7 @@
 #define __PK_CACHE_H
 
 #include <glib-object.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 G_BEGIN_DECLS
 
@@ -50,9 +50,9 @@ typedef struct
 GType		 pk_cache_get_type		(void);
 PkCache		*pk_cache_new			(void);
 
-PkPackageList	*pk_cache_get_updates		(PkCache	*cache);
+GPtrArray	*pk_cache_get_updates		(PkCache	*cache);
 gboolean	 pk_cache_set_updates		(PkCache	*cache,
-						 PkPackageList	*list);
+						 GPtrArray	*list);
 gboolean	 pk_cache_invalidate		(PkCache	*cache);
 
 G_END_DECLS

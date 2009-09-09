@@ -23,11 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-client
- * @short_description: An abstract client GObject
- */
-
 #ifndef __PK_CLIENT_H
 #define __PK_CLIENT_H
 

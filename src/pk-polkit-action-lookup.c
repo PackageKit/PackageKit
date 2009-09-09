@@ -23,7 +23,7 @@
 #include "config.h"
 
 #include <polkitbackend/polkitbackend.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 #include <glib/gi18n-lib.h>
 
 #define PK_TYPE_ACTION_LOOKUP		(pk_action_lookup_get_type())
@@ -256,7 +256,7 @@ out:
 static gchar *
 pk_action_lookup_package_ids_to_string (gchar **package_ids)
 {
-	PkPackageId *id;
+	gchar **split;
 	GPtrArray *array = NULL;
 	gchar **names = NULL;
 	gchar *names_str = NULL;
@@ -278,15 +278,15 @@ pk_action_lookup_package_ids_to_string (gchar **package_ids)
 	/* create array of name-version */
 	array = g_ptr_array_new ();
 	for (i=0; package_ids[i] != NULL; i++) {
-		id = pk_package_id_new_from_string (package_ids[i]);
+		split = pk_package_id_split (package_ids[i]);
 		if (len == 1)
-			names_str = g_strdup_printf ("%s-%s (%s)", id->name, id->version, id->data);
+			names_str = g_strdup_printf ("%s-%s (%s)", split[0], split[1], split[3]);
 		else if (len <= 3)
-			names_str = g_strdup_printf ("%s-%s", id->name, id->version);
+			names_str = g_strdup_printf ("%s-%s", split[0], split[1]);
 		else
-			names_str = g_strdup (id->name);
+			names_str = g_strdup (split[0]);
 		g_ptr_array_add (array, names_str);
-		pk_package_id_free (id);
+		g_strfree (split);
 	}
 
 	/* create string */

@@ -37,6 +37,7 @@ gchar		**pk_console_resolve_packages		(PkClient	*client,
 							 PkBitfield	 filter,
 							 gchar		**packages,
 							 GError		**error);
+const gchar	*pk_status_enum_to_localised_text	(PkStatusEnum	 status);
 
 #endif /* __PK_CONSOLE_SHARED_H */
 

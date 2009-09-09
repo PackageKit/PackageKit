@@ -23,11 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-results
- * @short_description: An abstract results GObject
- */
-
 #ifndef __PK_RESULTS_H
 #define __PK_RESULTS_H
 

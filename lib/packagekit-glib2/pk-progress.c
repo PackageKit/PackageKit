@@ -21,9 +21,10 @@
 
 /**
  * SECTION:pk-progress
- * @short_description: GObject class for PackageKit progress access
+ * @short_description: Transaction progress information
  *
- * A nice GObject to use for accessing PackageKit asynchronously
+ * This GObject is available to clients to be able to query details about
+ * the transaction. All of the details on this object are stored as properties.
  */
 
 #include "config.h"

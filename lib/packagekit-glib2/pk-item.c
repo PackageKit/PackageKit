@@ -21,7 +21,10 @@
 
 /**
  * SECTION:pk-item
- * @short_description: TODO
+ * @short_description: A single piece of information from a transaction
+ *
+ * These objects represent single items of data from the transaction, and are
+ * often present in lists (#PkResults) or just refcounted in client programs.
  */
 
 #include "config.h"
@@ -603,7 +606,6 @@ pk_item_message_unref (PkItemMessage *item)
 
 /**
  * pk_item_package_new:
- * @results: a valid #PkResults instance
  *
  * Adds a package to the results set.
  *
@@ -627,7 +629,6 @@ pk_item_package_new (PkInfoEnum info_enum, const gchar *package_id, const gchar 
 
 /**
  * pk_item_details_new:
- * @results: a valid #PkResults instance
  *
  * Adds some package details to the results set.
  *
@@ -654,7 +655,6 @@ pk_item_details_new (const gchar *package_id, const gchar *license,
 
 /**
  * pk_item_update_detail_new:
- * @results: a valid #PkResults instance
  *
  * Adds some update details to the results set.
  *
@@ -691,7 +691,6 @@ pk_item_update_detail_new (const gchar *package_id, const gchar *updates,
 
 /**
  * pk_item_category_new:
- * @results: a valid #PkResults instance
  *
  * Adds a category item to the results set.
  *
@@ -717,7 +716,6 @@ pk_item_category_new (const gchar *parent_id, const gchar *cat_id, const gchar *
 
 /**
  * pk_item_distro_upgrade_new:
- * @results: a valid #PkResults instance
  *
  * Adds a distribution upgrade item to the results set.
  *
@@ -741,7 +739,6 @@ pk_item_distro_upgrade_new (PkUpdateStateEnum state_enum, const gchar *name, con
 
 /**
  * pk_item_require_restart_new:
- * @results: a valid #PkResults instance
  *
  * Adds a require restart item to the results set.
  *
@@ -764,7 +761,6 @@ pk_item_require_restart_new (PkRestartEnum restart_enum, const gchar *package_id
 
 /**
  * pk_item_transaction_new:
- * @results: a valid #PkResults instance
  *
  * Adds a transaction item to the results set.
  *
@@ -796,7 +792,6 @@ pk_item_transaction_new (const gchar *tid, const gchar *timespec,
 
 /**
  * pk_item_files_new:
- * @results: a valid #PkResults instance
  *
  * Adds some files details to the results set.
  *
@@ -819,7 +814,6 @@ pk_item_files_new (const gchar *package_id, gchar **files)
 
 /**
  * pk_item_repo_signature_required_new:
- * @results: a valid #PkResults instance
  *
  * Adds some repository signature details to the results set.
  *
@@ -850,7 +844,6 @@ pk_item_repo_signature_required_new (const gchar *package_id, const gchar *repos
 
 /**
  * pk_item_eula_required_new:
- * @results: a valid #PkResults instance
  *
  * Adds some EULA details to the results set.
  *
@@ -875,7 +868,6 @@ pk_item_eula_required_new (const gchar *eula_id, const gchar *package_id,
 
 /**
  * pk_item_media_change_required_new:
- * @results: a valid #PkResults instance
  *
  * Adds some media change details to the results set.
  *
@@ -898,7 +890,6 @@ pk_item_media_change_required_new (PkMediaTypeEnum media_type_enum, const gchar 
 
 /**
  * pk_item_repo_detail_new:
- * @results: a valid #PkResults instance
  *
  * Adds some repository details to the results set.
  *
@@ -921,7 +912,6 @@ pk_item_repo_detail_new (const gchar *repo_id, const gchar *description, gboolea
 
 /**
  * pk_item_error_code_new:
- * @results: a valid #PkResults instance
  *
  * Adds some error details to the results set.
  *
@@ -941,7 +931,6 @@ pk_item_error_code_new (PkErrorCodeEnum code_enum, const gchar *details)
 
 /**
  * pk_item_message_new:
- * @results: a valid #PkResults instance
  *
  * Adds some message details to the results set.
  *

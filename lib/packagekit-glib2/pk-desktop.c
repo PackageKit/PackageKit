@@ -21,9 +21,10 @@
 
 /**
  * SECTION:pk-desktop
- * @short_description: Client singleton access to desktop metadata about a package
+ * @short_description: Find desktop metadata about a package
  *
- * Desktop metadata such as icon name and localised summary may be stored here
+ * Desktop metadata such as icon name and localised summary may be stored in
+ * a local sqlite cache, and this module allows applications to query this.
  */
 
 #include "config.h"

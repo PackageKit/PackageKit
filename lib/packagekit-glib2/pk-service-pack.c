@@ -20,6 +20,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-service-pack
+ * @short_description: Functionality for creating and reading service packs
+ *
+ * Clients can use this GObject for reading and writing service packs.
+ */
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -73,7 +80,12 @@ typedef struct {
 	PkServicePackType		 type;
 } PkServicePackState;
 
-struct PkServicePackPrivate
+/**
+ * PkServicePackPrivate:
+ *
+ * Private #PkServicePack data
+ **/
+struct _PkServicePackPrivate
 {
 	gchar			*directory;
 	PkClient		*client;
@@ -336,6 +348,7 @@ pk_service_pack_create_temporary_directory (const gchar *prefix)
 /**
  * pk_service_pack_check_valid:
  * @pack: a valid #PkServicePack instance
+ * @filename: the filename of the pack to check
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Checks to see if a service pack file is valid, and usable with this system.

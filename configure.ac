@@ -144,7 +144,7 @@ AM_GLIB_GNU_GETTEXT
 dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
-GLIB_REQUIRED=2.14.0
+GLIB_REQUIRED=2.21.5
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
@@ -154,13 +154,6 @@ QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
 QTSQL_REQUIRED=4.4.0
 QTXML_REQUIRED=4.4.0
-
-dnl ---------------------------------------------------------------------------
-dnl - Make above strings available for packaging files (e.g. rpm spec files)
-dnl ---------------------------------------------------------------------------
-AC_SUBST(GLIB_REQUIRED)
-AC_SUBST(DBUS_REQUIRED)
-AC_SUBST(DBUS_GLIB_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
@@ -555,18 +548,6 @@ if test x$build_glib = xyes; then
 	AC_DEFINE(PK_BUILD_GLIB,1,[Build glib code])
 fi
 
-dnl ---------------------------------------------------------------------------
-dnl - Able to build GLib2 library
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(glib2, AS_HELP_STRING([--enable-glib2],[Build glib2 library (experimental)]),
-	      build_glib2=$enableval,build_glib2=no)
-AM_CONDITIONAL(PK_BUILD_GLIB2, test $build_glib2 = "yes")
-if test x$build_glib2 = xyes; then
-	# needed for g_cancellable_connect() and g_ptr_array_ref()
-	PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.22.0)
-	AC_DEFINE(PK_BUILD_GLIB2,1,[Build glib2 code])
-fi
-
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
@@ -882,8 +863,7 @@ echo "
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
-        GLib:                      ${build_glib}
-        GLib2:                     ${build_glib2}
+        GLib library (legacy):     ${build_glib}
 	Managed bindings:          ${build_managed}
 
         Backends:

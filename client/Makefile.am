@@ -54,80 +54,20 @@ bin_PROGRAMS =						\
 	pkgenpack					\
 	$(NULL)
 
-# Only build this functionality if we have glib2, and don't yet install it
-if PK_BUILD_GLIB2
-
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
 	$(NULL)
 
 pkcon_SOURCES =						\
-	pk-console-test.c				\
-	$(NULL)
-
-pkcon_LDADD =						\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-pkcon_CFLAGS =						\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-pkmon_SOURCES =						\
-	pk-monitor-test.c				\
-	$(NULL)
-
-pkmon_LDADD =						\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-pkmon_CFLAGS =						\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-pkgenpack_SOURCES =				\
-	pk-generate-pack-test.c				\
-	$(NULL)
-
-pkgenpack_LDADD = 					\
-	$(ARCHIVE_LIBS)					\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(SQLITE_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-pkgenpack_CFLAGS =					\
-	$(WARNINGFLAGS_C)				\
-	$(NULL)
-
-else
-
-PK_GLIB_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
-	$(NULL)
-
-pkcon_SOURCES =						\
-	egg-debug.c					\
-	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
 	pk-console.c					\
-	pk-tools-common.c				\
-	pk-tools-common.h				\
 	$(NULL)
 
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 pkcon_CFLAGS =						\
@@ -135,15 +75,14 @@ pkcon_CFLAGS =						\
 	$(NULL)
 
 pkmon_SOURCES =						\
-	egg-debug.c					\
-	egg-debug.h					\
 	pk-monitor.c					\
 	$(NULL)
 
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 pkmon_CFLAGS =						\
@@ -151,27 +90,20 @@ pkmon_CFLAGS =						\
 	$(NULL)
 
 pkgenpack_SOURCES =					\
-	egg-debug.c					\
-	egg-debug.h					\
-	egg-string.c					\
-	egg-string.h					\
 	pk-generate-pack.c				\
-	pk-tools-common.c				\
-	pk-tools-common.h				\
 	$(NULL)
 
 pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 pkgenpack_CFLAGS =					\
 	$(WARNINGFLAGS_C)				\
 	$(NULL)
-
-endif
 
 if EGG_BUILD_TESTS
 

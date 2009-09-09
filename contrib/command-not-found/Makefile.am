@@ -15,27 +15,9 @@ INCLUDES =						\
 
 libexec_PROGRAMS = pk-command-not-found
 
-if PK_BUILD_GLIB2
-
 PK_GLIB2_LIBS =						\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 	$(top_builddir)/lib/packagekit-glib2/libpackagekitprivate.a	\
-	$(NULL)
-
-pk_command_not_found_SOURCES =				\
-	pk-command-not-found-test.c			\
-	$(NULL)
-
-pk_command_not_found_LDADD =				\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(PK_GLIB2_LIBS)				\
-	$(NULL)
-
-else
-
-PK_GLIB_LIBS =						\
-	$(top_builddir)/lib/packagekit-glib/libpackagekit-glib.la	\
 	$(NULL)
 
 pk_command_not_found_SOURCES =				\
@@ -43,18 +25,14 @@ pk_command_not_found_SOURCES =				\
 	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
-	pk-tools-common.c				\
-	pk-tools-common.h				\
 	pk-command-not-found.c				\
 	$(NULL)
 
 pk_command_not_found_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
-
-endif
 
 pk_command_not_found_CFLAGS =				\
 	$(WARNINGFLAGS_C)				\

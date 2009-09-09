@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-control
+ * @short_description: For querying data about PackageKit
+ *
+ * A GObject to use for accessing PackageKit asynchronously.
+ */
+
 #include "config.h"
 
 #include <string.h>
@@ -776,6 +783,7 @@ out:
 /**
  * pk_control_get_time_since_action_async:
  * @control: a valid #PkControl instance
+ * @role: the role enum, e.g. %PK_ROLE_ENUM_GET_UPDATES
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -1066,6 +1074,7 @@ out:
 /**
  * pk_control_can_authorize_async:
  * @control: a valid #PkControl instance
+ * @action_id: The action ID, for instance "org.freedesktop.PackageKit.install-untrusted"
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -1250,17 +1259,15 @@ out:
 /**
  * pk_control_get_properties_async:
  * @control: a valid #PkControl instance
- * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
- * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Set a proxy on the PK daemon
+ * Gets global properties from the daemon.
  **/
 void
 pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
-			    GAsyncReadyCallback callback, gpointer user_data)
+				 GAsyncReadyCallback callback, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;

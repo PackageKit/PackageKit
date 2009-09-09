@@ -2,15 +2,10 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 client/pk-console.c
-client/pk-console-test.c
 client/pk-generate-pack.c
-client/pk-generate-pack-test.c
 client/pk-monitor.c
-client/pk-monitor-test.c
-client/pk-tools-common.c
 contrib/browser-plugin/pk-plugin-install.c
 contrib/command-not-found/pk-command-not-found.c
-contrib/command-not-found/pk-command-not-found-test.c
 contrib/debuginfo-install/pk-debuginfo-install.c
 contrib/device-rebind/pk-device-rebind.c
 data/packagekit-catalog.xml.in

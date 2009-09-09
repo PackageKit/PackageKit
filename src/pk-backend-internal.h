@@ -23,7 +23,7 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include "pk-store.h"
 #include "pk-backend.h"

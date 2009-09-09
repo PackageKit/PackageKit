@@ -24,7 +24,7 @@
 
 #include <glib.h>
 #include <gmodule.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

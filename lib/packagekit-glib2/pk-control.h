@@ -23,11 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-control
- * @short_description: An abstract control access GObject
- */
-
 #ifndef __PK_CONTROL_H
 #define __PK_CONTROL_H
 

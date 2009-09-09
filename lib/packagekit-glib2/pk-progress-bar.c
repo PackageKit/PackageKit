@@ -94,8 +94,8 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 	for (i=0; i<self->priv->size - section; i++)
 		g_print (" ");
 	g_print ("] ");
-	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
-		g_print ("(%i%%)  ", self->priv->percentage);
+	if (percentage >= 0 && percentage < 100)
+		g_print ("(%i%%)  ", percentage);
 	else
 		g_print ("        ");
 	return TRUE;
@@ -317,6 +317,7 @@ pk_progress_bar_init (PkProgressBar *self)
 
 /**
  * pk_progress_bar_new:
+ *
  * Return value: A new progress_bar class instance.
  **/
 PkProgressBar *

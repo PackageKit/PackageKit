@@ -23,11 +23,6 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-/**
- * SECTION:pk-item
- * @short_description: Abstract items
- */
-
 #ifndef __PK_ITEM_H
 #define __PK_ITEM_H
 

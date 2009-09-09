@@ -36,7 +36,7 @@
 
 #include <glib/gi18n.h>
 #include <gio/gio.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
 #include "pk-conf.h"
