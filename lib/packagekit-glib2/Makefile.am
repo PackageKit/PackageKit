@@ -46,6 +46,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-results.h						\
 	pk-service-pack.h					\
 	pk-task.h						\
+	pk-version.h						\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
