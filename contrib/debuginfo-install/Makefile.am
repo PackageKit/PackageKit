@@ -46,7 +46,7 @@ pk_debuginfo_install_SOURCES =				\
 pk_debuginfo_install_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(PK_GLIB_LIBS)					\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 else
