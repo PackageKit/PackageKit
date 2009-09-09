@@ -206,7 +206,6 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 		} else {
 			*error = g_error_new (1, 0, "failed to install packages: %s", error_local->message);
 			g_error_free (error_local);
-			egg_error ("moo: %s", error_local->message);
 			goto out;
 		}
 	}
