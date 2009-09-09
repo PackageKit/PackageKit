@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -21,79 +21,31 @@
 
 #include "config.h"
 
-#include <string.h>
+//#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/ioctl.h>
-#include <glib.h>
 #include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <locale.h>
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
-#include "pk-tools-common.h"
-
-#define PROGRESS_BAR_SIZE 15
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles;
 static gboolean is_console = FALSE;
-static gboolean has_output_bar = FALSE;
-static gboolean need_requeue = FALSE;
 static gboolean nowait = FALSE;
-static gboolean awaiting_space = FALSE;
-static guint timer_id = 0;
-static guint percentage_last = 0;
 static PkControl *control = NULL;
-static PkClient *client_primary = NULL;
-static PkClient *client_secondary = NULL;
-static PkClient *client_sync = NULL;
-
-typedef struct {
-	gint position;
-	gboolean move_forward;
-} PulseState;
-
-/**
- * pk_console_bar:
- **/
-static void
-pk_console_bar (guint subpercentage)
-{
-	guint section;
-	guint i;
-
-	/* don't pretty print */
-	if (!is_console)
-		return;
-	if (!has_output_bar)
-		return;
-
-	/* restore cursor */
-	g_print ("%c8", 0x1B);
-
-	section = (guint) ((gfloat) PROGRESS_BAR_SIZE / (gfloat) 100.0 * (gfloat) subpercentage);
-	g_print ("[");
-	for (i=0; i<section; i++)
-		g_print ("=");
-	for (i=0; i<PROGRESS_BAR_SIZE-section; i++)
-		g_print (" ");
-	g_print ("] ");
-	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID)
-		g_print ("(%i%%)  ", percentage_last);
-	else
-		g_print ("        ");
-	awaiting_space = TRUE;
-}
+static PkTaskText *task = NULL;
+static PkProgressBar *progressbar = NULL;
+static GCancellable *cancellable = NULL;
 
 /**
  * pk_strpad:
@@ -131,108 +83,62 @@ pk_strpad (const gchar *data, guint length)
 }
 
 /**
- * pk_console_start_bar:
- **/
-static void
-pk_console_start_bar (const gchar *text)
-{
-	gchar *text_pad;
-
-	/* make these all the same length */
-	text_pad = pk_strpad (text, 50);
-	g_print ("%s", text_pad);
-	g_free (text_pad);
-	has_output_bar = TRUE;
-
-	/* save cursor in new position */
-	g_print ("%c7", 0x1B);
-	pk_console_bar (0);
-}
-
-/**
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkClient *client, const PkPackageObj *obj, gpointer data)
+pk_console_package_cb (const PkItemPackage *obj, gpointer data)
 {
-	PkRoleEnum role;
 	gchar *package = NULL;
 	gchar *package_pad = NULL;
 	gchar *info_pad = NULL;
-	gchar *text = NULL;
+	gchar **split = NULL;
 
 	/* ignore finished */
-	if (obj->info == PK_INFO_ENUM_FINISHED)
+	if (obj->info_enum == PK_INFO_ENUM_FINISHED)
+		goto out;
+
+	/* split */
+	split = pk_package_id_split (obj->package_id);
+	if (split == NULL)
 		goto out;
 
 	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_text (obj->info), 12);
+	info_pad = pk_strpad (pk_info_enum_to_text (obj->info_enum), 12);
+
+	/* create printable */
+	package = pk_package_id_to_printable (obj->package_id);
 
 	/* don't pretty print */
 	if (!is_console) {
-		g_print ("%s %s-%s.%s\n", info_pad, obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", info_pad, package);
 		goto out;
 	}
 
 	/* pad the name-version */
-	if (egg_strzero (obj->id->version))
-		package = g_strdup (obj->id->name);
-	else
-		package = g_strdup_printf ("%s-%s", obj->id->name, obj->id->version);
 	package_pad = pk_strpad (package, 40);
-
-	/* mark previous complete */
-	if (has_output_bar)
-		pk_console_bar (100);
-
-	if (awaiting_space)
-		g_print ("\n");
-
-	pk_client_get_role (client, &role, NULL, NULL);
-	if (role == PK_ROLE_ENUM_SEARCH_NAME ||
-	    role == PK_ROLE_ENUM_SEARCH_GROUP ||
-	    role == PK_ROLE_ENUM_SEARCH_FILE ||
-	    role == PK_ROLE_ENUM_SEARCH_DETAILS ||
-	    role == PK_ROLE_ENUM_GET_PACKAGES ||
-	    role == PK_ROLE_ENUM_GET_DEPENDS ||
-	    role == PK_ROLE_ENUM_GET_REQUIRES ||
-	    role == PK_ROLE_ENUM_GET_UPDATES ||
-	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
-	    role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES ||
-	    role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES ||
-	    role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-		/* don't do the bar */
-		g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
-		goto out;
-	}
-
-	text = g_strdup_printf ("%s\t%s", info_pad, package);
-	pk_console_start_bar (text);
-	g_free (text);
-
+	g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
 out:
 	/* free all the data */
 	g_free (package);
 	g_free (package_pad);
 	g_free (info_pad);
+	g_strfreev (split);
 }
 
 /**
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpointer user_data)
+pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
 {
 	struct passwd *pw;
 	const gchar *role_text;
 	gchar **lines;
 	gchar **parts;
 	guint i, lines_len;
-	PkPackageId *id;
+	gchar *package = NULL;
 
 	role_text = pk_role_enum_to_text (obj->role);
-	if (awaiting_space)
-		g_print ("\n");
 	/* TRANSLATORS: this is an atomic transaction */
 	g_print ("%s: %s\n", _("Transaction"), obj->tid);
 	/* TRANSLATORS: this is the time the transaction was started in system timezone */
@@ -254,7 +160,7 @@ pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpoint
 	g_print (" %s: %i\n", _("User ID"), obj->uid);
 
 	/* query real name */
-	pw = getpwuid(obj->uid);
+	pw = getpwuid (obj->uid);
 	if (pw != NULL) {
 		if (pw->pw_name != NULL) {
 			/* TRANSLATORS: this is the username, e.g. hughsie */
@@ -275,89 +181,22 @@ pk_console_transaction_cb (PkClient *client, const PkTransactionObj *obj, gpoint
 		g_print (" %s\n", _("Affected packages: None"));
 	for (i=0; i<lines_len; i++) {
 		parts = g_strsplit (lines[i], "\t", 3);
-		id = pk_package_id_new_from_string (parts[1]);
-		g_print (" - %s %s", parts[0], id->name);
-		if (!egg_strzero (id->version))
-			g_print ("-%s", id->version);
-		if (!egg_strzero (id->arch))
-			g_print (".%s", id->arch);
-		g_print ("\n");
-		pk_package_id_free (id);
+
+		/* create printable */
+		package = pk_package_id_to_printable (parts[1]);
+		g_print (" - %s %s\n", parts[0], package);
+		g_free (package);
 		g_strfreev (parts);
 	}
 	g_strfreev (lines);
 }
 
 /**
- * pk_console_print_deps_list_info:
- **/
-static guint
-pk_console_print_deps_list_info (PkPackageList *list, PkInfoEnum info, const gchar *header)
-{
-	const PkPackageObj *obj;
-	gboolean ret = FALSE;
-	guint found = 0;
-	guint i;
-	guint length;
-
-	length = pk_package_list_get_size (list);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-
-		/* are we interested in this type */
-		if (obj->info != info)
-			continue;
-
-		/* is this package already local */
-		if (g_strcmp0 (obj->id->data, "local") == 0)
-			continue;
-
-		/* print header if it's not been done before */
-		if (!ret) {
-			g_print ("%s\n", header);
-			ret = TRUE;
-		}
-
-		/* print package */
-		g_print ("%i\t%s-%s.%s\n", ++found, obj->id->name, obj->id->version, obj->id->arch);
-	}
-	return found;
-}
-
-/**
- * pk_console_print_deps_list:
- **/
-static guint
-pk_console_print_deps_list (PkPackageList *list)
-{
-	guint found = 0;
-
-	/* TRANSLATORS: When processing, we might have to remove other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REMOVING, _("The following packages have to be removed:"));
-
-	/* TRANSLATORS: When processing, we might have to install other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_INSTALLING, _("The following packages have to be installed:"));
-
-	/* TRANSLATORS: When processing, we might have to update other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_UPDATING, _("The following packages have to be updated:"));
-
-	/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_REINSTALLING, _("The following packages have to be reinstalled:"));
-
-	/* TRANSLATORS: When processing, we might have to downgrade other dependencies */
-	found += pk_console_print_deps_list_info (list, PK_INFO_ENUM_DOWNGRADING, _("The following packages have to be downgraded:"));
-
-	return found;
-}
-
-/**
  * pk_console_distro_upgrade_cb:
  **/
 static void
-pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, gpointer user_data)
+pk_console_distro_upgrade_cb (const PkItemDistroUpgrade *obj, gpointer user_data)
 {
-	if (awaiting_space)
-		g_print ("\n");
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
 	g_print ("%s: %s\n", _("Distribution"), obj->name);
 	/* TRANSLATORS: this is type of update, stable or testing */
@@ -370,21 +209,19 @@ pk_console_distro_upgrade_cb (PkClient *client, const PkDistroUpgradeObj *obj, g
  * pk_console_category_cb:
  **/
 static void
-pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer user_data)
+pk_console_category_cb (const PkItemCategory *obj, gpointer user_data)
 {
-	if (awaiting_space)
-		g_print ("\n");
 	/* TRANSLATORS: this is the group category name */
 	g_print ("%s: %s\n", _("Category"), obj->name);
 	/* TRANSLATORS: this is group identifier */
 	g_print (" %s: %s\n", _("ID"), obj->cat_id);
-	if (!egg_strzero (obj->parent_id)) {
+	if (obj->parent_id != NULL) {
 		/* TRANSLATORS: this is the parent group */
 		g_print (" %s: %s\n", _("Parent"), obj->parent_id);
 	}
 	/* TRANSLATORS: this is the name of the parent group */
 	g_print (" %s: %s\n", _("Name"), obj->name);
-	if (!egg_strzero (obj->summary)) {
+	if (obj->summary != NULL) {
 		/* TRANSLATORS: this is the summary of the group */
 		g_print (" %s: %s\n", _("Summary"), obj->summary);
 	}
@@ -396,80 +233,81 @@ pk_console_category_cb (PkClient *client, const PkCategoryObj *obj, gpointer use
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (PkClient *client, const PkUpdateDetailObj *detail, gpointer data)
+pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
 {
 	gchar *issued;
 	gchar *updated;
+	gchar *package = NULL;
 
-	if (awaiting_space)
-		g_print ("\n");
 	/* TRANSLATORS: this is a header for the package that can be updated */
 	g_print ("%s\n", _("Details about the update:"));
+
+	/* create printable */
+	package = pk_package_id_to_printable (detail->package_id);
+
 	/* TRANSLATORS: details about the update, package name and version */
-	g_print (" %s: '%s-%s.%s'\n", _("Package"), detail->id->name, detail->id->version, detail->id->arch);
-	if (!egg_strzero (detail->updates)) {
+	g_print (" %s: %s\n", _("Package"), package);
+	if (detail->updates != NULL) {
 		/* TRANSLATORS: details about the update, any packages that this update updates */
 		g_print (" %s: %s\n", _("Updates"), detail->updates);
 	}
-	if (!egg_strzero (detail->obsoletes)) {
+	if (detail->obsoletes != NULL) {
 		/* TRANSLATORS: details about the update, any packages that this update obsoletes */
 		g_print (" %s: %s\n", _("Obsoletes"), detail->obsoletes);
 	}
-	if (!egg_strzero (detail->vendor_url)) {
+	if (detail->vendor_url != NULL) {
 		/* TRANSLATORS: details about the update, the vendor URLs */
 		g_print (" %s: %s\n", _("Vendor"), detail->vendor_url);
 	}
-	if (!egg_strzero (detail->bugzilla_url)) {
+	if (detail->bugzilla_url != NULL) {
 		/* TRANSLATORS: details about the update, the bugzilla URLs */
 		g_print (" %s: %s\n", _("Bugzilla"), detail->bugzilla_url);
 	}
-	if (!egg_strzero (detail->cve_url)) {
+	if (detail->cve_url != NULL) {
 		/* TRANSLATORS: details about the update, the CVE URLs */
 		g_print (" %s: %s\n", _("CVE"), detail->cve_url);
 	}
-	if (detail->restart != PK_RESTART_ENUM_NONE) {
+	if (detail->restart_enum != PK_RESTART_ENUM_NONE) {
 		/* TRANSLATORS: details about the update, if the package requires a restart */
-		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart));
+		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart_enum));
 	}
-	if (!egg_strzero (detail->update_text)) {
+	if (detail->update_text != NULL) {
 		/* TRANSLATORS: details about the update, any description of the update */
 		g_print (" %s: %s\n", _("Update text"), detail->update_text);
 	}
-	if (!egg_strzero (detail->changelog)) {
+	if (detail->changelog != NULL) {
 		/* TRANSLATORS: details about the update, the changelog for the package */
 		g_print (" %s: %s\n", _("Changes"), detail->changelog);
 	}
-	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
+	if (detail->state_enum != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		/* TRANSLATORS: details about the update, the ongoing state of the update */
-		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state));
+		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state_enum));
 	}
 	issued = pk_iso8601_from_date (detail->issued);
-	if (!egg_strzero (issued)) {
+	if (issued != NULL) {
 		/* TRANSLATORS: details about the update, date the update was issued */
 		g_print (" %s: %s\n", _("Issued"), issued);
 	}
 	updated = pk_iso8601_from_date (detail->updated);
-	if (!egg_strzero (updated)) {
+	if (updated != NULL) {
 		/* TRANSLATORS: details about the update, date the update was updated */
 		g_print (" %s: %s\n", _("Updated"), updated);
 	}
 	g_free (issued);
 	g_free (updated);
+	g_free (package);
 }
 
 /**
  * pk_console_repo_detail_cb:
  **/
 static void
-pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
-			   const gchar *description, gboolean enabled, gpointer data)
+pk_console_repo_detail_cb (const PkItemRepoDetail *obj, gpointer data)
 {
 	gchar *enabled_pad;
 	gchar *repo_pad;
 
-	if (awaiting_space)
-		g_print ("\n");
-	if (enabled) {
+	if (obj->enabled) {
 		/* TRANSLATORS: if the repo is enabled */
 		enabled_pad = pk_strpad (_("Enabled"), 10);
 	} else {
@@ -477,153 +315,126 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 		enabled_pad = pk_strpad (_("Disabled"), 10);
 	}
 
-	repo_pad = pk_strpad (repo_id, 25);
-	g_print (" %s %s %s\n", enabled_pad, repo_pad, description);
+	repo_pad = pk_strpad (obj->repo_id, 25);
+	g_print (" %s %s %s\n", enabled_pad, repo_pad, obj->description);
 	g_free (enabled_pad);
 	g_free (repo_pad);
-}
-
-/**
- * pk_console_pulse_bar:
- **/
-static gboolean
-pk_console_pulse_bar (PulseState *pulse_state)
-{
-	gint i;
-
-	if (!has_output_bar)
-		return TRUE;
-
-	/* restore cursor */
-	g_print ("%c8", 0x1B);
-
-	if (pulse_state->move_forward) {
-		if (pulse_state->position == PROGRESS_BAR_SIZE - 1)
-			pulse_state->move_forward = FALSE;
-		else
-			pulse_state->position++;
-	} else if (!pulse_state->move_forward) {
-		if (pulse_state->position == 1)
-			pulse_state->move_forward = TRUE;
-		else
-			pulse_state->position--;
-	}
-
-	g_print ("[");
-	for (i=0; i<pulse_state->position-1; i++)
-		g_print (" ");
-	printf("==");
-	for (i=0; i<PROGRESS_BAR_SIZE-pulse_state->position-1; i++)
-		g_print (" ");
-	g_print ("] ");
-	if (percentage_last != PK_CLIENT_PERCENTAGE_INVALID)
-		g_print ("(%i%%)  ", percentage_last);
-	else
-		g_print ("        ");
-
-	return TRUE;
-}
-
-/**
- * pk_console_draw_pulse_bar:
- **/
-static void
-pk_console_draw_pulse_bar (void)
-{
-	static PulseState pulse_state;
-
-	/* have we already got zero percent? */
-	if (timer_id != 0)
-		return;
-	if (is_console) {
-		pulse_state.position = 1;
-		pulse_state.move_forward = TRUE;
-		timer_id = g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
-	}
-}
-
-/**
- * pk_console_progress_changed_cb:
- **/
-static void
-pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
-				guint elapsed, guint remaining, gpointer data)
-{
-	if (!is_console) {
-		if (percentage != PK_CLIENT_PERCENTAGE_INVALID)
-			g_print ("%s: %i%%\n", _("Percentage"), percentage);
-		else
-			g_print ("%s: %s\n", _("Percentage"), _("Unknown"));
-		return;
-	}
-	percentage_last = percentage;
-	if (subpercentage == PK_CLIENT_PERCENTAGE_INVALID) {
-		pk_console_bar (0);
-		pk_console_draw_pulse_bar ();
-	} else {
-		if (timer_id != 0) {
-			g_source_remove (timer_id);
-			timer_id = 0;
-		}
-		pk_console_bar (subpercentage);
-	}
-}
-
-/**
- * pk_console_signature_finished_cb:
- **/
-static void
-pk_console_signature_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
-{
-	gboolean ret;
-	GError *error = NULL;
-
-	egg_debug ("trying to requeue");
-	ret = pk_client_requeue (client_primary, &error);
-	if (!ret) {
-		egg_warning ("failed to requeue action: %s", error->message);
-		g_error_free (error);
-		g_main_loop_quit (loop);
-	}
 }
 
 /**
  * pk_console_require_restart_cb:
  **/
 static void
-pk_console_require_restart_cb (PkClient *client, const PkRequireRestartObj *obj, gpointer data)
+pk_console_require_restart_cb (const PkItemRequireRestart *obj, gpointer data)
 {
+	gchar *package = NULL;
+
+	/* create printable */
+	package = pk_package_id_to_printable (obj->package_id);
+
 	if (obj->restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted */
-		g_print ("%s %s-%s.%s\n", _("System restart required by:"), obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", _("System restart required by:"), package);
 	} else if (obj->restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted */
-		g_print ("%s %s-%s.%s\n", _("Session restart required:"), obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", _("Session restart required:"), package);
 	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted due to a security update*/
-		g_print ("%s %s-%s.%s\n", _("System restart (security) required by:"), obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", _("System restart (security) required by:"), package);
 	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted due to a security update */
-		g_print ("%s %s-%s.%s\n", _("Session restart (security) required:"), obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", _("Session restart (security) required:"), package);
 	} else if (obj->restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package requires the application to be restarted */
-		g_print ("%s %s-%s.%s\n", _("Application restart required by:"), obj->id->name, obj->id->version, obj->id->arch);
+		g_print ("%s %s\n", _("Application restart required by:"), package);
+	}
+	g_free (package);
+}
+
+/**
+ * pk_console_details_cb:
+ **/
+static void
+pk_console_details_cb (const PkItemDetails *obj, gpointer data)
+{
+	gchar *package = NULL;
+
+	/* create printable */
+	package = pk_package_id_to_printable (obj->package_id);
+
+	/* TRANSLATORS: This a list of details about the package */
+	g_print ("%s\n", _("Package description"));
+	g_print ("  package:     %s\n", package);
+	g_print ("  license:     %s\n", obj->license);
+	g_print ("  group:       %s\n", pk_group_enum_to_text (obj->group_enum));
+	g_print ("  description: %s\n", obj->description);
+	g_print ("  size:        %lu bytes\n", (long unsigned int) obj->size);
+	g_print ("  url:         %s\n", obj->url);
+
+	g_free (package);
+}
+
+/**
+ * pk_console_message_cb:
+ **/
+static void
+pk_console_message_cb (const PkItemMessage *obj, gpointer data)
+{
+	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (obj->message), obj->details);
+}
+
+/**
+ * pk_console_files_cb:
+ **/
+static void
+pk_console_files_cb (PkItemFiles *obj, gpointer data)
+{
+	guint i;
+
+	/* empty */
+	if (obj->files == NULL || obj->files[0] == NULL) {
+		/* TRANSLATORS: This where the package has no files */
+		g_print ("%s\n", _("No files"));
+		return;
+	}
+
+	/* TRANSLATORS: This a list files contained in the package */
+	g_print ("%s\n", _("Package files"));
+	for (i=0; obj->files[i] != NULL; i++) {
+		g_print ("  %s\n", obj->files[i]);
 	}
 }
 
 /**
- * pk_console_destroy_cb:
+ * pk_console_progress_cb:
  **/
 static void
-pk_console_destroy_cb (PkClient *client, gpointer data)
+pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
-	gboolean ret;
+	gint percentage;
+	PkStatusEnum status;
+	const gchar *status_text;
 
-	/* exit our private loop if it's running */
-	ret = g_main_loop_is_running (loop);
-	if (ret) {
-		egg_warning ("maybe quit loop due to transaction being destroyed?");
-//		g_main_loop_quit (loop);
+	/* percentage */
+	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
+		g_object_get (progress,
+			      "percentage", &percentage,
+			      NULL);
+		pk_progress_bar_set_percentage (progressbar, percentage);
+	}
+
+	/* status */
+	if (type == PK_PROGRESS_TYPE_STATUS) {
+		g_object_get (progress,
+			      "status", &status,
+			      NULL);
+		if (status == PK_STATUS_ENUM_FINISHED)
+			return;
+
+		/* show new status on the bar */
+		status_text = pk_status_enum_to_localised_text (status);
+		pk_progress_bar_start (progressbar, status_text);
 	}
 }
 
@@ -631,44 +442,106 @@ pk_console_destroy_cb (PkClient *client, gpointer data)
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, gpointer data)
+pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	PkRoleEnum role;
-	const gchar *role_text;
-	gfloat time_s;
-	PkRestartEnum restart;
-	gboolean ret;
+	const PkItemErrorCode *error_item;
+	PkResults *results;
 	GError *error = NULL;
+	GPtrArray *array;
+	PkExitEnum exit_enum;
+	PkRestartEnum restart;
+	PkRoleEnum role;
 
-	pk_client_get_role (client, &role, NULL, NULL);
+	/* no more progress */
+	pk_progress_bar_end (progressbar);
 
-	/* mark previous complete */
-	if (has_output_bar)
-		pk_console_bar (100);
+	/* get the results */
+	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	if (results == NULL) {
+		g_print ("Failed to complete: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
-	/* cancel the spinning */
-	if (timer_id != 0)
-		g_source_remove (timer_id);
+	/* get the role */
+	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
-	role_text = pk_role_enum_to_text (role);
-	time_s = (gfloat) runtime / 1000.0;
+	exit_enum = pk_results_get_exit_code (results);
+//	if (exit_enum != PK_EXIT_ENUM_CANCELLED)
+//		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_text (exit_enum));
 
-	/* do we need to new line? */
-	if (awaiting_space)
-		g_print ("\n");
-	egg_debug ("%s runtime was %.1f seconds", role_text, time_s);
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+//	if (error_item->code != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
+//		egg_test_failed (test, "failed to get error code: %i", error_item->code);
+//	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
+//		egg_test_failed (test, "failed to get error message: %s", error_item->details);
+
+	/* package */
+	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
+	    role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	    role != PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		array = pk_results_get_package_array (results);
+		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, NULL);
+		g_ptr_array_unref (array);
+	}
+
+	/* transaction */
+	array = pk_results_get_transaction_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_transaction_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* distro_upgrade */
+	array = pk_results_get_distro_upgrade_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_distro_upgrade_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* category */
+	array = pk_results_get_category_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_category_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* update_detail */
+	array = pk_results_get_update_detail_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_update_detail_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* repo_detail */
+	array = pk_results_get_repo_detail_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_repo_detail_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* require_restart */
+	array = pk_results_get_require_restart_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_require_restart_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* details */
+	array = pk_results_get_details_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_details_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* message */
+	array = pk_results_get_message_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_console_message_cb, NULL);
+	g_ptr_array_unref (array);
+
+	/* don't print files if we are DownloadPackages */
+	if (role != PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+		array = pk_results_get_files_array (results);
+		g_ptr_array_foreach (array, (GFunc) pk_console_files_cb, NULL);
+		g_ptr_array_unref (array);
+	}
 
 	/* is there any restart to notify the user? */
-	restart = pk_client_get_require_restart (client);
+	restart = pk_results_get_require_restart_worst (results);
 	if (restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package needs to restart their system */
 		g_print ("%s\n", _("Please restart the computer to complete the update."));
 	} else if (restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package needs to restart the session */
 		g_print ("%s\n", _("Please logout and login to complete the update."));
-	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
-		/* TRANSLATORS: a package needs to restart the application */
-		g_print ("%s\n", _("Please restart the application as it is being used."));
 	} else if (restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
 		/* TRANSLATORS: a package needs to restart their system (due to security) */
 		g_print ("%s\n", _("Please restart the computer to complete the update as important security updates have been installed."));
@@ -676,453 +549,65 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit_enum, guint runtime, g
 		/* TRANSLATORS: a package needs to restart the session (due to security) */
 		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
-
-	/* need to handle retry with only_trusted=FALSE */
-	if (exit_enum == PK_EXIT_ENUM_NEED_UNTRUSTED) {
-		egg_debug ("need to handle untrusted");
-
-		/* retry new action with untrusted */
-		pk_client_set_only_trusted (client, FALSE);
-		ret = pk_client_requeue (client, &error);
-		if (!ret) {
-			egg_warning ("Failed to requeue: %s", error->message);
-			g_error_free (error);
-		}
-		return;
-	}
-
-	if ((role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES) &&
-	    exit_enum == PK_EXIT_ENUM_FAILED && need_requeue) {
-		egg_warning ("waiting for second install file to finish");
-		return;
-	}
-
-	/* have we failed to install, and the gpg key is now installed */
-	if (exit_enum == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
-		egg_debug ("key now installed");
-		return;
-	}
-
-	/* have we failed to install, and the eula key is now installed */
-	if (exit_enum == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
-		egg_debug ("eula now agreed");
-		return;
-	}
-
-	/* close the loop */
+out:
+	if (results != NULL)
+		g_object_unref (results);
 	g_main_loop_quit (loop);
 }
 
 /**
- * pk_console_perhaps_resolve:
- **/
-static gchar *
-pk_console_perhaps_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
-{
-	PkPackageList *list;
-	gchar *package_id = NULL;
-	gboolean valid;
-
-	/* have we passed a complete package_id? */
-	valid = pk_package_id_check (package);
-	if (valid)
-		return g_strdup (package);
-
-	/* get the list of possibles */
-	list = pk_console_resolve (filter, package, error);
-	if (list == NULL)
-		goto out;
-
-	/* else list the options if multiple matches found */
-	if (awaiting_space)
-		g_print ("\n");
-
-	/* ask the user to select the right one */
-	package_id = pk_console_resolve_package_id (list, error);
-out:
-	if (list != NULL)
-		g_object_unref (list);
-	return package_id;
-}
-
-/**
- * pk_console_is_installed:
+ * pk_console_install_packages:
  **/
 static gboolean
-pk_console_is_installed (const gchar *package)
-{
-	PkPackageList *list;
-	GError *error;
-	gboolean ret = FALSE;
-
-	/* get the list of possibles */
-	list = pk_console_resolve (pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package, &error);
-	if (list == NULL) {
-		egg_debug ("not installed: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-	/* true if any installed */
-	ret = PK_OBJ_LIST(list)->len > 0;
-out:
-	if (list != NULL)
-		g_object_unref (list);
-	return ret;
-}
-
-/**
- * pk_console_install_stuff:
- **/
-static gboolean
-pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
+pk_console_install_packages (gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
-	gboolean installed;
-	gboolean is_local;
-	gboolean accept_changes;
-	gchar *package_id = NULL;
-	gchar **package_ids = NULL;
-	gchar **files = NULL;
-	guint i;
-	guint length;
-	PkPackageList *list;
-	PkPackageList *list_single;
-	GPtrArray *array_packages;
-	GPtrArray *array_files;
+	gchar **package_ids;
 	GError *error_local = NULL;
 
-	array_packages = g_ptr_array_new ();
-	array_files = g_ptr_array_new ();
-	length = g_strv_length (packages);
-	list = pk_package_list_new ();
-
-	for (i=2; i<length; i++) {
-		/* are we a local file */
-		is_local = g_file_test (packages[i], G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR);
-		if (is_local) {
-			g_ptr_array_add (array_files, g_strdup (packages[i]));
-		} else {
-			/* if already installed, then abort */
-			installed = pk_console_is_installed (packages[i]);
-			if (installed) {
-				/* TRANSLATORS: The package is already installed on the system */
-				*error = g_error_new (1, 0, _("The package %s is already installed"), packages[i]);
-				ret = FALSE;
-				break;
-			}
-			/* try and find a package */
-			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages[i], &error_local);
-			if (package_id == NULL) {
-				/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-				*error = g_error_new (1, 0, _("The package %s could not be installed: %s"), packages[i], error_local->message);
-				g_error_free (error_local);
-				ret = FALSE;
-				break;
-			}
-			g_ptr_array_add (array_packages, package_id);
-		}
-	}
-
-	/* one of the resolves failed */
-	if (!ret) {
-		egg_warning ("resolve failed");
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	if (package_ids == NULL) {
+		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not find the available package: %s"), error_local->message);
+		g_error_free (error_local);
+		ret = FALSE;
 		goto out;
 	}
 
-
-	/* any to process? */
-	if (array_packages->len > 0) {
-		/* convert to strv */
-		package_ids = pk_ptr_array_to_strv (array_packages);
-
-		/* can we simulate? */
-		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
-			ret = pk_client_reset (client_sync, &error_local);
-			if (!ret) {
-				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
-
-			egg_debug ("Simulating install for %s", package_ids[0]);
-			ret = pk_client_simulate_install_packages (client_sync, package_ids, error);
-			if (!ret) {
-				egg_warning ("failed to simulate a package install");
-				goto out;
-			}
-
-			/* see how many packages there are */
-			list_single = pk_client_get_package_list (client_sync);
-			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-			g_object_unref (list_single);
-
-			/* one of the simulate-install-packages failed */
-			if (!ret)
-				goto out;
-
-			/* if there are no required packages, just do the remove */
-			length = pk_package_list_get_size (list);
-			if (length != 0) {
-				/* present this to the user */
-				if (awaiting_space)
-					g_print ("\n");
-
-				/* print the additional deps to the screen */
-				pk_console_print_deps_list (list);
-
-				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-				/* we chickened out */
-				if (!accept_changes) {
-					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
-					ret = FALSE;
-					goto out;
-				}
-			}
-		}
-
-		/* reset */
-		ret = pk_client_reset (client, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-
-		ret = pk_client_install_packages (client, TRUE, package_ids, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-	}
-
-	/* any to process? */
-	if (array_files->len > 0) {
-		/* convert to strv */
-		files = pk_ptr_array_to_strv (array_files);
-
-		/* can we simulate? */
-		if (pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
-			ret = pk_client_reset (client_sync, &error_local);
-			if (!ret) {
-				/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-				*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
-
-			egg_debug ("Simulating install for %s", files[0]);
-			ret = pk_client_simulate_install_files (client_sync, files, error);
-			if (!ret) {
-				egg_warning ("failed to simulate a package install");
-				goto out;
-			}
-
-			/* see how many packages there are */
-			list_single = pk_client_get_package_list (client_sync);
-			pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-			g_object_unref (list_single);
-
-			/* one of the simulate-install-files failed */
-			if (!ret)
-				goto out;
-
-			/* if there are no required packages, just do the remove */
-			length = pk_package_list_get_size (list);
-			if (length != 0) {
-				/* present this to the user */
-				if (awaiting_space)
-					g_print ("\n");
-
-				/* print the additional deps to the screen */
-				pk_console_print_deps_list (list);
-
-				/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-				accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-				/* we chickened out */
-				if (!accept_changes) {
-					/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-					*error = g_error_new (1, 0, "%s", _("The package install was canceled!"));
-					ret = FALSE;
-					goto out;
-				}
-			}
-		}
-
-		/* reset */
-		ret = pk_client_reset (client, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-
-		ret = pk_client_install_files (client, TRUE, files, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error installing the files. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not install the files: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-	}
-
+	/* do the async action */
+	pk_task_install_packages_async (PK_TASK(task), package_ids, cancellable,
+				        (PkProgressCallback) pk_console_progress_cb, NULL,
+				        (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
-	g_object_unref (list);
 	g_strfreev (package_ids);
-	g_strfreev (files);
-	g_ptr_array_foreach (array_files, (GFunc) g_free, NULL);
-	g_ptr_array_free (array_files, TRUE);
-	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
-	g_ptr_array_free (array_packages, TRUE);
 	return ret;
-}
-
-/**
- * pk_console_remove_only:
- **/
-static gboolean
-pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, GError **error)
-{
-	gboolean ret;
-
-	egg_debug ("remove+ %s", package_ids[0]);
-	ret = pk_client_reset (client, error);
-	if (!ret)
-		return ret;
-	return pk_client_remove_packages (client, package_ids, force, FALSE, error);
 }
 
 /**
  * pk_console_remove_packages:
  **/
 static gboolean
-pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
+pk_console_remove_packages (gchar **packages, GError **error)
 {
-	gchar *package_id;
 	gboolean ret = TRUE;
-	guint i;
-	guint length;
-	gboolean remove_deps;
-	GPtrArray *array;
-	gchar **package_ids = NULL;
-	PkPackageList *list;
-	PkPackageList *list_single;
+	gchar **package_ids;
 	GError *error_local = NULL;
 
-	array = g_ptr_array_new ();
-	list = pk_package_list_new ();
-	length = g_strv_length (packages);
-	for (i=2; i<length; i++) {
-		package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages[i], &error_local);
-		if (package_id == NULL) {
-			/* TRANSLATORS: The package name was not found in the installed list. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove %s: %s"), packages[i], error_local->message);
-			g_error_free (error_local);
-			ret = FALSE;
-			break;
-		}
-		g_ptr_array_add (array, g_strdup (package_id));
-		egg_debug ("resolved to %s", package_id);
-		g_free (package_id);
-	}
-
-	/* one of the resolves failed */
-	if (!ret)
-		goto out;
-
-	/* convert to strv */
-	package_ids = pk_ptr_array_to_strv (array);
-
-	/* are we dumb and can't check for requires? */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
-		/* no, just try to remove it without deps */
-		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
-			g_error_free (error_local);
-		}
-		goto out;
-	}
-
-	ret = pk_client_reset (client_sync, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), packages, &error_local);
+	if (package_ids == NULL) {
+		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not find the installed package: %s"), error_local->message);
 		g_error_free (error_local);
-		goto out;
-	}
-
-	egg_debug ("Getting installed requires for %s", package_ids[0]);
-	/* see if any packages require this one */
-	ret = pk_client_simulate_remove_packages (client_sync, package_ids, error);
-	if (!ret) {
-		egg_warning ("failed to simulate a package removal");
-		goto out;
-	}
-
-	/* see how many packages there are */
-	list_single = pk_client_get_package_list (client_sync);
-	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-	g_object_unref (list_single);
-
-	/* one of the simulate-remove-packages failed */
-	if (!ret)
-		goto out;
-
-	/* if there are no required packages, just do the remove */
-	length = pk_package_list_get_size (list);
-	if (length == 0) {
-		egg_debug ("no requires");
-		ret = pk_console_remove_only (client, package_ids, FALSE, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
-			g_error_free (error_local);
-		}
-		goto out;
-	}
-
-
-	/* present this to the user */
-	if (awaiting_space)
-		g_print ("\n");
-
-	/* print the additional deps to the screen */
-	pk_console_print_deps_list (list);
-
-	/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-	remove_deps = pk_console_get_prompt (_("Proceed with additional packages?"), FALSE);
-
-	/* we chickened out */
-	if (!remove_deps) {
-		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-		*error = g_error_new (1, 0, "%s", _("The package removal was canceled!"));
 		ret = FALSE;
 		goto out;
 	}
 
-	/* remove all the stuff */
-	ret = pk_console_remove_only (client, package_ids, TRUE, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not remove the packages: %s"), error_local->message);
-		g_error_free (error_local);
-	}
-
+	/* do the async action */
+	pk_task_remove_packages_async (PK_TASK(task), package_ids, FALSE, FALSE, cancellable,
+				       (PkProgressCallback) pk_console_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
-	g_object_unref (list);
 	g_strfreev (package_ids);
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
 	return ret;
 }
 
@@ -1130,159 +615,55 @@ out:
  * pk_console_download_packages:
  **/
 static gboolean
-pk_console_download_packages (PkClient *client, gchar **packages, const gchar *directory, GError **error)
+pk_console_download_packages (gchar **packages, const gchar *directory, GError **error)
 {
 	gboolean ret = TRUE;
-	gchar *package_id = NULL;
-	gchar **package_ids = NULL;
-	guint i;
-	guint length;
-	GPtrArray *array_packages;
+	gchar **package_ids;
 	GError *error_local = NULL;
 
-	array_packages = g_ptr_array_new ();
-	length = g_strv_length (packages);
-	for (i=3; i<length; i++) {
-			package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), packages[i], &error_local);
-			if (package_id == NULL) {
-				/* TRANSLATORS: The package name was not found in any software sources */
-				*error = g_error_new (1, 0, _("This tool could not download the package %s as it could not be found"), packages[i]);
-				g_error_free (error_local);
-				ret = FALSE;
-				break;
-			}
-			g_ptr_array_add (array_packages, package_id);
-		}
-	
-	/* one of the resolves failed */
-	if (!ret) {
-		egg_warning ("resolve failed");
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	if (package_ids == NULL) {
+		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);
+		g_error_free (error_local);
+		ret = FALSE;
 		goto out;
 	}
 
-	/* any to process? */
-	if (array_packages->len > 0) {
-		/* convert to strv */
-		package_ids = pk_ptr_array_to_strv (array_packages);
-
-		/* reset */
-		ret = pk_client_reset (client, &error_local);
-		if (!ret) {
-			/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-			*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-
-		ret = pk_client_download_packages (client, package_ids, directory, error);
-		if (!ret) {
-			/* TRANSLATORS: Could not download the packages for some reason. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not download the packages: %s"), error_local->message);
-			g_error_free (error_local);
-			goto out;
-		}
-	}
-
+	/* do the async action */
+	pk_client_download_packages_async (PK_CLIENT(task), package_ids, directory, cancellable,
+				           (PkProgressCallback) pk_console_progress_cb, NULL,
+				           (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
-	g_ptr_array_foreach (array_packages, (GFunc) g_free, NULL);
-	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
 
 /**
- * pk_console_update_package:
+ * pk_console_update_packages:
  **/
 static gboolean
-pk_console_update_package (PkClient *client, const gchar *package, GError **error)
+pk_console_update_packages (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
+	gboolean ret = TRUE;
 	gchar **package_ids;
-	guint length;
 	GError *error_local = NULL;
-	gboolean accept_changes;
-	PkPackageList *list;
-	PkPackageList *list_single;
 
-	list = pk_package_list_new ();
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
-	if (package_id == NULL) {
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
-	}
-	package_ids = pk_package_ids_from_id (package_id);
-
-	/* are we dumb and can't simulate? */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
-		/* no, just try to update it without deps */
-		ret = pk_client_update_packages (client, TRUE, package_ids, error);
-		if (!ret) {
-			/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-			*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
-			g_error_free (error_local);
-		}
+		ret = FALSE;
 		goto out;
 	}
 
-	ret = pk_client_reset (client_sync, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows */
-		*error = g_error_new (1, 0, _("Internal error: %s"), error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	egg_debug ("Simulating update for %s", package_ids[0]);
-	ret = pk_client_simulate_update_packages (client_sync, package_ids, error);
-	if (!ret) {
-		egg_warning ("failed to simulate a package update");
-		goto out;
-	}
-
-	/* see how many packages there are */
-	list_single = pk_client_get_package_list (client_sync);
-	pk_obj_list_add_list (PK_OBJ_LIST(list), PK_OBJ_LIST(list_single));
-	g_object_unref (list_single);
-
-	/* one of the simulate-update-packages failed */
-	if (!ret)
-		goto out;
-
-	/* if there are no required packages, just do the remove */
-	length = pk_package_list_get_size (list);
-	if (length != 0) {
-		/* present this to the user */
-		if (awaiting_space)
-			g_print ("\n");
-
-		/* print the additional deps to the screen */
-		pk_console_print_deps_list (list);
-
-		/* TRANSLATORS: We are checking if it's okay to remove a list of packages */
-		accept_changes = pk_console_get_prompt (_("Proceed with changes?"), FALSE);
-
-		/* we chickened out */
-		if (!accept_changes) {
-			/* TRANSLATORS: There was an error removing the packages. The detailed error follows */
-			*error = g_error_new (1, 0, "%s", _("The package update was canceled!"));
-			ret = FALSE;
-			goto out;
-		}
-	}
-
-	ret = pk_client_update_packages (client, TRUE, package_ids, error);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not update %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
+	/* do the async action */
+	pk_task_update_packages_async (PK_TASK(task), package_ids, cancellable,
+				       (PkProgressCallback) pk_console_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
-	g_object_unref (list);
 	g_strfreev (package_ids);
-	g_free (package_id);
 	return ret;
 }
 
@@ -1290,29 +671,27 @@ out:
  * pk_console_get_requires:
  **/
 static gboolean
-pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
+pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
-	if (package_id == NULL) {
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_requires (client, filters, package_ids, TRUE, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the requirements for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
+
+	/* do the async action */
+	pk_client_get_requires_async (PK_CLIENT(task), filters, package_ids, TRUE, cancellable,
+				      (PkProgressCallback) pk_console_progress_cb, NULL,
+				      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
-	g_free (package_id);
 	return ret;
 }
 
@@ -1320,29 +699,27 @@ pk_console_get_requires (PkClient *client, PkBitfield filters, const gchar *pack
  * pk_console_get_depends:
  **/
 static gboolean
-pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *package, GError **error)
+pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
-	if (package_id == NULL) {
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_depends (client, filters, package_ids, FALSE, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the dependencies for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
+
+	/* do the async action */
+	pk_client_get_depends_async (PK_CLIENT(task), filters, package_ids, FALSE, cancellable,
+				     (PkProgressCallback) pk_console_progress_cb, NULL,
+				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
-	g_free (package_id);
 	return ret;
 }
 
@@ -1350,29 +727,27 @@ pk_console_get_depends (PkClient *client, PkBitfield filters, const gchar *packa
  * pk_console_get_details:
  **/
 static gboolean
-pk_console_get_details (PkClient *client, const gchar *package, GError **error)
+pk_console_get_details (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
-	if (package_id == NULL) {
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_details (client, package_ids, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the details about the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package details for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
+
+	/* do the async action */
+	pk_client_get_details_async (PK_CLIENT(task), package_ids, cancellable,
+				     (PkProgressCallback) pk_console_progress_cb, NULL,
+				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
-	g_free (package_id);
 	return ret;
 }
 
@@ -1380,268 +755,27 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
  * pk_console_get_files:
  **/
 static gboolean
-pk_console_get_files (PkClient *client, const gchar *package, GError **error)
+pk_console_get_files (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
-	gchar **package_ids;
-	GError *error_local = NULL;
-
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error_local);
-	if (package_id == NULL) {
-		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not find the files for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-		return FALSE;
-	}
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_files (client, package_ids, error);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the file list for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
-	g_strfreev (package_ids);
-	g_free (package_id);
-	return ret;
-}
-
-/**
- * pk_console_list_create:
- **/
-static gboolean
-pk_console_list_create (PkClient *client, const gchar *file, GError **error)
-{
-	gboolean ret;
-	GError *error_local = NULL;
-	PkPackageList *list;
-
-	/* file exists */
-	ret = g_file_test (file, G_FILE_TEST_EXISTS);
-	if (ret) {
-		/* TRANSLATORS: There was an error getting the list of packages. The filename follows */
-		*error = g_error_new (1, 0, _("File already exists: %s"), file);
-		return FALSE;
-	}
-
-	/* TRANSLATORS: follows a list of packages to install */
-	g_print ("%s...\n", _("Getting package list"));
-
-	/* get all installed packages and save it to disk */
-	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
-		g_error_free (error_local);
-		return FALSE;
-	}
-
-	/* save list to disk */
-	list = pk_client_get_package_list (client_sync);
-	ret = pk_obj_list_to_file (PK_OBJ_LIST(list), file);
-	g_object_unref (list);
-	if (!ret) {
-		/* TRANSLATORS: There was an error saving the list */
-		*error = g_error_new (1, 0, _("Failed to save to disk"));
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
- * pk_console_package_obj_name_equal:
- **/
-static gboolean
-pk_console_package_obj_name_equal (const PkPackageObj *obj1, const PkPackageObj *obj2)
-{
-	return (g_strcmp0 (obj1->id->name, obj2->id->name) == 0);
-}
-
-/**
- * pk_console_list_diff:
- **/
-static gboolean
-pk_console_list_diff (PkClient *client, const gchar *file, GError **error)
-{
-	gboolean ret;
-	GError *error_local = NULL;
-	PkPackageList *list;
-	PkPackageList *list_copy;
-	PkPackageList *new;
-	const PkPackageObj *obj;
-	guint i;
-	guint length;
-
-	/* file exists */
-	ret = g_file_test (file, G_FILE_TEST_EXISTS);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list. The filename follows */
-		*error = g_error_new (1, 0, _("File does not exist: %s"), file);
-		return FALSE;
-	}
-
-	/* TRANSLATORS: follows a list of packages to install */
-	g_print ("%s...\n", _("Getting package list"));
-
-	/* get all installed packages */
-	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
-		g_error_free (error_local);
-		return FALSE;
-	}
-
-	/* get two copies of the list */
-	list = pk_client_get_package_list (client_sync);
-	list_copy = pk_package_list_new ();
-	pk_obj_list_add_list (PK_OBJ_LIST(list_copy), PK_OBJ_LIST(list));
-
-	/* get installed copy */
-	new = pk_package_list_new ();
-	pk_obj_list_from_file (PK_OBJ_LIST(new), file);
-
-	/* only compare the name */
-	pk_obj_list_set_equal (PK_OBJ_LIST(list), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
-	pk_obj_list_set_equal (PK_OBJ_LIST(new), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
-	pk_obj_list_remove_list (PK_OBJ_LIST(list), PK_OBJ_LIST(new));
-	pk_obj_list_remove_list (PK_OBJ_LIST(new), PK_OBJ_LIST(list_copy));
-
-	/* TRANSLATORS: header to a list of packages newly added */
-	g_print ("%s:\n", _("Packages to add"));
-	length = PK_OBJ_LIST(list)->len;
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		g_print ("%i\t%s\n", i+1, obj->id->name);
-	}
-
-	/* TRANSLATORS: header to a list of packages removed */
-	g_print ("%s:\n", _("Packages to remove"));
-	length = PK_OBJ_LIST(new)->len;
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (new, i);
-		g_print ("%i\t%s\n", i+1, obj->id->name);
-	}
-
-	g_object_unref (list);
-	g_object_unref (list_copy);
-	g_object_unref (new);
-	return TRUE;
-}
-
-/**
- * pk_console_list_install:
- **/
-static gboolean
-pk_console_list_install (PkClient *client, const gchar *file, GError **error)
-{
-	gboolean ret = FALSE;
-	GError *error_local = NULL;
-	PkPackageList *list;
-	PkPackageList *new;
-	PkBitfield filters;
-	const PkPackageObj *obj;
-	guint i;
-	guint length;
-	gchar *package_id;
+	gboolean ret = TRUE;
 	gchar **package_ids = NULL;
-	GPtrArray *array;
+	GError *error_local = NULL;
 
-	/* file exists */
-	ret = g_file_test (file, G_FILE_TEST_EXISTS);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list. The filename follows */
-		*error = g_error_new (1, 0, _("File does not exist: %s"), file);
-		return FALSE;
-	}
-
-	/* TRANSLATORS: follows a list of packages to install */
-	g_print ("%s...\n", _("Getting package list"));
-
-	/* get all installed packages */
-	ret = pk_client_get_packages (client_sync, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the list of packages. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get package list: %s"), error_local->message);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	if (package_ids == NULL) {
+		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
+		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
-	}
-
-	/* get two copies of the list */
-	list = pk_client_get_package_list (client_sync);
-
-	/* get installed copy */
-	new = pk_package_list_new ();
-	pk_obj_list_from_file (PK_OBJ_LIST(new), file);
-
-	/* only compare the name */
-	pk_obj_list_set_equal (PK_OBJ_LIST(new), (PkObjListCompareFunc) pk_console_package_obj_name_equal);
-	pk_obj_list_remove_list (PK_OBJ_LIST(new), PK_OBJ_LIST(list));
-	array = g_ptr_array_new ();
-
-
-	/* nothing to do */
-	length = PK_OBJ_LIST(new)->len;
-	if (length == 0) {
-		/* TRANSLATORS: We didn't find any differences */
-		*error = g_error_new (1, 0, _("No new packages need to be installed"));
 		ret = FALSE;
 		goto out;
 	}
 
-	/* TRANSLATORS: follows a list of packages to install */
-	g_print ("%s:\n", _("To install"));
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (new, i);
-		g_print ("%s ", obj->id->name);
-	}
-	g_print ("\n");
-
-	/* resolve */
-	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-	for (i=0; i<length; i++) {
-		obj = pk_package_list_get_obj (new, i);
-		/* TRANSLATORS: searching takes some time.... */
-		g_print ("%.0f%%\t%s %s...", (100.0f/length)*i, _("Searching for package: "), obj->id->name);
-		package_id = pk_console_perhaps_resolve (client, filters, obj->id->name, NULL);
-		if (package_id == NULL) {
-			/* TRANSLATORS: package was not found -- this is the end of a string ended in ... */
-			g_print (" %s\n", _("not found."));
-		} else {
-			g_print (" %s\n", obj->id->version);
-			g_ptr_array_add (array, package_id);
-			/* no need to free */
-		}
-	}
-
-	/* nothing to do */
-	if (array->len == 0) {
-		/* TRANSLATORS: We didn't find any packages to install */
-		*error = g_error_new (1, 0, _("No packages can be found to install"));
-		ret = FALSE;
-		goto out;
-	}
-
-	/* TRANSLATORS: installing new packages from package list */
-	g_print ("%s...\n", _("Installing packages"));
-
-	/* install packages */
-	package_ids = pk_package_ids_from_array (array);
-	ret = pk_client_install_packages (client, FALSE, package_ids, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error installing the packages. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not install the packages: %s"), error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
+	/* do the async action */
+	pk_client_get_files_async (PK_CLIENT(task), package_ids, cancellable,
+				   (PkProgressCallback) pk_console_progress_cb, NULL,
+				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
 	g_strfreev (package_ids);
-
-	g_object_unref (list);
-	g_object_unref (new);
 	return ret;
 }
 
@@ -1649,269 +783,57 @@ out:
  * pk_console_get_update_detail
  **/
 static gboolean
-pk_console_get_update_detail (PkClient *client, const gchar *package, GError **error)
+pk_console_get_update_detail (gchar **packages, GError **error)
 {
-	gboolean ret;
-	gchar *package_id;
-	gchar **package_ids;
+	gboolean ret = TRUE;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
 
-	package_id = pk_console_perhaps_resolve (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package, &error_local);
-	if (package_id == NULL) {
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: The package name was not found in any software sources. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not find the update details for %s: %s"), package, error_local->message);
+		*error = g_error_new (1, 0, _("This tool could not find all the packages: %s"), error_local->message);
 		g_error_free (error_local);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	package_ids = pk_package_ids_from_id (package_id);
-	ret = pk_client_get_update_detail (client, package_ids, &error_local);
-	if (!ret) {
-		/* TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows */
-		*error = g_error_new (1, 0, _("This tool could not get the update details for %s: %s"), package, error_local->message);
-		g_error_free (error_local);
-	}
+
+	/* do the async action */
+	pk_client_get_update_detail_async (PK_CLIENT(task), package_ids, cancellable,
+					   (PkProgressCallback) pk_console_progress_cb, NULL,
+					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+out:
 	g_strfreev (package_ids);
-	g_free (package_id);
 	return ret;
-}
-
-/**
- * pk_console_error_code_cb:
- **/
-static void
-pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
-{
-	PkRoleEnum role;
-
-	pk_client_get_role (client, &role, NULL, NULL);
-
-	/* handled */
-	if (need_requeue) {
-		if (error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT ||
-		    pk_error_code_is_need_untrusted (error_code)) {
-			egg_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
-			return;
-		}
-		egg_warning ("set requeue, but did not handle error");
-	}
-
-	if (awaiting_space)
-		g_print ("\n");
-	/* TRANSLATORS: This was an unhandled error, and we don't have _any_ context */
-	g_print ("%s %s: %s\n", _("Error:"), pk_error_enum_to_text (error_code), details);
-}
-
-/**
- * pk_console_details_cb:
- **/
-static void
-pk_console_details_cb (PkClient *client, const PkDetailsObj *details, gpointer data)
-{
-	/* if on console, clear the progress bar line */
-	if (awaiting_space)
-		g_print ("\n");
-
-	/* TRANSLATORS: This a list of details about the package */
-	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     %s-%s.%s\n", details->id->name, details->id->version, details->id->arch);
-	g_print ("  license:     %s\n", details->license);
-	g_print ("  group:       %s\n", pk_group_enum_to_text (details->group));
-	g_print ("  description: %s\n", details->description);
-	g_print ("  size:        %lu bytes\n", (long unsigned int) details->size);
-	g_print ("  url:         %s\n", details->url);
-}
-
-/**
- * pk_watch_message_cb:
- **/
-static void
-pk_watch_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, gpointer data)
-{
-	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
-	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (message), details);
-}
-
-/**
- * pk_console_files_cb:
- **/
-static void
-pk_console_files_cb (PkClient *client, const gchar *package_id,
-		     const gchar *filelist, gpointer data)
-{
-	PkRoleEnum role;
-	gchar **filevector;
-	gchar **current_file;
-
-	/* don't print if we are DownloadPackages */
-	pk_client_get_role (client, &role, NULL, NULL);
-	if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		egg_debug ("ignoring ::files");
-		return;
-	}
-
-	filevector = g_strsplit (filelist, ";", 0);
-
-	if (awaiting_space)
-		g_print ("\n");
-
-	if (*filevector != NULL) {
-		/* TRANSLATORS: This a list files contained in the package */
-		g_print ("%s\n", _("Package files"));
-		current_file = filevector;
-		while (*current_file != NULL) {
-			g_print ("  %s\n", *current_file);
-			current_file++;
-		}
-	} else {
-		/* TRANSLATORS: This where the package has no files */
-		g_print ("%s\n", _("No files"));
-	}
-
-	g_strfreev (filevector);
-}
-
-/**
- * pk_console_repo_signature_required_cb:
- **/
-static void
-pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id, const gchar *repository_name,
-				       const gchar *key_url, const gchar *key_userid, const gchar *key_id,
-				       const gchar *key_fingerprint, const gchar *key_timestamp,
-				       PkSigTypeEnum type, gpointer data)
-{
-	gboolean import;
-	gboolean ret;
-	GError *error = NULL;
-
-	if (awaiting_space)
-		g_print ("\n");
-
-	/* TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later */
-	g_print ("%s\n", _("Repository signature required"));
-	g_print ("Package:     %s\n", package_id);
-	g_print ("Name:        %s\n", repository_name);
-	g_print ("URL:         %s\n", key_url);
-	g_print ("User:        %s\n", key_userid);
-	g_print ("ID:          %s\n", key_id);
-	g_print ("Fingerprint: %s\n", key_fingerprint);
-	g_print ("Timestamp:   %s\n", key_timestamp);
-
-	/* TRANSLATORS: This a prompt asking the user to import the security key */
-	import = pk_console_get_prompt (_("Do you accept this signature?"), FALSE);
-	if (!import) {
-		need_requeue = FALSE;
-		/* TRANSLATORS: This is where the user declined the security key */
-		g_print ("%s\n", _("The signature was not accepted."));
-		return;
-	}
-
-	/* install signature */
-	egg_debug ("install signature %s", key_id);
-	ret = pk_client_install_signature (client_secondary, PK_SIGTYPE_ENUM_GPG,
-					   key_id, package_id, &error);
-	/* we succeeded, so wait for the requeue */
-	if (!ret) {
-		egg_warning ("failed to install signature: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* we imported a signature */
-	need_requeue = TRUE;
-}
-
-/**
- * pk_console_eula_required_cb:
- **/
-static void
-pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar *package_id,
-			     const gchar *vendor_name, const gchar *license_agreement, gpointer data)
-{
-	gboolean import;
-	gboolean ret;
-	GError *error = NULL;
-
-	if (awaiting_space)
-		g_print ("\n");
-
-	/* TRANSLATORS: This a request for a EULA */
-	g_print ("%s\n", _("End user license agreement required"));
-	g_print ("Eula:        %s\n", eula_id);
-	g_print ("Package:     %s\n", package_id);
-	g_print ("Vendor:      %s\n", vendor_name);
-	g_print ("Agreement:   %s\n", license_agreement);
-
-	/* TRANSLATORS: This a prompt asking the user to agree to the license */
-	import = pk_console_get_prompt (_("Do you agree to this license?"), FALSE);
-	if (!import) {
-		need_requeue = FALSE;
-		/* TRANSLATORS: This is where the user declined the license */
-		g_print ("%s\n", _("The license was refused."));
-		return;
-	}
-
-	/* accept eula */
-	egg_debug ("accept eula %s", eula_id);
-	ret = pk_client_accept_eula (client_secondary, eula_id, &error);
-	/* we succeeded, so wait for the requeue */
-	if (!ret) {
-		egg_warning ("failed to accept eula: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	/* we accepted eula */
-	need_requeue = TRUE;
 }
 
 /**
  * pk_connection_changed_cb:
  **/
 static void
-pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointer data)
+pk_connection_changed_cb (PkControl *control_, gboolean connected, gpointer data)
 {
 	/* if the daemon crashed, don't hang around */
-	if (awaiting_space)
-		g_print ("\n");
 	if (!connected) {
 		/* TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle */
 		g_print ("%s\n", _("The daemon crashed mid-transaction!"));
-		exit (2);
+		_exit (2);
 	}
 }
 
 /**
- * pk_console_sigint_handler:
+ * pk_console_sigint_cb:
  **/
 static void
-pk_console_sigint_handler (int sig)
+pk_console_sigint_cb (int sig)
 {
-	PkRoleEnum role;
-	gboolean ret;
-	GError *error = NULL;
 	egg_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
 	signal (SIGINT, SIG_DFL);
 
-	/* cancel any tasks */
-	pk_client_get_role (client_primary, &role, NULL, NULL);
-	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client_primary, &error);
-		if (!ret) {
-			egg_warning ("failed to cancel normal client: %s", error->message);
-			g_error_free (error);
-			error = NULL;
-		}
-	}
-	pk_client_get_role (client_sync, &role, NULL, NULL);
-	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client_sync, &error);
-		if (!ret) {
-			egg_warning ("failed to cancel task client: %s", error->message);
-			g_error_free (error);
-		}
-	}
+	/* cancel any tasks still running */
+	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
 	egg_debug ("Retrying SIGINT");
@@ -1944,9 +866,10 @@ pk_console_get_summary (void)
 	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
 	    pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE))
 		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
-	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
-	    pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_FILES))
-		g_string_append_printf (string, "  %s\n", "install [packages|files]");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES))
+		g_string_append_printf (string, "  %s\n", "install [packages]");
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_FILES))
+		g_string_append_printf (string, "  %s\n", "install-local [files]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES))
 		g_string_append_printf (string, "  %s\n", "download [directory] [packages]");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE))
@@ -1995,28 +918,48 @@ pk_console_get_summary (void)
 }
 
 /**
+ * pk_console_get_time_since_action_cb:
+ **/
+static void
+pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	guint time_ms;
+	GError *error = NULL;
+//	PkControl *control = PK_CONTROL(object);
+
+	/* get the results */
+	time_ms = pk_control_get_time_since_action_finish (control, res, &error);
+	if (time_ms == 0) {
+		/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
+		g_print ("%s: %s\n", _("Failed to get the time since this action was last completed"), error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_print ("time is %is\n", time_ms);
+out:
+	g_main_loop_quit (loop);
+}
+
+/**
  * main:
  **/
 int
 main (int argc, char *argv[])
 {
-	DBusGConnection *system_connection;
+	gboolean ret;
 	GError *error = NULL;
-	PkConnection *pconnection;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
 	gchar *filter = NULL;
-	gchar *summary;
-	gboolean ret = FALSE;
+	gchar *summary = NULL;
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
 	PkBitfield groups;
 	gchar *text;
-	gboolean maybe_sync = TRUE;
 	PkBitfield filters = 0;
 	gint retval = EXIT_SUCCESS;
 
@@ -2043,30 +986,36 @@ main (int argc, char *argv[])
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
-	dbus_g_thread_init ();
 	g_type_init ();
 
 	/* do stuff on ctrl-c */
-	signal (SIGINT, pk_console_sigint_handler);
+	signal (SIGINT, pk_console_sigint_cb);
 
 	/* check if we are on console */
 	if (isatty (fileno (stdout)) == 1)
 		is_console = TRUE;
 
-	/* check dbus connections, exit if not valid */
-	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error) {
-		egg_warning ("%s", error->message);
-		g_error_free (error);
-		/* TRANSLATORS: This is when we could not connect to the system bus, and is fatal */
-		g_error (_("This tool could not connect to system DBUS."));
-	}
-
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control, NULL);
-	summary = pk_console_get_summary ();
+	ret = pk_control_get_properties_sync (control, &error);
+	if (!ret) {
+		/* TRANSLATORS: we failed to contact the daemon */
+		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
+		g_error_free (error);
+		goto out_last;
+	}
 
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
+
+	summary = pk_console_get_summary ();
+	progressbar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (progressbar, 25);
+	pk_progress_bar_set_padding (progressbar, 30);
+
+	cancellable = g_cancellable_new ();
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
@@ -2091,58 +1040,12 @@ main (int argc, char *argv[])
 
 	loop = g_main_loop_new (NULL, FALSE);
 
-	pconnection = pk_connection_new ();
-	g_signal_connect (pconnection, "connection-changed",
+	/* watch when the daemon aborts */
+	g_signal_connect (control, "connection-changed",
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
-	client_primary = pk_client_new ();
-	pk_client_set_use_buffer (client_primary, TRUE, NULL);
-	g_signal_connect (client_primary, "package",
-			  G_CALLBACK (pk_console_package_cb), NULL);
-	g_signal_connect (client_primary, "transaction",
-			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (client_primary, "distro-upgrade",
-			  G_CALLBACK (pk_console_distro_upgrade_cb), NULL);
-	g_signal_connect (client_primary, "category",
-			  G_CALLBACK (pk_console_category_cb), NULL);
-	g_signal_connect (client_primary, "details",
-			  G_CALLBACK (pk_console_details_cb), NULL);
-	g_signal_connect (client_primary, "files",
-			  G_CALLBACK (pk_console_files_cb), NULL);
-	g_signal_connect (client_primary, "repo-signature-required",
-			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
-	g_signal_connect (client_primary, "eula-required",
-			  G_CALLBACK (pk_console_eula_required_cb), NULL);
-	g_signal_connect (client_primary, "update-detail",
-			  G_CALLBACK (pk_console_update_detail_cb), NULL);
-	g_signal_connect (client_primary, "repo-detail",
-			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
-	g_signal_connect (client_primary, "progress-changed",
-			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
-	g_signal_connect (client_primary, "finished",
-			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (client_primary, "destroy",
-			  G_CALLBACK (pk_console_destroy_cb), NULL);
-	g_signal_connect (client_primary, "require-restart",
-			  G_CALLBACK (pk_console_require_restart_cb), NULL);
-	g_signal_connect (client_primary, "error-code",
-			  G_CALLBACK (pk_console_error_code_cb), NULL);
-	g_signal_connect (client_primary, "message",
-			  G_CALLBACK (pk_watch_message_cb), NULL);
-
-	client_sync = pk_client_new ();
-	pk_client_set_use_buffer (client_sync, TRUE, NULL);
-	pk_client_set_synchronous (client_sync, TRUE, NULL);
-	g_signal_connect (client_sync, "finished",
-			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (client_sync, "message",
-			  G_CALLBACK (pk_watch_message_cb), NULL);
-	g_signal_connect (client_sync, "destroy",
-			  G_CALLBACK (pk_console_destroy_cb), NULL);
-
-	client_secondary = pk_client_new ();
-	g_signal_connect (client_secondary, "finished",
-			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
+	/* create transactions */
+	task = pk_task_text_new ();
 
 	/* check filter */
 	if (filter != NULL) {
@@ -2179,7 +1082,10 @@ main (int argc, char *argv[])
 				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
-			ret = pk_client_search_name (client_primary, filters, details, &error);
+			/* fire off an async request */
+			pk_client_search_name_async (PK_CLIENT(task), filters, details, cancellable,
+						     (PkProgressCallback) pk_console_progress_cb, NULL,
+						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
@@ -2188,7 +1094,10 @@ main (int argc, char *argv[])
 				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
-			ret = pk_client_search_details (client_primary, filters, details, &error);
+			/* fire off an async request */
+			pk_client_search_details_async (PK_CLIENT(task), filters, details, cancellable,
+						        (PkProgressCallback) pk_console_progress_cb, NULL,
+						        (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
@@ -2197,7 +1106,10 @@ main (int argc, char *argv[])
 				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
-			ret = pk_client_search_group (client_primary, filters, details, &error);
+			/* fire off an async request */
+			pk_client_search_group_async (PK_CLIENT(task), filters, details, cancellable,
+						      (PkProgressCallback) pk_console_progress_cb, NULL,
+						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
@@ -2206,7 +1118,10 @@ main (int argc, char *argv[])
 				retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
-			ret = pk_client_search_file (client_primary, filters, details, &error);
+			/* fire off an async request */
+			pk_client_search_file_async (PK_CLIENT(task), filters, details, cancellable,
+						     (PkProgressCallback) pk_console_progress_cb, NULL,
+						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
 			/* TRANSLATORS: the search type was provided, but invalid */
 			error = g_error_new (1, 0, "%s", _("Invalid search type"));
@@ -2215,11 +1130,23 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: the user did not specify what they wanted to install */
-			error = g_error_new (1, 0, "%s", _("A package name or filename to install is required"));
+			error = g_error_new (1, 0, "%s", _("A package name to install is required"));
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_install_stuff (client_primary, argv, &error);
+		nowait = !pk_console_install_packages (argv+2, &error);
+
+	} else if (strcmp (mode, "install-local") == 0) {
+		if (value == NULL) {
+			/* TRANSLATORS: the user did not specify what they wanted to install */
+			error = g_error_new (1, 0, "%s", _("A filename to install is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
+			goto out;
+		}
+		pk_task_install_files_async (PK_TASK(task), argv+2, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -2228,7 +1155,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_install_signature (client_primary, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
+		pk_client_install_signature_async (PK_CLIENT(task), PK_SIGTYPE_ENUM_GPG, details, parameter, cancellable,
+						   (PkProgressCallback) pk_console_progress_cb, NULL,
+						   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
@@ -2237,7 +1166,8 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_remove_packages (client_primary, argv, &error);
+		nowait = !pk_console_remove_packages (argv+2, &error);
+
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
 			/* TRANSLATORS: the user did not specify anything about what to download or where */
@@ -2252,7 +1182,8 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		ret = pk_console_download_packages (client_primary, argv, value, &error);
+		nowait = !pk_console_download_packages (argv+3, value, &error);
+
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: geeky error, 99.9999% of users won't see this */
@@ -2260,8 +1191,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_accept_eula (client_primary, value, &error);
-		maybe_sync = FALSE;
+		pk_client_accept_eula_async (PK_CLIENT(task), value, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "rollback") == 0) {
 		if (value == NULL) {
@@ -2270,14 +1202,18 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_rollback (client_primary, value, &error);
+		pk_client_rollback_async (PK_CLIENT(task), value, cancellable,
+					  (PkProgressCallback) pk_console_progress_cb, NULL,
+					  (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
-			ret = pk_client_update_system (client_primary, TRUE, &error);
+			pk_task_update_system_async (PK_TASK(task), cancellable,
+						     (PkProgressCallback) pk_console_progress_cb, NULL,
+						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
-			ret = pk_console_update_package (client_primary, value, &error);
+			nowait = !pk_console_update_packages (argv+2, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -2287,7 +1223,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_resolve (client_primary, filters, argv+2, &error);
+		pk_client_resolve_async (PK_CLIENT(task), filters, argv+2, cancellable,
+				         (PkProgressCallback) pk_console_progress_cb, NULL,
+					 (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -2296,7 +1234,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_repo_enable (client_primary, value, TRUE, &error);
+		pk_client_repo_enable_async (PK_CLIENT(task), value, TRUE, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
@@ -2305,7 +1245,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_repo_enable (client_primary, value, FALSE, &error);
+		pk_client_repo_enable_async (PK_CLIENT(task), value, FALSE, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -2314,14 +1256,17 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_repo_set_data (client_primary, value, details, parameter, &error);
+		pk_client_repo_set_data_async (PK_CLIENT(task), value, details, parameter, cancellable,
+					       (PkProgressCallback) pk_console_progress_cb, NULL,
+					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		ret = pk_client_get_repo_list (client_primary, filters, &error);
+		pk_client_get_repo_list_async (PK_CLIENT(task), filters, cancellable,
+					       (PkProgressCallback) pk_console_progress_cb, NULL,
+					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
-		guint time_ms;
 		if (value == NULL) {
 			/* TRANSLATORS: The user didn't specify what action to use */
 			error = g_error_new (1, 0, "%s", _("An action, e.g. 'update-system' is required"));
@@ -2335,15 +1280,8 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_control_get_time_since_action (control, role, &time_ms, &error);
-		if (!ret) {
-			/* TRANSLATORS: we keep a database updated with the time that an action was last executed */
-			error = g_error_new (1, 0, "%s", _("Failed to get the time since this action was last completed"));
-			retval = EXIT_FAILURE;
-			goto out;
-		}
-		g_print ("time since %s is %is\n", value, time_ms);
-		maybe_sync = FALSE;
+		pk_control_get_time_since_action_async (control, role, cancellable,
+							(GAsyncReadyCallback) pk_console_get_time_since_action_cb, NULL);
 
 	} else if (strcmp (mode, "get-depends") == 0) {
 		if (value == NULL) {
@@ -2352,10 +1290,13 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_depends (client_primary, filters, value, &error);
+		nowait = !pk_console_get_depends (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
-		ret = pk_client_get_distro_upgrades (client_primary, &error);
+		pk_client_get_distro_upgrades_async (PK_CLIENT(task), cancellable,
+						     (PkProgressCallback) pk_console_progress_cb, NULL,
+						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
@@ -2364,7 +1305,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_update_detail (client_primary, value, &error);
+		nowait = !pk_console_get_update_detail (argv+2, &error);
 
 	} else if (strcmp (mode, "get-requires") == 0) {
 		if (value == NULL) {
@@ -2373,7 +1314,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_requires (client_primary, filters, value, &error);
+		nowait = !pk_console_get_requires (filters, argv+2, &error);
 
 	} else if (strcmp (mode, "what-provides") == 0) {
 		if (value == NULL) {
@@ -2382,7 +1323,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_client_what_provides (client_primary, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
+		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_CODEC, value, cancellable,
+					       (PkProgressCallback) pk_console_progress_cb, NULL,
+					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
@@ -2391,7 +1334,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_details (client_primary, value, &error);
+		nowait = !pk_console_get_details (argv+2, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
@@ -2400,82 +1343,59 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		ret = pk_console_get_files (client_primary, value, &error);
-
-	} else if (strcmp (mode, "list-create") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to create as a list */
-			error = g_error_new (1, 0, "%s", _("A list file name to create is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_create (client_primary, value, &error);
-		maybe_sync = FALSE;
-
-	} else if (strcmp (mode, "list-diff") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to open as a list */
-			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_diff (client_primary, value, &error);
-		maybe_sync = FALSE;
-
-	} else if (strcmp (mode, "list-install") == 0) {
-		if (value == NULL) {
-			/* TRANSLATORS: The user didn't specify a filename to open as a list */
-			error = g_error_new (1, 0, "%s", _("A list file to open is required"));
-			retval = PK_EXIT_CODE_SYNTAX_INVALID;
-			goto out;
-		}
-		ret = pk_console_list_install (client_primary, value, &error);
+		nowait = !pk_console_get_files (argv+2, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
-		ret = pk_client_get_updates (client_primary, filters, &error);
+		pk_client_get_updates_async (PK_CLIENT(task), filters, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
-		ret = pk_client_get_categories (client_primary, &error);
+		pk_client_get_categories_async (PK_CLIENT(task), cancellable,
+						(PkProgressCallback) pk_console_progress_cb, NULL,
+						(GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
-		ret = pk_client_get_packages (client_primary, filters, &error);
+		pk_client_get_packages_async (PK_CLIENT(task), filters, cancellable,
+					      (PkProgressCallback) pk_console_progress_cb, NULL,
+					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
-	} else if (strcmp (mode, "get-actions") == 0) {
+	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_text (roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		maybe_sync = FALSE;
-		/* these can never fail */
-		ret = TRUE;
+		nowait = TRUE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
-		filters = pk_control_get_filters (control, NULL);
+		g_object_get (control,
+			      "filters", &filters,
+			      NULL);
 		text = pk_filter_bitfield_to_text (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		maybe_sync = FALSE;
-		/* these can never fail */
-		ret = TRUE;
+		nowait = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
-		groups = pk_control_get_groups (control, NULL);
+		g_object_get (control,
+			      "groups", &groups,
+			      NULL);
 		text = pk_group_bitfield_to_text (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
-		maybe_sync = FALSE;
-		/* these can never fail */
-		ret = TRUE;
+		nowait = TRUE;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
-		ret = pk_client_get_old_transactions (client_primary, 10, &error);
+		pk_client_get_old_transactions_async (PK_CLIENT(task), 10, cancellable,
+						      (PkProgressCallback) pk_console_progress_cb, NULL,
+						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "refresh") == 0) {
-		/* special case - this takes a long time, and doesn't do packages */
-		pk_console_start_bar ("refresh-cache");
-		ret = pk_client_refresh_cache (client_primary, FALSE, &error);
+		pk_client_refresh_cache_async (PK_CLIENT(task), FALSE, cancellable,
+					       (PkProgressCallback) pk_console_progress_cb, NULL,
+					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
@@ -2483,21 +1403,13 @@ main (int argc, char *argv[])
 	}
 
 	/* do we wait for the method? */
-	if (maybe_sync && !nowait && ret)
+	if (!nowait && error == NULL)
 		g_main_loop_run (loop);
 
 out:
-	if (!ret) {
-		if (error == NULL) {
-			g_print ("Command failed in an unknown way. Please report!\n");
-		} else if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
-			/* TRANSLATORS: User does not have permission to do this */
-			g_print ("%s\n", _("Incorrect privileges for this operation"));
-		} else {
-			/* TRANSLATORS: Generic failure of what they asked to do */
-			g_print ("%s:  %s\n", _("Command failed"), error->message);
-			g_error_free (error);
-		}
+	if (error != NULL) {
+		/* TRANSLATORS: Generic failure of what they asked to do */
+		g_print ("%s:  %s\n", _("Command failed"), error->message);
 		if (retval == EXIT_SUCCESS)
 			retval = EXIT_FAILURE;
 	}
@@ -2505,10 +1417,10 @@ out:
 	g_free (options_help);
 	g_free (filter);
 	g_free (summary);
+	g_object_unref (progressbar);
 	g_object_unref (control);
-	g_object_unref (client_primary);
-	g_object_unref (client_sync);
-	g_object_unref (client_secondary);
+	g_object_unref (task);
+	g_object_unref (cancellable);
 out_last:
 	return retval;
 }

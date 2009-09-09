@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2008 Shishir Goel <crazyontheedge@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
@@ -26,17 +26,16 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
-#include "pk-tools-common.h"
-
-static guint last_percentage = 0;
-static PkServicePack *pack = NULL;
+static PkProgressBar *progressbar = NULL;
+static GCancellable *cancellable = NULL;
 
 /**
  * pk_generate_pack_get_filename:
@@ -63,68 +62,31 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 }
 
 /**
- * pk_generate_pack_package_resolve:
- **/
-static gchar *
-pk_generate_pack_package_resolve (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
-{
-	PkPackageList *list;
-	gchar *package_id = NULL;
-	gboolean valid;
-
-	/* have we passed a complete package_id? */
-	valid = pk_package_id_check (package);
-	if (valid)
-		return g_strdup (package);
-
-	/* get the list of possibles */
-	list = pk_console_resolve (filter, package, error);
-	if (list == NULL)
-		goto out;
-
-	/* ask the user to select the right one */
-	package_id = pk_console_resolve_package_id (list, error);
-out:
-	if (list != NULL)
-		g_object_unref (list);
-	return package_id;
-}
-
-/**
- * pk_generate_pack_package_cb:
+ * pk_generate_pack_progress_cb:
  **/
 static void
-pk_generate_pack_package_cb (PkServicePack *pack_, const PkPackageObj *obj, gpointer data)
+pk_generate_pack_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
-	g_return_if_fail (obj != NULL);
-	/* TRANSLATORS: This is the state of the transaction */
-	g_print ("%i%%\t%s %s-%s.%s\n", last_percentage, _("Downloading"), obj->id->name, obj->id->version, obj->id->arch);
-}
+	gint percentage;
+	PkStatusEnum status;
 
-/**
- * pk_generate_pack_percentage_cb:
- **/
-static void
-pk_generate_pack_percentage_cb (PkServicePack *pack_, guint percentage, gpointer data)
-{
-	last_percentage = percentage;
-}
-
-/**
- * pk_generate_pack_status_cb:
- **/
-static void
-pk_generate_pack_status_cb (PkServicePack *pack_, PkServicePackStatus status, gpointer data)
-{
-	if (status == PK_SERVICE_PACK_STATUS_DOWNLOAD_PACKAGES) {
-		/* TRANSLATORS: This is when the main packages are being downloaded */
-		g_print ("%s\n", _("Downloading packages"));
-		return;
+	/* percentage */
+	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
+		g_object_get (progress,
+			      "percentage", &percentage,
+			      NULL);
+		pk_progress_bar_set_percentage (progressbar, percentage);
 	}
-	if (status == PK_SERVICE_PACK_STATUS_DOWNLOAD_DEPENDENCIES) {
-		/* TRANSLATORS: This is when the dependency packages are being downloaded */
-		g_print ("%s\n", _("Downloading dependencies"));
-		return;
+
+	/* status */
+	if (type == PK_PROGRESS_TYPE_STATUS) {
+		g_object_get (progress,
+			      "status", &status,
+			      NULL);
+		if (status == PK_STATUS_ENUM_FINISHED)
+			return;
+		/* TODO: translate */
+		pk_progress_bar_start (progressbar, pk_status_enum_to_text (status));
 	}
 }
 
@@ -134,23 +96,97 @@ pk_generate_pack_status_cb (PkServicePack *pack_, PkServicePackStatus status, gp
 static void
 pk_generate_pack_sigint_cb (int sig)
 {
-	gboolean ret;
-	GError *error = NULL;
 	egg_debug ("Handling SIGINT");
 
 	/* restore default */
 	signal (SIGINT, SIG_DFL);
 
-	/* cancel downloads */
-	ret = pk_service_pack_cancel (pack, &error);
-	if (!ret) {
-		egg_warning ("failed to cancel: %s", error->message);
-		g_error_free (error);
-	}
+	/* cancel any tasks still running */
+	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
 	egg_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
+}
+
+/* tiny helper to help us do the async operation */
+typedef struct {
+	GError		**error;
+	GMainLoop	*loop;
+	gboolean	 ret;
+} PkGenpackHelper;
+
+/**
+ * pk_generate_pack_generic_cb:
+ **/
+static void
+pk_generate_pack_generic_cb (PkServicePack *pack, GAsyncResult *res, PkGenpackHelper *helper)
+{
+	/* get the result */
+	helper->ret = pk_service_pack_generic_finish (pack, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_generate_pack_create_for_updates:
+ **/
+static gboolean
+pk_generate_pack_create_for_updates (PkServicePack *pack, const gchar *filename, gchar **excludes, GError **error)
+{
+	gboolean ret;
+	PkGenpackHelper *helper;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkGenpackHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_service_pack_create_for_updates_async (pack, filename, excludes, cancellable,
+						  (PkProgressCallback) pk_generate_pack_progress_cb, NULL,
+						  (GAsyncReadyCallback) pk_generate_pack_generic_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	ret = helper->ret;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return ret;
+}
+
+/**
+ * pk_generate_pack_create_for_package_ids:
+ **/
+static gboolean
+pk_generate_pack_create_for_package_ids (PkServicePack *pack, const gchar *filename, gchar **package_ids, gchar **excludes, GError **error)
+{
+	gboolean ret;
+	PkGenpackHelper *helper;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkGenpackHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_service_pack_create_for_package_ids_async (pack, filename, package_ids, excludes, cancellable,
+						      (PkProgressCallback) pk_generate_pack_progress_cb, NULL,
+						      (GAsyncReadyCallback) pk_generate_pack_generic_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	ret = helper->ret;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return ret;
 }
 
 /**
@@ -170,8 +206,9 @@ main (int argc, char *argv[])
 	gchar *tempdir = NULL;
 	gboolean exists;
 	gboolean overwrite;
-	PkPackageList *list = NULL;
+	gchar **excludes = NULL;
 	gchar *package_id = NULL;
+	PkServicePack *pack = NULL;
 
 	gboolean verbose = FALSE;
 	gchar *directory = NULL;
@@ -219,6 +256,13 @@ main (int argc, char *argv[])
 	g_option_context_free (context);
 	egg_debug_init (verbose);
 
+	client = pk_client_new ();
+	pack = pk_service_pack_new ();
+	cancellable = g_cancellable_new ();
+	progressbar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (progressbar, 25);
+	pk_progress_bar_set_padding (progressbar, 20);
+
 	/* neither options selected */
 	if (package == NULL && !updates) {
 		/* TRANSLATORS: This is when the user fails to supply the correct arguments */
@@ -236,7 +280,7 @@ main (int argc, char *argv[])
 	}
 
 	/* no argument given to --package */
-	if (package != NULL && egg_strzero (package)) {
+	if (package != NULL && package[0] == '\0') {
 		/* TRANSLATORS: This is when the user fails to supply the package name */
 		g_print ("%s\n", _("A package name is required"));
 		retval = 1;
@@ -244,7 +288,7 @@ main (int argc, char *argv[])
 	}
 
 	/* no argument given to --output */
-	if (directory != NULL && egg_strzero (directory)) {
+	if (directory != NULL && directory[0] == '\0') {
 		/* TRANSLATORS: This is when the user fails to supply the output */
 		g_print ("%s\n", _("A output directory or file name is required"));
 		retval = 1;
@@ -261,7 +305,18 @@ main (int argc, char *argv[])
 
 	/* are we dumb and can't do some actions */
 	control = pk_control_new ();
-	roles = pk_control_get_actions (control, NULL);
+	ret = pk_control_get_properties_sync (control, &error);
+	if (!ret) {
+		/* TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup */
+		g_print ("%s: %s\n", _("The dameon failed to startup"), error->message);
+		goto out;
+	}
+
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
+
 	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
 		/* TRANSLATORS: This is when the backend doesn't have the capability to get-depends */
 		g_print ("%s (GetDepends)\n", _("The package manager cannot perform this type of operation."));
@@ -324,9 +379,11 @@ main (int argc, char *argv[])
 		retval = 1;
 		goto out;
 	}
+	pk_service_pack_set_temp_directory (pack, tempdir);
 
 	/* get the exclude list */
-	list = pk_package_list_new ();
+	excludes = NULL;
+#if 0
 	ret = pk_obj_list_from_file (PK_OBJ_LIST(list), package_list);
 	if (!ret) {
 		/* TRANSLATORS: This is when the list of packages from the remote computer cannot be opened */
@@ -334,15 +391,13 @@ main (int argc, char *argv[])
 		retval = 1;
 		goto out;
 	}
+#endif
 
 	/* resolve package name to package_id */
 	if (!updates) {
-		client = pk_client_new ();
-		pk_client_set_use_buffer (client, TRUE, NULL);
-		pk_client_set_synchronous (client, TRUE, NULL);
 		/* TRANSLATORS: The package name is being matched up to available packages */
 		g_print ("%s\n", _("Finding package name."));
-		package_id = pk_generate_pack_package_resolve (client, PK_FILTER_ENUM_NONE, package, &error);
+		package_id = pk_console_resolve_package (client, PK_FILTER_ENUM_NONE, package, &error);
 		if (package_id == NULL) {
 			/* TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
@@ -352,21 +407,20 @@ main (int argc, char *argv[])
 		}
 	}
 
-	/* create pack and set initial values */
-	pack = pk_service_pack_new ();
-	g_signal_connect (pack, "package", G_CALLBACK (pk_generate_pack_package_cb), pack);
-	g_signal_connect (pack, "percentage", G_CALLBACK (pk_generate_pack_percentage_cb), pack);
-	g_signal_connect (pack, "status", G_CALLBACK (pk_generate_pack_status_cb), pack);
-	pk_service_pack_set_filename (pack, filename);
-	pk_service_pack_set_temp_directory (pack, tempdir);
-	pk_service_pack_set_exclude_list (pack, list);
-
 	/* TRANSLATORS: This is telling the user we are in the process of making the pack */
 	g_print ("%s\n", _("Creating service pack..."));
 	if (updates)
-		ret = pk_service_pack_create_for_updates (pack, &error);
-	else
-		ret = pk_service_pack_create_for_package_id (pack, package_id, &error);
+		ret = pk_generate_pack_create_for_updates (pack, filename, excludes, &error);
+	else {
+		gchar **package_ids;
+		package_ids = pk_package_ids_from_id (package_id);
+		ret = pk_generate_pack_create_for_package_ids (pack, filename, package_ids, excludes, &error);
+		g_strfreev (package_ids);
+	}
+
+	/* no more progress */
+	pk_progress_bar_end (progressbar);
+
 	if (ret) {
 		/* TRANSLATORS: we succeeded in making the file */
 		g_print (_("Service pack created '%s'"), filename);
@@ -383,12 +437,13 @@ out:
 	/* get rid of temp directory */
 	g_rmdir (tempdir);
 
+	g_object_unref (cancellable);
+	if (progressbar != NULL)
+		g_object_unref (progressbar);
 	if (pack != NULL)
 		g_object_unref (pack);
 	if (client != NULL)
 		g_object_unref (client);
-	if (list != NULL)
-		g_object_unref (list);
 	if (control != NULL)
 		g_object_unref (control);
 	g_free (tempdir);
@@ -397,5 +452,6 @@ out:
 	g_free (directory);
 	g_free (package_list);
 	g_free (options_help);
+	g_strfreev (excludes);
 	return retval;
 }

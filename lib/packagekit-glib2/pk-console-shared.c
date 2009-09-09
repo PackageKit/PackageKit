@@ -201,3 +201,161 @@ pk_console_resolve_packages (PkClient *client, PkBitfield filter, gchar **packag
 	return package_ids;
 }
 
+/**
+ * pk_status_enum_to_localised_text:
+ **/
+const gchar *
+pk_status_enum_to_localised_text (PkStatusEnum status)
+{
+	const gchar *text = NULL;
+	switch (status) {
+	case PK_STATUS_ENUM_UNKNOWN:
+		/* TRANSLATORS: This is when the transaction status is not known */
+		text = _("Unknown state");
+		break;
+	case PK_STATUS_ENUM_SETUP:
+		/* TRANSLATORS: transaction state, the daemon is in the process of starting */
+		text = _("Starting");
+		break;
+	case PK_STATUS_ENUM_WAIT:
+		/* TRANSLATORS: transaction state, the transaction is waiting for another to complete */
+		text = _("Waiting in queue");
+		break;
+	case PK_STATUS_ENUM_RUNNING:
+		/* TRANSLATORS: transaction state, just started */
+		text = _("Running");
+		break;
+	case PK_STATUS_ENUM_QUERY:
+		/* TRANSLATORS: transaction state, is querying data */
+		text = _("Querying");
+		break;
+	case PK_STATUS_ENUM_INFO:
+		/* TRANSLATORS: transaction state, getting data from a server */
+		text = _("Getting information");
+		break;
+	case PK_STATUS_ENUM_REMOVE:
+		/* TRANSLATORS: transaction state, removing packages */
+		text = _("Removing packages");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD:
+		/* TRANSLATORS: transaction state, downloading package files */
+		text = _("Downloading packages");
+		break;
+	case PK_STATUS_ENUM_INSTALL:
+		/* TRANSLATORS: transaction state, installing packages */
+		text = _("Installing packages");
+		break;
+	case PK_STATUS_ENUM_REFRESH_CACHE:
+		/* TRANSLATORS: transaction state, refreshing internal lists */
+		text = _("Refreshing software list");
+		break;
+	case PK_STATUS_ENUM_UPDATE:
+		/* TRANSLATORS: transaction state, installing updates */
+		text = _("Installing updates");
+		break;
+	case PK_STATUS_ENUM_CLEANUP:
+		/* TRANSLATORS: transaction state, removing old packages, and cleaning config files */
+		text = _("Cleaning up packages");
+		break;
+	case PK_STATUS_ENUM_OBSOLETE:
+		/* TRANSLATORS: transaction state, obsoleting old packages */
+		text = _("Obsoleting packages");
+		break;
+	case PK_STATUS_ENUM_DEP_RESOLVE:
+		/* TRANSLATORS: transaction state, checking the transaction before we do it */
+		text = _("Resolving dependencies");
+		break;
+	case PK_STATUS_ENUM_SIG_CHECK:
+		/* TRANSLATORS: transaction state, checking if we have all the security keys for the operation */
+		text = _("Checking signatures");
+		break;
+	case PK_STATUS_ENUM_ROLLBACK:
+		/* TRANSLATORS: transaction state, when we return to a previous system state */
+		text = _("Rolling back");
+		break;
+	case PK_STATUS_ENUM_TEST_COMMIT:
+		/* TRANSLATORS: transaction state, when we're doing a test transaction */
+		text = _("Testing changes");
+		break;
+	case PK_STATUS_ENUM_COMMIT:
+		/* TRANSLATORS: transaction state, when we're writing to the system package database */
+		text = _("Committing changes");
+		break;
+	case PK_STATUS_ENUM_REQUEST:
+		/* TRANSLATORS: transaction state, requesting data from a server */
+		text = _("Requesting data");
+		break;
+	case PK_STATUS_ENUM_FINISHED:
+		/* TRANSLATORS: transaction state, all done! */
+		text = _("Finished");
+		break;
+	case PK_STATUS_ENUM_CANCEL:
+		/* TRANSLATORS: transaction state, in the process of cancelling */
+		text = _("Cancelling");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_REPOSITORY:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading repository information");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading list of packages");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_FILELIST:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading file lists");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_CHANGELOG:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading lists of changes");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_GROUP:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading groups");
+		break;
+	case PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO:
+		/* TRANSLATORS: transaction state, downloading metadata */
+		text = _("Downloading update information");
+		break;
+	case PK_STATUS_ENUM_REPACKAGING:
+		/* TRANSLATORS: transaction state, repackaging delta files */
+		text = _("Repackaging files");
+		break;
+	case PK_STATUS_ENUM_LOADING_CACHE:
+		/* TRANSLATORS: transaction state, loading databases */
+		text = _("Loading cache");
+		break;
+	case PK_STATUS_ENUM_SCAN_APPLICATIONS:
+		/* TRANSLATORS: transaction state, scanning for running processes */
+		text = _("Scanning applications");
+		break;
+	case PK_STATUS_ENUM_GENERATE_PACKAGE_LIST:
+		/* TRANSLATORS: transaction state, generating a list of packages installed on the system */
+		text = _("Generating package lists");
+		break;
+	case PK_STATUS_ENUM_WAITING_FOR_LOCK:
+		/* TRANSLATORS: transaction state, when we're waiting for the native tools to exit */
+		text = _("Waiting for package manager lock");
+		break;
+	case PK_STATUS_ENUM_WAITING_FOR_AUTH:
+		/* TRANSLATORS: waiting for user to type in a password */
+		text = _("Waiting for authentication");
+		break;
+	case PK_STATUS_ENUM_SCAN_PROCESS_LIST:
+		/* TRANSLATORS: we are updating the list of processes */
+		text = _("Updating running applications");
+		break;
+	case PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES:
+		/* TRANSLATORS: we are checking executable files currently in use */
+		text = _("Checking applications in use");
+		break;
+	case PK_STATUS_ENUM_CHECK_LIBRARIES:
+		/* TRANSLATORS: we are checking for libraries currently in use */
+		text = _("Checking libraries in use");
+		break;
+	default:
+		egg_warning ("status unrecognised: %s", pk_status_enum_to_text (status));
+	}
+	return text;
+}
+

@@ -28,12 +28,11 @@
 #include <signal.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/packagekit-private.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
-
-#include "pk-tools-common.h"
 
 #define PK_MAX_PATH_LEN 1023
 
@@ -55,6 +54,7 @@ typedef struct {
 } PkCnfPolicyConfig;
 
 static PkClient *client = NULL;
+static GCancellable *cancellable = NULL;
 
 /**
  * pk_cnf_find_alternatives_swizzle:
@@ -336,12 +336,21 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 }
 
 /**
- * pk_cnf_status_changed_cb:
+ * pk_cnf_progress_cb:
  **/
 static void
-pk_cnf_status_changed_cb (PkClient *client_, PkStatusEnum status, gpointer data)
+pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
+	PkStatusEnum status;
 	const gchar *text = NULL;
+
+	/* status */
+	if (type != PK_PROGRESS_TYPE_STATUS)
+		return;
+
+	g_object_get (progress,
+		      "status", &status,
+		      NULL);
 
 	switch (status) {
 	case PK_STATUS_ENUM_DOWNLOAD_REPOSITORY:
@@ -371,6 +380,45 @@ pk_cnf_status_changed_cb (PkClient *client_, PkStatusEnum status, gpointer data)
 }
 
 /**
+ * pk_cnf_search_file:
+ **/
+static gchar **
+pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename, GError **error)
+{
+	gchar **package_ids = NULL;
+	PkResults *results;
+	GPtrArray *array = NULL;
+	guint i;
+	const PkItemPackage *item;
+
+	/* get the list of possibles */
+	results = pk_client_search_file_sync (client_, filter, filename, cancellable,
+					      (PkProgressCallback) pk_cnf_progress_cb, NULL, error);
+	if (results == NULL)
+		goto out;
+
+	/* get the packages returned */
+	array = pk_results_get_package_array (results);
+	if (array == NULL) {
+		*error = g_error_new (1, 0, "did not get package struct for %s", filename);
+		goto out;
+	}
+
+	/* copy results into struct */
+	package_ids = g_new0 (gchar *, array->len+1);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		package_ids[i] = g_strdup (item->package_id);
+	}
+out:
+	if (results != NULL)
+		g_object_unref (results);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return package_ids;
+}
+
+/**
  * pk_cnf_find_available:
  *
  * Find software we could install
@@ -378,76 +426,41 @@ pk_cnf_status_changed_cb (PkClient *client_, PkStatusEnum status, gpointer data)
 static gboolean
 pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 {
-	PkControl *control;
 	GError *error = NULL;
-	PkBitfield roles;
 	PkBitfield filters;
 	gboolean ret = FALSE;
-	guint i, len;
-	PkPackageList *list = NULL;
-	const PkPackageObj *obj;
+	guint i;
+	gchar **package_ids = NULL;
 	gchar *path = NULL;
-
-	control = pk_control_new ();
-	client = pk_client_new ();
-	pk_client_set_synchronous (client, TRUE, NULL);
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	g_signal_connect (client, "status-changed",
-			  G_CALLBACK (pk_cnf_status_changed_cb), NULL);
-	g_object_add_weak_pointer (G_OBJECT (client), (gpointer) &client);
-
-	/* get what we support */
-	roles = pk_control_get_actions (control, &error);
-	if (roles == 0) {
-		egg_warning ("Failed to contact PackageKit: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* can we search the repos */
-	if (!pk_bitfield_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
-		egg_warning ("cannot search file");
-		goto out;
-	}
+	gchar **parts;
 
 	/* do search */
 	path = g_build_filename (prefix, cmd, NULL);
 	egg_debug ("searching for %s", path);
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-	ret = pk_client_search_file (client, filters, path, &error);
-	if (!ret) {
+	package_ids = pk_cnf_search_file (client, filters, path, &error);
+	if (package_ids == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
 		egg_warning ("%s: %s", _("Failed to search for file"), error->message);
 		g_error_free (error);
 		goto out;
 	}
 
-	/* get package list */
-	list = pk_client_get_package_list (client);
-	if (list == NULL) {
-		egg_warning ("failed to get list");
-		ret = FALSE;
-		goto out;
-	}
-
 	/* nothing found */
-	len = PK_OBJ_LIST(list)->len;
-	if (len == 0)
+	ret = (g_strv_length (package_ids) != 0);
+	if (!ret)
 		goto out;
 
 	/* add all package names */
-	for (i=0; i<len; i++) {
-		obj = pk_package_list_get_obj (list, i);
-		g_ptr_array_add (array, g_strdup (obj->id->name));
-		egg_warning ("obj->id->name=%s", obj->id->name);
+	for (i=0; package_ids[i] != NULL; i++) {
+		parts = pk_package_id_split (package_ids[i]);
+		g_ptr_array_add (array, g_strdup (parts[0]));
+		egg_debug ("name=%s", parts[0]);
+		g_strfreev (parts);
 	}
 out:
-	if (list != NULL)
-		g_object_unref (list);
-	g_object_unref (control);
-	g_object_unref (client);
+	g_strfreev (package_ids);
 	g_free (path);
-
 	return ret;
 }
 
@@ -566,29 +579,14 @@ pk_cnf_spawn_command (const gchar *exec)
 static void
 pk_cnf_sigint_handler (int sig)
 {
-	PkRoleEnum role;
-	gboolean ret;
-	GError *error = NULL;
 	egg_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancel might hang */
 	signal (SIGINT, SIG_DFL);
 
-	/* nothing in progress */
-	if (client == NULL)
-		goto out;
-
 	/* hopefully, cancel client */
-	pk_client_get_role (client, &role, NULL, NULL);
-	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		ret = pk_client_cancel (client, &error);
-		if (!ret) {
-			egg_warning ("failed to cancel client: %s", error->message);
-			g_error_free (error);
-		}
-	}
+	g_cancellable_cancel (cancellable);
 
-out:
 	/* kill ourselves */
 	egg_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
@@ -645,6 +643,8 @@ main (int argc, char *argv[])
 
 	/* get policy config */
 	config = pk_cnf_get_config ();
+	client = pk_client_new ();
+	cancellable = g_cancellable_new ();
 
 	/* get length */
 	len = egg_strlen (argv[1], 1024);
@@ -778,6 +778,8 @@ main (int argc, char *argv[])
 	g_print ("\n");
 
 out:
+	g_object_unref (client);
+	g_object_unref (cancellable);
 	if (config != NULL) {
 		g_strfreev (config->locations);
 		g_free (config);

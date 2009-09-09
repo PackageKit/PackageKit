@@ -343,6 +343,7 @@ pk_client_get_details_sync (PkClient *client, gchar **package_ids, GCancellable 
 /**
  * pk_client_get_update_detail_sync:
  * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
