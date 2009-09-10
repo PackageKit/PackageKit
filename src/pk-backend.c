@@ -1001,7 +1001,10 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 		egg_warning ("Failed to parse detail object");
 		goto out;
 	}
+
+	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_UPDATE_DETAIL], 0, item);
+	pk_results_add_update_detail (backend->priv->results, item);
 
 	/* we parsed okay */
 	ret = TRUE;
