@@ -27,6 +27,7 @@
 #define __PK_PROGRESS_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -63,6 +64,7 @@ struct _PkProgressClass
 GQuark		 pk_progress_error_quark		(void);
 GType		 pk_progress_get_type		  	(void);
 PkProgress	*pk_progress_new			(void);
+void		 pk_progress_test			(gpointer		 user_data);
 
 typedef enum {
 	PK_PROGRESS_TYPE_PACKAGE_ID,
@@ -78,7 +80,21 @@ typedef enum {
 typedef void	(*PkProgressCallback)			(PkProgress		*progress,
 							 PkProgressType		 type,
                                                          gpointer		 user_data);
-void		 pk_progress_test			(gpointer		 user_data);
+
+gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
+							 const gchar		*package_id);
+gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
+							 gint			 percentage);
+gboolean	 pk_progress_set_subpercentage		(PkProgress		*progress,
+							 gint			 subpercentage);
+gboolean	 pk_progress_set_status			(PkProgress		*progress,
+							 PkStatusEnum		 status);
+gboolean	 pk_progress_set_role			(PkProgress		*progress,
+							 PkRoleEnum		 role);
+gboolean	 pk_progress_set_allow_cancel		(PkProgress		*progress,
+							 gboolean		 allow_cancel);
+gboolean	 pk_progress_set_caller_active		(PkProgress		*progress,
+							 gboolean		 caller_active);
 
 G_END_DECLS
 

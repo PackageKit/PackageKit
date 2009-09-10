@@ -75,29 +75,28 @@ static void
 pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkProgress *progress = PK_PROGRESS (object);
-	PkProgressPrivate *priv = progress->priv;
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
-		g_value_set_string (value, priv->package_id);
+		g_value_set_string (value, progress->priv->package_id);
 		break;
 	case PROP_PERCENTAGE:
-		g_value_set_int (value, priv->percentage);
+		g_value_set_int (value, progress->priv->percentage);
 		break;
 	case PROP_SUBPERCENTAGE:
-		g_value_set_int (value, priv->subpercentage);
+		g_value_set_int (value, progress->priv->subpercentage);
 		break;
 	case PROP_ALLOW_CANCEL:
-		g_value_set_boolean (value, priv->allow_cancel);
+		g_value_set_boolean (value, progress->priv->allow_cancel);
 		break;
 	case PROP_STATUS:
-		g_value_set_uint (value, priv->status);
+		g_value_set_uint (value, progress->priv->status);
 		break;
 	case PROP_ROLE:
-		g_value_set_uint (value, priv->role);
+		g_value_set_uint (value, progress->priv->role);
 		break;
 	case PROP_CALLER_ACTIVE:
-		g_value_set_boolean (value, priv->caller_active);
+		g_value_set_boolean (value, progress->priv->caller_active);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -107,94 +106,130 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 
 /**
  * pk_progress_set_package_id:
+ * @progress: a valid #PkProgress instance
  **/
-static void
+gboolean
 pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (g_strcmp0 (priv->package_id, package_id) == 0)
-		return;
-	g_free (priv->package_id);
-	priv->package_id = g_strdup (package_id);
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (g_strcmp0 (progress->priv->package_id, package_id) == 0)
+		return FALSE;
+
+	/* new value */
+	g_free (progress->priv->package_id);
+	progress->priv->package_id = g_strdup (package_id);
 	egg_debug ("package_id now %s", package_id);
+	return TRUE;
 }
 
 /**
  * pk_progress_set_percentage:
  **/
-static void
+gboolean
 pk_progress_set_percentage (PkProgress *progress, gint percentage)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->percentage == percentage)
-		return;
-	priv->percentage = percentage;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->percentage == percentage)
+		return FALSE;
+
+	/* new value */
+	progress->priv->percentage = percentage;
 	egg_debug ("percentage now %i", percentage);
+	return TRUE;
 }
 
 /**
  * pk_progress_set_subpercentage:
  **/
-static void
+gboolean
 pk_progress_set_subpercentage (PkProgress *progress, gint subpercentage)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->subpercentage == subpercentage)
-		return;
-	priv->subpercentage = subpercentage;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->subpercentage == subpercentage)
+		return FALSE;
+
+	/* new value */
+	progress->priv->subpercentage = subpercentage;
 	egg_debug ("subpercentage now %i", subpercentage);
+	return TRUE;
 }
 
 /**
  * pk_progress_set_status:
  **/
-static void
+gboolean
 pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->status == status)
-		return;
-	priv->status = status;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->status == status)
+		return FALSE;
+
+	/* new value */
+	progress->priv->status = status;
 	egg_debug ("status now %s", pk_status_enum_to_text (status));
+	return TRUE;
 }
 
 /**
  * pk_progress_set_role:
  **/
-static void
+gboolean
 pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->role == role)
-		return;
-	priv->role = role;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->role == role)
+		return FALSE;
+
+	/* new value */
+	progress->priv->role = role;
 	egg_debug ("role now %s", pk_role_enum_to_text (role));
+	return TRUE;
 }
 
 /**
  * pk_progress_set_allow_cancel:
  **/
-static void
+gboolean
 pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->allow_cancel == allow_cancel)
-		return;
-	priv->allow_cancel = allow_cancel;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->allow_cancel == allow_cancel)
+		return FALSE;
+
+	/* new value */
+	progress->priv->allow_cancel = allow_cancel;
 	egg_debug ("allow-cancel now %i", allow_cancel);
+	return TRUE;
 }
 
 /**
  * pk_progress_set_caller_active:
  **/
-static void
+gboolean
 pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 {
-	PkProgressPrivate *priv = progress->priv;
-	if (priv->caller_active == caller_active)
-		return;
-	priv->caller_active = caller_active;
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->caller_active == caller_active)
+		return FALSE;
+
+	/* new value */
+	progress->priv->caller_active = caller_active;
 	egg_debug ("caller-active now %i", caller_active);
+	return TRUE;
 }
 
 /**
@@ -321,9 +356,8 @@ static void
 pk_progress_finalize (GObject *object)
 {
 	PkProgress *progress = PK_PROGRESS (object);
-	PkProgressPrivate *priv = progress->priv;
 
-	g_free (priv->package_id);
+	g_free (progress->priv->package_id);
 
 	G_OBJECT_CLASS (pk_progress_parent_class)->finalize (object);
 }
