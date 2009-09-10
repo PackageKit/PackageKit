@@ -292,7 +292,7 @@ pk_action_lookup_package_ids_to_string (gchar **package_ids)
 			names_str = g_strdup (split[PK_PACKAGE_ID_NAME]);
 		}
 		g_ptr_array_add (array, names_str);
-		g_strfree (split);
+		g_strfreev (split);
 	}
 
 	/* create string */

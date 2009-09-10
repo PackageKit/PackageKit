@@ -188,6 +188,7 @@ libpackagekit_action_lookup_la_CFLAGS =				\
 	-DPOLKIT_BACKEND_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit-Action-Lookup\"		\
 	$(POLKIT_BACKEND_1_CFLAGS)				\
+	$(WARNINGFLAGS_C)					\
 	$(NULL)
 
 libpackagekit_action_lookup_la_LDFLAGS =			\
