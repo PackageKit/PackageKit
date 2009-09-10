@@ -1,4 +1,4 @@
-# translation of packagekit.master.bn_IN.po to Bengali INDIA
+# translation of packagekit.master.po to Bengali INDIA
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
@@ -6,10 +6,10 @@
 # Runa Bhattacharjee <runab@fedoraproject.org>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.bn_IN\n"
+"Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-10 08:29+0000\n"
-"PO-Revision-Date: 2009-09-10 17:21+0530\n"
+"PO-Revision-Date: 2009-09-10 17:33+0530\n"
 "Last-Translator: Runa Bhattacharjee <runab@redhat.com>\n"
 "Language-Team: Bengali INDIA <anubad@lists.ankur.org.in>\n"
 "MIME-Version: 1.0\n"
@@ -21,7 +21,7 @@ msgstr ""
 #. TRANSLATORS: this is an atomic transaction
 #: ../client/pk-console.c:143
 msgid "Transaction"
-msgstr "ট্রানসাকশন"
+msgstr "ট্রানস্যাকশন"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:145
@@ -435,7 +435,7 @@ msgstr "লাইসেন্স পরিচয়কারী (eula-id) উল্
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1214
 msgid "A transaction identifier (tid) is required"
-msgstr "ট্রানসাকশন পরিচয়কারী (tid) উল্লেখ করা আবশ্যক"
+msgstr "ট্রানস্যাকশন পরিচয়কারী (tid) উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:1235
@@ -1423,7 +1423,7 @@ msgstr "প্যাকেজ অপসারণের জন্য অনুম
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to rollback a transaction"
-msgstr "ট্রানসাকশন রোল-ব্যাক করার জন্য অনুমোদন প্রয়োজন"
+msgstr "ট্রানস্যাকশন রোল-ব্যাক করার জন্য অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid ""
@@ -1512,7 +1512,7 @@ msgstr "প্যাকেজ মুছে ফেলুন"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:74
 msgid "Rollback to a previous transaction"
-msgstr "পূর্ববর্তী একটি ট্রানসাকশন রোল-ব্যাক করুন"
+msgstr "পূর্ববর্তী একটি ট্রানস্যাকশন রোল-ব্যাক করুন"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
