@@ -30,6 +30,34 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PK_PACKAGE_ID_NAME:
+ *
+ * Alias to get a name field from the result of pk_package_id_split
+ */
+#define PK_PACKAGE_ID_NAME	0
+
+/**
+ * PK_PACKAGE_ID_VERSION:
+ *
+ * Alias to get a version field from the result of pk_package_id_split
+ */
+#define PK_PACKAGE_ID_VERSION	1
+
+/**
+ * PK_PACKAGE_ID_ARCH:
+ *
+ * Alias to get an arch field from the result of pk_package_id_split
+ */
+#define PK_PACKAGE_ID_ARCH	2
+
+/**
+ * PK_PACKAGE_ID_DATA:
+ *
+ * Alias to get a data field from the result of pk_package_id_split
+ */
+#define PK_PACKAGE_ID_DATA	3
+
 void		 pk_package_id_test			(gpointer		 user_data);
 gchar		*pk_package_id_build			(const gchar		*name,
 							 const gchar		*version,
