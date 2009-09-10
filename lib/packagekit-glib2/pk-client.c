@@ -3359,7 +3359,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	/* list, just for shits and giggles */
 	for (i=0; i<packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
 	}
 
 	if (packages->len != 2)

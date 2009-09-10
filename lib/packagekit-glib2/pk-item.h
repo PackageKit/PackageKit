@@ -70,7 +70,7 @@ typedef struct {
 	guint				 refcount;
 	gchar				*package_id;
 	gchar				*license;
-	PkGroupEnum			 group_enum;
+	PkGroupEnum			 group;
 	gchar				*description;
 	gchar				*url;
 	guint64				 size;
@@ -89,10 +89,10 @@ typedef struct {
 	gchar				*vendor_url;
 	gchar				*bugzilla_url;
 	gchar				*cve_url;
-	PkRestartEnum			 restart_enum;
+	PkRestartEnum			 restart;
 	gchar				*update_text;
 	gchar				*changelog;
-	PkUpdateStateEnum		 state_enum;
+	PkUpdateStateEnum		 state;
 	GDate				*issued;
 	GDate				*updated;
 } PkItemUpdateDetail;
@@ -104,7 +104,7 @@ typedef struct {
  **/
 typedef struct {
 	guint				 refcount;
-	PkInfoEnum			 info_enum;
+	PkInfoEnum			 info;
 	gchar				*package_id;
 	gchar				*summary;
 } PkItemPackage;

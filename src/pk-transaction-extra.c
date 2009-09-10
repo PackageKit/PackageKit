@@ -439,7 +439,7 @@ pk_transaction_extra_package_list_to_string (GPtrArray *array)
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_text (item->info_enum),
+					pk_info_enum_to_text (item->info),
 					item->package_id, item->summary);
 	}
 

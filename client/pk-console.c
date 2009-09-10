@@ -94,7 +94,7 @@ pk_console_package_cb (const PkItemPackage *item, gpointer data)
 	gchar **split = NULL;
 
 	/* ignore finished */
-	if (item->info_enum == PK_INFO_ENUM_FINISHED)
+	if (item->info == PK_INFO_ENUM_FINISHED)
 		goto out;
 
 	/* split */
@@ -103,7 +103,7 @@ pk_console_package_cb (const PkItemPackage *item, gpointer data)
 		goto out;
 
 	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_localised_past (item->info_enum), 12);
+	info_pad = pk_strpad (pk_info_enum_to_localised_past (item->info), 12);
 
 	/* create printable */
 	package = pk_package_id_to_printable (item->package_id);
@@ -267,9 +267,9 @@ pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
 		/* TRANSLATORS: details about the update, the CVE URLs */
 		g_print (" %s: %s\n", _("CVE"), detail->cve_url);
 	}
-	if (detail->restart_enum != PK_RESTART_ENUM_NONE) {
+	if (detail->restart != PK_RESTART_ENUM_NONE) {
 		/* TRANSLATORS: details about the update, if the package requires a restart */
-		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart_enum));
+		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart));
 	}
 	if (detail->update_text != NULL) {
 		/* TRANSLATORS: details about the update, any description of the update */
@@ -279,9 +279,9 @@ pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
 		/* TRANSLATORS: details about the update, the changelog for the package */
 		g_print (" %s: %s\n", _("Changes"), detail->changelog);
 	}
-	if (detail->state_enum != PK_UPDATE_STATE_ENUM_UNKNOWN) {
+	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		/* TRANSLATORS: details about the update, the ongoing state of the update */
-		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state_enum));
+		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state));
 	}
 	issued = pk_iso8601_from_date (detail->issued);
 	if (issued != NULL) {
@@ -366,7 +366,7 @@ pk_console_details_cb (const PkItemDetails *item, gpointer data)
 	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     %s\n", package);
 	g_print ("  license:     %s\n", item->license);
-	g_print ("  group:       %s\n", pk_group_enum_to_text (item->group_enum));
+	g_print ("  group:       %s\n", pk_group_enum_to_text (item->group));
 	g_print ("  description: %s\n", item->description);
 	g_print ("  size:        %lu bytes\n", (long unsigned int) item->size);
 	g_print ("  url:         %s\n", item->url);

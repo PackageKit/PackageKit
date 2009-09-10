@@ -271,7 +271,7 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 	/* list, just for shits and giggles */
 	for (i=0; i<packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
-		g_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+		g_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
 	}
 
 	/* no results */
@@ -290,7 +290,7 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		self->priv->display_name = g_strdup (item->summary);
 
 	/* parse the data */
-	if (item->info_enum == PK_INFO_ENUM_AVAILABLE) {
+	if (item->info == PK_INFO_ENUM_AVAILABLE) {
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, AVAILABLE);
 		else if (self->priv->status == INSTALLED)
@@ -310,7 +310,7 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 
-	} else if (item->info_enum == PK_INFO_ENUM_INSTALLED) {
+	} else if (item->info == PK_INFO_ENUM_INSTALLED) {
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, INSTALLED);
 		else if (self->priv->status == AVAILABLE)

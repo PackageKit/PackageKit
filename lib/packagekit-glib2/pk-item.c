@@ -621,7 +621,7 @@ pk_item_package_new (PkInfoEnum info_enum, const gchar *package_id, const gchar 
 
 	/* copy and add to array */
 	item = g_new0 (PkItemPackage, 1);
-	item->info_enum = info_enum;
+	item->info = info_enum;
 	item->package_id = g_strdup (package_id);
 	item->summary = g_strdup (summary);
 	return item;
@@ -646,7 +646,7 @@ pk_item_details_new (const gchar *package_id, const gchar *license,
 	item = g_new0 (PkItemDetails, 1);
 	item->package_id = g_strdup (package_id);
 	item->license = g_strdup (license);
-	item->group_enum = group_enum;
+	item->group = group_enum;
 	item->description = g_strdup (description);
 	item->url = g_strdup (url);
 	item->size = size;
@@ -678,10 +678,10 @@ pk_item_update_detail_new (const gchar *package_id, const gchar *updates,
 	item->vendor_url = g_strdup (vendor_url);
 	item->bugzilla_url = g_strdup (bugzilla_url);
 	item->cve_url = g_strdup (cve_url);
-	item->restart_enum = restart_enum;
+	item->restart = restart_enum;
 	item->update_text = g_strdup (update_text);
 	item->changelog = g_strdup (changelog);
-	item->state_enum = state_enum;
+	item->state = state_enum;
 	if (issued != NULL)
 		item->issued = g_date_new_dmy (issued->day, issued->month, issued->year);
 	if (updated != NULL)
@@ -972,7 +972,7 @@ pk_item_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check set");
-	egg_test_assert (test, (item->info_enum == PK_INFO_ENUM_AVAILABLE &&
+	egg_test_assert (test, (item->info == PK_INFO_ENUM_AVAILABLE &&
 				g_strcmp0 ("gnome-power-manager;0.1.2;i386;fedora", item->package_id) == 0 &&
 				g_strcmp0 ("Power manager for GNOME", item->summary) == 0));
 

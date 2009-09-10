@@ -494,7 +494,7 @@ pk_results_get_package_sack (PkResults *results)
 
 		/* set data we already know */
 		g_object_set (package,
-			      "info", item->info_enum,
+			      "info", item->info,
 			      "summary", item->summary,
 			      NULL);
 
@@ -905,7 +905,7 @@ pk_results_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check data");
 	item = g_ptr_array_index (packages, 0);
-	egg_test_assert (test, (item->info_enum == PK_INFO_ENUM_AVAILABLE &&
+	egg_test_assert (test, (item->info == PK_INFO_ENUM_AVAILABLE &&
 				g_strcmp0 ("gnome-power-manager;0.1.2;i386;fedora", item->package_id) == 0 &&
 				g_strcmp0 ("Power manager for GNOME", item->summary) == 0));
 	pk_item_package_ref (item);
@@ -913,7 +913,7 @@ pk_results_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check ref");
-	egg_test_assert (test, (item->info_enum == PK_INFO_ENUM_AVAILABLE &&
+	egg_test_assert (test, (item->info == PK_INFO_ENUM_AVAILABLE &&
 				g_strcmp0 ("gnome-power-manager;0.1.2;i386;fedora", item->package_id) == 0 &&
 				g_strcmp0 ("Power manager for GNOME", item->summary) == 0));
 	pk_item_package_unref (item);

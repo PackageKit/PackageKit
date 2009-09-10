@@ -472,7 +472,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	for (i=0; i<packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
 
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
 
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, item->package_id);
@@ -483,7 +483,7 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 
 		/* set data */
 		g_object_set (package,
-			      "info", item->info_enum,
+			      "info", item->info,
 			      "summary", item->summary,
 			      NULL);
 		g_object_unref (package);
@@ -622,7 +622,7 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 		/* set data */
 		g_object_set (package,
 			      "license", item->license,
-			      "group", item->group_enum,
+			      "group", item->group,
 			      "description", item->description,
 			      "url", item->url,
 			      "size", item->size,
@@ -741,10 +741,10 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 			      "update-vendor-url", item->vendor_url,
 			      "update-bugzilla-url", item->bugzilla_url,
 			      "update-cve-url", item->cve_url,
-			      "update-restart", item->restart_enum,
+			      "update-restart", item->restart,
 			      "update-text", item->update_text,
 			      "update-changelog", item->changelog,
-			      "update-state", item->state_enum,
+			      "update-state", item->state,
 			      "update-issued", item->issued,
 			      "update-updated", item->updated,
 			      NULL);

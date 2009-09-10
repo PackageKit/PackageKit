@@ -800,18 +800,18 @@ pk_backend_package_emulate_finished (PkBackend *backend)
 		goto out;
 
 	/* already finished */
-	if (item->info_enum == PK_INFO_ENUM_FINISHED)
+	if (item->info == PK_INFO_ENUM_FINISHED)
 		goto out;
 
 	/* only makes sense for some values */
-	if (item->info_enum == PK_INFO_ENUM_DOWNLOADING ||
-	    item->info_enum == PK_INFO_ENUM_UPDATING ||
-	    item->info_enum == PK_INFO_ENUM_INSTALLING ||
-	    item->info_enum == PK_INFO_ENUM_REMOVING ||
-	    item->info_enum == PK_INFO_ENUM_CLEANUP ||
-	    item->info_enum == PK_INFO_ENUM_OBSOLETING ||
-	    item->info_enum == PK_INFO_ENUM_REINSTALLING ||
-	    item->info_enum == PK_INFO_ENUM_DOWNGRADING) {
+	if (item->info == PK_INFO_ENUM_DOWNLOADING ||
+	    item->info == PK_INFO_ENUM_UPDATING ||
+	    item->info == PK_INFO_ENUM_INSTALLING ||
+	    item->info == PK_INFO_ENUM_REMOVING ||
+	    item->info == PK_INFO_ENUM_CLEANUP ||
+	    item->info == PK_INFO_ENUM_OBSOLETING ||
+	    item->info == PK_INFO_ENUM_REINSTALLING ||
+	    item->info == PK_INFO_ENUM_DOWNGRADING) {
 		pk_backend_package (backend, PK_INFO_ENUM_FINISHED, item->package_id, item->summary);
 		ret = TRUE;
 	}
@@ -834,7 +834,7 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkIte
 		return FALSE;
 
 	/* sending finished already */
-	if (item->info_enum == PK_INFO_ENUM_FINISHED)
+	if (item->info == PK_INFO_ENUM_FINISHED)
 		return FALSE;
 
 	/* same package, just info change */
@@ -890,7 +890,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* is it the same? */
 	ret = (backend->priv->last_package != NULL &&
-	       item->info_enum == backend->priv->last_package->info_enum &&
+	       item->info == backend->priv->last_package->info &&
 	       g_strcmp0 (item->package_id, backend->priv->last_package->package_id) == 0);
 	if (ret) {
 		egg_debug ("skipping duplicate %s", package_id);

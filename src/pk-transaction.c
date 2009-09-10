@@ -478,7 +478,7 @@ pk_transaction_details_cb (PkBackend *backend, PkItemDetails *item, PkTransactio
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	group_text = pk_group_enum_to_text (item->group_enum);
+	group_text = pk_group_enum_to_text (item->group);
 	egg_debug ("emitting details");
 	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, item->package_id,
 		       item->license, group_text, item->description, item->url, item->size);
@@ -574,7 +574,7 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_text (item->info_enum),
+					pk_info_enum_to_text (item->info),
 					item->package_id, item->summary);
 	}
 
@@ -638,7 +638,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			package_list = transaction->priv->package_list;
 			for (i=0; i<package_list->len; i++) {
 				item = g_ptr_array_index (package_list, i);
-				if (item->info_enum == PK_INFO_ENUM_UPDATING) {
+				if (item->info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' as this means
 					 * we can use the local package database for GetFiles rather than
 					 * downloading new remote metadata */
@@ -676,8 +676,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			package_list = transaction->priv->package_list;
 			for (i=0; i<package_list->len; i++) {
 				item = g_ptr_array_index (package_list, i);
-				if (item->info_enum == PK_INFO_ENUM_INSTALLING ||
-				    item->info_enum == PK_INFO_ENUM_UPDATING) {
+				if (item->info == PK_INFO_ENUM_INSTALLING ||
+				    item->info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' */
 					split = pk_package_id_split (item->package_id);
 					package_id = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
@@ -778,12 +778,12 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		array = transaction->priv->package_list;
 		for (i=0; i<array->len; i++) {
 			item = g_ptr_array_index (array, i);
-			if (item->info_enum == PK_INFO_ENUM_REMOVING ||
-			    item->info_enum == PK_INFO_ENUM_INSTALLING ||
-			    item->info_enum == PK_INFO_ENUM_UPDATING) {
+			if (item->info == PK_INFO_ENUM_REMOVING ||
+			    item->info == PK_INFO_ENUM_INSTALLING ||
+			    item->info == PK_INFO_ENUM_UPDATING) {
 				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
 					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role),
-					       item->package_id, pk_info_enum_to_text (item->info_enum), transaction->priv->uid);
+					       item->package_id, pk_info_enum_to_text (item->info), transaction->priv->uid);
 			}
 		}
 	}
@@ -871,7 +871,7 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		if (item->info_enum == PK_INFO_ENUM_INSTALLED) {
+		if (item->info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action", role_text);
@@ -881,7 +881,7 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 
 	/* check we are respecting the filters */
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		if (item->info_enum == PK_INFO_ENUM_INSTALLED) {
+		if (item->info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was installed when "
 					    "the ~installed filter is in place", role_text);
@@ -889,7 +889,7 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 		}
 	}
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
-		if (item->info_enum == PK_INFO_ENUM_AVAILABLE) {
+		if (item->info == PK_INFO_ENUM_AVAILABLE) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was ~installed when "
 					    "the installed filter is in place", role_text);
@@ -898,14 +898,14 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 	}
 
 	/* add to package cache even if we already got a result */
-	if (item->info_enum != PK_INFO_ENUM_FINISHED)
+	if (item->info != PK_INFO_ENUM_FINISHED)
 		g_ptr_array_add (transaction->priv->package_list, pk_item_package_ref (item));
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (item->package_id);
-	info_text = pk_info_enum_to_text (item->info_enum);
-	egg_debug ("emit package %s, %s, %s", pk_info_enum_to_text (item->info_enum), item->package_id, item->summary);
+	info_text = pk_info_enum_to_text (item->info);
+	egg_debug ("emit package %s, %s, %s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
 	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text,
 		       item->package_id, item->summary);
 }
@@ -1092,8 +1092,8 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkItemUpdateDetail *detail,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	restart_text = pk_restart_enum_to_text (detail->restart_enum);
-	state_text = pk_update_state_enum_to_text (detail->state_enum);
+	restart_text = pk_restart_enum_to_text (detail->restart);
+	state_text = pk_update_state_enum_to_text (detail->state);
 	issued = pk_iso8601_from_date (detail->issued);
 	updated = pk_iso8601_from_date (detail->updated);
 
@@ -1155,7 +1155,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	/* find security update packages */
 	for (i=0; i<updates->len; i++) {
 		item = g_ptr_array_index (updates, i);
-		if (item->info_enum == PK_INFO_ENUM_SECURITY) {
+		if (item->info == PK_INFO_ENUM_SECURITY) {
 			egg_debug ("security update: %s", item->package_id);
 			length++;
 		}
@@ -1171,7 +1171,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	package_ids_security = g_new0 (gchar *, length+1);
 	for (i=0; i<updates->len; i++) {
 		item = g_ptr_array_index (updates, i);
-		if (item->info_enum == PK_INFO_ENUM_SECURITY)
+		if (item->info == PK_INFO_ENUM_SECURITY)
 			package_ids_security[j++] = g_strdup (item->package_id);
 	}
 
@@ -3070,7 +3070,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		/* emulate the backend */
 		for (i=0; i<updates_cache->len; i++) {
 			item = g_ptr_array_index (updates_cache, i);
-			info_text = pk_info_enum_to_text (item->info_enum);
+			info_text = pk_info_enum_to_text (item->info);
 			egg_debug ("emitting package");
 			g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
 				       info_text, item->package_id, item->summary);
