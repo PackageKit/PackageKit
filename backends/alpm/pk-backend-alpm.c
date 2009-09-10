@@ -39,7 +39,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <egg-debug.h>
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 
 #include <alpm.h>
 #include <alpm_list.h>
@@ -130,35 +130,34 @@ pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
 }
 
 static pmpkg_t *
-pkg_from_package_id_str (const gchar *package_id_str)
+pkg_from_package_id (const gchar *package_id)
 {
 	pmdb_t *repo = NULL;
 	pmpkg_t *result;
-	PkPackageId *package_id = pk_package_id_new_from_string (package_id_str);
+	gchar **package_id_data = pk_package_id_split (package_id);
 
 	/* do all this fancy stuff */
-	if (g_strcmp0 (ALPM_LOCAL_DB_ALIAS, pk_package_id_get_data (package_id)) == 0)
+	if (g_strcmp0 (ALPM_LOCAL_DB_ALIAS, package_id_data[PK_PACKAGE_ID_DATA]) == 0)
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
 		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
 			repo = alpm_list_getdata (iterator);
-			if (g_strcmp0 (alpm_db_get_name(repo), pk_package_id_get_data (package_id)) == 0)
+			if (g_strcmp0 (alpm_db_get_name(repo), package_id_data[PK_PACKAGE_ID_DATA]) == 0)
 				break;
 		}
 	}
 
 	if (repo != NULL) {
-		pmpkg_t *pkg = alpm_db_get_pkg (repo, pk_package_id_get_name (package_id));
-		if (pkg_equals_to (pkg, pk_package_id_get_name (package_id), pk_package_id_get_version (package_id)))
+		pmpkg_t *pkg = alpm_db_get_pkg (repo, package_id_data[PK_PACKAGE_ID_NAME]);
+		if (pkg_equals_to (pkg, package_id_data[PK_PACKAGE_ID_NAME], package_id_data[PK_PACKAGE_ID_VERSION]))
 			result = pkg;
 		else
 			result = NULL;
 	} else
 		result = NULL;
 
-	/* free package id as we no longer need it */
-	pk_package_id_free (package_id);
+	g_strfreev (package_id_data);
 
 	return result;
 }
@@ -180,7 +179,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
 	gchar **package_ids;
 
-	/* TODO: Add more code here */
+	/* TODO: add more code here */
 	switch (event) {
 		case PM_TRANS_EVT_REMOVE_START:
 			pk_backend_set_allow_cancel (backend_instance, FALSE);
@@ -279,14 +278,14 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 					pmpkg_t *pkg = alpm_list_getdata (packages);
 
 					/* compare package information with file name */
-					gchar *pkginfo = g_strjoin ("-", alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), NULL);
-					if (pkginfo != NULL && strcmp (pkginfo, "") != 0)
-						egg_debug ("matching %s with %s", filename, pkginfo);
-					if (g_str_has_prefix (filename, pkginfo)) {
+					gchar *needle = g_strjoin ("-", alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), NULL);
+					if (needle != NULL && strcmp (needle, "") != 0)
+						egg_debug ("matching %s with %s", filename, needle);
+					if (g_str_has_prefix (filename, needle)) {
 						current_pkg = pkg;
 						repo_name = alpm_db_get_name (db);
 					}
-					g_free (pkginfo);
+					g_free (needle);
 				}
 			}
 
@@ -763,14 +762,16 @@ backend_download_packages_thread (PkBackend *backend)
 
 	/* add targets to the transaction */
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
+		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
+
+		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
 			return FALSE;
 		}
-		pk_package_id_free (id);
+
+		g_strfreev (package_id_data);
 	}
 
 	/* prepare and commit transaction */
@@ -783,11 +784,30 @@ backend_download_packages_thread (PkBackend *backend)
 
 	alpm_trans_release ();
 
-	/* emit/cleanup downloaded files list */
+	/* emit downloaded packages */
 	for (list_iterator = downloaded_files; list_iterator; list_iterator = alpm_list_next (list_iterator)) {
-		gchar *fullname = g_strjoin ("/", directory, alpm_list_getdata (list_iterator), NULL);
-		pk_backend_files (backend, NULL, fullname);
-		g_free (fullname);
+		gchar *package_id = NULL;
+		gchar *filename;
+
+		/* TODO: optimize this? split-then-join isn't good */
+		for (iterator = 0; package_id == NULL && iterator < g_strv_length (package_ids); ++iterator) {
+			gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
+			gchar *needle = g_strjoin ("-", package_id_data[PK_PACKAGE_ID_NAME], package_id_data[PK_PACKAGE_ID_VERSION], NULL);
+
+			if (needle != NULL && strcmp (needle, "") != 0)
+				egg_debug ("matching %s with %s", (char *) alpm_list_getdata (list_iterator), needle);
+			if (g_str_has_prefix ((char *) alpm_list_getdata (list_iterator), needle))
+				package_id = package_ids[iterator];
+
+			g_free (needle);
+			g_strfreev (package_id_data);
+		}
+
+		filename = g_build_filename (directory, alpm_list_getdata (list_iterator), NULL);
+		pk_backend_files (backend, package_id, filename);
+		g_free (filename);
+
+		/* clean up list data */
 		g_free (alpm_list_getdata (list_iterator));
 	}
 	alpm_list_free (downloaded_files);
@@ -825,7 +845,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		alpm_list_t *list_iterator;
 
-		pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
+		pmpkg_t *pkg = pkg_from_package_id (package_ids[iterator]);
 		if (pkg == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, alpm_strerrorlast ());
 			pk_backend_finished (backend);
@@ -885,7 +905,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 		GString *licenses_str;
 		gchar *licenses;
 
-		pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
+		pmpkg_t *pkg = pkg_from_package_id (package_ids[iterator]);
 		if (pkg == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
 			pk_backend_finished (backend);
@@ -931,12 +951,11 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_allow_cancel (backend, FALSE);
 
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		pmpkg_t *pkg;
 		alpm_list_t *files_list;
 		GString *files_str;
 		gchar *files;
 
-		pkg = pkg_from_package_id_str (package_ids[iterator]);
+		pmpkg_t *pkg = pkg_from_package_id (package_ids[iterator]);
 		if (pkg == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
 			pk_backend_finished (backend);
@@ -1113,9 +1132,9 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		/* TODO: add changelog code here */
-		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
+		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
 
-		pmpkg_t *installed_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id_get_name (id));
+		pmpkg_t *installed_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), package_id_data[PK_PACKAGE_ID_NAME]);
 
 		gchar *installed_package_id = installed_pkg ? pkg_to_package_id_str (installed_pkg, ALPM_LOCAL_DB_ALIAS) : NULL;
 		pk_backend_update_detail (backend, package_ids[iterator], installed_package_id, "", "", "", "", PK_RESTART_ENUM_NONE,
@@ -1123,7 +1142,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 			NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 		g_free (installed_package_id);
 
-		pk_package_id_free (id);
+		g_strfreev (package_id_data);
 	}
 
 	pk_backend_finished (backend);
@@ -1239,14 +1258,16 @@ backend_install_packages_thread (PkBackend *backend)
 
 	/* add targets to the transaction */
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
+		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
+
+		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
 			return FALSE;
 		}
-		pk_package_id_free (id);
+
+		g_strfreev (package_id_data);
 	}
 
 	/* prepare and commit transaction */
@@ -1346,14 +1367,16 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	/* add targets to the transaction */
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-		PkPackageId *id = pk_package_id_new_from_string (package_ids[iterator]);
-		if (alpm_trans_addtarget ((char *) pk_package_id_get_name (id)) != 0) {
+		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
+
+		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
 			return FALSE;
 		}
-		pk_package_id_free (id);
+
+		g_strfreev (package_id_data);
 	}
 
 	/* prepare and commit transaction */
@@ -1399,19 +1422,18 @@ backend_resolve_thread (PkBackend *backend)
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		if (pk_package_id_check (package_ids[iterator])) {
 			/* skip all the db iterations and so on - we already know everything */
-			pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
+			pmpkg_t *pkg = pkg_from_package_id (package_ids[iterator]);
 
 			if (pkg != NULL) {
-				PkPackageId *package_id = pk_package_id_new_from_string (package_ids[iterator]);
-				const gchar *repo = pk_package_id_get_data (package_id);
+				gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
 
-				if (!search_not_installed && g_strcmp0 (repo, ALPM_LOCAL_DB_ALIAS) == 0)
+				if (!search_not_installed && g_strcmp0 (package_id_data[PK_PACKAGE_ID_DATA], ALPM_LOCAL_DB_ALIAS) == 0)
 					emit_package (backend, pkg, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_INSTALLED);
 
-				if (!search_installed && g_strcmp0 (repo, ALPM_LOCAL_DB_ALIAS) != 0)
-					emit_package (backend, pkg, repo, PK_INFO_ENUM_INSTALLED);
+				if (!search_installed && g_strcmp0 (package_id_data[PK_PACKAGE_ID_DATA], ALPM_LOCAL_DB_ALIAS) != 0)
+					emit_package (backend, pkg, package_id_data[PK_PACKAGE_ID_DATA], PK_INFO_ENUM_INSTALLED);
 
-				pk_package_id_free (package_id);
+				g_strfreev (package_id_data);
 			}
 		} else {
 			/* good old way with backend_search */
