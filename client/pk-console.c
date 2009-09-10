@@ -86,7 +86,7 @@ pk_strpad (const gchar *data, guint length)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (const PkItemPackage *obj, gpointer data)
+pk_console_package_cb (const PkItemPackage *item, gpointer data)
 {
 	gchar *package = NULL;
 	gchar *package_pad = NULL;
@@ -94,19 +94,19 @@ pk_console_package_cb (const PkItemPackage *obj, gpointer data)
 	gchar **split = NULL;
 
 	/* ignore finished */
-	if (obj->info_enum == PK_INFO_ENUM_FINISHED)
+	if (item->info_enum == PK_INFO_ENUM_FINISHED)
 		goto out;
 
 	/* split */
-	split = pk_package_id_split (obj->package_id);
+	split = pk_package_id_split (item->package_id);
 	if (split == NULL)
 		goto out;
 
 	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_text (obj->info_enum), 12);
+	info_pad = pk_strpad (pk_info_enum_to_text (item->info_enum), 12);
 
 	/* create printable */
-	package = pk_package_id_to_printable (obj->package_id);
+	package = pk_package_id_to_printable (item->package_id);
 
 	/* don't pretty print */
 	if (!is_console) {
@@ -116,7 +116,7 @@ pk_console_package_cb (const PkItemPackage *obj, gpointer data)
 
 	/* pad the name-version */
 	package_pad = pk_strpad (package, 40);
-	g_print ("%s\t%s\t%s\n", info_pad, package_pad, obj->summary);
+	g_print ("%s\t%s\t%s\n", info_pad, package_pad, item->summary);
 out:
 	/* free all the data */
 	g_free (package);
@@ -129,7 +129,7 @@ out:
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
+pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
 {
 	struct passwd *pw;
 	const gchar *role_text;
@@ -138,29 +138,29 @@ pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
 	guint i, lines_len;
 	gchar *package = NULL;
 
-	role_text = pk_role_enum_to_text (obj->role);
+	role_text = pk_role_enum_to_text (item->role);
 	/* TRANSLATORS: this is an atomic transaction */
-	g_print ("%s: %s\n", _("Transaction"), obj->tid);
+	g_print ("%s: %s\n", _("Transaction"), item->tid);
 	/* TRANSLATORS: this is the time the transaction was started in system timezone */
-	g_print (" %s: %s\n", _("System time"), obj->timespec);
+	g_print (" %s: %s\n", _("System time"), item->timespec);
 	/* TRANSLATORS: this is if the transaction succeeded or not */
-	g_print (" %s: %s\n", _("Succeeded"), obj->timespec ? _("True") : _("False"));
+	g_print (" %s: %s\n", _("Succeeded"), item->timespec ? _("True") : _("False"));
 	/* TRANSLATORS: this is the transactions role, e.g. "update-system" */
 	g_print (" %s: %s\n", _("Role"), role_text);
 
 	/* only print if not null */
-	if (obj->duration > 0) {
+	if (item->duration > 0) {
 		/* TRANSLATORS: this is The duration of the transaction */
-		g_print (" %s: %i %s\n", _("Duration"), obj->duration, _("(seconds)"));
+		g_print (" %s: %i %s\n", _("Duration"), item->duration, _("(seconds)"));
 	}
 
 	/* TRANSLATORS: this is The command line used to do the action */
-	g_print (" %s: %s\n", _("Command line"), obj->cmdline);
+	g_print (" %s: %s\n", _("Command line"), item->cmdline);
 	/* TRANSLATORS: this is the user ID of the user that started the action */
-	g_print (" %s: %i\n", _("User ID"), obj->uid);
+	g_print (" %s: %i\n", _("User ID"), item->uid);
 
 	/* query real name */
-	pw = getpwuid (obj->uid);
+	pw = getpwuid (item->uid);
 	if (pw != NULL) {
 		if (pw->pw_name != NULL) {
 			/* TRANSLATORS: this is the username, e.g. hughsie */
@@ -173,7 +173,7 @@ pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
 	}
 
 	/* TRANSLATORS: these are packages touched by the transaction */
-	lines = g_strsplit (obj->data, "\n", -1);
+	lines = g_strsplit (item->data, "\n", -1);
 	lines_len = g_strv_length (lines);
 	if (lines_len > 0)
 		g_print (" %s\n", _("Affected packages:"));
@@ -195,38 +195,38 @@ pk_console_transaction_cb (const PkItemTransaction *obj, gpointer user_data)
  * pk_console_distro_upgrade_cb:
  **/
 static void
-pk_console_distro_upgrade_cb (const PkItemDistroUpgrade *obj, gpointer user_data)
+pk_console_distro_upgrade_cb (const PkItemDistroUpgrade *item, gpointer user_data)
 {
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
-	g_print ("%s: %s\n", _("Distribution"), obj->name);
+	g_print ("%s: %s\n", _("Distribution"), item->name);
 	/* TRANSLATORS: this is type of update, stable or testing */
-	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (obj->state));
+	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (item->state));
 	/* TRANSLATORS: this is any summary text describing the upgrade */
-	g_print (" %s: %s\n", _("Summary"), obj->summary);
+	g_print (" %s: %s\n", _("Summary"), item->summary);
 }
 
 /**
  * pk_console_category_cb:
  **/
 static void
-pk_console_category_cb (const PkItemCategory *obj, gpointer user_data)
+pk_console_category_cb (const PkItemCategory *item, gpointer user_data)
 {
 	/* TRANSLATORS: this is the group category name */
-	g_print ("%s: %s\n", _("Category"), obj->name);
+	g_print ("%s: %s\n", _("Category"), item->name);
 	/* TRANSLATORS: this is group identifier */
-	g_print (" %s: %s\n", _("ID"), obj->cat_id);
-	if (obj->parent_id != NULL) {
+	g_print (" %s: %s\n", _("ID"), item->cat_id);
+	if (item->parent_id != NULL) {
 		/* TRANSLATORS: this is the parent group */
-		g_print (" %s: %s\n", _("Parent"), obj->parent_id);
+		g_print (" %s: %s\n", _("Parent"), item->parent_id);
 	}
 	/* TRANSLATORS: this is the name of the parent group */
-	g_print (" %s: %s\n", _("Name"), obj->name);
-	if (obj->summary != NULL) {
+	g_print (" %s: %s\n", _("Name"), item->name);
+	if (item->summary != NULL) {
 		/* TRANSLATORS: this is the summary of the group */
-		g_print (" %s: %s\n", _("Summary"), obj->summary);
+		g_print (" %s: %s\n", _("Summary"), item->summary);
 	}
 	/* TRANSLATORS: this is preferred icon for the group */
-	g_print (" %s: %s\n", _("Icon"), obj->icon);
+	g_print (" %s: %s\n", _("Icon"), item->icon);
 }
 
 /**
@@ -302,12 +302,12 @@ pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
  * pk_console_repo_detail_cb:
  **/
 static void
-pk_console_repo_detail_cb (const PkItemRepoDetail *obj, gpointer data)
+pk_console_repo_detail_cb (const PkItemRepoDetail *item, gpointer data)
 {
 	gchar *enabled_pad;
 	gchar *repo_pad;
 
-	if (obj->enabled) {
+	if (item->enabled) {
 		/* TRANSLATORS: if the repo is enabled */
 		enabled_pad = pk_strpad (_("Enabled"), 10);
 	} else {
@@ -315,8 +315,8 @@ pk_console_repo_detail_cb (const PkItemRepoDetail *obj, gpointer data)
 		enabled_pad = pk_strpad (_("Disabled"), 10);
 	}
 
-	repo_pad = pk_strpad (obj->repo_id, 25);
-	g_print (" %s %s %s\n", enabled_pad, repo_pad, obj->description);
+	repo_pad = pk_strpad (item->repo_id, 25);
+	g_print (" %s %s %s\n", enabled_pad, repo_pad, item->description);
 	g_free (enabled_pad);
 	g_free (repo_pad);
 }
@@ -325,26 +325,26 @@ pk_console_repo_detail_cb (const PkItemRepoDetail *obj, gpointer data)
  * pk_console_require_restart_cb:
  **/
 static void
-pk_console_require_restart_cb (const PkItemRequireRestart *obj, gpointer data)
+pk_console_require_restart_cb (const PkItemRequireRestart *item, gpointer data)
 {
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_to_printable (obj->package_id);
+	package = pk_package_id_to_printable (item->package_id);
 
-	if (obj->restart == PK_RESTART_ENUM_SYSTEM) {
+	if (item->restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted */
 		g_print ("%s %s\n", _("System restart required by:"), package);
-	} else if (obj->restart == PK_RESTART_ENUM_SESSION) {
+	} else if (item->restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted */
 		g_print ("%s %s\n", _("Session restart required:"), package);
-	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
+	} else if (item->restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted due to a security update*/
 		g_print ("%s %s\n", _("System restart (security) required by:"), package);
-	} else if (obj->restart == PK_RESTART_ENUM_SECURITY_SESSION) {
+	} else if (item->restart == PK_RESTART_ENUM_SECURITY_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted due to a security update */
 		g_print ("%s %s\n", _("Session restart (security) required:"), package);
-	} else if (obj->restart == PK_RESTART_ENUM_APPLICATION) {
+	} else if (item->restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s\n", _("Application restart required by:"), package);
 	}
@@ -355,21 +355,21 @@ pk_console_require_restart_cb (const PkItemRequireRestart *obj, gpointer data)
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (const PkItemDetails *obj, gpointer data)
+pk_console_details_cb (const PkItemDetails *item, gpointer data)
 {
 	gchar *package = NULL;
 
 	/* create printable */
-	package = pk_package_id_to_printable (obj->package_id);
+	package = pk_package_id_to_printable (item->package_id);
 
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     %s\n", package);
-	g_print ("  license:     %s\n", obj->license);
-	g_print ("  group:       %s\n", pk_group_enum_to_text (obj->group_enum));
-	g_print ("  description: %s\n", obj->description);
-	g_print ("  size:        %lu bytes\n", (long unsigned int) obj->size);
-	g_print ("  url:         %s\n", obj->url);
+	g_print ("  license:     %s\n", item->license);
+	g_print ("  group:       %s\n", pk_group_enum_to_text (item->group_enum));
+	g_print ("  description: %s\n", item->description);
+	g_print ("  size:        %lu bytes\n", (long unsigned int) item->size);
+	g_print ("  url:         %s\n", item->url);
 
 	g_free (package);
 }
@@ -378,22 +378,22 @@ pk_console_details_cb (const PkItemDetails *obj, gpointer data)
  * pk_console_message_cb:
  **/
 static void
-pk_console_message_cb (const PkItemMessage *obj, gpointer data)
+pk_console_message_cb (const PkItemMessage *item, gpointer data)
 {
 	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
-	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (obj->message), obj->details);
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (item->message), item->details);
 }
 
 /**
  * pk_console_files_cb:
  **/
 static void
-pk_console_files_cb (PkItemFiles *obj, gpointer data)
+pk_console_files_cb (PkItemFiles *item, gpointer data)
 {
 	guint i;
 
 	/* empty */
-	if (obj->files == NULL || obj->files[0] == NULL) {
+	if (item->files == NULL || item->files[0] == NULL) {
 		/* TRANSLATORS: This where the package has no files */
 		g_print ("%s\n", _("No files"));
 		return;
@@ -401,8 +401,8 @@ pk_console_files_cb (PkItemFiles *obj, gpointer data)
 
 	/* TRANSLATORS: This a list files contained in the package */
 	g_print ("%s\n", _("Package files"));
-	for (i=0; obj->files[i] != NULL; i++) {
-		g_print ("  %s\n", obj->files[i]);
+	for (i=0; item->files[i] != NULL; i++) {
+		g_print ("  %s\n", item->files[i]);
 	}
 }
 

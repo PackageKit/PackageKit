@@ -454,8 +454,8 @@ pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
 	/* add all package names */
 	for (i=0; package_ids[i] != NULL; i++) {
 		parts = pk_package_id_split (package_ids[i]);
-		g_ptr_array_add (array, g_strdup (parts[0]));
-		egg_debug ("name=%s", parts[0]);
+		g_ptr_array_add (array, g_strdup (parts[PK_PACKAGE_ID_NAME]));
+		egg_debug ("name=%s", parts[PK_PACKAGE_ID_NAME]);
 		g_strfreev (parts);
 	}
 out:

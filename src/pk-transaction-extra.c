@@ -282,7 +282,7 @@ pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar
 
 	/* add */
 	parts = pk_package_id_split (obj->package_id);
-	rc = pk_transaction_extra_sqlite_add_filename_details (extra, filename, parts[0], md5);
+	rc = pk_transaction_extra_sqlite_add_filename_details (extra, filename, parts[PK_PACKAGE_ID_NAME], md5);
 out:
 	g_strfreev (parts);
 	g_free (md5);
@@ -741,7 +741,7 @@ pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gc
 
 		egg_debug ("adding filename %s", files[i]);
 		md5 = pk_transaction_extra_get_filename_md5 (files[i]);
-		pk_transaction_extra_sqlite_add_filename_details (extra, files[i], package[0], md5);
+		pk_transaction_extra_sqlite_add_filename_details (extra, files[i], package[PK_PACKAGE_ID_NAME], md5);
 		g_free (md5);
 	}
 	g_strfreev (files);

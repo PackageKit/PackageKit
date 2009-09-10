@@ -481,7 +481,7 @@ pk_task_text_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "install package");
-	package_ids = g_strsplit ("vips-doc;7.12.4-2.fc8;noarch;linva", ",", -1);
+	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
 	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
 				        (PkProgressCallback) pk_task_text_test_progress_cb, test,
 				        (GAsyncReadyCallback) pk_task_text_test_install_packages_cb, test);

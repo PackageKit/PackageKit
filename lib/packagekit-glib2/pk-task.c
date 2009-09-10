@@ -1026,6 +1026,7 @@ pk_task_new (void)
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef EGG_TEST
+#include <packagekit-glib2/pk-package-ids.h>
 #include "egg-test.h"
 
 static void
@@ -1084,7 +1085,7 @@ pk_task_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "install package");
-	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora", ",", -1);
+	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
 	pk_task_install_packages_async (task, package_ids, NULL,
 				        (PkProgressCallback) pk_task_test_progress_cb, test,
 				        (GAsyncReadyCallback) pk_task_test_install_packages_cb, test);

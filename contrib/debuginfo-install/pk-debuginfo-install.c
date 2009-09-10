@@ -318,7 +318,11 @@ pk_debuginfo_install_print_array (GPtrArray *array)
 	for (i=0; i<array->len; i++) {
 		package_id = g_ptr_array_index (array, i);
 		split = pk_package_id_split (package_id);
-		g_print ("%i\t%s-%s(%s)\t%s\n", i+1, split[0], split[1], split[2], split[3]);
+		g_print ("%i\t%s-%s(%s)\t%s\n", i+1,
+			 split[PK_PACKAGE_ID_NAME],
+			 split[PK_PACKAGE_ID_VERSION],
+			 split[PK_PACKAGE_ID_ARCH],
+			 split[PK_PACKAGE_ID_DATA]);
 		g_strfreev (split);
 	}
 }
@@ -391,7 +395,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		item = g_ptr_array_index (list, 0);
 		split = pk_package_id_split (item->package_id);
 		/* add -debuginfo */
-		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[0]);
+		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[PK_PACKAGE_ID_NAME]);
 		g_strfreev (split);
 
 		/* resolve name */

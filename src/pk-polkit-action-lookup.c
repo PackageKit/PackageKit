@@ -279,12 +279,18 @@ pk_action_lookup_package_ids_to_string (gchar **package_ids)
 	array = g_ptr_array_new ();
 	for (i=0; package_ids[i] != NULL; i++) {
 		split = pk_package_id_split (package_ids[i]);
-		if (len == 1)
-			names_str = g_strdup_printf ("%s-%s (%s)", split[0], split[1], split[3]);
-		else if (len <= 3)
-			names_str = g_strdup_printf ("%s-%s", split[0], split[1]);
-		else
-			names_str = g_strdup (split[0]);
+		if (len == 1) {
+			names_str = g_strdup_printf ("%s-%s (%s)",
+						     split[PK_PACKAGE_ID_NAME],
+						     split[PK_PACKAGE_ID_VERSION],
+						     split[PK_PACKAGE_ID_DATA]);
+		} else if (len <= 3) {
+			names_str = g_strdup_printf ("%s-%s",
+						     split[PK_PACKAGE_ID_NAME],
+						     split[PK_PACKAGE_ID_VERSION]);
+		} else {
+			names_str = g_strdup (split[PK_PACKAGE_ID_NAME]);
+		}
 		g_ptr_array_add (array, names_str);
 		g_strfree (split);
 	}

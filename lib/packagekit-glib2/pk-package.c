@@ -176,12 +176,17 @@ pk_package_get_id (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	gchar **split;
+	gchar **parts;
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
-	split = pk_package_id_split (package->priv->id);
-	g_print ("%s-%s.%s\t%s\t%s\n", split[0], split[1], split[2], split[3], package->priv->summary);
-	g_strfreev (split);
+	parts = pk_package_id_split (package->priv->id);
+	g_print ("%s-%s.%s\t%s\t%s\n",
+		 parts[PK_PACKAGE_ID_NAME],
+		 parts[PK_PACKAGE_ID_VERSION],
+		 parts[PK_PACKAGE_ID_ARCH],
+		 parts[PK_PACKAGE_ID_DATA],
+		 package->priv->summary);
+	g_strfreev (parts);
 }
 
 /**

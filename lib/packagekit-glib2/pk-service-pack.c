@@ -1110,7 +1110,7 @@ pk_service_pack_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "install package");
-	package_ids = g_strsplit ("glib2;2.14.0;i386;fedora", ",", -1);
+	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
 	pk_service_pack_create_for_package_ids_async (pack, "dave.servicepack", package_ids, NULL, NULL,
 				        (PkProgressCallback) pk_service_pack_test_progress_cb, test,
 				        (GAsyncReadyCallback) pk_service_pack_test_create_cb, test);

@@ -182,7 +182,7 @@ pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_i
 gchar *
 pk_package_id_to_printable (const gchar *package_id)
 {
-	gchar **split = NULL;
+	gchar **parts = NULL;
 	gchar *value = NULL;
 
 	/* invalid */
@@ -190,14 +190,17 @@ pk_package_id_to_printable (const gchar *package_id)
 		goto out;
 
 	/* split */
-	split = pk_package_id_split (package_id);
-	if (split == NULL)
+	parts = pk_package_id_split (package_id);
+	if (parts == NULL)
 		goto out;
 
 	/* form name-version.arch */
-	value = g_strdup_printf ("%s-%s.%s", split[0], split[1], split[2]);
+	value = g_strdup_printf ("%s-%s.%s",
+				 parts[PK_PACKAGE_ID_NAME],
+				 parts[PK_PACKAGE_ID_VERSION],
+				 parts[PK_PACKAGE_ID_ARCH]);
 out:
-	g_strfreev (split);
+	g_strfreev (parts);
 	return value;
 }
 

@@ -646,7 +646,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 					 * we can use the local package database for GetFiles rather than
 					 * downloading new remote metadata */
 					split = pk_package_id_split (obj->package_id);
-					package_id = pk_package_id_build (split[0], split[1], split[2], "installed");
+					package_id = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
+									  split[PK_PACKAGE_ID_VERSION],
+									  split[PK_PACKAGE_ID_ARCH],
+									  "installed");
 					g_strfreev (split);
 					g_ptr_array_add (list, package_id);
 				}
@@ -680,7 +683,10 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				    obj->info_enum == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' */
 					split = pk_package_id_split (obj->package_id);
-					package_id = pk_package_id_build (split[0], split[1], split[2], "installed");
+					package_id = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
+									  split[PK_PACKAGE_ID_VERSION],
+									  split[PK_PACKAGE_ID_ARCH],
+									  "installed");
 					g_strfreev (split);
 					g_ptr_array_add (list, package_id);
 				}
