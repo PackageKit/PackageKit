@@ -2245,8 +2245,10 @@ pk_backend_reset (PkBackend *backend)
 		backend->priv->signal_error_timeout = 0;
 	}
 
-	if (backend->priv->last_package != NULL)
+	if (backend->priv->last_package != NULL) {
 		pk_item_package_unref (backend->priv->last_package);
+		backend->priv->last_package = NULL;
+	}
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
