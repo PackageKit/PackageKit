@@ -119,6 +119,7 @@ struct _PkBackendPrivate
 	GThread			*thread;
 	PkBitfield		 roles;
 	PkBackendDesc		*desc;
+	PkResults		*results;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -945,6 +946,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_PACKAGE], 0, item);
+	pk_results_add_package (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1070,6 +1072,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_REQUIRE_RESTART], 0, item);
+	pk_results_add_require_restart (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1112,6 +1115,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+	pk_results_add_message (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1220,6 +1224,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_DETAILS], 0, item);
+	pk_results_add_details (backend->priv->results, item);
 
 	/* we parsed okay */
 	ret = TRUE;
@@ -1270,6 +1275,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_FILES], 0, item);
+	pk_results_add_files (backend->priv->results, item);
 
 	/* success */
 	backend->priv->download_files++;
@@ -1317,6 +1323,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_DISTRO_UPGRADE], 0, item);
+	pk_results_add_distro_upgrade (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1366,6 +1373,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0, item);
+	pk_results_add_repo_signature_required (backend->priv->results, item);
 
 	/* success */
 	backend->priv->set_signature = TRUE;
@@ -1414,6 +1422,7 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_EULA_REQUIRED], 0, item);
+	pk_results_add_eula_required (backend->priv->results, item);
 
 	/* success */
 	backend->priv->set_eula = TRUE;
@@ -1456,6 +1465,7 @@ pk_backend_media_change_required (PkBackend *backend,
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0, item);
+	pk_results_add_media_change_required (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1498,6 +1508,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_REPO_DETAIL], 0, item);
+	pk_results_add_repo_detail (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1540,6 +1551,7 @@ pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *ca
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_CATEGORY], 0, item);
+	pk_results_add_category (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
@@ -1641,6 +1653,10 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_ERROR_CODE], 0, item);
+	pk_results_add_error_code (backend->priv->results, item);
+
+	/* success */
+	ret = TRUE;
 out:
 	if (item != NULL)
 		pk_item_error_code_unref (item);
@@ -2085,6 +2101,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
 	g_free (backend->priv->c_tid);
+	g_object_unref (backend->priv->results);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->store);
@@ -2247,6 +2264,11 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
+
+	/* unref then create rather then set zero size, as another object
+	 * might have a reference on the data */
+	g_object_unref (backend->priv->results);
+	backend->priv->results = pk_results_new ();
 
 	return TRUE;
 }
@@ -2645,6 +2667,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->simultaneous = FALSE;
 	backend->priv->roles = 0;
+	backend->priv->results = pk_results_new ();
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
