@@ -123,28 +123,28 @@ G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 static gpointer pk_backend_object = NULL;
 
 enum {
-	PK_BACKEND_STATUS_CHANGED,
-	PK_BACKEND_PROGRESS_CHANGED,
-	PK_BACKEND_DETAILS,
-	PK_BACKEND_FILES,
-	PK_BACKEND_DISTRO_UPGRADE,
-	PK_BACKEND_PACKAGE,
-	PK_BACKEND_UPDATE_DETAIL,
-	PK_BACKEND_ERROR_CODE,
-	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
-	PK_BACKEND_EULA_REQUIRED,
-	PK_BACKEND_REQUIRE_RESTART,
-	PK_BACKEND_MESSAGE,
-	PK_BACKEND_CHANGE_TRANSACTION_DATA,
-	PK_BACKEND_FINISHED,
-	PK_BACKEND_ALLOW_CANCEL,
-	PK_BACKEND_REPO_DETAIL,
-	PK_BACKEND_CATEGORY,
-	PK_BACKEND_MEDIA_CHANGE_REQUIRED,
-	PK_BACKEND_LAST_SIGNAL
+	SIGNAL_STATUS_CHANGED,
+	SIGNAL_PROGRESS_CHANGED,
+	SIGNAL_DETAILS,
+	SIGNAL_FILES,
+	SIGNAL_DISTRO_UPGRADE,
+	SIGNAL_PACKAGE,
+	SIGNAL_UPDATE_DETAIL,
+	SIGNAL_ERROR_CODE,
+	SIGNAL_REPO_SIGNATURE_REQUIRED,
+	SIGNAL_EULA_REQUIRED,
+	SIGNAL_REQUIRE_RESTART,
+	SIGNAL_MESSAGE,
+	SIGNAL_CHANGE_TRANSACTION_DATA,
+	SIGNAL_FINISHED,
+	SIGNAL_ALLOW_CANCEL,
+	SIGNAL_REPO_DETAIL,
+	SIGNAL_CATEGORY,
+	SIGNAL_MEDIA_CHANGE_REQUIRED,
+	SIGNAL_LAST
 };
 
-static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 /**
  * pk_backend_get_groups:
@@ -478,7 +478,6 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	g_free (backend->priv->name);
 	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
-
 out:
 	g_free (path);
 	return ret;
@@ -603,9 +602,8 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 	elapsed = pk_time_get_elapsed (backend->priv->time);
 	remaining = backend->priv->last_remaining;
 
-	egg_debug ("emit progress %i, %i, %i, %i",
-		  percentage, subpercentage, elapsed, remaining);
-	g_signal_emit (backend, signals [PK_BACKEND_PROGRESS_CHANGED], 0,
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_PROGRESS_CHANGED], 0,
 		       percentage, subpercentage, elapsed, remaining);
 	return TRUE;
 }
@@ -760,15 +758,15 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* do we have to enumate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-			egg_debug ("emitting status-changed running");
-			g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
+			/* emit */
+			g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
 		}
 	}
 
 	backend->priv->status = status;
 
-	egg_debug ("emitting status-changed %s", pk_status_enum_to_text (status));
-	g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, status);
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
 
@@ -825,7 +823,7 @@ out:
  * pk_backend_package_emulate_finished_for_package:
  **/
 static gboolean
-pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkItemPackage *obj)
+pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkItemPackage *item)
 {
 	/* simultaneous handles this on it's own */
 	if (backend->priv->simultaneous)
@@ -836,11 +834,11 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkIte
 		return FALSE;
 
 	/* sending finished already */
-	if (obj->info_enum == PK_INFO_ENUM_FINISHED)
+	if (item->info_enum == PK_INFO_ENUM_FINISHED)
 		return FALSE;
 
 	/* same package, just info change */
-	if (g_strcmp0 (backend->priv->last_package->package_id, obj->package_id))
+	if (g_strcmp0 (backend->priv->last_package->package_id, item->package_id))
 		return FALSE;
 
 	/* emit the old package as finished */
@@ -854,7 +852,7 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe = NULL;
-	PkItemPackage *obj = NULL;
+	PkItemPackage *item = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -883,8 +881,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* create a new package object AFTER we emulate the info value */
-	obj = pk_item_package_new (info, package_id, summary_safe);
-	if (obj == NULL) {
+	item = pk_item_package_new (info, package_id, summary_safe);
+	if (item == NULL) {
 		egg_warning ("Failed to create object summary: '%s'", summary_safe);
 		ret = FALSE;
 		goto out;
@@ -892,8 +890,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* is it the same? */
 	ret = (backend->priv->last_package != NULL &&
-	       obj->info_enum == backend->priv->last_package->info_enum &&
-	       g_strcmp0 (obj->package_id, backend->priv->last_package->package_id) == 0);
+	       item->info_enum == backend->priv->last_package->info_enum &&
+	       g_strcmp0 (item->package_id, backend->priv->last_package->package_id) == 0);
 	if (ret) {
 		egg_debug ("skipping duplicate %s", package_id);
 		ret = FALSE;
@@ -901,12 +899,12 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* simulate the finish here when required */
-	pk_backend_package_emulate_finished_for_package (backend, obj);
+	pk_backend_package_emulate_finished_for_package (backend, item);
 
 	/* update the 'last' package */
 	if (backend->priv->last_package != NULL)
 		pk_item_package_unref (backend->priv->last_package);
-	backend->priv->last_package = pk_item_package_ref (obj);
+	backend->priv->last_package = pk_item_package_ref (item);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -935,14 +933,14 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* we've sent a package for this transaction */
 	backend->priv->has_sent_package = TRUE;
 
-	egg_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, obj);
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_PACKAGE], 0, item);
 
 	/* success */
 	ret = TRUE;
 out:
-	if (obj != NULL)
-		pk_item_package_unref (obj);
+	if (item != NULL)
+		pk_item_package_unref (item);
 	g_free (summary_safe);
 	return ret;
 }
@@ -960,7 +958,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updated_text)
 {
 	gchar *update_text_safe = NULL;
-	PkItemUpdateDetail *detail = NULL;
+	PkItemUpdateDetail *item = NULL;
 	GDate *issued = NULL;
 	GDate *updated = NULL;
 	gboolean ret = FALSE;
@@ -983,21 +981,21 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	update_text_safe = pk_strsafe (update_text);
 
 	/* form PkItemUpdateDetail struct */
-	detail = pk_item_update_detail_new (package_id, updates, obsoletes, vendor_url,
-						     bugzilla_url, cve_url, restart,
-						     update_text_safe, changelog,
-						     state, issued, updated);
-	if (detail == NULL) {
+	item = pk_item_update_detail_new (package_id, updates, obsoletes, vendor_url,
+					  bugzilla_url, cve_url, restart,
+					  update_text_safe, changelog,
+					  state, issued, updated);
+	if (item == NULL) {
 		egg_warning ("Failed to parse detail object");
 		goto out;
 	}
-	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0, detail);
+	g_signal_emit (backend, signals[SIGNAL_UPDATE_DETAIL], 0, item);
 
 	/* we parsed okay */
 	ret = TRUE;
-
 out:
-	pk_item_update_detail_unref (detail);
+	if (item != NULL)
+		pk_item_update_detail_unref (item);
 	g_free (update_text_safe);
 	if (issued != NULL)
 		g_date_free (issued);
@@ -1035,6 +1033,7 @@ gboolean
 pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *package_id)
 {
 	gboolean ret = FALSE;
+	PkItemRequireRestart *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1052,9 +1051,21 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 		goto out;
 	}
 
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
-	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, package_id);
+	/* form PkItemRequireRestart struct */
+	item = pk_item_require_restart_new (restart, package_id);
+	if (item == NULL) {
+		egg_warning ("Failed to parse require restart object");
+		goto out;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_REQUIRE_RESTART], 0, item);
+
+	/* success */
+	ret = TRUE;
 out:
+	if (item != NULL)
+		pk_item_require_restart_unref (item);
 	return ret;
 }
 
@@ -1064,8 +1075,10 @@ out:
 gboolean
 pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *format, ...)
 {
+	gboolean ret = FALSE;
 	va_list args;
-	gchar *buffer;
+	gchar *buffer = NULL;
+	PkItemMessage *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1073,17 +1086,29 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	/* have we already set an error? */
 	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
 		egg_warning ("already set error, cannot process: message %s", pk_message_enum_to_text (message));
-		return FALSE;
+		goto out;
 	}
 
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	egg_debug ("emit message %i, %s", message, buffer);
-	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
-	g_free (buffer);
+	/* form PkItemMessage struct */
+	item = pk_item_message_new (message, buffer);
+	if (item == NULL) {
+		egg_warning ("Failed to parse message object");
+		goto out;
+	}
 
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
+
+	/* success */
+	ret = TRUE;
+out:
+	g_free (buffer);
+	if (item != NULL)
+		pk_item_message_unref (item);
 	return TRUE;
 }
 
@@ -1102,8 +1127,8 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 		return FALSE;
 	}
 
-	egg_debug ("emit change-transaction-data %s", data);
-	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_CHANGE_TRANSACTION_DATA], 0, data);
 	return TRUE;
 }
 
@@ -1160,7 +1185,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe = NULL;
-	PkItemDetails *details = NULL;
+	PkItemDetails *item = NULL;
 	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -1177,18 +1202,20 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	description_safe = pk_strsafe (description);
 
 	/* form PkItemDetails struct */
-	details = pk_item_details_new (package_id, license, group, description_safe, url, size);
-	if (details == NULL) {
+	item = pk_item_details_new (package_id, license, group, description_safe, url, size);
+	if (item == NULL) {
 		egg_warning ("Failed to parse details object");
 		goto out;
 	}
-	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0, details);
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_DETAILS], 0, item);
 
 	/* we parsed okay */
 	ret = TRUE;
-
 out:
-	pk_item_details_unref (details);
+	if (item != NULL)
+		pk_item_details_unref (item);
 	g_free (description_safe);
 	return ret;
 }
@@ -1202,6 +1229,8 @@ gboolean
 pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
 	gboolean ret;
+	PkItemFiles *item = NULL;
+	gchar **files = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (filelist != NULL, FALSE);
@@ -1220,11 +1249,25 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
 		goto out;
 	}
 
-	egg_debug ("emit files %s, %s", package_id, filelist);
-	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
-		       package_id, filelist);
+	/* form PkItemFiles struct */
+	files = g_strsplit (filelist, ";", -1);
+	item = pk_item_files_new (package_id, files);
+	if (item == NULL) {
+		egg_warning ("Failed to parse files object");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_FILES], 0, item);
+
+	/* success */
 	backend->priv->download_files++;
+	ret = TRUE;
 out:
+	g_strfreev (files);
+	if (item != NULL)
+		pk_item_files_unref (item);
 	return ret;
 }
 
@@ -1234,8 +1277,10 @@ out:
 gboolean
 pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const gchar *name, const gchar *summary)
 {
-	gchar *name_safe;
-	gchar *summary_safe;
+	gboolean ret = FALSE;
+	gchar *name_safe = NULL;
+	gchar *summary_safe = NULL;
+	PkItemDistroUpgrade *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (type != PK_DISTRO_UPGRADE_ENUM_UNKNOWN, FALSE);
@@ -1246,19 +1291,30 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: distro-upgrade");
-		return FALSE;
+		goto out;
 	}
 
 	/* replace unsafe chars */
 	name_safe = pk_strsafe (name);
 	summary_safe = pk_strsafe (summary);
 
-	egg_debug ("emit distro-upgrade %s, %s, %s", pk_distro_upgrade_enum_to_text (type), name_safe, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_DISTRO_UPGRADE], 0, type, name_safe, summary_safe);
+	/* form PkItemDistroUpgrade struct */
+	item = pk_item_distro_upgrade_new (type, name_safe, summary_safe);
+	if (item == NULL) {
+		egg_warning ("Failed to parse distro upgrade object");
+		goto out;
+	}
 
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_DISTRO_UPGRADE], 0, item);
+
+	/* success */
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_distro_upgrade_unref (item);
 	g_free (name_safe);
 	g_free (summary_safe);
-
 	return TRUE;
 }
 
@@ -1271,6 +1327,9 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				    const gchar *key_timestamp, PkSigTypeEnum type)
 {
+	gboolean ret = FALSE;
+	PkItemRepoSignatureRequired *item = NULL;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (repository_name != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1286,15 +1345,25 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 		egg_warning ("already asked for a signature, cannot process");
 		return FALSE;
 	}
-	backend->priv->set_signature = TRUE;
 
-	egg_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %i",
-		  package_id, repository_name, key_url, key_userid, key_id,
-		  key_fingerprint, key_timestamp, type);
-	g_signal_emit (backend, signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED], 0,
-		       package_id, repository_name, key_url, key_userid, key_id,
-		       key_fingerprint, key_timestamp, type);
-	return TRUE;
+	/* form PkItemRepoSignatureRequired struct */
+	item = pk_item_repo_signature_required_new (package_id, repository_name, key_url,
+						    key_userid, key_id, key_fingerprint, key_timestamp, type);
+	if (item == NULL) {
+		egg_warning ("Failed to parse repo signature required object");
+		goto out;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0, item);
+
+	/* success */
+	backend->priv->set_signature = TRUE;
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_repo_signature_required_unref (item);
+	return ret;
 }
 
 /**
@@ -1304,6 +1373,9 @@ gboolean
 pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
 			  const gchar *vendor_name, const gchar *license_agreement)
 {
+	PkItemEulaRequired *item = NULL;
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -1314,23 +1386,32 @@ pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: eula required");
-		return FALSE;
+		goto out;
 	}
 
 	/* check we don't do this more than once */
 	if (backend->priv->set_eula) {
 		egg_warning ("already asked for a signature, cannot process");
-		return FALSE;
+		goto out;
 	}
+
+	/* form PkItemEulaRequired struct */
+	item = pk_item_eula_required_new (eula_id, package_id, vendor_name, license_agreement);
+	if (item == NULL) {
+		egg_warning ("Failed to parse eula required object");
+		goto out;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_EULA_REQUIRED], 0, item);
+
+	/* success */
 	backend->priv->set_eula = TRUE;
-
-	egg_debug ("emit eula-required %s, %s, %s, %s",
-		  eula_id, package_id, vendor_name, license_agreement);
-
-	g_signal_emit (backend, signals [PK_BACKEND_EULA_REQUIRED], 0,
-		       eula_id, package_id, vendor_name, license_agreement);
-
-	return TRUE;
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_eula_required_unref (item);
+	return ret;
 }
 
 /**
@@ -1342,6 +1423,9 @@ pk_backend_media_change_required (PkBackend *backend,
 				  const gchar *media_id,
 				  const gchar *media_text)
 {
+	PkItemMediaChangeRequired *item = NULL;
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (media_id != NULL, FALSE);
 	g_return_val_if_fail (media_text != NULL, FALSE);
@@ -1350,16 +1434,25 @@ pk_backend_media_change_required (PkBackend *backend,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: media change required");
-		return FALSE;
+		goto out;
 	}
 
-	egg_debug ("emit media-change-required %s, %s, %s",
-		  pk_media_type_enum_to_text (media_type), media_id, media_text);
+	/* form PkItemMediaChangeRequired struct */
+	item = pk_item_media_change_required_new (media_type, media_id, media_text);
+	if (item == NULL) {
+		egg_warning ("Failed to parse media change required object");
+		goto out;
+	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_MEDIA_CHANGE_REQUIRED], 0,
-		       media_type, media_id, media_text);
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0, item);
 
-	return TRUE;
+	/* success */
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_media_change_required_unref (item);
+	return ret;
 }
 
 /**
@@ -1369,7 +1462,9 @@ gboolean
 pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 			const gchar *description, gboolean enabled)
 {
-	gchar *description_safe;
+	gchar *description_safe = NULL;
+	PkItemRepoDetail *item = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (repo_id != NULL, FALSE);
@@ -1378,16 +1473,29 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: repo-detail %s", repo_id);
-		return FALSE;
+		goto out;
 	}
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	egg_debug ("emit repo-detail %s, %s, %i", repo_id, description_safe, enabled);
-	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	/* form PkItemRepoDetail struct */
+	item = pk_item_repo_detail_new (repo_id, description, enabled);
+	if (item == NULL) {
+		egg_warning ("Failed to parse repo detail object");
+		goto out;
+	}
+
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_REPO_DETAIL], 0, item);
+
+	/* success */
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_repo_detail_unref (item);
 	g_free (description_safe);
-	return TRUE;
+	return ret;
 }
 
 /**
@@ -1396,7 +1504,9 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 gboolean
 pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *cat_id, const gchar *name, const gchar *summary, const gchar *icon)
 {
-	gchar *summary_safe;
+	gchar *summary_safe = NULL;
+	PkItemCategory *item = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (cat_id != NULL, FALSE);
@@ -1411,11 +1521,23 @@ pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *ca
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	egg_debug ("emit category %s, %s, %s, %s, %s", parent_id, cat_id, name, summary_safe, icon);
-	g_signal_emit (backend, signals [PK_BACKEND_CATEGORY], 0, parent_id, cat_id, name, summary, icon);
-	g_free (summary_safe);
-	return TRUE;
+	/* form PkItemCategory struct */
+	item = pk_item_category_new (parent_id, cat_id, name, summary, icon);
+	if (item == NULL) {
+		egg_warning ("Failed to parse category object");
+		goto out;
+	}
 
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_CATEGORY], 0, item);
+
+	/* success */
+	ret = TRUE;
+out:
+	if (item != NULL)
+		pk_item_category_unref (item);
+	g_free (summary_safe);
+	return ret;
 }
 
 /**
@@ -1427,8 +1549,7 @@ static gboolean
 pk_backend_error_timeout_delay_cb (gpointer data)
 {
 	PkBackend *backend = PK_BACKEND (data);
-	PkMessageEnum message;
-	const gchar *buffer;
+	PkItemMessage *item = NULL;
 
 	/* check we have not already finished */
 	if (backend->priv->finished) {
@@ -1437,16 +1558,22 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 		goto out;
 	}
 
+	/* form PkItemMessage struct */
+	item = pk_item_message_new (PK_MESSAGE_ENUM_BACKEND_ERROR, "ErrorCode() has to be followed with Finished()!");
+	if (item == NULL) {
+		egg_warning ("Failed to parse message object");
+		goto out;
+	}
+
 	/* warn the backend developer that they've done something worng
 	 * - we can't use pk_backend_message here as we have already set
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
-	message = PK_MESSAGE_ENUM_BACKEND_ERROR;
-	buffer = "ErrorCode() has to be followed with Finished()!";
-	egg_warning ("emit message %i, %s", message, buffer);
-	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
+	g_signal_emit (backend, signals[SIGNAL_MESSAGE], 0, item);
 
 	pk_backend_finished (backend);
 out:
+	if (item != NULL)
+		pk_item_message_unref (item);
 	backend->priv->signal_error_timeout = 0;
 	return FALSE;
 }
@@ -1461,6 +1588,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 	gchar *buffer;
 	gboolean ret = TRUE;
 	gboolean need_untrusted;
+	PkItemErrorCode *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -1494,10 +1622,18 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 	else
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
-	egg_debug ("emit error-code %s, %s", pk_error_enum_to_text (error_code), buffer);
-	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, error_code, buffer);
+	/* form PkItemErrorCode struct */
+	item = pk_item_error_code_new (error_code, buffer);
+	if (item == NULL) {
+		egg_warning ("Failed to parse error code object");
+		goto out;
+	}
 
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_ERROR_CODE], 0, item);
 out:
+	if (item != NULL)
+		pk_item_error_code_unref (item);
 	g_free (buffer);
 	return ret;
 }
@@ -1526,9 +1662,9 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
+		/* emit */
+		g_signal_emit (backend, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
 		backend->priv->allow_cancel = allow_cancel;
-		egg_debug ("emit allow-cancel %i", allow_cancel);
-		g_signal_emit (backend, signals [PK_BACKEND_ALLOW_CANCEL], 0, allow_cancel);
 	}
 	return TRUE;
 }
@@ -1625,8 +1761,8 @@ pk_backend_finished_delay (gpointer data)
 	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 
-	egg_debug ("emit finished %i", backend->priv->exit);
-	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
 	return FALSE;
 }
@@ -1886,7 +2022,6 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	return FALSE;
 }
 
-
 /**
  * pk_backend_watch_file:
  */
@@ -1959,98 +2094,100 @@ pk_backend_class_init (PkBackendClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_finalize;
-	signals [PK_BACKEND_STATUS_CHANGED] =
+
+	/* properties */
+	signals[SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_PROGRESS_CHANGED] =
+	signals[SIGNAL_PROGRESS_CHANGED] =
 		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
-	signals [PK_BACKEND_PACKAGE] =
-		g_signal_new ("package",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals [PK_BACKEND_UPDATE_DETAIL] =
-		g_signal_new ("update-detail",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals [PK_BACKEND_REQUIRE_RESTART] =
-		g_signal_new ("require-restart",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_BACKEND_MESSAGE] =
-		g_signal_new ("message",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_BACKEND_CHANGE_TRANSACTION_DATA] =
+	signals[SIGNAL_CHANGE_TRANSACTION_DATA] =
 		g_signal_new ("change-transaction-data",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_BACKEND_DETAILS] =
-		g_signal_new ("details",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals [PK_BACKEND_FILES] =
-		g_signal_new ("files",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_BACKEND_DISTRO_UPGRADE] =
-		g_signal_new ("distro-upgrade",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_BACKEND_ERROR_CODE] =
-		g_signal_new ("error-code",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED] =
-		g_signal_new ("repo-signature-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
-	signals [PK_BACKEND_EULA_REQUIRED] =
-		g_signal_new ("eula-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_BACKEND_MEDIA_CHANGE_REQUIRED] =
-		g_signal_new ("media-change-required",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_BACKEND_FINISHED] =
+	signals[SIGNAL_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_ALLOW_CANCEL] =
+	signals[SIGNAL_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals [PK_BACKEND_REPO_DETAIL] =
+
+	/* objects */
+	signals[SIGNAL_PACKAGE] =
+		g_signal_new ("package",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_UPDATE_DETAIL] =
+		g_signal_new ("update-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_REQUIRE_RESTART] =
+		g_signal_new ("require-restart",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_MESSAGE] =
+		g_signal_new ("message",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_DETAILS] =
+		g_signal_new ("details",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_FILES] =
+		g_signal_new ("files",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_DISTRO_UPGRADE] =
+		g_signal_new ("distro-upgrade",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_ERROR_CODE] =
+		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_REPO_SIGNATURE_REQUIRED] =
+		g_signal_new ("repo-signature-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_MEDIA_CHANGE_REQUIRED] =
+		g_signal_new ("media-change-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
-	signals [PK_BACKEND_CATEGORY] =
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[SIGNAL_CATEGORY] =
 		g_signal_new ("category",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 
@@ -2222,9 +2359,9 @@ pk_backend_test_func_immediate_false (PkBackend *backend)
  * pk_backend_test_package_cb:
  **/
 static void
-pk_backend_test_package_cb (PkBackend *backend, PkItemPackage *obj, EggTest *test)
+pk_backend_test_package_cb (PkBackend *backend, PkItemPackage *item, EggTest *test)
 {
-	egg_debug ("package:%s", obj->package_id);
+	egg_debug ("package:%s", item->package_id);
 	number_packages++;
 }
 
