@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.nl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-09 15:38+0000\n"
-"PO-Revision-Date: 2009-09-09 19:05+0200\n"
+"POT-Creation-Date: 2009-09-10 16:42+0000\n"
+"PO-Revision-Date: 2009-09-11 00:33+0200\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: nl <nl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -41,7 +41,7 @@ msgstr "Niet waar"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:333
 msgid "Role"
 msgstr "Rol"
 
@@ -56,7 +56,7 @@ msgstr "(seconden)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:347
 msgid "Command line"
 msgstr "Commando regel"
 
@@ -135,7 +135,7 @@ msgstr "Details van de vernieuwing:"
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
 #: ../lib/packagekit-glib2/pk-task-text.c:172
-#: ../src/pk-polkit-action-lookup.c:352
+#: ../src/pk-polkit-action-lookup.c:358
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Pakket"
@@ -193,7 +193,8 @@ msgid "Issued"
 msgstr "Uitgegeven"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:294
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:470
 msgid "Updated"
 msgstr "Vernieuwd"
 
@@ -348,7 +349,7 @@ msgstr ""
 #: ../client/pk-console.c:982 ../client/pk-generate-pack.c:222
 #: ../client/pk-monitor.c:282
 #: ../contrib/command-not-found/pk-command-not-found.c:614
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:500
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:504
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Extra debuginformatie tonen"
@@ -758,13 +759,13 @@ msgid "Starting install"
 msgstr "Installeren starten"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:402
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:406
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Pakket %s vinden is mislukt, of is reeds geïnstalleerd: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:503
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:507
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr ""
@@ -772,178 +773,178 @@ msgstr ""
 "worden"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:506
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:510
 msgid "Do not install dependencies of the core packages"
 msgstr "Installeer geen afhankelijkheden van de kern pakketten"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:509
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:513
 msgid "Do not display information or progress"
 msgstr "Laat geen informatie zien over de voortgang"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:528
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit debuginfo installer"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:536
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "FOUT: Specificeer de te installeren pakket namen."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:568
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:572
 #, c-format
 msgid "Getting sources list"
 msgstr "Ophalen bronnen lijst"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:578
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:653
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:892
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:582
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
 msgid "FAILED."
 msgstr "MISLUKT."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:593
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:668
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:752
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:796
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:863
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:597
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:637
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:672
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:756
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:867
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:596
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Vond %i aangezette en %i uitgezette bronnen."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:603
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:607
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Zoeken naar debug bronnen"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:636
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Vond %i uitgezette debuginfo repo's"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:647
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Debug bronnen aanzetten"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:671
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "%i debug bronnen aangezet."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:678
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Zoeken naar debug pakketten"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Pakket %s vinden mislukte: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:713
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:717
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Debug info pakket %s niet gevonden: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:745
 #, c-format
 msgid "Found no packages to install."
 msgstr "Geen pakketten gevonden om te installeren."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:755
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
 #, c-format
 msgid "Found %i packages:"
 msgstr "Vond %i pakketten:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:775
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Zoeken naar pakketten die afhangen van deze pakketten"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Kon geen afhankelijke pakketten vinden: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Vond %i extra pakketten."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
 msgid "No extra packages required."
 msgstr "Geen extra pakketten vereist."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:813
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:817
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Vond %i pakketten om te installeren:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Pakketten niet installeren in de simulatie mode"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:838
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:842
 #: ../lib/packagekit-glib2/pk-console-shared.c:246
 #, c-format
 msgid "Installing packages"
 msgstr "Pakketten installeren"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:855
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Kon pakketen %s  niet installeren."
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:883
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Uitzetten van bronnen die eerst aangezet waren"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Kon de debug bronnen %s niet uitzetten"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "%i debug bronnen uitgezet."
@@ -1235,6 +1236,113 @@ msgstr "Controleren van toepassingen in gebruik"
 #: ../lib/packagekit-glib2/pk-console-shared.c:354
 msgid "Checking libraries in use"
 msgstr "Controleren van bibliotheken in gebruik"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:372
+msgid "Trivial"
+msgstr "Triviaal"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:376
+msgid "Normal"
+msgstr "Normaal"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:380
+msgid "Important"
+msgstr "Belangrijk"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:384
+msgid "Security"
+msgstr "Beveiliging"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:388
+msgid "Bug fix "
+msgstr "Fout reparatie"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:392
+msgid "Enhancement"
+msgstr "Verbetering"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:396
+msgid "Blocked"
+msgstr "Geblokkeerd"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:401
+#: ../lib/packagekit-glib2/pk-console-shared.c:474
+msgid "Installed"
+msgstr "Geïnstalleerd"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:406
+msgid "Available"
+msgstr "Beschikbaar"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:424
+msgid "Downloading"
+msgstr "Downloaden"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:428
+msgid "Updating"
+msgstr "Vernieuwen"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:432
+msgid "Installing"
+msgstr "Installeren"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:436
+msgid "Removing"
+msgstr "Verwijderen"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:440
+msgid "Cleaning up"
+msgstr "Opschonen"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:444
+msgid "Obsoleting"
+msgstr "Verouderd maken"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:448
+msgid "Reinstalling"
+msgstr "Hergeïnstalleerd"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:466
+msgid "Downloaded"
+msgstr "Downloaden"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:478
+msgid "Removed"
+msgstr "Verwijderd"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:482
+msgid "Cleaned up"
+msgstr "Opgeruimd"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:486
+msgid "Obsoleted"
+msgstr "Verouderd"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:490
+msgid "Reinstalled"
+msgstr "Herge"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: ../lib/packagekit-glib2/pk-task-text.c:64
@@ -1669,7 +1777,7 @@ msgid "Many packages"
 msgstr "Vele pakketten"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:340
 msgid "Only trusted"
 msgstr "Alleen vertrouwde"
 
@@ -1755,9 +1863,6 @@ msgstr "Alleen vertrouwde"
 
 #~ msgid "No new packages need to be installed"
 #~ msgstr "Er hoeven geen nieuwe pakketten te worden toegevoegd"
-
-#~ msgid "To install"
-#~ msgstr "Te installeren"
 
 #~ msgid "Searching for package: "
 #~ msgstr "Pakketten worden gezocht (kan even duren): "
