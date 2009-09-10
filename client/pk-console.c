@@ -103,7 +103,7 @@ pk_console_package_cb (const PkItemPackage *item, gpointer data)
 		goto out;
 
 	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_text (item->info_enum), 12);
+	info_pad = pk_strpad (pk_info_enum_to_localised_past (item->info_enum), 12);
 
 	/* create printable */
 	package = pk_package_id_to_printable (item->package_id);

@@ -359,3 +359,139 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 	return text;
 }
 
+/**
+ * pk_info_enum_to_localised_text:
+ **/
+static const gchar *
+pk_info_enum_to_localised_text (PkInfoEnum info)
+{
+	const gchar *text = NULL;
+	switch (info) {
+	case PK_INFO_ENUM_LOW:
+		/* TRANSLATORS: The type of update */
+		text = _("Trivial");
+		break;
+	case PK_INFO_ENUM_NORMAL:
+		/* TRANSLATORS: The type of update */
+		text = _("Normal");
+		break;
+	case PK_INFO_ENUM_IMPORTANT:
+		/* TRANSLATORS: The type of update */
+		text = _("Important");
+		break;
+	case PK_INFO_ENUM_SECURITY:
+		/* TRANSLATORS: The type of update */
+		text = _("Security");
+		break;
+	case PK_INFO_ENUM_BUGFIX:
+		/* TRANSLATORS: The type of update */
+		text = _("Bug fix ");
+		break;
+	case PK_INFO_ENUM_ENHANCEMENT:
+		/* TRANSLATORS: The type of update */
+		text = _("Enhancement");
+		break;
+	case PK_INFO_ENUM_BLOCKED:
+		/* TRANSLATORS: The type of update */
+		text = _("Blocked");
+		break;
+	case PK_INFO_ENUM_INSTALLED:
+	case PK_INFO_ENUM_COLLECTION_INSTALLED:
+		/* TRANSLATORS: The state of a package */
+		text = _("Installed");
+		break;
+	case PK_INFO_ENUM_AVAILABLE:
+	case PK_INFO_ENUM_COLLECTION_AVAILABLE:
+		/* TRANSLATORS: The state of a package, i.e. not installed */
+		text = _("Available");
+		break;
+	default:
+		egg_warning ("info unrecognised: %s", pk_info_enum_to_text (info));
+	}
+	return text;
+}
+
+/**
+ * pk_info_enum_to_localised_present:
+ **/
+const gchar *
+pk_info_enum_to_localised_present (PkInfoEnum info)
+{
+	const gchar *text = NULL;
+	switch (info) {
+	case PK_INFO_ENUM_DOWNLOADING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Downloading");
+		break;
+	case PK_INFO_ENUM_UPDATING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Updating");
+		break;
+	case PK_INFO_ENUM_INSTALLING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Installing");
+		break;
+	case PK_INFO_ENUM_REMOVING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Removing");
+		break;
+	case PK_INFO_ENUM_CLEANUP:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Cleaning up");
+		break;
+	case PK_INFO_ENUM_OBSOLETING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Obsoleting");
+		break;
+	case PK_INFO_ENUM_REINSTALLING:
+		/* TRANSLATORS: The action of the package, in present tense */
+		text = _("Reinstalling");
+		break;
+	default:
+		text = pk_info_enum_to_localised_text (info);
+	}
+	return text;
+}
+
+/**
+ * pk_info_enum_to_localised_past:
+ **/
+const gchar *
+pk_info_enum_to_localised_past (PkInfoEnum info)
+{
+	const gchar *text = NULL;
+	switch (info) {
+	case PK_INFO_ENUM_DOWNLOADING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Downloaded");
+		break;
+	case PK_INFO_ENUM_UPDATING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Updated");
+		break;
+	case PK_INFO_ENUM_INSTALLING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Installed");
+		break;
+	case PK_INFO_ENUM_REMOVING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Removed");
+		break;
+	case PK_INFO_ENUM_CLEANUP:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Cleaned up");
+		break;
+	case PK_INFO_ENUM_OBSOLETING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Obsoleted");
+		break;
+	case PK_INFO_ENUM_REINSTALLING:
+		/* TRANSLATORS: The action of the package, in past tense */
+		text = _("Reinstalled");
+		break;
+	default:
+		text = pk_info_enum_to_localised_text (info);
+	}
+	return text;
+}
+
