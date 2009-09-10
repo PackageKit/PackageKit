@@ -1126,7 +1126,7 @@ out:
 	g_free (buffer);
 	if (item != NULL)
 		pk_item_message_unref (item);
-	return TRUE;
+	return ret;
 }
 
 /**
