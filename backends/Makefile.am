@@ -32,6 +32,10 @@ if BACKEND_TYPE_RAZOR
 SUBDIRS += razor
 endif
 
+if BACKEND_TYPE_SLAPT
+SUBDIRS += slapt
+endif
+
 if BACKEND_TYPE_SMART
 SUBDIRS += smart
 endif
