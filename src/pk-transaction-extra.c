@@ -123,15 +123,11 @@ static const PkItemPackage *
 pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, const gchar *filename)
 {
 	const PkItemPackage *obj = NULL;
-	PkStore *store;
 
 	/* use PK to find the correct package */
 	if (extra->priv->list->len > 0)
 		g_ptr_array_remove_range (extra->priv->list, 0, extra->priv->list->len);
 	pk_backend_reset (extra->priv->backend);
-	store = pk_backend_get_store (extra->priv->backend);
-	pk_store_set_uint (store, "filters", pk_bitfield_value (PK_FILTER_ENUM_INSTALLED));
-	pk_store_set_string (store, "search", filename);
 	pk_backend_search_file (extra->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename);
 
 	/* wait for finished */
@@ -478,7 +474,6 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 
 	/* get the new package list */
 	pk_backend_reset (extra->priv->backend);
-	pk_store_set_uint (pk_backend_get_store (extra->priv->backend), "filters", pk_bitfield_value (PK_FILTER_ENUM_NONE));
 	pk_backend_get_packages (extra->priv->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
@@ -677,7 +672,6 @@ out:
 gboolean
 pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **package_ids)
 {
-	PkStore *store;
 	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
@@ -690,7 +684,6 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 	pk_transaction_extra_set_progress_changed (extra, 101);
 
-	store = pk_backend_get_store (extra->priv->backend);
 	pk_transaction_extra_update_process_list (extra);
 
 	signal_files = g_signal_connect (extra->priv->backend, "files",
@@ -698,7 +691,6 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
-	pk_store_set_strv (store, "package_ids", package_ids);
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
@@ -754,7 +746,6 @@ pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gc
 gboolean
 pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **package_ids)
 {
-	PkStore *store;
 	guint signal_files = 0;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
@@ -767,13 +758,11 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_SCAN_APPLICATIONS);
 	pk_transaction_extra_set_progress_changed (extra, 101);
 
-	store = pk_backend_get_store (extra->priv->backend);
 	signal_files = g_signal_connect (extra->priv->backend, "files",
 					 G_CALLBACK (pk_transaction_extra_update_files_check_desktop_cb), extra);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
-	pk_store_set_strv (store, "package_ids", package_ids);
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
@@ -983,7 +972,6 @@ out:
 gboolean
 pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar **package_ids)
 {
-	PkStore *store;
 	guint signal_files = 0;
 	gboolean ret = TRUE;
 	gchar **files = NULL;
@@ -1018,13 +1006,11 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	/* set status */
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_LIBRARIES);
 
-	store = pk_backend_get_store (extra->priv->backend);
 	signal_files = g_signal_connect (extra->priv->backend, "files",
 					 G_CALLBACK (pk_transaction_extra_files_check_library_restart_cb), extra);
 
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
-	pk_store_set_strv (store, "package_ids", package_ids);
 	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */

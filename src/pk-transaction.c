@@ -1252,7 +1252,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	gboolean ret;
 	guint i;
 	GError *error = NULL;
-	PkStore *store;
 	PkBitfield filters;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
@@ -1355,26 +1354,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* we are no longer waiting, we are setting up */
 	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 	pk_backend_set_percentage (priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
-
-	/* set all possible arguments for backend */
-	store = pk_backend_get_store (priv->backend);
-	pk_store_set_bool (store, "force", priv->cached_force);
-	pk_store_set_bool (store, "allow_deps", priv->cached_allow_deps);
-	pk_store_set_bool (store, "autoremove", priv->cached_autoremove);
-	pk_store_set_bool (store, "enabled", priv->cached_enabled);
-	pk_store_set_bool (store, "only_trusted", priv->cached_only_trusted);
-	pk_store_set_uint (store, "filters", priv->cached_filters);
-	pk_store_set_uint (store, "provides", priv->cached_provides);
-	pk_store_set_strv (store, "package_ids", priv->cached_package_ids);
-	pk_store_set_strv (store, "full_paths", priv->cached_full_paths);
-	pk_store_set_string (store, "package_id", priv->cached_package_id);
-	pk_store_set_string (store, "transaction_id", priv->cached_transaction_id);
-	pk_store_set_string (store, "search", priv->cached_search);
-	pk_store_set_string (store, "repo_id", priv->cached_repo_id);
-	pk_store_set_string (store, "key_id", priv->cached_key_id);
-	pk_store_set_string (store, "parameter", priv->cached_parameter);
-	pk_store_set_string (store, "value", priv->cached_value);
-	pk_store_set_string (store, "directory", priv->cached_directory);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
