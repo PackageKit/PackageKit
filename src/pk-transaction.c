@@ -1129,10 +1129,16 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	GPtrArray *updates;
 	const PkItemPackage *obj;
 	guint i;
-	guint j;
+	guint j = 0;
 	guint length = 0;
 	gboolean ret = FALSE;
 	gchar **package_ids_security = NULL;
+
+	/* chekc we have anything to process */
+	if (package_ids == NULL) {
+		egg_debug ("no package_ids for %s", pk_role_enum_to_text (transaction->priv->role));
+		goto out;
+	}
 
 	/* only do this for update actions */
 	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
@@ -1172,11 +1178,11 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	}
 
 	/* create list of security packages */
-	package_ids_security = g_new (gchar *, length+1);
+	package_ids_security = g_new0 (gchar *, length+1);
 	for (i=0; i<updates->len; i++) {
 		obj = g_ptr_array_index (updates, i);
 		if (obj->info_enum == PK_INFO_ENUM_SECURITY)
-			package_ids_security[i] = g_strdup (obj->package_id);
+			package_ids_security[j++] = g_strdup (obj->package_id);
 	}
 
 
