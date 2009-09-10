@@ -132,7 +132,7 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 	store = pk_backend_get_store (extra->priv->backend);
 	pk_store_set_uint (store, "filters", pk_bitfield_value (PK_FILTER_ENUM_INSTALLED));
 	pk_store_set_string (store, "search", filename);
-	extra->priv->backend->desc->search_file (extra->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename);
+	pk_backend_search_file (extra->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);
@@ -360,7 +360,7 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
-	if (extra->priv->backend->desc->search_file == NULL) {
+	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
 		egg_debug ("cannot search files");
 		return FALSE;
 	}
@@ -461,7 +461,7 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
-	if (extra->priv->backend->desc->get_packages == NULL) {
+	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
 		egg_debug ("cannot get packages");
 		return FALSE;
 	}
@@ -479,7 +479,7 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 	/* get the new package list */
 	pk_backend_reset (extra->priv->backend);
 	pk_store_set_uint (pk_backend_get_store (extra->priv->backend), "filters", pk_bitfield_value (PK_FILTER_ENUM_NONE));
-	extra->priv->backend->desc->get_packages (extra->priv->backend, PK_FILTER_ENUM_NONE);
+	pk_backend_get_packages (extra->priv->backend, PK_FILTER_ENUM_NONE);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);
@@ -682,7 +682,7 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
-	if (extra->priv->backend->desc->get_files == NULL) {
+	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
 		egg_debug ("cannot get files");
 		return FALSE;
 	}
@@ -699,7 +699,7 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
 	pk_store_set_strv (store, "package_ids", package_ids);
-	extra->priv->backend->desc->get_files (extra->priv->backend, package_ids);
+	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);
@@ -759,7 +759,7 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
-	if (extra->priv->backend->desc->get_files == NULL) {
+	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
 		egg_debug ("cannot get files");
 		return FALSE;
 	}
@@ -774,7 +774,7 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
 	pk_store_set_strv (store, "package_ids", package_ids);
-	extra->priv->backend->desc->get_files (extra->priv->backend, package_ids);
+	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);
@@ -990,7 +990,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
-	if (extra->priv->backend->desc->get_files == NULL) {
+	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
 		egg_debug ("cannot get files");
 		return FALSE;
 	}
@@ -1025,7 +1025,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	/* get all the files touched in the packages we just updated */
 	pk_backend_reset (extra->priv->backend);
 	pk_store_set_strv (store, "package_ids", package_ids);
-	extra->priv->backend->desc->get_files (extra->priv->backend, package_ids);
+	pk_backend_get_files (extra->priv->backend, package_ids);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);

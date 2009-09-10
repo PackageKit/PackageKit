@@ -43,8 +43,6 @@ typedef struct _PkBackendClass PkBackendClass;
 struct _PkBackend
 {
 	GObject			 parent;
-	PkStore			*store;
-	PkBackendDesc		*desc;
 	PkBackendPrivate	*priv;
 };
 
@@ -77,6 +75,91 @@ PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 PkStore		*pk_backend_get_store			(PkBackend	*backend);
 gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
+gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
+							 PkRoleEnum	 role);
+void		pk_backend_cancel			(PkBackend	*backend);
+void		pk_backend_download_packages		(PkBackend	*backend,
+							 gchar		**package_ids,
+							 const gchar	*directory);
+void		pk_backend_get_categories		(PkBackend	*backend);
+void		pk_backend_get_depends			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 gchar		**package_ids,
+							 gboolean	 recursive);
+void		pk_backend_get_details			(PkBackend	*backend,
+							 gchar		**package_ids);
+void		pk_backend_get_distro_upgrades		(PkBackend	*backend);
+void		pk_backend_get_files			(PkBackend	*backend,
+							 gchar		**package_ids);
+void		pk_backend_get_requires			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 gchar		**package_ids,
+							 gboolean	 recursive);
+void		pk_backend_get_update_detail		(PkBackend	*backend,
+							 gchar		**package_ids);
+void		pk_backend_get_updates			(PkBackend	*backend,
+							 PkBitfield	 filters);
+void		pk_backend_install_packages		(PkBackend	*backend,
+							 gboolean	 only_trusted,
+							 gchar		**package_ids);
+void		pk_backend_install_signature		(PkBackend	*backend,
+							 PkSigTypeEnum	 type,
+							 const gchar	*key_id,
+							 const gchar	*package_id);
+void		pk_backend_install_files		(PkBackend	*backend,
+							 gboolean	 only_trusted,
+							 gchar		**full_paths);
+void		pk_backend_refresh_cache		(PkBackend	*backend,
+							 gboolean	 force);
+void		pk_backend_remove_packages		(PkBackend	*backend,
+							 gchar		**package_ids,
+							 gboolean	 allow_deps,
+							 gboolean	 autoremove);
+void		pk_backend_resolve			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 gchar		**package_ids);
+void		pk_backend_rollback			(PkBackend	*backend,
+							 const gchar	*transaction_id);
+void		pk_backend_search_details		(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 const gchar	*search);
+void		pk_backend_search_file			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 const gchar	*search);
+void		pk_backend_search_group			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 const gchar	*search);
+void		pk_backend_search_name			(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 const gchar	*search);
+void		pk_backend_update_packages		(PkBackend	*backend,
+							 gboolean	 only_trusted,
+							 gchar		**package_ids);
+void		pk_backend_update_system		(PkBackend	*backend,
+							 gboolean	 only_trusted);
+void		pk_backend_get_repo_list		(PkBackend	*backend,
+							 PkBitfield	 filters);
+void		pk_backend_repo_enable			(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 gboolean	 enabled);
+void		pk_backend_repo_set_data		(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 const gchar	*parameter,
+							 const gchar	*value);
+void		pk_backend_what_provides		(PkBackend	*backend,
+							 PkBitfield	 filters,
+							 PkProvidesEnum provides,
+							 const gchar	*search);
+void		pk_backend_get_packages			(PkBackend	*backend,
+							 PkBitfield	 filters);
+void		pk_backend_simulate_install_files	(PkBackend	*backend,
+							 gchar		**full_paths);
+void		pk_backend_simulate_install_packages	(PkBackend	*backend,
+							 gchar		**package_ids);
+void		pk_backend_simulate_remove_packages	(PkBackend	*backend,
+							 gchar		**package_ids);
+void		pk_backend_simulate_update_packages	(PkBackend	*backend,
+							 gchar		**package_ids);
 
 G_END_DECLS
 

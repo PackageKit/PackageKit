@@ -68,10 +68,37 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("");
+}
+
+/**
  * backend_cancel:
  */
 static void
 backend_cancel (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * pk_backend_get_categories:
+ */
+static void
+backend_get_categories (PkBackend *backend)
 {
 	pk_backend_finished (backend);
 }
@@ -95,7 +122,16 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_details:
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_files:
  */
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
@@ -307,6 +343,42 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_simulate_install_files:
+ */
+static void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_simulate_update_packages:
+ */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Test Succeed",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -314,13 +386,13 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
+	backend_download_packages,		/* download_packages */
+	backend_get_categories,			/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,					/* get_distro_upgrades */
+	backend_get_distro_upgrades,		/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
@@ -343,9 +415,9 @@ PK_BACKEND_OPTIONS (
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides,			/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL					/* simulate_update_packages */
+	backend_simulate_install_files,		/* simulate_install_files */
+	backend_simulate_install_packages,	/* simulate_install_packages */
+	backend_simulate_remove_packages,	/* simulate_remove_packages */
+	backend_simulate_update_packages	/* simulate_update_packages */
 );
 

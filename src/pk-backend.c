@@ -117,6 +117,8 @@ struct _PkBackendPrivate
 	guint			 signal_finished;
 	guint			 signal_error_timeout;
 	GThread			*thread;
+	PkBitfield		 roles;
+	PkBackendDesc		*desc;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -156,9 +158,9 @@ pk_backend_get_groups (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
 
 	/* not compulsory */
-	if (backend->desc->get_groups == NULL)
+	if (backend->priv->desc->get_groups == NULL)
 		return PK_GROUP_ENUM_UNKNOWN;
-	return backend->desc->get_groups (backend);
+	return backend->priv->desc->get_groups (backend);
 }
 
 /**
@@ -171,9 +173,9 @@ pk_backend_get_mime_types (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 
 	/* not compulsory */
-	if (backend->desc->get_mime_types == NULL)
+	if (backend->priv->desc->get_mime_types == NULL)
 		return g_strdup ("");
-	return backend->desc->get_mime_types (backend);
+	return backend->priv->desc->get_mime_types (backend);
 }
 
 /**
@@ -186,9 +188,9 @@ pk_backend_get_filters (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
 
 	/* not compulsory */
-	if (backend->desc->get_filters == NULL)
+	if (backend->priv->desc->get_filters == NULL)
 		return PK_FILTER_ENUM_UNKNOWN;
-	return backend->desc->get_filters (backend);
+	return backend->priv->desc->get_filters (backend);
 }
 
 /**
@@ -203,8 +205,12 @@ pk_backend_get_roles (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 
+	/* optimise */
+	if (backend->priv->roles != 0)
+		goto out;
+
 	/* lets reduce pointer dereferences... */
-	desc = backend->desc;
+	desc = backend->priv->desc;
 	if (desc->cancel != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_CANCEL);
 	if (desc->get_depends != NULL)
@@ -267,7 +273,20 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
 	if (desc->simulate_update_packages != NULL || desc->get_depends != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
-	return roles;
+	backend->priv->roles = roles;
+out:
+	return backend->priv->roles;
+}
+
+/**
+ * pk_backend_is_implemented:
+ **/
+gboolean
+pk_backend_is_implemented (PkBackend *backend, PkRoleEnum role)
+{
+	PkBitfield roles;
+	roles = pk_backend_get_roles (backend);
+	return pk_bitfield_contain (roles, role);
 }
 
 /**
@@ -467,7 +486,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	}
 
 	/* is is correctly formed? */
-	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc)) {
+	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->priv->desc)) {
 		g_module_close (handle);
 		egg_warning ("could not find description in plugin %s, not loading", backend_name);
 		ret = FALSE;
@@ -535,16 +554,16 @@ gboolean
 pk_backend_lock (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 
 	if (backend->priv->locked) {
 		egg_warning ("already locked");
 		/* we don't return FALSE here, as the action didn't fail */
 		return TRUE;
 	}
-	if (backend->desc->initialize != NULL) {
+	if (backend->priv->desc->initialize != NULL) {
 		backend->priv->during_initialize = TRUE;
-		backend->desc->initialize (backend);
+		backend->priv->desc->initialize (backend);
 		backend->priv->during_initialize = FALSE;
 	}
 	backend->priv->locked = TRUE;
@@ -570,12 +589,12 @@ pk_backend_unlock (PkBackend *backend)
 		/* we don't return FALSE here, as the action didn't fail */
 		return TRUE;
 	}
-	if (backend->desc == NULL) {
+	if (backend->priv->desc == NULL) {
 		egg_warning ("not yet loaded backend, try pk_backend_lock()");
 		return FALSE;
 	}
-	if (backend->desc->destroy != NULL)
-		backend->desc->destroy (backend);
+	if (backend->priv->desc->destroy != NULL)
+		backend->priv->desc->destroy (backend);
 	backend->priv->locked = FALSE;
 	return TRUE;
 }
@@ -1645,7 +1664,7 @@ gboolean
 pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -1661,7 +1680,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	}
 
 	/* can we do the action? */
-	if (backend->desc->cancel != NULL) {
+	if (backend->priv->desc->cancel != NULL) {
 		/* emit */
 		g_signal_emit (backend, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
 		backend->priv->allow_cancel = allow_cancel;
@@ -1929,7 +1948,7 @@ gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return g_strdup (backend->priv->name);
 }
@@ -1941,9 +1960,9 @@ gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-	return g_strdup (backend->desc->description);
+	return g_strdup (backend->priv->desc->description);
 }
 
 /**
@@ -1953,9 +1972,9 @@ gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-	return g_strdup (backend->desc->author);
+	return g_strdup (backend->priv->desc->author);
 }
 
 /**
@@ -2242,6 +2261,326 @@ pk_backend_reset (PkBackend *backend)
 }
 
 /**
+ * pk_backend_cancel:
+ */
+void
+pk_backend_cancel (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->cancel (backend);
+}
+
+/**
+ * pk_backend_download_packages:
+ */
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->download_packages (backend, package_ids, directory);
+}
+
+/**
+ * pk_pk_backend_get_categories:
+ */
+void
+pk_backend_get_categories (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_categories (backend);
+}
+
+/**
+ * pk_backend_get_depends:
+ */
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_depends (backend, filters, package_ids, recursive);
+}
+
+/**
+ * pk_backend_get_details:
+ */
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_details (backend, package_ids);
+}
+
+/**
+ * pk_backend_get_distro_upgrades:
+ */
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_distro_upgrades (backend);
+}
+
+/**
+ * pk_backend_get_files:
+ */
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_files (backend, package_ids);
+}
+
+/**
+ * pk_backend_get_requires:
+ */
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_requires (backend, filters, package_ids, recursive);
+}
+
+/**
+ * pk_backend_get_update_detail:
+ */
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_update_detail (backend, package_ids);
+}
+
+/**
+ * pk_backend_get_updates:
+ */
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_updates (backend, filters);
+}
+
+/**
+ * pk_backend_install_packages:
+ */
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->install_packages (backend, only_trusted, package_ids);
+}
+
+/**
+ * pk_backend_install_signature:
+ */
+void
+pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->install_signature (backend, type, key_id, package_id);
+}
+
+/**
+ * pk_backend_install_files:
+ */
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->install_files (backend, only_trusted, full_paths);
+}
+
+/**
+ * pk_backend_refresh_cache:
+ */
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->refresh_cache (backend, force);
+}
+
+/**
+ * pk_backend_remove_packages:
+ */
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->remove_packages (backend, package_ids, allow_deps, autoremove);
+}
+
+/**
+ * pk_backend_resolve:
+ */
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->resolve (backend, filters, package_ids);
+}
+
+/**
+ * pk_backend_rollback:
+ */
+void
+pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->rollback (backend, transaction_id);
+}
+
+/**
+ * pk_backend_search_details:
+ */
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->search_details (backend, filters, search);
+}
+
+/**
+ * pk_backend_search_file:
+ */
+void
+pk_backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->search_file (backend, filters, search);
+}
+
+/**
+ * pk_backend_search_group:
+ */
+void
+pk_backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->search_group (backend, filters, search);
+}
+
+/**
+ * pk_backend_search_name:
+ */
+void
+pk_backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->search_name (backend, filters, search);
+}
+
+/**
+ * pk_backend_update_packages:
+ */
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->update_packages (backend, only_trusted, package_ids);
+}
+
+/**
+ * pk_backend_update_system:
+ */
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->update_system (backend, only_trusted);
+}
+
+/**
+ * pk_backend_get_repo_list:
+ */
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_repo_list (backend, filters);
+}
+
+/**
+ * pk_backend_repo_enable:
+ */
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->repo_enable (backend, repo_id, enabled);
+}
+
+/**
+ * pk_backend_repo_set_data:
+ */
+void
+pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->repo_set_data (backend, repo_id, parameter, value);
+}
+
+/**
+ * pk_backend_what_provides:
+ */
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->what_provides (backend, filters, provides, search);
+}
+
+/**
+ * pk_backend_get_packages:
+ */
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->get_packages (backend, filters);
+}
+
+/**
+ * pk_backend_simulate_install_files:
+ */
+void
+pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->simulate_install_files (backend, full_paths);
+}
+
+/**
+ * pk_backend_simulate_install_packages:
+ */
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->simulate_install_packages (backend, package_ids);
+}
+
+/**
+ * pk_backend_simulate_remove_packages:
+ */
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->simulate_remove_packages (backend, package_ids);
+}
+
+/**
+ * pk_backend_simulate_update_packages:
+ */
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	backend->priv->desc->simulate_update_packages (backend, package_ids);
+}
+
+/**
  * pk_backend_init:
  **/
 static void
@@ -2264,6 +2603,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->simultaneous = FALSE;
+	backend->priv->roles = 0;
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();

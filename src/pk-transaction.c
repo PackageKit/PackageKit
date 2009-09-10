@@ -1252,7 +1252,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	gboolean ret;
 	guint i;
 	GError *error = NULL;
-	PkBackendDesc *desc;
 	PkStore *store;
 	PkBitfield filters;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
@@ -1377,95 +1376,92 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_store_set_string (store, "value", priv->cached_value);
 	pk_store_set_string (store, "directory", priv->cached_directory);
 
-	/* lets reduce pointer dereferences... */
-	desc = priv->backend->desc;
-
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS)
-		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
+		pk_backend_get_depends (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
-		desc->get_update_detail (priv->backend, priv->cached_package_ids);
+		pk_backend_get_update_detail (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_RESOLVE)
-		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
+		pk_backend_resolve (priv->backend, priv->cached_filters, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_ROLLBACK)
-		desc->rollback (priv->backend, priv->cached_transaction_id);
+		pk_backend_rollback (priv->backend, priv->cached_transaction_id);
 	else if (priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES)
-		desc->download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
+		pk_backend_download_packages (priv->backend, priv->cached_package_ids, priv->cached_directory);
 	else if (priv->role == PK_ROLE_ENUM_GET_DETAILS)
-		desc->get_details (priv->backend, priv->cached_package_ids);
+		pk_backend_get_details (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
-		desc->get_distro_upgrades (priv->backend);
+		pk_backend_get_distro_upgrades (priv->backend);
 	else if (priv->role == PK_ROLE_ENUM_GET_FILES)
-		desc->get_files (priv->backend, priv->cached_package_ids);
+		pk_backend_get_files (priv->backend, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
-		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
+		pk_backend_get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES)
-		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
+		pk_backend_what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
-		desc->get_updates (priv->backend, priv->cached_filters);
+		pk_backend_get_updates (priv->backend, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES)
-		desc->get_packages (priv->backend, priv->cached_filters);
+		pk_backend_get_packages (priv->backend, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
-		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_details (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		desc->search_file (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_file (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
-		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_group (priv->backend, priv->cached_filters, priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
-		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
+		pk_backend_search_name (priv->backend,priv->cached_filters,priv->cached_search);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
-		desc->install_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
+		pk_backend_install_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
-		desc->install_files (priv->backend, priv->cached_only_trusted, priv->cached_full_paths);
+		pk_backend_install_files (priv->backend, priv->cached_only_trusted, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE)
-		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
+		pk_backend_install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
-		desc->refresh_cache (priv->backend,  priv->cached_force);
+		pk_backend_refresh_cache (priv->backend,  priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES)
-		desc->remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
+		pk_backend_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		desc->update_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
+		pk_backend_update_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM)
-		desc->update_system (priv->backend, priv->cached_only_trusted);
+		pk_backend_update_system (priv->backend, priv->cached_only_trusted);
 	else if (priv->role == PK_ROLE_ENUM_GET_CATEGORIES)
-		desc->get_categories (priv->backend);
+		pk_backend_get_categories (priv->backend);
 	else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST)
-		desc->get_repo_list (priv->backend, priv->cached_filters);
+		pk_backend_get_repo_list (priv->backend, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE)
-		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
+		pk_backend_repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
-		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
+		pk_backend_repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)
-		desc->simulate_install_files (priv->backend, priv->cached_full_paths);
+		pk_backend_simulate_install_files (priv->backend, priv->cached_full_paths);
 	else if (priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
 		/* fallback to a method we do have */
-		if (desc->simulate_install_packages != NULL) {
-			desc->simulate_install_packages (priv->backend, priv->cached_package_ids);
+		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
+			pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_INSTALLING, priv->cached_package_ids[i], "");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
+			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
 		/* fallback to a method we do have */
-		if (desc->simulate_remove_packages != NULL) {
-			desc->simulate_remove_packages (priv->backend, priv->cached_package_ids);
+		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
+			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids);
 		} else {
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			desc->get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
+			pk_backend_get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
 		/* fallback to a method we do have */
-		if (desc->simulate_update_packages != NULL) {
-			desc->simulate_update_packages (priv->backend, priv->cached_package_ids);
+		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
+			pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_REMOVING, priv->cached_package_ids[i], "");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-			desc->get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
+			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else {
 		egg_error ("failed to run as role not assigned");
@@ -2095,7 +2091,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	egg_debug ("Cancel method called on %s", transaction->priv->tid);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->cancel == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Cancel not yet supported by backend");
 		pk_transaction_dbus_return_error (context, error);
@@ -2175,7 +2171,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	pk_backend_set_exit_code (transaction->priv->backend, PK_EXIT_ENUM_CANCELLED);
 
 	/* actually run the method */
-	transaction->priv->backend->desc->cancel (transaction->priv->backend);
+	pk_backend_cancel (transaction->priv->backend);
 
 out:
 	/* return from async with success */
@@ -2202,7 +2198,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	egg_debug ("DownloadPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->download_packages == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "DownloadPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2303,7 +2299,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 	egg_debug ("GetCategories method called");
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_categories == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_CATEGORIES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetCategories not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2364,7 +2360,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_depends == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDepends not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2451,7 +2447,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_details == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DETAILS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2523,7 +2519,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	egg_debug ("GetDistroUpgrades method called");
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_distro_upgrades == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetDistroUpgrades not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2578,7 +2574,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_files == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2650,7 +2646,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	egg_debug ("GetPackages method called: %s", filter);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_packages == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2765,7 +2761,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	egg_debug ("GetRepoList method called");
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_repo_list == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REPO_LIST)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRepoList not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2828,7 +2824,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_requires == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetRequires not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -2957,7 +2953,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_update_detail == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdateDetail not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3030,7 +3026,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	egg_debug ("GetUpdates method called");
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_updates == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_UPDATES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "GetUpdates not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3183,7 +3179,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->install_files == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3289,7 +3285,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->install_packages == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3362,7 +3358,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	egg_debug ("InstallSignature method called: %s, %s", key_id, package_id);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->install_signature == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "InstallSignature not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3445,7 +3441,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	egg_debug ("RefreshCache method called: %i", force);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->refresh_cache == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REFRESH_CACHE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RefreshCache not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3502,7 +3498,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->remove_packages == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RemovePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3574,7 +3570,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	egg_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->repo_enable == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_ENABLE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RepoEnable not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3634,7 +3630,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	egg_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->repo_set_data == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_SET_DATA)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "RepoSetData not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3700,7 +3696,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	g_free (packages_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->resolve == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_RESOLVE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Resolve not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3782,7 +3778,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	egg_debug ("Rollback method called: %s", transaction_id);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->rollback == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_ROLLBACK)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Rollback not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3840,7 +3836,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	egg_debug ("SearchDetails method called: %s, %s", filter, search);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->search_details == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_DETAILS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchDetails not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3907,7 +3903,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	egg_debug ("SearchFile method called: %s, %s", filter, search);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->search_file == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchFile not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -3983,7 +3979,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	egg_debug ("SearchGroup method called: %s, %s", filter, search);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->search_group == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_GROUP)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchGroup not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4059,7 +4055,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	egg_debug ("SearchName method called: %s, %s", filter, search);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->search_name == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_NAME)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SearchName not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4171,7 +4167,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->simulate_install_files == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateInstallFiles not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4273,8 +4269,8 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 	egg_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->simulate_install_packages == NULL &&
-	    transaction->priv->backend->desc->get_depends == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
+	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateInstallPackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4349,8 +4345,8 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 	egg_debug ("SimulateRemovePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->simulate_remove_packages == NULL &&
-	    transaction->priv->backend->desc->get_requires == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
+	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REQUIRES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateRemovePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4425,8 +4421,8 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 	egg_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->simulate_update_packages == NULL &&
-	    transaction->priv->backend->desc->get_depends == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
+	    !pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DEPENDS)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "SimulateUpdatePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4503,7 +4499,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->update_packages == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "UpdatePackages not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4574,7 +4570,7 @@ pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted,
 	egg_debug ("UpdateSystem method called");
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->update_system == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "UpdateSystem not yet supported by backend");
 		pk_transaction_release_tid (transaction);
@@ -4631,7 +4627,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	egg_debug ("WhatProvides method called: %s, %s", type, search);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->what_provides == NULL) {
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_WHAT_PROVIDES)) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "WhatProvides not yet supported by backend");
 		pk_transaction_release_tid (transaction);
