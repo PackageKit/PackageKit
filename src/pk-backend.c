@@ -268,11 +268,11 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
 	if (desc->simulate_install_files != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
-	if (desc->simulate_install_packages != NULL || desc->get_depends != NULL)
+	if (desc->simulate_install_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
-	if (desc->simulate_remove_packages != NULL || desc->get_requires != NULL)
+	if (desc->simulate_remove_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
-	if (desc->simulate_update_packages != NULL || desc->get_depends != NULL)
+	if (desc->simulate_update_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	backend->priv->roles = roles;
 out:
