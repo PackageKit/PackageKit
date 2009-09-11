@@ -622,7 +622,7 @@ out:
  * pk_service_pack_create_from_files:
  **/
 static gboolean
-pk_service_pack_create_from_files (PkServicePackState *state, GPtrArray *file_array, GError **error)
+pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array, GError **error)
 {
 	g_return_val_if_fail (PK_IS_SERVICE_PACK (state->pack), FALSE);
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
