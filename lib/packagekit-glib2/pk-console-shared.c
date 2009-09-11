@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include <termios.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
@@ -56,12 +58,40 @@ pk_console_get_number (const gchar *question, guint maxnum)
 }
 
 /**
+ * pk_console_getchar_unbuffered:
+ **/
+static gchar
+pk_console_getchar_unbuffered (void)
+{
+	gchar c = '\0';
+	struct termios org_opts, new_opts;
+	gint res = 0;
+
+	/* store old settings */
+	res = tcgetattr (STDIN_FILENO, &org_opts);
+	if (res != 0)
+		egg_warning ("failed to set terminal");
+
+	/* set new terminal parms */
+	memcpy (&new_opts, &org_opts, sizeof(new_opts));
+	new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
+	tcsetattr (STDIN_FILENO, TCSANOW, &new_opts);
+	c = getchar ();
+
+	/* restore old settings */
+	res = tcsetattr (STDIN_FILENO, TCSANOW, &org_opts);
+	if (res != 0)
+		egg_warning ("failed to set terminal");
+	return c;
+}
+
+/**
  * pk_console_get_prompt:
  **/
 gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
-	gchar answer = '\0';
+	gchar answer;
 	gboolean ret = FALSE;
 
 	/* pretty print */
@@ -72,8 +102,8 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 		g_print (" [N/y] ");
 
 	do {
-		/* ITS4: ignore, we are copying into the same variable, not a string */
-		answer = (gchar) fgetc (stdin);
+		/* get the unbuffered char */
+		answer = pk_console_getchar_unbuffered ();
 
 		/* positive */
 		if (answer == 'y' || answer == 'Y') {
@@ -92,12 +122,6 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 		if (answer == '\n' && !defaultyes)
 			break;
 	} while (TRUE);
-
-	/* remove the trailing \n */
-	answer = (gchar) fgetc (stdin);
-	if (answer != '\n')
-		ungetc (answer, stdin);
-
 	return ret;
 }
 
@@ -494,4 +518,44 @@ pk_info_enum_to_localised_past (PkInfoEnum info)
 	}
 	return text;
 }
+
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef EGG_TEST
+#include "egg-test.h"
+
+void
+pk_console_test (gpointer user_data)
+{
+	EggTest *test = (EggTest *) user_data;
+	gboolean ret;
+
+	if (!egg_test_start (test, "PkConsole"))
+		return;
+
+	/************************************************************/
+	egg_test_title (test, "get prompt 1");
+	ret = pk_console_get_prompt ("press enter", TRUE);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "get prompt 2");
+	ret = pk_console_get_prompt ("press enter", TRUE);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "get prompt 3");
+	ret = pk_console_get_prompt ("press Y", TRUE);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "get prompt 3");
+	ret = pk_console_get_prompt ("press N", TRUE);
+	egg_test_assert (test, !ret);
+
+	egg_test_end (test);
+}
+#endif
 

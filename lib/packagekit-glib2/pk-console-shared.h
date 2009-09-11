@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <packagekit-glib2/packagekit.h>
 
+void		 pk_console_test			(gpointer	 user_data);
 guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
 gboolean	 pk_console_get_prompt			(const gchar	*question,

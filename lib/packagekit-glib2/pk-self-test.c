@@ -29,6 +29,7 @@
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-control.h"
+#include "pk-console-shared.h"
 #include "pk-desktop.h"
 #include "pk-enum.h"
 #include "pk-package.h"
@@ -68,6 +69,7 @@ main (int argc, char **argv)
 	pk_task_test (test);
 	pk_task_wrapper_test (test);
 	pk_task_text_test (test);
+	pk_console_test (test);
 
 	return (egg_test_finish (test));
 }
