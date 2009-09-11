@@ -1,4 +1,4 @@
-# translation of Packagekit-new.po to Gujarati
+# translation of PulseAudio-Up-pre.po to Gujarati
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
@@ -6,10 +6,10 @@
 # Sweta Kothari <swkothar@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: Packagekit-new\n"
+"Project-Id-Version: PulseAudio-Up-pre\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-10 08:29+0000\n"
-"PO-Revision-Date: 2009-09-10 15:52+0530\n"
+"POT-Creation-Date: 2009-09-11 02:28+0000\n"
+"PO-Revision-Date: 2009-09-11 14:30+0530\n"
 "Last-Translator: Sweta Kothari <swkothar@redhat.com>\n"
 "Language-Team: Gujarati\n"
 "MIME-Version: 1.0\n"
@@ -45,7 +45,7 @@ msgstr "False"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:333
 msgid "Role"
 msgstr "ભૂમિકા"
 
@@ -60,7 +60,7 @@ msgstr "(સકંડો)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:347
 msgid "Command line"
 msgstr "આદેશ વાક્ય"
 
@@ -139,7 +139,7 @@ msgstr "સુધારા વિશે વિગતો:"
 #. TRANSLATORS: title, the names of the packages that the method is processing
 #: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
 #: ../lib/packagekit-glib2/pk-task-text.c:172
-#: ../src/pk-polkit-action-lookup.c:352
+#: ../src/pk-polkit-action-lookup.c:358
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "પેકેજ"
@@ -197,7 +197,8 @@ msgid "Issued"
 msgstr "અદા કરેલ"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:294
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:470
 msgid "Updated"
 msgstr "સુધારેલ"
 
@@ -353,7 +354,7 @@ msgstr "આ ક્રિયા છેલ્લી સમાપ્ત થયે�
 #: ../client/pk-console.c:982 ../client/pk-generate-pack.c:222
 #: ../client/pk-monitor.c:282
 #: ../contrib/command-not-found/pk-command-not-found.c:614
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:500
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:504
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "વધારાની ડિબગીંગ જાણકારી બતાવો"
@@ -756,189 +757,189 @@ msgid "Starting install"
 msgstr "સ્થાપન શરૂ કરી રહ્યા છે"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:402
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:406
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "પેકેજ %s ને શોધતી વખતે નિષ્ફળતા, અથવા પહેલેથી જ સ્થાપિત થયેલ છે: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:503
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:507
 msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "કોઇપણ પેકેજોને વાસ્તવમાં સ્થાપિત કરો નહિં, ફક્ત દેખાવ કરો ક્યુ સ્થાપિત થયેલ છે"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:506
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:510
 msgid "Do not install dependencies of the core packages"
 msgstr "કોર પેકેજોનાં આધારોને સ્થાપિત કરો નહિં"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:509
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:513
 msgid "Do not display information or progress"
 msgstr "જાણકારી અથવા પ્રગતિને દર્શાવો નહિં"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:528
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit Debuginfo Installer"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:536
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ભૂલ: સ્થાપિત કરવા માટે પેકેજ નામો ને સ્પષ્ટ કરો."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:568
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:572
 #, c-format
 msgid "Getting sources list"
 msgstr "સ્ત્રોત યાદીને મેળવી રહ્યા છે"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:578
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:653
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:892
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:582
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
 msgid "FAILED."
 msgstr "FAILED."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:593
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:668
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:752
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:796
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:863
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:597
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:637
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:672
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:756
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:867
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:596
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "%i સક્રિય થયેલ અને %i નિષ્ક્રિય થયેલ સ્ત્રોતો મળ્યા."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:603
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:607
 #, c-format
 msgid "Finding debugging sources"
 msgstr "ડિબગીંગ સ્ત્રોતોને શોધી રહ્યા છે"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:636
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "%i નિષ્ક્રિય થયેલ debuginfo repos મળ્યુ."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:647
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "ડિબગીંગ સ્ત્રોતોને સક્રિય કરી રહ્યા છે"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:671
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "સક્રિય થયેલ %i ડિબગીંગ સ્ત્રોતો."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:678
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
 #, c-format
 msgid "Finding debugging packages"
 msgstr "ડિબગીંગ પેકેજોને શોધી રહ્યા છીએ"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "પેકેજ %s ને શોધતી વખતે નિષ્ફળતા: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:713
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:717
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "debuginfo પેકેજ શોધતી વખતે નિષ્ફળતા %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:745
 #, c-format
 msgid "Found no packages to install."
 msgstr "સ્થાપિત કરવા માટે પેકેજોની મળ્યા નહિં."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:755
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
 #, c-format
 msgid "Found %i packages:"
 msgstr "%i પેકેજો મળ્યા:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:775
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "પેકેજોને શોધી રહ્યા છે કે જે આ પેકેજો પર આધાર રાખે છે"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "આધારિત પેકેજો ને શોધી શક્યા નહિં: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
 #, c-format
 msgid "Found %i extra packages."
 msgstr "%i બહારનાં પેકેજો મળ્યા."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
 msgid "No extra packages required."
 msgstr "વધારાનાં પેકેજો જરૂરી નથી."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:813
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:817
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "સ્થાપિત કરવા માટે %i પેકેજો મળ્યા:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "simulate સ્થિતિમાં પેકેજોને સ્થાપિત કરી રહ્યા નથી"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:838
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:842
 #: ../lib/packagekit-glib2/pk-console-shared.c:246
 #, c-format
 msgid "Installing packages"
 msgstr "પેકેજોને સ્થાપિત કરી રહ્યા છે"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:855
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "પેકેજોનું સ્થાપન કરી શક્યા નહિં: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:883
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "પહેલાનાં સક્રિય થયેલ સ્ત્રોતોને નિષ્ક્રિય કરી રહ્યા છે"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "ડિબગીંગ સ્ત્રોતો ને નિષ્ક્રિય કરી શક્યા નહિં: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "નિષ્ક્રિય થયેલ %i ડિબગીંગ સ્ત્રોતો."
@@ -1174,7 +1175,7 @@ msgstr "ફાઇલ યાદીઓને ડાઉનલોડ કરી ર�
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:310
 msgid "Downloading lists of changes"
-msgstr "બદલાવોની યાદીને લોડ કરી રહ્યા છે."
+msgstr "બદલાવોની યાદીને લોડ કરી રહ્યા છે"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:314
@@ -1230,6 +1231,113 @@ msgstr "વપરાશમાં કાર્યક્રમોને ચકા�
 #: ../lib/packagekit-glib2/pk-console-shared.c:354
 msgid "Checking libraries in use"
 msgstr "વપરાશમાં લાઇબ્રેરીઓને ચકાસી રહ્યા છે"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:372
+msgid "Trivial"
+msgstr "Trivial"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:376
+msgid "Normal"
+msgstr "સામાન્ય"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:380
+msgid "Important"
+msgstr "મહત્વનું"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:384
+msgid "Security"
+msgstr "સુરક્ષા"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:388
+msgid "Bug fix "
+msgstr "ભૂલ સુધારો"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:392
+msgid "Enhancement"
+msgstr "વધારો"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:396
+msgid "Blocked"
+msgstr "બ્લોક થયેલ"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:401
+#: ../lib/packagekit-glib2/pk-console-shared.c:474
+msgid "Installed"
+msgstr "સ્થાપિત થયેલ"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:406
+msgid "Available"
+msgstr "ઉપલ્બધ"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:424
+msgid "Downloading"
+msgstr "ડાઉનલોડ કરી રહ્યા છીએ"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:428
+msgid "Updating"
+msgstr "સુધારી રહ્યા છે"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:432
+msgid "Installing"
+msgstr "સ્થાપિત કરી રહ્યા છીએ"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:436
+msgid "Removing"
+msgstr "દૂર કરી રહ્યા છે"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:440
+msgid "Cleaning up"
+msgstr "સાફ કરી રહ્યા છે"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:444
+msgid "Obsoleting"
+msgstr "અપ્રચલિત કરી રહ્યા છે"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:448
+msgid "Reinstalling"
+msgstr "પુન:સ્થાપિત કરી રહ્યા છીએ"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:466
+msgid "Downloaded"
+msgstr "ડાઉનલોડ થયેલ"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:478
+msgid "Removed"
+msgstr "દૂર કરેલ"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:482
+msgid "Cleaned up"
+msgstr "સાફ કરેલ"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:486
+msgid "Obsoleted"
+msgstr "અપ્રચલિત થયેલ"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:490
+msgid "Reinstalled"
+msgstr "પુન:સ્થાપિત થયેલ"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: ../lib/packagekit-glib2/pk-task-text.c:64
@@ -1648,7 +1756,7 @@ msgid "Many packages"
 msgstr "ઘણાબધા પેકેજો"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:340
 msgid "Only trusted"
 msgstr "માત્ર વિશ્ર્વાસપાત્ર"
 
