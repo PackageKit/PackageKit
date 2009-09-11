@@ -41,7 +41,6 @@
 #include "egg-string.h"
 
 #include "pk-transaction-db.h"
-#include "pk-marshal.h"
 
 static void     pk_transaction_db_finalize	(GObject        *object);
 
@@ -63,24 +62,13 @@ struct PkTransactionDbPrivate
 };
 
 enum {
-	PK_TRANSACTION_DB_TRANSACTION,
-	PK_TRANSACTION_DB_LAST_SIGNAL
+	SIGNAL_TRANSACTION,
+	SIGNAL_LAST
 };
 
-static guint signals [PK_TRANSACTION_DB_LAST_SIGNAL] = { 0 };
+static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
-
-typedef struct {
-	gboolean succeeded;
-	guint duration;
-	PkRoleEnum role;
-	gchar *tid;
-	gchar *data;
-	gchar *timespec;
-	guint uid;
-	gchar *cmdline;
-} PkTransactionDbItem;
 
 typedef struct {
 	gchar		*proxy_http;
@@ -89,42 +77,12 @@ typedef struct {
 } PkTransactionDbProxyItem;
 
 /**
- * pk_transaction_db_item_clear:
- **/
-static gboolean
-pk_transaction_db_item_clear (PkTransactionDbItem *item)
-{
-	item->succeeded = FALSE;
-	item->duration = 0;
-	item->role = PK_ROLE_ENUM_UNKNOWN;
-	item->tid = NULL;
-	item->data = NULL;
-	item->timespec = NULL;
-	item->uid = 0;
-	item->cmdline = NULL;
-	return TRUE;
-}
-
-/**
- * pk_transaction_db_item_free:
- **/
-static gboolean
-pk_transaction_db_item_free (PkTransactionDbItem *item)
-{
-	g_free (item->tid);
-	g_free (item->data);
-	g_free (item->timespec);
-	g_free (item->cmdline);
-	return TRUE;
-}
-
-/**
  * pk_transaction_sqlite_transaction_cb:
  **/
 static gint
 pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	PkTransactionDbItem item;
+	PkItemTransaction *item;
 	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
 	gint i;
 	gchar *col;
@@ -135,8 +93,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
 
-	pk_transaction_db_item_clear (&item);
-
+	item = g_new0 (PkItemTransaction, 1);
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
@@ -145,58 +102,51 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 			if (!ret)
 				egg_warning ("failed to parse succeeded: %s", value);
 			if (temp == 1)
-				item.succeeded = TRUE;
+				item->succeeded = TRUE;
 			else
-				item.succeeded = FALSE;
-			if (item.succeeded > 1) {
-				egg_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
-				item.succeeded = 1;
+				item->succeeded = FALSE;
+			if (item->succeeded > 1) {
+				egg_warning ("item->succeeded %i! Resetting to 1", item->succeeded);
+				item->succeeded = 1;
 			}
 		} else if (g_strcmp0 (col, "role") == 0) {
 			if (value != NULL)
-				item.role = pk_role_enum_from_text (value);
+				item->role = pk_role_enum_from_text (value);
 		} else if (g_strcmp0 (col, "transaction_id") == 0) {
 			if (value != NULL)
-				item.tid = g_strdup (value);
+				item->tid = g_strdup (value);
 		} else if (g_strcmp0 (col, "timespec") == 0) {
 			if (value != NULL)
-				item.timespec = g_strdup (value);
+				item->timespec = g_strdup (value);
 		} else if (g_strcmp0 (col, "cmdline") == 0) {
 			if (value != NULL)
-				item.cmdline = g_strdup (value);
+				item->cmdline = g_strdup (value);
 		} else if (g_strcmp0 (col, "data") == 0) {
 			if (value != NULL)
-				item.data = g_strdup (value);
+				item->data = g_strdup (value);
 		} else if (g_strcmp0 (col, "uid") == 0) {
 			ret = egg_strtouint (value, &temp);
 			if (ret)
-				item.uid = temp;
+				item->uid = temp;
 		} else if (g_strcmp0 (col, "duration") == 0) {
-			ret = egg_strtouint (value, &item.duration);
+			ret = egg_strtouint (value, &item->duration);
 			if (!ret) {
 				egg_warning ("failed to parse duration: %s", value);
-				item.duration = 0;
+				item->duration = 0;
 			}
-			if (item.duration > 60*60*12) {
-				egg_warning ("insane duration: %i", item.duration);
-				item.duration = 0;
+			if (item->duration > 60*60*12) {
+				egg_warning ("insane duration: %i", item->duration);
+				item->duration = 0;
 			}
 		} else {
 			egg_warning ("%s = %s\n", col, value);
 		}
 	}
 
-	egg_debug (" duration: %i (seconds)", item.duration);
-	egg_debug (" data: %s", item.data);
-	egg_debug (" uid: %i", item.uid);
-	egg_debug (" cmdline: %s", item.cmdline);
-
 	/* emit signal */
-	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
-		       item.tid, item.timespec, item.succeeded, item.role,
-		       item.duration, item.data, item.uid, item.cmdline);
+	g_signal_emit (tdb, signals [SIGNAL_TRANSACTION], 0, item);
 
-	pk_transaction_db_item_free (&item);
+	pk_item_transaction_unref (item);
 	return 0;
 }
 
@@ -777,13 +727,11 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_transaction_db_finalize;
-	signals [PK_TRANSACTION_DB_TRANSACTION] =
+	signals [SIGNAL_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING_UINT_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT,
-			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
