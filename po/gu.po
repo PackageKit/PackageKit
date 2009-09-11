@@ -1,4 +1,4 @@
-# translation of PulseAudio-Up-pre.po to Gujarati
+# translation of PackageKit-Update.po to Gujarati
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
@@ -6,10 +6,10 @@
 # Sweta Kothari <swkothar@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: PulseAudio-Up-pre\n"
+"Project-Id-Version: PackageKit-Update\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-11 02:28+0000\n"
-"PO-Revision-Date: 2009-09-11 14:30+0530\n"
+"PO-Revision-Date: 2009-09-11 15:06+0530\n"
 "Last-Translator: Sweta Kothari <swkothar@redhat.com>\n"
 "Language-Team: Gujarati\n"
 "MIME-Version: 1.0\n"
@@ -1205,7 +1205,7 @@ msgstr "કાર્યક્રમોનું સ્કેન કરી રહ
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: ../lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Generating package lists"
-msgstr "પેકેજ યાદીઓને ઉત્પન્ન કરી ી રહ્યા છે"
+msgstr "પેકેજ યાદીઓને ઉત્પન્ન કરી રહ્યા છે"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: ../lib/packagekit-glib2/pk-console-shared.c:338
