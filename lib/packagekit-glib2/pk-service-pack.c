@@ -624,7 +624,7 @@ out:
 static gboolean
 pk_service_pack_create_from_files (PkServicePackState *state, GPtrArray *file_array, GError **error)
 {
-	g_return_val_if_fail (PK_IS_SERVICE_PACK (pack), FALSE);
+	g_return_val_if_fail (PK_IS_SERVICE_PACK (state->pack), FALSE);
 	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 			      "The service pack %s cannot be created as PackageKit was not built with libarchive support", pack->priv->filename);
 	return FALSE;
