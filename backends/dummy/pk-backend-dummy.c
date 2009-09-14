@@ -612,13 +612,15 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_resolve:
+ * backend_resolve_timeout:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+static gboolean
+backend_resolve_timeout (gpointer data)
 {
+	PkBackend *backend = (PkBackend *) data;
 	guint i;
 	guint len;
+	gchar **packages = _package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -627,12 +629,12 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	len = g_strv_length (packages);
 	for (i=0; i<len; i++) {
 		if (g_strcmp0 (packages[i], "vips-doc") == 0 || g_strcmp0 (packages[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
-			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 						    "vips-doc;7.12.4-2.fc8;noarch;linva", "The vips documentation package.");
 			}
 		} else if (g_strcmp0 (packages[i], "glib2") == 0 || g_strcmp0 (packages[i], "glib2;2.14.0;i386;fedora") == 0) {
-			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 						    "glib2;2.14.0;i386;fedora", "The GLib library");
 			}
@@ -648,6 +650,20 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	}
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
+
+	/* never repeat */
+	return FALSE;
+}
+
+/**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+{
+	_filters = filters;
+	_package_ids = packages;
+	_signal_timeout = g_timeout_add (20, backend_resolve_timeout, backend);
 }
 
 /**
