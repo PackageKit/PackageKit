@@ -244,6 +244,120 @@ pk_client_real_paths (gchar **paths)
 }
 
 /**
+ * pk_client_percentage_to_signed:
+ */
+static gint
+pk_client_percentage_to_signed (guint percentage)
+{
+	if (percentage == 101)
+		return -1;
+	return (gint) percentage;
+}
+
+/**
+ * pk_client_get_properties_collect_cb:
+ **/
+static void
+pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkClientState *state)
+{
+	gboolean ret;
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback == NULL)
+		return;
+
+	/* role */
+	if (g_strcmp0 (key, "Role") == 0) {
+		ret = pk_progress_set_role (state->progress, pk_role_enum_from_text (g_value_get_string (value)));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
+		return;
+	}
+
+	/* status */
+	if (g_strcmp0 (key, "Status") == 0) {
+		ret = pk_progress_set_status (state->progress, pk_status_enum_from_text (g_value_get_string (value)));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+		return;
+	}
+
+	/* last-package */
+	if (g_strcmp0 (key, "LastPackage") == 0) {
+		ret = pk_progress_set_package_id (state->progress, g_value_get_string (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
+		return;
+	}
+
+	/* percentage */
+	if (g_strcmp0 (key, "Percentage") == 0) {
+		ret = pk_progress_set_percentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
+		return;
+	}
+
+	/* subpercentage */
+	if (g_strcmp0 (key, "Subpercentage") == 0) {
+		ret = pk_progress_set_subpercentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
+		return;
+	}
+
+	/* allow-cancel */
+	if (g_strcmp0 (key, "AllowCancel") == 0) {
+		ret = pk_progress_set_allow_cancel (state->progress, g_value_get_boolean (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
+		return;
+	}
+
+	/* caller-active */
+	if (g_strcmp0 (key, "CallerActive") == 0) {
+		ret = pk_progress_set_caller_active (state->progress, g_value_get_boolean (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
+		return;
+	}
+
+	/* elapsed-time */
+	if (g_strcmp0 (key, "ElapsedTime") == 0) {
+		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ELAPSED_TIME, state->progress_user_data);
+		return;
+	}
+
+	/* remaining-time */
+	if (g_strcmp0 (key, "RemainingTime") == 0) {
+		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_REMAINING_TIME, state->progress_user_data);
+		return;
+	}
+
+	/* speed */
+	if (g_strcmp0 (key, "Speed") == 0) {
+		ret = pk_progress_set_speed (state->progress, g_value_get_uint (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SPEED, state->progress_user_data);
+		return;
+	}
+
+	/* uid */
+	if (g_strcmp0 (key, "Uid") == 0) {
+		ret = pk_progress_set_uid (state->progress, g_value_get_uint (value));
+		if (ret)
+			state->progress_callback (state->progress, PK_PROGRESS_TYPE_UID, state->progress_user_data);
+		return;
+	}
+
+	egg_warning ("unhandled property '%s'", key);
+}
+
+/**
  * pk_client_cancel_cb:
  **/
 static void
@@ -252,18 +366,17 @@ pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	GError *error = NULL;
 	gboolean ret;
 
-	egg_debug ("cancelled %s (%p)", state->tid, state->call);
-
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
 		/* there's not really a lot we can do here */
-		egg_warning ("failed: %s", error->message);
+		egg_warning ("failed to cancel: %s", error->message);
 		g_error_free (error);
 	}
 
 	/* finished this call */
+	egg_debug ("cancelled %s, ended DBus call: %p", state->tid, state->call);
 	state->call = NULL;
 }
 
@@ -282,6 +395,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 	/* dbus method is pending now, just cancel */
 	if (state->call != NULL) {
 		dbus_g_proxy_cancel_call (state->proxy, state->call);
+		egg_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call);
 		state->call = NULL;
 		return;
 	}
@@ -561,10 +675,8 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 {
 	GError *error = NULL;
 
-	/* we've sent this async */
-	egg_debug ("got reply to request");
-
 	/* finished this call */
+	egg_debug ("got reply to request, ended DBus call: %p", state->call);
 	state->call = NULL;
 
 	/* get the result */
@@ -608,111 +720,58 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 }
 
 /**
- * pk_client_percentage_to_signed:
- */
-static gint
-pk_client_percentage_to_signed (guint percentage)
+ * pk_client_get_properties_cb:
+ **/
+static void
+pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
-	if (percentage == 101)
-		return -1;
-	return (gint) percentage;
+	GError *error = NULL;
+	GHashTable *hash;
+	gboolean ret;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to get properties: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* process results */
+	if (hash != NULL) {
+		g_hash_table_foreach (hash, (GHFunc) pk_client_get_properties_collect_cb, state);
+		g_hash_table_unref (hash);
+	}
+
+out:
+	/* finished this call */
+	egg_debug ("got property results, ended DBus call: %p", state->call);
+	state->call = NULL;
 }
 
 /**
- * pk_client_progress_changed_cb:
+ * pk_client_changed_cb:
  */
 static void
-pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subpercentage,
-			       guint elapsed_time, guint remaining_time, PkClientState *state)
+pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 {
-	gboolean ret;
-	gint percentage_new;
-	gint subpercentage_new;
+	/* successive quick Changed events */
+	if (state->call != NULL) {
+		egg_debug ("already processing request %p, so ignoring", state->call);
+		return;
+	}
 
-	/* convert to signed */
-	percentage_new = pk_client_percentage_to_signed (percentage);
-	subpercentage_new = pk_client_percentage_to_signed (subpercentage);
-
-	/* save progress */
-	ret = pk_progress_set_percentage (state->progress, percentage_new);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
-
-	/* save progress */
-	ret = pk_progress_set_subpercentage (state->progress, subpercentage_new);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
-
-	/* save progress */
-	ret = pk_progress_set_elapsed_time (state->progress, elapsed_time);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ELAPSED_TIME, state->progress_user_data);
-
-	/* save progress */
-	ret = pk_progress_set_remaining_time (state->progress, remaining_time);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_REMAINING_TIME, state->progress_user_data);
+	/* call D-Bus get_properties async */
+	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
+					       (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
+					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
+					       G_TYPE_INVALID);
+	egg_debug ("changed so checking properties, started DBus call: %p", state->call);
+	/* TODO: save state->call? */
 }
 
-/**
- * pk_client_status_changed_cb:
- */
-static void
-pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClientState *state)
-{
-	gboolean ret;
-	PkStatusEnum status_enum;
-
-	/* convert from text */
-	status_enum = pk_status_enum_from_text (status_text);
-
-	/* save progress */
-	ret = pk_progress_set_status (state->progress, status_enum);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
-}
-
-/**
- * pk_client_allow_cancel_cb:
- */
-static void
-pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClientState *state)
-{
-	gboolean ret;
-
-	/* save progress */
-	ret = pk_progress_set_allow_cancel (state->progress, allow_cancel);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
-}
-
-/**
- * pk_client_caller_active_changed_cb:
- */
-static void
-pk_client_caller_active_changed_cb (DBusGProxy *proxy, gboolean caller_active, PkClientState *state)
-{
-	gboolean ret;
-
-	/* save progress */
-	ret = pk_progress_set_caller_active (state->progress, caller_active);
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback != NULL && ret)
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
-}
 
 /**
  * pk_client_details_cb:
@@ -957,10 +1016,6 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 	/* add the signal types */
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "ProgressChanged",
-				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "StatusChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Transaction",
@@ -989,23 +1044,18 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Message", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Destroy", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Category", G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "MediaChangeRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Changed", G_TYPE_INVALID);
 
 	/* connect up the signals */
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_client_package_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
-				     G_CALLBACK (pk_client_status_changed_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
-				     G_CALLBACK (pk_client_progress_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Details",
 				     G_CALLBACK (pk_client_details_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
@@ -1018,10 +1068,6 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_require_restart_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Category",
 				     G_CALLBACK (pk_client_category_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
-				     G_CALLBACK (pk_client_allow_cancel_cb), state, NULL);
-	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
-				     G_CALLBACK (pk_client_caller_active_changed_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
@@ -1036,6 +1082,8 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_message_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "MediaChangeRequired",
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Changed",
+				     G_CALLBACK (pk_client_changed_cb), state, NULL);
 }
 
 /**
@@ -1048,10 +1096,6 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_finished_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
 					G_CALLBACK (pk_client_package_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "ProgressChanged",
-					G_CALLBACK (pk_client_progress_changed_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
-					G_CALLBACK (pk_client_status_changed_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Details",
 					G_CALLBACK (pk_client_details_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
@@ -1062,10 +1106,6 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_distro_upgrade_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
 					G_CALLBACK (pk_client_require_restart_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
-					G_CALLBACK (pk_client_allow_cancel_cb), state);
-	dbus_g_proxy_disconnect_signal (proxy, "CallerActiveChanged",
-					G_CALLBACK (pk_client_caller_active_changed_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_client_files_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
@@ -1078,6 +1118,8 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_message_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "MediaChangeRequired",
 					G_CALLBACK (pk_client_media_change_required_cb), state);
+	dbus_g_proxy_disconnect_signal (proxy, "Changed",
+					G_CALLBACK (pk_client_changed_cb), state);
 }
 
 /**
@@ -1102,6 +1144,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	}
 
 	/* finished this call */
+	egg_debug ("set locale, ended DBus call: %p", state->call);
 	state->call = NULL;
 
 	/* setup the proxies ready for use */
@@ -1310,7 +1353,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	}
 
 	/* we've sent this async */
-	egg_debug ("sent request");
+	egg_debug ("new method, started DBus call: %p", state->call);
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -1351,19 +1394,26 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
 
+	/* get a connection to the properties interface */
+	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
+							PK_DBUS_SERVICE, state->tid,
+							"org.freedesktop.DBus.Properties");
+	if (state->proxy_props == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+
 	/* set locale */
 	locale = (const gchar *) setlocale (LC_ALL, NULL);
 	state->call = dbus_g_proxy_begin_call (state->proxy, "SetLocale",
 					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
 					       G_TYPE_STRING, locale,
 					       G_TYPE_INVALID);
+	egg_debug ("sent locale request, started DBus call: %p", state->call);
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
 	egg_debug ("state array add %p", state);
 
 	/* we've sent this async */
-	egg_debug ("sent locale request");
 }
 
 /**
@@ -2975,95 +3025,10 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 /***************************************************************************************************/
 
 /**
- * pk_client_get_properties_collect_cb:
+ * pk_client_adopt_get_properties_cb:
  **/
 static void
-pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkClientState *state)
-{
-	const gchar *tmp_str;
-	guint tmp;
-	gboolean ret;
-
-	/* do the callback for GUI programs */
-	if (state->progress_callback == NULL)
-		return;
-
-	/* role */
-	if (g_strcmp0 (key, "Role") == 0) {
-		tmp_str = g_value_get_string (value);
-		tmp = pk_role_enum_from_text (tmp_str);
-		g_object_set (state->progress, "role", tmp, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
-		return;
-	}
-
-	/* status */
-	if (g_strcmp0 (key, "Status") == 0) {
-		tmp_str = g_value_get_string (value);
-		tmp = pk_status_enum_from_text (tmp_str);
-		g_object_set (state->progress, "status", tmp, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
-		return;
-	}
-
-	/* last-package */
-	if (g_strcmp0 (key, "LastPackage") == 0) {
-		tmp_str = g_value_get_string (value);
-		g_object_set (state->progress, "package-id", tmp_str, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
-		return;
-	}
-
-#if 0
-	/* uid */
-	if (g_strcmp0 (key, "Uid") == 0) {
-		tmp = g_value_get_uint (value);
-		g_object_set (state->progress, "uid", tmp, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_UID, state->progress_user_data);
-		return;
-	}
-#endif
-
-	/* percentage */
-	if (g_strcmp0 (key, "Percentage") == 0) {
-		tmp = g_value_get_uint (value);
-		g_object_set (state->progress, "percentage", pk_client_percentage_to_signed (tmp), NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
-		return;
-	}
-
-	/* subpercentage */
-	if (g_strcmp0 (key, "Subpercentage") == 0) {
-		tmp = g_value_get_uint (value);
-		g_object_set (state->progress, "subpercentage", pk_client_percentage_to_signed (tmp), NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
-		return;
-	}
-
-	/* allow-cancel */
-	if (g_strcmp0 (key, "AllowCancel") == 0) {
-		ret = g_value_get_boolean (value);
-		g_object_set (state->progress, "allow-cancel", ret, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
-		return;
-	}
-
-	/* caller-active */
-	if (g_strcmp0 (key, "CallerActive") == 0) {
-		ret = g_value_get_boolean (value);
-		g_object_set (state->progress, "caller-active", ret, NULL);
-		state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
-		return;
-	}
-
-	egg_warning ("unhandled property '%s'", key);
-}
-
-/**
- * pk_client_get_properties_cb:
- **/
-static void
-pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
 	GError *error = NULL;
 	GHashTable *hash;
@@ -3078,6 +3043,7 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 	}
 
 	/* finished this call */
+	egg_debug ("coldplugged properties, ended DBus call: %p", state->call);
 	state->call = NULL;
 
 	/* setup the proxies ready for use */
@@ -3139,21 +3105,15 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	if (state->proxy == NULL)
 		egg_error ("Cannot connect to PackageKit on %s", state->tid);
 
-	/* get a connection to the properties interface */
-	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
-							PK_DBUS_SERVICE, state->tid,
-							"org.freedesktop.DBus.Properties");
-	if (state->proxy_props == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", transaction_id);
-
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
 
 	/* call D-Bus get_properties async */
 	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
-					       (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
+					       (DBusGProxyCallNotify) pk_client_adopt_get_properties_cb, state, NULL,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
+	egg_debug ("coldplug adoptee, started DBus call: %p", state->call);
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -3234,14 +3194,6 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_UINT,
 					   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 
-	/* AllowCancel */
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
-					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
-
-	/* StatusChanged */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_INVALID);
-
 	/* Finished */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -3249,10 +3201,6 @@ pk_client_init (PkClient *client)
 	/* ErrorCode, RequireRestart, Message */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-
-	/* CallerActiveChanged */
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
-					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* Details */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
@@ -3689,12 +3637,17 @@ pk_client_test (gpointer user_data)
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "got updates in %i", egg_test_elapsed (test));
 
-	/************************************************************/
-	egg_test_title (test, "got status updates");
-	if (_status_cb > 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got %i updates", _status_cb);
+	/* it takes more than 50ms to get the progress of the transaction, and if
+	 * getting updates from internal cache, then it'll take a shed load less
+	 * than this to complete */
+	if (egg_test_elapsed (test) > 50) {
+		/************************************************************/
+		egg_test_title (test, "got status updates");
+		if (_status_cb > 0)
+			egg_test_success (test, NULL);
+		else
+			egg_test_failed (test, "got %i updates", _status_cb);
+	}
 
 	/************************************************************/
 	egg_test_title (test, "search by name");

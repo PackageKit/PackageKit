@@ -182,6 +182,7 @@ enum {
 	SIGNAL_UPDATE_DETAIL,
 	SIGNAL_CATEGORY,
 	SIGNAL_DESTROY,
+	SIGNAL_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -379,6 +380,10 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percenta
 
 	egg_debug ("emitting percentage-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (transaction, signals[SIGNAL_PROGRESS_CHANGED], 0, percentage, subpercentage, elapsed, remaining);
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -388,6 +393,10 @@ static void
 pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_cancel)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	/* already set */
+	if (transaction->priv->allow_cancel == allow_cancel)
+		return;
 
 	transaction->priv->allow_cancel = allow_cancel;
 
@@ -399,6 +408,10 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 
 	egg_debug ("emitting allow-cancel %i", allow_cancel);
 	g_signal_emit (transaction, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -412,11 +425,19 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* already set */
+	if (transaction->priv->status == status)
+		return;
+
 	transaction->priv->status = status;
 	status_text = pk_status_enum_to_text (status);
 
 	egg_debug ("emitting status-changed '%s'", status_text);
 	g_signal_emit (transaction, signals[SIGNAL_STATUS_CHANGED], 0, status_text);
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -460,19 +481,27 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
  * pk_transaction_caller_active_changed_cb:
  **/
 static void
-pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean is_active, PkTransaction *transaction)
+pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gboolean caller_active, PkTransaction *transaction)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* already set */
+	if (transaction->priv->caller_active == caller_active)
+		return;
+
 	/* save as a property */
-	transaction->priv->caller_active = is_active;
+	transaction->priv->caller_active = caller_active;
 
 	/* only send if false, a client can hardly re-connect... */
-	if (is_active == FALSE) {
+	if (caller_active == FALSE) {
 		egg_debug ("client disconnected....");
 		g_signal_emit (transaction, signals[SIGNAL_CALLER_ACTIVE_CHANGED], 0, FALSE);
 	}
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -5011,6 +5040,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 		g_signal_new ("destroy",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+	signals[SIGNAL_CHANGED] =
+		g_signal_new ("changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));
 }

@@ -1629,47 +1629,6 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <signal name="AllowCancel">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when the backend decides that the transaction can no longer be
-            cancelled, or is now able to be cancelled.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="b" name="allow_cancel" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the backend is in a cancelable state.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*****************************************************************************************-->
-    <signal name="CallerActiveChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when the session program that started the transaction exits.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="b" name="is_active" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the caller is active, usually FALSE.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*****************************************************************************************-->
     <signal name="Category">
       <doc:doc>
         <doc:description>
@@ -1985,60 +1944,6 @@
     </signal>
 
     <!--*****************************************************************************************-->
-    <signal name="ProgressChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal describes the completion of the transaction.
-          </doc:para>
-          <doc:para>
-            This is optional.
-            Backends should send the percentage fields to 101 if the amount complete
-            cannot be calculated.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="percentage" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The percentage complete of the whole transaction.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="subpercentage" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The percentage complete of the individual task, for example, downloading.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="elapsed" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The amount of time in seconds this transaction has been in the
-              running state
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="remaining" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The amount of time in seconds this transaction will take to
-              complete. Zero is sent for unknown.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*****************************************************************************************-->
     <signal name="RepoDetail">
       <doc:doc>
         <doc:description>
@@ -2313,33 +2218,6 @@
     </signal>
 
     <!--*****************************************************************************************-->
-    <signal name="StatusChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when the status of the transaction has changed.
-          </doc:para>
-          <doc:para>
-            This is optional, but highly recommended.
-            It gives the GUI tools a chance to show a different icon to show what stage the
-            transaction is in, for instance, a downloading icon can be shown whilst in the
-            <doc:tt>download</doc:tt> state.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="status" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              One of <doc:tt>download</doc:tt>, <doc:tt>install</doc:tt>,
-              <doc:tt>update</doc:tt> or <doc:tt>remove</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*****************************************************************************************-->
     <signal name="Transaction">
       <doc:doc>
         <doc:description>
@@ -2587,6 +2465,155 @@
           <doc:summary>
             <doc:para>
               The multi-line description of the release.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="Changed">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when a property on the interface changes.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="ProgressChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal describes the completion of the transaction.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the Changed signal and the properties interface instead.
+          </doc:para>
+          <doc:para>
+            This is optional.
+            Backends should send the percentage fields to 101 if the amount complete
+            cannot be calculated.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="u" name="percentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The percentage complete of the whole transaction.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="subpercentage" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The percentage complete of the individual task, for example, downloading.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="elapsed" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The amount of time in seconds this transaction has been in the
+              running state
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="remaining" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The amount of time in seconds this transaction will take to
+              complete. Zero is sent for unknown.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="StatusChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is sent when the status of the transaction has changed.
+          </doc:para>
+          <doc:para>
+            This is optional, but highly recommended.
+            It gives the GUI tools a chance to show a different icon to show what stage the
+            transaction is in, for instance, a downloading icon can be shown whilst in the
+            <doc:tt>download</doc:tt> state.
+           <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the Changed signal and the properties interface instead.
+          </doc:para>
+         </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="status" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              One of <doc:tt>download</doc:tt>, <doc:tt>install</doc:tt>,
+              <doc:tt>update</doc:tt> or <doc:tt>remove</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="AllowCancel">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is sent when the backend decides that the transaction can no longer be
+            cancelled, or is now able to be cancelled.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the Changed signal and the properties interface instead.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="allow_cancel" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the backend is in a cancelable state.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="CallerActiveChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the session program that started the transaction exits.
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the Changed signal and the properties interface instead.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="is_active" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the caller is active, usually FALSE.
             </doc:para>
           </doc:summary>
         </doc:doc>
