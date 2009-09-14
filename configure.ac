@@ -861,6 +861,7 @@ lib/python/packagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile
+tools/Makefile
 po/Makefile.in
 ])
 

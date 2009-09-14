@@ -1,3 +1,7 @@
-allApplications
-rpmbuild.sh
+.deps
+*.wiki
+*.tmp
+*.o
+*.sh
+pk-refresh-licenses
 

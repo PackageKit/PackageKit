@@ -1,0 +1,289 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ *
+ * Licensed under the GNU General Public License Version 2
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <glib/gi18n.h>
+
+typedef struct {
+	gchar	*enum_name;
+	gchar	*full_name;
+} PkRefreshLicenseItem;
+
+/**
+ * pk_refresh_licenses_mkenum:
+ **/
+static gchar *
+pk_refresh_licenses_mkenum (const gchar *text)
+{
+	guint i;
+	GString *string;
+	gchar c;
+	gchar *new;
+
+	string = g_string_new ("PK_LICENSE_ENUM_");
+
+	for (i=0; text[i] != '\0'; i++) {
+		c = text[i];
+		if (c == '.') {
+			new = g_strdup ("_DOT_");
+		} else if (c == '-' || c == ' ') {
+			new = g_strdup ("_");
+		} else if (c == '+') {
+			new = g_strdup ("_PLUS");
+		} else {
+			new = g_strdup_printf ("%c", g_ascii_toupper (c));
+		}
+		g_string_append (string, new);
+		g_free (new);
+	}
+
+	return g_string_free (string, FALSE);	
+}
+
+/**
+ * pk_refresh_licenses_compare_func:
+ **/
+static gint
+pk_refresh_licenses_compare_func (gconstpointer a, gconstpointer b)
+{
+	PkRefreshLicenseItem **item1 = (PkRefreshLicenseItem **) a;
+	PkRefreshLicenseItem **item2 = (PkRefreshLicenseItem **) b;
+	return g_strcmp0 ((*item1)->enum_name, (*item2)->enum_name);
+}
+
+/**
+ * main:
+ **/
+int
+main (int argc, char *argv[])
+{
+	gboolean ret;
+	gint retval = EXIT_FAILURE;
+	GError *error = NULL;
+	const gchar *command;
+	gchar *contents = NULL;
+	gchar **lines = NULL;
+	gchar **parts;
+	guint i, j;
+	const gchar *trim;
+	gint fullname = -1;
+	gint fsf_free = -1;
+	gint shortname = -1;
+	GPtrArray *data = NULL;
+	gboolean is_col;
+	GString *string_h = NULL;
+	GString *string_c = NULL;
+	PkRefreshLicenseItem *item;
+	PkRefreshLicenseItem *item_tmp;
+
+	/* get file */
+	command = "wget \"https://fedoraproject.org/w/index.php?title=Licensing:Main&action=edit\" --output-document=./Licensing.wiki";
+	ret = g_spawn_command_line_sync (command, NULL, NULL, NULL, &error);
+	if (!ret) {
+		g_warning ("failed to download file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get contents */
+	ret = g_file_get_contents ("./Licensing.wiki", &contents, NULL, &error);
+	if (!ret) {
+		g_warning ("failed to get contents: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* output arrays */
+	data = g_ptr_array_new ();
+
+	/* split into lines */
+	lines = g_strsplit (contents, "\n", -1);
+	for (i=0; lines[i] != NULL; i++) {
+		if (lines[i][0] != '|') {
+			fullname = -1;
+			fsf_free = -1;
+			shortname = -1;
+			continue;
+		}
+		if (g_strstr_len (lines[i], -1, "background-color") != NULL)
+			continue;
+
+		parts = g_strsplit (lines[i]+1, "||", -1);
+
+		/* trim spaces */
+		for (j=0; parts[j] != NULL; j++)
+			parts[j] = g_strstrip (parts[j]);
+
+		if (g_strv_length (parts) < 2)
+			goto skip;
+		if (g_strv_length (parts) > 6)
+			goto skip;
+
+		/* check if this is a column */
+		is_col = FALSE;
+		for (j=0; parts[j] != NULL; j++) {
+			trim = parts[j];
+
+			/* Fedora likes NO in bold on the Wiki */
+			if (g_strcmp0 (trim, "'''NO'''") == 0)
+				trim = "NO";
+
+			/* is command */
+			if (g_str_has_prefix (trim, "'''")) {
+				if (g_strcmp0 (trim, "'''Full Name'''") == 0) {
+					fullname = j;
+					g_debug ("fullname now col %i", fullname);
+				} else if (g_strcmp0 (trim, "'''FSF Free?'''") == 0) {
+					fsf_free = j;
+					g_debug ("fsf_free now col %i", fsf_free);
+				} else if (g_strcmp0 (trim, "'''Short Name'''") == 0) {
+					shortname = j;
+					g_debug ("shortname now col %i", shortname);
+				} else if (g_strcmp0 (trim, "'''GPLv2 Compat?'''") == 0) {
+					// ignore
+				} else if (g_strcmp0 (trim, "'''GPLv2 Compatible?'''") == 0) {
+					// ignore
+				} else if (g_strcmp0 (trim, "'''GPLv3 Compat?'''") == 0) {
+					// ignore
+				} else if (g_strcmp0 (trim, "'''Upstream URL'''") == 0) {
+					// ignore
+				} else if (g_str_has_prefix (trim, "'''[")) {
+					// ignore URL
+				} else {
+					g_warning ("column not matched: %s", trim);
+				}
+				is_col = TRUE;
+			}
+		}
+
+		/* we've just processed a column */
+		if (is_col)
+			goto skip;
+
+		if (fullname == -1) {
+			g_warning ("fullname not set for %s", lines[i]+1);
+			goto skip;
+		}
+		if (fsf_free == -1) {
+			g_warning ("fsf_free not set for %s", lines[i]+1);
+			goto skip;
+		}
+
+		/* is license free */
+		if (g_ascii_strcasecmp (parts[fsf_free], "Yes") != 0) {
+			g_print ("NONFREE: %s\n", parts[fullname]);
+			goto skip;
+		}
+
+		if (shortname == -1) {
+			g_warning ("shortname not set for %s", lines[i]+1);
+			goto skip;
+		}
+	
+		/* is note */
+		if (g_str_has_prefix (parts[shortname], "(See Note") != 0) {
+			g_print ("NOTE: %s\n", parts[fullname]);
+			goto skip;
+		}
+		
+		/* add data */
+		item = g_new (PkRefreshLicenseItem, 1);
+		item->enum_name = pk_refresh_licenses_mkenum (parts[shortname]);
+		item->full_name = g_strdup (parts[shortname]);
+		g_ptr_array_add (data, item);
+		g_print ("FREE: %s\n", parts[fullname]);
+skip:
+		g_strfreev (parts);
+	}
+
+	/* is the enum name duplicated? */
+	for (i=0; i<data->len; i++) {
+		item = g_ptr_array_index (data, i);
+
+		/* search for items that are the same */
+		for (j=i+1; j<data->len; j++) {
+			item_tmp = g_ptr_array_index (data, j);
+			/* is the same? in which case remove */
+			if (g_strcmp0 (item_tmp->enum_name, item->enum_name) == 0)
+				g_ptr_array_remove_fast (data, item_tmp);
+		}
+	}
+
+	/* sort */
+	g_ptr_array_sort (data, pk_refresh_licenses_compare_func);
+
+	/* process data, and output to header file */
+	string_h = g_string_new ("automatically geneated, do not edit\n\n");	
+	string_c = g_string_new ("automatically geneated, do not edit\n\n");	
+	for (i=0; i<data->len; i++) {
+		gchar *tabs;
+		guint len;
+		gint no_tabs;
+		item = g_ptr_array_index (data, i);
+
+		/* trivial */
+		g_string_append_printf (string_h, "\t%s,\n", item->enum_name);
+
+		/* 5 tabs, each tab = 8 chars */
+		len = strlen (item->enum_name) + 2; /* for the { and , */
+		no_tabs = (gint) ceilf (5.0f - ((gfloat) len / 8.0f));
+		if (no_tabs > 0)
+			tabs = g_strnfill (no_tabs, '\t');
+		else
+			tabs = g_strdup (" ");
+		
+		/* need to tab properly */
+		g_string_append_printf (string_c, "\t{%s,%s\"%s\"},\n", item->enum_name, tabs, item->full_name);
+		g_free (tabs);
+	}
+	g_string_append (string_c, "\n");
+	g_string_append (string_h, "\n");
+
+	/* set h contents */
+	ret = g_file_set_contents ("./pk-enum.h.tmp", string_h->str, -1, &error);
+	if (!ret) {
+		g_warning ("failed to set contents: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set c contents */
+	ret = g_file_set_contents ("./pk-enum.c.tmp", string_c->str, -1, &error);
+	if (!ret) {
+		g_warning ("failed to set contents: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	retval = EXIT_SUCCESS;
+out:
+	if (string_h != NULL)
+		g_string_free (string_h, TRUE);
+	if (string_c != NULL)
+		g_string_free (string_c, TRUE);
+	if (data != NULL)
+		g_ptr_array_unref (data);
+	g_free (contents);
+	g_strfreev (lines);
+	return retval;
+}
+
