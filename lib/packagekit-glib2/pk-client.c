@@ -623,7 +623,7 @@ pk_client_percentage_to_signed (guint percentage)
  */
 static void
 pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subpercentage,
-			       guint elapsed, guint remaining, PkClientState *state)
+			       guint elapsed_time, guint remaining_time, PkClientState *state)
 {
 	gboolean ret;
 	gint percentage_new;
@@ -646,6 +646,20 @@ pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subper
 	/* do the callback for GUI programs */
 	if (state->progress_callback != NULL && ret)
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
+
+	/* save progress */
+	ret = pk_progress_set_elapsed_time (state->progress, elapsed_time);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ELAPSED_TIME, state->progress_user_data);
+
+	/* save progress */
+	ret = pk_progress_set_remaining_time (state->progress, remaining_time);
+
+	/* do the callback for GUI programs */
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_REMAINING_TIME, state->progress_user_data);
 }
 
 /**

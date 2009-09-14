@@ -94,6 +94,24 @@
         </doc:description>
       </doc:doc>
     </property>
+    <property name="ElapsedTime" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The amount of time elapsed during the transaction in seconds.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+    <property name="RemainingTime" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The estimated time remaining of the transaction in seconds, or 0 if not known.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
 
     <!--*****************************************************************************************-->
     <method name="SetLocale">

@@ -52,6 +52,8 @@ struct _PkProgressPrivate
 	PkRoleEnum			 role;
 	PkStatusEnum			 status;
 	gboolean			 caller_active;
+	guint				 elapsed_time;
+	guint				 remaining_time;
 };
 
 enum {
@@ -63,6 +65,8 @@ enum {
 	PROP_ROLE,
 	PROP_STATUS,
 	PROP_CALLER_ACTIVE,
+	PROP_ELAPSED_TIME,
+	PROP_REMAINING_TIME,
 	PROP_LAST
 };
 
@@ -97,6 +101,12 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_CALLER_ACTIVE:
 		g_value_set_boolean (value, progress->priv->caller_active);
+		break;
+	case PROP_ELAPSED_TIME:
+		g_value_set_uint (value, progress->priv->elapsed_time);
+		break;
+	case PROP_REMAINING_TIME:
+		g_value_set_uint (value, progress->priv->remaining_time);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -233,6 +243,42 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 }
 
 /**
+ * pk_progress_set_elapsed_time:
+ **/
+gboolean
+pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->elapsed_time == elapsed_time)
+		return FALSE;
+
+	/* new value */
+	progress->priv->elapsed_time = elapsed_time;
+	egg_debug ("elapsed time now %i", elapsed_time);
+	return TRUE;
+}
+
+/**
+ * pk_progress_set_remaining_time:
+ **/
+gboolean
+pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->remaining_time == remaining_time)
+		return FALSE;
+
+	/* new value */
+	progress->priv->remaining_time = remaining_time;
+	egg_debug ("remaining time now %i", remaining_time);
+	return TRUE;
+}
+
+/**
  * pk_progress_set_property:
  **/
 static void
@@ -261,6 +307,12 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 		break;
 	case PROP_CALLER_ACTIVE:
 		pk_progress_set_caller_active (progress, g_value_get_boolean (value));
+		break;
+	case PROP_ELAPSED_TIME:
+		pk_progress_set_elapsed_time (progress, g_value_get_uint (value));
+		break;
+	case PROP_REMAINING_TIME:
+		pk_progress_set_remaining_time (progress, g_value_get_uint (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -336,6 +388,22 @@ pk_progress_class_init (PkProgressClass *klass)
 				      FALSE,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, pspec);
+
+	/**
+	 * PkProgress:elapsed-time:
+	 */
+	pspec = g_param_spec_uint ("elapsed-time", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ELAPSED_TIME, pspec);
+
+	/**
+	 * PkProgress:remaining-time:
+	 */
+	pspec = g_param_spec_uint ("remaining-time", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_REMAINING_TIME, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }

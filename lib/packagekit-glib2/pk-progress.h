@@ -74,6 +74,8 @@ typedef enum {
 	PK_PROGRESS_TYPE_STATUS,
 	PK_PROGRESS_TYPE_ROLE,
 	PK_PROGRESS_TYPE_CALLER_ACTIVE,
+	PK_PROGRESS_TYPE_ELAPSED_TIME,
+	PK_PROGRESS_TYPE_REMAINING_TIME,
 	PK_PROGRESS_TYPE_INVALID
 } PkProgressType;
 
@@ -95,6 +97,10 @@ gboolean	 pk_progress_set_allow_cancel		(PkProgress		*progress,
 							 gboolean		 allow_cancel);
 gboolean	 pk_progress_set_caller_active		(PkProgress		*progress,
 							 gboolean		 caller_active);
+gboolean	 pk_progress_set_elapsed_time		(PkProgress		*progress,
+							 guint			 elapsed_time);
+gboolean	 pk_progress_set_remaining_time		(PkProgress		*progress,
+							 guint			 remaining_time);
 
 G_END_DECLS
 

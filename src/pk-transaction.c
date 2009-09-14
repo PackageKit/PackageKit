@@ -83,8 +83,8 @@ struct PkTransactionPrivate
 	PkStatusEnum		 status;
 	guint			 percentage;
 	guint			 subpercentage;
-	guint			 elapsed;
-	guint			 remaining;
+	guint			 elapsed_time;
+	guint			 remaining_time;
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 has_been_run;
@@ -194,6 +194,8 @@ enum
 	PROP_SUBPERCENTAGE,
 	PROP_ALLOW_CANCEL,
 	PROP_CALLER_ACTIVE,
+	PROP_ELAPSED_TIME,
+	PROP_REMAINING_TIME,
 	PROP_LAST
 };
 
@@ -369,8 +371,8 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percenta
 	/* save so we can do GetProgress on a queued or finished transaction */
 	transaction->priv->percentage = percentage;
 	transaction->priv->subpercentage = subpercentage;
-	transaction->priv->elapsed = elapsed;
-	transaction->priv->remaining = remaining;
+	transaction->priv->elapsed_time = elapsed;
+	transaction->priv->remaining_time = remaining;
 
 	egg_debug ("emitting percentage-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (transaction, signals[SIGNAL_PROGRESS_CHANGED], 0, percentage, subpercentage, elapsed, remaining);
@@ -2772,8 +2774,8 @@ pk_transaction_get_progress (PkTransaction *transaction,
 	egg_debug ("GetProgress method called, using cached values");
 	*percentage = transaction->priv->percentage;
 	*subpercentage = transaction->priv->subpercentage;
-	*elapsed = transaction->priv->elapsed;
-	*remaining = transaction->priv->remaining;
+	*elapsed = transaction->priv->elapsed_time;
+	*remaining = transaction->priv->remaining_time;
 
 	return TRUE;
 }
@@ -4756,6 +4758,12 @@ pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GPar
 	case PROP_CALLER_ACTIVE:
 		g_value_set_boolean (value, transaction->priv->caller_active);
 		break;
+	case PROP_ELAPSED_TIME:
+		g_value_set_uint (value, transaction->priv->elapsed_time);
+		break;
+	case PROP_REMAINING_TIME:
+		g_value_set_uint (value, transaction->priv->remaining_time);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4846,6 +4854,24 @@ pk_transaction_class_init (PkTransactionClass *klass)
 				     TRUE,
 				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, spec);
+
+	/**
+	 * PkTransaction:elapsed-time:
+	 */
+	spec = g_param_spec_uint ("elapsed-time",
+				  "Elapsed Time", "The amount of time elapsed during the transaction",
+				  0, G_MAXUINT, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_ELAPSED_TIME, spec);
+
+	/**
+	 * PkTransaction:remaining-time:
+	 */
+	spec = g_param_spec_uint ("remaining-time",
+				  "Remaining Time", "The estimated remaining time of the transaction",
+				  0, G_MAXUINT, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_REMAINING_TIME, spec);
 
 	signals[SIGNAL_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
@@ -4999,8 +5025,8 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
-	transaction->priv->elapsed = 0;
-	transaction->priv->remaining = 0;
+	transaction->priv->elapsed_time = 0;
+	transaction->priv->remaining_time = 0;
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();
