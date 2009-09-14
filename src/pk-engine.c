@@ -101,14 +101,14 @@ struct PkEnginePrivate
 };
 
 enum {
-	PK_ENGINE_LOCKED,
-	PK_ENGINE_TRANSACTION_LIST_CHANGED,
-	PK_ENGINE_REPO_LIST_CHANGED,
-	PK_ENGINE_NETWORK_STATE_CHANGED,
-	PK_ENGINE_RESTART_SCHEDULE,
-	PK_ENGINE_UPDATES_CHANGED,
-	PK_ENGINE_QUIT,
-	PK_ENGINE_LAST_SIGNAL
+	SIGNAL_LOCKED,
+	SIGNAL_TRANSACTION_LIST_CHANGED,
+	SIGNAL_REPO_LIST_CHANGED,
+	SIGNAL_NETWORK_STATE_CHANGED,
+	SIGNAL_RESTART_SCHEDULE,
+	SIGNAL_UPDATES_CHANGED,
+	SIGNAL_QUIT,
+	SIGNAL_LAST
 };
 
 enum {
@@ -126,7 +126,7 @@ enum {
 	PROP_LAST,
 };
 
-static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0 };
+static guint	     signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
 
@@ -194,7 +194,7 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	egg_debug ("emitting transaction-list-changed");
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
+	g_signal_emit (engine, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
 
 	g_strfreev (transaction_list);
@@ -208,7 +208,7 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	egg_debug ("emitting locked %i", is_locked);
-	g_signal_emit (engine, signals [PK_ENGINE_LOCKED], 0, is_locked);
+	g_signal_emit (engine, signals[SIGNAL_LOCKED], 0, is_locked);
 }
 
 /**
@@ -219,7 +219,7 @@ pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	egg_debug ("emitting repo-list-changed");
-	g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0);
+	g_signal_emit (engine, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 }
 
 /**
@@ -230,7 +230,7 @@ pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	egg_debug ("emitting updates-changed");
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0);
+	g_signal_emit (engine, signals[SIGNAL_UPDATES_CHANGED], 0);
 }
 
 /**
@@ -550,7 +550,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	/* have we been updated? */
 	if (engine->priv->notify_clients_of_upgrade) {
 		egg_debug ("emitting restart-schedule because of binary change");
-		g_signal_emit (engine, signals [PK_ENGINE_RESTART_SCHEDULE], 0);
+		g_signal_emit (engine, signals[SIGNAL_RESTART_SCHEDULE], 0);
 		return G_MAXUINT;
 	}
 
@@ -578,7 +578,7 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size == 0) {
 		egg_debug ("emitting quit");
-		g_signal_emit (engine, signals [PK_ENGINE_QUIT], 0);
+		g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
 		return TRUE;
 	}
 
@@ -994,37 +994,37 @@ pk_engine_class_init (PkEngineClass *klass)
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/* signals */
-	signals [PK_ENGINE_LOCKED] =
+	signals[SIGNAL_LOCKED] =
 		g_signal_new ("locked",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals [PK_ENGINE_TRANSACTION_LIST_CHANGED] =
+	signals[SIGNAL_TRANSACTION_LIST_CHANGED] =
 		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, G_TYPE_STRV);
-	signals [PK_ENGINE_RESTART_SCHEDULE] =
+	signals[SIGNAL_RESTART_SCHEDULE] =
 		g_signal_new ("restart-schedule",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_ENGINE_REPO_LIST_CHANGED] =
+	signals[SIGNAL_REPO_LIST_CHANGED] =
 		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_ENGINE_NETWORK_STATE_CHANGED] =
+	signals[SIGNAL_NETWORK_STATE_CHANGED] =
 		g_signal_new ("network-state-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_ENGINE_UPDATES_CHANGED] =
+	signals[SIGNAL_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_ENGINE_QUIT] =
+	signals[SIGNAL_QUIT] =
 		g_signal_new ("quit",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
@@ -1067,7 +1067,7 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum state, PkE
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	state_text = pk_network_enum_to_text (state);
 	egg_debug ("emitting network-state-changed: %s", state_text);
-	g_signal_emit (engine, signals [PK_ENGINE_NETWORK_STATE_CHANGED], 0, state_text);
+	g_signal_emit (engine, signals[SIGNAL_NETWORK_STATE_CHANGED], 0, state_text);
 }
 
 /**
