@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <time.h>
 
@@ -138,13 +139,15 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	gchar *str_time;
 	gchar *header;
 	time_t the_time;
+	struct timeval time_val;
 
 	time (&the_time);
+	gettimeofday (&time_val, NULL);
 	str_time = g_new0 (gchar, 255);
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
 
 	/* generate header text */
-	header = g_strdup_printf ("TI:%s\tFI:%s\tFN:%s,%d", str_time, file, func, line);
+	header = g_strdup_printf ("TI:%s.%i\tFI:%s\tFN:%s,%d", str_time, (gint) time_val.tv_usec / 1000, file, func, line);
 	g_free (str_time);
 
 	/* always in light green */
