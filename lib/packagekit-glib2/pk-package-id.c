@@ -184,6 +184,7 @@ pk_package_id_to_printable (const gchar *package_id)
 {
 	gchar **parts = NULL;
 	gchar *value = NULL;
+	GString *string = NULL;
 
 	/* invalid */
 	if (package_id == NULL)
@@ -194,12 +195,19 @@ pk_package_id_to_printable (const gchar *package_id)
 	if (parts == NULL)
 		goto out;
 
-	/* form name-version.arch */
-	value = g_strdup_printf ("%s-%s.%s",
-				 parts[PK_PACKAGE_ID_NAME],
-				 parts[PK_PACKAGE_ID_VERSION],
-				 parts[PK_PACKAGE_ID_ARCH]);
+	/* name */
+	string = g_string_new (parts[PK_PACKAGE_ID_NAME]);
+
+	/* version if present */
+	if (parts[PK_PACKAGE_ID_VERSION][0] != '\0')
+		g_string_append_printf (string, "-%s", parts[PK_PACKAGE_ID_VERSION]);
+
+	/* arch if present */
+	if (parts[PK_PACKAGE_ID_ARCH][0] != '\0')
+		g_string_append_printf (string, ".%s", parts[PK_PACKAGE_ID_ARCH]);
 out:
+	if (string != NULL)
+		value = g_string_free (string, FALSE);
 	g_strfreev (parts);
 	return value;
 }
@@ -262,6 +270,24 @@ pk_package_id_test (gpointer user_data)
 	egg_test_title (test, "test printable");
 	text = pk_package_id_to_printable ("moo;0.0.1;i386;fedora");
 	if (g_strcmp0 (text, "moo-0.0.1.i386") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "printable is '%s'", text);
+	g_free (text);
+
+	/************************************************************/
+	egg_test_title (test, "test printable no arch");
+	text = pk_package_id_to_printable ("moo;0.0.1;;");
+	if (g_strcmp0 (text, "moo-0.0.1") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "printable is '%s'", text);
+	g_free (text);
+
+	/************************************************************/
+	egg_test_title (test, "test printable just name");
+	text = pk_package_id_to_printable ("moo;;;");
+	if (g_strcmp0 (text, "moo") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "printable is '%s'", text);
