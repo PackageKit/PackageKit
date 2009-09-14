@@ -171,7 +171,10 @@ QString Transaction::data()
 
 uint Transaction::uid()
 {
-	return d->p->uid ();
+	if(d->p) {
+		return d->p->uid();
+	}
+	return d->uid;
 }
 
 QString Transaction::cmdline()

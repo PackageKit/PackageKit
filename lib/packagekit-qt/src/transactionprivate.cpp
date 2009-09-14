@@ -23,7 +23,7 @@
 
 using namespace PackageKit;
 
-TransactionPrivate::TransactionPrivate(Transaction* parent) : QObject(parent), t(parent)
+TransactionPrivate::TransactionPrivate(Transaction* parent) : QObject(parent), t(parent), p(0)
 {
 }
 
