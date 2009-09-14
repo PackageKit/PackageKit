@@ -112,6 +112,15 @@
         </doc:description>
       </doc:doc>
     </property>
+    <property name="Speed" type="u" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The estimated speed of the transaction (copying, downloading, etc.) in bits per second, or 0 if not known.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
 
     <!--*****************************************************************************************-->
     <method name="SetLocale">

@@ -85,6 +85,7 @@ struct PkTransactionPrivate
 	guint			 subpercentage;
 	guint			 elapsed_time;
 	guint			 remaining_time;
+	guint			 speed;
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 has_been_run;
@@ -157,6 +158,7 @@ struct PkTransactionPrivate
 	guint			 signal_status_changed;
 	guint			 signal_update_detail;
 	guint			 signal_category;
+	guint			 signal_speed;
 };
 
 enum {
@@ -196,6 +198,7 @@ enum
 	PROP_CALLER_ACTIVE,
 	PROP_ELAPSED_TIME,
 	PROP_REMAINING_TIME,
+	PROP_SPEED,
 	PROP_LAST
 };
 
@@ -648,6 +651,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_media_change_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_category);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_speed);
 
 	/* check for session restarts */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS &&
@@ -1303,6 +1307,19 @@ out:
 }
 
 /**
+ * pk_transaction_speed_cb:
+ **/
+static void
+pk_transaction_speed_cb (GObject *object, GParamSpec *pspec, PkTransaction *transaction)
+{
+	g_object_get (object,
+		      "speed", &transaction->priv->speed,
+		      NULL);
+	/* emit */
+	egg_warning ("need to emit changed event");
+}
+
+/**
  * pk_transaction_set_running:
  */
 G_GNUC_WARN_UNUSED_RESULT static gboolean
@@ -1400,6 +1417,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_category =
 		g_signal_connect (transaction->priv->backend, "category",
 				  G_CALLBACK (pk_transaction_category_cb), transaction);
+	transaction->priv->signal_speed =
+		g_signal_connect (transaction->priv->backend, "notify::speed",
+				  G_CALLBACK (pk_transaction_speed_cb), transaction);
 
 	/* mark running */
 	transaction->priv->running = TRUE;
@@ -4764,6 +4784,9 @@ pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GPar
 	case PROP_REMAINING_TIME:
 		g_value_set_uint (value, transaction->priv->remaining_time);
 		break;
+	case PROP_SPEED:
+		g_value_set_uint (value, transaction->priv->speed);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4872,6 +4895,15 @@ pk_transaction_class_init (PkTransactionClass *klass)
 				  0, G_MAXUINT, 0,
 				  G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_REMAINING_TIME, spec);
+
+	/**
+	 * PkTransaction:speed:
+	 */
+	spec = g_param_spec_uint ("speed",
+				  "Speed", "The estimated speed of the transaction",
+				  0, G_MAXUINT, 0,
+				  G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_SPEED, spec);
 
 	signals[SIGNAL_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",

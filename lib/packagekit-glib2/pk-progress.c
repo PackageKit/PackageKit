@@ -54,6 +54,7 @@ struct _PkProgressPrivate
 	gboolean			 caller_active;
 	guint				 elapsed_time;
 	guint				 remaining_time;
+	guint				 speed;
 };
 
 enum {
@@ -67,6 +68,7 @@ enum {
 	PROP_CALLER_ACTIVE,
 	PROP_ELAPSED_TIME,
 	PROP_REMAINING_TIME,
+	PROP_SPEED,
 	PROP_LAST
 };
 
@@ -107,6 +109,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_REMAINING_TIME:
 		g_value_set_uint (value, progress->priv->remaining_time);
+		break;
+	case PROP_SPEED:
+		g_value_set_uint (value, progress->priv->speed);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -279,6 +284,24 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 }
 
 /**
+ * pk_progress_set_speed:
+ **/
+gboolean
+pk_progress_set_speed (PkProgress *progress, guint speed)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->speed == speed)
+		return FALSE;
+
+	/* new value */
+	progress->priv->speed = speed;
+	egg_debug ("speed now %i", speed);
+	return TRUE;
+}
+
+/**
  * pk_progress_set_property:
  **/
 static void
@@ -313,6 +336,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 		break;
 	case PROP_REMAINING_TIME:
 		pk_progress_set_remaining_time (progress, g_value_get_uint (value));
+		break;
+	case PROP_SPEED:
+		pk_progress_set_speed (progress, g_value_get_uint (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -404,6 +430,14 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_REMAINING_TIME, pspec);
+
+	/**
+	 * PkProgress:speed:
+	 */
+	pspec = g_param_spec_uint ("speed", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SPEED, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }

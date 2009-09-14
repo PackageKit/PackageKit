@@ -99,6 +99,7 @@ struct _PkBackendPrivate
 	gboolean		 has_sent_package;
 	gboolean		 use_time;
 	guint			 download_files;
+	guint			 speed;
 	PkNetwork		*network;
 	PkStore			*store;
 	PkItemPackage		*last_package;
@@ -2668,6 +2669,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->last_package = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
+	backend->priv->speed = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->simultaneous = FALSE;
