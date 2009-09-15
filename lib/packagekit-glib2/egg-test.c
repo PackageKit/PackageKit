@@ -1,1 +1,1 @@
-../packagekit-glib/egg-test.c
+../../src/egg-test.c
