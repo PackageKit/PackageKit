@@ -77,8 +77,6 @@ G_BEGIN_DECLS
 void		 pk_common_test				(gpointer	 user_data);
 gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;
-GPtrArray	*pk_strv_to_ptr_array			(gchar		**array)
-							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_from_date			(const GDate	*date);
