@@ -151,8 +151,6 @@ void		 pk_control_get_properties_async	(PkControl		*control,
 gboolean	 pk_control_get_properties_finish	(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
-gboolean	 pk_control_get_properties_sync		(PkControl		*control,
-							 GError			**error);
 
 G_END_DECLS
 

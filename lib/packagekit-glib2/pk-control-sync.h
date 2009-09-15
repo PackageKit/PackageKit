@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,17 +19,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PACKAGEKIT_PRIVATE_H__
-#define __PACKAGEKIT_PRIVATE_H__
+#ifndef __PK_CONTROL_SYNC_H
+#define __PK_CONTROL_SYNC_H
 
-#define __PACKAGEKIT_PRIVATE_H_INSIDE__
+#include <glib.h>
+#include <packagekit-glib2/packagekit.h>
 
-#include <packagekit-glib2/pk-task-sync.h>
-#include <packagekit-glib2/pk-task-text.h>
-#include <packagekit-glib2/pk-console-shared.h>
-#include <packagekit-glib2/pk-progress-bar.h>
+gboolean	 pk_control_get_properties		(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
-#undef __PACKAGEKIT_PRIVATE_H_INSIDE__
+#endif /* __PK_CONTROL_SYNC_H */
 
-#endif /* __PACKAGEKIT_PRIVATE_H__ */
+
 

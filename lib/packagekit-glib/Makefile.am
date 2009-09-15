@@ -33,29 +33,31 @@ libpackagekit_glib_includedir = $(includedir)/PackageKit/packagekit-glib
 
 libpackagekit_glib_include_HEADERS =				\
 	packagekit.h						\
-	pk-version.h						\
-	pk-desktop.h						\
-	pk-connection.h						\
-	pk-package-id.h						\
-	pk-package-ids.h					\
-	pk-package-obj.h					\
-	pk-require-restart-obj.h				\
-	pk-obj-list.h						\
-	pk-package-list.h					\
-	pk-category-obj.h					\
-	pk-update-detail-obj.h					\
-	pk-distro-upgrade-obj.h					\
-	pk-details-obj.h					\
-	pk-transaction-obj.h					\
-	pk-enum.h						\
 	pk-bitfield.h						\
-	pk-common.h						\
+	pk-catalog.h						\
+	pk-category-obj.h					\
 	pk-client.h						\
 	pk-client-pool.h					\
-	pk-catalog.h						\
+	pk-client-sync.h					\
+	pk-common.h						\
+	pk-connection.h						\
 	pk-control.h						\
-	pk-task-list.h						\
+	pk-control-sync.h					\
+	pk-desktop.h						\
+	pk-details-obj.h					\
+	pk-distro-upgrade-obj.h					\
+	pk-enum.h						\
+	pk-obj-list.h						\
+	pk-package-id.h						\
+	pk-package-ids.h					\
+	pk-package-list.h					\
+	pk-package-obj.h					\
+	pk-require-restart-obj.h				\
 	pk-service-pack.h					\
+	pk-task-list.h						\
+	pk-transaction-obj.h					\
+	pk-update-detail-obj.h					\
+	pk-version.h						\
 	$(NULL)
 
 libpackagekit_glib_la_SOURCES =					\

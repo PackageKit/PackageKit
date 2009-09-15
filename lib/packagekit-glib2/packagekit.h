@@ -25,8 +25,10 @@
 #define __PACKAGEKIT_H_INSIDE__
 
 #include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-client-sync.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-control-sync.h>
 #include <packagekit-glib2/pk-desktop.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-item.h>

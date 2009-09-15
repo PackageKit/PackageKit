@@ -392,7 +392,7 @@ pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename,
 	const PkItemPackage *item;
 
 	/* get the list of possibles */
-	results = pk_client_search_file_sync (client_, filter, filename, cancellable,
+	results = pk_client_search_file (client_, filter, filename, cancellable,
 					      (PkProgressCallback) pk_cnf_progress_cb, NULL, error);
 	if (results == NULL)
 		goto out;

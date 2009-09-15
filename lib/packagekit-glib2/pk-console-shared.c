@@ -149,7 +149,7 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	tmp = g_strsplit (package, ",", -1);
 
 	/* get the list of possibles */
-	results = pk_client_resolve_sync (client, filter, tmp, NULL, NULL, NULL, error);
+	results = pk_client_resolve (client, filter, tmp, NULL, NULL, NULL, error);
 	if (results == NULL)
 		goto out;
 

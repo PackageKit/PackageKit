@@ -59,10 +59,14 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-bitfield.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-client-sync.c					\
+	pk-client-sync.h					\
 	pk-common.c						\
 	pk-common.h						\
 	pk-control.c						\
 	pk-control.h						\
+	pk-control-sync.c					\
+	pk-control-sync.h					\
 	pk-desktop.c						\
 	pk-desktop.h						\
 	pk-enum.c						\
@@ -116,8 +120,6 @@ libpackagekitprivate_a_SOURCES =				\
 	egg-string.c						\
 	egg-string.h						\
 	packagekit-private.h					\
-	pk-client-sync.c					\
-	pk-client-sync.h					\
 	pk-console-shared.c					\
 	pk-console-shared.h					\
 	pk-progress-bar.c					\
@@ -148,8 +150,6 @@ pk_self_test_SOURCES =						\
 	pk-task-text.h						\
 	pk-console-shared.c					\
 	pk-console-shared.h					\
-	pk-client-sync.c					\
-	pk-client-sync.h					\
 	pk-self-test.c						\
 	$(NULL)
 

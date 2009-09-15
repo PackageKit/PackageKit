@@ -1015,7 +1015,7 @@ main (int argc, char *argv[])
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
-	ret = pk_control_get_properties_sync (control, &error);
+	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
 		/* TRANSLATORS: we failed to contact the daemon */
 		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);

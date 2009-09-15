@@ -130,7 +130,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		repo_id = g_ptr_array_index (array, i);
 
 		/* enable this repo */
-		results = pk_client_repo_enable_sync (priv->client, repo_id, enable, NULL, NULL, NULL, &error_local);
+		results = pk_client_repo_enable (priv->client, repo_id, enable, NULL, NULL, NULL, &error_local);
 		if (results == NULL) {
 			*error = g_error_new (1, 0, "failed to enable %s: %s", repo_id, error_local->message);
 			g_error_free (error_local);
@@ -240,7 +240,7 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	names = g_strsplit (package_name, ";", -1);
 
 	/* resolve */
-	results = pk_client_resolve_sync (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, NULL, NULL, NULL, &error_local);
+	results = pk_client_resolve (priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, -1), names, NULL, NULL, NULL, &error_local);
 	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to resolve: %s", error_local->message);
 		g_error_free (error_local);
@@ -372,7 +372,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
-	results = pk_client_get_depends_sync (priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, NULL, NULL, NULL, &error_local);
+	results = pk_client_get_depends (priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, NULL, NULL, NULL, &error_local);
 	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
 		g_error_free (error_local);
@@ -443,7 +443,7 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	const PkItemRepoDetail *item;
 
 	/* get all repo details */
-	results = pk_client_get_repo_list_sync (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
+	results = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
 	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to get repo list: %s", error_local->message);
 		g_error_free (error_local);

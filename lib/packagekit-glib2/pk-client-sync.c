@@ -54,7 +54,7 @@ pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelp
 }
 
 /**
- * pk_client_resolve_sync:
+ * pk_client_resolve:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
@@ -73,8 +73,8 @@ pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelp
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_resolve_sync (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
-			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
+		   PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -103,7 +103,7 @@ pk_client_resolve_sync (PkClient *client, PkBitfield filters, gchar **packages, 
 }
 
 /**
- * pk_client_search_name_sync:
+ * pk_client_search_name:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
@@ -121,8 +121,8 @@ pk_client_resolve_sync (PkClient *client, PkBitfield filters, gchar **packages, 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_name_sync (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -151,7 +151,7 @@ pk_client_search_name_sync (PkClient *client, PkBitfield filters, const gchar *s
 }
 
 /**
- * pk_client_search_details_sync:
+ * pk_client_search_details:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
@@ -170,8 +170,8 @@ pk_client_search_name_sync (PkClient *client, PkBitfield filters, const gchar *s
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_details_sync (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -200,7 +200,7 @@ pk_client_search_details_sync (PkClient *client, PkBitfield filters, const gchar
 }
 
 /**
- * pk_client_search_group_sync:
+ * pk_client_search_group:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: a group enum to search for, for instance, "system-tools"
@@ -217,8 +217,8 @@ pk_client_search_details_sync (PkClient *client, PkBitfield filters, const gchar
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_group_sync (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -247,7 +247,7 @@ pk_client_search_group_sync (PkClient *client, PkBitfield filters, const gchar *
 }
 
 /**
- * pk_client_search_file_sync:
+ * pk_client_search_file:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: file to search for, for instance, "/sbin/service"
@@ -264,8 +264,8 @@ pk_client_search_group_sync (PkClient *client, PkBitfield filters, const gchar *
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_file_sync (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -294,7 +294,7 @@ pk_client_search_file_sync (PkClient *client, PkBitfield filters, const gchar *s
 }
 
 /**
- * pk_client_get_details_sync:
+ * pk_client_get_details:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -311,8 +311,8 @@ pk_client_search_file_sync (PkClient *client, PkBitfield filters, const gchar *s
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_details_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -341,7 +341,7 @@ pk_client_get_details_sync (PkClient *client, gchar **package_ids, GCancellable 
 }
 
 /**
- * pk_client_get_update_detail_sync:
+ * pk_client_get_update_detail:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -358,8 +358,8 @@ pk_client_get_details_sync (PkClient *client, gchar **package_ids, GCancellable 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_update_detail_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-				  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -388,7 +388,7 @@ pk_client_get_update_detail_sync (PkClient *client, gchar **package_ids, GCancel
 }
 
 /**
- * pk_client_download_packages_sync:
+ * pk_client_download_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the location where packages are to be downloaded
@@ -405,8 +405,8 @@ pk_client_get_update_detail_sync (PkClient *client, gchar **package_ids, GCancel
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_download_packages_sync (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
-				  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -435,7 +435,7 @@ pk_client_download_packages_sync (PkClient *client, gchar **package_ids, const g
 }
 
 /**
- * pk_client_get_updates_sync:
+ * pk_client_get_updates:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -451,8 +451,8 @@ pk_client_download_packages_sync (PkClient *client, gchar **package_ids, const g
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_updates_sync (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -481,7 +481,7 @@ pk_client_get_updates_sync (PkClient *client, PkBitfield filters, GCancellable *
 }
 
 /**
- * pk_client_get_old_transactions_sync:
+ * pk_client_get_old_transactions:
  * @client: a valid #PkClient instance
  * @number: the number of past transactions to return, or 0 for all
  * @cancellable: a #GCancellable or %NULL
@@ -497,8 +497,8 @@ pk_client_get_updates_sync (PkClient *client, PkBitfield filters, GCancellable *
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_old_transactions_sync (PkClient *client, guint number, GCancellable *cancellable,
-				     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *cancellable,
+			        PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -527,7 +527,7 @@ pk_client_get_old_transactions_sync (PkClient *client, guint number, GCancellabl
 }
 
 /**
- * pk_client_update_system_sync:
+ * pk_client_update_system:
  * @client: a valid #PkClient instance
  * @only_trusted: only trusted packages should be installed
  * @cancellable: a #GCancellable or %NULL
@@ -548,8 +548,8 @@ pk_client_get_old_transactions_sync (PkClient *client, guint number, GCancellabl
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_update_system_sync (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_update_system (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -578,7 +578,7 @@ pk_client_update_system_sync (PkClient *client, gboolean only_trusted, GCancella
 }
 
 /**
- * pk_client_get_depends_sync:
+ * pk_client_get_depends:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -596,8 +596,8 @@ pk_client_update_system_sync (PkClient *client, gboolean only_trusted, GCancella
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_depends_sync (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -626,7 +626,7 @@ pk_client_get_depends_sync (PkClient *client, PkBitfield filters, gchar **packag
 }
 
 /**
- * pk_client_get_packages_sync:
+ * pk_client_get_packages:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -642,8 +642,8 @@ pk_client_get_depends_sync (PkClient *client, PkBitfield filters, gchar **packag
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_packages_sync (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *cancellable,
+		        PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -672,7 +672,7 @@ pk_client_get_packages_sync (PkClient *client, PkBitfield filters, GCancellable 
 }
 
 /**
- * pk_client_get_requires_sync:
+ * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -690,8 +690,8 @@ pk_client_get_packages_sync (PkClient *client, PkBitfield filters, GCancellable 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_requires_sync (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
+		        PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -720,7 +720,7 @@ pk_client_get_requires_sync (PkClient *client, PkBitfield filters, gchar **packa
 }
 
 /**
- * pk_client_what_provides_sync:
+ * pk_client_what_provides:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
@@ -740,8 +740,8 @@ pk_client_get_requires_sync (PkClient *client, PkBitfield filters, gchar **packa
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_what_provides_sync (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
+		         PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -770,7 +770,7 @@ pk_client_what_provides_sync (PkClient *client, PkBitfield filters, PkProvidesEn
 }
 
 /**
- * pk_client_get_distro_upgrades_sync:
+ * pk_client_get_distro_upgrades:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
@@ -786,8 +786,8 @@ pk_client_what_provides_sync (PkClient *client, PkBitfield filters, PkProvidesEn
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_distro_upgrades_sync (PkClient *client, GCancellable *cancellable,
-				    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
+			       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -816,7 +816,7 @@ pk_client_get_distro_upgrades_sync (PkClient *client, GCancellable *cancellable,
 }
 
 /**
- * pk_client_get_files_sync:
+ * pk_client_get_files:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -832,8 +832,8 @@ pk_client_get_distro_upgrades_sync (PkClient *client, GCancellable *cancellable,
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_files_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+		     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -862,7 +862,7 @@ pk_client_get_files_sync (PkClient *client, gchar **package_ids, GCancellable *c
 }
 
 /**
- * pk_client_get_categories_sync:
+ * pk_client_get_categories:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
@@ -877,9 +877,8 @@ pk_client_get_files_sync (PkClient *client, gchar **package_ids, GCancellable *c
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_categories_sync (PkClient *client, GCancellable *cancellable,
-				PkProgressCallback progress_callback, gpointer progress_user_data,
-				GError **error)
+pk_client_get_categories (PkClient *client, GCancellable *cancellable,
+			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -908,7 +907,7 @@ pk_client_get_categories_sync (PkClient *client, GCancellable *cancellable,
 }
 
 /**
- * pk_client_remove_packages_sync:
+ * pk_client_remove_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
@@ -928,8 +927,8 @@ pk_client_get_categories_sync (PkClient *client, GCancellable *cancellable,
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_remove_packages_sync (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
-				PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
+			   PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -958,7 +957,7 @@ pk_client_remove_packages_sync (PkClient *client, gchar **package_ids, gboolean 
 }
 
 /**
- * pk_client_refresh_cache_sync:
+ * pk_client_refresh_cache:
  * @client: a valid #PkClient instance
  * @force: if we should aggressively drop caches
  * @cancellable: a #GCancellable or %NULL
@@ -977,8 +976,8 @@ pk_client_remove_packages_sync (PkClient *client, gchar **package_ids, gboolean 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_refresh_cache_sync (PkClient *client, gboolean force, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1007,7 +1006,7 @@ pk_client_refresh_cache_sync (PkClient *client, gboolean force, GCancellable *ca
 }
 
 /**
- * pk_client_install_packages_sync:
+ * pk_client_install_packages:
  * @client: a valid #PkClient instance
  * @only_trusted: only trusted packages should be installed
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1024,8 +1023,8 @@ pk_client_refresh_cache_sync (PkClient *client, gboolean force, GCancellable *ca
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_install_packages_sync (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
-				 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
+			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1054,7 +1053,7 @@ pk_client_install_packages_sync (PkClient *client, gboolean only_trusted, gchar 
 }
 
 /**
- * pk_client_install_signature_sync:
+ * pk_client_install_signature:
  * @client: a valid #PkClient instance
  * @type: the signature type, e.g. %PK_SIGTYPE_ENUM_GPG
  * @key_id: a key ID such as "0df23df"
@@ -1072,8 +1071,8 @@ pk_client_install_packages_sync (PkClient *client, gboolean only_trusted, gchar 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_install_signature_sync (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
-				  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
+			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1102,7 +1101,7 @@ pk_client_install_signature_sync (PkClient *client, PkSigTypeEnum type, const gc
 }
 
 /**
- * pk_client_update_packages_sync:
+ * pk_client_update_packages:
  * @client: a valid #PkClient instance
  * @only_trusted: only trusted packages should be installed
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1119,8 +1118,8 @@ pk_client_install_signature_sync (PkClient *client, PkSigTypeEnum type, const gc
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_update_packages_sync (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
-				PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
+			   PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1149,7 +1148,7 @@ pk_client_update_packages_sync (PkClient *client, gboolean only_trusted, gchar *
 }
 
 /**
- * pk_client_install_files_sync:
+ * pk_client_install_files:
  * @client: a valid #PkClient instance
  * @only_trusted: only trusted packages should be installed
  * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
@@ -1167,8 +1166,8 @@ pk_client_update_packages_sync (PkClient *client, gboolean only_trusted, gchar *
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_install_files_sync (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1197,7 +1196,7 @@ pk_client_install_files_sync (PkClient *client, gboolean only_trusted, gchar **f
 }
 
 /**
- * pk_client_accept_eula_sync:
+ * pk_client_accept_eula:
  * @client: a valid #PkClient instance
  * @eula_id: the <literal>eula_id</literal> we are agreeing to
  * @cancellable: a #GCancellable or %NULL
@@ -1213,8 +1212,8 @@ pk_client_install_files_sync (PkClient *client, gboolean only_trusted, gchar **f
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_accept_eula_sync (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1243,7 +1242,7 @@ pk_client_accept_eula_sync (PkClient *client, const gchar *eula_id, GCancellable
 }
 
 /**
- * pk_client_rollback_sync:
+ * pk_client_rollback:
  * @client: a valid #PkClient instance
  * @transaction_id: the <literal>transaction_id</literal> we want to return to
  * @cancellable: a #GCancellable or %NULL
@@ -1259,8 +1258,8 @@ pk_client_accept_eula_sync (PkClient *client, const gchar *eula_id, GCancellable
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_rollback_sync (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
-			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_rollback (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
+		    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1289,7 +1288,7 @@ pk_client_rollback_sync (PkClient *client, const gchar *transaction_id, GCancell
 }
 
 /**
- * pk_client_get_repo_list_sync:
+ * pk_client_get_repo_list:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_DEVEL or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -1305,8 +1304,8 @@ pk_client_rollback_sync (PkClient *client, const gchar *transaction_id, GCancell
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_get_repo_list_sync (PkClient *client, PkBitfield filters, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1335,7 +1334,7 @@ pk_client_get_repo_list_sync (PkClient *client, PkBitfield filters, GCancellable
 }
 
 /**
- * pk_client_repo_enable_sync:
+ * pk_client_repo_enable:
  * @client: a valid #PkClient instance
  * @repo_id: a repo_id structure such as "livna-devel"
  * @enabled: if we should enable the repository
@@ -1352,8 +1351,8 @@ pk_client_get_repo_list_sync (PkClient *client, PkBitfield filters, GCancellable
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_repo_enable_sync (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
+		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1382,7 +1381,7 @@ pk_client_repo_enable_sync (PkClient *client, const gchar *repo_id, gboolean ena
 }
 
 /**
- * pk_client_repo_set_data_sync:
+ * pk_client_repo_set_data:
  * @client: a valid #PkClient instance
  * @repo_id: a repo_id structure such as "livna-devel"
  * @parameter: the parameter to change
@@ -1401,8 +1400,8 @@ pk_client_repo_enable_sync (PkClient *client, const gchar *repo_id, gboolean ena
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_repo_set_data_sync (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1431,7 +1430,7 @@ pk_client_repo_set_data_sync (PkClient *client, const gchar *repo_id, const gcha
 }
 
 /**
- * pk_client_simulate_install_files_sync:
+ * pk_client_simulate_install_files:
  * @client: a valid #PkClient instance
  * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
@@ -1447,9 +1446,9 @@ pk_client_repo_set_data_sync (PkClient *client, const gchar *repo_id, const gcha
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_simulate_install_files_sync (PkClient *client, gchar **files, GCancellable *cancellable,
-					PkProgressCallback progress_callback, gpointer progress_user_data,
-					GError **error)
+pk_client_simulate_install_files (PkClient *client, gchar **files, GCancellable *cancellable,
+				  PkProgressCallback progress_callback, gpointer progress_user_data,
+				  GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1478,7 +1477,7 @@ pk_client_simulate_install_files_sync (PkClient *client, gchar **files, GCancell
 }
 
 /**
- * pk_client_simulate_install_packages_sync:
+ * pk_client_simulate_install_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1494,8 +1493,8 @@ pk_client_simulate_install_files_sync (PkClient *client, gchar **files, GCancell
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_simulate_install_packages_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+				     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1524,7 +1523,7 @@ pk_client_simulate_install_packages_sync (PkClient *client, gchar **package_ids,
 }
 
 /**
- * pk_client_simulate_remove_packages_sync:
+ * pk_client_simulate_remove_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1540,8 +1539,8 @@ pk_client_simulate_install_packages_sync (PkClient *client, gchar **package_ids,
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_simulate_remove_packages_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+				    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
@@ -1570,7 +1569,7 @@ pk_client_simulate_remove_packages_sync (PkClient *client, gchar **package_ids, 
 }
 
 /**
- * pk_client_simulate_update_packages_sync:
+ * pk_client_simulate_update_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1586,8 +1585,8 @@ pk_client_simulate_remove_packages_sync (PkClient *client, gchar **package_ids, 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_simulate_update_packages_sync (PkClient *client, gchar **package_ids, GCancellable *cancellable,
-					 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+				    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;

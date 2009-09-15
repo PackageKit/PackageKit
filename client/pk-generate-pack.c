@@ -305,7 +305,7 @@ main (int argc, char *argv[])
 
 	/* are we dumb and can't do some actions */
 	control = pk_control_new ();
-	ret = pk_control_get_properties_sync (control, &error);
+	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
 		/* TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup */
 		g_print ("%s: %s\n", _("The dameon failed to startup"), error->message);
