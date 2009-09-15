@@ -84,7 +84,6 @@ gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
-guint		 pk_iso8601_difference			(const gchar	*isodate);
 gchar		*pk_iso8601_from_date			(const GDate	*date);
 GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
 gchar		*pk_get_distro_id			(void)

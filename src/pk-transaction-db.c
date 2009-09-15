@@ -195,6 +195,36 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 }
 
 /**
+ * pk_transaction_db_iso8601_difference:
+ * @isodate: The ISO8601 date to compare
+ *
+ * Return value: The difference in seconds between the iso8601 date and current
+ **/
+static guint
+pk_transaction_db_iso8601_difference (const gchar *isodate)
+{
+	GTimeVal timeval_then;
+	GTimeVal timeval_now;
+	gboolean ret;
+	guint time_s;
+
+	g_return_val_if_fail (isodate != NULL, 0);
+
+	/* convert date */
+	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
+	if (!ret) {
+		egg_warning ("failed to parse '%s'", isodate);
+		return 0;
+	}
+	g_get_current_time (&timeval_now);
+
+	/* work out difference */
+	time_s = timeval_now.tv_sec - timeval_then.tv_sec;
+
+	return time_s;
+}
+
+/**
  * pk_transaction_db_action_time_since:
  **/
 guint
@@ -227,7 +257,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	}
 
 	/* work out the difference */
-	time_ms = pk_iso8601_difference (timespec);
+	time_ms = pk_transaction_db_iso8601_difference (timespec);
 	egg_debug ("timespec=%s, difference=%i", timespec, time_ms);
 	g_free (timespec);
 
@@ -911,9 +941,18 @@ pk_transaction_db_test (EggTest *test)
 	guint ms;
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
+	guint seconds;
 
 	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
+
+	/************************************************************/
+	egg_test_title (test, "get difference in iso8601");
+	seconds = pk_transaction_db_iso8601_difference (present);
+	if (seconds == 2)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "seconds is wrong, %i", seconds);
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL

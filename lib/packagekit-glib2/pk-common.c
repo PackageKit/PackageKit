@@ -264,36 +264,6 @@ pk_iso8601_present (void)
 }
 
 /**
- * pk_iso8601_difference:
- * @isodate: The ISO8601 date to compare
- *
- * Return value: The difference in seconds between the iso8601 date and current
- **/
-guint
-pk_iso8601_difference (const gchar *isodate)
-{
-	GTimeVal timeval_then;
-	GTimeVal timeval_now;
-	gboolean ret;
-	guint time_s;
-
-	g_return_val_if_fail (isodate != NULL, 0);
-
-	/* convert date */
-	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
-	if (!ret) {
-		egg_warning ("failed to parse '%s'", isodate);
-		return 0;
-	}
-	g_get_current_time (&timeval_now);
-
-	/* work out difference */
-	time_s = timeval_now.tv_sec - timeval_then.tv_sec;
-
-	return time_s;
-}
-
-/**
  * pk_iso8601_from_date:
  * @date: a %GDate to convert
  *
@@ -483,11 +453,9 @@ void
 pk_common_test (gpointer user_data)
 {
 	EggTest *test = (EggTest *) user_data;
-	gboolean ret;
 	gchar **array;
 	gchar *text_safe;
 	gchar *present;
-	guint seconds;
 	GDate *date;
 
 	if (!egg_test_start (test, "PkCommon"))
@@ -537,16 +505,6 @@ pk_common_test (gpointer user_data)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "present is NULL");
-
-	g_usleep (2000000);
-
-	/************************************************************/
-	egg_test_title (test, "get difference in iso8601");
-	seconds = pk_iso8601_difference (present);
-	if (seconds == 2)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "seconds is wrong, %i", seconds);
 
 	/************************************************************/
 	g_free (present);
