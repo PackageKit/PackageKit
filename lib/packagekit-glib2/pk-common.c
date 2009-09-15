@@ -459,32 +459,6 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 	return array;
 }
 
-/**
- * pk_error_code_is_need_untrusted:
- * @error_code: the transactions #PkErrorCodeEnum
- *
- * Is this error could be handled with retrying with only_trusted %FALSE.
- *
- * Return value: if the error code suggests to try with only_trusted %FALSE
- **/
-gboolean
-pk_error_code_is_need_untrusted (PkErrorCodeEnum error_code)
-{
-	gboolean ret = FALSE;
-	switch (error_code) {
-		case PK_ERROR_ENUM_GPG_FAILURE:
-		case PK_ERROR_ENUM_BAD_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_MISSING_GPG_SIGNATURE:
-		case PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED:
-		case PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED:
-			ret = TRUE;
-			break;
-		default:
-			break;
-	}
-	return ret;
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/

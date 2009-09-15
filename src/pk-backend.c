@@ -1639,6 +1639,27 @@ out:
 }
 
 /**
+ * pk_backend_error_code_is_need_untrusted:
+ **/
+static gboolean
+pk_backend_error_code_is_need_untrusted (PkErrorCodeEnum error_code)
+{
+	gboolean ret = FALSE;
+	switch (error_code) {
+		case PK_ERROR_ENUM_GPG_FAILURE:
+		case PK_ERROR_ENUM_BAD_GPG_SIGNATURE:
+		case PK_ERROR_ENUM_MISSING_GPG_SIGNATURE:
+		case PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED:
+		case PK_ERROR_ENUM_CANNOT_UPDATE_REPO_UNSIGNED:
+			ret = TRUE;
+			break;
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * pk_backend_error_code:
  **/
 gboolean
@@ -1676,7 +1697,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 							     pk_backend_error_timeout_delay_cb, backend);
 
 	/* some error codes have a different exit code */
-	need_untrusted = pk_error_code_is_need_untrusted (error_code);
+	need_untrusted = pk_backend_error_code_is_need_untrusted (error_code);
 	if (need_untrusted)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_NEED_UNTRUSTED);
 	else
