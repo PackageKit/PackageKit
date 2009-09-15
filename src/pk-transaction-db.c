@@ -946,14 +946,6 @@ pk_transaction_db_test (EggTest *test)
 	if (!egg_test_start (test, "PkTransactionDb"))
 		return;
 
-	/************************************************************/
-	egg_test_title (test, "get difference in iso8601");
-	seconds = pk_transaction_db_iso8601_difference (present);
-	if (seconds == 2)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "seconds is wrong, %i", seconds);
-
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
 	ret = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);

@@ -621,6 +621,47 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 }
 
 /**
+ * pk_backend_spawn_va_list_to_argv:
+ * @string_first: the first string
+ * @args: any subsequant string's
+ *
+ * Form a composite string array of the va_list
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+static gchar **
+pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
+{
+	GPtrArray *ptr_array;
+	gchar **array;
+	gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (args != NULL, NULL);
+	g_return_val_if_fail (string_first != NULL, NULL);
+
+	/* find how many elements we have in a temp array */
+	ptr_array = g_ptr_array_new ();
+	g_ptr_array_add (ptr_array, g_strdup (string_first));
+
+	/* process all the va_list entries */
+	for (i=0;; i++) {
+		value_temp = va_arg (*args, gchar *);
+		if (value_temp == NULL)
+			break;
+		g_ptr_array_add (ptr_array, g_strdup (value_temp));
+	}
+
+	/* convert the array to a strv type */
+	array = pk_ptr_array_to_strv (ptr_array);
+
+	/* get rid of the array, and free the contents */
+	g_ptr_array_foreach (ptr_array, (GFunc) g_free, NULL);
+	g_ptr_array_free (ptr_array, TRUE);
+	return array;
+}
+
+/**
  * pk_backend_spawn_helper_va_list:
  **/
 static gboolean
@@ -637,7 +678,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* convert to a argv */
-	argv = pk_va_list_to_argv (executable, args);
+	argv = pk_backend_spawn_va_list_to_argv (executable, args);
 	if (argv == NULL) {
 		egg_warning ("argv NULL");
 		return FALSE;
@@ -917,6 +958,20 @@ pk_backend_spawn_test_package_cb (PkBackend *backend, PkInfoEnum info,
 	number_packages++;
 }
 
+static gchar **
+pk_backend_spawn_va_list_to_argv_test (const gchar *first_element, ...)
+{
+	va_list args;
+	gchar **array;
+
+	/* get the argument list */
+	va_start (args, first_element);
+	array = pk_backend_spawn_va_list_to_argv (first_element, &args);
+	va_end (args);
+
+	return array;
+}
+
 void
 pk_backend_test_spawn (EggTest *test)
 {
@@ -926,11 +981,36 @@ pk_backend_test_spawn (EggTest *test)
 	guint refcount;
 	gboolean ret;
 	gchar *uri;
+	gchar **array;
 
 	loop = g_main_loop_new (NULL, FALSE);
 
 	if (!egg_test_start (test, "PkBackendSpawn"))
 		return;
+
+	/************************************************************
+	 ****************      splitting va_list       **************
+	 ************************************************************/
+	egg_test_title (test, "va_list_to_argv single");
+	array = pk_backend_spawn_va_list_to_argv_test ("richard", NULL);
+	if (g_strcmp0 (array[0], "richard") == 0 &&
+	    array[1] == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "incorrect array '%s'", array[0]);
+	g_strfreev (array);
+
+	/************************************************************/
+	egg_test_title (test, "va_list_to_argv triple");
+	array = pk_backend_spawn_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
+	if (g_strcmp0 (array[0], "richard") == 0 &&
+	    g_strcmp0 (array[1], "phillip") == 0 &&
+	    g_strcmp0 (array[2], "hughes") == 0 &&
+	    array[3] == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "get an backend_spawn");

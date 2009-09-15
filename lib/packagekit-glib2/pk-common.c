@@ -388,72 +388,16 @@ pk_strv_to_ptr_array (gchar **array)
 	return parray;
 }
 
-/**
- * pk_va_list_to_argv:
- * @string_first: the first string
- * @args: any subsequant string's
- *
- * Form a composite string array of the va_list
- *
- * Return value: the string array, or %NULL if invalid
- **/
-gchar **
-pk_va_list_to_argv (const gchar *string_first, va_list *args)
-{
-	GPtrArray *ptr_array;
-	gchar **array;
-	gchar *value_temp;
-	guint i;
-
-	g_return_val_if_fail (args != NULL, NULL);
-	g_return_val_if_fail (string_first != NULL, NULL);
-
-	/* find how many elements we have in a temp array */
-	ptr_array = g_ptr_array_new ();
-	g_ptr_array_add (ptr_array, g_strdup (string_first));
-
-	/* process all the va_list entries */
-	for (i=0;; i++) {
-		value_temp = va_arg (*args, gchar *);
-		if (value_temp == NULL)
-			break;
-		g_ptr_array_add (ptr_array, g_strdup (value_temp));
-	}
-
-	/* convert the array to a strv type */
-	array = pk_ptr_array_to_strv (ptr_array);
-
-	/* get rid of the array, and free the contents */
-	g_ptr_array_foreach (ptr_array, (GFunc) g_free, NULL);
-	g_ptr_array_free (ptr_array, TRUE);
-	return array;
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
 
-static gchar **
-pk_va_list_to_argv_test (const gchar *first_element, ...)
-{
-	va_list args;
-	gchar **array;
-
-	/* get the argument list */
-	va_start (args, first_element);
-	array = pk_va_list_to_argv (first_element, &args);
-	va_end (args);
-
-	return array;
-}
-
 void
 pk_common_test (gpointer user_data)
 {
 	EggTest *test = (EggTest *) user_data;
-	gchar **array;
 	gchar *text_safe;
 	gchar *present;
 	GDate *date;
@@ -473,30 +417,6 @@ pk_common_test (gpointer user_data)
 	g_free (text_safe);
 
 	/************************************************************
-	 ****************      splitting va_list       **************
-	 ************************************************************/
-	egg_test_title (test, "va_list_to_argv single");
-	array = pk_va_list_to_argv_test ("richard", NULL);
-	if (g_strcmp0 (array[0], "richard") == 0 &&
-	    array[1] == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect array '%s'", array[0]);
-	g_strfreev (array);
-
-	/************************************************************/
-	egg_test_title (test, "va_list_to_argv triple");
-	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
-	if (g_strcmp0 (array[0], "richard") == 0 &&
-	    g_strcmp0 (array[1], "phillip") == 0 &&
-	    g_strcmp0 (array[2], "hughes") == 0 &&
-	    array[3] == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	g_strfreev (array);
-
-	/************************************************************
 	 **************            iso8601           ****************
 	 ************************************************************/
 	egg_test_title (test, "get present iso8601");
@@ -505,10 +425,7 @@ pk_common_test (gpointer user_data)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "present is NULL");
-
-	/************************************************************/
 	g_free (present);
-
 
 	/************************************************************
 	 **************        Date handling         ****************
