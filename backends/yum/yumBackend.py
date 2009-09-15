@@ -1296,6 +1296,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     resolve_list.append(pkg)
                     try:
                         txmbrs = self.yumbase.install(po=pkg)
+                    except yum.Errors.RepoError, e:
+                        self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             percentage += bump
