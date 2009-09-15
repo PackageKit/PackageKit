@@ -3108,6 +3108,13 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
 
+	/* get a connection to the properties interface */
+	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
+							PK_DBUS_SERVICE, state->tid,
+							"org.freedesktop.DBus.Properties");
+	if (state->proxy_props == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+
 	/* call D-Bus get_properties async */
 	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
 					       (DBusGProxyCallNotify) pk_client_adopt_get_properties_cb, state, NULL,
