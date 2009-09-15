@@ -244,7 +244,7 @@ user to restart the computer or remove and re-insert the device.
 %setup -q
 
 %build
-%configure --disable-static --enable-yum --enable-smart --enable-glib2 --with-default-backend=yum --disable-local
+%configure --disable-static --enable-yum --enable-smart --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
