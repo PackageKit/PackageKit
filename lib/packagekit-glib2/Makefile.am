@@ -33,8 +33,10 @@ libpackagekit_glib2_include_HEADERS =				\
 	packagekit.h						\
 	pk-bitfield.h						\
 	pk-client.h						\
+	pk-client-sync.h					\
 	pk-common.h						\
 	pk-control.h						\
+	pk-control-sync.h					\
 	pk-desktop.h						\
 	pk-enum.h						\
 	pk-item.h						\

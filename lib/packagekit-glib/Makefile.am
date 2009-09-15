@@ -38,11 +38,9 @@ libpackagekit_glib_include_HEADERS =				\
 	pk-category-obj.h					\
 	pk-client.h						\
 	pk-client-pool.h					\
-	pk-client-sync.h					\
 	pk-common.h						\
 	pk-connection.h						\
 	pk-control.h						\
-	pk-control-sync.h					\
 	pk-desktop.h						\
 	pk-details-obj.h					\
 	pk-distro-upgrade-obj.h					\
