@@ -328,7 +328,7 @@ pk_lsof_test (EggTest *test)
 	gboolean ret;
 	PkLsof *lsof;
 	GPtrArray *pids;
-	gchar *files[] = { "/lib/libssl3.so", NULL };
+	gchar *files[] = { "/usr/lib/libssl3.so", NULL };
 
 	if (!egg_test_start (test, "PkLsof"))
 		return;
