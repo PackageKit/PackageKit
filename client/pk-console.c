@@ -821,12 +821,17 @@ out:
 }
 
 /**
- * pk_connection_changed_cb:
+ * pk_console_notify_connected_cb:
  **/
 static void
-pk_connection_changed_cb (PkControl *control_, gboolean connected, gpointer data)
+pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer data)
 {
+	gboolean connected;
+
 	/* if the daemon crashed, don't hang around */
+	g_object_get (control_,
+		      "connected", &connected,
+		      NULL);
 	if (!connected) {
 		/* TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle */
 		g_print ("%s\n", _("The daemon crashed mid-transaction!"));
@@ -1054,8 +1059,8 @@ main (int argc, char *argv[])
 	loop = g_main_loop_new (NULL, FALSE);
 
 	/* watch when the daemon aborts */
-	g_signal_connect (control, "connection-changed",
-			  G_CALLBACK (pk_connection_changed_cb), loop);
+	g_signal_connect (control, "notify::connected",
+			  G_CALLBACK (pk_console_notify_connected_cb), loop);
 
 	/* create transactions */
 	task = pk_task_text_new ();

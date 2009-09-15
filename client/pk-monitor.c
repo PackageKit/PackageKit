@@ -52,24 +52,25 @@ pk_monitor_updates_changed_cb (PkControl *control, gpointer data)
 }
 
 /**
- * pk_connection_changed_cb:
+ * pk_monitor_notify_connected_cb:
  **/
 static void
-pk_connection_changed_cb (PkControl *control, gboolean connected, gpointer data)
+pk_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
+	gboolean connected;
+	g_object_get (control, "connected", &connected, NULL);
 	g_print ("daemon connected=%i\n", connected);
 }
 
 /**
- * pk_monitor_locked_cb:
+ * pk_monitor_notify_locked_cb:
  **/
 static void
-pk_monitor_locked_cb (PkControl *control, gboolean is_locked, gpointer data)
+pk_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
-	if (is_locked)
-		g_print ("backend locked\n");
-	else
-		g_print ("backend unlocked\n");
+	gboolean locked;
+	g_object_get (control, "locked", &locked, NULL);
+	g_print ("daemon locked=%i\n", locked);
 }
 
 /**
@@ -313,16 +314,16 @@ main (int argc, char *argv[])
 	control = pk_control_new ();
 	client = pk_client_new ();
 	array = g_ptr_array_new_with_free_func (g_free);
-	g_signal_connect (control, "locked",
-			  G_CALLBACK (pk_monitor_locked_cb), NULL);
 	g_signal_connect (control, "repo-list-changed",
 			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
 	g_signal_connect (control, "updates-changed",
 			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
 	g_signal_connect (control, "transaction-list-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
-	g_signal_connect (control, "connection-changed",
-			  G_CALLBACK (pk_connection_changed_cb), NULL);
+	g_signal_connect (control, "notify::locked",
+			  G_CALLBACK (pk_monitor_notify_locked_cb), NULL);
+	g_signal_connect (control, "notify::connected",
+			  G_CALLBACK (pk_monitor_notify_connected_cb), NULL);
 
 	/* coldplug */
 	pk_monitor_get_transaction_list (control);

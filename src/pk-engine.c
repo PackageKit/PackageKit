@@ -98,6 +98,8 @@ struct PkEnginePrivate
 	gchar			*proxy_http;
 	gchar			*proxy_ftp;
 	gchar			*sender;
+	gboolean		 locked;
+	PkNetworkEnum		 network_state;
 };
 
 enum {
@@ -107,6 +109,7 @@ enum {
 	SIGNAL_NETWORK_STATE_CHANGED,
 	SIGNAL_RESTART_SCHEDULE,
 	SIGNAL_UPDATES_CHANGED,
+	SIGNAL_CHANGED,
 	SIGNAL_QUIT,
 	SIGNAL_LAST
 };
@@ -123,6 +126,8 @@ enum {
 	PROP_GROUPS,
 	PROP_FILTERS,
 	PROP_MIME_TYPES,
+	PROP_LOCKED,
+	PROP_NETWORK_STATE,
 	PROP_LAST,
 };
 
@@ -209,6 +214,16 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	egg_debug ("emitting locked %i", is_locked);
 	g_signal_emit (engine, signals[SIGNAL_LOCKED], 0, is_locked);
+
+	/* already set */
+	if (engine->priv->locked == is_locked)
+		return;
+
+	engine->priv->locked = is_locked;
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -879,6 +894,12 @@ pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_MIME_TYPES:
 		g_value_set_string (value, engine->priv->mime_types);
 		break;
+	case PROP_LOCKED:
+		g_value_set_boolean (value, engine->priv->locked);
+		break;
+	case PROP_NETWORK_STATE:
+		g_value_set_string (value, pk_network_enum_to_text (engine->priv->network_state));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -993,6 +1014,22 @@ pk_engine_class_init (PkEngineClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
+	/**
+	 * PkEngine:locked:
+	 */
+	pspec = g_param_spec_boolean ("locked", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_LOCKED, pspec);
+
+	/**
+	 * PkEngine:network-state:
+	 */
+	pspec = g_param_spec_string ("network-state", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
+
 	/* signals */
 	signals[SIGNAL_LOCKED] =
 		g_signal_new ("locked",
@@ -1021,6 +1058,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals[SIGNAL_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals[SIGNAL_CHANGED] =
+		g_signal_new ("changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
@@ -1061,13 +1103,23 @@ pk_engine_binary_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
  * pk_engine_network_state_changed_cb:
  **/
 static void
-pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum state, PkEngine *engine)
+pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_state, PkEngine *engine)
 {
 	const gchar *state_text;
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	state_text = pk_network_enum_to_text (state);
+	state_text = pk_network_enum_to_text (network_state);
 	egg_debug ("emitting network-state-changed: %s", state_text);
 	g_signal_emit (engine, signals[SIGNAL_NETWORK_STATE_CHANGED], 0, state_text);
+
+	/* already set */
+	if (engine->priv->network_state == network_state)
+		return;
+
+	engine->priv->network_state = network_state;
+
+	/* emit */
+	egg_debug ("emitting changed");
+	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -1088,6 +1140,7 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend_description = NULL;
 	engine->priv->backend_author = NULL;
 	engine->priv->sender = NULL;
+	engine->priv->locked = FALSE;
 
 	/* use the config file */
 	engine->priv->conf = pk_conf_new ();
@@ -1112,6 +1165,7 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->network = pk_network_new ();
 	g_signal_connect (engine->priv->network, "state-changed",
 			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
+	engine->priv->network_state = pk_network_get_network_state (engine->priv->network);
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);

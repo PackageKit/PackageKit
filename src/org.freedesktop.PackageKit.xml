@@ -120,6 +120,38 @@
     </property>
 
     <!--*****************************************************************************************-->
+    <property name="Locked" type="b" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Set when the backend is locked and native tools would fail.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
+    <property name="NetworkState" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Gets the network state from the daemon. This is provided as some clients may not want
+            to use NetworkManager if the system daemon is configured to use something else.
+          </doc:para>
+          <doc:para>
+            If the system is managed using NetworkManager then the following
+            states are supported:
+            <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt>, <doc:tt>online</doc:tt>,
+            <doc:tt>wifi</doc:tt>, <doc:tt>mobile</doc:tt> or <doc:tt>wired</doc:tt>.
+            If the system is configured for legacy UNIX network fallback, or NetworkManager
+            is not running then the folowing states are supported:
+            <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt> or <doc:tt>online</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
     <method name="CanAuthorize">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -392,6 +424,10 @@
             Gets the network state from the daemon. This is provided as some clients may not want
             to use NetworkManager if the system daemon is configured to use something else.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="state" direction="out">
@@ -492,6 +528,10 @@
           <doc:para>
             This signal is emitted when the backend is locked and native tools would fail.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="b" name="is_locked" direction="out">
@@ -511,6 +551,10 @@
         <doc:description>
           <doc:para>
             This signal is emitted when the network state has changed
+          </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use the properties interface for the transaction instead.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -553,6 +597,17 @@
         <doc:description>
           <doc:para>
             This signal is emitted when the number of updates has changed
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <!--*****************************************************************************************-->
+    <signal name="Changed">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when a property on the interface changes.
           </doc:para>
         </doc:description>
       </doc:doc>

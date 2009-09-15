@@ -51,14 +51,15 @@ static void     pk_control_finalize	(GObject     *object);
  **/
 struct _PkControlPrivate
 {
+	DBusGProxyCall		*call_get_properties;
 	GPtrArray		*calls;
 	DBusGProxy		*proxy;
 	DBusGProxy		*proxy_props;
 	DBusGProxy		*proxy_dbus;
 	DBusGConnection		*connection;
-	gboolean		 version_major;
-	gboolean		 version_minor;
-	gboolean		 version_micro;
+	guint			 version_major;
+	guint			 version_minor;
+	guint			 version_micro;
 	gchar			*backend_name;
 	gchar			*backend_description;
 	gchar			*backend_author;
@@ -66,16 +67,16 @@ struct _PkControlPrivate
 	PkBitfield		 groups;
 	PkBitfield		 filters;
 	gchar			*mime_types;
+	gboolean		 connected;
+	gboolean		 locked;
+	PkNetworkEnum		 network_state;
 };
 
 enum {
-	SIGNAL_LOCKED,
-	SIGNAL_LIST_CHANGED,
+	SIGNAL_TRANSACTION_LIST_CHANGED,
 	SIGNAL_RESTART_SCHEDULE,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
-	SIGNAL_NETWORK_STATE_CHANGED,
-	SIGNAL_CONNECTION_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -91,10 +92,13 @@ enum {
 	PROP_GROUPS,
 	PROP_FILTERS,
 	PROP_MIME_TYPES,
+	PROP_LOCKED,
+	PROP_NETWORK_STATE,
+	PROP_CONNECTED,
 	PROP_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 static gpointer pk_control_object = NULL;
 
 G_DEFINE_TYPE (PkControl, pk_control, G_TYPE_OBJECT)
@@ -1178,40 +1182,231 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 }
 
 /**
+ * pk_control_set_version_major:
+ **/
+static void
+pk_control_set_version_major (PkControl *control, guint version_major)
+{
+	/* is the same as before */
+	if (control->priv->version_major == version_major)
+		return;
+	control->priv->version_major = version_major;
+
+	/* notify we're changed */
+	egg_debug ("notify::version-major");
+	g_object_notify (G_OBJECT(control), "version-major");
+}
+
+/**
+ * pk_control_set_version_minor:
+ **/
+static void
+pk_control_set_version_minor (PkControl *control, guint version_minor)
+{
+	/* is the same as before */
+	if (control->priv->version_minor == version_minor)
+		return;
+	control->priv->version_minor = version_minor;
+
+	/* notify we're changed */
+	egg_debug ("notify::version-minor");
+	g_object_notify (G_OBJECT(control), "version-minor");
+}
+
+/**
+ * pk_control_set_version_micro:
+ **/
+static void
+pk_control_set_version_micro (PkControl *control, guint version_micro)
+{
+	/* is the same as before */
+	if (control->priv->version_micro == version_micro)
+		return;
+	control->priv->version_micro = version_micro;
+
+	/* notify we're changed */
+	egg_debug ("notify::version-micro");
+	g_object_notify (G_OBJECT(control), "version-micro");
+}
+
+/**
+ * pk_control_set_locked:
+ **/
+static void
+pk_control_set_locked (PkControl *control, gboolean locked)
+{
+	/* is the same as before */
+	if (control->priv->locked == locked)
+		return;
+	control->priv->locked = locked;
+
+	/* notify we're changed */
+	egg_debug ("notify::locked");
+	g_object_notify (G_OBJECT(control), "locked");
+}
+
+/**
+ * pk_control_set_backend_name:
+ **/
+static void
+pk_control_set_backend_name (PkControl *control, const gchar *backend_name)
+{
+	/* is the same as before */
+	if (g_strcmp0 (control->priv->backend_name, backend_name) == 0)
+		return;
+	g_free (control->priv->backend_name);
+	control->priv->backend_name = g_strdup (backend_name);
+
+	/* notify we're changed */
+	egg_debug ("notify::backend-name");
+	g_object_notify (G_OBJECT(control), "backend-name");
+}
+
+/**
+ * pk_control_set_backend_author:
+ **/
+static void
+pk_control_set_backend_author (PkControl *control, const gchar *backend_author)
+{
+	/* is the same as before */
+	if (g_strcmp0 (control->priv->backend_author, backend_author) == 0)
+		return;
+	g_free (control->priv->backend_author);
+	control->priv->backend_author = g_strdup (backend_author);
+
+	/* notify we're changed */
+	egg_debug ("notify::backend-author");
+	g_object_notify (G_OBJECT(control), "backend-author");
+}
+
+/**
+ * pk_control_set_backend_description:
+ **/
+static void
+pk_control_set_backend_description (PkControl *control, const gchar *backend_description)
+{
+	/* is the same as before */
+	if (g_strcmp0 (control->priv->backend_description, backend_description) == 0)
+		return;
+	g_free (control->priv->backend_description);
+	control->priv->backend_description = g_strdup (backend_description);
+
+	/* notify we're changed */
+	egg_debug ("notify::backend-description");
+	g_object_notify (G_OBJECT(control), "backend-description");
+}
+
+/**
+ * pk_control_set_mime_types:
+ **/
+static void
+pk_control_set_mime_types (PkControl *control, const gchar *mime_types)
+{
+	/* is the same as before */
+	if (g_strcmp0 (control->priv->mime_types, mime_types) == 0)
+		return;
+	g_free (control->priv->mime_types);
+	control->priv->mime_types = g_strdup (mime_types);
+
+	/* notify we're changed */
+	egg_debug ("notify::mime-types");
+	g_object_notify (G_OBJECT(control), "mime-types");
+}
+
+/**
+ * pk_control_set_roles:
+ **/
+static void
+pk_control_set_roles (PkControl *control, PkBitfield roles)
+{
+	/* is the same as before */
+	if (control->priv->roles == roles)
+		return;
+	control->priv->roles = roles;
+
+	/* notify we're changed */
+	egg_debug ("notify::roles");
+	g_object_notify (G_OBJECT(control), "roles");
+}
+
+/**
+ * pk_control_set_groups:
+ **/
+static void
+pk_control_set_groups (PkControl *control, PkBitfield groups)
+{
+	/* is the same as before */
+	if (control->priv->groups == groups)
+		return;
+	control->priv->groups = groups;
+
+	/* notify we're changed */
+	egg_debug ("notify::groups");
+	g_object_notify (G_OBJECT(control), "groups");
+}
+
+/**
+ * pk_control_set_filters:
+ **/
+static void
+pk_control_set_filters (PkControl *control, PkBitfield filters)
+{
+	/* is the same as before */
+	if (control->priv->filters == filters)
+		return;
+	control->priv->filters = filters;
+
+	/* notify we're changed */
+	egg_debug ("notify::filters");
+	g_object_notify (G_OBJECT(control), "filters");
+}
+
+/**
+ * pk_control_set_network_state:
+ **/
+static void
+pk_control_set_network_state (PkControl *control, PkNetworkEnum network_state)
+{
+	/* is the same as before */
+	if (control->priv->network_state == network_state)
+		return;
+	control->priv->network_state = network_state;
+
+	/* notify we're changed */
+	egg_debug ("notify::network-state");
+	g_object_notify (G_OBJECT(control), "network-state");
+}
+
+/**
  * pk_control_get_properties_collect_cb:
  **/
 static void
 pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkControl *control)
 {
-	const gchar *tmp;
-
-	if (g_strcmp0 (key, "version-major") == 0 || g_strcmp0 (key, "VersionMajor") == 0) {
-		control->priv->version_major = g_value_get_uint (value);
-	} else if (g_strcmp0 (key, "version-minor") == 0 || g_strcmp0 (key, "VersionMinor") == 0) {
-		control->priv->version_minor = g_value_get_uint (value);
-	} else if (g_strcmp0 (key, "version-micro") == 0 || g_strcmp0 (key, "VersionMicro") == 0) {
-		control->priv->version_micro = g_value_get_uint (value);
+	if (g_strcmp0 (key, "VersionMajor") == 0) {
+		pk_control_set_version_major (control, g_value_get_uint (value));
+	} else if (g_strcmp0 (key, "VersionMinor") == 0) {
+		pk_control_set_version_minor (control, g_value_get_uint (value));
+	} else if (g_strcmp0 (key, "VersionMicro") == 0) {
+		pk_control_set_version_micro (control, g_value_get_uint (value));
 	} else if (g_strcmp0 (key, "BackendName") == 0) {
-		g_free (control->priv->backend_name);
-		control->priv->backend_name = g_strdup (g_value_get_string (value));
+		pk_control_set_backend_name (control, g_value_get_string (value));
 	} else if (g_strcmp0 (key, "BackendDescription") == 0) {
-		g_free (control->priv->backend_description);
-		control->priv->backend_description = g_strdup (g_value_get_string (value));
+		pk_control_set_backend_description (control, g_value_get_string (value));
 	} else if (g_strcmp0 (key, "BackendAuthor") == 0) {
-		g_free (control->priv->backend_author);
-		control->priv->backend_author = g_strdup (g_value_get_string (value));
+		pk_control_set_backend_author (control, g_value_get_string (value));
 	} else if (g_strcmp0 (key, "MimeTypes") == 0) {
-		g_free (control->priv->mime_types);
-		control->priv->mime_types = g_strdup (g_value_get_string (value));
+		pk_control_set_mime_types (control, g_value_get_string (value));
 	} else if (g_strcmp0 (key, "Roles") == 0) {
-		tmp = g_value_get_string (value);
-		control->priv->roles = pk_role_bitfield_from_text (tmp);
+		pk_control_set_roles (control, pk_role_bitfield_from_text (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "Groups") == 0) {
-		tmp = g_value_get_string (value);
-		control->priv->groups = pk_group_bitfield_from_text (tmp);
+		pk_control_set_groups (control, pk_group_bitfield_from_text (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "Filters") == 0) {
-		tmp = g_value_get_string (value);
-		control->priv->filters = pk_filter_bitfield_from_text (tmp);
+		pk_control_set_filters (control, pk_filter_bitfield_from_text (g_value_get_string (value)));
+	} else if (g_strcmp0 (key, "Locked") == 0) {
+		pk_control_set_locked (control, g_value_get_boolean (value));
+	} else if (g_strcmp0 (key, "NetworkState") == 0) {
+		pk_control_set_network_state (control, pk_network_enum_from_text (g_value_get_string (value)));
 	} else {
 		egg_warning ("unhandled property '%s'", key);
 	}
@@ -1224,7 +1419,6 @@ static void
 pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
 {
 	GError *error = NULL;
-	gchar *tid = NULL;
 	gboolean ret;
 	GHashTable *hash;
 
@@ -1236,7 +1430,7 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to set proxy: %s", error->message);
+		egg_warning ("failed to get properties: %s", error->message);
 		pk_control_get_properties_state_finish (state, error);
 		goto out;
 	}
@@ -1246,14 +1440,16 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 
 	/* process results */
 	if (hash != NULL) {
+		g_object_freeze_notify (G_OBJECT(state->control));
 		g_hash_table_foreach (hash, (GHFunc) pk_control_get_properties_collect_cb, state->control);
 		g_hash_table_unref (hash);
+		g_object_thaw_notify (G_OBJECT(state->control));
 	}
 
 	/* we're done */
 	pk_control_get_properties_state_finish (state, error);
 out:
-	g_free (tid);
+	return;
 }
 
 /**
@@ -1388,7 +1584,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkCont
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	egg_debug ("emit transaction-list-changed");
-	g_signal_emit (control, signals [SIGNAL_LIST_CHANGED], 0);
+	g_signal_emit (control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0);
 }
 
 /**
@@ -1400,7 +1596,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	egg_debug ("emitting restart-schedule");
-	g_signal_emit (control, signals [SIGNAL_RESTART_SCHEDULE], 0);
+	g_signal_emit (control, signals[SIGNAL_RESTART_SCHEDULE], 0);
 
 }
 
@@ -1413,7 +1609,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	egg_debug ("emitting updates-changed");
-	g_signal_emit (control, signals [SIGNAL_UPDATES_CHANGED], 0);
+	g_signal_emit (control, signals[SIGNAL_UPDATES_CHANGED], 0);
 
 }
 
@@ -1426,31 +1622,61 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	egg_debug ("emitting repo-list-changed");
-	g_signal_emit (control, signals [SIGNAL_REPO_LIST_CHANGED], 0);
+	g_signal_emit (control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 }
 
 /**
- * pk_control_network_state_changed_cb:
- */
+ * pk_control_changed_get_properties_cb:
+ **/
 static void
-pk_control_network_state_changed_cb (DBusGProxy *proxy, const gchar *network_text, PkControl *control)
+pk_control_changed_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl *control)
 {
-	PkNetworkEnum network;
-	g_return_if_fail (PK_IS_CONTROL (control));
+	GError *error = NULL;
+	gboolean ret;
+	GHashTable *hash;
 
-	network = pk_network_enum_from_text (network_text);
-	egg_debug ("emitting network-state-changed: %s", network_text);
-	g_signal_emit (control, signals [SIGNAL_NETWORK_STATE_CHANGED], 0, network);
+	/* finished this call */
+	control->priv->call_get_properties = NULL;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (proxy, call, &error,
+				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to get properties: %s", error->message);
+		goto out;
+	}
+
+	/* process results */
+	if (hash != NULL) {
+		g_object_freeze_notify (G_OBJECT(control));
+		g_hash_table_foreach (hash, (GHFunc) pk_control_get_properties_collect_cb, control);
+		g_hash_table_unref (hash);
+		g_object_thaw_notify (G_OBJECT(control));
+	}
+out:
+	return;
 }
 
 /**
- * pk_control_locked_cb:
+ * pk_control_changed_cb:
  */
 static void
-pk_control_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkControl *control)
+pk_control_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
-	egg_debug ("emit locked %i", is_locked);
-	g_signal_emit (control , signals [SIGNAL_LOCKED], 0, is_locked);
+	/* already getting properties */
+	if (control->priv->call_get_properties != NULL) {
+		egg_warning ("already getting properties, will ignore");
+		return;
+	}
+
+	/* call D-Bus get_properties async */
+	egg_debug ("properties changed, so getting new list");
+	control->priv->call_get_properties =
+		dbus_g_proxy_begin_call (control->priv->proxy_props, "GetAll",
+					 (DBusGProxyCallNotify) pk_control_changed_get_properties_cb, control, NULL,
+					 G_TYPE_STRING, "org.freedesktop.PackageKit",
+					 G_TYPE_INVALID);
 }
 
 /**
@@ -1501,13 +1727,17 @@ pk_control_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name, const gc
 
 	/* something --> nothing */
 	if (prev_len != 0 && new_len == 0) {
-		g_signal_emit (control, signals [SIGNAL_CONNECTION_CHANGED], 0, FALSE);
+		control->priv->connected = FALSE;
+		egg_debug ("notify::connected");
+		g_object_notify (G_OBJECT(control), "connected");
 		return;
 	}
 
 	/* nothing --> something */
 	if (prev_len == 0 && new_len != 0) {
-		g_signal_emit (control, signals [SIGNAL_CONNECTION_CHANGED], 0, TRUE);
+		control->priv->connected = TRUE;
+		egg_debug ("notify::connected");
+		g_object_notify (G_OBJECT(control), "connected");
 		return;
 	}
 }
@@ -1551,6 +1781,15 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		break;
 	case PROP_MIME_TYPES:
 		g_value_set_string (value, priv->mime_types);
+		break;
+	case PROP_LOCKED:
+		g_value_set_boolean (value, priv->locked);
+		break;
+	case PROP_NETWORK_STATE:
+		g_value_set_uint (value, priv->network_state);
+		break;
+	case PROP_CONNECTED:
+		g_value_set_boolean (value, priv->connected);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1665,13 +1904,37 @@ pk_control_class_init (PkControlClass *klass)
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/**
+	 * PkControl:locked:
+	 */
+	pspec = g_param_spec_boolean ("locked", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_LOCKED, pspec);
+
+	/**
+	 * PkControl:network-state:
+	 */
+	pspec = g_param_spec_boolean ("network-state", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
+
+	/**
+	 * PkControl:connected:
+	 */
+	pspec = g_param_spec_boolean ("connected", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_CONNECTED, pspec);
+
+	/**
 	 * PkControl::updates-changed:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
 	 * The ::updates-changed signal is emitted when the update list may have
 	 * changed and the control program may have to update some UI.
 	 **/
-	signals [SIGNAL_UPDATES_CHANGED] =
+	signals[SIGNAL_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, updates_changed),
@@ -1684,25 +1947,12 @@ pk_control_class_init (PkControlClass *klass)
 	 * The ::repo-list-changed signal is emitted when the repo list may have
 	 * changed and the control program may have to update some UI.
 	 **/
-	signals [SIGNAL_REPO_LIST_CHANGED] =
+	signals[SIGNAL_REPO_LIST_CHANGED] =
 		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, repo_list_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	/**
-	 * PkControl::network-state-changed:
-	 * @control: the #PkControl instance that emitted the signal
-	 *
-	 * The ::network-state-changed signal is emitted when the network has changed speed or
-	 * connections state.
-	 **/
-	signals [SIGNAL_NETWORK_STATE_CHANGED] =
-		g_signal_new ("network-state-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkControlClass, network_state_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	/**
 	 * PkControl::restart-schedule:
 	 * @control: the #PkControl instance that emitted the signal
@@ -1712,7 +1962,7 @@ pk_control_class_init (PkControlClass *klass)
 	 * Client programs should reload themselves when it is convenient to
 	 * do so, as old client tools may not be compatable with the new daemon.
 	 **/
-	signals [SIGNAL_RESTART_SCHEDULE] =
+	signals[SIGNAL_RESTART_SCHEDULE] =
 		g_signal_new ("restart-schedule",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, restart_schedule),
@@ -1725,42 +1975,12 @@ pk_control_class_init (PkControlClass *klass)
 	 * The ::transaction-list-changed signal is emitted when the list
 	 * of transactions handled by the daemon is changed.
 	 **/
-	signals [SIGNAL_LIST_CHANGED] =
+	signals[SIGNAL_TRANSACTION_LIST_CHANGED] =
 		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, transaction_list_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	/**
-	 * PkControl::locked:
-	 * @control: the #PkControl instance that emitted the signal
-	 *
-	 * The ::locked signal is emitted when the backend instance has been
-	 * locked by PackageKit.
-	 * This may mean that other native package tools will not work.
-	 **/
-	signals [SIGNAL_LOCKED] =
-		g_signal_new ("locked",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkControlClass, locked),
-			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-
-	/**
-	 * PkControl::connection-changed:
-	 * @control: the #PkControl instance that emitted the signal
-	 *
-	 * The ::connection-changed is emitted when packagekitd is added or
-	 * removed from the bus. In this way, a client can know if the daemon
-	 * is running.
-	 **/
-	signals [SIGNAL_CONNECTION_CHANGED] =
-		g_signal_new ("connection-changed",
-			      G_TYPE_FROM_CLASS (object_class),
-			      G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkControlClass, connection_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	g_type_class_add_private (klass, sizeof (PkControlPrivate));
 }
@@ -1779,6 +1999,9 @@ pk_control_init (PkControl *control)
 	control->priv->backend_name = NULL;
 	control->priv->backend_description = NULL;
 	control->priv->backend_author = NULL;
+	control->priv->locked = FALSE;
+	control->priv->connected = FALSE;
+	control->priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
 	control->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
@@ -1790,9 +2013,9 @@ pk_control_init (PkControl *control)
 	}
 
 	/* we maintain a local copy */
-	control->priv->version_major = 0;
-	control->priv->version_minor = 0;
-	control->priv->version_micro = 0;
+	control->priv->version_major = G_MAXUINT;
+	control->priv->version_minor = G_MAXUINT;
+	control->priv->version_micro = G_MAXUINT;
 
 	/* get a connection to the main interface */
 	control->priv->proxy = dbus_g_proxy_new_for_name (control->priv->connection,
@@ -1840,20 +2063,13 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_connect_signal (control->priv->proxy, "RepoListChanged",
 				     G_CALLBACK (pk_control_repo_list_changed_cb), control, NULL);
 
-	dbus_g_proxy_add_signal (control->priv->proxy, "NetworkStateChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (control->priv->proxy, "NetworkStateChanged",
-				     G_CALLBACK (pk_control_network_state_changed_cb), control, NULL);
+	dbus_g_proxy_add_signal (control->priv->proxy, "Changed", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (control->priv->proxy, "Changed",
+				     G_CALLBACK (pk_control_changed_cb), control, NULL);
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "RestartSchedule", G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "RestartSchedule",
 				     G_CALLBACK (pk_control_restart_schedule_cb), control, NULL);
-
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
-					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (control->priv->proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (control->priv->proxy, "Locked",
-				     G_CALLBACK (pk_control_locked_cb), control, NULL);
 }
 
 /**
@@ -1870,16 +2086,14 @@ pk_control_finalize (GObject *object)
 	pk_control_cancel_all_dbus_methods (control);
 
 	/* disconnect signal handlers */
-	dbus_g_proxy_disconnect_signal (control->priv->proxy, "Locked",
-				        G_CALLBACK (pk_control_locked_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "TransactionListChanged",
 				        G_CALLBACK (pk_control_transaction_list_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "UpdatesChanged",
 				        G_CALLBACK (pk_control_updates_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RepoListChanged",
 				        G_CALLBACK (pk_control_repo_list_changed_cb), control);
-	dbus_g_proxy_disconnect_signal (control->priv->proxy, "NetworkStateChanged",
-				        G_CALLBACK (pk_control_network_state_changed_cb), control);
+	dbus_g_proxy_disconnect_signal (control->priv->proxy, "Changed",
+				        G_CALLBACK (pk_control_changed_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy, "RestartSchedule",
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy_dbus, "NameOwnerChanged",
