@@ -858,6 +858,40 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkIte
 }
 
 /**
+ * pk_backend_strsafe:
+ * @text: The input text to make safe
+ *
+ * Replaces chars in the text that may be dangerous, or that may print
+ * incorrectly. These chars include new lines, tabs and line feed, and are
+ * replaced by spaces.
+ *
+ * Return value: the new string with no insane chars
+ **/
+static gchar *
+pk_backend_strsafe (const gchar *text)
+{
+	gchar *text_safe;
+	gboolean ret;
+	const gchar *delimiters;
+
+	if (text == NULL)
+		return NULL;
+
+	/* is valid UTF8? */
+	ret = g_utf8_validate (text, -1, NULL);
+	if (!ret) {
+		egg_warning ("text '%s' was not valid UTF8!", text);
+		return NULL;
+	}
+
+	/* rip out any insane characters */
+	delimiters = "\\\f\r\t";
+	text_safe = g_strdup (text);
+	g_strdelimit (text_safe, delimiters, ' ');
+	return text_safe;
+}
+
+/**
  * pk_backend_package:
  **/
 gboolean
@@ -879,7 +913,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* replace unsafe chars */
-	summary_safe = pk_strsafe (summary);
+	summary_safe = pk_backend_strsafe (summary);
 
 	/* fix up available and installed when doing simulate roles */
 	if (backend->priv->role == PK_ROLE_ENUM_SIMULATE_INSTALL_FILES ||
@@ -991,7 +1025,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	updated = pk_iso8601_to_date (updated_text);
 
 	/* replace unsafe chars */
-	update_text_safe = pk_strsafe (update_text);
+	update_text_safe = pk_backend_strsafe (update_text);
 
 	/* form PkItemUpdateDetail struct */
 	item = pk_item_update_detail_new (package_id, updates, obsoletes, vendor_url,
@@ -1217,7 +1251,7 @@ pk_backend_details (PkBackend *backend, const gchar *package_id,
 	}
 
 	/* replace unsafe chars */
-	description_safe = pk_strsafe (description);
+	description_safe = pk_backend_strsafe (description);
 
 	/* form PkItemDetails struct */
 	item = pk_item_details_new (package_id, license, group, description_safe, url, size);
@@ -1315,8 +1349,8 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 	}
 
 	/* replace unsafe chars */
-	name_safe = pk_strsafe (name);
-	summary_safe = pk_strsafe (summary);
+	name_safe = pk_backend_strsafe (name);
+	summary_safe = pk_backend_strsafe (summary);
 
 	/* form PkItemDistroUpgrade struct */
 	item = pk_item_distro_upgrade_new (type, name_safe, summary_safe);
@@ -1501,7 +1535,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 	}
 
 	/* replace unsafe chars */
-	description_safe = pk_strsafe (description);
+	description_safe = pk_backend_strsafe (description);
 
 	/* form PkItemRepoDetail struct */
 	item = pk_item_repo_detail_new (repo_id, description, enabled);
@@ -1544,7 +1578,7 @@ pk_backend_category (PkBackend *backend, const gchar *parent_id, const gchar *ca
 	}
 
 	/* replace unsafe chars */
-	summary_safe = pk_strsafe (summary);
+	summary_safe = pk_backend_strsafe (summary);
 
 	/* form PkItemCategory struct */
 	item = pk_item_category_new (parent_id, cat_id, name, summary, icon);
@@ -2782,12 +2816,51 @@ pk_backend_test (EggTest *test)
 	PkBackend *backend;
 	PkConf *conf;
 	gchar *text;
+	gchar *text_safe;
 	gboolean ret;
 	const gchar *filename;
 	gboolean developer_mode;
 
 	if (!egg_test_start (test, "PkBackend"))
 		return;
+
+	/************************************************************
+	 ****************       REPLACE CHARS      ******************
+	 ************************************************************/
+	egg_test_title (test, "test replace unsafe (okay)");
+	text_safe = pk_backend_strsafe ("Richard Hughes");
+	if (g_strcmp0 (text_safe, "Richard Hughes") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "test replace UTF8 unsafe (okay)");
+	text_safe = pk_backend_strsafe ("Gölas");
+	if (g_strcmp0 (text_safe, "Gölas") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "test replace unsafe (one invalid)");
+	text_safe = pk_backend_strsafe ("Richard\rHughes");
+	if (g_strcmp0 (text_safe, "Richard Hughes") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
+	g_free (text_safe);
+
+	/************************************************************/
+	egg_test_title (test, "test replace unsafe (multiple invalid)");
+	text_safe = pk_backend_strsafe (" Richard\rHughes\f");
+	if (g_strcmp0 (text_safe, " Richard Hughes ") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed the replace unsafe '%s'", text_safe);
+	g_free (text_safe);
 
 	/************************************************************/
 	egg_test_title (test, "get an backend");

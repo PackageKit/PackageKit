@@ -1694,6 +1694,66 @@ pk_transaction_finished_idle_cb (PkTransaction *transaction)
 	return FALSE;
 }
 
+
+/**
+ * pk_transaction_strvalidate_char:
+ * @item: A single char to test
+ *
+ * Tests a char to see if it may be dangerous.
+ *
+ * Return value: %TRUE if the char is valid
+ **/
+static gboolean
+pk_transaction_strvalidate_char (gchar item)
+{
+	switch (item) {
+	case '$':
+	case '`':
+	case '\'':
+	case '"':
+	case '^':
+	case '[':
+	case ']':
+	case '{':
+	case '}':
+	case '\\':
+	case '<':
+	case '>':
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_transaction_strvalidate:
+ * @text: The text to check for validity
+ *
+ * Tests a string to see if it may be dangerous or invalid.
+ *
+ * Return value: %TRUE if the string is valid
+ **/
+static gboolean
+pk_transaction_strvalidate (const gchar *text)
+{
+	guint i;
+	guint length;
+
+	/* maximum size is 1024 */
+	length = egg_strlen (text, 1024);
+	if (length > 1024) {
+		egg_warning ("input too long: %u", length);
+		return FALSE;
+	}
+
+	for (i=0; i<length; i++) {
+		if (pk_transaction_strvalidate_char (text[i]) == FALSE) {
+			egg_warning ("invalid char '%c' in text!", text[i]);
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 /**
  * pk_transaction_search_check:
  **/
@@ -1731,7 +1791,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "The search string length is too large");
 		return FALSE;
 	}
-	ret = pk_strvalidate (search);
+	ret = pk_transaction_strvalidate (search);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid search term");
@@ -1761,7 +1821,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	}
 
 	/* check for invalid input */
-	ret = pk_strvalidate (filter);
+	ret = pk_transaction_strvalidate (filter);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid filter term: %s", filter);
@@ -2123,7 +2183,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (eula_id);
+	ret = pk_transaction_strvalidate (eula_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -3458,7 +3518,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (key_id);
+	ret = pk_transaction_strvalidate (key_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -3670,7 +3730,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (repo_id);
+	ret = pk_transaction_strvalidate (repo_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -3730,7 +3790,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (repo_id);
+	ret = pk_transaction_strvalidate (repo_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -3816,7 +3876,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* check each package for sanity */
 	for (i=0; i<length; i++) {
-		ret = pk_strvalidate (packages[i]);
+		ret = pk_transaction_strvalidate (packages[i]);
 		if (!ret) {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Invalid input passed to daemon");
@@ -3878,7 +3938,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	}
 
 	/* check for sanity */
-	ret = pk_strvalidate (transaction_id);
+	ret = pk_transaction_strvalidate (transaction_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -5337,6 +5397,33 @@ egg_test_transaction (EggTest *test)
 	ret = pk_transaction_filter_check (temp, &error);
 	egg_test_assert (test, ret);
 	g_clear_error (&error);
+
+	/************************************************************
+	 ****************        validate text         **************
+	 ************************************************************/
+	egg_test_title (test, "validate correct char 1");
+	ret = pk_transaction_strvalidate_char ('a');
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "validate correct char 2");
+	ret = pk_transaction_strvalidate_char ('~');
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "validate incorrect char");
+	ret = pk_transaction_strvalidate_char ('$');
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "validate incorrect text");
+	ret = pk_transaction_strvalidate ("richard$hughes");
+	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "validate correct text");
+	ret = pk_transaction_strvalidate ("richardhughes");
+	egg_test_assert (test, ret);
 
 	g_object_unref (transaction);
 
