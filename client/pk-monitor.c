@@ -31,7 +31,6 @@
 
 static gboolean verbose = FALSE;
 static PkClient *client = NULL;
-static GPtrArray *array = NULL;
 
 /**
  * pk_monitor_repo_list_changed_cb:
@@ -134,91 +133,24 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, const gchar *
 }
 
 /**
- * pk_monitor_list_add:
- **/
-static void
-pk_monitor_list_add (const gchar *transaction_id)
-{
-	gchar *tid;
-
-	/* adopt client */
-	tid = g_strdup (transaction_id);
-	pk_client_adopt_async (client, transaction_id, NULL,
-			       (PkProgressCallback) pk_monitor_progress_cb, tid,
-			       (GAsyncReadyCallback) pk_monitor_adopt_cb, tid);
-	/* add tid to array */
-	g_ptr_array_add (array, tid);
-}
-
-/**
- * pk_monitor_in_array:
- **/
-static gboolean
-pk_monitor_in_array (GPtrArray *_array, const gchar *text)
-{
-	guint i;
-	const gchar *tmp;
-	for (i=0; i<_array->len; i++) {
-		tmp = g_ptr_array_index (_array, i);
-		if (g_strcmp0 (text, tmp) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/**
  * pk_monitor_list_print:
  **/
 static void
-pk_monitor_list_print (gchar **list)
+pk_monitor_list_print (PkTransactionList *tlist)
 {
 	guint i;
-	gboolean ret;
+	gchar **list;
 
+	list = pk_transaction_list_get_ids (tlist);
 	g_print ("Transactions:\n");
 	if (list[0] == NULL) {
 		g_print (" [none]\n");
-		return;
+		goto out;
 	}
-	for (i=0; list[i] != NULL; i++) {
+	for (i=0; list[i] != NULL; i++)
 		g_print (" %i\t%s\n", i+1, list[i]);
-
-		/* check to see if tid is in array */
-		ret = pk_monitor_in_array (array, list[i]);
-		if (!ret)
-			pk_monitor_list_add (list[i]);
-	}
-}
-
-/**
- * pk_monitor_get_transaction_list_cb:
- **/
-static void
-pk_monitor_get_transaction_list_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
-{
-	GError *error = NULL;
-	gchar **list;
-
-	/* get the result */
-	list = pk_control_get_transaction_list_finish (control, res, &error);
-	if (list == NULL) {
-		g_print ("%s: %s", _("Failed to get transaction list"), error->message);
-		g_error_free (error);
-		return;
-	}
-	pk_monitor_list_print (list);
+out:
 	g_strfreev (list);
-}
-
-/**
- * pk_monitor_get_transaction_list:
- **/
-static void
-pk_monitor_get_transaction_list (PkControl *control)
-{
-	egg_debug ("refreshing task list");
-	pk_control_get_transaction_list_async (control, NULL,
-					       (GAsyncReadyCallback) pk_monitor_get_transaction_list_cb, NULL);
 }
 
 /**
@@ -252,18 +184,38 @@ pk_monitor_get_daemon_state (PkControl *control)
 					   (GAsyncReadyCallback) pk_monitor_get_daemon_state_cb, NULL);
 }
 
-
 /**
  * pk_monitor_task_list_changed_cb:
  **/
 static void
 pk_monitor_task_list_changed_cb (PkControl *control)
 {
-	pk_monitor_get_transaction_list (control);
-
 	/* only print state when verbose */
 	if (verbose)
 		pk_monitor_get_daemon_state (control);
+}
+
+/**
+ * pk_monitor_transaction_list_added_cb:
+ **/
+static void
+pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
+{
+	egg_debug ("added: %s", transaction_id);
+	pk_client_adopt_async (client, transaction_id, NULL,
+			       (PkProgressCallback) pk_monitor_progress_cb, g_strdup (transaction_id),
+			       (GAsyncReadyCallback) pk_monitor_adopt_cb, g_strdup (transaction_id));
+	pk_monitor_list_print (tlist);
+}
+
+/**
+ * pk_monitor_transaction_list_removed_cb:
+ **/
+static void
+pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
+{
+	egg_debug ("removed: %s", transaction_id);
+	pk_monitor_list_print (tlist);
 }
 
 /**
@@ -277,6 +229,9 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 	gint retval = EXIT_SUCCESS;
 	PkControl *control;
+	PkTransactionList *tlist;
+	gchar **transaction_ids;
+	guint i;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -312,8 +267,6 @@ main (int argc, char *argv[])
 	loop = g_main_loop_new (NULL, FALSE);
 
 	control = pk_control_new ();
-	client = pk_client_new ();
-	array = g_ptr_array_new_with_free_func (g_free);
 	g_signal_connect (control, "repo-list-changed",
 			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
 	g_signal_connect (control, "updates-changed",
@@ -325,8 +278,20 @@ main (int argc, char *argv[])
 	g_signal_connect (control, "notify::connected",
 			  G_CALLBACK (pk_monitor_notify_connected_cb), NULL);
 
-	/* coldplug */
-	pk_monitor_get_transaction_list (control);
+	tlist = pk_transaction_list_new ();
+	g_signal_connect (tlist, "added",
+			  G_CALLBACK (pk_monitor_transaction_list_added_cb), NULL);
+	g_signal_connect (tlist, "removed",
+			  G_CALLBACK (pk_monitor_transaction_list_removed_cb), NULL);
+
+	client = pk_client_new ();
+
+	/* coldplug, but shouldn't be needed yet */
+	transaction_ids = pk_transaction_list_get_ids (tlist);
+	for (i=0; transaction_ids[i] != NULL; i++) {
+		egg_warning ("need to coldplug %s", transaction_ids[i]);
+	}
+	g_strfreev (transaction_ids);
 
 	/* only print state when verbose */
 	if (verbose)
@@ -336,8 +301,8 @@ main (int argc, char *argv[])
 	g_main_loop_run (loop);
 
 	g_object_unref (control);
+	g_object_unref (tlist);
 	g_object_unref (client);
-	g_ptr_array_unref (array);
 out:
 	return retval;
 }

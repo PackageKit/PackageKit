@@ -39,6 +39,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-service-pack.h>
 #include <packagekit-glib2/pk-task.h>
+#include <packagekit-glib2/pk-transaction-list.h>
 #include <packagekit-glib2/pk-version.h>
 
 #undef __PACKAGEKIT_H_INSIDE__

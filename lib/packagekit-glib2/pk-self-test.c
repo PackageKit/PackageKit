@@ -40,6 +40,7 @@
 #include "pk-task.h"
 #include "pk-task-text.h"
 #include "pk-task-wrapper.h"
+#include "pk-transaction-list.h"
 #include "pk-version.h"
 
 int
@@ -64,6 +65,7 @@ main (int argc, char **argv)
 	pk_results_test (test);
 	pk_package_test (test);
 	pk_control_test (test);
+	pk_transaction_list_test (test);
 	pk_client_test (test);
 	pk_package_sack_test (test);
 	pk_task_test (test);

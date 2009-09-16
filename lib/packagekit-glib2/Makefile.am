@@ -48,6 +48,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-results.h						\
 	pk-service-pack.h					\
 	pk-task.h						\
+	pk-transaction-list.h					\
 	pk-version.h						\
 	$(NULL)
 
@@ -93,6 +94,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-item.h						\
 	pk-task.c						\
 	pk-task.h						\
+	pk-transaction-list.c					\
+	pk-transaction-list.h					\
 	pk-version.h						\
 	$(NULL)
 
