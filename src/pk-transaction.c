@@ -331,24 +331,12 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		return FALSE;
 	}
 
-	egg_debug ("invalidating caches");
-
 	/* copy this into the cache if we are getting updates */
 	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		array = pk_results_get_package_array (transaction->priv->results);
 		pk_cache_set_updates (transaction->priv->cache, array);
 		g_ptr_array_unref (array);
 	}
-
-	/* we unref the update cache if it exists */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)
-		pk_cache_invalidate (transaction->priv->cache);
-
-	/* this has to be done as different repos might have different updates */
-	if (transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA)
-		pk_cache_invalidate (transaction->priv->cache);
 
 	/* could the update list have changed? */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -357,6 +345,11 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+
+		/* the cached list is no longer valid */
+		egg_debug ("invalidating caches");
+		pk_cache_invalidate (transaction->priv->cache);
+
 		/* this needs to be done after a small delay */
 		pk_notify_wait_updates_changed (transaction->priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
