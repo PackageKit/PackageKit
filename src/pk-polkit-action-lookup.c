@@ -23,7 +23,10 @@
 #include "config.h"
 
 #include <polkitbackend/polkitbackend.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-package-ids.h>
+#include <packagekit-glib2/pk-common.h>
 #include <glib/gi18n-lib.h>
 
 #define PK_TYPE_ACTION_LOOKUP		(pk_action_lookup_get_type())

@@ -35,7 +35,9 @@
 
 #include <glib/gi18n.h>
 #include <sqlite3.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-common.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

@@ -37,7 +37,7 @@
 #include <glib/gstdio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-version.h>
 #ifdef USE_SECURITY_POLKIT
 #include <polkit/polkit.h>
 #endif

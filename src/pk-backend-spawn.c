@@ -38,7 +38,9 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <gmodule.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

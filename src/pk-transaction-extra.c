@@ -28,7 +28,11 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-desktop.h>
+#include <packagekit-glib2/pk-common.h>
 #include <gio/gdesktopappinfo.h>
 #include <sqlite3.h>
 

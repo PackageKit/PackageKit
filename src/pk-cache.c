@@ -27,7 +27,6 @@
 
 #include <glib/gi18n.h>
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
 #include "pk-cache.h"

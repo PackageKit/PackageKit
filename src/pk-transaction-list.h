@@ -23,7 +23,7 @@
 #define __PK_TRANSACTION_LIST_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
 
 #include "pk-transaction.h"
 

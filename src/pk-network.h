@@ -30,7 +30,7 @@
 #define __PK_NETWORK_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 

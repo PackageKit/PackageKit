@@ -31,7 +31,10 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-common.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

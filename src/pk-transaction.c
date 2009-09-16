@@ -41,7 +41,12 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <gio/gio.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-package-ids.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-service-pack.h>
 #ifdef USE_SECURITY_POLKIT
 #include <polkit/polkit.h>
 #endif

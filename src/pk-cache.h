@@ -23,7 +23,6 @@
 #define __PK_CACHE_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/packagekit.h>
 
 G_BEGIN_DECLS
 
