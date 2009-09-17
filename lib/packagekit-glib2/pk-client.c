@@ -1123,6 +1123,19 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 }
 
 /**
+ * pk_client_set_role:
+ **/
+static void
+pk_client_set_role (PkClientState *state, PkRoleEnum role)
+{
+	gboolean ret;
+	ret = pk_progress_set_role (state->progress, role);
+	if (ret && state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
+	return;
+}
+
+/**
  * pk_client_set_locale_cb:
  **/
 static void
@@ -1484,7 +1497,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1533,7 +1546,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1583,7 +1596,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1631,7 +1644,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1679,7 +1692,7 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1726,7 +1739,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1773,7 +1786,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1821,7 +1834,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1867,7 +1880,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1913,7 +1926,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -1964,7 +1977,7 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2014,7 +2027,7 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2060,7 +2073,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2110,7 +2123,7 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2162,7 +2175,7 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2207,7 +2220,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2253,7 +2266,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2297,7 +2310,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2349,7 +2362,7 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2398,7 +2411,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2446,7 +2459,7 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2496,7 +2509,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2544,7 +2557,7 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2593,7 +2606,7 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2639,7 +2652,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2685,7 +2698,7 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2731,7 +2744,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2779,7 +2792,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2830,7 +2843,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2876,7 +2889,7 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2922,7 +2935,7 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -2968,7 +2981,7 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -3014,7 +3027,7 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
@@ -3096,7 +3109,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
-	pk_progress_set_role (state->progress, state->role);
+	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get a connection to the transaction interface */
