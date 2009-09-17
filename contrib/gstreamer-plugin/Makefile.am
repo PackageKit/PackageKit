@@ -14,6 +14,11 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
+	-I$(top_srcdir)/lib				\
+	$(NULL)
+
+PK_GLIB2_LIBS =						\
+	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la	\
 	$(NULL)
 
 libexec_PROGRAMS =					\
@@ -26,6 +31,7 @@ pk_gstreamer_install_SOURCES =				\
 
 pk_gstreamer_install_LDADD =				\
 	$(PK_GSTREAMER_PLUGIN_LIBS)			\
+	$(PK_GLIB2_LIBS)				\
 	$(NULL)
 
 pk_gstreamer_install_CFLAGS =				\

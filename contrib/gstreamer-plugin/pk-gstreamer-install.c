@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 #include <dbus/dbus-glib.h>
+#include <packagekit-glib2/packagekit.h>
 
 typedef struct {
 	GstStructure	*structure;
@@ -328,7 +329,7 @@ main (int argc, gchar **argv)
 	/* use a ()(64bit) suffix for 64 bit */
 	suffix = pk_gst_get_arch_suffix ();
 
-	array = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func (g_free);
 	len = g_strv_length (codecs);
 	resources = g_new0 (gchar*, len+1);
 
@@ -370,8 +371,7 @@ main (int argc, gchar **argv)
 	}
 
 	/* convert to a GStrv */
-	resources = (gchar **) g_ptr_array_free (array, FALSE);
-	array = NULL;
+	resources = pk_ptr_array_to_strv (array);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (proxy, INT_MAX);
@@ -399,10 +399,8 @@ main (int argc, gchar **argv)
 	retval = GST_INSTALL_PLUGINS_SUCCESS;
 
 out:
-	if (array != NULL) {
-		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-		g_ptr_array_free (array, TRUE);
-	}
+	if (array != NULL)
+		g_ptr_array_unref (array);
 	g_strfreev (resources);
 	if (proxy != NULL)
 		g_object_unref (proxy);
