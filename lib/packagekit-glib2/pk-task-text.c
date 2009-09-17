@@ -49,7 +49,7 @@ G_DEFINE_TYPE (PkTaskText, pk_task_text, PK_TYPE_TASK)
  * pk_task_text_untrusted_question:
  **/
 static void
-dkp_task_text_untrusted_question (PkTask *task, guint request, PkResults *results)
+pk_task_text_untrusted_question (PkTask *task, guint request, PkResults *results)
 {
 	gboolean ret;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
@@ -75,7 +75,7 @@ dkp_task_text_untrusted_question (PkTask *task, guint request, PkResults *result
  * pk_task_text_key_question:
  **/
 static void
-dkp_task_text_key_question (PkTask *task, guint request, PkResults *results)
+pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -142,7 +142,7 @@ dkp_task_text_key_question (PkTask *task, guint request, PkResults *results)
  * pk_task_text_eula_question:
  **/
 static void
-dkp_task_text_eula_question (PkTask *task, guint request, PkResults *results)
+pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -197,7 +197,7 @@ dkp_task_text_eula_question (PkTask *task, guint request, PkResults *results)
  * pk_task_text_media_change_question:
  **/
 static void
-dkp_task_text_media_change_question (PkTask *task, guint request, PkResults *results)
+pk_task_text_media_change_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
@@ -245,7 +245,7 @@ dkp_task_text_media_change_question (PkTask *task, guint request, PkResults *res
  * pk_task_text_simulate_question_type_to_text:
  **/
 static const gchar *
-dkp_task_text_simulate_question_type_to_text (PkInfoEnum info)
+pk_task_text_simulate_question_type_to_text (PkInfoEnum info)
 {
 	if (info == PK_INFO_ENUM_REMOVING) {
 		/* TRANSLATORS: When processing, we might have to remove other dependencies */
@@ -280,7 +280,7 @@ dkp_task_text_simulate_question_type_to_text (PkInfoEnum info)
  * pk_task_text_simulate_question:
  **/
 static void
-dkp_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
+pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	guint len;
@@ -314,7 +314,7 @@ dkp_task_text_simulate_question (PkTask *task, guint request, PkResults *results
 			      NULL);
 		/* new header */
 		if (info != info_last) {
-			title = dkp_task_text_simulate_question_type_to_text (info);
+			title = pk_task_text_simulate_question_type_to_text (info);
 			g_print ("%s\n", title);
 			info_last = info;
 		}
@@ -350,11 +350,11 @@ pk_task_text_class_init (PkTaskTextClass *klass)
 	PkTaskClass *task_class = PK_TASK_CLASS (klass);
 
 	object_class->finalize = pk_task_text_finalize;
-	task_class->untrusted_question = dkp_task_text_untrusted_question;
-	task_class->key_question = dkp_task_text_key_question;
-	task_class->eula_question = dkp_task_text_eula_question;
-	task_class->media_change_question = dkp_task_text_media_change_question;
-	task_class->simulate_question = dkp_task_text_simulate_question;
+	task_class->untrusted_question = pk_task_text_untrusted_question;
+	task_class->key_question = pk_task_text_key_question;
+	task_class->eula_question = pk_task_text_eula_question;
+	task_class->media_change_question = pk_task_text_media_change_question;
+	task_class->simulate_question = pk_task_text_simulate_question;
 
 	g_type_class_add_private (klass, sizeof (PkTaskTextPrivate));
 }
