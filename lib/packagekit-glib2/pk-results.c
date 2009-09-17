@@ -51,6 +51,7 @@ static void     pk_results_finalize	(GObject     *object);
 struct _PkResultsPrivate
 {
 	PkRoleEnum		 role;
+	guint			 inputs;
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
@@ -71,6 +72,7 @@ struct _PkResultsPrivate
 enum {
 	PROP_0,
 	PROP_ROLE,
+	PROP_INPUTS,
 	PROP_LAST
 };
 
@@ -88,6 +90,9 @@ pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	switch (prop_id) {
 	case PROP_ROLE:
 		g_value_set_uint (value, priv->role);
+		break;
+	case PROP_INPUTS:
+		g_value_set_uint (value, priv->inputs);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -107,6 +112,9 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	switch (prop_id) {
 	case PROP_ROLE:
 		priv->role = g_value_get_uint (value);
+		break;
+	case PROP_INPUTS:
+		priv->inputs = g_value_get_uint (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -778,6 +786,14 @@ pk_results_class_init (PkResultsClass *klass)
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
+	/**
+	 * PkResults:inputs:
+	 */
+	pspec = g_param_spec_uint ("inputs", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_INPUTS, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
 }
 
@@ -788,7 +804,9 @@ static void
 pk_results_init (PkResults *results)
 {
 	results->priv = PK_RESULTS_GET_PRIVATE (results);
+	results->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
+	results->priv->inputs = 0;
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_details_unref);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_update_detail_unref);

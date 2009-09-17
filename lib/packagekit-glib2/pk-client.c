@@ -1160,6 +1160,12 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	egg_debug ("set locale, ended DBus call: %p", state->call);
 	state->call = NULL;
 
+	/* we'll have results from now on */
+	state->results = pk_results_new ();
+	g_object_set (state->results,
+		      "role", state->role,
+		      NULL);
+
 	/* setup the proxies ready for use */
 	pk_client_connect_proxy (state->proxy, state);
 
@@ -1171,6 +1177,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchName",
@@ -1204,11 +1211,13 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdateDetail",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetOldTransactions",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1219,6 +1228,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdates",
@@ -1238,6 +1248,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_BOOLEAN, state->recursive,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetPackages",
@@ -1252,6 +1263,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_BOOLEAN, state->recursive,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
 		enum_text = pk_provides_enum_to_text (state->provides);
@@ -1270,6 +1282,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetCategories",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1281,6 +1294,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_BOOLEAN, state->allow_deps,
 						       G_TYPE_BOOLEAN, state->autoremove,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "RefreshCache",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1292,6 +1306,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_BOOLEAN, state->only_trusted,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		enum_text = pk_sig_type_enum_to_text (state->type);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallSignature",
@@ -1306,12 +1321,14 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       G_TYPE_BOOLEAN, state->only_trusted,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallFiles",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_BOOLEAN, state->only_trusted,
 						       G_TYPE_STRV, state->files,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
 	} else if (state->role == PK_ROLE_ENUM_ACCEPT_EULA) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "AcceptEula",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1346,11 +1363,13 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->files,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateRemovePackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
@@ -1361,18 +1380,13 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
+		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else {
 		g_assert_not_reached ();
 	}
 
 	/* we've sent this async */
 	egg_debug ("new method, started DBus call: %p", state->call);
-
-	/* we'll have results from now on */
-	state->results = pk_results_new ();
-	g_object_set (state->results,
-		      "role", state->role,
-		      NULL);
 
 out:
 	g_free (filters_text);
