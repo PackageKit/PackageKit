@@ -35,6 +35,7 @@ typedef struct {
 	GError		**error;
 	GMainLoop	*loop;
 	PkResults	*results;
+	PkProgress	*progress;
 } PkClientHelper;
 
 /**
@@ -1657,5 +1658,65 @@ pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *ca
 	g_free (helper);
 
 	return results;
+}
+
+/**
+ * pk_client_get_progress_finish_sync:
+ **/
+static void
+pk_client_get_progress_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelper *helper)
+{
+	PkProgress *progress;
+	progress = pk_client_get_progress_finish (client, res, helper->error);
+	if (progress != NULL) {
+		helper->progress = g_object_ref (G_OBJECT(progress));
+		g_object_unref (progress);
+	}
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_client_get_progress:
+ * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * Adopt a transaction.
+ *
+ * Warning: this function is synchronous, and will block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: a %PkResults object, or NULL for error
+ **/
+PkProgress *
+pk_client_get_progress (PkClient *client, const gchar *transaction_id, GCancellable *cancellable, GError **error)
+{
+	PkClientHelper *helper;
+	PkProgress *progress;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkClientHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_client_get_progress_async (client, transaction_id, cancellable,
+				      (GAsyncReadyCallback) pk_client_get_progress_finish_sync, helper);
+
+	g_main_loop_run (helper->loop);
+
+	progress = helper->progress;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return progress;
 }
 

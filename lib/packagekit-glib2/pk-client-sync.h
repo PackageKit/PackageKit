@@ -285,6 +285,11 @@ PkResults	*pk_client_adopt 			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkProgress	*pk_client_get_progress			(PkClient		*client,
+							 const gchar		*transaction_id,
+							 GCancellable		*cancellable,
+							 GError			**error);
+
 #endif /* __PK_CLIENT_SYNC_H */
 
 

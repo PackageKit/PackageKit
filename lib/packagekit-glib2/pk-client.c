@@ -3151,6 +3151,176 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 /***************************************************************************************************/
 
 /**
+ * pk_client_get_progress_finish:
+ * @client: a valid #PkClient instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the #PkProgress, or %NULL. Free with g_object_unref()
+ **/
+PkProgress *
+pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+
+	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
+}
+
+/**
+ * pk_client_get_progress_state_finish:
+ **/
+static void
+pk_client_get_progress_state_finish (PkClientState *state, GError *error)
+{
+	PkClientPrivate *priv;
+	priv = state->client->priv;
+
+	if (state->client != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	if (state->cancellable != NULL) {
+		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
+		g_object_unref (state->cancellable);
+	}
+
+	if (state->proxy != NULL) {
+		pk_client_disconnect_proxy (state->proxy, state);
+		g_object_unref (G_OBJECT (state->proxy));
+	}
+
+	if (state->proxy_props != NULL)
+		g_object_unref (G_OBJECT (state->proxy_props));
+
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->progress), g_object_unref);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+		g_error_free (error);
+	}
+
+	/* remove from list */
+	g_ptr_array_remove (priv->calls, state);
+	egg_debug ("state array remove %p", state);
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* destroy state */
+	g_free (state->transaction_id);
+	g_object_unref (state->progress);
+	g_object_unref (state->res);
+	g_slice_free (PkClientState, state);
+}
+
+/**
+ * pk_client_get_progress_cb:
+ **/
+static void
+pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+{
+	GError *error = NULL;
+	GHashTable *hash;
+
+	/* get the result */
+	state->ret = dbus_g_proxy_end_call (proxy, call, &error,
+					    dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
+					    G_TYPE_INVALID);
+	if (!state->ret) {
+		pk_client_get_progress_state_finish (state, error);
+		return;
+	}
+
+	/* finished this call */
+	egg_debug ("coldplugged properties, ended DBus call: %p", state->call);
+	state->call = NULL;
+
+	/* process results */
+	if (hash != NULL) {
+		g_hash_table_foreach (hash, (GHFunc) pk_client_get_properties_collect_cb, state);
+		g_hash_table_unref (hash);
+	}
+
+	/* we're done */
+	pk_client_get_progress_state_finish (state, error);
+}
+
+/**
+ * pk_client_get_progress_async:
+ * @client: a valid #PkClient instance
+ * @transaction_id: a transaction ID such as "/21_ebcbdaae_data"
+ * @cancellable: a #GCancellable or %NULL
+ * @callback_ready: the function to run on completion
+ * @user_data: the data to pass to @callback_ready
+ *
+ * Find the current state of a transaction.
+ **/
+void
+pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
+			      GAsyncReadyCallback callback_ready, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkClientState *state;
+
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_progress_async);
+
+	/* save state */
+	state = g_slice_new0 (PkClientState);
+	state->res = g_object_ref (res);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
+	}
+	state->client = client;
+	state->tid = g_strdup (transaction_id);
+	state->progress = pk_progress_new ();
+	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+
+	/* get a connection to the transaction interface */
+	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
+						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
+	if (state->proxy == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+
+	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
+	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
+
+	/* get a connection to the properties interface */
+	state->proxy_props = dbus_g_proxy_new_for_name (state->client->priv->connection,
+							PK_DBUS_SERVICE, state->tid,
+							"org.freedesktop.DBus.Properties");
+	if (state->proxy_props == NULL)
+		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+
+	/* call D-Bus get_properties async */
+	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
+					       (DBusGProxyCallNotify) pk_client_get_progress_cb, state, NULL,
+					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
+					       G_TYPE_INVALID);
+	egg_debug ("getting progress on %s, started DBus call: %p", state->tid, state->call);
+
+	/* track state */
+	g_ptr_array_add (client->priv->calls, state);
+	egg_debug ("state array add %p", state);
+
+	g_object_unref (res);
+}
+
+/***************************************************************************************************/
+
+/**
  * pk_client_cancel_all_dbus_methods:
  **/
 static gboolean

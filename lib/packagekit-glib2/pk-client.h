@@ -395,6 +395,16 @@ void		 pk_client_adopt_async 			(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+PkProgress	*pk_client_get_progress_finish		(PkClient		*client,
+							 GAsyncResult		*res,
+							 GError			**error);
+
+void		 pk_client_get_progress_async 		(PkClient		*client,
+							 const gchar		*transaction_id,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 G_END_DECLS
 
 #endif /* __PK_CLIENT_H */
