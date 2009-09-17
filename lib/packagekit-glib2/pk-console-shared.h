@@ -41,6 +41,7 @@ gchar		**pk_console_resolve_packages		(PkClient	*client,
 const gchar	*pk_status_enum_to_localised_text	(PkStatusEnum	 status);
 const gchar	*pk_info_enum_to_localised_past		(PkInfoEnum	 info);
 const gchar	*pk_info_enum_to_localised_present	(PkInfoEnum	 info);
+const gchar	*pk_role_enum_to_localised_present	(PkRoleEnum	 role);
 
 #endif /* __PK_CONSOLE_SHARED_H */
 
