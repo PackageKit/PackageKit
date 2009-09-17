@@ -23,7 +23,9 @@
 #define __PK_CLIENT_SYNC_H
 
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-progress.h>
 
 PkResults	*pk_client_resolve			(PkClient		*client,
 							 PkBitfield		 filters,
