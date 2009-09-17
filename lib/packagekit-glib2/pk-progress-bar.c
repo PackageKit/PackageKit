@@ -164,6 +164,10 @@ pk_progress_bar_set_percentage (PkProgressBar *self, gint percentage)
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (self), FALSE);
 	g_return_val_if_fail (percentage <= PK_PROGRESS_BAR_PERCENTAGE_INVALID, FALSE);
 
+	/* never called pk_progress_bar_start() */
+	if (self->priv->percentage == G_MININT)
+		pk_progress_bar_start (self, "FIXME: need to call pk_progress_bar_start() earlier!");
+
 	/* check for old percentage */
 	if (percentage == self->priv->percentage) {
 		egg_debug ("skipping as the same");
