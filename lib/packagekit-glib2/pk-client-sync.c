@@ -44,11 +44,10 @@ static void
 pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelper *helper)
 {
 	PkResults *results;
-	/* get the result */
 	results = pk_client_generic_finish (client, res, helper->error);
 	if (results != NULL) {
+		helper->results = g_object_ref (G_OBJECT(results));
 		g_object_unref (results);
-		helper->results = g_object_ref (G_OBJECT (results));
 	}
 	g_main_loop_quit (helper->loop);
 }
