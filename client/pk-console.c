@@ -414,7 +414,21 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 {
 	gint percentage;
 	PkStatusEnum status;
-	const gchar *status_text;
+	PkRoleEnum role;
+	const gchar *text;
+
+	/* role */
+	if (type == PK_PROGRESS_TYPE_ROLE) {
+		g_object_get (progress,
+			      "role", &role,
+			      NULL);
+		if (role == PK_ROLE_ENUM_UNKNOWN)
+			return;
+
+		/* show new status on the bar */
+		text = pk_role_enum_to_localised_present (role);
+		pk_progress_bar_start (progressbar, text);
+	}
 
 	/* percentage */
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
@@ -433,8 +447,8 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			return;
 
 		/* show new status on the bar */
-		status_text = pk_status_enum_to_localised_text (status);
-		pk_progress_bar_start (progressbar, status_text);
+		text = pk_status_enum_to_localised_text (status);
+		pk_progress_bar_start (progressbar, text);
 	}
 }
 
