@@ -73,6 +73,17 @@ pk_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer dat
 }
 
 /**
+ * pk_monitor_notify_network_status_cb:
+ **/
+static void
+pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
+{
+	PkNetworkEnum state;
+	g_object_get (control, "network-status", &state, NULL);
+	g_print ("network status=%s\n", pk_network_enum_to_text (state));
+}
+
+/**
  * pk_monitor_adopt_cb:
  **/
 static void
@@ -277,6 +288,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_notify_locked_cb), NULL);
 	g_signal_connect (control, "notify::connected",
 			  G_CALLBACK (pk_monitor_notify_connected_cb), NULL);
+	g_signal_connect (control, "notify::network-status",
+			  G_CALLBACK (pk_monitor_notify_network_status_cb), NULL);
 
 	tlist = pk_transaction_list_new ();
 	g_signal_connect (tlist, "added",
@@ -292,6 +305,7 @@ main (int argc, char *argv[])
 		egg_warning ("need to coldplug %s", transaction_ids[i]);
 	}
 	g_strfreev (transaction_ids);
+	pk_monitor_list_print (tlist);
 
 	/* only print state when verbose */
 	if (verbose)
