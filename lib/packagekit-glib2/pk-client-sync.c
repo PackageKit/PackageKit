@@ -1614,3 +1614,49 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
 	return results;
 }
 
+/**
+ * pk_client_adopt:
+ * @client: a valid #PkClient instance
+ * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * Adopt a transaction.
+ *
+ * Warning: this function is synchronous, and will block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: a %PkResults object, or NULL for error
+ **/
+PkResults *
+pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
+		 PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+{
+	PkClientHelper *helper;
+	PkResults *results;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkClientHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_client_adopt_async (client, transaction_id, cancellable, progress_callback, progress_user_data,
+			       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+
+	g_main_loop_run (helper->loop);
+
+	results = helper->results;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return results;
+}
+
