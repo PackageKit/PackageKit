@@ -630,7 +630,7 @@ pk_console_remove_packages (gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_task_remove_packages_async (PK_TASK(task), package_ids, FALSE, FALSE, cancellable,
+	pk_task_remove_packages_async (PK_TASK(task), package_ids, TRUE, FALSE, cancellable,
 				       (PkProgressCallback) pk_console_progress_cb, NULL,
 				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
