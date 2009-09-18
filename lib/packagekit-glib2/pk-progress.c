@@ -46,6 +46,7 @@ static void     pk_progress_finalize	(GObject     *object);
 struct _PkProgressPrivate
 {
 	gchar				*package_id;
+	gchar				*transaction_id;
 	gint				 percentage;
 	gint				 subpercentage;
 	gboolean			 allow_cancel;
@@ -61,6 +62,7 @@ struct _PkProgressPrivate
 enum {
 	PROP_0,
 	PROP_PACKAGE_ID,
+	PROP_TRANSACTION_ID,
 	PROP_PERCENTAGE,
 	PROP_SUBPERCENTAGE,
 	PROP_ALLOW_CANCEL,
@@ -87,6 +89,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
 		g_value_set_string (value, progress->priv->package_id);
+		break;
+	case PROP_TRANSACTION_ID:
+		g_value_set_string (value, progress->priv->transaction_id);
 		break;
 	case PROP_PERCENTAGE:
 		g_value_set_int (value, progress->priv->percentage);
@@ -141,6 +146,26 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 	g_free (progress->priv->package_id);
 	progress->priv->package_id = g_strdup (package_id);
 	egg_debug ("package_id now %s", package_id);
+	return TRUE;
+}
+
+/**
+ * pk_progress_set_transaction_id:
+ * @progress: a valid #PkProgress instance
+ **/
+gboolean
+pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_id)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (g_strcmp0 (progress->priv->transaction_id, transaction_id) == 0)
+		return FALSE;
+
+	/* new value */
+	g_free (progress->priv->transaction_id);
+	progress->priv->transaction_id = g_strdup (transaction_id);
+	egg_debug ("transaction_id now %s", transaction_id);
 	return TRUE;
 }
 
@@ -336,6 +361,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	case PROP_PACKAGE_ID:
 		pk_progress_set_package_id (progress, g_value_get_string (value));
 		break;
+	case PROP_TRANSACTION_ID:
+		pk_progress_set_transaction_id (progress, g_value_get_string (value));
+		break;
 	case PROP_PERCENTAGE:
 		pk_progress_set_percentage (progress, g_value_get_int (value));
 		break;
@@ -392,6 +420,15 @@ pk_progress_class_init (PkProgressClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
+
+	/**
+	 * PkPackage:transaction-id:
+	 */
+	pspec = g_param_spec_string ("transaction-id", NULL,
+				     "The transaction_id, e.g. '/892_deabbbdb_data'",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
 
 	/**
 	 * PkProgress:percentage:
@@ -494,6 +531,7 @@ pk_progress_finalize (GObject *object)
 	PkProgress *progress = PK_PROGRESS (object);
 
 	g_free (progress->priv->package_id);
+	g_free (progress->priv->transaction_id);
 
 	G_OBJECT_CLASS (pk_progress_parent_class)->finalize (object);
 }

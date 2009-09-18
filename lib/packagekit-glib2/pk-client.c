@@ -1411,6 +1411,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	}
 
 	egg_debug ("tid = %s", state->tid);
+	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
@@ -3124,6 +3125,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
+	pk_progress_set_transaction_id (state->progress, state->tid);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get a connection to the transaction interface */
@@ -3301,6 +3303,7 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	state->tid = g_strdup (transaction_id);
 	state->progress = pk_progress_new ();
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
+	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,

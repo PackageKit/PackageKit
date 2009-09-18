@@ -68,6 +68,7 @@ void		 pk_progress_test			(gpointer		 user_data);
 
 typedef enum {
 	PK_PROGRESS_TYPE_PACKAGE_ID,
+	PK_PROGRESS_TYPE_TRANSACTION_ID,
 	PK_PROGRESS_TYPE_PERCENTAGE,
 	PK_PROGRESS_TYPE_SUBPERCENTAGE,
 	PK_PROGRESS_TYPE_ALLOW_CANCEL,
@@ -86,6 +87,8 @@ typedef void	(*PkProgressCallback)			(PkProgress		*progress,
                                                          gpointer		 user_data);
 
 gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
+							 const gchar		*package_id);
+gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
 							 const gchar		*package_id);
 gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
 							 gint			 percentage);
