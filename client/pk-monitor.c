@@ -87,11 +87,12 @@ pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpoi
  * pk_monitor_adopt_cb:
  **/
 static void
-pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, const gchar *tid)
+pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
+	gchar *transaction_id = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -101,9 +102,14 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, const gchar *tid)
 		goto out;
 	}
 
+	/* get data about the transaction */
+	g_object_get (results,
+		      "transaction-id", &transaction_id,
+		      NULL);
 	exit_enum = pk_results_get_exit_code (results);
-	g_print ("%s\texit code: %s\n", tid, pk_exit_enum_to_text (exit_enum));
+	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_text (exit_enum));
 out:
+	g_free (transaction_id);
 	if (results != NULL)
 		g_object_unref (results);
 }
@@ -112,13 +118,14 @@ out:
  * pk_monitor_progress_cb:
  **/
 static void
-pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, const gchar *tid)
+pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
 	PkRoleEnum role;
 	PkStatusEnum status;
 	guint percentage;
 	gboolean allow_cancel;
 	gchar *package_id;
+	gchar *transaction_id;
 
 	/* get data */
 	g_object_get (progress,
@@ -127,20 +134,22 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, const gchar *
 		      "percentage", &percentage,
 		      "allow-cancel", &allow_cancel,
 		      "package-id", &package_id,
+		      "transaction-id", &transaction_id,
 		      NULL);
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
-		g_print ("%s\trole         %s\n", tid, pk_role_enum_to_text (role));
+		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_text (role));
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
-		g_print ("%s\tpackage      %s\n", tid, package_id);
+		g_print ("%s\tpackage      %s\n", transaction_id, package_id);
 	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
-		g_print ("%s\tpercentage   %i\n", tid, percentage);
+		g_print ("%s\tpercentage   %i\n", transaction_id, percentage);
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
-		g_print ("%s\tallow_cancel %i\n", tid, allow_cancel);
+		g_print ("%s\tallow_cancel %i\n", transaction_id, allow_cancel);
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_print ("%s\tstatus       %s\n", tid, pk_status_enum_to_text (status));
+		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_text (status));
 	}
 	g_free (package_id);
+	g_free (transaction_id);
 }
 
 /**
@@ -210,12 +219,12 @@ pk_monitor_task_list_changed_cb (PkControl *control)
  * pk_monitor_transaction_list_added_cb:
  **/
 static void
-pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
+pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
 {
 	egg_debug ("added: %s", transaction_id);
 	pk_client_adopt_async (client, transaction_id, NULL,
-			       (PkProgressCallback) pk_monitor_progress_cb, g_strdup (transaction_id),
-			       (GAsyncReadyCallback) pk_monitor_adopt_cb, g_strdup (transaction_id));
+			       (PkProgressCallback) pk_monitor_progress_cb, user_data,
+			       (GAsyncReadyCallback) pk_monitor_adopt_cb, user_data);
 	pk_monitor_list_print (tlist);
 }
 
