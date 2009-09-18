@@ -58,10 +58,6 @@ bool aptcc::init()
 	gchar *proxy_http;
 	gchar *proxy_ftp;
 
-	// make sure we do not get a graphical debconf
-	setenv("DEBIAN_FRONTEND", "noninteractive", 1);
-	setenv("APT_LISTCHANGES_FRONTEND", "none", 1);
-
 	// set locale
 	if (locale = pk_backend_get_locale(m_backend)) {
 		setlocale(LC_ALL, locale);
@@ -148,6 +144,48 @@ aptcc::~aptcc()
 	}
 
 	delete Map;
+}
+
+pair<pkgCache::PkgIterator, pkgCache::VerIterator>
+		      aptcc::find_package_id(const gchar *package_id)
+{
+	gchar **parts;
+	pkgCache::VerIterator ver;
+	pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+
+	parts = pk_package_id_split (package_id);
+	pkg_ver.first = packageCache->FindPkg(parts[PK_PACKAGE_ID_NAME]);
+
+	// Ignore packages that could not be found or that exist only due to dependencies.
+	if (pkg_ver.first.end() == true ||
+	    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
+	{
+		g_strfreev (parts);
+		return pkg_ver;
+	}
+
+	ver = find_ver(pkg_ver.first);
+	// check to see if the provided package isn't virtual too
+	if (ver.end() == false &&
+	    strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+	{
+		g_strfreev (parts);
+		pkg_ver.second = ver;
+		return pkg_ver;
+	}
+
+	ver = find_candidate_ver(pkg_ver.first);
+	// check to see if the provided package isn't virtual too
+	if (ver.end() == false &&
+	    strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+	{
+		g_strfreev (parts);
+		pkg_ver.second = ver;
+		return pkg_ver;
+	}
+
+	g_strfreev (parts);
+	return pkg_ver;
 }
 
 pkgCache::VerIterator aptcc::find_candidate_ver(const pkgCache::PkgIterator &pkg)
@@ -377,7 +415,9 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 			  PkBitfield filters,
 			  PkInfoEnum state)
 {
+	// Sort so we can remove the duplicated entries
 	sort(output.begin(), output.end(), compare());
+	// Remove the duplicated entries
 	output.erase(unique(output.begin(),
 			    output.end(),
 			    result_equality()),
@@ -589,14 +629,16 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 }
 
 // used to emit files it reads the info directly from the files
-void emit_files (PkBackend *backend, const PkPackageId *pi)
+void emit_files (PkBackend *backend, const gchar *pi)
 {
 	static string filelist;
 	string line;
 
 	filelist.erase(filelist.begin(), filelist.end());
 
-	string f = "/var/lib/dpkg/info/" + string(pi->name) + ".list";
+	string f = "/var/lib/dpkg/info/" +
+		   string(pk_package_id_split(pi)[PK_PACKAGE_ID_NAME]) +
+		   ".list";
 	if (FileExists(f)) {
 		ifstream in(f.c_str());
 		if (!in != 0) {
@@ -614,7 +656,7 @@ void emit_files (PkBackend *backend, const PkPackageId *pi)
 		}
 
 		if (!filelist.empty()) {
-			pk_backend_files (backend, pk_package_id_to_string(pi), filelist.c_str());
+			pk_backend_files (backend, pi, filelist.c_str());
 		}
 	}
 }

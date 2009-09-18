@@ -54,6 +54,10 @@ backend_initialize (PkBackend *backend)
 {
 	egg_debug ("APTcc Initializing");
 
+	// make sure we do not get a graphical debconf
+	setenv("DEBIAN_FRONTEND", "noninteractive", 1);
+	setenv("APT_LISTCHANGES_FRONTEND", "none", 1);
+
 	if (pkgInitConfig(*_config) == false ||
 	    pkgInitSystem(*_config, _system) == false)
 	{
@@ -106,7 +110,6 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_PUBLISHING,
 		PK_GROUP_ENUM_SCIENCE,
 		PK_GROUP_ENUM_SYSTEM,
-		PK_GROUP_ENUM_COLLECTIONS,
 		-1);
 }
 
@@ -121,7 +124,6 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_INSTALLED,
 		PK_FILTER_ENUM_DEVELOPMENT,
 		PK_FILTER_ENUM_FREE,
-// 		PK_FILTER_ENUM_COLLECTIONS,//FIXME see if this apply
 		-1);
 }
 
@@ -149,7 +151,7 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield filters;
-	PkPackageId *pi;
+	gchar *pi;
 	bool recursive;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -175,38 +177,39 @@ backend_get_depends_or_requires_thread (PkBackend *backend)
 		if (_cancel) {
 			break;
 		}
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					       pi);
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
-		if (pkg.end() == true)
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pkg_ver = m_apt->find_package_id(pi);
+		if (pkg_ver.second.end() == true)
 		{
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
-			pk_package_id_free (pi);
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+					       "Couldn't find package");
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
 		if (depends) {
-			m_apt->get_depends(output, pkg, recursive);
+			m_apt->get_depends(output, pkg_ver.first, recursive);
 		} else {
-			m_apt->get_requires(output, pkg, recursive);
+			m_apt->get_requires(output, pkg_ver.first, recursive);
 		}
-
-		pk_package_id_free (pi);
 	}
 
 	// It's faster to emmit the packages here than in the matching part
 	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
-
 	pk_backend_finished (backend);
 	return true;
 }
@@ -237,11 +240,13 @@ static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	PkPackageId *pi;
+	gchar *pi;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (package_ids == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+				       "Invalid package id");
 		pk_backend_finished (backend);
 		return false;
 	}
@@ -257,31 +262,30 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					       pi);
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
-		pkgCache::PkgIterator Pkg = m_apt->packageCache->FindPkg(pi->name);
-		if (Pkg.end() == true)
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pkg_ver = m_apt->find_package_id(pi);
+		if (pkg_ver.second.end() == true)
 		{
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
-			pk_package_id_free (pi);
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find package");
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
 		emit_files (backend, pi);
-
-		pk_package_id_free (pi);
 	}
 
 	delete m_apt;
-
 	pk_backend_finished (backend);
 	return true;
 }
@@ -299,18 +303,19 @@ static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	PkPackageId *pi;
+	gchar *pi;
 
 	bool updateDetail = pk_backend_get_bool (backend, "updateDetail");
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (package_ids == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+				       "Invalid package id");
 		pk_backend_finished (backend);
 		return false;
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
 	aptcc *m_apt = new aptcc(backend, _cancel, *apt_source_list);
 	if (m_apt->init()) {
 		egg_debug ("Failed to create apt cache");
@@ -319,37 +324,38 @@ backend_get_details_thread (PkBackend *backend)
 		return false;
 	}
 
-
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					       pi);
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
-		if (pkg.end() == true)
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pkg_ver = m_apt->find_package_id(pi);
+		if (pkg_ver.second.end() == true)
 		{
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
-			pk_package_id_free (pi);
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+					       "couldn't find package");
+
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
 		if (updateDetail) {
-			m_apt->emit_update_detail(pkg);
+			m_apt->emit_update_detail(pkg_ver.first);
 		} else {
-			m_apt->emit_details(pkg);
+			m_apt->emit_details(pkg_ver.first);
 		}
-
-		pk_package_id_free (pi);
 	}
 
 	delete m_apt;
-
 	pk_backend_finished (backend);
 	return true;
 }
@@ -652,12 +658,14 @@ backend_download_packages_thread (PkBackend *backend)
 	// get a fetcher
 	pkgAcquire fetcher(&Stat);
 	string filelist;
-	PkPackageId *pi;
+	gchar *pi;
 
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					       pi);
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
@@ -667,42 +675,38 @@ backend_download_packages_thread (PkBackend *backend)
 			break;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pkg_ver = m_apt->find_package_id(pi);
 		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		if (pkg_ver.second.end() == true)
 		{
-			_error->Error("Can't find a package named \"%s\"", pi->name);
-			pk_package_id_free(pi);
+			_error->Error("Can't find this package id \"%s\".", pi);
 			continue;
-		}
-
-		pkgCache::VerIterator ver;
-		ver = m_apt->find_ver(pkg);
-		// check to see if the provided package isn't virtual too
-		if (ver.end())
-		{
-			pk_package_id_free(pi);
-			continue;
-		}
-
-		if(!ver.Downloadable()) {
-			_error->Error("No downloadable files for %s version %s; perhaps it is a local or obsolete package?",
-				    pi->name, ver.VerStr());
-		}
-
-		string storeFileName;
-		if (get_archive(&fetcher, apt_source_list, m_apt->packageRecords,
-			    ver, directory, storeFileName))
-		{
-			Stat.addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
-		}
-		string destFile = directory + "/" + flNotDir(storeFileName);
-		if (filelist.empty()) {
-			filelist = destFile;
 		} else {
-			filelist.append(";" + destFile);
+			if(!pkg_ver.second.Downloadable()) {
+				_error->Error("No downloadable files for %s,"
+					      "perhaps it is a local or obsolete" "package?",
+					      pi);
+				continue;
+			}
+
+			string storeFileName;
+			if (get_archive(&fetcher,
+					apt_source_list,
+					m_apt->packageRecords,
+					pkg_ver.second,
+					directory,
+					storeFileName))
+			{
+				Stat.addPackagePair(pkg_ver);
+			}
+			string destFile = directory + "/" + flNotDir(storeFileName);
+			if (filelist.empty()) {
+				filelist = destFile;
+			} else {
+				filelist.append(";" + destFile);
+			}
 		}
-		pk_package_id_free(pi);
 	}
 
 	pk_backend_set_status(backend, PK_STATUS_ENUM_DOWNLOAD);
@@ -826,53 +830,48 @@ backend_resolve_thread (PkBackend *backend)
 		return false;
 	}
 
-	PkPackageId *pi;
+	gchar *pi;
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		if (_cancel) {
 			break;
 		}
 
-		pkgCache::PkgIterator pkg;
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pkg = m_apt->packageCache->FindPkg(package_ids[i]);
-		} else {
-			pkg = m_apt->packageCache->FindPkg(pi->name);
-		}
-
-		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
-		{
-			continue;
-		}
-
-		pkgCache::VerIterator ver;
-		ver = m_apt->find_ver(pkg);
-		// check to see if the provided package isn't virtual too
-		if (ver.end() == false)
-		{
-			if (pi == NULL) {
-				m_apt->emit_package(pkg, ver, filters);
-			} else {
-				if (strcmp(ver.VerStr(), pi->version) == 0) {
-					m_apt->emit_package(pkg, ver, filters);
-				}
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pkg_ver.first = m_apt->packageCache->FindPkg(pi);
+			// Ignore packages that could not be found or that exist only due to dependencies.
+			if (pkg_ver.first.end() == true ||
+			    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
+			{
+				continue;
 			}
-		}
 
-		ver = m_apt->find_candidate_ver(pkg);
-		// check to see if the provided package isn't virtual too
-		if (ver.end() == false)
-		{
-			if (pi == NULL) {
-				m_apt->emit_package(pkg, ver, filters);
-			} else {
-				if (strcmp(ver.VerStr(), pi->version) == 0) {
-					m_apt->emit_package(pkg, ver, filters);
-				}
+			pkg_ver.second = m_apt->find_ver(pkg_ver.first);
+			// check to see if the provided package isn't virtual too
+			if (pkg_ver.second.end() == false)
+			{
+				output.push_back(pkg_ver);
+			}
+
+			pkg_ver.second = m_apt->find_candidate_ver(pkg_ver.first);
+			// check to see if the provided package isn't virtual too
+			if (pkg_ver.second.end() == false)
+			{
+				output.push_back(pkg_ver);
+			}
+		} else {
+			pkg_ver = m_apt->find_package_id(pi);
+			// check to see if we found the package
+			if (pkg_ver.second.end() == false)
+			{
+				output.push_back(pkg_ver);
 			}
 		}
 	}
+	// It's faster to emmit the packages here rather than in the matching part
+	m_apt->emit_packages(output, filters);
 
 	delete m_apt;
 
@@ -913,6 +912,7 @@ backend_search_file_thread (PkBackend *backend)
 		}
 
 		vector<string> packages = search_file (backend, search, _cancel);
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 		for(vector<string>::iterator i = packages.begin();
 		    i != packages.end(); ++i)
 		{
@@ -925,8 +925,10 @@ backend_search_file_thread (PkBackend *backend)
 			{
 				continue;
 			}
-			m_apt->emit_package(pkg, ver, filters);
+			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 		}
+		// It's faster to emmit the packages here rather than in the matching part
+		m_apt->emit_packages(output, filters);
 
 		delete m_apt;
 	}
@@ -956,7 +958,9 @@ backend_search_group_thread (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, true);
 
 	if (group == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_GROUP_NOT_FOUND,
+				       group);
 		pk_backend_finished (backend);
 		return false;
 	}
@@ -1191,7 +1195,7 @@ static gboolean
 backend_manage_packages_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	PkPackageId *pi;
+	gchar *pi;
 	bool simulate;
 	bool remove;
 
@@ -1217,31 +1221,30 @@ backend_manage_packages_thread (PkBackend *backend)
 			break;
 		}
 
-		pi = pk_package_id_new_from_string (package_ids[i]);
-		if (pi == NULL) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pi = package_ids[i];
+		if (pk_package_id_check(pi) == false) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					       pi);
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
 		}
 
-		pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(pi->name);
+		pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+		pkg_ver = m_apt->find_package_id(pi);
 		// Ignore packages that could not be found or that exist only due to dependencies.
-		if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+		if (pkg_ver.second.end() == true)
 		{
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
-			pk_package_id_free (pi);
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+					       "couldn't find package");
+
 			delete m_apt;
 			pk_backend_finished (backend);
 			return false;
-		}
-
-		pkgCache::VerIterator ver;
-		ver = m_apt->find_ver(pkg);
-		// check to see if the provided package isn't virtual too
-		if (ver.end() == false)
-		{
-			pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		} else {
+			pkgs.push_back(pkg_ver);
 		}
 	}
 

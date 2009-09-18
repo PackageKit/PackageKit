@@ -25,7 +25,7 @@
 
 #include <apt-pkg/pkgrecords.h>
 
-#include <packagekit-glib/packagekit.h>
+#include <packagekit-glib2/packagekit.h>
 #include <pk-backend.h>
 
 #include <string.h>
@@ -47,7 +47,11 @@ public:
 	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
 			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
 	{
-		return strcmp(a.first.Name(), b.first.Name()) < 0;
+		int ret = strcmp(a.first.Name(), b.first.Name());
+		if (ret == 0) {
+		    return strcmp(a.second.VerStr(), b.second.VerStr()) < 0;
+		}
+		return ret < 0;
 	}
 };
 
@@ -60,7 +64,8 @@ public:
 	bool operator()(const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &a,
 			const pair<pkgCache::PkgIterator, pkgCache::VerIterator> &b)
 	{
-		return strcmp(a.first.Name(), b.first.Name()) == 0;
+		return strcmp(a.first.Name(), b.first.Name()) == 0 &&
+		       strcmp(a.second.VerStr(), b.second.VerStr()) == 0;
 	}
 };
 

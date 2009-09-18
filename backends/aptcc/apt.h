@@ -36,7 +36,7 @@ using namespace std;
 /**
 *  Emits files of packages
 */
-void emit_files (PkBackend *backend, const PkPackageId *pi);
+void emit_files (PkBackend *backend, const gchar *pi);
 
 /**
 *  returns a list of packages names
@@ -53,6 +53,10 @@ public:
 
 	bool init();
 
+	// Check the returned VerIterator.end()
+	// if it's true we could not find it
+	pair<pkgCache::PkgIterator, pkgCache::VerIterator>
+			find_package_id(const gchar *package_id);
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
 	bool is_held(const pkgCache::PkgIterator &pkg);
