@@ -102,7 +102,7 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
  * Return all desktop files owned by a package, regardless if they are shown
  * in the main menu or not.
  *
- * Return value: array of results
+ * Return value: string array of results, free with g_ptr_array_unref()
  **/
 GPtrArray *
 pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GError **error)
@@ -123,7 +123,7 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GErr
 	}
 
 	/* get packages */
-	array = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func (g_free);
 	statement = g_strdup_printf ("SELECT filename FROM cache WHERE package = '%s'", package);
 	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
 	g_free (statement);
@@ -144,7 +144,7 @@ out:
  * Return all desktop files owned by a package that would be shown in a menu,
  * i.e are an application
  *
- * Return value: array of results
+ * Return value: string array of results, free with g_ptr_array_unref()
  **/
 GPtrArray *
 pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GError **error)
@@ -165,7 +165,7 @@ pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GErr
 	}
 
 	/* get packages */
-	array = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func (g_free);
 	statement = g_strdup_printf ("SELECT filename FROM cache WHERE package = '%s' AND show = 1", package);
 	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
 	g_free (statement);
