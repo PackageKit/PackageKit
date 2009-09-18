@@ -52,6 +52,7 @@ struct _PkResultsPrivate
 {
 	PkRoleEnum		 role;
 	guint			 inputs;
+	gchar			*transaction_id;
 	PkExitEnum		 exit_enum;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
@@ -73,6 +74,7 @@ enum {
 	PROP_0,
 	PROP_ROLE,
 	PROP_INPUTS,
+	PROP_TRANSACTION_ID,
 	PROP_LAST
 };
 
@@ -93,6 +95,9 @@ pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		break;
 	case PROP_INPUTS:
 		g_value_set_uint (value, priv->inputs);
+		break;
+	case PROP_TRANSACTION_ID:
+		g_value_set_string (value, priv->transaction_id);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -115,6 +120,10 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_INPUTS:
 		priv->inputs = g_value_get_uint (value);
+		break;
+	case PROP_TRANSACTION_ID:
+		g_free (priv->transaction_id);
+		priv->transaction_id = g_strdup (g_value_get_string (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -795,6 +804,15 @@ pk_results_class_init (PkResultsClass *klass)
 	g_object_class_install_property (object_class, PROP_INPUTS, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
+
+	/**
+	 * PkResults:transaction-id:
+	 */
+	pspec = g_param_spec_string ("transaction-id", NULL,
+				     "The transaction_id, e.g. '/892_deabbbdb_data'",
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
 }
 
 /**
@@ -807,6 +825,7 @@ pk_results_init (PkResults *results)
 	results->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
 	results->priv->inputs = 0;
+	results->priv->transaction_id = NULL;
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_details_unref);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_update_detail_unref);
@@ -846,6 +865,7 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->repo_detail_array);
 	g_ptr_array_unref (priv->error_code_array);
 	g_ptr_array_unref (priv->message_array);
+	g_free (results->priv->transaction_id);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }
