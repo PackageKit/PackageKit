@@ -1,5 +1,5 @@
 # Catalan translations for packagekit package.
-# Copyright (C) 2008 Red Hat, Inc.
+# Copyright (C) 2008, 2009 Red Hat, Inc.
 # This file is distributed under the same license as the
 #  packagekit package.
 #
@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-13 08:27+0000\n"
-"PO-Revision-Date: 2009-09-13 15:46+0100\n"
+"POT-Creation-Date: 2009-09-20 14:41+0000\n"
+"PO-Revision-Date: 2009-09-20 15:46+0100\n"
 "Last-Translator: Xavier Conde Rueda <xavi.conde@gmail.com>\n"
 "Language-Team: Catalan <fedora@softcatala.net>\n"
 "MIME-Version: 1.0\n"
@@ -32,115 +32,115 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:143
+#: ../client/pk-console.c:142
 msgid "Transaction"
 msgstr "Transacció"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:145
+#: ../client/pk-console.c:144
 msgid "System time"
 msgstr "Temps del sistema"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "Succeeded"
 msgstr "Fet"
 
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "True"
 msgstr "Cert"
 
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "False"
 msgstr "Fals"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:333
+#: ../client/pk-console.c:148 ../src/pk-polkit-action-lookup.c:336
 msgid "Role"
 msgstr "Rol"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:154
+#: ../client/pk-console.c:153
 msgid "Duration"
 msgstr "Durada"
 
-#: ../client/pk-console.c:154
+#: ../client/pk-console.c:153
 msgid "(seconds)"
 msgstr "(segons)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:347
+#: ../client/pk-console.c:157 ../src/pk-polkit-action-lookup.c:350
 msgid "Command line"
 msgstr "Línia d'ordres"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:160
+#: ../client/pk-console.c:159
 msgid "User ID"
 msgstr "ID d'usuari"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:167
+#: ../client/pk-console.c:166
 msgid "Username"
 msgstr "Nom d'usuari"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:171
+#: ../client/pk-console.c:170
 msgid "Real name"
 msgstr "Nom real"
 
-#: ../client/pk-console.c:179
+#: ../client/pk-console.c:178
 msgid "Affected packages:"
 msgstr "Paquets afectats:"
 
-#: ../client/pk-console.c:181
+#: ../client/pk-console.c:180
 msgid "Affected packages: None"
 msgstr "Paquets afectats: cap"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:201
+#: ../client/pk-console.c:200
 msgid "Distribution"
 msgstr "Distribució"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:203
+#: ../client/pk-console.c:202
 msgid "Type"
 msgstr "Tipus"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:205 ../client/pk-console.c:226
+#: ../client/pk-console.c:204 ../client/pk-console.c:225
 msgid "Summary"
 msgstr "Resum"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:215
+#: ../client/pk-console.c:214
 msgid "Category"
 msgstr "Categoria"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:217
+#: ../client/pk-console.c:216
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:220
+#: ../client/pk-console.c:219
 msgid "Parent"
 msgstr "Pare"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:223
+#: ../client/pk-console.c:222
 msgid "Name"
 msgstr "Nom"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:229
+#: ../client/pk-console.c:228
 msgid "Icon"
 msgstr "Icona"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:243
+#: ../client/pk-console.c:242
 msgid "Details about the update:"
 msgstr "Detalls quant a l'actualització:"
 
@@ -148,153 +148,153 @@ msgstr "Detalls quant a l'actualització:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
+#: ../client/pk-console.c:248 ../lib/packagekit-glib2/pk-task-text.c:105
 #: ../lib/packagekit-glib2/pk-task-text.c:172
-#: ../src/pk-polkit-action-lookup.c:358
+#: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Paquet"
 msgstr[1] "Paquets"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:251
 msgid "Updates"
 msgstr "Actualitzacions"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:256
+#: ../client/pk-console.c:255
 msgid "Obsoletes"
 msgstr "Obsolets"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:175
+#: ../client/pk-console.c:259 ../lib/packagekit-glib2/pk-task-text.c:175
 msgid "Vendor"
 msgstr "Proveïdor"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:264
+#: ../client/pk-console.c:263
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:268
+#: ../client/pk-console.c:267
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:272
+#: ../client/pk-console.c:271
 msgid "Restart"
 msgstr "Reinicia"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:276
+#: ../client/pk-console.c:275
 msgid "Update text"
 msgstr "Actualitza el text"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:280
+#: ../client/pk-console.c:279
 msgid "Changes"
 msgstr "Canvis"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:284
+#: ../client/pk-console.c:283
 msgid "State"
 msgstr "Estat"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:289
+#: ../client/pk-console.c:288
 msgid "Issued"
 msgstr "Emès"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:494
+#: ../client/pk-console.c:293 ../lib/packagekit-glib2/pk-console-shared.c:494
 msgid "Updated"
 msgstr "Actualitzat"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:312
+#: ../client/pk-console.c:311
 msgid "Enabled"
 msgstr "Habilitat"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:315
+#: ../client/pk-console.c:314
 msgid "Disabled"
 msgstr "Inhabilitat"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:337
+#: ../client/pk-console.c:336
 msgid "System restart required by:"
 msgstr "Es requereix reiniciar el sistema:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:339
 msgid "Session restart required:"
 msgstr "Es requereix reiniciar la sessió:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:342
 msgid "System restart (security) required by:"
 msgstr "Es requereix reiniciar el sistema (seguretat):"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:346
+#: ../client/pk-console.c:345
 msgid "Session restart (security) required:"
 msgstr "Es requereix reiniciar la sessió (seguretat):"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:349
+#: ../client/pk-console.c:348
 msgid "Application restart required by:"
 msgstr "Es requereix reiniciar l'aplicació per:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:366
+#: ../client/pk-console.c:365
 msgid "Package description"
 msgstr "Descripció del paquet"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:383
 msgid "Message:"
 msgstr "Missatge:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:398
+#: ../client/pk-console.c:397
 msgid "No files"
 msgstr "Sense fitxers"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:403
+#: ../client/pk-console.c:402
 msgid "Package files"
 msgstr "Fitxers del paquet"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:462
+#: ../client/pk-console.c:475
 msgid "Fatal error"
 msgstr "Error greu"
 
 #. TRANSLATORS: we failed, but there was no error set
-#: ../client/pk-console.c:475
+#: ../client/pk-console.c:488
 msgid "Transaction failed with no error"
 msgstr "La transacció ha fallat sense errors"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:480
+#: ../client/pk-console.c:493
 msgid "The transaction failed"
 msgstr "La transacció ha fallat"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:554
+#: ../client/pk-console.c:567
 msgid "Please restart the computer to complete the update."
 msgstr "Reinicieu l'ordinador per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:570
 msgid "Please logout and login to complete the update."
 msgstr "Sortiu i torneu a entrar per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:560
+#: ../client/pk-console.c:573
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -303,7 +303,7 @@ msgstr ""
 "l'ordinador per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:563
+#: ../client/pk-console.c:576
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -312,19 +312,19 @@ msgstr ""
 "entrar per completar l'actualització."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:584
+#: ../client/pk-console.c:597
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "No s'ha trobat cap paquet disponible: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:612
+#: ../client/pk-console.c:625
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "No s'han trobat els paquets instal·lats: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:640 ../client/pk-console.c:668
+#: ../client/pk-console.c:653 ../client/pk-console.c:681
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "No s'ha trobat el paquet: %s"
@@ -333,30 +333,30 @@ msgstr "No s'ha trobat el paquet: %s"
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:696 ../client/pk-console.c:724
-#: ../client/pk-console.c:752 ../client/pk-console.c:780
-#: ../client/pk-console.c:808
+#: ../client/pk-console.c:709 ../client/pk-console.c:737
+#: ../client/pk-console.c:765 ../client/pk-console.c:793
+#: ../client/pk-console.c:821
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "No s'han trobat tots els paquets: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:832
+#: ../client/pk-console.c:850
 msgid "The daemon crashed mid-transaction!"
 msgstr "Ha fallat el dimoni durant una transacció."
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:866
+#: ../client/pk-console.c:884
 msgid "PackageKit Console Interface"
 msgstr "Interfície de consola de PackageKit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:868
+#: ../client/pk-console.c:886
 msgid "Subcommands:"
 msgstr "Subordres:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:947
+#: ../client/pk-console.c:965
 msgid "Failed to get the time since this action was last completed"
 msgstr ""
 "No s'ha pogut obtenir l'hora des que aquesta acció es va completar per "
@@ -364,8 +364,8 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:982 ../client/pk-generate-pack.c:222
-#: ../client/pk-monitor.c:282
+#: ../client/pk-console.c:1000 ../client/pk-generate-pack.c:222
+#: ../client/pk-monitor.c:249
 #: ../contrib/command-not-found/pk-command-not-found.c:614
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:504
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
@@ -373,134 +373,134 @@ msgid "Show extra debugging information"
 msgstr "Mostra informació extra de depuració"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:985 ../client/pk-monitor.c:284
+#: ../client/pk-console.c:1003 ../client/pk-monitor.c:251
 msgid "Show the program version and exit"
 msgstr "Mostra la versió de l'aplicació i surt"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:988
+#: ../client/pk-console.c:1006
 msgid "Set the filter, e.g. installed"
 msgstr "Configura el filtre, p.e. instal·lats"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:991
+#: ../client/pk-console.c:1009
 msgid "Exit without waiting for actions to complete"
 msgstr "Surt sense esperar que les accions es completin"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1016
+#: ../client/pk-console.c:1034
 msgid "Failed to contact PackageKit"
 msgstr "S'ha produït un error en contactar amb el PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1068
+#: ../client/pk-console.c:1086
 msgid "The filter specified was invalid"
 msgstr "El filtre especificat era invàlid"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1087
+#: ../client/pk-console.c:1105
 msgid "A search type is required, e.g. name"
 msgstr "Es requreix un mot de cerca, p.e. nom"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1094 ../client/pk-console.c:1106
-#: ../client/pk-console.c:1118 ../client/pk-console.c:1130
+#: ../client/pk-console.c:1112 ../client/pk-console.c:1124
+#: ../client/pk-console.c:1136 ../client/pk-console.c:1148
 msgid "A search term is required"
 msgstr "Es requereix un terme de cerca"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1140
+#: ../client/pk-console.c:1158
 msgid "Invalid search type"
 msgstr "Tipus de cerca invàlida"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1164
 msgid "A package name to install is required"
 msgstr "Es requereix un nom de paquet per instal·lar"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1155
+#: ../client/pk-console.c:1173
 msgid "A filename to install is required"
 msgstr "Es requreix un nom de fitxer per instal·lar"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1167
+#: ../client/pk-console.c:1185
 msgid "A type, key_id and package_id are required"
 msgstr "Es requereixen un tipus, una clau_id i un paquet_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1178
+#: ../client/pk-console.c:1196
 msgid "A package name to remove is required"
 msgstr "Es requereix un nom de paquet per eliminar"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1187
+#: ../client/pk-console.c:1205
 msgid "A destination directory and the package names to download are required"
 msgstr ""
 "Us cal especificar el directori destí i els noms dels paquets per a la "
 "baixada"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1194
+#: ../client/pk-console.c:1212
 msgid "Directory not found"
 msgstr "No s'ha trobat el directori"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1203
+#: ../client/pk-console.c:1221
 msgid "A licence identifier (eula-id) is required"
 msgstr "Es requreix un identificador de llicència (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1214
+#: ../client/pk-console.c:1232
 msgid "A transaction identifier (tid) is required"
 msgstr "Es requreix un identificador de transacció (idt)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1235
+#: ../client/pk-console.c:1253
 msgid "A package name to resolve is required"
 msgstr "Es requereix un nom de paquet per resoldre"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1246 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1264 ../client/pk-console.c:1275
 msgid "A repository name is required"
 msgstr "Es requreix un nom del repositori"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1286
 msgid "A repo name, parameter and value are required"
 msgstr "Es requreixen el nom o el paràmetre d'un repositori i el seu valor"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1285
+#: ../client/pk-console.c:1303
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Es requereix una acció, p.e. 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1292
+#: ../client/pk-console.c:1310
 msgid "A correct role is required"
 msgstr "Es requereix un rol correcte"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1302 ../client/pk-console.c:1317
-#: ../client/pk-console.c:1326 ../client/pk-console.c:1346
-#: ../client/pk-console.c:1355 ../client/pk-generate-pack.c:285
+#: ../client/pk-console.c:1320 ../client/pk-console.c:1335
+#: ../client/pk-console.c:1344 ../client/pk-console.c:1364
+#: ../client/pk-console.c:1373 ../client/pk-generate-pack.c:285
 msgid "A package name is required"
 msgstr "Es requreix un nom del paquet"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1335
+#: ../client/pk-console.c:1353
 msgid "A package provide string is required"
 msgstr "Es requreix una cadena de proveïdor de paquet"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1415
+#: ../client/pk-console.c:1433
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "L'opció '%s' no està disponible"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1443
 msgid "Command failed"
 msgstr "Ha fallat l'ordre"
 
@@ -613,16 +613,12 @@ msgstr "S'ha creat el service pack '%s'"
 msgid "Failed to create '%s': %s"
 msgstr "Ha fallat la creació de '%s': %s"
 
-#: ../client/pk-monitor.c:204
-msgid "Failed to get transaction list"
-msgstr "S'ha produït un error en obtenir la llista de transaccions"
-
-#: ../client/pk-monitor.c:235
+#: ../client/pk-monitor.c:179
 msgid "Failed to get daemon state"
 msgstr "S'ha produït un error en obtenir l'estat del dimoni"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:299
+#: ../client/pk-monitor.c:266
 msgid "PackageKit Monitor"
 msgstr "Monitor de PackageKit"
 
@@ -1112,7 +1108,9 @@ msgid "Removing packages"
 msgstr "S'està suprimint els paquets"
 
 #. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:266
+#: ../lib/packagekit-glib2/pk-console-shared.c:640
 msgid "Downloading packages"
 msgstr "S'estan baixant els paquets"
 
@@ -1147,7 +1145,9 @@ msgid "Checking signatures"
 msgstr "S'estan comprovant les firmes"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
+#. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:298
+#: ../lib/packagekit-glib2/pk-console-shared.c:600
 msgid "Rolling back"
 msgstr "S'estan desfent els canvis"
 
@@ -1309,12 +1309,16 @@ msgid "Updating"
 msgstr "S'està actualitzant"
 
 #. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:456
+#: ../lib/packagekit-glib2/pk-console-shared.c:576
 msgid "Installing"
 msgstr "S'està instal·lant"
 
 #. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:460
+#: ../lib/packagekit-glib2/pk-console-shared.c:572
 msgid "Removing"
 msgstr "S'està suprimint"
 
@@ -1357,6 +1361,157 @@ msgstr "Obsolet"
 #: ../lib/packagekit-glib2/pk-console-shared.c:514
 msgid "Reinstalled"
 msgstr "Reinstal·lat"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:532
+msgid "Unknown role type"
+msgstr "Tipus de rol desconegut"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:536
+msgid "Getting dependencies"
+msgstr "S'estan obtenint les dependències"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
+msgid "Getting update details"
+msgstr "S'està obtenint els detalls de l'actualització"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
+msgid "Getting details"
+msgstr "S'està obtenint els detalls"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:548
+msgid "Getting requires"
+msgstr "S'està obtenint els requeriments"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:552
+msgid "Getting updates"
+msgstr "S'està obtenint les actualitzacions"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:556
+msgid "Searching by details"
+msgstr "S'està cercant pels detalls"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:560
+msgid "Searching by file"
+msgstr "S'est cercant pels fitxers"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:564
+msgid "Searching groups"
+msgstr "S'està cercant els grups"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:568
+msgid "Searching by name"
+msgstr "S'està cercant pel nom"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:580
+msgid "Installing files"
+msgstr "S'està instal·lant els fitxers"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:584
+msgid "Refreshing cache"
+msgstr "S'està refrescant la memòria cau"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:588
+msgid "Updating packages"
+msgstr "S'està actualitzant els paquets"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:592
+msgid "Updating system"
+msgstr "S'està actualitzant el sistema"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:596
+msgid "Canceling"
+msgstr "S'està cancel·lant"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:604
+msgid "Getting repositories"
+msgstr "S'està obtenint els repositoris"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:608
+msgid "Enabling repository"
+msgstr "S'està habilitant el repositori"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:612
+msgid "Setting data"
+msgstr "S'està establint les dades"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:616
+msgid "Resolving"
+msgstr "S'està resolent"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:620
+msgid "Getting file list"
+msgstr "S'està obtenint la llista de fitxers"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:624
+msgid "Getting provides"
+msgstr "S'està obtenint allò proporcionat"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:628
+msgid "Installing signature"
+msgstr "S'està instal·lant la signatura"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:632
+msgid "Getting packages"
+msgstr "S'està obtenint els paquets"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:636
+msgid "Accepting EULA"
+msgstr "S'està acceptant l'EULA"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:644
+msgid "Getting upgrades"
+msgstr "S'està obtenint les actualitzacions"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:648
+msgid "Getting categories"
+msgstr "S'està obtenint les categories"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:652
+msgid "Getting transactions"
+msgstr "S'està obtenint les transaccions"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:656
+#: ../lib/packagekit-glib2/pk-console-shared.c:660
+msgid "Simulating install"
+msgstr "S'està simulant la instal·lació"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:664
+msgid "Simulating remove"
+msgstr "S'està simulant la supressió"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:668
+msgid "Simulating update"
+msgstr "S'està simulant les actualitzacions"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: ../lib/packagekit-glib2/pk-task-text.c:64
@@ -1742,47 +1897,50 @@ msgstr "No s'ha pogut connectar amb el bus del sistema"
 msgid "Error trying to start:"
 msgstr "Ha fallat en intentar executar:"
 
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "Per instal·lar paquets de depuració, cal habilitar fonts addicionals"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
+#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
 msgstr "El programari no prové d'una font de confiança."
 
-#: ../src/pk-polkit-action-lookup.c:173
+#: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Actualitzeu aquest paquet només si esteu segurs que cal fer-ho."
 
-#: ../src/pk-polkit-action-lookup.c:174
+#: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Actualitzeu aquests paquets només si esteu segurs que cal fer-ho."
 
-#: ../src/pk-polkit-action-lookup.c:192
+#: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Instal·leu aquest paquet només si esteu segurs que cal fer-ho."
 
-#: ../src/pk-polkit-action-lookup.c:193
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Instal·leu aquests paquets només si esteu segurs que cal fer-ho."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:199
+#: ../src/pk-polkit-action-lookup.c:202
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr ""
 "El programari maliciós pot fer malbé el vostre ordinador o causar altres "
 "greuges."
 
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:274
+#: ../src/pk-polkit-action-lookup.c:277
 msgid "Many packages"
 msgstr "Massa paquets"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:340
+#: ../src/pk-polkit-action-lookup.c:343
 msgid "Only trusted"
 msgstr "Només els de confiança"
+
+#~ msgid "Failed to get transaction list"
+#~ msgstr "S'ha produït un error en obtenir la llista de transaccions"
 
 #~ msgid "Percentage"
 #~ msgstr "Percentatge"
@@ -1864,9 +2022,6 @@ msgstr "Només els de confiança"
 
 #~ msgid "No new packages need to be installed"
 #~ msgstr "No és necessari instal·lar paquets nous"
-
-#~ msgid "Searching for package: "
-#~ msgstr "S'està cercant el paquet:"
 
 #~ msgid "not found."
 #~ msgstr "no s'ha trobat."
