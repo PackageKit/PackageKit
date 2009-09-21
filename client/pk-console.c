@@ -380,7 +380,7 @@ static void
 pk_console_message_cb (const PkItemMessage *item, gpointer data)
 {
 	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
-	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (item->message), item->details);
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (item->type), item->details);
 }
 
 /**

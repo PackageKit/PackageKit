@@ -897,8 +897,8 @@ pk_transaction_message_cb (PkBackend *backend, PkItemMessage *item, PkTransactio
 	/* if not running in developer mode, then skip these types */
 	developer_mode = pk_conf_get_bool (transaction->priv->conf, "DeveloperMode");
 	if (!developer_mode &&
-	    (item->message == PK_MESSAGE_ENUM_BACKEND_ERROR ||
-	     item->message == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
+	    (item->type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
+	     item->type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
 		egg_warning ("ignoring message: %s", item->details);
 		return;
 	}
@@ -907,7 +907,7 @@ pk_transaction_message_cb (PkBackend *backend, PkItemMessage *item, PkTransactio
 	pk_results_add_message (transaction->priv->results, item);
 
 	/* emit */
-	message_text = pk_message_enum_to_text (item->message);
+	message_text = pk_message_enum_to_text (item->type);
 	egg_debug ("emitting message %s, '%s'", message_text, item->details);
 	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, item->details);
 }

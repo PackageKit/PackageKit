@@ -937,13 +937,13 @@ pk_item_error_code_new (PkErrorCodeEnum code_enum, const gchar *details)
  * Return value: %TRUE if the value was set
  **/
 PkItemMessage *
-pk_item_message_new (PkMessageEnum message_enum, const gchar *details)
+pk_item_message_new (PkMessageEnum type_enum, const gchar *details)
 {
 	PkItemMessage *item;
 
 	/* copy and add to array */
 	item = g_new0 (PkItemMessage, 1);
-	item->message = message_enum;
+	item->type = type_enum;
 	item->details = g_strdup (details);
 	return item;
 }

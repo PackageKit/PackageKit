@@ -227,7 +227,7 @@ typedef struct
 typedef struct
 {
 	guint				 refcount;
-	PkMessageEnum			 message;
+	PkMessageEnum			 type;
 	gchar				*details;
 } PkItemMessage;
 
@@ -325,7 +325,7 @@ PkItemRepoDetail	*pk_item_repo_detail_new		(const gchar		*repo_id,
 								 gboolean		 enabled);
 PkItemErrorCode		*pk_item_error_code_new			(PkErrorCodeEnum	 code_enum,
 								 const gchar		*details);
-PkItemMessage		*pk_item_message_new			(PkMessageEnum		 message_enum,
+PkItemMessage		*pk_item_message_new			(PkMessageEnum		 type_enum,
 								 const gchar		*details);
 
 G_END_DECLS
