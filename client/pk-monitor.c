@@ -91,6 +91,7 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
 	GError *error = NULL;
 	PkResults *results = NULL;
+	PkProgress *progress = NULL;
 	PkExitEnum exit_enum;
 	gchar *transaction_id = NULL;
 
@@ -102,14 +103,22 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 		goto out;
 	}
 
-	/* get data about the transaction */
+	/* get progress data about the transaction */
 	g_object_get (results,
+		      "progress", &progress,
+		      NULL);
+
+	/* get data */
+	g_object_get (progress,
 		      "transaction-id", &transaction_id,
 		      NULL);
+
 	exit_enum = pk_results_get_exit_code (results);
 	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_text (exit_enum));
 out:
 	g_free (transaction_id);
+	if (progress != NULL)
+		g_object_unref (progress);
 	if (results != NULL)
 		g_object_unref (results);
 }

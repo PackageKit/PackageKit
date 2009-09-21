@@ -1164,7 +1164,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	state->results = pk_results_new ();
 	g_object_set (state->results,
 		      "role", state->role,
-		      "transaction-id", state->tid,
+		      "progress", state->progress,
 		      NULL);
 
 	/* setup the proxies ready for use */
@@ -3156,7 +3156,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state->results = pk_results_new ();
 	g_object_set (state->results,
 		      "role", state->role,
-		      "transaction-id", state->tid,
+		      "progress", state->progress,
 		      NULL);
 
 	/* track state */
