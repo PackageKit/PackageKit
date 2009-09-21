@@ -41,6 +41,7 @@ typedef struct
 	guint				 refcount;
 	PkRestartEnum			 restart;
 	gchar				*package_id;
+	gpointer			 user_data;
 } PkItemRequireRestart;
 
 /**
@@ -59,6 +60,7 @@ typedef struct
 	gchar				*data;
 	guint				 uid;
 	gchar				*cmdline;
+	gpointer			 user_data;
 } PkItemTransaction;
 
 /**
@@ -74,6 +76,7 @@ typedef struct {
 	gchar				*description;
 	gchar				*url;
 	guint64				 size;
+	gpointer			 user_data;
 } PkItemDetails;
 
 /**
@@ -95,6 +98,7 @@ typedef struct {
 	PkUpdateStateEnum		 state;
 	GDate				*issued;
 	GDate				*updated;
+	gpointer			 user_data;
 } PkItemUpdateDetail;
 
 /**
@@ -107,6 +111,7 @@ typedef struct {
 	PkInfoEnum			 info;
 	gchar				*package_id;
 	gchar				*summary;
+	gpointer			 user_data;
 } PkItemPackage;
 
 /**
@@ -120,6 +125,7 @@ typedef struct
 	PkUpdateStateEnum		 state;
 	gchar				*name;
 	gchar				*summary;
+	gpointer			 user_data;
 } PkItemDistroUpgrade;
 
 /**
@@ -135,6 +141,7 @@ typedef struct
 	gchar				*name;
 	gchar				*summary;
 	gchar				*icon;
+	gpointer			 user_data;
 } PkItemCategory;
 
 /**
@@ -147,6 +154,7 @@ typedef struct
 	guint				 refcount;
 	gchar				*package_id;
 	gchar				**files;
+	gpointer			 user_data;
 } PkItemFiles;
 
 /**
@@ -165,6 +173,7 @@ typedef struct
 	gchar				*key_fingerprint;
 	gchar				*key_timestamp;
 	PkSigTypeEnum			 type;
+	gpointer			 user_data;
 } PkItemRepoSignatureRequired;
 
 /**
@@ -179,6 +188,7 @@ typedef struct
 	gchar				*package_id;
 	gchar				*vendor_name;
 	gchar				*license_agreement;
+	gpointer			 user_data;
 } PkItemEulaRequired;
 
 /**
@@ -192,6 +202,7 @@ typedef struct
 	PkMediaTypeEnum			 media_type;
 	gchar				*media_id;
 	gchar				*media_text;
+	gpointer			 user_data;
 } PkItemMediaChangeRequired;
 
 /**
@@ -205,6 +216,7 @@ typedef struct
 	gchar				*repo_id;
 	gchar				*description;
 	gboolean			 enabled;
+	gpointer			 user_data;
 } PkItemRepoDetail;
 
 /**
@@ -217,6 +229,7 @@ typedef struct
 	guint				 refcount;
 	PkErrorCodeEnum			 code;
 	gchar				*details;
+	gpointer			 user_data;
 } PkItemErrorCode;
 
 /**
@@ -229,6 +242,7 @@ typedef struct
 	guint				 refcount;
 	PkMessageEnum			 type;
 	gchar				*details;
+	gpointer			 user_data;
 } PkItemMessage;
 
 void			 pk_item_test				(gpointer		 user_data);
