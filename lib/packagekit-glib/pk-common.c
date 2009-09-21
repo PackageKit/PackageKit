@@ -486,22 +486,20 @@ pk_strvalidate (const gchar *text)
 gchar **
 pk_ptr_array_to_strv (GPtrArray *array)
 {
-	gchar **strv_array;
+	gchar **value;
 	const gchar *value_temp;
 	guint i;
 
 	g_return_val_if_fail (array != NULL, NULL);
 
 	/* copy the array to a strv */
-	strv_array = g_new0 (gchar *, array->len + 2);
+	value = g_new0 (gchar *, array->len + 1);
 	for (i=0; i<array->len; i++) {
 		value_temp = (const gchar *) g_ptr_array_index (array, i);
-		strv_array[i] = g_strdup (value_temp);
+		value[i] = g_strdup (value_temp);
 	}
-	/* set the last element to NULL */
-	strv_array[i] = NULL;
 
-	return strv_array;
+	return value;
 }
 
 /**
