@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.ml\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-09 15:38+0000\n"
-"PO-Revision-Date: 2009-09-09 22:01+0530\n"
+"POT-Creation-Date: 2009-09-21 14:39+0000\n"
+"PO-Revision-Date: 2009-09-21 21:07+0530\n"
 "Last-Translator: \n"
 "Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,115 +18,115 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:143
+#: ../client/pk-console.c:142
 msgid "Transaction"
 msgstr "ഇടപാടു്"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:145
+#: ../client/pk-console.c:144
 msgid "System time"
 msgstr "സിസ്റ്റം സമയം"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "Succeeded"
 msgstr "ഇടപാടു് പൂര്‍ത്തിയായി"
 
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "True"
 msgstr "True"
 
-#: ../client/pk-console.c:147
+#: ../client/pk-console.c:146
 msgid "False"
 msgstr "False"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:148 ../src/pk-polkit-action-lookup.c:336
 msgid "Role"
 msgstr "റോള്‍"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:154
+#: ../client/pk-console.c:153
 msgid "Duration"
 msgstr "സമയം"
 
-#: ../client/pk-console.c:154
+#: ../client/pk-console.c:153
 msgid "(seconds)"
 msgstr "(സെക്കന്‍ഡുകള്‍)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:157 ../src/pk-polkit-action-lookup.c:350
 msgid "Command line"
 msgstr "കമാന്‍ഡ് ലൈന്‍"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:160
+#: ../client/pk-console.c:159
 msgid "User ID"
 msgstr "ഉപയോക്താവിനുള്ള ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:167
+#: ../client/pk-console.c:166
 msgid "Username"
 msgstr "ഉപയോക്തൃനാമം"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:171
+#: ../client/pk-console.c:170
 msgid "Real name"
 msgstr "യഥാര്‍ത്ഥ പേരു്"
 
-#: ../client/pk-console.c:179
+#: ../client/pk-console.c:178
 msgid "Affected packages:"
 msgstr "ബാധിച്ച പാക്കേജുകള്‍:"
 
-#: ../client/pk-console.c:181
+#: ../client/pk-console.c:180
 msgid "Affected packages: None"
 msgstr "ബാധിച്ച പാക്കേജുകള്‍: ഒന്നുമില്ല"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:201
+#: ../client/pk-console.c:200
 msgid "Distribution"
 msgstr "വിതരണം"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:203
+#: ../client/pk-console.c:202
 msgid "Type"
 msgstr "തരം"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:205 ../client/pk-console.c:226
+#: ../client/pk-console.c:204 ../client/pk-console.c:225
 msgid "Summary"
 msgstr "സമ്മറി"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:215
+#: ../client/pk-console.c:214
 msgid "Category"
 msgstr "വിഭാഗം"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:217
+#: ../client/pk-console.c:216
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:220
+#: ../client/pk-console.c:219
 msgid "Parent"
 msgstr "പേരന്റ്"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:223
+#: ../client/pk-console.c:222
 msgid "Name"
 msgstr "പേരു്"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:229
+#: ../client/pk-console.c:228
 msgid "Icon"
 msgstr "ചിഹ്നം"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:243
+#: ../client/pk-console.c:242
 msgid "Details about the update:"
 msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്ചുള്ള വിശദാംശങ്ങള്‍:"
 
@@ -134,152 +134,153 @@ msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്�
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
+#: ../client/pk-console.c:248 ../lib/packagekit-glib2/pk-task-text.c:105
 #: ../lib/packagekit-glib2/pk-task-text.c:172
-#: ../src/pk-polkit-action-lookup.c:352
+#: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "പാക്കേജ്"
 msgstr[1] "പാക്കേജുകള്‍"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:251
 msgid "Updates"
 msgstr "പരിഷ്കരണങ്ങള്‍"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:256
+#: ../client/pk-console.c:255
 msgid "Obsoletes"
 msgstr "വേണ്ടെന്നു് വച്ചവ"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:175
+#: ../client/pk-console.c:259 ../lib/packagekit-glib2/pk-task-text.c:175
 msgid "Vendor"
 msgstr "കച്ചവടക്കാരന്‍"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:264
+#: ../client/pk-console.c:263
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:268
+#: ../client/pk-console.c:267
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:272
+#: ../client/pk-console.c:271
 msgid "Restart"
 msgstr "വീണ്ടും ആരംഭിക്കുക"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:276
+#: ../client/pk-console.c:275
 msgid "Update text"
 msgstr "പരിഷ്കരിച്ച വാചകം"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:280
+#: ../client/pk-console.c:279
 msgid "Changes"
 msgstr "മാറ്റങ്ങള്‍"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:284
+#: ../client/pk-console.c:283
 msgid "State"
 msgstr "അവസ്ഥ"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:289
+#: ../client/pk-console.c:288
 msgid "Issued"
 msgstr "നല്‍കിയതു്"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:294
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:293 ../lib/packagekit-glib2/pk-console-shared.c:494
 msgid "Updated"
 msgstr "പരിഷ്കരിച്ചിരിക്കുന്നു"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:312
+#: ../client/pk-console.c:311
 msgid "Enabled"
 msgstr "പ്രവര്‍ത്തന സജ്ജം"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:315
+#: ../client/pk-console.c:314
 msgid "Disabled"
 msgstr "പ്രവര്‍ത്തന രഹിതം"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:337
+#: ../client/pk-console.c:336
 msgid "System restart required by:"
 msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:340
+#: ../client/pk-console.c:339
 msgid "Session restart required:"
 msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കേണ്ടതുണ്ടു്:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:342
 msgid "System restart (security) required by:"
 msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:346
+#: ../client/pk-console.c:345
 msgid "Session restart (security) required:"
 msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:349
+#: ../client/pk-console.c:348
 msgid "Application restart required by:"
 msgstr "പ്രയോഗം വീണ്ടും ആരംഭിക്കേണ്ടതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:366
+#: ../client/pk-console.c:365
 msgid "Package description"
 msgstr "പാക്കേജ് വിശദാംശങ്ങള്‍"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:384
+#: ../client/pk-console.c:383
 msgid "Message:"
 msgstr "സന്ദേശം:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:398
+#: ../client/pk-console.c:397
 msgid "No files"
 msgstr "ഫയലുകള്‍ ലഭ്യമല്ല"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:403
+#: ../client/pk-console.c:402
 msgid "Package files"
 msgstr "പാക്കേജിലുള്ള ഫയലുകള്‍"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:462
+#: ../client/pk-console.c:475
 msgid "Fatal error"
 msgstr "ഗുരുതര പിശക്"
 
 #. TRANSLATORS: we failed, but there was no error set
-#: ../client/pk-console.c:475
+#: ../client/pk-console.c:488
 msgid "Transaction failed with no error"
 msgstr "പിശകില്ലാതെ ഇടപാടില്‍ പരാജയം"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:480
+#: ../client/pk-console.c:493
 msgid "The transaction failed"
 msgstr "ഇടപാടു് പരാജയപ്പെട്ടു"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:554
+#: ../client/pk-console.c:567
 msgid "Please restart the computer to complete the update."
 msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:570
 msgid "Please logout and login to complete the update."
 msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:560
+#: ../client/pk-console.c:573
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -288,7 +289,7 @@ msgstr ""
 "വീണ്ടും ആരംഭിക്കുക."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:563
+#: ../client/pk-console.c:576
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -297,19 +298,19 @@ msgstr ""
 "ചെയ്യുക."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:584
+#: ../client/pk-console.c:597
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ലഭ്യമായ പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:612
+#: ../client/pk-console.c:625
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്ത പാക്കേജുകള്‍ കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:640 ../client/pk-console.c:668
+#: ../client/pk-console.c:653 ../client/pk-console.c:681
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
@@ -318,170 +319,170 @@ msgstr "പാക്കേജ് കണ്ടുപിടിക്കുവാ�
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:696 ../client/pk-console.c:724
-#: ../client/pk-console.c:752 ../client/pk-console.c:780
-#: ../client/pk-console.c:808
+#: ../client/pk-console.c:709 ../client/pk-console.c:737
+#: ../client/pk-console.c:765 ../client/pk-console.c:793
+#: ../client/pk-console.c:821
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "എല്ലാ പാക്കേജുകളും കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:832
+#: ../client/pk-console.c:850
 msgid "The daemon crashed mid-transaction!"
 msgstr "ഡെമണ്‍ തകര്‍ന്നിരിക്കുന്നു!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:866
+#: ../client/pk-console.c:884
 msgid "PackageKit Console Interface"
 msgstr "പാക്കേജ്കിറ്റ് കണ്‍സോള്‍ ഇന്റര്‍ഫെയിസ്"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:868
+#: ../client/pk-console.c:886
 msgid "Subcommands:"
 msgstr "സബ്കമാന്‍ഡുകള്‍:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:947
+#: ../client/pk-console.c:965
 msgid "Failed to get the time since this action was last completed"
 msgstr "ഈ പ്രവര്‍ത്തി അവസാനമായി പൂര്‍ത്തിയാക്കിയ സമയം ലഭ്യമായില്ല"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:982 ../client/pk-generate-pack.c:222
-#: ../client/pk-monitor.c:282
+#: ../client/pk-console.c:1000 ../client/pk-generate-pack.c:222
+#: ../client/pk-monitor.c:267
 #: ../contrib/command-not-found/pk-command-not-found.c:614
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:500
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:504
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "കൂടുതല്‍ ഡീബഗ്ഗിങ് വിവരം കാണിക്കുക"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:985 ../client/pk-monitor.c:284
+#: ../client/pk-console.c:1003 ../client/pk-monitor.c:269
 msgid "Show the program version and exit"
 msgstr "പ്രോഗ്രാമിന്റെ പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:988
+#: ../client/pk-console.c:1006
 msgid "Set the filter, e.g. installed"
 msgstr "ഫില്‍‌റ്റര്‍ ക്രമികരിക്കുക, e.g. ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:991
+#: ../client/pk-console.c:1009
 msgid "Exit without waiting for actions to complete"
 msgstr "പൂര്‍ത്തിയാകുന്നതിനുള്ള പ്രവര്‍ത്തികള്‍ക്കായി കാത്തിരിക്കാതെ പുറത്ത് കടക്കുക"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1016
+#: ../client/pk-console.c:1034
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit-മായി ബന്ധപ്പെടുവാന്‍ സാധിച്ചില്ല"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1068
+#: ../client/pk-console.c:1086
 msgid "The filter specified was invalid"
 msgstr "നല്‍കിയ ഫില്‍‌റ്റര്‍ തെറ്റാണു്"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1087
+#: ../client/pk-console.c:1105
 msgid "A search type is required, e.g. name"
 msgstr "തെരയുന്നതിനുള്ള തരം ആവശ്യമുണ്ടു്, ഉദാ. പേരു്"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1094 ../client/pk-console.c:1106
-#: ../client/pk-console.c:1118 ../client/pk-console.c:1130
+#: ../client/pk-console.c:1112 ../client/pk-console.c:1124
+#: ../client/pk-console.c:1136 ../client/pk-console.c:1148
 msgid "A search term is required"
 msgstr "തെരയുന്നതിനുള്ള വാചകം ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1140
+#: ../client/pk-console.c:1158
 msgid "Invalid search type"
 msgstr "തെറ്റായ തരത്തിലുള്ള തെരച്ചില്‍"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1164
 msgid "A package name to install is required"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1155
+#: ../client/pk-console.c:1173
 msgid "A filename to install is required"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1167
+#: ../client/pk-console.c:1185
 msgid "A type, key_id and package_id are required"
 msgstr "ഏത് തരം, key_id, package_id എന്നിവ ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1178
+#: ../client/pk-console.c:1196
 msgid "A package name to remove is required"
 msgstr "നീക്കം ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1187
+#: ../client/pk-console.c:1205
 msgid "A destination directory and the package names to download are required"
 msgstr "ഏതു് ഡയറക്ടറി എന്നും ഡൌണ്‍ലോട് ചെയ്യുവാനുള്ള പാക്കേജുകളും ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1194
+#: ../client/pk-console.c:1212
 msgid "Directory not found"
 msgstr "ഡയറക്ടറി ലഭ്യമല്ല"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1203
+#: ../client/pk-console.c:1221
 msgid "A licence identifier (eula-id) is required"
 msgstr "ലൈസന്‍സ് ഐഡന്റിഫയര്‍ (eula-id) ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1214
+#: ../client/pk-console.c:1232
 msgid "A transaction identifier (tid) is required"
 msgstr "ഒരു ട്രാന്‍സാക്ഷന്‍ ഐഡന്റിഫയര്‍ (tid) ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1235
+#: ../client/pk-console.c:1253
 msgid "A package name to resolve is required"
 msgstr "റിസോള്‍വ് ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1246 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1264 ../client/pk-console.c:1275
 msgid "A repository name is required"
 msgstr "സംഭരണിയ്ക്കുള്ള പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1268
+#: ../client/pk-console.c:1286
 msgid "A repo name, parameter and value are required"
 msgstr "ഒരു റിപ്പോയുടെ പേരും പരാമീറ്റരും മൂല്ല്യവും ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1285
+#: ../client/pk-console.c:1303
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ഒരു പ്രവര്‍ത്തി ആവശ്യമുണ്ടു്, ഉദാ. 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1292
+#: ../client/pk-console.c:1310
 msgid "A correct role is required"
 msgstr "ശരിയായ റോള്‍ ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1302 ../client/pk-console.c:1317
-#: ../client/pk-console.c:1326 ../client/pk-console.c:1346
-#: ../client/pk-console.c:1355 ../client/pk-generate-pack.c:285
+#: ../client/pk-console.c:1320 ../client/pk-console.c:1335
+#: ../client/pk-console.c:1344 ../client/pk-console.c:1364
+#: ../client/pk-console.c:1373 ../client/pk-generate-pack.c:285
 msgid "A package name is required"
 msgstr "പാക്കേജിന്റ് പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1335
+#: ../client/pk-console.c:1353
 msgid "A package provide string is required"
 msgstr "പാക്കേജ് ലഭ്യമാക്കുന്ന സ്ട്രിങ് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1415
+#: ../client/pk-console.c:1433
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "'%s' എന്ന ഐച്ഛികത്തിനുള്ള പിന്തുണ ലഭ്യമല്ല"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1443
 msgid "Command failed"
 msgstr "നിര്‍ദ്ദേശം പരാജയപ്പെട്ടു"
 
@@ -593,16 +594,12 @@ msgstr "'%s' സര്‍വീസ് പാക്ക് ഉണ്ടാക്�
 msgid "Failed to create '%s': %s"
 msgstr "'%s' ഉണ്ടാക്കുന്നതില്‍ പരാജയം: %s"
 
-#: ../client/pk-monitor.c:204
-msgid "Failed to get transaction list"
-msgstr "ഇടപാടുകളുടെ പട്ടിക ലഭ്യമാക്കുന്നതില്‍ പരാജയം"
-
-#: ../client/pk-monitor.c:235
+#: ../client/pk-monitor.c:197
 msgid "Failed to get daemon state"
 msgstr "ഡെമണ്‍ അവസ്ഥ ലഭ്യമാക്കുന്നതില്‍ പരാജയം"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:299
+#: ../client/pk-monitor.c:284
 msgid "PackageKit Monitor"
 msgstr "പാക്കേജ്കിറ്റ് നിരീക്ഷകന്‍"
 
@@ -755,189 +752,189 @@ msgid "Starting install"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാന്‍ ആരംഭിക്കുന്നു"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:402
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:406
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "%s എന്ന പാക്കേജ് നിലവില്‍ ലഭ്യമല്ല അല്ലെങ്കില്‍ കമ്പ്യൂട്ടറില്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:503
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:507
 msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ട പകരം, ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ടവ സിമുലേറ്റ് ചെയ്യുക"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:506
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:510
 msgid "Do not install dependencies of the core packages"
 msgstr "കോര്‍ പാക്കേജുകളുടെ ഡിപന്‍ഡന്‍സികള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:509
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:513
 msgid "Do not display information or progress"
 msgstr "വിവരം അല്ലെങ്കില്‍ പുരോഗതി ലഭ്യമാക്കേണ്ട"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:528
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit Debuginfo Installer"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:536
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "പിശക്: ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള പാക്കേജുകള്‍ വ്യക്തമാക്കുക."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:568
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:572
 #, c-format
 msgid "Getting sources list"
 msgstr "റിപ്പോസിറ്ററികളുടെ വിവരം ലഭ്യമാകുന്നു"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:578
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:653
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:781
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:892
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:582
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
 msgid "FAILED."
 msgstr "FAILED."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:593
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:633
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:668
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:752
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:796
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:863
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:597
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:637
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:672
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:756
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:867
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
 #, c-format
 msgid "OK."
 msgstr "ശരി."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:596
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "%i സജ്ജമാക്കിയവയും %i പ്രവര്‍ത്തന രഹിതവുമായ സോഴ്സുകള്‍ ലഭ്യമാണു്."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:603
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:607
 #, c-format
 msgid "Finding debugging sources"
 msgstr "ഡീബഗ്ഗിങ് സോഴ്സുകള്‍ ലഭ്യമാക്കുന്നു"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:636
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "പ്രവര്‍ത്തന രഹിതമായ %i debuginfo റിപ്പോകള്‍ ലഭ്യമാക്കിയിരിക്കുന്നു."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:647
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "ഡീബഗ്ഗിങ് സോഴ്സുകള്‍ സജ്ജമാക്കുന്നു"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:671
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "%i ഡീബഗ്ഗിങ് സോഴ്സുകള്‍ സജ്ജമാക്കിയിരിക്കുന്നു."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:678
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
 #, c-format
 msgid "Finding debugging packages"
 msgstr "എല്ലാ റിപ്പോകളിലുമുള്ള പാക്കേജുകള്‍ (ഡീബഗ്ഗിങ്) കണ്ടുപിടിക്കുന്നു."
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:694
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "%s എന്ന പാക്കേജ് കണ്ടുപിടിക്കുവാനായില്ല: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:713
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:717
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "debuginfo പാക്കേജ് %s കണ്ടുപിടിക്കുവാനായില്ല: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:745
 #, c-format
 msgid "Found no packages to install."
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാന്‍ പാക്കേജുകള്‍ ലഭ്യമായില്ല."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:755
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
 #, c-format
 msgid "Found %i packages:"
 msgstr "%i പാക്കേജുകള്‍ ലഭ്യമായി:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:771
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:775
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "ഈ പാക്കേജുകളെ ആശ്രയിക്കുന്ന പാക്കേജുകള്‍ ലഭ്യമാക്കുന്നു"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "ഡിപന്‍ഡന്റ് പാക്കേജുകള്‍ കണ്ടുപിടിക്കുവാനായില്ല: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
 #, c-format
 msgid "Found %i extra packages."
 msgstr "അധികമായ %i പാക്കേജുകള്‍ ലഭ്യമായിരിക്കുന്നു."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:804
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
 msgid "No extra packages required."
 msgstr "അധികമായ പാക്കേജുകള്‍ ആവശ്യമില്ല."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:813
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:817
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "%i പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുണ്ടു്:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:830
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "സിമുലേറ്റ് മോഡില്‍ പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതല്ല"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:838
-#: ../lib/packagekit-glib2/pk-console-shared.c:246
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:842
+#: ../lib/packagekit-glib2/pk-console-shared.c:270
 #, c-format
 msgid "Installing packages"
 msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:855
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാന്‍ സാധ്യമല്ല: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:883
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "മുമ്പ് സജ്ജമാക്കിയ സോഴ്സുകള്‍ പ്രവര്‍ത്തന രഹിതമാക്കുന്നു"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "ഡീബഗ്ഗിങ് സോഴ്സുകള്‍ പ്രവര്‍ത്തന രഹിതമാക്കുവാന്‍ സാധിച്ചില്ല: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "%i ഡീബഗ്ഗിങ് സോഴ്സുകള്‍ പ്രവര്‍ത്തന രഹിതമാക്കിയിരിക്കുന്നു."
@@ -1040,195 +1037,461 @@ msgstr "പാക്കേജ്കിറ്റിനുള്ള പാക്�
 msgid "PackageKit Service Pack"
 msgstr "പാക്കേജ്കിറ്റിനുള്ള സര്‍വീസ് പാക്ക്"
 
-#: ../lib/packagekit-glib2/pk-console-shared.c:53
+#: ../lib/packagekit-glib2/pk-console-shared.c:55
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "ദയവായി 1 മുതല്‍ %i വരെയുള്ള ഒരു അക്കം നല്‍കുക: "
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:153
+#: ../lib/packagekit-glib2/pk-console-shared.c:177
 msgid "More than one package matches:"
 msgstr "ഒന്നില്‍ കൂടുതല്‍ ചേരുന്ന പാക്കേജുകള്‍:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../lib/packagekit-glib2/pk-console-shared.c:162
+#: ../lib/packagekit-glib2/pk-console-shared.c:186
 msgid "Please choose the correct package: "
 msgstr "ദയവായി ശരിയായ പാക്കേജ് തെരഞ്ഞെടുക്കുക: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: ../lib/packagekit-glib2/pk-console-shared.c:214
+#: ../lib/packagekit-glib2/pk-console-shared.c:238
 msgid "Unknown state"
 msgstr "അപരിചിതമായ അവസ്ഥ"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: ../lib/packagekit-glib2/pk-console-shared.c:218
+#: ../lib/packagekit-glib2/pk-console-shared.c:242
 msgid "Starting"
 msgstr "ആരംഭിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: ../lib/packagekit-glib2/pk-console-shared.c:222
+#: ../lib/packagekit-glib2/pk-console-shared.c:246
 msgid "Waiting in queue"
 msgstr "ക്യൂവില്‍ കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, just started
-#: ../lib/packagekit-glib2/pk-console-shared.c:226
+#: ../lib/packagekit-glib2/pk-console-shared.c:250
 msgid "Running"
 msgstr "പ്രവര്‍ത്തിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, is querying data
-#: ../lib/packagekit-glib2/pk-console-shared.c:230
+#: ../lib/packagekit-glib2/pk-console-shared.c:254
 msgid "Querying"
 msgstr "ക്വറി ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:234
+#: ../lib/packagekit-glib2/pk-console-shared.c:258
 msgid "Getting information"
 msgstr "വിവരം ലഭ്യമാകുന്നു"
 
 #. TRANSLATORS: transaction state, removing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:238
+#: ../lib/packagekit-glib2/pk-console-shared.c:262
 msgid "Removing packages"
 msgstr "പാക്കേജുകള്‍ നീക്കം ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading package files
-#: ../lib/packagekit-glib2/pk-console-shared.c:242
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:266
+#: ../lib/packagekit-glib2/pk-console-shared.c:640
 msgid "Downloading packages"
 msgstr "പാക്കേജുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: ../lib/packagekit-glib2/pk-console-shared.c:250
+#: ../lib/packagekit-glib2/pk-console-shared.c:274
 msgid "Refreshing software list"
 msgstr "സോഫ്റ്റ്‌വെയര്‍ പട്ടി പുതുക്കുന്നുു"
 
 #. TRANSLATORS: transaction state, installing updates
-#: ../lib/packagekit-glib2/pk-console-shared.c:254
+#: ../lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Installing updates"
 msgstr "പരിഷ്കാരങ്ങള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: ../lib/packagekit-glib2/pk-console-shared.c:258
+#: ../lib/packagekit-glib2/pk-console-shared.c:282
 msgid "Cleaning up packages"
 msgstr "പാക്കേജുകള്‍ വെടിപ്പാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:262
+#: ../lib/packagekit-glib2/pk-console-shared.c:286
 msgid "Obsoleting packages"
 msgstr "പാക്കേജുകള്‍ ഇല്ലാതാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: ../lib/packagekit-glib2/pk-console-shared.c:266
+#: ../lib/packagekit-glib2/pk-console-shared.c:290
 msgid "Resolving dependencies"
 msgstr "ഡിപെന്‍ഡന്‍സികള്‍ റിസോള്‍വ് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../lib/packagekit-glib2/pk-console-shared.c:294
 msgid "Checking signatures"
 msgstr "ഒപ്പുകള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
-#: ../lib/packagekit-glib2/pk-console-shared.c:274
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:298
+#: ../lib/packagekit-glib2/pk-console-shared.c:600
 msgid "Rolling back"
 msgstr "റോളിങ് ബാക്ക്"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:278
+#: ../lib/packagekit-glib2/pk-console-shared.c:302
 msgid "Testing changes"
 msgstr "മാറ്റങ്ങള്‍ പരീക്ഷിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: ../lib/packagekit-glib2/pk-console-shared.c:282
+#: ../lib/packagekit-glib2/pk-console-shared.c:306
 msgid "Committing changes"
 msgstr "മാറ്റങ്ങള്‍ സമര്‍പ്പിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:286
+#: ../lib/packagekit-glib2/pk-console-shared.c:310
 msgid "Requesting data"
 msgstr "ഡേറ്റാ ആവശ്യപ്പെടുന്നു"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:290
+#: ../lib/packagekit-glib2/pk-console-shared.c:314
 msgid "Finished"
 msgstr "പൂര്‍ത്തിയാക്കി"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:294
+#: ../lib/packagekit-glib2/pk-console-shared.c:318
 msgid "Cancelling"
 msgstr "റദ്ദാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:298
+#: ../lib/packagekit-glib2/pk-console-shared.c:322
 msgid "Downloading repository information"
 msgstr "റിപ്പോസിറ്ററി വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:326
 msgid "Downloading list of packages"
 msgstr "പാക്കേജുകളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:306
+#: ../lib/packagekit-glib2/pk-console-shared.c:330
 msgid "Downloading file lists"
 msgstr "ഫയല്‍ പട്ടികകള്‍‌ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:310
+#: ../lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Downloading lists of changes"
 msgstr "മാറ്റങ്ങളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:314
+#: ../lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Downloading groups"
 msgstr "ഗ്രൂപ്പുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:318
+#: ../lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Downloading update information"
 msgstr "പരിഷ്കരണ വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:322
+#: ../lib/packagekit-glib2/pk-console-shared.c:346
 msgid "Repackaging files"
 msgstr "ഫയലുകള്‍ വീണ്ടും പാക്കേജ് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:326
+#: ../lib/packagekit-glib2/pk-console-shared.c:350
 msgid "Loading cache"
 msgstr "കാഷ് ലഭ്യമാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:330
+#: ../lib/packagekit-glib2/pk-console-shared.c:354
 msgid "Scanning applications"
 msgstr "പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:334
+#: ../lib/packagekit-glib2/pk-console-shared.c:358
 msgid "Generating package lists"
 msgstr "പാക്കേജ് പട്ടികകള്‍ ലഭ്യമാകുന്നു"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:338
+#: ../lib/packagekit-glib2/pk-console-shared.c:362
 msgid "Waiting for package manager lock"
 msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:342
+#: ../lib/packagekit-glib2/pk-console-shared.c:366
 msgid "Waiting for authentication"
 msgstr "ആധികാരികതയ്ക്കായി കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:346
+#: ../lib/packagekit-glib2/pk-console-shared.c:370
 msgid "Updating running applications"
 msgstr "പ്രവര്‍ത്തിക്കുന്ന പ്രയോഗങ്ങള്‍ പരിഷ്കരിക്കുന്നു"
 
 #. TRANSLATORS: we are checking executable files currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:350
+#: ../lib/packagekit-glib2/pk-console-shared.c:374
 msgid "Checking applications in use"
 msgstr "ഉപയോഗിത്തിലുള്ള പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: we are checking for libraries currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:354
+#: ../lib/packagekit-glib2/pk-console-shared.c:378
 msgid "Checking libraries in use"
 msgstr "ഉപയോഗത്തിലുള്ള ലൈബ്രറികള്‍ പരിശോധിക്കുന്നു"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:396
+msgid "Trivial"
+msgstr "ഏറ്റവും പ്രധാനപ്പെട്ട"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:400
+msgid "Normal"
+msgstr "സാധാരണ"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:404
+msgid "Important"
+msgstr "പ്രധാനം"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:408
+msgid "Security"
+msgstr "സുരക്ഷാ"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:412
+msgid "Bug fix "
+msgstr "ബഗിനുള്ള പരിഹാരം"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:416
+msgid "Enhancement"
+msgstr "പുരോഗമിച്ചതു്"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:420
+msgid "Blocked"
+msgstr "തടസ്സപ്പെട്ടതു്"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:425
+#: ../lib/packagekit-glib2/pk-console-shared.c:498
+msgid "Installed"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്ന"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:430
+msgid "Available"
+msgstr "ലഭ്യം"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:448
+msgid "Downloading"
+msgstr "ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:452
+msgid "Updating"
+msgstr "പരിഷ്കരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:456
+#: ../lib/packagekit-glib2/pk-console-shared.c:576
+msgid "Installing"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:460
+#: ../lib/packagekit-glib2/pk-console-shared.c:572
+msgid "Removing"
+msgstr "നീക്കം ചെയ്യുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:464
+msgid "Cleaning up"
+msgstr "വെടിപ്പാക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:468
+msgid "Obsoleting"
+msgstr "വേണ്ടെന്നുവയ്ക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:472
+msgid "Reinstalling"
+msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:490
+msgid "Downloaded"
+msgstr "ഡൌണ്‍ലോട് ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:502
+msgid "Removed"
+msgstr "നീക്കം ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:506
+msgid "Cleaned up"
+msgstr "വെടിപ്പാക്കിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:510
+msgid "Obsoleted"
+msgstr "വേണ്ടെന്നുവച്ചിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:514
+msgid "Reinstalled"
+msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:532
+msgid "Unknown role type"
+msgstr "അപരിചിതമായ റോള്‍ രീതി"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:536
+msgid "Getting dependencies"
+msgstr "ഡിപെന്‍ഡന്‍സികള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
+msgid "Getting update details"
+msgstr "പരിഷ്കരണങ്ങളുടെ വിശദാംശം ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
+msgid "Getting details"
+msgstr "വിശദാംശങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:548
+msgid "Getting requires"
+msgstr "ലഭ്യമാകുന്നതിനു് ആവശ്യമുള്ളതു്"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:552
+msgid "Getting updates"
+msgstr "പരിഷ്കാരങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:556
+msgid "Searching by details"
+msgstr "വിശദാംശങ്ങള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:560
+msgid "Searching by file"
+msgstr "ഫയലുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:564
+msgid "Searching groups"
+msgstr "ഗ്രൂപ്പുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:568
+msgid "Searching by name"
+msgstr "പേരനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:580
+msgid "Installing files"
+msgstr "ഫയലുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:584
+msgid "Refreshing cache"
+msgstr "കാഷ് പുതുക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:588
+msgid "Updating packages"
+msgstr "പാക്കേജുകള്‍ പരിഷ്കരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:592
+msgid "Updating system"
+msgstr "സിസ്റ്റം പരിഷ്കരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:596
+msgid "Canceling"
+msgstr "റദ്ദാക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:604
+msgid "Getting repositories"
+msgstr "റിപ്പോസിറ്ററികള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:608
+msgid "Enabling repository"
+msgstr "റിപ്പോസിറ്ററി പ്രവര്‍ത്തന സജ്ജമാക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:612
+msgid "Setting data"
+msgstr "ഡേറ്റാ സജ്ജമാക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:616
+msgid "Resolving"
+msgstr "പരിഹരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:620
+msgid "Getting file list"
+msgstr "ഫയലുകളുടെ പട്ടിക ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:624
+msgid "Getting provides"
+msgstr "ലഭ്യമാകുന്നവ നല്‍കുന്നതു്"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:628
+msgid "Installing signature"
+msgstr "ഒപ്പു് ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:632
+msgid "Getting packages"
+msgstr "പാക്കേജുകള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:636
+msgid "Accepting EULA"
+msgstr "EULA സ്വീകരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:644
+msgid "Getting upgrades"
+msgstr "പരിഷ്കരണങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:648
+msgid "Getting categories"
+msgstr "വിഭാഗങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:652
+msgid "Getting transactions"
+msgstr "ഇടപാടുകള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:656
+#: ../lib/packagekit-glib2/pk-console-shared.c:660
+msgid "Simulating install"
+msgstr "ഇന്‍സ്റ്റോള്‍ സിമുലേറ്റ് ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:664
+msgid "Simulating remove"
+msgstr "നീക്കം ചെയ്യുന്നതു് സിമുലേറ്റ് ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:668
+msgid "Simulating update"
+msgstr "പരിഷ്കാരങ്ങള്‍ സിമുലേറ്റ് ചെയ്യുന്നു"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: ../lib/packagekit-glib2/pk-task-text.c:64
@@ -1611,43 +1874,43 @@ msgstr "സിസ്റ്റം ബസിലേക്ക് കണക്ട് 
 msgid "Error trying to start:"
 msgstr "ആരംഭിക്കുന്നതിനിടെ പിശക് സംഭവിച്ചിരിക്കുന്നു:"
 
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "ഡീബഗ്ഗിങ് പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനായി, അധികമായ സോഴ്സുകള്‍ സജ്ജമാക്കേണ്ടതുണ്ടു്"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
+#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
 msgstr "സോഫ്റ്റ്‌വെയര്‍ ഒരു ട്രസ്റ്റഡ് സോഴ്സില്‍ നിന്നുമല്ല."
 
-#: ../src/pk-polkit-action-lookup.c:173
+#: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
 
-#: ../src/pk-polkit-action-lookup.c:174
+#: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
 
-#: ../src/pk-polkit-action-lookup.c:192
+#: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
 
-#: ../src/pk-polkit-action-lookup.c:193
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:199
+#: ../src/pk-polkit-action-lookup.c:202
 msgid "Malicious software can damage your computer or cause other harm."
 msgstr "അപകടകരമായ സോഫ്റ്റ്‌വെയര്‍ നിങ്ങളുടെ കമ്പ്യൂട്ടറിനെ നശിപ്പിക്കുന്നു."
 
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:274
+#: ../src/pk-polkit-action-lookup.c:277
 msgid "Many packages"
 msgstr "അനവധി പാക്കേജുകള്‍"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:343
 msgid "Only trusted"
 msgstr "ട്രസ്റ്റഡ് മാത്രം"
 
