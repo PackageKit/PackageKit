@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-22 14:38+0000\n"
-"PO-Revision-Date: 2009-09-22 16:46+0200\n"
+"PO-Revision-Date: 2009-09-22 16:47+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <fedora-trans-pl@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -1238,9 +1238,8 @@ msgstr "Sprawdzanie używanych bibliotek"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:382
-#, fuzzy
 msgid "Copying files"
-msgstr "Brak plików"
+msgstr "Kopiowanie plików"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:400
