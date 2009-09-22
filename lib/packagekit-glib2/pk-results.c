@@ -452,7 +452,8 @@ pk_results_add_message (PkResults *results, PkItemMessage *item)
  * pk_results_get_exit_code:
  * @results: a valid #PkResults instance
  *
- * Gets the exit enum.
+ * Gets the exit enum. You probably don't want to be using this function, and
+ * instead using the much more useful pk_results_get_error_code() function.
  *
  * Return value: The #PkExitEnum or %PK_EXIT_ENUM_UNKNOWN for error or if it was not set
  **/
@@ -475,6 +476,11 @@ PkItemErrorCode *
 pk_results_get_error_code (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+
+	/* failed, but no exit code? */
+	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
+		egg_error ("internal error: failed, but no exit code");
+
 	if (results->priv->error_code == NULL)
 		return NULL;
 	return pk_item_error_code_ref (results->priv->error_code);

@@ -123,7 +123,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 	PkResults *results = NULL;
 	const gchar *repo_id;
 	GError *error_local = NULL;
-	PkExitEnum exit_enum;
+	PkItemErrorCode *error_item = NULL;
 
 	/* enable all debuginfo repos we found */
 	for (i=0; i<array->len; i++) {
@@ -138,11 +138,11 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 			goto out;
 		}
 
-		/* test exit code */
-		exit_enum = pk_results_get_exit_code (results);
-		if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-			*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
-			g_error_free (error_local);
+		/* check error code */
+		error_item = pk_results_get_error_code (results);
+		if (error_item != NULL) {
+			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+			ret = FALSE;
 			goto out;
 		}
 
@@ -150,6 +150,8 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		g_object_unref (results);
 	}
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	return ret;
 }
 
@@ -186,7 +188,7 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	PkResults *results = NULL;
 	gchar **package_ids;
 	GError *error_local = NULL;
-	PkExitEnum exit_enum;
+	PkItemErrorCode *error_item = NULL;
 
 	/* mush back into a char** */
 	package_ids = pk_ptr_array_to_strv (array);
@@ -204,11 +206,10 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 		goto out;
 	}
 
-	/* test exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
-		g_error_free (error_local);
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
 		ret = FALSE;
 		goto out;
 	}
@@ -216,6 +217,8 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	/* end progressbar output */
 	pk_progress_bar_end (priv->progress_bar);
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (results != NULL)
 		g_object_unref (results);
 	g_strfreev (package_ids);
@@ -234,7 +237,7 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	GPtrArray *list = NULL;
 	GError *error_local = NULL;
 	gchar **names;
-	PkExitEnum exit_enum;
+	PkItemErrorCode *error_item = NULL;
 
 	/* resolve takes a char** */
 	names = g_strsplit (package_name, ";", -1);
@@ -247,11 +250,10 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 		goto out;
 	}
 
-	/* test exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
-		g_error_free (error_local);
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
 		goto out;
 	}
 
@@ -270,6 +272,8 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	item = g_ptr_array_index (list, 0);
 	package_id = g_strdup (item->package_id);
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (results != NULL)
 		g_object_unref (results);
 	if (list != NULL)
@@ -368,7 +372,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	gchar *name_debuginfo;
 	guint i;
 	gchar **split;
-	PkExitEnum exit_enum;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
@@ -380,11 +384,10 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		goto out;
 	}
 
-	/* test exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		*error = g_error_new (1, 0, "failed to resolve: %s", pk_exit_enum_to_text (exit_enum));
-		g_error_free (error_local);
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
 		ret = FALSE;
 		goto out;
 	}
@@ -420,6 +423,8 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		g_free (name_debuginfo);
 	}
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (results != NULL)
 		g_object_unref (results);
 	if (list != NULL)
@@ -436,11 +441,11 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 {
 	gboolean ret = FALSE;
 	PkResults *results = NULL;
-	PkExitEnum exit_enum;
 	guint i;
 	GPtrArray *array;
 	GError *error_local = NULL;
 	const PkItemRepoDetail *item;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get all repo details */
 	results = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
@@ -450,10 +455,10 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 		goto out;
 	}
 
-	/* test exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_print ("failed to get repo list: %s", pk_exit_enum_to_text (exit_enum));
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
 		goto out;
 	}
 
@@ -468,6 +473,8 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	}
 	ret = TRUE;
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (results != NULL)
 		g_object_unref (results);
 	return ret;

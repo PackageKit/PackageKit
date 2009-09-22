@@ -880,10 +880,10 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkExitEnum exit_enum;
 	GPtrArray *array = NULL;
 	guint i;
 	const PkItemPackage *package;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -893,10 +893,10 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 		goto out;
 	}
 
-	/* get exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error = g_error_new (1, 0, "failed to get updates");
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to get updates: %s", error_item->details);
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -915,6 +915,8 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)

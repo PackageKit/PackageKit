@@ -457,11 +457,10 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	PkItemErrorCode *error_item;
+	PkItemErrorCode *error_item = NULL;
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
-	PkExitEnum exit_enum;
 	PkRestartEnum restart;
 	PkRoleEnum role;
 
@@ -477,31 +476,16 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		goto out;
 	}
 
-	/* get the role */
-	g_object_get (G_OBJECT(results), "role", &role, NULL);
-
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error_item = pk_results_get_error_code (results);
-		if (error_item == NULL) {
-			/* TRANSLATORS: we failed, but there was no error set */
-			g_print ("%s: %s\n", _("Transaction failed with no error"), pk_exit_enum_to_text (exit_enum));
-			goto out;
-		}
-
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s (%s)\n", _("The transaction failed"), pk_exit_enum_to_text (exit_enum), error_item->details);
-
-		/* check error code */
-		pk_item_error_code_unref (error_item);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
 		goto out;
 	}
 
-
-//	if (error_item->code != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
-//		egg_test_failed (test, "failed to get error code: %i", error_item->code);
-//	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
-//		egg_test_failed (test, "failed to get error message: %s", error_item->details);
+	/* get the role */
+	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* package */
 	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
@@ -576,6 +560,8 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (results != NULL)
 		g_object_unref (results);
 	g_main_loop_quit (loop);

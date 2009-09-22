@@ -239,12 +239,12 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
 	PkResults *results = NULL;
-	PkExitEnum exit_enum;
 	GPtrArray *packages = NULL;
 	const PkItemPackage *item;
 	guint i;
 	gchar *filename;
 	gchar **split = NULL;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -254,21 +254,15 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		goto out;
 	}
 
-	/* check status */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		g_warning ("failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		g_warning ("failed to install: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
 		goto out;
 	}
 
 	/* get packages */
 	packages = pk_results_get_package_array (results);
-	if (packages == NULL) {
-		g_error ("internal error, no packages!");
-		goto out;
-	}
-
-	/* list, just for shits and giggles */
 	for (i=0; i<packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
 		g_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
@@ -344,6 +338,8 @@ out:
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 	}
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
 	if (results != NULL)
