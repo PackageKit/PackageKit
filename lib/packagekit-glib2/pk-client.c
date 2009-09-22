@@ -1364,7 +1364,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->files,
 						       G_TYPE_INVALID);
-		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
+		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateInstallPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
