@@ -169,8 +169,9 @@ pk_client_fixup_dbus_error (GError *error)
 			goto out;
 		}
 		if (g_str_has_prefix (name, "PackInvalid") ||
-			 g_str_has_prefix (name, "NoSuchFile") ||
-			 g_str_has_prefix (name, "NoSuchDirectory")) {
+		    g_str_has_prefix (name, "NoSuchFile") ||
+		    g_str_has_prefix (name, "MimeTypeNotSupported") ||
+		    g_str_has_prefix (name, "NoSuchDirectory")) {
 			error->code = PK_CLIENT_ERROR_INVALID_FILE;
 			goto out;
 		}
