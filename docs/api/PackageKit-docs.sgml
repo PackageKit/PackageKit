@@ -70,6 +70,7 @@
     <xi:include href="xml/pk-desktop.xml"/>
     <xi:include href="xml/pk-progress.xml"/>
     <xi:include href="xml/pk-results.xml"/>
+    <xi:include href="xml/pk-package.xml"/>
     <xi:include href="xml/pk-package-sack.xml"/>
     <xi:include href="xml/pk-service-pack.xml"/>
   </reference>
