@@ -362,20 +362,24 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		text = _("Waiting for package manager lock");
 		break;
 	case PK_STATUS_ENUM_WAITING_FOR_AUTH:
-		/* TRANSLATORS: waiting for user to type in a password */
+		/* TRANSLATORS: transaction state, waiting for user to type in a password */
 		text = _("Waiting for authentication");
 		break;
 	case PK_STATUS_ENUM_SCAN_PROCESS_LIST:
-		/* TRANSLATORS: we are updating the list of processes */
+		/* TRANSLATORS: transaction state, we are updating the list of processes */
 		text = _("Updating running applications");
 		break;
 	case PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES:
-		/* TRANSLATORS: we are checking executable files currently in use */
+		/* TRANSLATORS: transaction state, we are checking executable files currently in use */
 		text = _("Checking applications in use");
 		break;
 	case PK_STATUS_ENUM_CHECK_LIBRARIES:
-		/* TRANSLATORS: we are checking for libraries currently in use */
+		/* TRANSLATORS: transaction state, we are checking for libraries currently in use */
 		text = _("Checking libraries in use");
+		break;
+	case PK_STATUS_ENUM_COPY_FILES:
+		/* TRANSLATORS: transaction state, we are copying package files before or after the transaction */
+		text = _("Copying files");
 		break;
 	default:
 		egg_warning ("status unrecognised: %s", pk_status_enum_to_text (status));

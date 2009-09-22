@@ -597,7 +597,7 @@ pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, 
 	gboolean ret;
 
 	/* save progress */
-	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_REPACKAGING);
+	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_COPY_FILES);
 
 	/* do the callback for GUI programs */
 	if (state->progress_callback != NULL && ret)
