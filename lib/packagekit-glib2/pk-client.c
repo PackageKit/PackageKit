@@ -1739,6 +1739,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_details_async);
 
@@ -1786,6 +1787,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_update_detail_async);
 
@@ -1833,6 +1835,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_download_packages_async);
 
@@ -2025,6 +2028,7 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_depends_async);
 
@@ -2121,6 +2125,7 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_requires_async);
 
@@ -2266,6 +2271,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_files_async);
 
@@ -2360,6 +2366,7 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_remove_packages_async);
 
@@ -2458,6 +2465,7 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_install_packages_async);
 
@@ -2556,6 +2564,7 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_update_packages_async);
 
@@ -2605,6 +2614,7 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (files != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_install_files_async);
 
@@ -2889,6 +2899,7 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (files != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_simulate_install_files_async);
 
@@ -2935,6 +2946,7 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_simulate_install_packages_async);
 
@@ -2981,6 +2993,7 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_simulate_remove_packages_async);
 
@@ -3027,6 +3040,7 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (package_ids != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_simulate_update_packages_async);
 
