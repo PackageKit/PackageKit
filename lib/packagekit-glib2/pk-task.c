@@ -322,6 +322,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
+	PkItemErrorCode *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -343,9 +344,12 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature");
+		error_code = pk_results_get_error_code (state->results);
+		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", error_code->details);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
+		pk_item_error_code_unref (error_code);
 		goto out;
 	}
 
@@ -409,6 +413,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
+	PkItemErrorCode *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -430,9 +435,12 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula");
+		error_code = pk_results_get_error_code (state->results);
+		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", error_code->details);
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
+		pk_item_error_code_unref (error_code);
 		goto out;
 	}
 
