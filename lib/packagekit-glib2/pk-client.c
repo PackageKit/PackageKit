@@ -595,13 +595,21 @@ static void
 pk_client_copy_progress_cb (goffset current_num_bytes, goffset total_num_bytes, PkClientState *state)
 {
 	gboolean ret;
+	gint percentage = -1;
 
-	/* save progress */
+	/* save status */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_COPY_FILES);
-
-	/* do the callback for GUI programs */
 	if (state->progress_callback != NULL && ret)
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
+
+	/* calculate percentage */
+	if (total_num_bytes > 0)
+		percentage = 100 * current_num_bytes / total_num_bytes;
+
+	/* save percentage */
+	ret = pk_progress_set_percentage (state->progress, percentage);
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
 }
 
 /**
@@ -658,6 +666,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint len;
 	const PkItemFiles *item;
 	GPtrArray *array = NULL;
+	gboolean ret;
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
@@ -672,6 +681,11 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
 	len = array->len;
+
+	/* save percentage */
+	ret = pk_progress_set_percentage (state->progress, -1);
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
 
 	/* do the copies pipelined */
 	for (i=0; i < len; i++) {
@@ -2700,6 +2714,11 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 	/* get a temp dir accessible by the daemon */
 	user_temp = pk_client_get_user_temp ("native-cache", &error);
 	egg_debug ("using temp dir %s", user_temp);
+
+	/* save percentage */
+	ret = pk_progress_set_percentage (state->progress, -1);
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
 
 	/* copy each file that is non-native */
 	for (i=0; state->files[i] != NULL; i++) {
