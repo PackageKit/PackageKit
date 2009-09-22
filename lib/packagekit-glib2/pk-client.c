@@ -1062,7 +1062,7 @@ pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar 
 
 	/* add to results */
 	item = pk_item_error_code_new (code_enum, details);
-	pk_results_add_error_code (state->results, item);
+	pk_results_set_error_code (state->results, item);
 	pk_item_error_code_unref (item);
 }
 

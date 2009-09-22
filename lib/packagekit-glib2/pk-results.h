@@ -71,6 +71,8 @@ void		 pk_results_test			(gpointer		 user_data);
 /* set */
 gboolean	 pk_results_set_exit_code		(PkResults		*results,
 							 PkExitEnum		 exit_enum);
+gboolean	 pk_results_set_error_code 		(PkResults		*results,
+							 PkItemErrorCode	*item);
 
 /* add */
 gboolean	 pk_results_add_package			(PkResults		*results,
@@ -97,8 +99,6 @@ gboolean	 pk_results_add_media_change_required	(PkResults		*results,
 							 PkItemMediaChangeRequired	*item);
 gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
 							 PkItemRepoDetail	*item);
-gboolean	 pk_results_add_error_code 		(PkResults		*results,
-							 PkItemErrorCode	*item);
 gboolean	 pk_results_add_message 		(PkResults		*results,
 							 PkItemMessage		*item);
 
@@ -121,7 +121,6 @@ GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
 GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
 GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
 GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
-GPtrArray	*pk_results_get_error_code_array	(PkResults		*results);
 GPtrArray	*pk_results_get_message_array		(PkResults		*results);
 
 G_END_DECLS

@@ -54,6 +54,7 @@ struct _PkResultsPrivate
 	guint			 inputs;
 	PkProgress		*progress;
 	PkExitEnum		 exit_enum;
+	PkItemErrorCode		*error_code;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
 	GPtrArray		*update_detail_array;
@@ -66,7 +67,6 @@ struct _PkResultsPrivate
 	GPtrArray		*eula_required_array;
 	GPtrArray		*media_change_required_array;
 	GPtrArray		*repo_detail_array;
-	GPtrArray		*error_code_array;
 	GPtrArray		*message_array;
 };
 
@@ -405,7 +405,7 @@ pk_results_add_repo_detail (PkResults *results, PkItemRepoDetail *item)
 }
 
 /**
- * pk_results_add_error_code:
+ * pk_results_set_error_code:
  * @results: a valid #PkResults instance
  * @item: the object to add to the array
  *
@@ -414,13 +414,15 @@ pk_results_add_repo_detail (PkResults *results, PkItemRepoDetail *item)
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_add_error_code (PkResults *results, PkItemErrorCode *item)
+pk_results_set_error_code (PkResults *results, PkItemErrorCode *item)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
-	/* copy and add to array */
-	g_ptr_array_add (results->priv->error_code_array, pk_item_error_code_ref (item));
+	/* unref old error, then ref */
+	if (results->priv->error_code != NULL)
+		pk_item_error_code_unref (results->priv->error_code);
+	results->priv->error_code = pk_item_error_code_ref (item);
 
 	return TRUE;
 }
@@ -459,6 +461,23 @@ pk_results_get_exit_code (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_EXIT_ENUM_UNKNOWN);
 	return results->priv->exit_enum;
+}
+
+/**
+ * pk_results_get_error_code:
+ * @results: a valid #PkResults instance
+ *
+ * Gets the last error code from the transaction.
+ *
+ * Return value: A #PkItemErrorCode, or %NULL, free with pk_item_error_code_unref()
+ **/
+PkItemErrorCode *
+pk_results_get_error_code (PkResults *results)
+{
+	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	if (results->priv->error_code == NULL)
+		return NULL;
+	return pk_item_error_code_ref (results->priv->error_code);
 }
 
 /**
@@ -724,44 +743,6 @@ pk_results_get_repo_detail_array (PkResults *results)
 }
 
 /**
- * pk_results_get_error_code_array:
- * @results: a valid #PkResults instance
- *
- * Gets the error codes from the transaction.
- *
- * Return value: A #GPtrArray array of #PkItemErrorCode's, free with g_ptr_array_unref().
- **/
-GPtrArray *
-pk_results_get_error_code_array (PkResults *results)
-{
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	return g_ptr_array_ref (results->priv->error_code_array);
-}
-
-/**
- * pk_results_get_error_code:
- * @results: a valid #PkResults instance
- *
- * Gets the last error code from the transaction.
- *
- * Return value: A #PkItemErrorCode, or %NULL, free with pk_item_error_code_unref()
- **/
-PkItemErrorCode *
-pk_results_get_error_code (PkResults *results)
-{
-	GPtrArray *array;
-	PkItemErrorCode *item;
-
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-
-	array = results->priv->error_code_array;
-	if (array->len == 0)
-		return NULL;
-	item = g_ptr_array_index (array, 0);
-	return pk_item_error_code_ref (item);
-}
-
-/**
  * pk_results_get_message_array:
  * @results: a valid #PkResults instance
  *
@@ -827,6 +808,7 @@ pk_results_init (PkResults *results)
 	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
 	results->priv->inputs = 0;
 	results->priv->progress = NULL;
+	results->priv->error_code = NULL;
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_details_unref);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_update_detail_unref);
@@ -839,7 +821,6 @@ pk_results_init (PkResults *results)
 	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_eula_required_unref);
 	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_media_change_required_unref);
 	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_repo_detail_unref);
-	results->priv->error_code_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_error_code_unref);
 	results->priv->message_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_message_unref);
 }
 
@@ -864,10 +845,11 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->eula_required_array);
 	g_ptr_array_unref (priv->media_change_required_array);
 	g_ptr_array_unref (priv->repo_detail_array);
-	g_ptr_array_unref (priv->error_code_array);
 	g_ptr_array_unref (priv->message_array);
 	if (results->priv->progress != NULL)
 		g_object_unref (results->priv->progress);
+	if (results->priv->error_code != NULL)
+		pk_item_error_code_unref (results->priv->error_code);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }

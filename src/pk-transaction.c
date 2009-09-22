@@ -539,7 +539,7 @@ pk_transaction_error_code_cb (PkBackend *backend, PkItemErrorCode *item, PkTrans
 	}
 
 	/* add to results */
-	pk_results_add_error_code (transaction->priv->results, item);
+	pk_results_set_error_code (transaction->priv->results, item);
 
 	/* emit */
 	pk_transaction_error_code_emit (transaction, item->code, item->details);

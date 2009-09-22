@@ -1715,7 +1715,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_ERROR_CODE], 0, item);
-	pk_results_add_error_code (backend->priv->results, item);
+	pk_results_set_error_code (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;
