@@ -532,6 +532,9 @@ main (int argc, char *argv[])
 
 	egg_debug_init (verbose);
 
+	/* new private struct */
+	priv = g_new0 (PkDebuginfoInstallPrivate, 1);
+
 	/* no input */
 	if (argv[1] == NULL) {
 		/* should be vocal? */
@@ -544,9 +547,6 @@ main (int argc, char *argv[])
 		retval = PK_DEBUGINFO_EXIT_CODE_FAILED;
 		goto out;
 	}
-
-	/* clear private struct */
-	priv = g_new0 (PkDebuginfoInstallPrivate, 1);
 
 	/* store as strings */
 	priv->enabled = g_ptr_array_new ();
@@ -881,7 +881,7 @@ out:
 		/* should be vocal? */
 		if (!quiet) {
 			/* starting this section */
-			g_print ("%i. ", step++);
+			g_print ("%i. ", step);
 
 			/* TRANSLATORS: we are now disabling all debuginfo repos we previously enabled */
 			g_print (_("Disabling sources previously enabled"));

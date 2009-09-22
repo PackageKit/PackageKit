@@ -1274,7 +1274,8 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		goto out;
 	}
 
@@ -2545,7 +2546,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		goto out;
 	}
 
@@ -2961,7 +2963,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		goto out;
 	}
 
@@ -3039,7 +3042,9 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3126,7 +3131,9 @@ pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **pac
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3206,7 +3213,9 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 	type_text = pk_sig_type_enum_to_text (type);
@@ -3300,7 +3309,9 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3434,7 +3445,9 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files_
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3584,7 +3597,9 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3658,7 +3673,9 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 
@@ -3738,7 +3755,9 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
-		*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		if (error != NULL)
+			*error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		ret = FALSE;
 		goto out;
 	}
 

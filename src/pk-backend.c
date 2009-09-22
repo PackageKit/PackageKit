@@ -1373,7 +1373,7 @@ out:
 		pk_item_distro_upgrade_unref (item);
 	g_free (name_safe);
 	g_free (summary_safe);
-	return TRUE;
+	return ret;
 }
 
 /**

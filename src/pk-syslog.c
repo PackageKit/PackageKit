@@ -70,9 +70,7 @@ pk_syslog_add (PkSyslog *self, PkSyslogType type, const gchar *format, ...)
 static void
 pk_syslog_finalize (GObject *object)
 {
-	PkSyslog *self;
 	g_return_if_fail (PK_IS_SYSLOG (object));
-	self = PK_SYSLOG (object);
 
 	/* shut down syslog */
 	closelog ();

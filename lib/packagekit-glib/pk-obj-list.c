@@ -542,14 +542,11 @@ pk_obj_list_to_file (PkObjList *list, const gchar *filename)
 	GString *string;
 	gboolean ret = TRUE;
 	GError *error = NULL;
-	PkObjListFreeFunc func_free;
 	PkObjListToStringFunc func_to_string;
 
 	g_return_val_if_fail (PK_IS_OBJ_LIST (list), FALSE);
 	g_return_val_if_fail (list->priv->func_to_string != NULL, FALSE);
-	g_return_val_if_fail (list->priv->func_free != NULL, FALSE);
 
-	func_free = list->priv->func_free;
 	func_to_string = list->priv->func_to_string;
 
 	/* generate data */

@@ -86,13 +86,8 @@ pk_network_stack_init (PkNetworkStack *nstack)
 static void
 pk_network_stack_finalize (GObject *object)
 {
-	PkNetworkStack *nstack;
-
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_NETWORK_STACK (object));
-
-	nstack = PK_NETWORK_STACK (object);
-
 	G_OBJECT_CLASS (pk_network_stack_parent_class)->finalize (object);
 }
 
