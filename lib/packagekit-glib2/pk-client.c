@@ -255,6 +255,66 @@ pk_client_percentage_to_signed (guint percentage)
 }
 
 /**
+ * pk_client_get_user_temp:
+ *
+ * Return (and create if does not exist) a temporary directory
+ * that is writable only by the user, and readable by root.
+ *
+ * Return value: the temp directory, or %NULL for create error
+ **/
+static gchar *
+pk_client_get_user_temp (const gchar *subfolder, GError **error)
+{
+	GFile *file;
+	gboolean ret;
+	gchar *path = NULL;
+
+	/* build path in home folder */
+	path = g_build_filename (g_get_home_dir (), ".PackageKit", subfolder, NULL);
+
+	/* find if exists */
+	file = g_file_new_for_path (path);
+	ret = g_file_query_exists (file, NULL);
+	if (ret)
+		goto out;
+
+	/* create as does not exist */
+	ret = g_file_make_directory_with_parents (file, NULL, error);
+	if (!ret) {
+		/* return nothing.. */
+		g_free (path);
+		path = NULL;
+	}
+out:
+	g_object_unref (file);
+	return path;
+}
+
+/**
+ * pk_client_is_file_native:
+ **/
+static gboolean
+pk_client_is_file_native (const gchar *filename)
+{
+	gboolean ret;
+	GFile *source;
+
+	/* does gvfs think the file is on a remote filesystem? */
+	source = g_file_new_for_path (filename);
+	ret = g_file_is_native (source);
+	if (!ret)
+		goto out;
+
+	/* are we FUSE mounted */
+	ret = (g_strstr_len (filename, -1, "/.gvfs/") == NULL);
+	if (!ret)
+		goto out;
+out:
+	g_object_unref (source);
+	return ret;
+}
+
+/**
  * pk_client_get_properties_collect_cb:
  **/
 static void
@@ -498,10 +558,10 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 }
 
 /**
- * pk_client_copy_finished_cb:
+ * pk_client_copy_downloaded_finished_cb:
  */
 static void
-pk_client_copy_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
+pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
 {
 	gboolean ret;
 	gchar *path;
@@ -567,7 +627,7 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	destination = g_file_new_for_path (path);
 	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
 			   (GFileProgressCallback) pk_client_copy_progress_cb, state,
-			   (GAsyncReadyCallback) pk_client_copy_finished_cb, state);
+			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb, state);
 
 	/* Add the result (as a GStrv) to the results set */
 	files = g_strsplit (path, ",", -1);
@@ -2590,6 +2650,85 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	g_object_unref (res);
 }
 
+
+/**
+ * pk_client_copy_native_finished_cb:
+ */
+static void
+pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
+{
+	gboolean ret;
+	gchar *path;
+	GError *error = NULL;
+
+	/* debug */
+	path = g_file_get_path (file);
+	egg_debug ("finished copy of %s", path);
+
+	/* get the result */
+	ret = g_file_copy_finish (file, res, &error);
+	if (!ret) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* no more copies pending? */
+	if (--state->refcount == 0) {
+		/* now get tid and continue on our merry way */
+		pk_control_get_tid_async (state->client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	}
+out:
+	g_free (path);
+}
+
+/**
+ * pk_client_copy_non_native_then_get_tid:
+ **/
+static void
+pk_client_copy_non_native_then_get_tid (PkClientState *state)
+{
+	GFile *source;
+	gchar *basename;
+	gchar *path;
+	GFile *destination;
+	gchar *user_temp = NULL;
+	GError *error = NULL;
+	gboolean ret;
+	guint i;
+
+	/* get a temp dir accessible by the daemon */
+	user_temp = pk_client_get_user_temp ("native-cache", &error);
+	egg_debug ("using temp dir %s", user_temp);
+
+	/* copy each file that is non-native */
+	for (i=0; state->files[i] != NULL; i++) {
+		ret = pk_client_is_file_native (state->files[i]);
+		egg_debug ("%s native=%i", state->files[i], ret);
+		if (!ret) {
+			/* generate the destination location */
+			basename = g_path_get_basename (state->files[i]);
+			path = g_build_filename (user_temp, basename, NULL);
+			egg_debug ("copy from %s to %s", state->files[i], path);
+			source = g_file_new_for_path (state->files[i]);
+			destination = g_file_new_for_path (path);
+
+			/* copy the file async */
+			g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
+					   (GFileProgressCallback) pk_client_copy_progress_cb, state,
+					   (GAsyncReadyCallback) pk_client_copy_native_finished_cb, state);
+			g_object_unref (source);
+			g_object_unref (destination);
+
+			/* pass the new path to PackageKit */
+			g_free (state->files[i]);
+			state->files[i] = path;
+			g_free (basename);
+		}
+	}
+	g_free (user_temp);
+}
+
 /**
  * pk_client_install_files_async:
  * @client: a valid #PkClient instance
@@ -2611,6 +2750,8 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
+	gboolean ret;
+	guint i;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2635,8 +2776,24 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
-	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	/* how many non-native */
+	for (i=0; state->files[i] != NULL; i++) {
+		ret = pk_client_is_file_native (state->files[i]);
+		/* on a FUSE mount (probably created by gvfs) and not readable by packagekitd */
+		if (!ret)
+			state->refcount++;
+	}
+
+	/* nothing to copy, common case */
+	if (state->refcount == 0) {
+		/* just get tid */
+		pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		goto out;
+	}
+
+	/* copy the files first */
+	pk_client_copy_non_native_then_get_tid (state);
+out:
 	g_object_unref (res);
 }
 
@@ -2896,6 +3053,8 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 {
 	GSimpleAsyncResult *res;
 	PkClientState *state;
+	gboolean ret;
+	guint i;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -2913,14 +3072,31 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	}
 	state->client = client;
 	state->files = pk_client_real_paths (files);
+
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
-	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	/* how many non-native */
+	for (i=0; state->files[i] != NULL; i++) {
+		ret = pk_client_is_file_native (state->files[i]);
+		/* on a FUSE mount (probably created by gvfs) and not readable by packagekitd */
+		if (!ret)
+			state->refcount++;
+	}
+
+	/* nothing to copy, common case */
+	if (state->refcount == 0) {
+		/* just get tid */
+		pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		goto out;
+	}
+
+	/* copy the files first */
+	pk_client_copy_non_native_then_get_tid (state);
+out:
 	g_object_unref (res);
 }
 
@@ -3759,9 +3935,29 @@ pk_client_test (gpointer user_data)
 	gchar **package_ids;
 	gchar *file;
 	GCancellable *cancellable;
+	gboolean ret;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
+
+	/************************************************************/
+	egg_test_title (test, "test user temp");
+	file = pk_client_get_user_temp ("self-test", NULL);
+	if (g_str_has_suffix (file, "/.PackageKit/self-test") && g_str_has_prefix (file, "/home/"))
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "temp was %s", file);
+	g_free (file);
+
+	/************************************************************/
+	egg_test_title (test, "test native TRUE");
+	ret = pk_client_is_file_native ("/tmp");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "test native FALSE");
+	ret = pk_client_is_file_native ("/tmp/.gvfs/moo");
+	egg_test_assert (test, !ret);
 
 	/************************************************************/
 	egg_test_title (test, "test resolve NULL");
