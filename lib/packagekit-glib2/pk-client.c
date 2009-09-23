@@ -1592,7 +1592,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1641,7 +1641,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1691,7 +1691,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1739,7 +1739,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1787,7 +1787,7 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1835,7 +1835,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1883,7 +1883,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1932,7 +1932,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -1978,7 +1978,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2024,7 +2024,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2075,7 +2075,7 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2126,7 +2126,7 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2172,7 +2172,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2223,7 +2223,7 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2275,7 +2275,7 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2320,7 +2320,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2367,7 +2367,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2411,7 +2411,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2464,7 +2464,7 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2513,7 +2513,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2562,7 +2562,7 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2612,7 +2612,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2661,7 +2661,7 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2691,7 +2691,7 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState
 	/* no more copies pending? */
 	if (--state->refcount == 0) {
 		/* now get tid and continue on our merry way */
-		pk_control_get_tid_async (state->client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (state->client->priv->control, state->cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	}
 out:
 	g_free (path);
@@ -2807,7 +2807,7 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	/* nothing to copy, common case */
 	if (state->refcount == 0) {
 		/* just get tid */
-		pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 		goto out;
 	}
 
@@ -2859,7 +2859,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2905,7 +2905,7 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2951,7 +2951,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -2999,7 +2999,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -3050,7 +3050,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -3110,7 +3110,7 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	/* nothing to copy, common case */
 	if (state->refcount == 0) {
 		/* just get tid */
-		pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+		pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 		goto out;
 	}
 
@@ -3163,7 +3163,7 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -3210,7 +3210,7 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
@@ -3257,7 +3257,7 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
-	pk_control_get_tid_async (client->priv->control, NULL, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
+	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
 	g_object_unref (res);
 }
 
