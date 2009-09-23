@@ -4079,7 +4079,7 @@ pk_client_test (gpointer user_data)
 	/* it takes more than 50ms to get the progress of the transaction, and if
 	 * getting updates from internal cache, then it'll take a shed load less
 	 * than this to complete */
-	if (egg_test_elapsed (test) > 50) {
+	if (egg_test_elapsed (test) > 100) {
 		/************************************************************/
 		egg_test_title (test, "got status updates");
 		if (_status_cb > 0)
