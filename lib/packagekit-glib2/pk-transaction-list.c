@@ -107,7 +107,6 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 
 	/* add new entries */
 	for (i=0; list[i] != NULL; i++) {
-		g_print (" %i\t%s\n", i+1, list[i]);
 
 		/* check to see if tid is in array */
 		ret = FALSE;
