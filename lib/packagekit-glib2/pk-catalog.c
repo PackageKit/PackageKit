@@ -635,7 +635,7 @@ pk_catalog_new (void)
 #include "egg-test.h"
 
 static void
-pk_catalog_test_create_cb (GObject *object, GAsyncResult *res, EggTest *test)
+pk_catalog_test_lookup_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkCatalog *catalog = PK_CATALOG (object);
 	GError *error = NULL;
@@ -704,7 +704,7 @@ pk_catalog_test (gpointer user_data)
 	egg_test_title (test, "lookup catalog");
 	pk_catalog_lookup_async (catalog, path, NULL,
 			 	 (PkProgressCallback) pk_catalog_test_progress_cb, test,
-				 (GAsyncReadyCallback) pk_catalog_test_create_cb, test);
+				 (GAsyncReadyCallback) pk_catalog_test_lookup_cb, test);
 	egg_test_loop_wait (test, 150000);
 	egg_test_success (test, "resolvd, searched, etc. in %i", egg_test_elapsed (test));
 
