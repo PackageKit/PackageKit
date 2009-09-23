@@ -44,6 +44,8 @@ static void     pk_control_finalize	(GObject     *object);
 
 #define PK_CONTROL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONTROL, PkControlPrivate))
 
+#define PK_CONTROL_DBUS_METHOD_TIMEOUT		500 /* ms */
+
 /**
  * PkControlPrivate:
  *
@@ -189,6 +191,7 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -274,6 +277,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -331,6 +335,7 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -416,6 +421,7 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -473,6 +479,7 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -559,6 +566,7 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -616,6 +624,7 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -701,6 +710,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -758,6 +768,7 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -852,6 +863,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -909,6 +921,7 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1000,6 +1013,7 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -1056,6 +1070,7 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1150,6 +1165,7 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -1206,6 +1222,7 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
+	egg_debug ("state array remove %p", state->call);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1529,6 +1546,7 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p", state->call);
 
 	g_object_unref (res);
 }
@@ -2038,8 +2056,8 @@ pk_control_init (PkControl *control)
 				     G_CALLBACK (pk_control_name_owner_changed_cb),
 				     control, NULL);
 
-	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
-	dbus_g_proxy_set_default_timeout (control->priv->proxy, INT_MAX);
+	/* timeout after a few ms, all all these methods should not take long */
+	dbus_g_proxy_set_default_timeout (control->priv->proxy, PK_CONTROL_DBUS_METHOD_TIMEOUT);
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
