@@ -24,6 +24,7 @@
 
 #define __PACKAGEKIT_H_INSIDE__
 
+#include <packagekit-glib2/pk-catalog.h>
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-client-sync.h>
 #include <packagekit-glib2/pk-common.h>

@@ -26,6 +26,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
+#include "pk-catalog.h"
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-control.h"
@@ -67,6 +68,7 @@ main (int argc, char **argv)
 	pk_control_test (test);
 	pk_transaction_list_test (test);
 	pk_client_test (test);
+	pk_catalog_test (test);
 	pk_package_sack_test (test);
 	pk_task_test (test);
 	pk_task_wrapper_test (test);

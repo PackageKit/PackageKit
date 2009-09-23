@@ -1,0 +1,717 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ *
+ * Licensed under the GNU General Public License Version 2
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * SECTION:pk-catalog
+ * @short_description: Functionality for installing catalogs
+ *
+ * Clients can use this GObject for installing catalog files.
+ */
+
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
+//#include <fcntl.h>
+
+#include <glib.h>
+//#include <glib/gstdio.h>
+#include <gio/gio.h>
+
+#include <packagekit-glib2/pk-catalog.h>
+#include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-package-ids.h>
+
+#include "egg-debug.h"
+#include "egg-string.h"
+
+#define PK_CATALOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CATALOG, PkCatalogPrivate))
+
+typedef enum {
+	PK_CATALOG_MODE_PACKAGES,
+	PK_CATALOG_MODE_FILES,
+	PK_CATALOG_MODE_PROVIDES,
+	PK_CATALOG_MODE_UNKNOWN
+} PkCatalogMode;
+
+/**
+ * PkCatalogState:
+ *
+ * For use in the async methods
+ **/
+typedef struct {
+	GKeyFile			*file;
+	gpointer			 progress_user_data;
+	GCancellable			*cancellable;
+	GSimpleAsyncResult		*res;
+	PkProgressCallback		 progress_callback;
+	PkCatalog			*catalog;
+	GPtrArray			*array_packages;
+	GPtrArray			*array_files;
+	GPtrArray			*array_provides;
+	GPtrArray			*array;
+} PkCatalogState;
+
+/**
+ * PkCatalogPrivate:
+ *
+ * Private #PkCatalog data
+ **/
+struct _PkCatalogPrivate
+{
+	gchar			*distro_id;
+	PkClient		*client;
+};
+
+G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
+
+/**
+ * pk_catalog_error_quark:
+ *
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_catalog_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("pk_catalog_error");
+	return quark;
+}
+
+/**
+ * pk_catalog_error_get_type:
+ **/
+#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+GType
+pk_catalog_error_get_type (void)
+{
+	static GType etype = 0;
+
+	if (etype == 0) {
+		static const GEnumValue values[] =
+		{
+			ENUM_ENTRY (PK_CATALOG_ERROR_FAILED, "Failed"),
+			{ 0, NULL, NULL }
+		};
+		etype = g_enum_register_static ("PkCatalogError", values);
+	}
+	return etype;
+}
+
+/**
+ * pk_catalog_mode_to_text:
+ **/
+static const gchar *
+pk_catalog_mode_to_text (PkCatalogMode mode)
+{
+	if (mode == PK_CATALOG_MODE_PACKAGES)
+		return "InstallPackages";
+	if (mode == PK_CATALOG_MODE_FILES)
+		return "InstallFiles";
+	if (mode == PK_CATALOG_MODE_PROVIDES)
+		return "InstallProvides";
+	return NULL;
+}
+
+/**
+ * pk_catalog_process_type_part:
+ **/
+static void
+pk_catalog_process_type_part (PkCatalogState *state, PkCatalogMode mode, const gchar *distro_id_part)
+{
+	gchar *data = NULL;
+	gchar **list = NULL;
+	gchar *key = NULL;
+	guint i;
+	const gchar *type;
+	GPtrArray *array = NULL;
+
+	/* make key */
+	type = pk_catalog_mode_to_text (mode);
+	if (distro_id_part == NULL)
+		key = g_strdup (type);
+	else
+		key = g_strdup_printf ("%s(%s)", type, distro_id_part);
+	data = g_key_file_get_string (state->file, PK_CATALOG_FILE_HEADER, key, NULL);
+
+	/* we have no key of this name */
+	if (data == NULL)
+		goto out;
+
+	/* get array */
+	if (mode == PK_CATALOG_MODE_PACKAGES)
+		array = state->array_packages;
+	if (mode == PK_CATALOG_MODE_FILES)
+		array = state->array_files;
+	if (mode == PK_CATALOG_MODE_PROVIDES)
+		array = state->array_provides;
+
+	/* split using any of the delimiters and add to correct array*/
+	list = g_strsplit_set (data, ";, ", 0);
+	for (i=0; list[i] != NULL; i++)
+		g_ptr_array_add (array, g_strdup (list[i]));
+out:
+	g_strfreev (list);
+	g_free (key);
+	g_free (data);
+}
+
+/**
+ * pk_catalog_process_type:
+ **/
+static void
+pk_catalog_process_type (PkCatalogState *state, PkCatalogMode mode)
+{
+	gchar **parts;
+	gchar *distro_id_part;
+
+	/* split distro id */
+	parts = g_strsplit (state->catalog->priv->distro_id, "-", 0);
+
+	/* no specifier */
+	pk_catalog_process_type_part (state, mode, NULL);
+
+	/* distro */
+	pk_catalog_process_type_part (state, mode, parts[0]);
+
+	/* distro-ver */
+	distro_id_part = g_strjoin ("-", parts[0], parts[1], NULL);
+	pk_catalog_process_type_part (state, mode, distro_id_part);
+	g_free (distro_id_part);
+
+	/* distro-ver-arch */
+	pk_catalog_process_type_part (state, mode, state->catalog->priv->distro_id);
+
+	g_strfreev (parts);
+}
+
+/**
+ * pk_catalog_lookup_state_finish:
+ **/
+static void
+pk_catalog_lookup_state_finish (PkCatalogState *state, const GError *error)
+{
+	/* remove weak ref */
+	if (state->catalog != NULL)
+		g_object_remove_weak_pointer (G_OBJECT (state->catalog), (gpointer) &state->catalog);
+
+	/* get result */
+	if (error == NULL) {
+		g_simple_async_result_set_op_res_gpointer (state->res, g_ptr_array_ref (state->array), (GDestroyNotify) g_ptr_array_unref);
+	} else {
+		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
+		g_simple_async_result_set_from_error (state->res, (GError*) error);
+	}
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	if (state->cancellable != NULL)
+		g_object_unref (state->cancellable);
+	g_ptr_array_unref (state->array_packages);
+	g_ptr_array_unref (state->array_files);
+	g_ptr_array_unref (state->array_provides);
+	g_key_file_free (state->file);
+	g_object_unref (state->res);
+	g_ptr_array_unref (state->array);
+	g_slice_free (PkCatalogState, state);
+}
+
+/**
+ * pk_catalog_what_provides_ready_cb:
+ **/
+static void
+pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalogState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *array = NULL;
+	guint i;
+	PkItemPackage *item;
+	PkItemErrorCode *error_item = NULL;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to search file: %s", error_item->details);
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* add all the results to the existing list */
+	array = pk_results_get_package_array (results);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", item->package_id);
+		g_ptr_array_add (state->array, pk_item_package_ref (item));
+	}
+
+	/* there's nothing left to do */
+	pk_catalog_lookup_state_finish (state, NULL);
+out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	if (results != NULL)
+		g_object_unref (results);
+}
+
+/**
+ * pk_catalog_do_what_provides:
+ **/
+static void
+pk_catalog_do_what_provides (PkCatalogState *state)
+{
+	gchar **data;
+	gchar *temp_bodge_waiting_for_new_api;
+	data = pk_ptr_array_to_strv (state->array_files);
+	temp_bodge_waiting_for_new_api = g_strjoinv ("&", data);
+	pk_client_what_provides_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
+				       PK_PROVIDES_ENUM_ANY, temp_bodge_waiting_for_new_api,
+				       state->cancellable, state->progress_callback, state->progress_user_data,
+				       (GAsyncReadyCallback) pk_catalog_what_provides_ready_cb, state);
+	g_strfreev (data);
+	g_free (temp_bodge_waiting_for_new_api);
+}
+
+/**
+ * pk_catalog_search_file_ready_cb:
+ **/
+static void
+pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalogState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *array = NULL;
+	guint i;
+	PkItemPackage *item;
+	PkItemErrorCode *error_item = NULL;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to search file: %s", error_item->details);
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* add all the results to the existing list */
+	array = pk_results_get_package_array (results);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", item->package_id);
+		g_ptr_array_add (state->array, pk_item_package_ref (item));
+	}
+
+	/* what-provides */
+	if (state->array_provides->len > 0) {
+		pk_catalog_do_what_provides (state);
+		goto out;
+	}
+
+	/* just exit without any error as there's nothing to do */
+	pk_catalog_lookup_state_finish (state, NULL);
+out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	if (results != NULL)
+		g_object_unref (results);
+}
+
+/**
+ * pk_catalog_do_search_files:
+ **/
+static void
+pk_catalog_do_search_files (PkCatalogState *state)
+{
+	gchar **data;
+	gchar *temp_bodge_waiting_for_new_api;
+	data = pk_ptr_array_to_strv (state->array_files);
+	temp_bodge_waiting_for_new_api = g_strjoinv ("&", data);
+	egg_debug ("searching for %s", temp_bodge_waiting_for_new_api);
+	pk_client_search_file_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
+				     temp_bodge_waiting_for_new_api,
+				     state->cancellable, state->progress_callback, state->progress_user_data,
+				     (GAsyncReadyCallback) pk_catalog_search_file_ready_cb, state);
+	g_strfreev (data);
+	g_free (temp_bodge_waiting_for_new_api);
+}
+
+/**
+ * pk_catalog_resolve_ready_cb:
+ **/
+static void
+pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalogState *state)
+{
+	PkClient *client = PK_CLIENT (source_object);
+	GError *error = NULL;
+	PkResults *results;
+	GPtrArray *array = NULL;
+	guint i;
+	PkItemPackage *item;
+	PkItemErrorCode *error_item = NULL;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	if (results == NULL) {
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to resolve: %s", error_item->details);
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* add all the results to the existing list */
+	array = pk_results_get_package_array (results);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", item->package_id);
+		g_ptr_array_add (state->array, pk_item_package_ref (item));
+	}
+
+	/* search-file then what-provides */
+	if (state->array_files->len > 0) {
+		pk_catalog_do_search_files (state);
+		goto out;
+	}
+	if (state->array_provides->len > 0) {
+		pk_catalog_do_what_provides (state);
+		goto out;
+	}
+
+	/* just exit without any error as there's nothing to do */
+	pk_catalog_lookup_state_finish (state, NULL);
+out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	if (results != NULL)
+		g_object_unref (results);
+}
+
+/**
+ * pk_catalog_do_resolve:
+ **/
+static void
+pk_catalog_do_resolve (PkCatalogState *state)
+{
+	gchar **data;
+	gchar *dbg;
+	data = pk_ptr_array_to_strv (state->array_packages);
+	dbg = g_strjoinv ("&", data);
+	egg_debug ("searching for %s", dbg);
+	pk_client_resolve_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), data,
+				 state->cancellable, state->progress_callback, state->progress_user_data,
+				 (GAsyncReadyCallback) pk_catalog_resolve_ready_cb, state);
+	g_free (dbg);
+	g_strfreev (data);
+}
+
+/**
+ * pk_catalog_lookup_async:
+ * @catalog: a valid #PkCatalog instance
+ * @filename: the filename of the catalog to install
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @progress_callback: the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @user_data: the data to pass to @callback
+ *
+ * Simulate the install of a catalog file.
+ **/
+void
+pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable *cancellable,
+			 PkProgressCallback progress_callback, gpointer progress_user_data,
+			 GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkCatalogState *state;
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_CATALOG (catalog));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (catalog), callback, user_data, pk_catalog_lookup_async);
+
+	/* save state */
+	state = g_slice_new0 (PkCatalogState);
+	state->res = g_object_ref (res);
+	if (cancellable != NULL)
+		state->cancellable = g_object_ref (cancellable);
+	state->file = g_key_file_new ();
+	state->array_packages = g_ptr_array_new_with_free_func (g_free);
+	state->array_files = g_ptr_array_new_with_free_func (g_free);
+	state->array_provides = g_ptr_array_new_with_free_func (g_free);;
+	state->catalog = catalog;
+	state->array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
+	state->progress_callback = progress_callback;
+	state->progress_user_data = progress_user_data;
+	g_object_add_weak_pointer (G_OBJECT (state->catalog), (gpointer) &state->catalog);
+
+	/* load all data */
+	egg_debug ("loading from %s", filename);
+	ret = g_key_file_load_from_file (state->file, filename, G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		pk_catalog_lookup_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* parse InstallPackages */
+	egg_debug ("processing InstallPackages");
+	pk_catalog_process_type (state, PK_CATALOG_MODE_PACKAGES);
+
+	/* parse InstallFiles */
+	egg_debug ("processing InstallFiles");
+	pk_catalog_process_type (state, PK_CATALOG_MODE_FILES);
+
+	/* parse InstallProvides */
+	egg_debug ("processing InstallProvides");
+	pk_catalog_process_type (state, PK_CATALOG_MODE_PROVIDES);
+
+	/* resolve, search-file then what-provides */
+	if (state->array_packages->len > 0) {
+		pk_catalog_do_resolve (state);
+		goto out;
+	}
+	if (state->array_files->len > 0) {
+		pk_catalog_do_search_files (state);
+		goto out;
+	}
+	if (state->array_provides->len > 0) {
+		pk_catalog_do_what_provides (state);
+		goto out;
+	}
+
+	/* just exit without any error as there's nothing to do */
+	pk_catalog_lookup_state_finish (state, NULL);
+out:
+	g_object_unref (res);
+}
+
+/**
+ * pk_catalog_lookup_finish:
+ * @catalog: a valid #PkCatalog instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the #GPtrArray of #PkItemPackage's, or %NULL. Free with g_ptr_array_unref()
+ **/
+GPtrArray *
+pk_catalog_lookup_finish (PkCatalog *catalog, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+
+	g_return_val_if_fail (PK_IS_CATALOG (catalog), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_ptr_array_ref (g_simple_async_result_get_op_res_gpointer (simple));
+}
+
+/**
+ * pk_catalog_finalize:
+ **/
+static void
+pk_catalog_finalize (GObject *object)
+{
+	PkCatalog *catalog;
+
+	g_return_if_fail (object != NULL);
+	g_return_if_fail (PK_IS_CATALOG (object));
+	catalog = PK_CATALOG (object);
+
+	g_object_unref (catalog->priv->client);
+	g_free (catalog->priv->distro_id);
+
+	G_OBJECT_CLASS (pk_catalog_parent_class)->finalize (object);
+}
+
+/**
+ * pk_catalog_class_init:
+ **/
+static void
+pk_catalog_class_init (PkCatalogClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	object_class->finalize = pk_catalog_finalize;
+
+	g_type_class_add_private (klass, sizeof (PkCatalogPrivate));
+}
+
+/**
+ * pk_catalog_init:
+ **/
+static void
+pk_catalog_init (PkCatalog *catalog)
+{
+	catalog->priv = PK_CATALOG_GET_PRIVATE (catalog);
+	catalog->priv->client = pk_client_new ();
+	catalog->priv->distro_id = pk_get_distro_id ();
+	if (catalog->priv->distro_id == NULL)
+		egg_error ("no distro_id, your distro needs to implement this in pk-common.c!");
+}
+
+/**
+ * pk_catalog_new:
+ *
+ * Return value: A new catalog class instance.
+ **/
+PkCatalog *
+pk_catalog_new (void)
+{
+	PkCatalog *catalog;
+	catalog = g_object_new (PK_TYPE_CATALOG, NULL);
+	return PK_CATALOG (catalog);
+}
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef EGG_TEST
+#include "egg-test.h"
+
+static void
+pk_catalog_test_create_cb (GObject *object, GAsyncResult *res, EggTest *test)
+{
+	PkCatalog *catalog = PK_CATALOG (object);
+	GError *error = NULL;
+	GPtrArray *array;
+	guint i;
+	PkItemPackage *item;
+
+	/* get the results */
+	array = pk_catalog_lookup_finish (catalog, res, &error);
+	if (array == NULL) {
+		egg_test_failed (test, "failed to lookup catalog: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* check size */
+	if (array->len != 3) {
+		egg_test_failed (test, "incorrect size, expecting 3 got %i", array->len);
+		goto out;
+	}
+
+	/* list for shits and giggles */
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		egg_debug ("%i\t%s", i, item->package_id);
+	}
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	egg_test_loop_quit (test);
+}
+
+static void
+pk_catalog_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *test)
+{
+	PkStatusEnum status;
+	if (type == PK_PROGRESS_TYPE_STATUS) {
+		g_object_get (progress,
+			      "status", &status,
+			      NULL);
+		egg_debug ("now %s", pk_status_enum_to_text (status));
+	}
+}
+
+void
+pk_catalog_test (gpointer user_data)
+{
+	EggTest *test = (EggTest *) user_data;
+	PkCatalog *catalog;
+	gchar *path;
+
+	if (!egg_test_start (test, "PkCatalog"))
+		return;
+
+	/************************************************************/
+	egg_test_title (test, "get an instance");
+	catalog = pk_catalog_new ();
+	egg_test_assert (test, catalog != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "get test file");
+	path = egg_test_get_data_file ("test.catalog");
+	egg_test_assert (test, path != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "lookup catalog");
+	pk_catalog_lookup_async (catalog, path, NULL,
+			 	 (PkProgressCallback) pk_catalog_test_progress_cb, test,
+				 (GAsyncReadyCallback) pk_catalog_test_create_cb, test);
+	egg_test_loop_wait (test, 150000);
+	egg_test_success (test, "resolvd, searched, etc. in %i", egg_test_elapsed (test));
+
+	g_object_unref (catalog);
+	g_free (path);
+
+	egg_test_end (test);
+}
+#endif
+

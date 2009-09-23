@@ -32,6 +32,7 @@ libpackagekit_glib2_includedir = $(includedir)/PackageKit/packagekit-glib2
 libpackagekit_glib2_include_HEADERS =				\
 	packagekit.h						\
 	pk-bitfield.h						\
+	pk-catalog.h						\
 	pk-client.h						\
 	pk-client-sync.h					\
 	pk-common.h						\
@@ -60,6 +61,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	packagekit.h						\
 	pk-bitfield.c						\
 	pk-bitfield.h						\
+	pk-catalog.c						\
+	pk-catalog.h						\
 	pk-client.c						\
 	pk-client.h						\
 	pk-client-sync.c					\

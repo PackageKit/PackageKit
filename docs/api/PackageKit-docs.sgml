@@ -73,6 +73,7 @@
     <xi:include href="xml/pk-package.xml"/>
     <xi:include href="xml/pk-package-sack.xml"/>
     <xi:include href="xml/pk-service-pack.xml"/>
+    <xi:include href="xml/pk-catalog.xml"/>
   </reference>
 
   <reference id="libpackagekit-helpers">
