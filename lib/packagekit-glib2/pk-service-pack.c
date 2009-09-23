@@ -697,10 +697,10 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkExitEnum exit_enum;
 	gboolean ret;
 	gchar **files = NULL;
 	GPtrArray *array = NULL;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -710,10 +710,10 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 		goto out;
 	}
 
-	/* get exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error = g_error_new (1, 0, "failed to download");
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to download: %s", error_item->details);
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -738,6 +738,8 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	pk_service_pack_generic_state_finish (state, error);
 out:
 	g_strfreev (files);
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -771,13 +773,13 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkExitEnum exit_enum;
 	GPtrArray *array = NULL;
 	guint i;
 	guint j = 0;
 	const PkItemPackage *package;
 	gchar **package_ids = NULL;
 	gchar **package_ids_to_download = NULL;
+	PkItemErrorCode *error_item = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -787,10 +789,10 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 		goto out;
 	}
 
-	/* get exit code */
-	exit_enum = pk_results_get_exit_code (results);
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error = g_error_new (1, 0, "failed to download");
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		error = g_error_new (1, 0, "failed to download: %s", error_item->details);
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -814,6 +816,8 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 out:
 	g_strfreev (package_ids);
 	g_strfreev (package_ids_to_download);
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
