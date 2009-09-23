@@ -63,7 +63,7 @@ G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
  * pk_catalog_process_type_part:
  **/
 static gboolean
-pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar *distro_id_part)
+pk_catalog_process_type_part (PkCatalog *catalog, const gchar *type, GPtrArray *array, const gchar *distro_id_part)
 {
 	gchar *data;
 	gchar **list;
@@ -79,9 +79,9 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
 
 	/* make key */
 	if (distro_id_part == NULL)
-		key = g_strdup (catalog->priv->type);
+		key = g_strdup (type);
 	else
-		key = g_strdup_printf ("%s(%s)", catalog->priv->type, distro_id_part);
+		key = g_strdup_printf ("%s(%s)", type, distro_id_part);
 	data = g_key_file_get_string (catalog->priv->file, PK_CATALOG_FILE_HEADER, key, NULL);
 	g_free (key);
 
@@ -106,7 +106,7 @@ pk_catalog_process_type_part (PkCatalog *catalog, GPtrArray *array, const gchar 
  * pk_catalog_process_type:
  **/
 static gboolean
-pk_catalog_process_type (PkCatalog *catalog)
+pk_catalog_process_type (PkCatalog *catalog, const gchar *type)
 {
 	PkCatalogProgress mode = 0;
 	PkPackageList *list;
@@ -129,25 +129,25 @@ pk_catalog_process_type (PkCatalog *catalog)
 	array = g_ptr_array_new ();
 
 	/* no specifier */
-	pk_catalog_process_type_part (catalog, array, NULL);
+	pk_catalog_process_type_part (catalog, type, array, NULL);
 
 	/* distro */
-	pk_catalog_process_type_part (catalog, array, parts[0]);
+	pk_catalog_process_type_part (catalog, type, array, parts[0]);
 
 	/* distro-ver */
 	distro_id_part = g_strjoin ("-", parts[0], parts[1], NULL);
-	pk_catalog_process_type_part (catalog, array, distro_id_part);
+	pk_catalog_process_type_part (catalog, type, array, distro_id_part);
 	g_free (distro_id_part);
 
 	/* distro-ver-arch */
-	pk_catalog_process_type_part (catalog, array, catalog->priv->distro_id);
+	pk_catalog_process_type_part (catalog, type, array, catalog->priv->distro_id);
 
 	/* find mode */
-	if (g_strcmp0 (catalog->priv->type, "InstallPackages") == 0) {
+	if (g_strcmp0 (type, "InstallPackages") == 0) {
 		mode = PK_CATALOG_PROGRESS_PACKAGES;
-	} else if (g_strcmp0 (catalog->priv->type, "InstallFiles") == 0) {
+	} else if (g_strcmp0 (type, "InstallFiles") == 0) {
 		mode = PK_CATALOG_PROGRESS_FILES;
-	} else if (g_strcmp0 (catalog->priv->type, "InstallProvides") == 0) {
+	} else if (g_strcmp0 (type, "InstallProvides") == 0) {
 		mode = PK_CATALOG_PROGRESS_PROVIDES;
 	}
 
@@ -176,16 +176,16 @@ pk_catalog_process_type (PkCatalog *catalog)
 		if (mode == PK_CATALOG_PROGRESS_PACKAGES) {
 			packages = pk_package_ids_from_id (package);
 			ret = pk_client_resolve (catalog->priv->client,
-						 pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						 pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1),
 						 packages, &error);
 			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
 			ret = pk_client_search_file (catalog->priv->client,
-						     pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						     pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1),
 						     package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {
 			ret = pk_client_what_provides (catalog->priv->client,
-						      pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED),
+						      pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1),
 						      PK_PROVIDES_ENUM_ANY, package, &error);
 		}
 		if (!ret) {
@@ -230,16 +230,13 @@ pk_catalog_process_file (PkCatalog *catalog, const gchar *filename)
 	}
 
 	/* InstallPackages */
-	catalog->priv->type = "InstallPackages";
-	pk_catalog_process_type (catalog);
+	pk_catalog_process_type (catalog, "InstallPackages");
 
 	/* InstallFiles */
-	catalog->priv->type = "InstallFiles";
-	pk_catalog_process_type (catalog);
+	pk_catalog_process_type (catalog, "InstallFiles");
 
 	/* InstallProvides */
-	catalog->priv->type = "InstallProvides";
-	pk_catalog_process_type (catalog);
+	pk_catalog_process_type (catalog, "InstallProvides");
 
 	return TRUE;
 }
@@ -317,7 +314,6 @@ static void
 pk_catalog_init (PkCatalog *catalog)
 {
 	catalog->priv = PK_CATALOG_GET_PRIVATE (catalog);
-	catalog->priv->type = NULL;
 	catalog->priv->is_cancelled = FALSE;
 	catalog->priv->file = g_key_file_new ();
 	catalog->priv->list = pk_package_list_new ();
