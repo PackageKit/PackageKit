@@ -863,8 +863,8 @@ pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *
 	state->type = PK_SERVICE_PACK_TYPE_INSTALL;
 	g_object_add_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
 
-	/* get deps, TODO: use NEWEST? */
-	pk_client_get_depends_async (pack->priv->client, PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
+	/* get deps */
+	pk_client_get_depends_async (pack->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), state->package_ids, TRUE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 
