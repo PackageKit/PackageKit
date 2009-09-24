@@ -53,7 +53,7 @@ typedef struct {
 	gchar		**locations;
 } PkCnfPolicyConfig;
 
-static PkClient *client = NULL;
+static PkTask *task = NULL;
 static GCancellable *cancellable = NULL;
 
 /**
@@ -273,8 +273,8 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	gchar buffer_sbin[PK_MAX_PATH_LEN+1];
 	gboolean ret;
 
-	array = g_ptr_array_new ();
-	possible = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func (g_free);
+	possible = g_ptr_array_new_with_free_func (g_free);
 	unique = g_ptr_array_new ();
 	pk_cnf_find_alternatives_swizzle (cmd, len, possible);
 	pk_cnf_find_alternatives_replace (cmd, len, possible);
@@ -329,8 +329,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 			g_ptr_array_add (array, g_strdup (cmdt));
 	}
 
-	g_ptr_array_foreach (possible, (GFunc) g_free, NULL);
-	g_ptr_array_free (possible, TRUE);
+	g_ptr_array_unref (possible);
 	g_ptr_array_free (unique, TRUE);
 	return array;
 }
@@ -380,91 +379,66 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 }
 
 /**
- * pk_cnf_search_file:
- **/
-static gchar **
-pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename, GError **error)
-{
-	gchar **package_ids = NULL;
-	PkResults *results;
-	GPtrArray *array = NULL;
-	guint i;
-	const PkItemPackage *item;
-	gchar **value = NULL;
-
-	/* get the list of possibles */
-	value = g_strsplit (filename, "&", -1);
-	results = pk_client_search_file (client_, filter, value, cancellable,
-					 (PkProgressCallback) pk_cnf_progress_cb, NULL, error);
-	if (results == NULL)
-		goto out;
-
-	/* get the packages returned */
-	array = pk_results_get_package_array (results);
-	if (array == NULL) {
-		*error = g_error_new (1, 0, "did not get package struct for %s", filename);
-		goto out;
-	}
-
-	/* copy results into struct */
-	package_ids = g_new0 (gchar *, array->len+1);
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		package_ids[i] = g_strdup (item->package_id);
-	}
-out:
-	g_strfreev (value);
-	if (results != NULL)
-		g_object_unref (results);
-	if (array != NULL)
-		g_ptr_array_unref (array);
-	return package_ids;
-}
-
-/**
  * pk_cnf_find_available:
  *
  * Find software we could install
  **/
-static gboolean
-pk_cnf_find_available (GPtrArray *array, const gchar *prefix, const gchar *cmd)
+static gchar **
+pk_cnf_find_available (const gchar *cmd)
 {
-	GError *error = NULL;
-	PkBitfield filters;
-	gboolean ret = FALSE;
-	guint i;
+	const PkItemPackage *item;
 	gchar **package_ids = NULL;
-	gchar *path = NULL;
-	gchar **parts;
+	const gchar *prefixes[] = {"/usr/bin", "/usr/sbin", "/bin", "/sbin", NULL};
+	gchar **values = NULL;
+	GError *error = NULL;
+	GPtrArray *array = NULL;
+	guint i;
+	guint len;
+	PkBitfield filters;
+	PkResults *results = NULL;
+	PkItemErrorCode *error_item = NULL;
+
+	/* create new array of full paths */
+	len = g_strv_length ((gchar **)prefixes);
+	values = g_new0 (gchar *, len + 1);
+	for (i=0; prefixes[i] != NULL; i++)
+		values[i] = g_build_filename (prefixes[i], cmd, NULL);
 
 	/* do search */
-	path = g_build_filename (prefix, cmd, NULL);
-	egg_debug ("searching for %s", path);
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
-	package_ids = pk_cnf_search_file (client, filters, path, &error);
-	if (package_ids == NULL) {
+	results = pk_client_search_file (PK_CLIENT(task), filters, values, cancellable,
+					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
+	if (results == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
 		egg_warning ("%s: %s", _("Failed to search for file"), error->message);
 		g_error_free (error);
 		goto out;
 	}
 
-	/* nothing found */
-	ret = (g_strv_length (package_ids) != 0);
-	if (!ret)
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		/* TRANSLATORS: the transaction failed in a way we could not expect */
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
 		goto out;
+	}
 
-	/* add all package names */
-	for (i=0; package_ids[i] != NULL; i++) {
-		parts = pk_package_id_split (package_ids[i]);
-		g_ptr_array_add (array, g_strdup (parts[PK_PACKAGE_ID_NAME]));
-		egg_debug ("name=%s", parts[PK_PACKAGE_ID_NAME]);
-		g_strfreev (parts);
+	/* get the packages returned */
+	array = pk_results_get_package_array (results);
+	package_ids = g_new0 (gchar *, array->len+1);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+		package_ids[i] = g_strdup (item->package_id);
 	}
 out:
-	g_strfreev (package_ids);
-	g_free (path);
-	return ret;
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
+	if (results != NULL)
+		g_object_unref (results);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	g_strfreev (values);
+	return package_ids;
 }
 
 /**
@@ -560,19 +534,43 @@ out:
 }
 
 /**
- * pk_cnf_spawn_command:
+ * pk_cnf_install_package_id:
  **/
 static gboolean
-pk_cnf_spawn_command (const gchar *exec)
+pk_cnf_install_package_id (const gchar *package_id)
 {
-	gboolean ret;
 	GError *error = NULL;
-	ret = g_spawn_command_line_sync (exec, NULL, NULL, NULL, &error);
-	if (!ret) {
-		/* TRANSLATORS: we failed to launch the executable, the error follows */
-		g_print ("%s '%s': %s", _("Failed to launch:"), exec, error->message);
+	PkResults *results = NULL;
+	gchar **package_ids;
+	gboolean ret = FALSE;
+	PkItemErrorCode *error_item = NULL;
+
+	/* do install */
+	package_ids = pk_package_ids_from_id (package_id);
+	results = pk_task_install_packages_sync (task, package_ids, cancellable,
+						 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
+	if (results == NULL) {
+		/* TRANSLATORS: we failed to install the package */
+		egg_warning ("%s: %s", _("Failed to install packages"), error->message);
 		g_error_free (error);
+		goto out;
 	}
+
+	/* check error code */
+	error_item = pk_results_get_error_code (results);
+	if (error_item != NULL) {
+		/* TRANSLATORS: the transaction failed in a way we could not expect */
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		goto out;
+	}
+
+	ret = TRUE;
+out:
+	if (error_item != NULL)
+		pk_item_error_code_unref (error_item);
+	if (results != NULL)
+		g_object_unref (results);
+	g_strfreev (package_ids);
 	return ret;
 }
 
@@ -605,12 +603,13 @@ main (int argc, char *argv[])
 	gboolean verbose = FALSE;
 	GOptionContext *context;
 	GPtrArray *array = NULL;
-	GPtrArray *available = NULL;
+	gchar **package_ids = NULL;
 	PkCnfPolicyConfig *config = NULL;
 	guint i;
 	guint len;
 	gchar *text;
 	const gchar *possible;
+	gchar **parts;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -646,7 +645,7 @@ main (int argc, char *argv[])
 
 	/* get policy config */
 	config = pk_cnf_get_config ();
-	client = pk_client_new ();
+	task = PK_TASK(pk_task_text_new ());
 	cancellable = g_cancellable_new ();
 
 	/* get length */
@@ -669,7 +668,7 @@ main (int argc, char *argv[])
 
 		/* run */
 		} else if (config->single_match == PK_CNF_POLICY_RUN) {
-			pk_cnf_spawn_command (possible);
+			pk_cnf_install_package_id (possible);
 
 		/* ask */
 		} else if (config->single_match == PK_CNF_POLICY_ASK) {
@@ -677,7 +676,7 @@ main (int argc, char *argv[])
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
-				pk_cnf_spawn_command (possible);
+				pk_cnf_install_package_id (possible);
 			g_free (text);
 		}
 		goto out;
@@ -706,73 +705,66 @@ main (int argc, char *argv[])
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
-			pk_cnf_spawn_command (possible);
+			pk_cnf_install_package_id (possible);
 		}
 		goto out;
 
 	/* only search using PackageKit if configured to do so */
 	} else if (config->software_source_search) {
-		available = g_ptr_array_new ();
-		pk_cnf_find_available (available, "/usr/bin", argv[1]);
-		pk_cnf_find_available (available, "/usr/sbin", argv[1]);
-		pk_cnf_find_available (available, "/bin", argv[1]);
-		pk_cnf_find_available (available, "/sbin", argv[1]);
-		if (available->len == 1) {
-			possible = g_ptr_array_index (available, 0);
+		package_ids = pk_cnf_find_available (argv[1]);
+		len = g_strv_length (package_ids);
+		if (len == 1) {
+			parts = pk_package_id_split (package_ids[0]);
 			if (config->single_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: tell the user what package provides the command */
-				g_print ("%s '%s'\n", _("The package providing this file is:"), possible);
+				g_print ("%s '%s'\n", _("The package providing this file is:"), parts[PK_PACKAGE_ID_NAME]);
 
 			/* ask */
 			} else if (config->single_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: as the user if we want to install a package to provide the command */
-				text = g_strdup_printf (_("Install package '%s' to provide command '%s'?"), possible, argv[1]);
+				text = g_strdup_printf (_("Install package '%s' to provide command '%s'?"), parts[PK_PACKAGE_ID_NAME], argv[1]);
 				ret = pk_console_get_prompt (text, FALSE);
 				g_free (text);
 				if (ret) {
-					text = g_strdup_printf ("pkcon install %s", possible);
-					ret = pk_cnf_spawn_command (text);
+					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
-						pk_cnf_spawn_command (argv[1]);
-					g_free (text);
+						pk_cnf_install_package_id (argv[1]);
 				}
 
 			/* install */
 			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
-				text = g_strdup_printf ("pkcon install %s", possible);
-				pk_cnf_spawn_command (text);
-				g_free (text);
+				pk_cnf_install_package_id (package_ids[0]);
 			}
+			g_strfreev (parts);
 			goto out;
-		} else if (available->len > 1) {
+		} else if (len > 1) {
 			if (config->multiple_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: Show the user a list of packages that provide this command */
 				g_print ("%s\n", _("Packages providing this file are:"));
-				for (i=0; i<available->len; i++) {
-					possible = g_ptr_array_index (available, i);
-					g_print ("'%s'\n", possible);
+				for (i=0; package_ids[i] != NULL; i++) {
+					parts = pk_package_id_split (package_ids[i]);
+					g_print ("'%s'\n", parts[PK_PACKAGE_ID_NAME]);
+					g_strfreev (parts);
 				}
 
 			/* ask */
 			} else if (config->multiple_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: Show the user a list of packages that they can install to provide this command */
 				g_print ("%s:\n", _("Suitable packages are:"));
-				for (i=0; i<available->len; i++) {
-					possible = g_ptr_array_index (available, i);
-					g_print ("%i\t'%s'\n", i+1, possible);
+				for (i=0; package_ids[i] != NULL; i++) {
+					parts = pk_package_id_split (package_ids[i]);
+					g_print ("%i\t'%s'\n", i+1, parts[PK_PACKAGE_ID_NAME]);
+					g_strfreev (parts);
 				}
 
 				/* get selection */
 				/* TRANSLATORS: ask the user to choose a file to install */
-				i = pk_console_get_number (_("Please choose a package to install"), available->len);
+				i = pk_console_get_number (_("Please choose a package to install"), len);
 
 				/* run command */
-				possible = g_ptr_array_index (available, i);
-				text = g_strdup_printf ("pkcon install %s", possible);
-				ret = pk_cnf_spawn_command (text);
+				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
-					pk_cnf_spawn_command (argv[1]);
-				g_free (text);
+					pk_cnf_install_package_id (argv[1]);
 			}
 			goto out;
 		}
@@ -781,20 +773,15 @@ main (int argc, char *argv[])
 	g_print ("\n");
 
 out:
-	g_object_unref (client);
+	g_strfreev (package_ids);
+	g_object_unref (task);
 	g_object_unref (cancellable);
 	if (config != NULL) {
 		g_strfreev (config->locations);
 		g_free (config);
 	}
-	if (array != NULL) {
-		g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-		g_ptr_array_free (array, TRUE);
-	}
-	if (available != NULL) {
-		g_ptr_array_foreach (available, (GFunc) g_free, NULL);
-		g_ptr_array_free (available, TRUE);
-	}
+	if (array != NULL)
+		g_ptr_array_unref (array);
 
 	return 0;
 }
