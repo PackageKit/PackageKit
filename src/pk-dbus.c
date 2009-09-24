@@ -92,8 +92,11 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
-	g_return_val_if_fail (dbus->priv->proxy_pid != NULL, G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
+
+	/* no connection to DBus */
+	if (dbus->priv->proxy_pid == NULL)
+		goto out;
 
 	/* get pid from DBus (quite slow) - TODO: cache this */
 	ret = dbus_g_proxy_call (dbus->priv->proxy_pid,
