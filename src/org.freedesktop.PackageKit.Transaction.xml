@@ -1208,6 +1208,18 @@
             <doc:para>
               The search should not be treated as case sensitive.
             </doc:para>
+            <doc:para>
+              NOTE: On some backends an OR search can be specified by delimiting
+              each value with <doc:tt>&amp;</doc:tt>, so this query would become
+              <doc:tt>games-text&amp;games-gui</doc:tt>.
+              It is recommended that front-end clients do not depend on this
+              functionality at this time.
+              In future versions of this specification the <doc:tt>values</doc:tt>
+              argument will become a string array (and no delimiters), and all backends
+              will have to accept multiple requests.
+              In this instance the failure to find one of the values would not be
+              fatal, but the failure to find all of the values would be fatal.
+            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
@@ -1257,6 +1269,18 @@
             </doc:para>
             <doc:para>
               The search is case sensitive, and should not be escaped or surrounded in quotes.
+            </doc:para>
+            <doc:para>
+              NOTE: On some backends an OR search can be specified by delimiting
+              each value with <doc:tt>&amp;</doc:tt>, so this query would become
+              <doc:tt>games-text&amp;games-gui</doc:tt>.
+              It is recommended that front-end clients do not depend on this
+              functionality at this time.
+              In future versions of this specification the <doc:tt>values</doc:tt>
+              argument will become a string array (and no delimiters), and all backends
+              will have to accept multiple requests.
+              In this instance the failure to find one of the values would not be
+              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1313,6 +1337,18 @@
             <doc:para>
               An enumerated group_type, or <doc:tt>unknown</doc:tt>. The search
               can't contain spaces. It must contains only one group_type.
+            </doc:para>
+            <doc:para>
+              NOTE: On some backends an OR search can be specified by delimiting
+              each value with <doc:tt>&amp;</doc:tt>, so this query would become
+              <doc:tt>games-text&amp;games-gui</doc:tt>.
+              It is recommended that front-end clients do not depend on this
+              functionality at this time.
+              In future versions of this specification the <doc:tt>values</doc:tt>
+              argument will become a string array (and no delimiters), and all backends
+              will have to accept multiple requests.
+              In this instance the failure to find one of the values would not be
+              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1382,6 +1418,18 @@
             </doc:para>
             <doc:para>
               The search should not be treated as case sensitive.
+            </doc:para>
+            <doc:para>
+              NOTE: On some backends an OR search can be specified by delimiting
+              each value with <doc:tt>&amp;</doc:tt>, so this query would become
+              <doc:tt>games-text&amp;games-gui</doc:tt>.
+              It is recommended that front-end clients do not depend on this
+              functionality at this time.
+              In future versions of this specification the <doc:tt>values</doc:tt>
+              argument will become a string array (and no delimiters), and all backends
+              will have to accept multiple requests.
+              In this instance the failure to find one of the values would not be
+              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1622,6 +1670,18 @@
             <doc:para>
               The data to send to the backend to get the packages.
               Note: This is backend specific.
+            </doc:para>
+            <doc:para>
+              NOTE: On some backends an OR search can be specified by delimiting
+              each value with <doc:tt>&amp;</doc:tt>, so this query would become
+              <doc:tt>games-text&amp;games-gui</doc:tt>.
+              It is recommended that front-end clients do not depend on this
+              functionality at this time.
+              In future versions of this specification the <doc:tt>values</doc:tt>
+              argument will become a string array (and no delimiters), and all backends
+              will have to accept multiple requests.
+              In this instance the failure to find one of the values would not be
+              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
