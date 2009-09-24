@@ -344,11 +344,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def _do_meta_package_search(self, fltlist, key):
+    def _do_meta_package_search(self, fltlist, values):
         grps = self.comps.get_meta_packages()
         for grpid in grps:
-            if key in grpid:
-                self._show_meta_package(grpid, fltlist)
+            for value in values:
+                if value in grpid:
+                    self._show_meta_package(grpid, fltlist)
 
     def set_locale(self, code):
         '''
@@ -357,30 +358,27 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         self.lang = code
 
-    def _do_search(self, searchlist, filters, key):
+    def _do_search(self, searchlist, filters, values):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
         @param filters: package types to search (all, installed, available)
-        @param key: key to seach for
+        @param values: key to seach for
         '''
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
         package_list = []
 
-        # FIXME: treat as AND, not OR
-        keys = key.split(' ')
-
         # get collection objects
         if FILTER_NOT_COLLECTIONS not in fltlist:
-            self._do_meta_package_search(fltlist, key)
+            self._do_meta_package_search(fltlist, values)
 
         # return, as we only want collection objects
         if FILTER_COLLECTIONS not in fltlist:
             installed = []
             available = []
             try:
-                res = self.yumbase.searchGenerator(searchlist, keys)
+                res = self.yumbase.searchGenerator(searchlist, values)
                 for (pkg, inst) in res:
                     if pkg.repo.id == 'installed':
                         installed.append(pkg)
@@ -402,7 +400,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         for (pkg, status) in lst:
             self._show_package(pkg, status)
 
-    def search_name(self, filters, key):
+    def search_name(self, filters, values):
         '''
         Implement the search-name functionality
         '''
@@ -415,6 +413,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
+        # until the API is changed, allow '&' to delimit multiple fields
+        values = values.split('&')
+
         searchlist = ['name']
         self.status(STATUS_QUERY)
         try:
@@ -422,10 +423,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         try:
-            self._do_search(searchlist, filters, key)
+            self._do_search(searchlist, filters, values)
         except PkError, e:
             self.error(e.code, e.details, exit=False)
-    def search_details(self, filters, key):
+
+    def search_details(self, filters, values):
         '''
         Implement the search-details functionality
         '''
@@ -442,10 +444,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
+        # until the API is changed, allow '&' to delimit multiple fields
+        values = values.split('&')
+
         searchlist = ['name', 'summary', 'description', 'group']
         self.status(STATUS_QUERY)
         try:
-            self._do_search(searchlist, filters, key)
+            self._do_search(searchlist, filters, values)
         except PkError, e:
             self.error(e.code, e.details, exit=False)
 
@@ -549,7 +554,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if show_avail:
                         self.package(package_id, INFO_COLLECTION_AVAILABLE, name)
 
-    def search_group(self, filters, group_key):
+    def search_group(self, filters, values):
         '''
         Implement the search-group functionality
         '''
@@ -569,51 +574,53 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # until the API is changed, allow '&' to delimit multiple fields
+        values = values.split('&')
+
         # handle collections
-        if group_key == GROUP_COLLECTIONS:
+        if GROUP_COLLECTIONS in values:
             try:
                 self._handle_collections(fltlist)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
-            return
+            values.remove
 
         # handle newest packages
-        if group_key == GROUP_NEWEST:
+        if GROUP_NEWEST in values:
             try:
                 self._handle_newest(fltlist)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
             return
 
-        # handle dynamic groups (yum comps group)
-        if group_key[0] == '@':
-            cat_id = group_key[1:]
-             # get the packagelist for this group
-            all_packages = self.comps.get_meta_package_list(cat_id)
-        else: # this is an group_enum
-            # get the packagelist for this group enum
-            all_packages = self.comps.get_package_list(group_key)
+        # for each search term
+        for value in values:
+            # handle dynamic groups (yum comps group)
+            if value[0] == '@':
+                cat_id = value[1:]
+                 # get the packagelist for this group
+                all_packages = self.comps.get_meta_package_list(cat_id)
+            else: # this is an group_enum
+                # get the packagelist for this group enum
+                all_packages = self.comps.get_package_list(value)
 
-        # group don't exits, just bail out
-        if not all_packages:
-            return
+            # group don't exits, just bail out
+            if not all_packages:
+                continue
 
-        # get installed packages
-        self.percentage(10)
-        try:
-            pkgfilter.add_installed(self._get_installed_from_names(all_packages))
-        except PkError, e:
-            self.error(e.code, e.details, exit=False)
-            return
+            if FILTER_NOT_INSTALLED not in fltlist:
+                try:
+                    pkgfilter.add_installed(self._get_installed_from_names(all_packages))
+                except PkError, e:
+                    self.error(e.code, e.details, exit=False)
+                    return
 
-        # get available packages
-        self.percentage(20)
-        if FILTER_INSTALLED not in fltlist:
-            try:
-                pkgfilter.add_available(self._get_available_from_names(all_packages))
-            except PkError, e:
-                self.error(e.code, e.details, exit=False)
-                return
+            if FILTER_INSTALLED not in fltlist:
+                try:
+                    pkgfilter.add_available(self._get_available_from_names(all_packages))
+                except PkError, e:
+                    self.error(e.code, e.details, exit=False)
+                    return
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
@@ -628,7 +635,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         Search for yum packages
         @param searchlist: The yum package fields to search in
         @param filters: package types to search (all, installed, available)
-        @param key: key to seach for
         '''
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -665,7 +671,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
-    def search_file(self, filters, key):
+    def search_file(self, filters, values):
         '''
         Implement the search-file functionality
         '''
@@ -683,58 +689,64 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # until the API is changed, allow '&' to delimit multiple fields
+        values = values.split('&')
+
         # Check installed for file
-        try:
-            pkgs = self.yumbase.rpmdb.searchFiles(key)
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        pkgfilter.add_installed(pkgs)
+        if not FILTER_NOT_INSTALLED in fltlist:
+            for value in values:
+                try:
+                    pkgs = self.yumbase.rpmdb.searchFiles(value)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                pkgfilter.add_installed(pkgs)
 
         # Check available for file
         if not FILTER_INSTALLED in fltlist:
-            # Check available for file
-            try:
-                self.yumbase.repos.populateSack(mdtype='filelists')
-                pkgs = self.yumbase.pkgSack.searchFiles(key)
-            except yum.Errors.RepoError, e:
-                self.error(ERROR_NO_CACHE, "failed to search sack: %s" %_to_unicode(e), exit=False)
-                return
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            else:
-                pkgfilter.add_available(pkgs)
+            for value in values:
+                try:
+                    self.yumbase.repos.populateSack(mdtype='filelists')
+                    pkgs = self.yumbase.pkgSack.searchFiles(value)
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_NO_CACHE, "failed to search sack: %s" %_to_unicode(e), exit=False)
+                    return
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                else:
+                    pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
-    def _get_provides_query(self, provides_type, search):
+    def _get_provides_query(self, provides_type, value):
         # gets a list of provides
 
         # old standard
-        if search.startswith("gstreamer0.10("):
-            return [ search ]
+        if value.startswith("gstreamer0.10("):
+            return [ value ]
 
         # new standard
         if provides_type == PROVIDES_CODEC:
-            return [ "gstreamer0.10(%s)" % search ]
+            return [ "gstreamer0.10(%s)" % value ]
         if provides_type == PROVIDES_FONT:
-            return [ "font(%s)" % search ]
+            return [ "font(%s)" % value ]
         if provides_type == PROVIDES_MIMETYPE:
-            return [ "mimehandler(%s)" % search ]
+            return [ "mimehandler(%s)" % value ]
         if provides_type == PROVIDES_POSTSCRIPT_DRIVER:
-            return [ "postscriptdriver(%s)" % search ]
+            return [ "postscriptdriver(%s)" % value ]
         if provides_type == PROVIDES_ANY:
             provides = []
-            provides.append(self._get_provides_query(PROVIDES_CODEC, search)[0])
-            provides.append(self._get_provides_query(PROVIDES_FONT, search)[0])
-            provides.append(self._get_provides_query(PROVIDES_MIMETYPE, search)[0])
+            provides.append(self._get_provides_query(PROVIDES_CODEC, value)[0])
+            provides.append(self._get_provides_query(PROVIDES_FONT, value)[0])
+            provides.append(self._get_provides_query(PROVIDES_MIMETYPE, value)[0])
+            provides.append(self._get_provides_query(PROVIDES_POSTSCRIPT_DRIVER, value)[0])
             return provides
 
         # not supported
         raise PkError(ERROR_NOT_SUPPORTED, "this backend does not support '%s' provides" % provides_type)
 
-    def what_provides(self, filters, provides_type, search):
+    def what_provides(self, filters, provides_type, values):
         '''
         Implement the what-provides functionality
         '''
@@ -747,17 +759,24 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
+        values_provides = []
 
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
+        # until the API is changed, allow '&' to delimit multiple fields
+        values = values.split('&')
+
         try:
-            provides = self._get_provides_query(provides_type, search)
+            for value in values:
+                provides = self._get_provides_query(provides_type, value)
+                for provide in provides:
+                    values_provides.append(provide)
         except PkError, e:
             self.error(e.code, e.details, exit=False)
         else:
             # there may be multiple provide strings
-            for provide in provides:
+            for provide in values_provides:
                 # Check installed packages for provide
                 try:
                     pkgs = self.yumbase.rpmdb.searchProvides(provide)
