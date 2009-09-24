@@ -1100,7 +1100,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_name_async (PK_CLIENT(task), filters, details, cancellable,
+			pk_client_search_name_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1112,7 +1112,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_details_async (PK_CLIENT(task), filters, details, cancellable,
+			pk_client_search_details_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						        (PkProgressCallback) pk_console_progress_cb, NULL,
 						        (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1124,7 +1124,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_group_async (PK_CLIENT(task), filters, details, cancellable,
+			pk_client_search_group_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1136,7 +1136,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_file_async (PK_CLIENT(task), filters, details, cancellable,
+			pk_client_search_file_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
@@ -1340,7 +1340,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_CODEC, value, cancellable,
+		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_CODEC, argv+2, cancellable,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 

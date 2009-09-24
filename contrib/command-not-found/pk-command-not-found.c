@@ -390,10 +390,12 @@ pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename,
 	GPtrArray *array = NULL;
 	guint i;
 	const PkItemPackage *item;
+	gchar **value = NULL;
 
 	/* get the list of possibles */
-	results = pk_client_search_file (client_, filter, filename, cancellable,
-					      (PkProgressCallback) pk_cnf_progress_cb, NULL, error);
+	value = g_strsplit (filename, "&", -1);
+	results = pk_client_search_file (client_, filter, value, cancellable,
+					 (PkProgressCallback) pk_cnf_progress_cb, NULL, error);
 	if (results == NULL)
 		goto out;
 
@@ -411,6 +413,7 @@ pk_cnf_search_file (PkClient *client_, PkBitfield filter, const gchar *filename,
 		package_ids[i] = g_strdup (item->package_id);
 	}
 out:
+	g_strfreev (value);
 	if (results != NULL)
 		g_object_unref (results);
 	if (array != NULL)

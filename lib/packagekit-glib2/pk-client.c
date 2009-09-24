@@ -1600,7 +1600,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * pk_client_search_name_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: free text to search for, for instance, "power"
+ * @values: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1611,7 +1611,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * that matches a specific name.
  **/
 void
-pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_name_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1633,7 +1633,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
 	}
 	state->client = client;
 	state->filters = filters;
-	state->search = g_strdup (search);
+	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -1649,7 +1649,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
  * pk_client_search_details_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: free text to search for, for instance, "power"
+ * @values: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1661,7 +1661,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, const gchar *
  * taking longer.
  **/
 void
-pk_client_search_details_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			        PkProgressCallback progress_callback, gpointer progress_user_data,
 			        GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1683,7 +1683,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
 	}
 	state->client = client;
 	state->filters = filters;
-	state->search = g_strdup (search);
+	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -1699,7 +1699,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
  * pk_client_search_group_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: a group enum to search for, for instance, "system-tools"
+ * @values: a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1709,7 +1709,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, const gcha
  * Return all packages in a specific group.
  **/
 void
-pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1731,7 +1731,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
 	}
 	state->client = client;
 	state->filters = filters;
-	state->search = g_strdup (search);
+	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -1747,7 +1747,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
  * pk_client_search_file_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: file to search for, for instance, "/sbin/service"
+ * @values: file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1757,7 +1757,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, const gchar 
  * Search for packages that provide a specific file.
  **/
 void
-pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_file_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1779,7 +1779,7 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, const gchar *
 	}
 	state->client = client;
 	state->filters = filters;
-	state->search = g_strdup (search);
+	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2232,7 +2232,7 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
- * @search: a search term such as "sound/mp3"
+ * @values: a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -2244,7 +2244,7 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
  * or GStreamer codec string.
  **/
 void
-pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
+pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -2267,7 +2267,7 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->client = client;
 	state->filters = filters;
 	state->provides = provides;
-	state->search = g_strdup (search);
+	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -3956,6 +3956,7 @@ pk_client_test (gpointer user_data)
 	gchar *file;
 	GCancellable *cancellable;
 	gboolean ret;
+	gchar **values;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4091,13 +4092,15 @@ pk_client_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "search by name");
 	cancellable = g_cancellable_new ();
-	pk_client_search_name_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), "power", cancellable,
+	values = g_strsplit ("power", "&", -1);
+	pk_client_search_name_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_search_name_cb, test);
 	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "cancelled in %i", egg_test_elapsed (test));
 
+	g_strfreev (values);
 	g_cancellable_reset (cancellable);
 
 	/************************************************************/

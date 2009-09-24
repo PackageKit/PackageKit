@@ -298,15 +298,16 @@ static void
 pk_catalog_do_what_provides (PkCatalogState *state)
 {
 	gchar **data;
-	gchar *temp_bodge_waiting_for_new_api;
+	gchar *dbg;
 	data = pk_ptr_array_to_strv (state->array_files);
-	temp_bodge_waiting_for_new_api = g_strjoinv ("&", data);
+	dbg = g_strjoinv ("&", data);
+	egg_debug ("searching for %s", dbg);
 	pk_client_what_provides_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
-				       PK_PROVIDES_ENUM_ANY, temp_bodge_waiting_for_new_api,
+				       PK_PROVIDES_ENUM_ANY, data,
 				       state->cancellable, state->progress_callback, state->progress_user_data,
 				       (GAsyncReadyCallback) pk_catalog_what_provides_ready_cb, state);
 	g_strfreev (data);
-	g_free (temp_bodge_waiting_for_new_api);
+	g_free (dbg);
 }
 
 /**
@@ -372,16 +373,16 @@ static void
 pk_catalog_do_search_files (PkCatalogState *state)
 {
 	gchar **data;
-	gchar *temp_bodge_waiting_for_new_api;
+	gchar *dbg;
 	data = pk_ptr_array_to_strv (state->array_files);
-	temp_bodge_waiting_for_new_api = g_strjoinv ("&", data);
-	egg_debug ("searching for %s", temp_bodge_waiting_for_new_api);
+	dbg = g_strjoinv ("&", data);
+	egg_debug ("searching for %s", dbg);
 	pk_client_search_file_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
-				     temp_bodge_waiting_for_new_api,
+				     data,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_catalog_search_file_ready_cb, state);
 	g_strfreev (data);
-	g_free (temp_bodge_waiting_for_new_api);
+	g_free (dbg);
 }
 
 /**

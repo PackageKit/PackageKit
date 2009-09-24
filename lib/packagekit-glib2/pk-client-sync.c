@@ -106,7 +106,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * pk_client_search_name:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: free text to search for, for instance, "power"
+ * @values: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -121,7 +121,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -136,7 +136,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_name_async (client, filters, search, cancellable, progress_callback, progress_user_data,
+	pk_client_search_name_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -154,7 +154,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
  * pk_client_search_details:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: free text to search for, for instance, "power"
+ * @values: free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -170,7 +170,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -185,7 +185,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_details_async (client, filters, search, cancellable, progress_callback, progress_user_data,
+	pk_client_search_details_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 					(GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -203,7 +203,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
  * pk_client_search_group:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: a group enum to search for, for instance, "system-tools"
+ * @values: a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -217,7 +217,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, const gchar *sea
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -232,7 +232,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_group_async (client, filters, search, cancellable, progress_callback, progress_user_data,
+	pk_client_search_group_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -250,7 +250,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
  * pk_client_search_file:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @search: file to search for, for instance, "/sbin/service"
+ * @values: file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -264,7 +264,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *searc
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GCancellable *cancellable,
+pk_client_search_file (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -279,7 +279,7 @@ pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_file_async (client, filters, search, cancellable, progress_callback, progress_user_data,
+	pk_client_search_file_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -724,7 +724,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
- * @search: a search term such as "sound/mp3"
+ * @values: a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -740,7 +740,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, const gchar *search, GCancellable *cancellable,
+pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
 		         PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -755,7 +755,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	helper->error = error;
 
 	/* run async method */
-	pk_client_what_provides_async (client, filters, provides, search, cancellable, progress_callback, progress_user_data,
+	pk_client_what_provides_async (client, filters, provides, values, cancellable, progress_callback, progress_user_data,
 				       (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -1617,7 +1617,7 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
 /**
  * pk_client_adopt:
  * @client: a valid #PkClient instance
- * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @transaction_id: a transaction ID such as "/21_ebcbdaae_data"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
