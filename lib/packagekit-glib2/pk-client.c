@@ -465,6 +465,8 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
 					       (DBusGProxyCallNotify) pk_client_cancel_cb, state,
 					       NULL, G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 	egg_debug ("cancelling %s (%p)", state->tid, state->call);
 }
 
@@ -843,6 +845,8 @@ pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 					       (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 	egg_debug ("changed so checking properties, started DBus call: %p", state->call);
 	/* TODO: save state->call? */
 }
@@ -1461,6 +1465,10 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		g_assert_not_reached ();
 	}
 
+	/* check we called okay */
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
+
 	/* we've sent this async */
 	egg_debug ("new method, started DBus call: %p", state->call);
 
@@ -1511,6 +1519,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
 					       G_TYPE_STRING, locale,
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 	egg_debug ("sent locale request, started DBus call: %p", state->call);
 
 	/* track state */
@@ -3360,6 +3370,8 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 					       (DBusGProxyCallNotify) pk_client_adopt_get_properties_cb, state, NULL,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 	egg_debug ("coldplug adoptee, started DBus call: %p", state->call);
 
 	/* we'll have results from now on */
@@ -3538,6 +3550,8 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 					       (DBusGProxyCallNotify) pk_client_get_progress_cb, state, NULL,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 	egg_debug ("getting progress on %s, started DBus call: %p", state->tid, state->call);
 
 	/* track state */

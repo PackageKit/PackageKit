@@ -241,6 +241,16 @@ out:
 }
 
 /**
+ * pk_control_call_destroy_cb:
+ **/
+static void
+pk_control_call_destroy_cb (PkControlState *state)
+{
+	if (state->call != NULL)
+		egg_warning ("%p was destroyed before it was cleared", state->call);
+}
+
+/**
  * pk_control_get_tid_async:
  * @control: a valid #PkControl instance
  * @cancellable: a #GCancellable or %NULL
@@ -273,7 +283,9 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTid",
 					       (DBusGProxyCallNotify) pk_control_get_tid_cb, state,
-					       NULL, G_TYPE_INVALID);
+					       (GDestroyNotify) pk_control_call_destroy_cb, G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -418,6 +430,8 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetDaemonState",
 					       (DBusGProxyCallNotify) pk_control_get_daemon_state_cb, state,
 					       NULL, G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -563,6 +577,8 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 					       G_TYPE_STRING, proxy_http,
 					       G_TYPE_STRING, proxy_ftp,
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -707,6 +723,8 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTransactionList",
 					       (DBusGProxyCallNotify) pk_control_get_transaction_list_cb, state,
 					       NULL, G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -860,6 +878,8 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 					       (DBusGProxyCallNotify) pk_control_get_time_since_action_cb, state, NULL,
 					       G_TYPE_STRING, role_text,
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -1010,6 +1030,8 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetNetworkState",
 					       (DBusGProxyCallNotify) pk_control_get_network_state_cb, state, NULL,
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -1162,6 +1184,8 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 					       (DBusGProxyCallNotify) pk_control_can_authorize_cb, state, NULL,
 					       G_TYPE_STRING, action_id,
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -1543,6 +1567,8 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 					       (DBusGProxyCallNotify) pk_control_get_properties_cb, state, NULL,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit",
 					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
@@ -2058,6 +2084,8 @@ pk_control_init (PkControl *control)
 
 	/* timeout after a few ms, all all these methods should not take long */
 	dbus_g_proxy_set_default_timeout (control->priv->proxy, PK_CONTROL_DBUS_METHOD_TIMEOUT);
+	dbus_g_proxy_set_default_timeout (control->priv->proxy_props, PK_CONTROL_DBUS_METHOD_TIMEOUT);
+	dbus_g_proxy_set_default_timeout (control->priv->proxy_dbus, PK_CONTROL_DBUS_METHOD_TIMEOUT);
 
 	dbus_g_proxy_add_signal (control->priv->proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
