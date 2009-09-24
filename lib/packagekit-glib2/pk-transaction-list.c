@@ -75,6 +75,7 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 	guint i, j;
 	gboolean ret;
 	const gchar *tid;
+	gchar *tid_tmp;
 	GPtrArray *array = tlist->priv->transaction_ids;
 
 	/* get the result */
@@ -99,9 +100,11 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 
 		/* no, so remove from array */
 		if (!ret) {
+			tid_tmp = g_strdup (tid);
 			g_ptr_array_remove_index (array, i);
-			egg_debug ("emit removed: %s", tid);
-			g_signal_emit (tlist, signals[SIGNAL_REMOVED], 0, tid);
+			egg_debug ("emit removed: %s", tid_tmp);
+			g_signal_emit (tlist, signals[SIGNAL_REMOVED], 0, tid_tmp);
+			g_free (tid_tmp);
 		}
 	}
 
