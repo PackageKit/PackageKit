@@ -31,7 +31,7 @@
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
 static gchar **_package_ids;
-static const gchar *_search;
+static const gchar *_values;
 static guint _package_current = 0;
 static gboolean _repo_enabled_local = FALSE;
 static gboolean _repo_enabled_fedora = TRUE;
@@ -725,7 +725,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -739,7 +739,7 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -758,7 +758,7 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -808,7 +808,7 @@ backend_search_name_timeout (gpointer data)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -1114,17 +1114,17 @@ backend_what_provides_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
-		if (g_strcmp0 (_search, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)") == 0) {
+		if (g_strcmp0 (_values, "gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;available",
 					    "GStreamer streaming media framework \"bad\" plug-ins");
-		} else if (g_strcmp0 (_search, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
+		} else if (g_strcmp0 (_values, "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 					    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;available",
 					    "MPEG demuxer for GStreamer");
 		} else {
 			/* pkcon install vips-doc says it's installed cause evince is INSTALLED */
-			if (g_strcmp0 (_search, "vips-doc") != 0) {
+			if (g_strcmp0 (_values, "vips-doc") != 0) {
 				if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 					pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 							    "evince;0.9.3-5.fc8;i386;installed",
@@ -1149,10 +1149,10 @@ backend_what_provides_timeout (gpointer data)
  * backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *values)
 {
 	_progress_percentage = 0;
-	_search = search;
+	_values = values;
 	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
 	_filters = filters;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);

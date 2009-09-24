@@ -287,28 +287,28 @@ class PackageKitBaseBackend:
 # Backend Action Methods
 #
 
-    def search_name(self, filters, key):
+    def search_name(self, filters, values):
         '''
         Implement the {backend}-search-name functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def search_details(self, filters, key):
+    def search_details(self, filters, values):
         '''
         Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def search_group(self, filters, key):
+    def search_group(self, filters, values):
         '''
         Implement the {backend}-search-group functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def search_file(self, filters, key):
+    def search_file(self, filters, values):
         '''
         Implement the {backend}-search-file functionality
         Needed to be implemented in a sub class
@@ -343,7 +343,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def what_provides(self, filters, provides_type, search):
+    def what_provides(self, filters, provides_type, values):
         '''
         Implement the {backend}-what-provides functionality
         Needed to be implemented in a sub class
@@ -621,23 +621,23 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-details':
             options = args[0]
-            searchterms = _to_unicode(args[1])
-            self.search_details(options, searchterms)
+            values = _to_unicode(args[1])
+            self.search_details(options, values)
             self.finished()
         elif cmd == 'search-file':
             options = args[0]
-            searchterms = args[1]
-            self.search_file(options, searchterms)
+            values = args[1]
+            self.search_file(options, values)
             self.finished()
         elif cmd == 'search-group':
             options = args[0]
-            searchterms = args[1]
-            self.search_group(options, searchterms)
+            values = args[1]
+            self.search_group(options, values)
             self.finished()
         elif cmd == 'search-name':
             options = args[0]
-            searchterms = _to_unicode(args[1])
-            self.search_name(options, searchterms)
+            values = _to_unicode(args[1])
+            self.search_name(options, values)
             self.finished()
         elif cmd == 'signature-install':
             package = args[0]
@@ -655,8 +655,8 @@ class PackageKitBaseBackend:
         elif cmd == 'what-provides':
             filters = args[0]
             provides_type = args[1]
-            search = _to_unicode(args[2])
-            self.what_provides(filters, provides_type, search)
+            values = _to_unicode(args[2])
+            self.what_provides(filters, provides_type, values)
             self.finished()
         elif cmd == 'set-locale':
             code = args[0]

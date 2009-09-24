@@ -2536,48 +2536,48 @@ pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
  * pk_backend_search_details:
  */
 void
-pk_backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_string (backend->priv->store, "search", search);
-	backend->priv->desc->search_details (backend, filters, search);
+	pk_store_set_string (backend->priv->store, "search", values);
+	backend->priv->desc->search_details (backend, filters, values);
 }
 
 /**
  * pk_backend_search_file:
  */
 void
-pk_backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+pk_backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_string (backend->priv->store, "search", search);
-	backend->priv->desc->search_file (backend, filters, search);
+	pk_store_set_string (backend->priv->store, "search", values);
+	backend->priv->desc->search_file (backend, filters, values);
 }
 
 /**
  * pk_backend_search_group:
  */
 void
-pk_backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+pk_backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_string (backend->priv->store, "search", search);
-	backend->priv->desc->search_group (backend, filters, search);
+	pk_store_set_string (backend->priv->store, "search", values);
+	backend->priv->desc->search_group (backend, filters, values);
 }
 
 /**
  * pk_backend_search_name:
  */
 void
-pk_backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+pk_backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_uint (backend->priv->store, "filters", filters);
-	pk_store_set_string (backend->priv->store, "search", search);
-	backend->priv->desc->search_name (backend, filters, search);
+	pk_store_set_string (backend->priv->store, "search", values);
+	backend->priv->desc->search_name (backend, filters, values);
 }
 
 /**
@@ -2643,13 +2643,13 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
  * pk_backend_what_provides:
  */
 void
-pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_uint (backend->priv->store, "provides", provides);
-	pk_store_set_string (backend->priv->store, "search", search);
-	backend->priv->desc->what_provides (backend, filters, provides, search);
+	pk_store_set_string (backend->priv->store, "search", values);
+	backend->priv->desc->what_provides (backend, filters, provides, values);
 }
 
 /**

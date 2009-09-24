@@ -1194,7 +1194,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="search" direction="in">
+      <arg type="s" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1246,7 +1246,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="search" direction="in">
+      <arg type="s" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1307,7 +1307,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="search" direction="in">
+      <arg type="s" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1369,7 +1369,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="search" direction="in">
+      <arg type="s" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1616,7 +1616,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="search" direction="in">
+      <arg type="s" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>

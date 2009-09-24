@@ -333,11 +333,11 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-details", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-details", filters_text, values, NULL);
 	g_free (filters_text);
 }
 
@@ -345,11 +345,11 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
  * pk_backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-file", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-file", filters_text, values, NULL);
 	g_free (filters_text);
 }
 
@@ -357,11 +357,11 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
  * pk_backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-group", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-group", filters_text, values, NULL);
 	g_free (filters_text);
 }
 
@@ -369,11 +369,11 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *values)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-name", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "search-name", filters_text, values, NULL);
 	g_free (filters_text);
 }
 
@@ -453,13 +453,13 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *values)
 {
 	gchar *filters_text;
 	const gchar *provides_text;
 	provides_text = pk_provides_enum_to_text (provides);
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "yumBackend.py", "what-provides", filters_text, provides_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "yumBackend.py", "what-provides", filters_text, provides_text, values, NULL);
 	g_free (filters_text);
 }
 

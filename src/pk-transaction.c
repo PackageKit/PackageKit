@@ -137,7 +137,7 @@ struct PkTransactionPrivate
 	gchar			*cached_transaction_id;
 	gchar			**cached_full_paths;
 	PkBitfield		 cached_filters;
-	gchar			*cached_search;
+	gchar			*cached_values;
 	gchar			*cached_repo_id;
 	gchar			*cached_key_id;
 	gchar			*cached_parameter;
@@ -312,8 +312,8 @@ pk_transaction_get_text (PkTransaction *transaction)
 	} else if (transaction->priv->cached_package_ids != NULL) {
 		data = transaction->priv->cached_package_ids[0];
 		text = pk_package_id_to_printable (data);
-	} else if (transaction->priv->cached_search != NULL) {
-		text = g_strdup (transaction->priv->cached_search);
+	} else if (transaction->priv->cached_values != NULL) {
+		text = g_strdup (transaction->priv->cached_values);
 	}
 
 	return text;
@@ -1477,19 +1477,19 @@ pk_transaction_set_running (PkTransaction *transaction)
 	else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES)
 		pk_backend_get_requires (priv->backend, priv->cached_filters, priv->cached_package_ids, priv->cached_force);
 	else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES)
-		pk_backend_what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
+		pk_backend_what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_GET_UPDATES)
 		pk_backend_get_updates (priv->backend, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES)
 		pk_backend_get_packages (priv->backend, priv->cached_filters);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
-		pk_backend_search_details (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_details (priv->backend, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		pk_backend_search_file (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_file (priv->backend, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
-		pk_backend_search_group (priv->backend, priv->cached_filters, priv->cached_search);
+		pk_backend_search_group (priv->backend, priv->cached_filters, priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
-		pk_backend_search_name (priv->backend,priv->cached_filters,priv->cached_search);
+		pk_backend_search_name (priv->backend,priv->cached_filters,priv->cached_values);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
 		pk_backend_install_packages (priv->backend, priv->cached_only_trusted, priv->cached_package_ids);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
@@ -1756,15 +1756,15 @@ pk_transaction_strvalidate (const gchar *text)
  * pk_transaction_search_check:
  **/
 static gboolean
-pk_transaction_search_check (const gchar *search, GError **error)
+pk_transaction_search_check (const gchar *values, GError **error)
 {
 	guint size;
 	gboolean ret;
 
 	/* limit to a 1k chunk */
-	size = egg_strlen (search, 1024);
+	size = egg_strlen (values, 1024);
 
-	if (search == NULL) {
+	if (values == NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Search is null. This isn't supposed to happen...");
 		return FALSE;
@@ -1774,12 +1774,12 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "Search string zero length");
 		return FALSE;
 	}
-	if (strstr (search, "*") != NULL) {
+	if (strstr (values, "*") != NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '*'");
 		return FALSE;
 	}
-	if (strstr (search, "?") != NULL) {
+	if (strstr (values, "?") != NULL) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '?'");
 		return FALSE;
@@ -1789,7 +1789,7 @@ pk_transaction_search_check (const gchar *search, GError **error)
 				     "The search string length is too large");
 		return FALSE;
 	}
-	ret = pk_transaction_strvalidate (search);
+	ret = pk_transaction_strvalidate (values);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid search term");
@@ -3966,7 +3966,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
  **/
 void
 pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
-			       const gchar *search, DBusGMethodInvocation *context)
+			       const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -3974,7 +3974,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchDetails method called: %s, %s", filter, search);
+	egg_debug ("SearchDetails method called: %s, %s", filter, values);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_DETAILS)) {
@@ -3994,7 +3994,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* check the search term */
-	ret = pk_transaction_search_check (search, &error);
+	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4011,7 +4011,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->cached_search = g_strdup (search);
+	transaction->priv->cached_values = g_strdup (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
 
 	/* try to commit this */
@@ -4033,7 +4033,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
-		   	    const gchar *search, DBusGMethodInvocation *context)
+			    const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -4041,7 +4041,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchFile method called: %s, %s", filter, search);
+	egg_debug ("SearchFile method called: %s, %s", filter, values);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
@@ -4061,7 +4061,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* check the search term */
-	ret = pk_transaction_search_check (search, &error);
+	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4069,7 +4069,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* when not an absolute path, disallow slashes in search */
-	if (search[0] != '/' && strstr (search, "/") != NULL) {
+	if (values[0] != '/' && strstr (values, "/") != NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
 				     "Invalid search path");
 		pk_transaction_release_tid (transaction);
@@ -4087,7 +4087,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->cached_search = g_strdup (search);
+	transaction->priv->cached_values = g_strdup (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
 
 	/* try to commit this */
@@ -4109,7 +4109,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
-			     const gchar *search, DBusGMethodInvocation *context)
+			     const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -4117,7 +4117,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchGroup method called: %s, %s", filter, search);
+	egg_debug ("SearchGroup method called: %s, %s", filter, values);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_GROUP)) {
@@ -4137,7 +4137,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* check the search term */
-	ret = pk_transaction_search_check (search, &error);
+	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4145,7 +4145,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* do not allow spaces */
-	if (strstr (search, " ") != NULL) {
+	if (strstr (values, " ") != NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing spaces");
 		pk_transaction_release_tid (transaction);
@@ -4163,7 +4163,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->cached_search = g_strdup (search);
+	transaction->priv->cached_values = g_strdup (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
 
 	/* try to commit this */
@@ -4185,7 +4185,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
-		  	    const gchar *search, DBusGMethodInvocation *context)
+			    const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -4193,7 +4193,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchName method called: %s, %s", filter, search);
+	egg_debug ("SearchName method called: %s, %s", filter, values);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_NAME)) {
@@ -4213,7 +4213,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* check the search term */
-	ret = pk_transaction_search_check (search, &error);
+	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4230,7 +4230,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->cached_search = g_strdup (search);
+	transaction->priv->cached_values = g_strdup (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
 
 	/* try to commit this */
@@ -4756,7 +4756,7 @@ pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted,
  **/
 void
 pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, const gchar *type,
-			      const gchar *search, DBusGMethodInvocation *context)
+			      const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkProvidesEnum provides;
@@ -4765,7 +4765,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("WhatProvides method called: %s, %s", type, search);
+	egg_debug ("WhatProvides method called: %s, %s", type, values);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_WHAT_PROVIDES)) {
@@ -4785,7 +4785,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	}
 
 	/* check the search term */
-	ret = pk_transaction_search_check (search, &error);
+	ret = pk_transaction_search_check (values, &error);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
@@ -4812,7 +4812,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 
 	/* save so we can run later */
 	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
-	transaction->priv->cached_search = g_strdup (search);
+	transaction->priv->cached_values = g_strdup (values);
 	transaction->priv->cached_provides = provides;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
 
@@ -5132,7 +5132,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_transaction_id = NULL;
 	transaction->priv->cached_full_paths = NULL;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
-	transaction->priv->cached_search = NULL;
+	transaction->priv->cached_values = NULL;
 	transaction->priv->cached_repo_id = NULL;
 	transaction->priv->cached_parameter = NULL;
 	transaction->priv->cached_value = NULL;
@@ -5237,7 +5237,7 @@ pk_transaction_finalize (GObject *object)
 	g_strfreev (transaction->priv->cached_package_ids);
 	g_free (transaction->priv->cached_transaction_id);
 	g_free (transaction->priv->cached_directory);
-	g_free (transaction->priv->cached_search);
+	g_free (transaction->priv->cached_values);
 	g_free (transaction->priv->cached_repo_id);
 	g_free (transaction->priv->cached_parameter);
 	g_free (transaction->priv->cached_value);
