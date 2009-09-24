@@ -636,10 +636,6 @@ pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array
 static void
 pk_service_pack_generic_state_finish (PkServicePackState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->pack != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -657,6 +653,7 @@ pk_service_pack_generic_state_finish (PkServicePackState *state, const GError *e
 	g_strfreev (state->package_ids_exclude);
 	g_free (state->filename);
 	g_object_unref (state->res);
+	g_object_unref (state->pack);
 	g_slice_free (PkServicePackState, state);
 }
 
@@ -855,16 +852,15 @@ pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *
 	/* save state */
 	state = g_slice_new0 (PkServicePackState);
 	state->res = g_object_ref (res);
+	state->pack = g_object_ref (pack);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->pack = pack;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->filename = g_strdup (filename);
 	state->package_ids = g_strdupv (package_ids);
 	state->package_ids_exclude = g_strdupv (package_ids_exclude);
 	state->type = PK_SERVICE_PACK_TYPE_INSTALL;
-	g_object_add_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
 
 	/* get deps */
 	pk_client_get_depends_async (pack->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), state->package_ids, TRUE,
@@ -957,15 +953,14 @@ pk_service_pack_create_for_updates_async (PkServicePack *pack, const gchar *file
 	/* save state */
 	state = g_slice_new0 (PkServicePackState);
 	state->res = g_object_ref (res);
+	state->pack = g_object_ref (pack);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->pack = pack;
 	state->type = PK_SERVICE_PACK_TYPE_UPDATE;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->filename = g_strdup (filename);
 	state->package_ids_exclude = g_strdupv (package_ids_exclude);
-	g_object_add_weak_pointer (G_OBJECT (state->pack), (gpointer) &state->pack);
 
 	/* get deps, TODO: use NEWEST? */
 	pk_client_get_updates_async (pack->priv->client, PK_FILTER_ENUM_NONE,

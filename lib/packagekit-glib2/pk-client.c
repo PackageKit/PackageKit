@@ -479,9 +479,6 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	PkClientPrivate *priv;
 	priv = state->client->priv;
 
-	if (state->client != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
-
 	if (state->cancellable != NULL) {
 		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
 		g_object_unref (state->cancellable);
@@ -526,6 +523,7 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		g_object_unref (state->results);
 	g_object_unref (state->progress);
 	g_object_unref (state->res);
+	g_object_unref (state->client);
 	g_slice_free (PkClientState, state);
 }
 
@@ -1592,18 +1590,17 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_RESOLVE;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->package_ids = g_strdupv (packages);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1641,18 +1638,17 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, gchar **value
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SEARCH_NAME;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1691,18 +1687,17 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SEARCH_DETAILS;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1739,18 +1734,17 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **valu
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SEARCH_GROUP;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1787,18 +1781,17 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, gchar **value
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SEARCH_FILE;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->search = g_strjoinv ("&", values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1836,17 +1829,16 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_DETAILS;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1884,17 +1876,16 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1932,18 +1923,17 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->directory = g_strdup (directory);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -1979,17 +1969,16 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_UPDATES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2025,17 +2014,16 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->number = number;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2076,17 +2064,16 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->only_trusted = only_trusted;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2125,11 +2112,11 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_DEPENDS;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->recursive = recursive;
 	state->package_ids = g_strdupv (package_ids);
@@ -2137,7 +2124,6 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2173,17 +2159,16 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2222,11 +2207,11 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_REQUIRES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->recursive = recursive;
 	state->filters = filters;
 	state->package_ids = g_strdupv (package_ids);
@@ -2234,7 +2219,6 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2274,11 +2258,11 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_WHAT_PROVIDES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->provides = provides;
 	state->search = g_strjoinv ("&", values);
@@ -2286,7 +2270,6 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2322,16 +2305,15 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2368,17 +2350,16 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_FILES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2413,16 +2394,15 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_CATEGORIES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2463,19 +2443,18 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->allow_deps = allow_deps;
 	state->autoremove = autoremove;
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2514,17 +2493,16 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_REFRESH_CACHE;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->force = force;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2562,18 +2540,17 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2611,11 +2588,11 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->type = type;
 	state->key_id = g_strdup (key_id);
 	state->package_id = g_strdup (package_id);
@@ -2623,7 +2600,6 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2661,18 +2637,17 @@ pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar 
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->only_trusted = only_trusted;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2797,18 +2772,17 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_INSTALL_FILES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->only_trusted = only_trusted;
 	state->files = pk_client_real_paths (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* how many non-native */
 	for (i=0; state->files[i] != NULL; i++) {
@@ -2860,17 +2834,16 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_ACCEPT_EULA;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->eula_id = g_strdup (eula_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2906,17 +2879,16 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_ROLLBACK;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->transaction_id = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2952,17 +2924,16 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_GET_REPO_LIST;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -2999,18 +2970,17 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_REPO_ENABLE;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->enabled = enabled;
 	state->repo_id = g_strdup (repo_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -3049,11 +3019,11 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_REPO_SET_DATA;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->repo_id = g_strdup (repo_id);
 	state->parameter = g_strdup (parameter);
 	state->value = g_strdup (value);
@@ -3061,7 +3031,6 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -3100,18 +3069,17 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SIMULATE_INSTALL_FILES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->files = pk_client_real_paths (files);
 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* how many non-native */
 	for (i=0; state->files[i] != NULL; i++) {
@@ -3164,17 +3132,16 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -3211,17 +3178,16 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -3258,17 +3224,16 @@ pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids,
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get tid */
 	pk_control_get_tid_async (client->priv->control, cancellable, (GAsyncReadyCallback) pk_client_get_tid_cb, state);
@@ -3341,18 +3306,17 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state = g_slice_new0 (PkClientState);
 	state->role = PK_ROLE_ENUM_UNKNOWN;
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->tid = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
 	pk_progress_set_transaction_id (state->progress, state->tid);
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 
 	/* get a connection to the transaction interface */
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
@@ -3430,9 +3394,6 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 	PkClientPrivate *priv;
 	priv = state->client->priv;
 
-	if (state->client != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
-
 	if (state->cancellable != NULL) {
 		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
 		g_object_unref (state->cancellable);
@@ -3464,6 +3425,7 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 	g_free (state->transaction_id);
 	g_object_unref (state->progress);
 	g_object_unref (state->res);
+	g_object_unref (state->client);
 	g_slice_free (PkClientState, state);
 }
 
@@ -3524,14 +3486,13 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	/* save state */
 	state = g_slice_new0 (PkClientState);
 	state->res = g_object_ref (res);
+	state->client = g_object_ref (client);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->client = client;
 	state->tid = g_strdup (transaction_id);
 	state->progress = pk_progress_new ();
-	g_object_add_weak_pointer (G_OBJECT (state->client), (gpointer) &state->client);
 	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */

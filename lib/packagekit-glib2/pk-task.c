@@ -118,10 +118,6 @@ out:
 static void
 pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->task != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref ((GObject*) state->results), g_object_unref);
@@ -144,6 +140,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_strfreev (state->package_ids);
 	g_strfreev (state->files);
 	g_object_unref (state->res);
+	g_object_unref (state->task);
 	g_slice_free (PkTaskState, state);
 }
 
@@ -724,16 +721,15 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
 	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->task = task;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->ret = FALSE;
 	state->only_trusted = TRUE;
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
-	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
 	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
@@ -777,15 +773,14 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->task = task;
 	state->only_trusted = TRUE;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
-	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
 	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
@@ -833,16 +828,15 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 	state->allow_deps = allow_deps;
 	state->autoremove = autoremove;
-	state->task = task;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
-	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
 	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
@@ -887,15 +881,14 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_INSTALL_FILES;
 	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->task = task;
 	state->only_trusted = TRUE;
 	state->files = g_strdupv (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
-	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
 	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
@@ -942,14 +935,13 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 	state->res = g_object_ref (res);
+	state->task = g_object_ref (task);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
-	state->task = task;
 	state->only_trusted = TRUE;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
-	g_object_add_weak_pointer (G_OBJECT (state->task), (gpointer) &state->task);
 
 	egg_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);

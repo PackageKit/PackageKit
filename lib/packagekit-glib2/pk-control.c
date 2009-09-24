@@ -177,10 +177,6 @@ pk_control_cancellable_cancel_cb (GCancellable *cancellable, PkControlState *sta
 static void
 pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->tid != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->tid), g_free);
@@ -202,6 +198,7 @@ pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 	}
 	g_free (state->tid);
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -273,12 +270,11 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTid",
@@ -333,10 +329,6 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 static void
 pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->daemon_state != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->daemon_state), g_free);
@@ -358,6 +350,7 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *e
 	}
 	g_free (state->daemon_state);
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -419,12 +412,11 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetDaemonState",
@@ -479,10 +471,6 @@ pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GErro
 static void
 pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -503,6 +491,7 @@ pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 		g_object_unref (state->cancellable);
 	}
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -564,12 +553,11 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus set_proxy async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "SetProxy",
@@ -626,10 +614,6 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 static void
 pk_control_get_transaction_list_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->transaction_list != NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->transaction_list), (GDestroyNotify) g_strfreev);
@@ -651,6 +635,7 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, const GErro
 	}
 	g_strfreev (state->transaction_list);
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -712,12 +697,11 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus get_transaction_list async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTransactionList",
@@ -772,10 +756,6 @@ pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, G
 static void
 pk_control_get_time_since_action_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->time != 0) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->time);
@@ -796,6 +776,7 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, const GErr
 		g_object_unref (state->cancellable);
 	}
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -866,12 +847,11 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus get_time_since_action async */
 	role_text = pk_role_enum_to_text (role);
@@ -928,10 +908,6 @@ pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, 
 static void
 pk_control_get_network_state_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->network != PK_NETWORK_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->network);
@@ -952,6 +928,7 @@ pk_control_get_network_state_state_finish (PkControlState *state, const GError *
 		g_object_unref (state->cancellable);
 	}
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -1020,13 +997,12 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	state->network = PK_NETWORK_ENUM_UNKNOWN;
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetNetworkState",
@@ -1080,10 +1056,6 @@ pk_control_get_network_state_finish (PkControl *control, GAsyncResult *res, GErr
 static void
 pk_control_can_authorize_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->authorize != PK_AUTHORIZE_ENUM_UNKNOWN) {
 		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
@@ -1104,6 +1076,7 @@ pk_control_can_authorize_state_finish (PkControlState *state, const GError *erro
 		g_object_unref (state->cancellable);
 	}
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -1174,13 +1147,12 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
 	state->authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "CanAuthorize",
@@ -1235,10 +1207,6 @@ pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError *
 static void
 pk_control_get_properties_state_finish (PkControlState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->control != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -1259,6 +1227,7 @@ pk_control_get_properties_state_finish (PkControlState *state, const GError *err
 		g_object_unref (state->cancellable);
 	}
 	g_object_unref (state->res);
+	g_object_unref (state->control);
 	g_slice_free (PkControlState, state);
 }
 
@@ -1558,12 +1527,11 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 	/* save state */
 	state = g_slice_new0 (PkControlState);
 	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
-	state->control = control;
-	g_object_add_weak_pointer (G_OBJECT (state->control), (gpointer) &state->control);
 
 	/* call D-Bus get_properties async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy_props, "GetAll",

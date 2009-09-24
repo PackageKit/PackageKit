@@ -413,10 +413,6 @@ typedef struct {
 static void
 pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->sack != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
-
 	/* get result */
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
@@ -431,6 +427,7 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 	if (state->cancellable != NULL)
 		g_object_unref (state->cancellable);
 	g_object_unref (state->res);
+	g_object_unref (state->sack);
 	g_slice_free (PkPackageSackState, state);
 }
 
@@ -528,12 +525,11 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
+	state->sack = g_object_ref (sack);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 	}
-	state->sack = sack;
 	state->ret = FALSE;
-	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
 	/* start resolve async */
 	package_ids = pk_package_sack_get_package_ids (sack);
@@ -669,12 +665,11 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
+	state->sack = g_object_ref (sack);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 	}
-	state->sack = sack;
 	state->ret = FALSE;
-	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
 	/* start details async */
 	package_ids = pk_package_sack_get_package_ids (sack);
@@ -790,12 +785,11 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
 	state->res = g_object_ref (res);
+	state->sack = g_object_ref (sack);
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 	}
-	state->sack = sack;
 	state->ret = FALSE;
-	g_object_add_weak_pointer (G_OBJECT (state->sack), (gpointer) &state->sack);
 
 	/* start update_detail async */
 	package_ids = pk_package_sack_get_package_ids (sack);

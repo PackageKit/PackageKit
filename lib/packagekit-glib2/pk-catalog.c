@@ -214,10 +214,6 @@ pk_catalog_process_type (PkCatalogState *state, PkCatalogMode mode)
 static void
 pk_catalog_lookup_state_finish (PkCatalogState *state, const GError *error)
 {
-	/* remove weak ref */
-	if (state->catalog != NULL)
-		g_object_remove_weak_pointer (G_OBJECT (state->catalog), (gpointer) &state->catalog);
-
 	/* get result */
 	if (error == NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_ptr_array_ref (state->array), (GDestroyNotify) g_ptr_array_unref);
@@ -236,6 +232,7 @@ pk_catalog_lookup_state_finish (PkCatalogState *state, const GError *error)
 	g_ptr_array_unref (state->array_provides);
 	g_key_file_free (state->file);
 	g_object_unref (state->res);
+	g_object_unref (state->catalog);
 	g_ptr_array_unref (state->array);
 	g_slice_free (PkCatalogState, state);
 }
@@ -492,17 +489,16 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	/* save state */
 	state = g_slice_new0 (PkCatalogState);
 	state->res = g_object_ref (res);
+	state->catalog = g_object_ref (catalog);
 	if (cancellable != NULL)
 		state->cancellable = g_object_ref (cancellable);
 	state->file = g_key_file_new ();
 	state->array_packages = g_ptr_array_new_with_free_func (g_free);
 	state->array_files = g_ptr_array_new_with_free_func (g_free);
 	state->array_provides = g_ptr_array_new_with_free_func (g_free);;
-	state->catalog = catalog;
 	state->array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
-	g_object_add_weak_pointer (G_OBJECT (state->catalog), (gpointer) &state->catalog);
 
 	/* load all data */
 	egg_debug ("loading from %s", filename);
