@@ -644,8 +644,7 @@ pk_service_pack_generic_state_finish (PkServicePackState *state, const GError *e
 	if (state->ret) {
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
 	} else {
-		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
-		g_simple_async_result_set_from_error (state->res, (GError*) error);
+		g_simple_async_result_set_from_error (state->res, error);
 	}
 
 	/* complete */

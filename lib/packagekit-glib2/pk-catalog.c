@@ -222,8 +222,7 @@ pk_catalog_lookup_state_finish (PkCatalogState *state, const GError *error)
 	if (error == NULL) {
 		g_simple_async_result_set_op_res_gpointer (state->res, g_ptr_array_ref (state->array), (GDestroyNotify) g_ptr_array_unref);
 	} else {
-		/* FIXME: change g_simple_async_result_set_from_error() to accept const GError */
-		g_simple_async_result_set_from_error (state->res, (GError*) error);
+		g_simple_async_result_set_from_error (state->res, error);
 	}
 
 	/* complete */

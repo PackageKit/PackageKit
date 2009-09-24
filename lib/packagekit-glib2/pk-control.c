@@ -44,7 +44,7 @@ static void     pk_control_finalize	(GObject     *object);
 
 #define PK_CONTROL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONTROL, PkControlPrivate))
 
-#define PK_CONTROL_DBUS_METHOD_TIMEOUT		500 /* ms */
+#define PK_CONTROL_DBUS_METHOD_TIMEOUT		1500 /* ms */
 
 /**
  * PkControlPrivate:
@@ -175,7 +175,7 @@ pk_control_cancellable_cancel_cb (GCancellable *cancellable, PkControlState *sta
  * pk_control_get_tid_state_finish:
  **/
 static void
-pk_control_get_tid_state_finish (PkControlState *state, GError *error)
+pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -186,7 +186,6 @@ pk_control_get_tid_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->tid), g_free);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -228,6 +227,7 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_tid_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -235,7 +235,7 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 	state->tid = g_strdup (tid);
 
 	/* we're done */
-	pk_control_get_tid_state_finish (state, error);
+	pk_control_get_tid_state_finish (state, NULL);
 out:
 	g_free (tid);
 }
@@ -331,7 +331,7 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
  * pk_control_get_daemon_state_state_finish:
  **/
 static void
-pk_control_get_daemon_state_state_finish (PkControlState *state, GError *error)
+pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -342,7 +342,6 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdup (state->daemon_state), g_free);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -384,6 +383,7 @@ pk_control_get_daemon_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkContr
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_daemon_state_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -391,7 +391,7 @@ pk_control_get_daemon_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkContr
 	state->daemon_state = g_strdup (daemon_state);
 
 	/* we're done */
-	pk_control_get_daemon_state_state_finish (state, error);
+	pk_control_get_daemon_state_state_finish (state, NULL);
 out:
 	g_free (daemon_state);
 }
@@ -477,7 +477,7 @@ pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GErro
  * pk_control_set_proxy_state_finish:
  **/
 static void
-pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
+pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -488,7 +488,6 @@ pk_control_set_proxy_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -526,6 +525,7 @@ pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 	if (!ret) {
 		egg_warning ("failed to set proxy: %s", error->message);
 		pk_control_set_proxy_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -533,7 +533,7 @@ pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 	state->ret = TRUE;
 
 	/* we're done */
-	pk_control_set_proxy_state_finish (state, error);
+	pk_control_set_proxy_state_finish (state, NULL);
 out:
 	g_free (tid);
 }
@@ -624,7 +624,7 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
  * pk_control_get_transaction_list_state_finish:
  **/
 static void
-pk_control_get_transaction_list_state_finish (PkControlState *state, GError *error)
+pk_control_get_transaction_list_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -635,7 +635,6 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, GError *err
 		g_simple_async_result_set_op_res_gpointer (state->res, g_strdupv (state->transaction_list), (GDestroyNotify) g_strfreev);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -677,6 +676,7 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_transaction_list_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -684,7 +684,7 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 	state->transaction_list = g_strdupv (temp);
 
 	/* we're done */
-	pk_control_get_transaction_list_state_finish (state, error);
+	pk_control_get_transaction_list_state_finish (state, NULL);
 out:
 	g_strfreev (temp);
 }
@@ -770,7 +770,7 @@ pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, G
  * pk_control_get_time_since_action_state_finish:
  **/
 static void
-pk_control_get_time_since_action_state_finish (PkControlState *state, GError *error)
+pk_control_get_time_since_action_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -781,7 +781,6 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, GError *er
 		g_simple_async_result_set_op_res_gssize (state->res, state->time);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -822,6 +821,7 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_time_since_action_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -830,11 +830,12 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 	if (state->time == 0) {
 		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get time");
 		pk_control_get_time_since_action_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
 	/* we're done */
-	pk_control_get_time_since_action_state_finish (state, error);
+	pk_control_get_time_since_action_state_finish (state, NULL);
 out:
 	return;
 }
@@ -925,7 +926,7 @@ pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, 
  * pk_control_get_network_state_state_finish:
  **/
 static void
-pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
+pk_control_get_network_state_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -936,7 +937,6 @@ pk_control_get_network_state_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gssize (state->res, state->network);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -977,6 +977,7 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_get_network_state_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -985,11 +986,12 @@ pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCont
 	if (state->network == PK_NETWORK_ENUM_UNKNOWN) {
 		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_get_network_state_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
 	/* we're done */
-	pk_control_get_network_state_state_finish (state, error);
+	pk_control_get_network_state_state_finish (state, NULL);
 out:
 	g_free (network_state);
 	return;
@@ -1076,7 +1078,7 @@ pk_control_get_network_state_finish (PkControl *control, GAsyncResult *res, GErr
  * pk_control_can_authorize_state_finish:
  **/
 static void
-pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
+pk_control_can_authorize_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -1087,7 +1089,6 @@ pk_control_can_authorize_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -1128,6 +1129,7 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 		pk_control_fixup_dbus_error (error);
 		egg_warning ("failed: %s", error->message);
 		pk_control_can_authorize_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -1136,11 +1138,12 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
 		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_can_authorize_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
 	/* we're done */
-	pk_control_can_authorize_state_finish (state, error);
+	pk_control_can_authorize_state_finish (state, NULL);
 out:
 	g_free (authorize_state);
 	return;
@@ -1230,7 +1233,7 @@ pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError *
  * pk_control_get_properties_state_finish:
  **/
 static void
-pk_control_get_properties_state_finish (PkControlState *state, GError *error)
+pk_control_get_properties_state_finish (PkControlState *state, const GError *error)
 {
 	/* remove weak ref */
 	if (state->control != NULL)
@@ -1241,7 +1244,6 @@ pk_control_get_properties_state_finish (PkControlState *state, GError *error)
 		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -1511,6 +1513,7 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 	if (!ret) {
 		egg_warning ("failed to get properties: %s", error->message);
 		pk_control_get_properties_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -1526,7 +1529,7 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 	}
 
 	/* we're done */
-	pk_control_get_properties_state_finish (state, error);
+	pk_control_get_properties_state_finish (state, NULL);
 out:
 	return;
 }

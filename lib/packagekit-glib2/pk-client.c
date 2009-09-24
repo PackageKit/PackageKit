@@ -474,7 +474,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
  * pk_client_state_finish:
  **/
 static void
-pk_client_state_finish (PkClientState *state, GError *error)
+pk_client_state_finish (PkClientState *state, const GError *error)
 {
 	PkClientPrivate *priv;
 	priv = state->client->priv;
@@ -499,7 +499,6 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
-		g_error_free (error);
 	}
 
 	/* remove from list */
@@ -587,7 +586,7 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 	/* no more copies pending? */
 	if (--state->refcount == 0) {
 		pk_client_copy_finished_remove_old_files (state);
-		pk_client_state_finish (state, error);
+		pk_client_state_finish (state, NULL);
 	}
 out:
 	g_free (path);
@@ -730,6 +729,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
 		}
 		pk_client_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -740,7 +740,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	}
 
 	/* we're done */
-	pk_client_state_finish (state, error);
+	pk_client_state_finish (state, NULL);
 out:
 	if (error_item != NULL)
 		pk_item_error_code_unref (error_item);
@@ -765,6 +765,7 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
+		g_error_free (error);
 		return;
 	}
 
@@ -1234,6 +1235,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		/* fix up the D-Bus error */
 		pk_client_fixup_dbus_error (error);
 		pk_client_state_finish (state, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -3290,6 +3292,7 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
 					    G_TYPE_INVALID);
 	if (!state->ret) {
 		pk_client_state_finish (state, error);
+		g_error_free (error);
 		return;
 	}
 
