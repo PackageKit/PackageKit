@@ -99,9 +99,9 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 
 		/* no, so remove from array */
 		if (!ret) {
+			g_ptr_array_remove_index (array, i);
 			egg_debug ("emit removed: %s", tid);
 			g_signal_emit (tlist, signals[SIGNAL_REMOVED], 0, tid);
-			g_ptr_array_remove_index (array, i);
 		}
 	}
 
@@ -119,9 +119,9 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 
 		/* no, so add to array */
 		if (!ret) {
+			g_ptr_array_add (array, g_strdup (list[i]));
 			egg_debug ("emit added: %s", list[i]);
 			g_signal_emit (tlist, signals[SIGNAL_ADDED], 0, list[i]);
-			g_ptr_array_add (array, g_strdup (list[i]));
 		}
 	}
 out:
