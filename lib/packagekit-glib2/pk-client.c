@@ -522,8 +522,10 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_free (state->transaction_id);
 	g_strfreev (state->files);
 	g_strfreev (state->package_ids);
+	/* results will no exists if the GetTid fails */
+	if (state->results != NULL)
+		g_object_unref (state->results);
 	g_object_unref (state->progress);
-	g_object_unref (state->results);
 	g_object_unref (state->res);
 	g_slice_free (PkClientState, state);
 }
