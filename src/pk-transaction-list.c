@@ -644,7 +644,7 @@ pk_transaction_list_print (PkTransactionList *tlist)
 {
 	gchar *state;
 	state = pk_transaction_list_get_state (tlist);
-	g_print ("%s", state);
+	egg_debug ("%s", state);
 	g_free (state);
 }
 
