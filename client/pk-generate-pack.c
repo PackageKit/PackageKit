@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
@@ -244,6 +245,7 @@ main (int argc, char *argv[])
 		g_thread_init (NULL);
 
 	g_type_init ();
+	dbus_g_thread_init ();
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_generate_pack_sigint_cb);

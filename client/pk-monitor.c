@@ -26,6 +26,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/packagekit.h>
+#include <dbus/dbus-glib.h>
 
 #include "egg-debug.h"
 
@@ -286,6 +287,7 @@ main (int argc, char *argv[])
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
 	g_type_init ();
+	dbus_g_thread_init ();
 
 	context = g_option_context_new (NULL);
 	/* TRANSLATORS: this is a program that monitors PackageKit */

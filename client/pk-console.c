@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib/gi18n.h>
+#include <dbus/dbus-glib.h>
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 #include <sys/types.h>
@@ -1004,6 +1005,7 @@ main (int argc, char *argv[])
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
 	g_type_init ();
+	dbus_g_thread_init ();
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
