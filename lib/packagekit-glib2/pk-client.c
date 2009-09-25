@@ -50,6 +50,8 @@ static void     pk_client_finalize	(GObject     *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
 
+#define PK_CLIENT_DBUS_METHOD_TIMEOUT	1500 /* ms */
+
 /**
  * PkClientPrivate:
  *
@@ -3518,6 +3520,9 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 							"org.freedesktop.DBus.Properties");
 	if (state->proxy_props == NULL)
 		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+
+	/* timeout if we fail to get properties */
+	dbus_g_proxy_set_default_timeout (state->proxy_props, PK_CLIENT_DBUS_METHOD_TIMEOUT);
 
 	/* call D-Bus get_properties async */
 	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
