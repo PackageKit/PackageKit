@@ -774,8 +774,10 @@ main (int argc, char *argv[])
 
 out:
 	g_strfreev (package_ids);
-	g_object_unref (task);
-	g_object_unref (cancellable);
+	if (task != NULL)
+		g_object_unref (task);
+	if (cancellable != NULL)
+		g_object_unref (cancellable);
 	if (config != NULL) {
 		g_strfreev (config->locations);
 		g_free (config);
