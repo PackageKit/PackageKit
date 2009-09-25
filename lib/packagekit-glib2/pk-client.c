@@ -329,7 +329,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* role */
 	if (g_strcmp0 (key, "Role") == 0) {
 		ret = pk_progress_set_role (state->progress, pk_role_enum_from_text (g_value_get_string (value)));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
 		return;
 	}
@@ -337,7 +337,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* status */
 	if (g_strcmp0 (key, "Status") == 0) {
 		ret = pk_progress_set_status (state->progress, pk_status_enum_from_text (g_value_get_string (value)));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
 		return;
 	}
@@ -345,7 +345,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* last-package */
 	if (g_strcmp0 (key, "LastPackage") == 0) {
 		ret = pk_progress_set_package_id (state->progress, g_value_get_string (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
 		return;
 	}
@@ -353,7 +353,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* percentage */
 	if (g_strcmp0 (key, "Percentage") == 0) {
 		ret = pk_progress_set_percentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PERCENTAGE, state->progress_user_data);
 		return;
 	}
@@ -361,7 +361,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* subpercentage */
 	if (g_strcmp0 (key, "Subpercentage") == 0) {
 		ret = pk_progress_set_subpercentage (state->progress, pk_client_percentage_to_signed (g_value_get_uint (value)));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SUBPERCENTAGE, state->progress_user_data);
 		return;
 	}
@@ -369,7 +369,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* allow-cancel */
 	if (g_strcmp0 (key, "AllowCancel") == 0) {
 		ret = pk_progress_set_allow_cancel (state->progress, g_value_get_boolean (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ALLOW_CANCEL, state->progress_user_data);
 		return;
 	}
@@ -377,7 +377,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* caller-active */
 	if (g_strcmp0 (key, "CallerActive") == 0) {
 		ret = pk_progress_set_caller_active (state->progress, g_value_get_boolean (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_CALLER_ACTIVE, state->progress_user_data);
 		return;
 	}
@@ -385,7 +385,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* elapsed-time */
 	if (g_strcmp0 (key, "ElapsedTime") == 0) {
 		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ELAPSED_TIME, state->progress_user_data);
 		return;
 	}
@@ -393,7 +393,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* remaining-time */
 	if (g_strcmp0 (key, "RemainingTime") == 0) {
 		ret = pk_progress_set_elapsed_time (state->progress, g_value_get_uint (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_REMAINING_TIME, state->progress_user_data);
 		return;
 	}
@@ -401,7 +401,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* speed */
 	if (g_strcmp0 (key, "Speed") == 0) {
 		ret = pk_progress_set_speed (state->progress, g_value_get_uint (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_SPEED, state->progress_user_data);
 		return;
 	}
@@ -409,7 +409,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 	/* uid */
 	if (g_strcmp0 (key, "Uid") == 0) {
 		ret = pk_progress_set_uid (state->progress, g_value_get_uint (value));
-		if (ret)
+		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_UID, state->progress_user_data);
 		return;
 	}
@@ -3468,7 +3468,7 @@ pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientStat
 	}
 
 	/* we're done */
-	pk_client_get_progress_state_finish (state, error);
+	pk_client_get_progress_state_finish (state, NULL);
 }
 
 /**
@@ -3702,6 +3702,7 @@ pk_client_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+#include "pk-client-sync.h"
 
 static void
 pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
@@ -3872,10 +3873,12 @@ static guint _progress_cb = 0;
 static guint _status_cb = 0;
 static guint _package_cb = 0;
 static guint _allow_cancel_cb = 0;
+gchar *_tid = NULL;
 
 static void
 pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *test)
 {
+	gchar *tid;
 	if (type == PK_PROGRESS_TYPE_PACKAGE_ID)
 		_package_cb++;
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE)
@@ -3886,6 +3889,12 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 		_allow_cancel_cb++;
 	if (type == PK_PROGRESS_TYPE_STATUS)
 		_status_cb++;
+
+	/* get the running transaction id if we've not set it before */
+	g_object_get (progress, "transaction-id", &tid, NULL);
+	if (tid != NULL && _tid == NULL)
+		_tid = g_strdup (tid);
+	g_free (tid);
 }
 
 static gboolean
@@ -3950,6 +3959,11 @@ pk_client_test (gpointer user_data)
 	GCancellable *cancellable;
 	gboolean ret;
 	gchar **values;
+	GError *error = NULL;
+	PkProgress *progress;
+	gchar *tid;
+	PkRoleEnum role;
+	PkStatusEnum status;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4013,6 +4027,25 @@ pk_client_test (gpointer user_data)
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "get progress of past transaction");
+	progress = pk_client_get_progress (client, _tid, NULL, &error);
+	g_object_get (progress,
+		      "transaction-id", &tid,
+		      "role", &role,
+		      "status", &status,
+		      NULL);
+	if (g_strcmp0 (tid, _tid) != 0)
+		egg_test_failed (test, "incorrect transaction-id, got %s, expected %s", tid, _tid);
+	if (role != PK_ROLE_ENUM_RESOLVE)
+		egg_test_failed (test, "incorrect role, got %s", pk_role_enum_to_text (role));
+	if (status != PK_STATUS_ENUM_FINISHED)
+		egg_test_failed (test, "incorrect status, got %s", pk_status_enum_to_text (status));
+	egg_test_success (test, "got progress in %i", egg_test_elapsed (test));
+	g_object_unref (progress);
+	g_free (tid);
+	g_free (_tid);
 
 	/************************************************************/
 	egg_test_title (test, "got progress updates");
