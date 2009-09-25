@@ -89,6 +89,7 @@ typedef struct {
 	guint				 number;
 	gulong				 cancellable_id;
 	DBusGProxyCall			*call;
+	DBusGProxyCall			*call_interface_changed;
 	DBusGProxy			*proxy;
 	DBusGProxy			*proxy_props;
 	GCancellable			*cancellable;
@@ -460,6 +461,11 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 		state->call = NULL;
 		return;
 	}
+	if (state->call_interface_changed != NULL) {
+		dbus_g_proxy_cancel_call (state->proxy, state->call_interface_changed);
+		egg_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call_interface_changed);
+		state->call_interface_changed = NULL;
+	}
 
 	/* takeover the call with the cancel method */
 	state->call = dbus_g_proxy_begin_call (state->proxy, "Cancel",
@@ -807,6 +813,9 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 	GHashTable *hash;
 	gboolean ret;
 
+	egg_debug ("got properties, ended DBus call: %p (%p)", state, state->call_interface_changed);
+	state->call_interface_changed = NULL;
+
 	/* get the result */
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
@@ -836,20 +845,23 @@ static void
 pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 {
 	/* successive quick Changed events */
-	if (state->call != NULL) {
-		egg_debug ("already processing request %p, so ignoring", state->call);
+	if (state->call_interface_changed != NULL) {
+		egg_debug ("already processing request %p, so ignoring", state->call_interface_changed);
 		return;
 	}
 
 	/* call D-Bus get_properties async */
-	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
-					       (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
-					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
-					       G_TYPE_INVALID);
-	if (state->call == NULL)
+	state->call_interface_changed =
+		dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
+				         (DBusGProxyCallNotify) pk_client_get_properties_cb, state, NULL,
+				         G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
+				         G_TYPE_INVALID);
+	if (state->call_interface_changed == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call);
-	/* TODO: save state->call? */
+	egg_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call_interface_changed);
+
+	/* we've sent this async */
+	egg_debug ("interface changed, started DBus call: %p (%p)", state, state->call);
 }
 
 
