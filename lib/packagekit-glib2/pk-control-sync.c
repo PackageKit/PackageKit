@@ -36,6 +36,7 @@ typedef struct {
 	GMainLoop	*loop;
 	gboolean	 ret;
 	guint		 seconds;
+	gchar		**transaction_list;
 } PkControlHelper;
 
 /**
@@ -86,5 +87,55 @@ pk_control_get_properties (PkControl *control, GCancellable *cancellable, GError
 	g_free (helper);
 
 	return ret;
+}
+
+/**
+ * pk_control_get_transaction_list_cb:
+ **/
+static void
+pk_control_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
+{
+	/* get the result */
+	helper->transaction_list = pk_control_get_transaction_list_finish (control, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_control_get_transaction_list:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Gets the transaction list in progress.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: The list of transaction id's, or %NULL, free with g_strfreev()
+ **/
+gchar **
+pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, GError **error)
+{
+	gchar **transaction_list;
+	PkControlHelper *helper;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkControlHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_control_get_transaction_list_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_transaction_list_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	transaction_list = helper->transaction_list;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return transaction_list;
 }
 

@@ -28,6 +28,9 @@
 gboolean	 pk_control_get_properties		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gchar		**pk_control_get_transaction_list	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
 #endif /* __PK_CONTROL_SYNC_H */
 
