@@ -553,7 +553,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* use a temp array, as not all are in progress */
-	parray = g_ptr_array_new ();
+	parray = g_ptr_array_new_with_free_func (g_free);
 
 	/* find all the transactions in progress */
 	length = tlist->priv->array->len;
@@ -565,8 +565,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	}
 	egg_debug ("%i transactions in list, %i committed but not finished", length, parray->len);
 	array = pk_ptr_array_to_strv (parray);
-	g_ptr_array_foreach (parray, (GFunc) g_free, NULL);
-	g_ptr_array_free (parray, TRUE);
+	g_ptr_array_unref (parray);
 
 	return array;
 }
