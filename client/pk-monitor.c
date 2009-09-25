@@ -142,8 +142,8 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	PkStatusEnum status;
 	guint percentage;
 	gboolean allow_cancel;
-	gchar *package_id;
-	gchar *transaction_id;
+	gchar *package_id = NULL;
+	gchar *transaction_id = NULL;
 
 	/* get data */
 	g_object_get (progress,
@@ -154,6 +154,10 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		      "package-id", &package_id,
 		      "transaction-id", &transaction_id,
 		      NULL);
+
+	/* don't print before we have properties */
+	if (transaction_id == NULL)
+		goto out;
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_text (role));
@@ -166,6 +170,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
 		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_text (status));
 	}
+out:
 	g_free (package_id);
 	g_free (transaction_id);
 }
