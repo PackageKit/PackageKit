@@ -753,7 +753,7 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	GError *error = NULL;
 
 	/* finished this call */
-	egg_debug ("got reply to request, ended DBus call: %p", state->call);
+	egg_debug ("got reply to request, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* get the result */
@@ -825,7 +825,7 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 
 out:
 	/* finished this call */
-	egg_debug ("got property results, ended DBus call: %p", state->call);
+	egg_debug ("got property results, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 }
 
@@ -848,7 +848,7 @@ pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("changed so checking properties, started DBus call: %p", state->call);
+	egg_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call);
 	/* TODO: save state->call? */
 }
 
@@ -1238,7 +1238,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	}
 
 	/* finished this call */
-	egg_debug ("set locale, ended DBus call: %p", state->call);
+	egg_debug ("set locale, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* we'll have results from now on */
@@ -1472,7 +1472,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* we've sent this async */
-	egg_debug ("new method, started DBus call: %p", state->call);
+	egg_debug ("new method, started DBus call: %p (%p)", state, state->call);
 
 out:
 	g_free (filters_text);
@@ -1523,7 +1523,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("sent locale request, started DBus call: %p", state->call);
+	egg_debug ("sent locale request, started DBus call: %p (%p)", state, state->call);
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
@@ -3262,7 +3262,7 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
 	}
 
 	/* finished this call */
-	egg_debug ("coldplugged properties, ended DBus call: %p", state->call);
+	egg_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* setup the proxies ready for use */
@@ -3341,7 +3341,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("coldplug adoptee, started DBus call: %p", state->call);
+	egg_debug ("coldplug adoptee, started DBus call: %p (%p)", state, state->call);
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -3448,7 +3448,7 @@ pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientStat
 	}
 
 	/* finished this call */
-	egg_debug ("coldplugged properties, ended DBus call: %p", state->call);
+	egg_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* process results */
@@ -3545,7 +3545,7 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 		state = g_ptr_array_index (array, i);
 		if (state->call == NULL)
 			continue;
-		egg_debug ("cancel in flight call: %p", state->call);
+		egg_debug ("cancel in flight call: %p (%p)", state, state->call);
 		dbus_g_proxy_cancel_call (state->proxy, state->call);
 	}
 

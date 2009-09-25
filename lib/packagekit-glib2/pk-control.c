@@ -164,7 +164,7 @@ pk_control_cancellable_cancel_cb (GCancellable *cancellable, PkControlState *sta
 	if (state->call != NULL) {
 		dbus_g_proxy_cancel_call (state->control->priv->proxy, state->call);
 		dbus_g_proxy_cancel_call (state->control->priv->proxy_props, state->call);
-		egg_debug ("cancelling, ended DBus call: %p", state->call);
+		egg_debug ("cancelling, ended DBus call: %p (%p)", state, state->call);
 		state->call = NULL;
 	}
 }
@@ -186,7 +186,10 @@ pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -285,7 +288,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -338,7 +341,10 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *e
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -427,7 +433,7 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -480,7 +486,10 @@ pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -570,7 +579,7 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -623,7 +632,10 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, const GErro
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -712,7 +724,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -765,7 +777,10 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, const GErr
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -864,7 +879,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -917,7 +932,10 @@ pk_control_get_network_state_state_finish (PkControlState *state, const GError *
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1013,7 +1031,7 @@ pk_control_get_network_state_async (PkControl *control, GCancellable *cancellabl
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -1065,7 +1083,10 @@ pk_control_can_authorize_state_finish (PkControlState *state, const GError *erro
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1164,7 +1185,7 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -1216,7 +1237,10 @@ pk_control_get_properties_state_finish (PkControlState *state, const GError *err
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	egg_debug ("state array remove %p", state->call);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1543,7 +1567,7 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p", state->call);
+	egg_debug ("state array add %p (%p)", state, state->call);
 
 	g_object_unref (res);
 }
@@ -1701,7 +1725,7 @@ pk_control_cancel_all_dbus_methods (PkControl *control)
 		state = g_ptr_array_index (array, i);
 		if (state->call == NULL)
 			continue;
-		egg_debug ("cancel in flight call: %p", state->call);
+		egg_debug ("cancel in flight call: %p (%p)", state, state->call);
 		dbus_g_proxy_cancel_call (control->priv->proxy, state->call);
 	}
 
@@ -2143,6 +2167,8 @@ pk_control_new (void)
 #include "egg-test.h"
 #include "pk-control-sync.h"
 
+static guint _refcount = 0;
+
 static void
 pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
@@ -2160,7 +2186,8 @@ pk_control_test_get_tid_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	egg_debug ("tid = %s", tid);
 	g_free (tid);
-	egg_test_loop_quit (test);
+	if (--_refcount == 0)
+		egg_test_loop_quit (test);
 }
 
 static void
@@ -2224,9 +2251,12 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
 	}
+	egg_debug ("groups = %s", text);
+
 	g_free (text);
 
-	egg_test_loop_quit (test);
+	if (--_refcount == 0)
+		egg_test_loop_quit (test);
 }
 
 static void
@@ -2293,6 +2323,8 @@ pk_control_test (gpointer user_data)
 	gboolean ret;
 	gchar *text;
 	PkBitfield roles;
+	guint i;
+	const guint LOOP_SIZE = 5;
 
 	if (!egg_test_start (test, "PkControl"))
 		return;
@@ -2304,21 +2336,47 @@ pk_control_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "get TID async");
+	_refcount = 1;
 	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got tid in %i", egg_test_elapsed (test));
 
 	/************************************************************/
+	egg_test_title (test, "get multiple TIDs async");
+	_refcount = LOOP_SIZE;
+	for (i=0; i<_refcount; i++) {
+		egg_debug ("getting #%i", i+1);
+		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
+	}
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got %i tids in %i", LOOP_SIZE, egg_test_elapsed (test));
+
+	/************************************************************/
 	egg_test_title (test, "get properties async");
+	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got properties types in %i", egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "get properties async (again, to test caching)");
+	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got properties in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "do multiple requests async");
+	_refcount = LOOP_SIZE * 4;
+	for (i=0; i<_refcount; i++) {
+		egg_debug ("getting #%i", i+1);
+		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
+		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
+		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_tid_cb, test);
+		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_properties_cb, test);
+	}
+	egg_test_loop_wait (test, 5000);
+	egg_test_success (test, "got %i 2*properties and 2*tids in %i", LOOP_SIZE, egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "get time since async");
