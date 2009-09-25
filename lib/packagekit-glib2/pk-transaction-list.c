@@ -86,6 +86,14 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 		goto out;
 	}
 
+	/* debug */
+	for (i=0; i<array->len; i++) {
+		tid = g_ptr_array_index (array, i);
+		egg_debug ("last:\t%s", tid);
+	}
+	for (i=0; list[i] != NULL; i++)
+		egg_debug ("current:\t%s", list[i]);
+
 	/* remove old entries */
 	for (i=0; i<array->len; i++) {
 		tid = g_ptr_array_index (array, i);
@@ -115,7 +123,7 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 		ret = FALSE;
 		for (j=0; j<array->len; j++) {
 			tid = g_ptr_array_index (array, j);
-			ret = (g_strcmp0 (tid, list[j]) == 0);
+			ret = (g_strcmp0 (tid, list[i]) == 0);
 			if (ret)
 				break;
 		}
@@ -290,6 +298,7 @@ pk_transaction_list_new (void)
 
 guint _added = 0;
 guint _removed = 0;
+guint _refcount = 0;
 
 static void
 pk_transaction_list_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
@@ -313,7 +322,8 @@ pk_transaction_list_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest
 out:
 	if (results != NULL)
 		g_object_unref (results);
-	egg_test_loop_quit (test);
+	if (--_refcount == 0)
+		egg_test_loop_quit (test);
 }
 
 static void
@@ -328,6 +338,13 @@ pk_transaction_list_test_removed_cb (PkTransactionList *tlist, const gchar *tid,
 {
 	egg_warning ("removed %s", tid);
 	_removed++;
+}
+
+static gboolean
+pk_transaction_list_delay_cb (EggTest *test)
+{
+	egg_test_loop_quit (test);
+	return FALSE;
 }
 
 void
@@ -358,19 +375,28 @@ pk_transaction_list_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "resolve package");
 	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
+	_refcount = 2;
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL, NULL, NULL,
+				 (GAsyncReadyCallback) pk_transaction_list_test_resolve_cb, test);
+	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), package_ids, NULL, NULL, NULL,
 				 (GAsyncReadyCallback) pk_transaction_list_test_resolve_cb, test);
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
 
 	/************************************************************/
+	egg_test_title (test, "wait for remove");
+	g_timeout_add (10, (GSourceFunc) pk_transaction_list_delay_cb, test);
+	egg_test_loop_wait (test, 15000);
+	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
 	egg_test_title (test, "correct number of added signals");
-	egg_test_assert (test, (_added == 1));
+	egg_test_assert (test, (_added == 2));
 
 	/************************************************************/
 	egg_test_title (test, "correct number of removed signals");
-	egg_test_assert (test, (_removed == 0));
+	egg_test_assert (test, (_removed == 2));
 
 	g_object_unref (tlist);
 	g_object_unref (client);
