@@ -352,6 +352,10 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 		      NULL);
 
 	switch (status) {
+	case PK_STATUS_ENUM_SETUP:
+	case PK_STATUS_ENUM_FINISHED:
+	case PK_STATUS_ENUM_QUERY:
+		break;
 	case PK_STATUS_ENUM_DOWNLOAD_REPOSITORY:
 		/* TRANSLATORS: downloading repo data so we can search */
 		text = _("Downloading details about the software sources.");
@@ -369,8 +373,8 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 		text = _("Loading list of packages.");
 		break;
 	default:
-		/* no need to print */
-		text = NULL;
+		/* fallback to default */
+		text = pk_status_enum_to_localised_text (status);
 	}
 
 	/* print to screen, still one line */
