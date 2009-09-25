@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.ml\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-22 19:30+0000\n"
-"PO-Revision-Date: 2009-09-23 09:56+0530\n"
+"POT-Creation-Date: 2009-09-25 02:41+0000\n"
+"PO-Revision-Date: 2009-09-25 13:34+0530\n"
 "Last-Translator: \n"
 "Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,115 +18,115 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:142
+#: ../client/pk-console.c:143
 msgid "Transaction"
 msgstr "ഇടപാടു്"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:144
+#: ../client/pk-console.c:145
 msgid "System time"
 msgstr "സിസ്റ്റം സമയം"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:146
+#: ../client/pk-console.c:147
 msgid "Succeeded"
 msgstr "ഇടപാടു് പൂര്‍ത്തിയായി"
 
-#: ../client/pk-console.c:146
+#: ../client/pk-console.c:147
 msgid "True"
 msgstr "True"
 
-#: ../client/pk-console.c:146
+#: ../client/pk-console.c:147
 msgid "False"
 msgstr "False"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:148 ../src/pk-polkit-action-lookup.c:336
+#: ../client/pk-console.c:149 ../src/pk-polkit-action-lookup.c:336
 msgid "Role"
 msgstr "റോള്‍"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:153
+#: ../client/pk-console.c:154
 msgid "Duration"
 msgstr "സമയം"
 
-#: ../client/pk-console.c:153
+#: ../client/pk-console.c:154
 msgid "(seconds)"
 msgstr "(സെക്കന്‍ഡുകള്‍)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:157 ../src/pk-polkit-action-lookup.c:350
+#: ../client/pk-console.c:158 ../src/pk-polkit-action-lookup.c:350
 msgid "Command line"
 msgstr "കമാന്‍ഡ് ലൈന്‍"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:159
+#: ../client/pk-console.c:160
 msgid "User ID"
 msgstr "ഉപയോക്താവിനുള്ള ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:166
+#: ../client/pk-console.c:167
 msgid "Username"
 msgstr "ഉപയോക്തൃനാമം"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:170
+#: ../client/pk-console.c:171
 msgid "Real name"
 msgstr "യഥാര്‍ത്ഥ പേരു്"
 
-#: ../client/pk-console.c:178
+#: ../client/pk-console.c:179
 msgid "Affected packages:"
 msgstr "ബാധിച്ച പാക്കേജുകള്‍:"
 
-#: ../client/pk-console.c:180
+#: ../client/pk-console.c:181
 msgid "Affected packages: None"
 msgstr "ബാധിച്ച പാക്കേജുകള്‍: ഒന്നുമില്ല"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:200
+#: ../client/pk-console.c:201
 msgid "Distribution"
 msgstr "വിതരണം"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:202
+#: ../client/pk-console.c:203
 msgid "Type"
 msgstr "തരം"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:204 ../client/pk-console.c:225
+#: ../client/pk-console.c:205 ../client/pk-console.c:226
 msgid "Summary"
 msgstr "സമ്മറി"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:214
+#: ../client/pk-console.c:215
 msgid "Category"
 msgstr "വിഭാഗം"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:216
+#: ../client/pk-console.c:217
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:219
+#: ../client/pk-console.c:220
 msgid "Parent"
 msgstr "പേരന്റ്"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:222
+#: ../client/pk-console.c:223
 msgid "Name"
 msgstr "പേരു്"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:228
+#: ../client/pk-console.c:229
 msgid "Icon"
 msgstr "ചിഹ്നം"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:242
+#: ../client/pk-console.c:243
 msgid "Details about the update:"
 msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്ചുള്ള വിശദാംശങ്ങള്‍:"
 
@@ -134,7 +134,7 @@ msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്�
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:248 ../lib/packagekit-glib2/pk-task-text.c:105
+#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
 #: ../lib/packagekit-glib2/pk-task-text.c:172
 #: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
@@ -143,139 +143,141 @@ msgstr[0] "പാക്കേജ്"
 msgstr[1] "പാക്കേജുകള്‍"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:251
+#: ../client/pk-console.c:252
 msgid "Updates"
 msgstr "പരിഷ്കരണങ്ങള്‍"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:255
+#: ../client/pk-console.c:256
 msgid "Obsoletes"
 msgstr "വേണ്ടെന്നു് വച്ചവ"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:259 ../lib/packagekit-glib2/pk-task-text.c:175
+#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:175
 msgid "Vendor"
 msgstr "കച്ചവടക്കാരന്‍"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:264
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:267
+#: ../client/pk-console.c:268
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:272
 msgid "Restart"
 msgstr "വീണ്ടും ആരംഭിക്കുക"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:275
+#: ../client/pk-console.c:276
 msgid "Update text"
 msgstr "പരിഷ്കരിച്ച വാചകം"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:279
+#: ../client/pk-console.c:280
 msgid "Changes"
 msgstr "മാറ്റങ്ങള്‍"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:283
+#: ../client/pk-console.c:284
 msgid "State"
 msgstr "അവസ്ഥ"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:288
+#: ../client/pk-console.c:289
 msgid "Issued"
 msgstr "നല്‍കിയതു്"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:293 ../lib/packagekit-glib2/pk-console-shared.c:498
+#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:498
 msgid "Updated"
 msgstr "പരിഷ്കരിച്ചിരിക്കുന്നു"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:311
+#: ../client/pk-console.c:312
 msgid "Enabled"
 msgstr "പ്രവര്‍ത്തന സജ്ജം"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:314
+#: ../client/pk-console.c:315
 msgid "Disabled"
 msgstr "പ്രവര്‍ത്തന രഹിതം"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:336
+#: ../client/pk-console.c:337
 msgid "System restart required by:"
 msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:339
+#: ../client/pk-console.c:340
 msgid "Session restart required:"
 msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കേണ്ടതുണ്ടു്:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:342
+#: ../client/pk-console.c:343
 msgid "System restart (security) required by:"
 msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:345
+#: ../client/pk-console.c:346
 msgid "Session restart (security) required:"
 msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:348
+#: ../client/pk-console.c:349
 msgid "Application restart required by:"
 msgstr "പ്രയോഗം വീണ്ടും ആരംഭിക്കേണ്ടതു് ആവശ്യമുള്ളതു്:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:365
+#: ../client/pk-console.c:366
 msgid "Package description"
 msgstr "പാക്കേജ് വിശദാംശങ്ങള്‍"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:383
+#: ../client/pk-console.c:384
 msgid "Message:"
 msgstr "സന്ദേശം:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:397
+#: ../client/pk-console.c:398
 msgid "No files"
 msgstr "ഫയലുകള്‍ ലഭ്യമല്ല"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:403
 msgid "Package files"
 msgstr "പാക്കേജിലുള്ള ഫയലുകള്‍"
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:474
+#: ../client/pk-console.c:475
 msgid "Fatal error"
 msgstr "ഗുരുതര പിശക്"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:483
+#: ../client/pk-console.c:484
+#: ../contrib/command-not-found/pk-command-not-found.c:422
+#: ../contrib/command-not-found/pk-command-not-found.c:563
 msgid "The transaction failed"
 msgstr "ഇടപാടു് പരാജയപ്പെട്ടു"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:551
+#: ../client/pk-console.c:552
 msgid "Please restart the computer to complete the update."
 msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:554
+#: ../client/pk-console.c:555
 msgid "Please logout and login to complete the update."
 msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:558
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -284,7 +286,7 @@ msgstr ""
 "വീണ്ടും ആരംഭിക്കുക."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:560
+#: ../client/pk-console.c:561
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -293,19 +295,19 @@ msgstr ""
 "ചെയ്യുക."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:583
+#: ../client/pk-console.c:584
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ലഭ്യമായ പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:611
+#: ../client/pk-console.c:612
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്ത പാക്കേജുകള്‍ കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:639 ../client/pk-console.c:667
+#: ../client/pk-console.c:640 ../client/pk-console.c:668
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
@@ -314,287 +316,287 @@ msgstr "പാക്കേജ് കണ്ടുപിടിക്കുവാ�
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:695 ../client/pk-console.c:723
-#: ../client/pk-console.c:751 ../client/pk-console.c:779
-#: ../client/pk-console.c:807
+#: ../client/pk-console.c:696 ../client/pk-console.c:724
+#: ../client/pk-console.c:752 ../client/pk-console.c:780
+#: ../client/pk-console.c:808
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "എല്ലാ പാക്കേജുകളും കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:836
+#: ../client/pk-console.c:837
 msgid "The daemon crashed mid-transaction!"
 msgstr "ഡെമണ്‍ തകര്‍ന്നിരിക്കുന്നു!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:870
+#: ../client/pk-console.c:871
 msgid "PackageKit Console Interface"
 msgstr "പാക്കേജ്കിറ്റ് കണ്‍സോള്‍ ഇന്റര്‍ഫെയിസ്"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:872
+#: ../client/pk-console.c:873
 msgid "Subcommands:"
 msgstr "സബ്കമാന്‍ഡുകള്‍:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:951
+#: ../client/pk-console.c:952
 msgid "Failed to get the time since this action was last completed"
 msgstr "ഈ പ്രവര്‍ത്തി അവസാനമായി പൂര്‍ത്തിയാക്കിയ സമയം ലഭ്യമായില്ല"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:986 ../client/pk-generate-pack.c:222
-#: ../client/pk-monitor.c:275
-#: ../contrib/command-not-found/pk-command-not-found.c:614
+#: ../client/pk-console.c:987 ../client/pk-generate-pack.c:223
+#: ../client/pk-monitor.c:276
+#: ../contrib/command-not-found/pk-command-not-found.c:616
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:511
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "കൂടുതല്‍ ഡീബഗ്ഗിങ് വിവരം കാണിക്കുക"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:989 ../client/pk-monitor.c:277
+#: ../client/pk-console.c:990 ../client/pk-monitor.c:278
 msgid "Show the program version and exit"
 msgstr "പ്രോഗ്രാമിന്റെ പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:992
+#: ../client/pk-console.c:993
 msgid "Set the filter, e.g. installed"
 msgstr "ഫില്‍‌റ്റര്‍ ക്രമികരിക്കുക, e.g. ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:995
+#: ../client/pk-console.c:996
 msgid "Exit without waiting for actions to complete"
 msgstr "പൂര്‍ത്തിയാകുന്നതിനുള്ള പ്രവര്‍ത്തികള്‍ക്കായി കാത്തിരിക്കാതെ പുറത്ത് കടക്കുക"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1020
+#: ../client/pk-console.c:1022
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit-മായി ബന്ധപ്പെടുവാന്‍ സാധിച്ചില്ല"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1072
+#: ../client/pk-console.c:1074
 msgid "The filter specified was invalid"
 msgstr "നല്‍കിയ ഫില്‍‌റ്റര്‍ തെറ്റാണു്"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1091
+#: ../client/pk-console.c:1093
 msgid "A search type is required, e.g. name"
 msgstr "തെരയുന്നതിനുള്ള തരം ആവശ്യമുണ്ടു്, ഉദാ. പേരു്"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1098 ../client/pk-console.c:1110
-#: ../client/pk-console.c:1122 ../client/pk-console.c:1134
+#: ../client/pk-console.c:1100 ../client/pk-console.c:1112
+#: ../client/pk-console.c:1124 ../client/pk-console.c:1136
 msgid "A search term is required"
 msgstr "തെരയുന്നതിനുള്ള വാചകം ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1144
+#: ../client/pk-console.c:1146
 msgid "Invalid search type"
 msgstr "തെറ്റായ തരത്തിലുള്ള തെരച്ചില്‍"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1150
+#: ../client/pk-console.c:1152
 msgid "A package name to install is required"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1159
+#: ../client/pk-console.c:1161
 msgid "A filename to install is required"
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1171
+#: ../client/pk-console.c:1173
 msgid "A type, key_id and package_id are required"
 msgstr "ഏത് തരം, key_id, package_id എന്നിവ ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1182
+#: ../client/pk-console.c:1184
 msgid "A package name to remove is required"
 msgstr "നീക്കം ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1191
+#: ../client/pk-console.c:1193
 msgid "A destination directory and the package names to download are required"
 msgstr "ഏതു് ഡയറക്ടറി എന്നും ഡൌണ്‍ലോട് ചെയ്യുവാനുള്ള പാക്കേജുകളും ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1198
+#: ../client/pk-console.c:1200
 msgid "Directory not found"
 msgstr "ഡയറക്ടറി ലഭ്യമല്ല"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1207
+#: ../client/pk-console.c:1209
 msgid "A licence identifier (eula-id) is required"
 msgstr "ലൈസന്‍സ് ഐഡന്റിഫയര്‍ (eula-id) ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1218
+#: ../client/pk-console.c:1220
 msgid "A transaction identifier (tid) is required"
 msgstr "ഒരു ട്രാന്‍സാക്ഷന്‍ ഐഡന്റിഫയര്‍ (tid) ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1239
+#: ../client/pk-console.c:1241
 msgid "A package name to resolve is required"
 msgstr "റിസോള്‍വ് ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1261
+#: ../client/pk-console.c:1252 ../client/pk-console.c:1263
 msgid "A repository name is required"
 msgstr "സംഭരണിയ്ക്കുള്ള പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1272
+#: ../client/pk-console.c:1274
 msgid "A repo name, parameter and value are required"
 msgstr "ഒരു റിപ്പോയുടെ പേരും പരാമീറ്റരും മൂല്ല്യവും ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1289
+#: ../client/pk-console.c:1291
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ഒരു പ്രവര്‍ത്തി ആവശ്യമുണ്ടു്, ഉദാ. 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1296
+#: ../client/pk-console.c:1298
 msgid "A correct role is required"
 msgstr "ശരിയായ റോള്‍ ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1306 ../client/pk-console.c:1321
-#: ../client/pk-console.c:1330 ../client/pk-console.c:1350
-#: ../client/pk-console.c:1359 ../client/pk-generate-pack.c:285
+#: ../client/pk-console.c:1308 ../client/pk-console.c:1323
+#: ../client/pk-console.c:1332 ../client/pk-console.c:1352
+#: ../client/pk-console.c:1361 ../client/pk-generate-pack.c:287
 msgid "A package name is required"
 msgstr "പാക്കേജിന്റ് പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1339
+#: ../client/pk-console.c:1341
 msgid "A package provide string is required"
 msgstr "പാക്കേജ് ലഭ്യമാക്കുന്ന സ്ട്രിങ് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1419
+#: ../client/pk-console.c:1421
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "'%s' എന്ന ഐച്ഛികത്തിനുള്ള പിന്തുണ ലഭ്യമല്ല"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1429
+#: ../client/pk-console.c:1431
 msgid "Command failed"
 msgstr "നിര്‍ദ്ദേശം പരാജയപ്പെട്ടു"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:226
 msgid "Set the file name of dependencies to be excluded"
 msgstr "ചേര്‍ക്കേണ്ടാത്ത ഡിപന്‍ഡസികളുടെ ഫയല്‍ നാമം സജ്ജമാക്കുക"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:228
+#: ../client/pk-generate-pack.c:229
 msgid "The output file or directory (the current directory is used if ommitted)"
 msgstr ""
 "ഔട്ട്പുട്ട് ഫയല്‍ അല്ലെങ്കില്‍ ഡയറക്ടറി (നല്‍കിയിട്ടില്ല എങ്കില്‍ നിലവിലുള്ള ഡയറക്ടറി ആണു് "
 "ഉപയോഗിക്കുന്നതു്)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:231
+#: ../client/pk-generate-pack.c:232
 msgid "The package to be put into the service pack"
 msgstr "സര്‍വീസ് പാക്കിലേക്ക് ചേര്‍ക്കേണ്ട പാക്കേജ്"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:234
+#: ../client/pk-generate-pack.c:235
 msgid "Put all updates available in the service pack"
 msgstr "സര്‍വീസ് പാക്കില്‍ ലഭ്യമായ എല്ലാ പരിഷ്കരണങ്ങളും നല്‍കുക"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:269
+#: ../client/pk-generate-pack.c:271
 msgid "Neither --package or --updates option selected."
 msgstr "--package അല്ലെങ്കില്‍ --updates എച്ഛികം തെരഞ്ഞെടുത്തിട്ടില്ല."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:277
+#: ../client/pk-generate-pack.c:279
 msgid "Both options selected."
 msgstr "രണ്ടു് ഐച്ഛികങ്ങളും തെരഞ്ഞെടുത്തിട്ടില്ല."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:293
+#: ../client/pk-generate-pack.c:295
 msgid "A output directory or file name is required"
 msgstr "ഒരു ഔട്ട്പുട്ട് ഡയറക്ടറി അല്ലെങ്കില്‍ ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
 #. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
-#: ../client/pk-generate-pack.c:311
+#: ../client/pk-generate-pack.c:313
 msgid "The dameon failed to startup"
 msgstr "ആരംഭിക്കുന്നതില്‍ ഡെമണ്‍ പരാജയപ്പെട്ടു"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:322 ../client/pk-generate-pack.c:328
+#: ../client/pk-generate-pack.c:324 ../client/pk-generate-pack.c:330
 msgid "The package manager cannot perform this type of operation."
 msgstr "പാക്കേജ് നിരീക്ഷകനു് ഈ തരത്തിലുള്ള പ്രക്രിയ നടത്തുവാന്‍ സാധ്യമല്ല"
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:335
+#: ../client/pk-generate-pack.c:337
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
 msgstr "libarchive പിന്തുണ ഇല്ലാതെ PackageKit ഉണ്ടാക്കിയതിനാല്‍, സര്‍വീസ് പാക്കുകള്‍ ലഭ്യമാകുന്നതല്ല."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:346
+#: ../client/pk-generate-pack.c:348
 msgid "If specifying a file, the service pack name must end with"
 msgstr "ഒരു ഫയല്‍ നല്‍കുന്നു എങ്കില്‍, സര്‍വീസ് പാക്ക് അവസാനിക്കേണ്ടതു്"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:362
+#: ../client/pk-generate-pack.c:364
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "ഇതേ പേരില്‍ ഒരു ഫയല്‍ നിലവിലുണ്ടു്, അതു് മാറ്റി എഴുതണമോ?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:365
+#: ../client/pk-generate-pack.c:367
 msgid "The pack was not overwritten."
 msgstr "ഫയല്‍ തിരുത്തിയെഴുതിയിട്ടില്ല."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:378
+#: ../client/pk-generate-pack.c:380
 msgid "Failed to create directory:"
 msgstr "ഡയറക്ടറി ഉണ്ടാക്കുന്നതില്‍ പരാജയം:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:390
+#: ../client/pk-generate-pack.c:392
 msgid "Failed to open package list."
 msgstr "പാക്കേജുകളുടെ പട്ടിക തുറക്കുന്നതില്‍ പരാജയം."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:399
+#: ../client/pk-generate-pack.c:401
 msgid "Finding package name."
 msgstr "പാക്കേജിന്റെ പേര് കണ്ടുപിടിക്കുന്നു."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:403
+#: ../client/pk-generate-pack.c:405
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "'%s' എന്ന പാക്കേജ് കണ്ടുപിടിക്കുവാനായില്ല: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:411
+#: ../client/pk-generate-pack.c:413
 msgid "Creating service pack..."
 msgstr "സര്‍വീസ് പാക്ക് ഉണ്ടാക്കുന്നു..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:426
+#: ../client/pk-generate-pack.c:428
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "'%s' സര്‍വീസ് പാക്ക് ഉണ്ടാക്കിയിരിക്കുന്നു"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:431
+#: ../client/pk-generate-pack.c:433
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s' ഉണ്ടാക്കുന്നതില്‍ പരാജയം: %s"
 
-#: ../client/pk-monitor.c:205
+#: ../client/pk-monitor.c:206
 msgid "Failed to get daemon state"
 msgstr "ഡെമണ്‍ അവസ്ഥ ലഭ്യമാക്കുന്നതില്‍ പരാജയം"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:292
+#: ../client/pk-monitor.c:294
 msgid "PackageKit Monitor"
 msgstr "പാക്കേജ്കിറ്റ് നിരീക്ഷകന്‍"
 
@@ -653,91 +655,91 @@ msgid "Installing..."
 msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:358
+#: ../contrib/command-not-found/pk-command-not-found.c:357
 msgid "Downloading details about the software sources."
 msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സുകളെപ്പറ്റിയുള്ള വിവരങ്ങള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:362
+#: ../contrib/command-not-found/pk-command-not-found.c:361
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "ഫയല്‍ലിസ്റ്റുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു (ഇതല്‍പം സമയമെടുക്കുന്നു)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:366
+#: ../contrib/command-not-found/pk-command-not-found.c:365
 msgid "Waiting for package manager lock."
 msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:370
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Loading list of packages."
 msgstr "പാക്കേജുകളുടെ പട്ടിക ലഭ്യമാക്കുന്നു."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:444
+#: ../contrib/command-not-found/pk-command-not-found.c:413
 msgid "Failed to search for file"
 msgstr "ഫയല്‍ കണ്ടുപിടിക്കുന്നതില്‍ പരാജയപ്പെട്ടു"
 
-#. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:570
-msgid "Failed to launch:"
-msgstr "ലഭ്യമാക്കുന്നതില്‍ പരാജയപ്പെട്ടു:"
+#. TRANSLATORS: we failed to install the package
+#: ../contrib/command-not-found/pk-command-not-found.c:554
+msgid "Failed to install packages"
+msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതില്‍ പരാജയം"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:630
+#: ../contrib/command-not-found/pk-command-not-found.c:632
 msgid "PackageKit Command Not Found"
 msgstr "പാക്കേജ്കിറ്റ് കമാന്‍ഡ് ലഭ്യമായില്ല"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:660
 msgid "Command not found."
 msgstr "കമാന്‍ഡ് ലഭ്യമായില്ല."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:665
+#: ../contrib/command-not-found/pk-command-not-found.c:667
 msgid "Similar command is:"
 msgstr "ഇതു് പോലുള്ള കമാന്‍ഡ്:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:674
+#: ../contrib/command-not-found/pk-command-not-found.c:676
 msgid "Run similar command:"
 msgstr "ഇതുപോലുള്ള കമാന്‍ഡ് പ്രവര്‍ത്തിക്കുക:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:686
-#: ../contrib/command-not-found/pk-command-not-found.c:695
+#: ../contrib/command-not-found/pk-command-not-found.c:688
+#: ../contrib/command-not-found/pk-command-not-found.c:697
 msgid "Similar commands are:"
 msgstr "ഇതു് പോലുള്ള കമാന്‍ഡുകള്‍:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:702
+#: ../contrib/command-not-found/pk-command-not-found.c:704
 msgid "Please choose a command to run"
 msgstr "പ്രവര്‍ത്തിപ്പിക്കുന്നതിനുള്ള കമാന്‍ഡ് ദയവായി തെരഞ്ഞെടുക്കുക"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:721
+#: ../contrib/command-not-found/pk-command-not-found.c:720
 msgid "The package providing this file is:"
 msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജ്:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:726
+#: ../contrib/command-not-found/pk-command-not-found.c:725
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:743
 msgid "Packages providing this file are:"
 msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജുകള്‍:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:756
+#: ../contrib/command-not-found/pk-command-not-found.c:753
 msgid "Suitable packages are:"
 msgstr "ഉചിതമായ പാക്കേജുകള്‍:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:764
+#: ../contrib/command-not-found/pk-command-not-found.c:762
 msgid "Please choose a package to install"
 msgstr "ദയവായി ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനായി ഒരു പാക്കേജ് തെരഞ്ഞെടുക്കുക"
 
