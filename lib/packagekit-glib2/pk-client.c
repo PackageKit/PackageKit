@@ -324,10 +324,6 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 {
 	gboolean ret;
 
-	/* do the callback for GUI programs */
-	if (state->progress_callback == NULL)
-		return;
-
 	/* role */
 	if (g_strcmp0 (key, "Role") == 0) {
 		ret = pk_progress_set_role (state->progress, pk_role_enum_from_text (g_value_get_string (value)));
