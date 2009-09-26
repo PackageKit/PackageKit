@@ -859,7 +859,7 @@ pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 	egg_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call_interface_changed);
 
 	/* we've sent this async */
-	egg_debug ("interface changed, started DBus call: %p (%p)", state, state->call);
+	egg_debug ("interface changed, started DBus call: %p (%p)", state, state->call_interface_changed);
 }
 
 
@@ -1482,7 +1482,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* we've sent this async */
-	egg_debug ("new method, started DBus call: %p (%p)", state, state->call);
+	egg_debug ("new method '%s', started DBus call: %p (%p)", pk_role_enum_to_text (state->role), state, state->call);
 
 out:
 	g_free (filters_text);

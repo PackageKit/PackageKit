@@ -65,34 +65,24 @@ static guint signals [SIGNAL_LAST] = { 0 };
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 
 /**
- * pk_transaction_list_get_transaction_list_cb:
+ * pk_transaction_list_process_transaction_list:
  **/
 static void
-pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkTransactionList *tlist)
+pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **transaction_ids)
 {
-	GError *error = NULL;
-	gchar **list = NULL;
 	guint i, j;
 	gboolean ret;
 	const gchar *tid;
 	gchar *tid_tmp;
 	GPtrArray *array = tlist->priv->transaction_ids;
 
-	/* get the result */
-	list = pk_control_get_transaction_list_finish (control, res, &error);
-	if (list == NULL) {
-		egg_warning ("Failed to get transaction list: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
 	/* debug */
 	for (i=0; i<array->len; i++) {
 		tid = g_ptr_array_index (array, i);
 		egg_debug ("last:\t%s", tid);
 	}
-	for (i=0; list[i] != NULL; i++)
-		egg_debug ("current:\t%s", list[i]);
+	for (i=0; transaction_ids[i] != NULL; i++)
+		egg_debug ("current:\t%s", transaction_ids[i]);
 
 	/* remove old entries */
 	for (i=0; i<array->len; i++) {
@@ -100,8 +90,8 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 
 		/* is in new list */
 		ret = FALSE;
-		for (j=0; list[j] != NULL; j++) {
-			ret = (g_strcmp0 (tid, list[j]) == 0);
+		for (j=0; transaction_ids[j] != NULL; j++) {
+			ret = (g_strcmp0 (tid, transaction_ids[j]) == 0);
 			if (ret)
 				break;
 		}
@@ -117,26 +107,47 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 	}
 
 	/* add new entries */
-	for (i=0; list[i] != NULL; i++) {
+	for (i=0; transaction_ids[i] != NULL; i++) {
 
 		/* check to see if tid is in array */
 		ret = FALSE;
 		for (j=0; j<array->len; j++) {
 			tid = g_ptr_array_index (array, j);
-			ret = (g_strcmp0 (tid, list[i]) == 0);
+			ret = (g_strcmp0 (tid, transaction_ids[i]) == 0);
 			if (ret)
 				break;
 		}
 
 		/* no, so add to array */
 		if (!ret) {
-			g_ptr_array_add (array, g_strdup (list[i]));
-			egg_debug ("emit added: %s", list[i]);
-			g_signal_emit (tlist, signals[SIGNAL_ADDED], 0, list[i]);
+			g_ptr_array_add (array, g_strdup (transaction_ids[i]));
+			egg_debug ("emit added: %s", transaction_ids[i]);
+			g_signal_emit (tlist, signals[SIGNAL_ADDED], 0, transaction_ids[i]);
 		}
 	}
+}
+
+/**
+ * pk_transaction_list_get_transaction_list_cb:
+ **/
+static void
+pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkTransactionList *tlist)
+{
+	GError *error = NULL;
+	gchar **transaction_ids = NULL;
+
+	/* get the result */
+	transaction_ids = pk_control_get_transaction_list_finish (control, res, &error);
+	if (transaction_ids == NULL) {
+		egg_warning ("Failed to get transaction list: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* process */
+	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
 out:
-	g_strfreev (list);
+	g_strfreev (transaction_ids);
 }
 
 /**
@@ -154,9 +165,10 @@ pk_transaction_list_get_transaction_list (PkTransactionList *tlist)
  * pk_transaction_list_task_list_changed_cb:
  **/
 static void
-pk_transaction_list_task_list_changed_cb (PkControl *control, PkTransactionList *tlist)
+pk_transaction_list_task_list_changed_cb (PkControl *control, gchar **transaction_ids, PkTransactionList *tlist)
 {
-	pk_transaction_list_get_transaction_list (tlist);
+	/* process */
+	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
 }
 
 /**
@@ -386,7 +398,7 @@ pk_transaction_list_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "wait for remove");
-	g_timeout_add (10, (GSourceFunc) pk_transaction_list_delay_cb, test);
+	g_timeout_add (100, (GSourceFunc) pk_transaction_list_delay_cb, test);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
 

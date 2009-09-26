@@ -69,7 +69,8 @@ struct _PkControlClass
 	GObjectClass	parent_class;
 
 	/* signals */
-	void		(* transaction_list_changed)	(PkControl	*control);
+	void		(* transaction_list_changed)	(PkControl	*control,
+							 gchar		**transaction_ids);
 	void		(* updates_changed)		(PkControl	*control);
 	void		(* repo_list_changed)		(PkControl	*control);
 	void		(* network_state_changed)	(PkControl	*control);

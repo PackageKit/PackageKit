@@ -1605,16 +1605,52 @@ pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError 
 
 /***************************************************************************************************/
 
+typedef struct {
+	PkControl	*control;
+	gchar		**transaction_ids;
+} PkIdleSignalStore;
+
+/**
+ * pk_control_idle_signal_store_free:
+ */
+static void
+pk_control_idle_signal_store_free (PkIdleSignalStore *store)
+{
+	g_strfreev (store->transaction_ids);
+	g_object_unref (store->control);
+	g_free (store);
+}
+
+/**
+ * pk_control_transaction_list_changed_idle_cb:
+ */
+static gboolean
+pk_control_transaction_list_changed_idle_cb (PkIdleSignalStore *store)
+{
+	egg_debug ("emit transaction-list-changed");
+	g_signal_emit (store->control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, store->transaction_ids);
+	pk_control_idle_signal_store_free (store);
+	return FALSE;
+}
+
 /**
  * pk_control_transaction_list_changed_cb:
  */
 static void
-pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **array, PkControl *control)
+pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_ids, PkControl *control)
 {
+	PkIdleSignalStore *store;
+
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	egg_debug ("emit transaction-list-changed");
-	g_signal_emit (control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0);
+	/* create store object */
+	store = g_new0 (PkIdleSignalStore, 1);
+	store->control = g_object_ref (control);
+	store->transaction_ids = g_strdupv (transaction_ids);
+
+	/* we have to do this idle as the transaction list will change when not yet finished */
+	egg_debug ("emit transaction-list-changed (when idle)");
+	g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
 }
 
 /**
@@ -1625,6 +1661,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
+	/* TODO: idle? */
 	egg_debug ("emitting restart-schedule");
 	g_signal_emit (control, signals[SIGNAL_RESTART_SCHEDULE], 0);
 
@@ -1638,9 +1675,9 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
+	/* TODO: idle? */
 	egg_debug ("emitting updates-changed");
 	g_signal_emit (control, signals[SIGNAL_UPDATES_CHANGED], 0);
-
 }
 
 /**
@@ -1651,6 +1688,7 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	g_return_if_fail (PK_IS_CONTROL (control));
 
+	/* TODO: idle? */
 	egg_debug ("emitting repo-list-changed");
 	g_signal_emit (control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 }
@@ -1702,6 +1740,8 @@ pk_control_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* call D-Bus get_properties async */
 	egg_debug ("properties changed, so getting new list");
+
+	/* TODO: idle? */
 	control->priv->call_get_properties =
 		dbus_g_proxy_begin_call (control->priv->proxy_props, "GetAll",
 					 (DBusGProxyCallNotify) pk_control_changed_get_properties_cb, control, NULL,
@@ -2009,8 +2049,8 @@ pk_control_class_init (PkControlClass *klass)
 		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, transaction_list_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
+			      NULL, NULL, g_cclosure_marshal_VOID__BOXED,
+			      G_TYPE_NONE, 1, G_TYPE_STRV);
 
 	g_type_class_add_private (klass, sizeof (PkControlPrivate));
 }

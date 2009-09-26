@@ -228,10 +228,10 @@ pk_monitor_get_daemon_state (PkControl *control)
 }
 
 /**
- * pk_monitor_task_list_changed_cb:
+ * pk_monitor_transaction_list_changed_cb:
  **/
 static void
-pk_monitor_task_list_changed_cb (PkControl *control)
+pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
 {
 	/* only print state when verbose */
 	if (verbose)
@@ -316,7 +316,7 @@ main (int argc, char *argv[])
 	g_signal_connect (control, "updates-changed",
 			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
 	g_signal_connect (control, "transaction-list-changed",
-			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
+			  G_CALLBACK (pk_monitor_transaction_list_changed_cb), NULL);
 	g_signal_connect (control, "notify::locked",
 			  G_CALLBACK (pk_monitor_notify_locked_cb), NULL);
 	g_signal_connect (control, "notify::connected",
