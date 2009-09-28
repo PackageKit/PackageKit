@@ -2970,7 +2970,8 @@ class PackageKitYumBase(yum.YumBase):
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
-        self.mediagrabber = self.MediaGrabber
+        # TODO: disable until we have a backend we can use by default
+        # self.mediagrabber = self.MediaGrabber
         # Setup Repo GPG support callbacks
         try:
             self.repos.confirm_func = self._repo_gpg_confirm
