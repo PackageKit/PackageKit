@@ -3702,6 +3702,7 @@ pk_client_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+#include "pk-control-sync.h"
 #include "pk-client-sync.h"
 
 static void
@@ -3949,6 +3950,15 @@ out:
 	egg_test_loop_quit (test);
 }
 
+static void
+pk_client_test_recursive_signal_cb (PkControl *control, EggTest *test)
+{
+	gboolean ret;
+	ret = pk_control_get_properties (control, NULL, NULL);
+	if (!ret)
+		egg_test_failed (test, "could not get properties sync");
+}
+
 void
 pk_client_test (gpointer user_data)
 {
@@ -3964,6 +3974,7 @@ pk_client_test (gpointer user_data)
 	gchar *tid;
 	PkRoleEnum role;
 	PkStatusEnum status;
+	PkResults *results;
 
 	if (!egg_test_start (test, "PkClient"))
 		return;
@@ -4139,6 +4150,13 @@ pk_client_test (gpointer user_data)
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "downloaded and copied in %i", egg_test_elapsed (test));
 
+	/************************************************************/
+	egg_test_title (test, "test recursive signal handling");
+	g_signal_connect (client->priv->control, "repo-list-changed", G_CALLBACK (pk_client_test_recursive_signal_cb), test);
+	results = pk_client_repo_set_data (client, "dave", "moo", "data", NULL, NULL, NULL, NULL);
+	egg_test_assert (test, (results != NULL));
+
+	g_object_unref (results);
 	g_object_unref (cancellable);
 	g_object_unref (client);
 

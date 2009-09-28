@@ -72,6 +72,10 @@ struct _PkControlPrivate
 	gboolean		 connected;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
+	guint			 transaction_list_changed_id;
+	guint			 restart_schedule_id;
+	guint			 updates_changed_id;
+	guint			 repo_list_changed_id;
 };
 
 enum {
@@ -1629,6 +1633,7 @@ pk_control_transaction_list_changed_idle_cb (PkIdleSignalStore *store)
 {
 	egg_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, store->transaction_ids);
+	store->control->priv->transaction_list_changed_id = 0;
 	pk_control_idle_signal_store_free (store);
 	return FALSE;
 }
@@ -1643,6 +1648,12 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 
+	/* already pending */
+	if (control->priv->transaction_list_changed_id != 0) {
+		egg_debug ("already pending, so ignoring");
+		return;
+	}
+
 	/* create store object */
 	store = g_new0 (PkIdleSignalStore, 1);
 	store->control = g_object_ref (control);
@@ -1650,7 +1661,20 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
 	egg_debug ("emit transaction-list-changed (when idle)");
-	g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
+	control->priv->transaction_list_changed_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
+}
+
+/**
+ * pk_control_restart_schedule_idle_cb:
+ */
+static gboolean
+pk_control_restart_schedule_idle_cb (PkIdleSignalStore *store)
+{
+	egg_debug ("emit transaction-list-changed");
+	g_signal_emit (store->control, signals[SIGNAL_RESTART_SCHEDULE], 0);
+	store->control->priv->restart_schedule_id = 0;
+	pk_control_idle_signal_store_free (store);
+	return FALSE;
 }
 
 /**
@@ -1659,12 +1683,36 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 static void
 pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 {
+	PkIdleSignalStore *store;
+
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	/* TODO: idle? */
-	egg_debug ("emitting restart-schedule");
-	g_signal_emit (control, signals[SIGNAL_RESTART_SCHEDULE], 0);
+	/* already pending */
+	if (control->priv->restart_schedule_id != 0) {
+		egg_debug ("already pending, so ignoring");
+		return;
+	}
 
+	/* create store object */
+	store = g_new0 (PkIdleSignalStore, 1);
+	store->control = g_object_ref (control);
+
+	/* we have to do this idle as the transaction list will change when not yet finished */
+	egg_debug ("emit restart-schedule (when idle)");
+	store->control->priv->restart_schedule_id = g_idle_add ((GSourceFunc) pk_control_restart_schedule_idle_cb, store);
+}
+
+/**
+ * pk_control_updates_changed_idle_cb:
+ */
+static gboolean
+pk_control_updates_changed_idle_cb (PkIdleSignalStore *store)
+{
+	egg_debug ("emit transaction-list-changed");
+	g_signal_emit (store->control, signals[SIGNAL_UPDATES_CHANGED], 0);
+	store->control->priv->updates_changed_id = 0;
+	pk_control_idle_signal_store_free (store);
+	return FALSE;
 }
 
 /**
@@ -1673,11 +1721,36 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 static void
 pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
+	PkIdleSignalStore *store;
+
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	/* TODO: idle? */
-	egg_debug ("emitting updates-changed");
-	g_signal_emit (control, signals[SIGNAL_UPDATES_CHANGED], 0);
+	/* already pending */
+	if (control->priv->updates_changed_id != 0) {
+		egg_debug ("already pending, so ignoring");
+		return;
+	}
+
+	/* create store object */
+	store = g_new0 (PkIdleSignalStore, 1);
+	store->control = g_object_ref (control);
+
+	/* we have to do this idle as the transaction list will change when not yet finished */
+	egg_debug ("emit updates-changed (when idle)");
+	control->priv->updates_changed_id = g_idle_add ((GSourceFunc) pk_control_updates_changed_idle_cb, store);
+}
+
+/**
+ * pk_control_repo_list_changed_idle_cb:
+ */
+static gboolean
+pk_control_repo_list_changed_idle_cb (PkIdleSignalStore *store)
+{
+	egg_debug ("emit transaction-list-changed");
+	g_signal_emit (store->control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
+	store->control->priv->repo_list_changed_id = 0;
+	pk_control_idle_signal_store_free (store);
+	return FALSE;
 }
 
 /**
@@ -1686,11 +1759,23 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 static void
 pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
+	PkIdleSignalStore *store;
+
 	g_return_if_fail (PK_IS_CONTROL (control));
 
-	/* TODO: idle? */
-	egg_debug ("emitting repo-list-changed");
-	g_signal_emit (control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
+	/* already pending */
+	if (control->priv->repo_list_changed_id != 0) {
+		egg_debug ("already pending, so ignoring");
+		return;
+	}
+
+	/* create store object */
+	store = g_new0 (PkIdleSignalStore, 1);
+	store->control = g_object_ref (control);
+
+	/* we have to do this idle as the transaction list will change when not yet finished */
+	egg_debug ("emit repo-list-changed (when idle)");
+	control->priv->repo_list_changed_id = g_idle_add ((GSourceFunc) pk_control_repo_list_changed_idle_cb, store);
 }
 
 /**
@@ -2071,6 +2156,10 @@ pk_control_init (PkControl *control)
 	control->priv->backend_author = NULL;
 	control->priv->locked = FALSE;
 	control->priv->connected = FALSE;
+	control->priv->transaction_list_changed_id = 0;
+	control->priv->restart_schedule_id = 0;
+	control->priv->updates_changed_id = 0;
+	control->priv->repo_list_changed_id = 0;
 	control->priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
 	control->priv->calls = g_ptr_array_new ();
 
@@ -2170,6 +2259,16 @@ pk_control_finalize (GObject *object)
 				        G_CALLBACK (pk_control_restart_schedule_cb), control);
 	dbus_g_proxy_disconnect_signal (control->priv->proxy_dbus, "NameOwnerChanged",
 				        G_CALLBACK (pk_control_name_owner_changed_cb), control);
+
+	/* remove pending sources */
+	if (control->priv->transaction_list_changed_id != 0)
+		g_source_remove (control->priv->transaction_list_changed_id);
+	if (control->priv->restart_schedule_id != 0)
+		g_source_remove (control->priv->restart_schedule_id);
+	if (control->priv->updates_changed_id != 0)
+		g_source_remove (control->priv->updates_changed_id);
+	if (control->priv->repo_list_changed_id != 0)
+		g_source_remove (control->priv->repo_list_changed_id);
 
 	g_free (priv->backend_name);
 	g_free (priv->backend_description);
