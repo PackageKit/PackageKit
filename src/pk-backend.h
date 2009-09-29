@@ -24,8 +24,12 @@
 
 #include <glib.h>
 #include <gmodule.h>
+
+/* these include the includes the backends should be using */
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-package-ids.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"

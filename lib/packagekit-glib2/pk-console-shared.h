@@ -23,7 +23,9 @@
 #define __PK_CONSOLE_SHARED_H
 
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-enum.h>
 
 void		 pk_console_test			(gpointer	 user_data);
 guint		 pk_console_get_number			(const gchar	*question,

@@ -24,9 +24,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
-#include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
-#include <pk-backend-internal.h>
 #include <egg-debug.h>
 
 #include <libopkg/opkg.h>

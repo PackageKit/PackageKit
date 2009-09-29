@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
-#include <packagekit-glib/packagekit.h>
 
 #include <pk-backend.h>
 

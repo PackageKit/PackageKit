@@ -39,7 +39,6 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <egg-debug.h>
-#include <packagekit-glib2/packagekit.h>
 
 #include <alpm.h>
 #include <alpm_list.h>

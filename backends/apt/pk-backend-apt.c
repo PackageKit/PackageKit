@@ -24,7 +24,6 @@
 
 #include "config.h"
 
-#include <packagekit-glib/packagekit.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <string.h>

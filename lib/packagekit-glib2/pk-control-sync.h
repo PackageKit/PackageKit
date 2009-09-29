@@ -23,7 +23,7 @@
 #define __PK_CONTROL_SYNC_H
 
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-control.h>
 
 gboolean	 pk_control_get_properties		(PkControl		*control,
 							 GCancellable		*cancellable,

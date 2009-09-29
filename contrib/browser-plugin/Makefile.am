@@ -5,6 +5,7 @@ packagekit_plugin_la_LDFLAGS = -rpath $(plugindir) -module -avoid-version -no-un
 packagekit_plugin_la_CPPFLAGS =			\
 	$(PK_BROWSER_PLUGIN_CFLAGS)		\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"	\
+	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DMOZ_X11				\
 	-I$(top_srcdir)/lib
 

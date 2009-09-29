@@ -22,7 +22,9 @@
 #include "config.h"
 
 #include <glib/gi18n.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-task.h>
+#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 
@@ -400,6 +402,8 @@ pk_task_text_new (void)
  ***************************************************************************/
 #ifdef EGG_TEST
 #include "egg-test.h"
+
+#include <packagekit-glib2/pk-package-ids.h>
 
 static void
 pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTest *test)

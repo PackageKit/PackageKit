@@ -23,7 +23,7 @@
 #define __PK_TASK_TEXT_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-task.h>
 
 G_BEGIN_DECLS
 

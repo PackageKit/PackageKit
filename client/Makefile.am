@@ -41,6 +41,7 @@ INCLUDES =						\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
+	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
 	-DEGG_LOGGING="\"PK_LOGGING\""			\

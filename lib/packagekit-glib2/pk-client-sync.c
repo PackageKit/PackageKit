@@ -24,7 +24,8 @@
 #include <stdio.h>
 #include <gio/gio.h>
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-progress.h>
 
 #include "egg-debug.h"
 

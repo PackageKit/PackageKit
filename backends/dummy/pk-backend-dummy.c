@@ -23,7 +23,6 @@
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
-#include <packagekit-glib2/packagekit.h>
 
 #include <pk-backend.h>
 

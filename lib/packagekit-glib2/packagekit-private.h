@@ -22,14 +22,14 @@
 #ifndef __PACKAGEKIT_PRIVATE_H__
 #define __PACKAGEKIT_PRIVATE_H__
 
-#define __PACKAGEKIT_PRIVATE_H_INSIDE__
+#define __PACKAGEKIT_H_INSIDE__
 
 #include <packagekit-glib2/pk-task-sync.h>
 #include <packagekit-glib2/pk-task-text.h>
 #include <packagekit-glib2/pk-console-shared.h>
 #include <packagekit-glib2/pk-progress-bar.h>
 
-#undef __PACKAGEKIT_PRIVATE_H_INSIDE__
+#undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_PRIVATE_H__ */
 

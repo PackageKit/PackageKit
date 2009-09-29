@@ -23,7 +23,9 @@
 #define __PK_TASK_SYNC_H
 
 #include <glib.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-task.h>
+#include <packagekit-glib2/pk-progress.h>
 
 PkResults	*pk_task_remove_packages_sync		(PkTask			*task,
 							 gchar			**package_ids,

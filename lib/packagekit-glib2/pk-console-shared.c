@@ -26,7 +26,11 @@
 #include <stdio.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 
