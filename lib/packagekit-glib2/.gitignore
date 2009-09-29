@@ -9,5 +9,6 @@
 pk-self-test
 *.loT
 *.db
+*.sh
 pk-version.h
 

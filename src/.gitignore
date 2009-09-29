@@ -11,4 +11,5 @@ pk-self-test
 debug.log
 *.txt
 *.db
+*.sh
 
