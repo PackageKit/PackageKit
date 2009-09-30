@@ -46,6 +46,7 @@
 #include "pk-backend.h"
 #include "pk-conf.h"
 #include "pk-store.h"
+#include "pk-shared.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
 
@@ -78,13 +79,6 @@
  */
 #define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
-/* a boolean with unset */
-typedef enum {
-	PK_BACKEND_TRISTATE_FALSE = FALSE,
-	PK_BACKEND_TRISTATE_TRUE = TRUE,
-	PK_BACKEND_TRISTATE_UNSET
-} PkBackendTristate;
-
 struct _PkBackendPrivate
 {
 	gboolean		 during_initialize;
@@ -114,7 +108,7 @@ struct _PkBackendPrivate
 	GThread			*thread;
 	PkBackendDesc		*desc;
 	PkBackendFileChanged	 file_changed_func;
-	PkBackendTristate	 allow_cancel;
+	PkTristate		 allow_cancel;
 	PkBitfield		 roles;
 	PkConf			*conf;
 	PkExitEnum		 exit;
@@ -1745,7 +1739,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (backend->priv->allow_cancel == (PkBackendTristate) allow_cancel) {
+	if (backend->priv->allow_cancel == (PkTristate) allow_cancel) {
 		egg_debug ("ignoring same allow-cancel state");
 		return FALSE;
 	}
@@ -1771,7 +1765,7 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* return FALSE if we never set state */
-	if (backend->priv->allow_cancel != PK_BACKEND_TRISTATE_UNSET)
+	if (backend->priv->allow_cancel != PK_TRISTATE_UNSET)
 		allow_cancel = backend->priv->allow_cancel;
 
 	return allow_cancel;
@@ -2341,7 +2335,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->download_files = 0;
 	backend->priv->thread = NULL;
 	backend->priv->last_package = NULL;
-	backend->priv->allow_cancel = PK_BACKEND_TRISTATE_UNSET;
+	backend->priv->allow_cancel = PK_TRISTATE_UNSET;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
