@@ -577,7 +577,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	GPtrArray *array;
 	gboolean ret;
 
-	array = g_ptr_array_new ();
+	array = g_ptr_array_new_with_free_func (g_free);
 
 	/* http_proxy */
 	value = pk_backend_get_proxy_http (backend_spawn->priv->backend);
@@ -616,9 +616,14 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
 
+	/* IDLE */
+	ret = pk_backend_use_idle_bandwidth (backend_spawn->priv->backend);
+	line = g_strdup_printf ("%s=%s", "IDLE", ret ? "TRUE" : "FALSE");
+	egg_debug ("setting evp '%s'", line);
+	g_ptr_array_add (array, line);
+
 	envp = pk_ptr_array_to_strv (array);
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
+	g_ptr_array_unref (array);
 	return envp;
 }
 

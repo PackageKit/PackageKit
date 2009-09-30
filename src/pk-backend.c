@@ -44,6 +44,7 @@
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
+#include "pk-conf.h"
 #include "pk-store.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
@@ -86,44 +87,45 @@ typedef enum {
 
 struct _PkBackendPrivate
 {
-	GModule			*handle;
-	PkTime			*time;
-	GHashTable		*eulas;
-	gchar			*name;
-	gchar			*c_tid;
-	gchar			*proxy_http;
-	gchar			*proxy_ftp;
-	gchar			*locale;
+	gboolean		 during_initialize;
+	gboolean		 finished;
+	gboolean		 has_sent_package;
 	gboolean		 locked;
 	gboolean		 set_error;
-	gboolean		 set_signature;
 	gboolean		 set_eula;
+	gboolean		 set_signature;
 	gboolean		 simultaneous;
-	gboolean		 has_sent_package;
 	gboolean		 use_time;
+	gchar			*c_tid;
+	gchar			*locale;
+	gchar			*name;
+	gchar			*proxy_ftp;
+	gchar			*proxy_http;
+	gpointer		 file_changed_data;
 	guint			 download_files;
+	guint			 last_percentage;
+	guint			 last_remaining;
+	guint			 last_subpercentage;
+	guint			 signal_error_timeout;
+	guint			 signal_finished;
 	guint			 speed;
-	PkNetwork		*network;
-	PkStore			*store;
-	PkItemPackage		*last_package;
-	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
-	PkStatusEnum		 status; /* this changes */
+	GHashTable		*eulas;
+	GModule			*handle;
+	GThread			*thread;
+	PkBackendDesc		*desc;
+	PkBackendFileChanged	 file_changed_func;
+	PkBackendTristate	 allow_cancel;
+	PkBitfield		 roles;
+	PkConf			*conf;
 	PkExitEnum		 exit;
 	PkFileMonitor		*file_monitor;
-	PkBackendFileChanged	 file_changed_func;
-	gpointer		 file_changed_data;
-	gboolean		 during_initialize;
-	PkBackendTristate	 allow_cancel;
-	gboolean		 finished;
-	guint			 last_percentage;
-	guint			 last_subpercentage;
-	guint			 last_remaining;
-	guint			 signal_finished;
-	guint			 signal_error_timeout;
-	GThread			*thread;
-	PkBitfield		 roles;
-	PkBackendDesc		*desc;
+	PkItemPackage		*last_package;
+	PkNetwork		*network;
 	PkResults		*results;
+	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
+	PkStatusEnum		 status; /* this changes */
+	PkStore			*store;
+	PkTime			*time;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -1990,6 +1992,25 @@ pk_backend_is_online (PkBackend *backend)
 }
 
 /**
+ * pk_backend_use_idle_bandwidth:
+ **/
+gboolean
+pk_backend_use_idle_bandwidth (PkBackend *backend)
+{
+	gboolean ret;
+
+	/* check we are allowed */
+	ret = pk_conf_get_bool (backend->priv->conf, "UseIdleBandwidth");
+	if (!ret)
+		return FALSE;
+
+	/* for now, hardcode */
+	if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES)
+		return TRUE;
+	return FALSE;
+}
+
+/**
  * pk_backend_thread_create:
  **/
 gboolean
@@ -2167,6 +2188,7 @@ pk_backend_finalize (GObject *object)
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->store);
+	g_object_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
 	if (backend->priv->handle != NULL)
@@ -2732,6 +2754,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->simultaneous = FALSE;
 	backend->priv->roles = 0;
+	backend->priv->conf = pk_conf_new ();
 	backend->priv->results = pk_results_new ();
 	backend->priv->store = pk_store_new ();
 	backend->priv->time = pk_time_new ();

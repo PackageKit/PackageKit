@@ -55,6 +55,7 @@ class PackageKitBaseBackend:
         self._locked = False
         self.lang = "C"
         self.has_network = False
+        self.use_idle = False
         self.percentage_old = 0
         self.sub_percentage_old = 0
 
@@ -70,6 +71,13 @@ class PackageKitBaseBackend:
                 self.has_network = True
         except KeyError, e:
             print "Error: No NETWORK envp"
+
+        # try to get IDLE state
+        try:
+            if os.environ['IDLE'] == 'TRUE':
+                self.use_idle = True
+        except KeyError, e:
+            print "Error: No IDLE envp"
 
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
