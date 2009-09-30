@@ -65,6 +65,12 @@ struct _PkClientPrivate
 	gchar			*locale;
 };
 
+enum {
+	PROP_0,
+	PROP_LOCALE,
+	PROP_LAST
+};
+
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 typedef struct {
@@ -123,6 +129,45 @@ pk_client_error_quark (void)
 	if (!quark)
 		quark = g_quark_from_static_string ("pk_client_error");
 	return quark;
+}
+
+/**
+ * pk_client_get_property:
+ **/
+static void
+pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkClient *client = PK_CLIENT (object);
+	PkClientPrivate *priv = client->priv;
+
+	switch (prop_id) {
+	case PROP_LOCALE:
+		g_value_set_string (value, priv->locale);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_client_set_property:
+ **/
+static void
+pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkClient *client = PK_CLIENT (object);
+	PkClientPrivate *priv = client->priv;
+
+	switch (prop_id) {
+	case PROP_LOCALE:
+		g_free (priv->locale);
+		priv->locale = g_strdup (g_value_get_string (value));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 /**
@@ -3570,8 +3615,19 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 static void
 pk_client_class_init (PkClientClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_client_finalize;
+	object_class->get_property = pk_client_get_property;
+	object_class->set_property = pk_client_set_property;
+
+	/**
+	 * PkClient:locale:
+	 */
+	pspec = g_param_spec_string ("locale", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_LOCALE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
