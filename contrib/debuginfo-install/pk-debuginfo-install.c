@@ -395,7 +395,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	/* add dependant packages */
 	list = pk_results_get_package_array (results);
 	for (i=0; i<list->len; i++) {
-		item = g_ptr_array_index (list, 0);
+		item = g_ptr_array_index (list, i);
 		split = pk_package_id_split (item->package_id);
 		/* add -debuginfo */
 		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[PK_PACKAGE_ID_NAME]);
@@ -500,6 +500,7 @@ main (int argc, char *argv[])
 	gboolean simulate = FALSE;
 	gboolean no_depends = FALSE;
 	gboolean quiet = FALSE;
+	gboolean noninteractive = FALSE;
 	GOptionContext *context;
 	const gchar *repo_id;
 	gchar *repo_id_debuginfo;
@@ -518,6 +519,9 @@ main (int argc, char *argv[])
 		{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet,
 		   /* command line argument, do we operate quietly */
 		  _("Do not display information or progress"), NULL },
+		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
+		   /* command line argument, do we ask questions */
+		  _("Install the packages without asking for confirmation"), NULL },
 		{ NULL}
 	};
 
@@ -564,6 +568,13 @@ main (int argc, char *argv[])
 
 	/* create #PkClient */
 	priv->client = PK_CLIENT(pk_task_text_new ());
+
+	/* we are not asking questions, so it's pointless simulating */
+	if (noninteractive) {
+		g_object_set (priv->client,
+			      "simulate", FALSE,
+			      NULL);
+	}
 
 	/* use text progressbar */
 	priv->progress_bar = pk_progress_bar_new ();

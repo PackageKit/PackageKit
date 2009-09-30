@@ -85,6 +85,14 @@ manpage.1: manpage.xml
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--noninteractive</option>
+        </term>
+        <listitem>
+          <para>Do not be interactive and skip the confirmation before the packages are installed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--verbose</option>
         </term>
         <listitem>
