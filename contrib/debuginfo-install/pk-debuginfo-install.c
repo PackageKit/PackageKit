@@ -395,7 +395,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	/* add dependant packages */
 	list = pk_results_get_package_array (results);
 	for (i=0; i<list->len; i++) {
-		item = g_ptr_array_index (list, 0);
+		item = g_ptr_array_index (list, i);
 		split = pk_package_id_split (item->package_id);
 		/* add -debuginfo */
 		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[PK_PACKAGE_ID_NAME]);
