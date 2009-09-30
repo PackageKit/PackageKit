@@ -63,11 +63,15 @@ struct _PkClientPrivate
 	GPtrArray		*calls;
 	PkControl		*control;
 	gchar			*locale;
+	gboolean		 idle;
+	gboolean		 interactive;
 };
 
 enum {
 	PROP_0,
 	PROP_LOCALE,
+	PROP_IDLE,
+	PROP_INTERACTIVE,
 	PROP_LAST
 };
 
@@ -144,6 +148,12 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_LOCALE:
 		g_value_set_string (value, priv->locale);
 		break;
+	case PROP_IDLE:
+		g_value_set_boolean (value, priv->idle);
+		break;
+	case PROP_INTERACTIVE:
+		g_value_set_boolean (value, priv->interactive);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -163,6 +173,12 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 	case PROP_LOCALE:
 		g_free (priv->locale);
 		priv->locale = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_IDLE:
+		priv->idle = g_value_get_boolean (value);
+		break;
+	case PROP_INTERACTIVE:
+		priv->interactive = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -3629,6 +3645,22 @@ pk_client_class_init (PkClientClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_LOCALE, pspec);
 
+	/**
+	 * PkClient:idle:
+	 */
+	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+
+	/**
+	 * PkClient:interactive:
+	 */
+	pspec = g_param_spec_boolean ("interactive", NULL, NULL,
+				      TRUE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
 
@@ -3641,6 +3673,8 @@ pk_client_init (PkClient *client)
 	GError *error = NULL;
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->calls = g_ptr_array_new ();
+	client->priv->idle = FALSE;
+	client->priv->interactive = TRUE;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
