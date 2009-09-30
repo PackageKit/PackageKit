@@ -62,6 +62,7 @@ struct _PkClientPrivate
 	DBusGConnection		*connection;
 	GPtrArray		*calls;
 	PkControl		*control;
+	gchar			*locale;
 };
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
@@ -1497,7 +1498,6 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
-	const gchar *locale;
 
 	state->tid = pk_control_get_tid_finish (control, res, &error);
 	if (state->tid == NULL) {
@@ -1526,10 +1526,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 		egg_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* set locale */
-	locale = (const gchar *) setlocale (LC_ALL, NULL);
 	state->call = dbus_g_proxy_begin_call (state->proxy, "SetLocale",
 					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
-					       G_TYPE_STRING, locale,
+					       G_TYPE_STRING, state->client->priv->locale,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
@@ -3661,6 +3660,9 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* cache locale */
+	client->priv->locale = 	g_strdup (setlocale (LC_ALL, NULL));
 }
 
 /**
@@ -3675,6 +3677,7 @@ pk_client_finalize (GObject *object)
 	/* ensure we cancel any in-flight DBus calls */
 	pk_client_cancel_all_dbus_methods (client);
 
+	g_free (client->priv->locale);
 	g_object_unref (priv->control);
 	g_ptr_array_unref (priv->calls);
 
