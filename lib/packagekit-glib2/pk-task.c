@@ -48,6 +48,13 @@ static void     pk_task_finalize	(GObject     *object);
 struct _PkTaskPrivate
 {
 	GPtrArray			*array;
+	gboolean			 simulate;
+};
+
+enum {
+	PROP_0,
+	PROP_SIMULATE,
+	PROP_LAST
 };
 
 /**
@@ -735,7 +742,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	if (klass->simulate_question != NULL)
+	if (task->priv->simulate && klass->simulate_question != NULL)
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
@@ -786,7 +793,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	if (klass->simulate_question != NULL)
+	if (task->priv->simulate && klass->simulate_question != NULL)
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
@@ -842,7 +849,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	if (klass->simulate_question != NULL)
+	if (task->priv->simulate && klass->simulate_question != NULL)
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
@@ -894,7 +901,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
-	if (klass->simulate_question != NULL)
+	if (task->priv->simulate && klass->simulate_question != NULL)
 		pk_task_do_async_simulate_action (state);
 	else
 		pk_task_do_async_action (state);
@@ -979,14 +986,64 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
+
+/**
+ * pk_task_get_property:
+ **/
+static void
+pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkTask *task = PK_TASK (object);
+	PkTaskPrivate *priv = task->priv;
+
+	switch (prop_id) {
+	case PROP_SIMULATE:
+		g_value_set_boolean (value, priv->simulate);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_task_set_property:
+ **/
+static void
+pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkTask *task = PK_TASK (object);
+	PkTaskPrivate *priv = task->priv;
+
+	switch (prop_id) {
+	case PROP_SIMULATE:
+		priv->simulate = g_value_get_boolean (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
 /**
  * pk_task_class_init:
  **/
 static void
 pk_task_class_init (PkTaskClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_task_finalize;
+	object_class->get_property = pk_task_get_property;
+	object_class->set_property = pk_task_set_property;
+
+	/**
+	 * PkTask:simulate:
+	 */
+	pspec = g_param_spec_boolean ("simulate", NULL, NULL,
+				      TRUE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SIMULATE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
@@ -999,6 +1056,7 @@ pk_task_init (PkTask *task)
 {
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->priv->array = g_ptr_array_new ();
+	task->priv->simulate = TRUE;
 }
 
 /**
