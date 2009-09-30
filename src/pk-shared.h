@@ -26,13 +26,6 @@
 
 G_BEGIN_DECLS
 
-/* a boolean with unset */
-typedef enum {
-	PK_TRISTATE_FALSE = FALSE,
-	PK_TRISTATE_TRUE = TRUE,
-	PK_TRISTATE_UNSET
-} PkTristate;
-
 gboolean	 pk_directory_remove_contents		(const gchar	*directory);
 
 G_END_DECLS

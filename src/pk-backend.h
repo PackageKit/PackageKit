@@ -27,6 +27,7 @@
 
 /* these include the includes the backends should be using */
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
@@ -70,6 +71,8 @@ gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
 							 gboolean	 simultaneous);
 gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
+gboolean	 pk_backend_set_is_idle			(PkBackend	*backend,
+							 PkTristate	 is_idle);
 
 /* get the state */
 const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);

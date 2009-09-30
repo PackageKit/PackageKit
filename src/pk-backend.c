@@ -46,7 +46,6 @@
 #include "pk-backend.h"
 #include "pk-conf.h"
 #include "pk-store.h"
-#include "pk-shared.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
 
@@ -92,6 +91,7 @@ struct _PkBackendPrivate
 	gboolean		 use_time;
 	gchar			*c_tid;
 	gchar			*locale;
+	PkTristate		 is_idle;
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
@@ -505,6 +505,17 @@ pk_backend_set_proxy (PkBackend	*backend, const gchar *proxy_http, const gchar *
 	g_free (backend->priv->proxy_ftp);
 	backend->priv->proxy_http = g_strdup (proxy_http);
 	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_is_idle:
+ **/
+gboolean
+pk_backend_set_is_idle (PkBackend *backend, PkTristate is_idle)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	backend->priv->is_idle = is_idle;
 	return TRUE;
 }
 
@@ -1998,8 +2009,15 @@ pk_backend_use_idle_bandwidth (PkBackend *backend)
 	if (!ret)
 		return FALSE;
 
-	/* for now, hardcode */
-	if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES)
+	/* the session has set it one way or the other */
+	if (backend->priv->is_idle == PK_TRISTATE_TRUE)
+		return TRUE;
+	if (backend->priv->is_idle == PK_TRISTATE_FALSE)
+		return FALSE;
+
+	/* use a metric to try to guess a correct value */
+	if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES ||
+	    backend->priv->role == PK_ROLE_ENUM_REFRESH_CACHE)
 		return TRUE;
 	return FALSE;
 }

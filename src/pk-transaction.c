@@ -100,7 +100,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
-	gboolean		 is_idle;	//TODO: need tristate
+	PkTristate		 is_idle;
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -1366,6 +1366,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* assign */
 	pk_backend_set_current_tid (priv->backend, priv->tid);
+	pk_backend_set_is_idle (priv->backend, priv->is_idle);
 
 	/* if we didn't set a locale for this transaction, we would reuse the
 	 * last set locale in the backend, or NULL if it was not ever set.
@@ -4317,13 +4318,13 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 
 		/* idle true */
 		if (g_strcmp0 (value, "true") == 0) {
-			transaction->priv->is_idle = TRUE;	//TODO: need tristate
+			transaction->priv->is_idle = PK_TRISTATE_TRUE;
 			goto out;
 		}
 
 		/* idle false */
 		if (g_strcmp0 (value, "false") == 0) {
-			transaction->priv->is_idle = FALSE;	//TODO: need tristate
+			transaction->priv->is_idle = PK_TRISTATE_FALSE;
 			goto out;
 		}
 
@@ -5257,6 +5258,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	transaction->priv->is_idle = PK_TRISTATE_UNSET;
 	transaction->priv->elapsed_time = 0;
 	transaction->priv->remaining_time = 0;
 	transaction->priv->backend = pk_backend_new ();
