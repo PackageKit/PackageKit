@@ -100,6 +100,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
+	gboolean		 is_idle;	//TODO: need tristate
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -4280,6 +4281,113 @@ pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGM
 
 	/* save so we can pass to the backend */
 	transaction->priv->locale = g_strdup (code);
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_set_hint:
+ *
+ * Only return FALSE on error, not invalid parameter name
+ */
+static gboolean
+pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gchar *value, GError **error)
+{
+	gboolean ret = TRUE;
+
+	/* locale=en_GB.utf8 */
+	if (g_strcmp0 (key, "locale") == 0) {
+
+		/* already set */
+		if (transaction->priv->locale != NULL) {
+			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					      "Already set locale to %s", transaction->priv->locale);
+			ret = FALSE;
+			goto out;
+		}
+
+		/* success */
+		transaction->priv->locale = g_strdup (value);
+		goto out;
+	}
+
+	/* idle=true */
+	if (g_strcmp0 (key, "idle") == 0) {
+
+		/* idle true */
+		if (g_strcmp0 (value, "true") == 0) {
+			transaction->priv->is_idle = TRUE;	//TODO: need tristate
+			goto out;
+		}
+
+		/* idle false */
+		if (g_strcmp0 (value, "false") == 0) {
+			transaction->priv->is_idle = FALSE;	//TODO: need tristate
+			goto out;
+		}
+
+		/* nothing recognised */
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "idle hint expects true or false, not %s", value);
+		ret = FALSE;
+		goto out;
+	}
+	/* to preserve forwards and backwards compatibility, we ignore extra options here */
+	egg_warning ("unknown option: %s with value %s", key, value);
+out:
+	return ret;
+}
+
+/**
+ * pk_transaction_set_hints:
+ */
+void
+pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethodInvocation *context)
+{
+	GError *error;
+	gboolean ret;
+	guint i;
+	gchar **sections;
+	gchar *dbg;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	dbg = g_strjoinv (", ", hints);
+	egg_debug ("SetHints method called: %s", dbg);
+	g_free (dbg);
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* parse */
+	for (i=0; hints[i] != NULL; i++) {
+		sections = g_strsplit (hints[i], "=", 3);
+		if (g_strv_length (sections) == 2) {
+			ret = pk_transaction_set_hint (transaction, sections[0], sections[1], &error);
+		} else {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "Could not parse '%s'", hints[i]);
+			ret = FALSE;
+		}
+		g_strfreev (sections);
+
+		/* we failed, so abort current list */
+		if (!ret)
+			break;
+	}
+
+	/* we failed to parse */
+	if (!ret) {
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);

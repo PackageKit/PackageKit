@@ -132,6 +132,10 @@
             the package manager so that summaries and descriptions can be
             correctly localised.
           </doc:para>
+          <doc:para>
+            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+            Use <doc:tt>SetHints("locale=$code")</doc:tt> instead.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="code" direction="in">
@@ -139,6 +143,67 @@
           <doc:summary>
             <doc:para>
               The locale code, for example <doc:tt>en_GB</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
+    <method name="SetHints">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method allows the calling session to set transaction hints for
+            the package manager which can change as the transaction runs.
+          </doc:para>
+          <doc:para>
+            This method can be sent before the transaction has been run or
+            whilst it is running. There is no limit to the number of times this
+            method can be sent, although some backends may only use the values
+            that were set before the transaction was started.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="as" name="hints" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The values as an array of strings, for example
+              <doc:tt>['locale=en_GB.utf8','idle=true','interactive=false']</doc:tt>.
+            </doc:para>
+            <doc:para>
+              The following parameter values are understood:
+            </doc:para>
+            <doc:list>
+              <doc:item>
+                <doc:term>locale</doc:term>
+                <doc:definition>
+                  The locale code, for example <doc:tt>en_GB</doc:tt>.
+                </doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>idle</doc:term>
+                <doc:definition>
+                  If the method was executed when the session was idle, valid
+                  values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
+                  and other values will result in an error.
+                </doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>interactive</doc:term>
+                <doc:definition>
+                  If the method can ask interactive questions whilst running,
+                  valid values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
+                  and other values will result in an error.
+                </doc:definition>
+              </doc:item>
+            </doc:list>
+            <doc:para>
+              Other values will cause a verbose warning in the daemon, but will
+              not cause the method to fail. This will preserve forward and
+              backwards compatibility for future API versions.
             </doc:para>
           </doc:summary>
         </doc:doc>

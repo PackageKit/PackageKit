@@ -219,6 +219,9 @@ void		 pk_transaction_search_name			(PkTransaction	*transaction,
 void		 pk_transaction_set_locale			(PkTransaction	*transaction,
 								 const gchar	*code,
 								 DBusGMethodInvocation *context);
+void		 pk_transaction_set_hints			(PkTransaction	*transaction,
+								 gchar		**hints,
+								 DBusGMethodInvocation *context);
 void		 pk_transaction_simulate_install_files		(PkTransaction  *transaction,
 								 gchar		**full_paths,
 								 DBusGMethodInvocation *context);
