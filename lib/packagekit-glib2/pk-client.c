@@ -1288,10 +1288,10 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
 }
 
 /**
- * pk_client_set_locale_cb:
+ * pk_client_set_hints_cb:
  **/
 static void
-pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
+pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *state)
 {
 	gchar *filters_text = NULL;
 	const gchar *enum_text;
@@ -1310,7 +1310,7 @@ pk_client_set_locale_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState 
 	}
 
 	/* finished this call */
-	egg_debug ("set locale, ended DBus call: %p (%p)", state, state->call);
+	egg_debug ("set hints, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* we'll have results from now on */
@@ -1552,6 +1552,17 @@ out:
 }
 
 /**
+ * pk_client_bool_to_text:
+ **/
+static const gchar *
+pk_client_bool_to_text (gboolean value)
+{
+	if (value)
+		return "true";
+	return "false";
+}
+
+/**
  * pk_client_get_tid_cb:
  **/
 static void
@@ -1559,6 +1570,9 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 {
 	PkControl *control = PK_CONTROL (object);
 	GError *error = NULL;
+	gchar *hint;
+	gchar **hints;
+	GPtrArray *array;
 
 	state->tid = pk_control_get_tid_finish (control, res, &error);
 	if (state->tid == NULL) {
@@ -1586,10 +1600,28 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	if (state->proxy_props == NULL)
 		egg_error ("Cannot connect to PackageKit on %s", state->tid);
 
-	/* set locale */
-	state->call = dbus_g_proxy_begin_call (state->proxy, "SetLocale",
-					       (DBusGProxyCallNotify) pk_client_set_locale_cb, state, NULL,
-					       G_TYPE_STRING, state->client->priv->locale,
+	/* get hints */
+	array = g_ptr_array_new_with_free_func (g_free);
+
+	/* locale */
+	if (state->client->priv->locale != NULL) {
+		hint = g_strdup_printf ("locale=%s", state->client->priv->locale);
+		g_ptr_array_add (array, hint);
+	}
+
+	/* idle */
+	hint = g_strdup_printf ("idle=%s", pk_client_bool_to_text (state->client->priv->idle));
+	g_ptr_array_add (array, hint);
+
+	/* interactive */
+	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_text (state->client->priv->interactive));
+	g_ptr_array_add (array, hint);
+
+	/* set hints */
+	hints = pk_ptr_array_to_strv (array);
+	state->call = dbus_g_proxy_begin_call (state->proxy, "SetHints",
+					       (DBusGProxyCallNotify) pk_client_set_hints_cb, state, NULL,
+					       G_TYPE_STRV, hints,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		egg_error ("failed to setup call, maybe OOM or no connection");
@@ -1600,6 +1632,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	egg_debug ("state array add %p", state);
 
 	/* we've sent this async */
+	g_ptr_array_unref (array);
+	g_strfreev (hints);
 }
 
 /**
