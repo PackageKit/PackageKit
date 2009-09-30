@@ -248,6 +248,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         timeout = 15.0
         socket.setdefaulttimeout(timeout)
 
+        # use idle bandwidth by setting congestion control algorithm to TCP Low Priority
+        if self.use_idle:
+            socket.TCP_CONGESTION = 13
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
+
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
         try:
