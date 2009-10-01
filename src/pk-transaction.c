@@ -326,12 +326,14 @@ pk_transaction_get_text (PkTransaction *transaction)
 static gboolean
 pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
-	const gchar *c_tid;
+	gchar *c_tid;
 	GPtrArray *array;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
-	c_tid = pk_backend_get_current_tid (transaction->priv->backend);
+	g_object_get (transaction->priv->backend,
+		      "transaction-id", &c_tid,
+		      NULL);
 	if (c_tid == NULL) {
 		egg_warning ("could not get current tid from backend");
 		return FALSE;
@@ -360,6 +362,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		pk_notify_wait_updates_changed (transaction->priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
+	g_free (c_tid);
 	return TRUE;
 }
 
@@ -1365,9 +1368,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_backend_reset (transaction->priv->backend);
 
 	/* assign */
-	pk_backend_set_current_tid (priv->backend, priv->tid);
 	g_object_set (priv->backend,
 		      "idle", priv->is_idle,
+		      "transaction-id", priv->tid,
 		      NULL);
 
 	/* if we didn't set a locale for this transaction, we would reuse the

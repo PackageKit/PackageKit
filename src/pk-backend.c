@@ -152,6 +152,7 @@ enum {
 	PROP_IDLE,
 	PROP_STATUS,
 	PROP_ROLE,
+	PROP_TRANSACTION_ID,
 	PROP_LAST
 };
 
@@ -2055,32 +2056,6 @@ pk_backend_get_author (PkBackend *backend)
 }
 
 /**
- * pk_backend_get_current_tid:
- */
-const gchar *
-pk_backend_get_current_tid (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
-	return backend->priv->c_tid;
-}
-
-/**
- * pk_backend_set_current_tid:
- */
-gboolean
-pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	egg_debug ("setting backend tid as %s", tid);
-	g_free (backend->priv->c_tid);
-	backend->priv->c_tid = g_strdup (tid);
-	return TRUE;
-}
-
-/**
  * pk_backend_accept_eula:
  */
 gboolean
@@ -2174,6 +2149,9 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_ROLE:
 		g_value_set_uint (value, priv->role);
 		break;
+	case PROP_TRANSACTION_ID:
+		g_value_set_string (value, priv->c_tid);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2198,6 +2176,11 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_ROLE:
 		priv->role = g_value_get_uint (value);
+		break;
+	case PROP_TRANSACTION_ID:
+		g_free (priv->c_tid);
+		priv->c_tid = g_value_dup_string (value);
+		egg_debug ("setting backend tid as %s", priv->c_tid);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2269,6 +2252,14 @@ pk_backend_class_init (PkBackendClass *klass)
 				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
+
+	/**
+	 * PkBackend:transaction-id:
+	 */
+	pspec = g_param_spec_string ("transaction-id", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =

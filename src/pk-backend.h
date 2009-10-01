@@ -47,8 +47,6 @@ G_BEGIN_DECLS
 typedef struct _PkBackend PkBackend;
 
 /* set the state */
-gboolean	 pk_backend_set_current_tid		(PkBackend	*backend,
-							 const gchar	*tid);
 gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
 							 const gchar	*eula_id);
 gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
@@ -73,7 +71,6 @@ gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
 
 /* get the state */
-const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
 gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*percentage,
