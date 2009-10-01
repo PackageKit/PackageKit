@@ -60,7 +60,7 @@ BackendSpawnNiceValue=0
 # A niceness value of 0 will not attempt to set any priority.
 #
 # default=10
-BackendSpawnNiceValueIdle=10
+BackendSpawnNiceValueBackground=10
 
 # Set the iopriority class of the spawned backend to idle.
 # This ensures the process does not hog the disk when performing actions.
@@ -72,7 +72,7 @@ BackendSpawnIdleIO=true
 # This ensures the process does not hog the disk when performing actions.
 #
 # default=true
-BackendSpawnIdleIOIdle=true
+BackendSpawnIdleIOBackground=true
 
 # Set whether the spawned backends are allowed to be SIGKILLed if they do not
 # respond to SIGQUIT. This ensures that Cancel() works as expected, but

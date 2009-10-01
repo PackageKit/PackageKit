@@ -249,7 +249,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         socket.setdefaulttimeout(timeout)
 
         # use idle bandwidth by setting congestion control algorithm to TCP Low Priority
-        if self.use_idle:
+        if self.background:
             socket.TCP_CONGESTION = 13
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")

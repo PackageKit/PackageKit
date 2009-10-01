@@ -100,7 +100,7 @@ struct PkTransactionPrivate
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
-	PkTristate		 is_idle;
+	PkTristate		 background;
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -326,15 +326,15 @@ pk_transaction_get_text (PkTransaction *transaction)
 static gboolean
 pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
-	gchar *c_tid;
+	gchar *transaction_id;
 	GPtrArray *array;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
 	g_object_get (transaction->priv->backend,
-		      "transaction-id", &c_tid,
+		      "transaction-id", &transaction_id,
 		      NULL);
-	if (c_tid == NULL) {
+	if (transaction_id == NULL) {
 		egg_warning ("could not get current tid from backend");
 		return FALSE;
 	}
@@ -362,7 +362,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		pk_notify_wait_updates_changed (transaction->priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
-	g_free (c_tid);
+	g_free (transaction_id);
 	return TRUE;
 }
 
@@ -1369,7 +1369,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* assign */
 	g_object_set (priv->backend,
-		      "idle", priv->is_idle,
+		      "background", priv->background,
 		      "transaction-id", priv->tid,
 		      NULL);
 
@@ -1653,11 +1653,11 @@ pk_transaction_commit (PkTransaction *transaction)
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	/* set the idle really early as this affects scheduling */
-	if (transaction->priv->is_idle == PK_TRISTATE_TRUE ||
-	    transaction->priv->is_idle == PK_TRISTATE_FALSE) {
-		pk_transaction_list_set_idle (transaction->priv->transaction_list,
+	if (transaction->priv->background == PK_TRISTATE_TRUE ||
+	    transaction->priv->background == PK_TRISTATE_FALSE) {
+		pk_transaction_list_set_background (transaction->priv->transaction_list,
 					      transaction->priv->tid,
-					      transaction->priv->is_idle);
+					      transaction->priv->background);
 	}
 
 	/* commit, so it appears in the JobList */
@@ -4327,17 +4327,17 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 	}
 
 	/* idle=true */
-	if (g_strcmp0 (key, "idle") == 0) {
+	if (g_strcmp0 (key, "background") == 0) {
 
 		/* idle true */
 		if (g_strcmp0 (value, "true") == 0) {
-			transaction->priv->is_idle = PK_TRISTATE_TRUE;
+			transaction->priv->background = PK_TRISTATE_TRUE;
 			goto out;
 		}
 
 		/* idle false */
 		if (g_strcmp0 (value, "false") == 0) {
-			transaction->priv->is_idle = PK_TRISTATE_FALSE;
+			transaction->priv->background = PK_TRISTATE_FALSE;
 			goto out;
 		}
 
@@ -5271,7 +5271,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
-	transaction->priv->is_idle = PK_TRISTATE_UNSET;
+	transaction->priv->background = PK_TRISTATE_UNSET;
 	transaction->priv->elapsed_time = 0;
 	transaction->priv->remaining_time = 0;
 	transaction->priv->backend = pk_backend_new ();

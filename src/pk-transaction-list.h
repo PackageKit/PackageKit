@@ -60,9 +60,9 @@ gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
 							 GError			**error);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
 							 const gchar		*tid);
-gboolean	 pk_transaction_list_set_idle		(PkTransactionList	*tlist,
+gboolean	 pk_transaction_list_set_background		(PkTransactionList	*tlist,
 							 const gchar		*tid,
-							 gboolean		 is_idle);
+							 gboolean		 background);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
 							 const gchar		*tid)
 							 G_GNUC_WARN_UNUSED_RESULT;

@@ -184,11 +184,13 @@
                 </doc:definition>
               </doc:item>
               <doc:item>
-                <doc:term>idle</doc:term>
+                <doc:term>background</doc:term>
                 <doc:definition>
-                  If the method was executed when the session was idle, valid
+                  If the method should be executed as a background task, valid
                   values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
                   and other values will result in an error.
+                  Background tasks are normally treated with a low priority than
+                  regular tasks, and normally only use idle CPU and network.
                 </doc:definition>
               </doc:item>
               <doc:item>

@@ -967,7 +967,7 @@ main (int argc, char *argv[])
 	gboolean ret;
 	GError *error = NULL;
 	gboolean verbose = FALSE;
-	gboolean is_idle = FALSE;
+	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
@@ -999,7 +999,7 @@ main (int argc, char *argv[])
 		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
 			/* command line argument, do we ask questions */
 			_("Install the packages without asking for confirmation"), NULL },
-		{ "idle", 'n', 0, G_OPTION_ARG_NONE, &is_idle,
+		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
 		{ NULL}
@@ -1074,7 +1074,7 @@ main (int argc, char *argv[])
 	/* create transactions */
 	task = pk_task_text_new ();
 	g_object_set (task,
-		      "idle", is_idle,
+		      "background", background,
 		      "simulate", !noninteractive,
 		      NULL);
 

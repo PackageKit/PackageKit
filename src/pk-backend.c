@@ -89,9 +89,9 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 simultaneous;
 	gboolean		 use_time;
-	gchar			*c_tid;
+	gchar			*transaction_id;
 	gchar			*locale;
-	PkTristate		 is_idle;
+	PkTristate		 background;
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
@@ -149,7 +149,7 @@ enum {
 
 enum {
 	PROP_0,
-	PROP_IDLE,
+	PROP_BACKGROUND,
 	PROP_STATUS,
 	PROP_ROLE,
 	PROP_TRANSACTION_ID,
@@ -1947,7 +1947,7 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* this function is only valid when we have a running transaction */
-	if (backend->priv->c_tid != NULL)
+	if (backend->priv->transaction_id != NULL)
 		egg_warning ("only valid when we have a running transaction");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
@@ -1986,9 +1986,9 @@ pk_backend_use_idle_bandwidth (PkBackend *backend)
 		return FALSE;
 
 	/* the session has set it one way or the other */
-	if (backend->priv->is_idle == PK_TRISTATE_TRUE)
+	if (backend->priv->background == PK_TRISTATE_TRUE)
 		return TRUE;
-	if (backend->priv->is_idle == PK_TRISTATE_FALSE)
+	if (backend->priv->background == PK_TRISTATE_FALSE)
 		return FALSE;
 
 	/* use a metric to try to guess a correct value */
@@ -2140,8 +2140,8 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	PkBackendPrivate *priv = backend->priv;
 
 	switch (prop_id) {
-	case PROP_IDLE:
-		g_value_set_boolean (value, priv->is_idle);
+	case PROP_BACKGROUND:
+		g_value_set_boolean (value, priv->background);
 		break;
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
@@ -2150,7 +2150,7 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		g_value_set_uint (value, priv->role);
 		break;
 	case PROP_TRANSACTION_ID:
-		g_value_set_string (value, priv->c_tid);
+		g_value_set_string (value, priv->transaction_id);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2168,8 +2168,8 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	PkBackendPrivate *priv = backend->priv;
 
 	switch (prop_id) {
-	case PROP_IDLE:
-		priv->is_idle = g_value_get_boolean (value);
+	case PROP_BACKGROUND:
+		priv->background = g_value_get_boolean (value);
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
@@ -2178,9 +2178,9 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		priv->role = g_value_get_uint (value);
 		break;
 	case PROP_TRANSACTION_ID:
-		g_free (priv->c_tid);
-		priv->c_tid = g_value_dup_string (value);
-		egg_debug ("setting backend tid as %s", priv->c_tid);
+		g_free (priv->transaction_id);
+		priv->transaction_id = g_value_dup_string (value);
+		egg_debug ("setting backend tid as %s", priv->transaction_id);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2203,7 +2203,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
-	g_free (backend->priv->c_tid);
+	g_free (backend->priv->transaction_id);
 	g_object_unref (backend->priv->results);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->network);
@@ -2230,12 +2230,12 @@ pk_backend_class_init (PkBackendClass *klass)
 	object_class->set_property = pk_backend_set_property;
 
 	/**
-	 * PkBackend:idle:
+	 * PkBackend:background:
 	 */
-	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
 				      G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**
 	 * PkBackend:status:
@@ -2367,7 +2367,7 @@ pk_backend_reset (PkBackend *backend)
 
 	/* we can't reset when we are running */
 	if (backend->priv->status == PK_STATUS_ENUM_RUNNING) {
-		egg_warning ("cannot reset %s when running", backend->priv->c_tid);
+		egg_warning ("cannot reset %s when running", backend->priv->transaction_id);
 		return FALSE;
 	}
 
@@ -2796,7 +2796,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->locale = NULL;
-	backend->priv->c_tid = NULL;
+	backend->priv->transaction_id = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;
 	backend->priv->file_changed_func = NULL;

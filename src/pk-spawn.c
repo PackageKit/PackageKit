@@ -66,7 +66,7 @@ struct PkSpawnPrivate
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
-	gboolean		 is_idle;
+	gboolean		 background;
 	gboolean		 is_sending_exit;
 	gboolean		 is_changing_dispatcher;
 	gboolean		 allow_sigkill;
@@ -87,7 +87,7 @@ enum {
 
 enum {
 	PROP_0,
-	PROP_IDLE,
+	PROP_BACKGROUND,
 	PROP_ALLOW_SIGKILL,
 	PROP_LAST
 };
@@ -510,8 +510,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* get the nice value and ensure we are in the valid range */
 	key = "BackendSpawnNiceValue";
-	if (spawn->priv->is_idle)
-		key = "BackendSpawnNiceValueIdle";
+	if (spawn->priv->background)
+		key = "BackendSpawnNiceValueBackground";
 	nice_value = pk_conf_get_int (spawn->priv->conf, key);
 	nice_value = CLAMP(nice_value, -20, 19);
 
@@ -523,8 +523,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* perhaps set idle IO priority */
 	key = "BackendSpawnIdleIO";
-	if (spawn->priv->is_idle)
-		key = "BackendSpawnIdleIOIdle";
+	if (spawn->priv->background)
+		key = "BackendSpawnIdleIOBackground";
 	idleio = pk_conf_get_bool (spawn->priv->conf, key);
 	if (idleio) {
 		egg_debug ("setting ioprio class to idle");
@@ -569,8 +569,8 @@ pk_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 	PkSpawnPrivate *priv = spawn->priv;
 
 	switch (prop_id) {
-	case PROP_IDLE:
-		g_value_set_boolean (value, priv->is_idle);
+	case PROP_BACKGROUND:
+		g_value_set_boolean (value, priv->background);
 		break;
 	case PROP_ALLOW_SIGKILL:
 		g_value_set_boolean (value, priv->allow_sigkill);
@@ -591,8 +591,8 @@ pk_spawn_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 	PkSpawnPrivate *priv = spawn->priv;
 
 	switch (prop_id) {
-	case PROP_IDLE:
-		priv->is_idle = g_value_get_boolean (value);
+	case PROP_BACKGROUND:
+		priv->background = g_value_get_boolean (value);
 		break;
 	case PROP_ALLOW_SIGKILL:
 		priv->allow_sigkill = g_value_get_boolean (value);
@@ -618,12 +618,12 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	object_class->set_property = pk_spawn_set_property;
 
 	/**
-	 * PkSpawn:idle:
+	 * PkSpawn:background:
 	 */
-	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
 				      G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**
 	 * PkSpawn:allow-sigkill:
@@ -676,7 +676,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->allow_sigkill = TRUE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
-	spawn->priv->is_idle = FALSE;
+	spawn->priv->background = FALSE;
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -1024,7 +1024,7 @@ pk_spawn_test (EggTest *test)
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C IDLE=TRUE", " ", 0);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp);
 	g_free (file);
 	g_free (path);

@@ -678,7 +678,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	gchar *filename;
 	gchar **argv;
 	gchar **envp;
-	gboolean is_idle;
+	gboolean background;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
@@ -719,8 +719,8 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	argv[0] = g_strdup (filename);
 
 	/* copy idle setting from backend to PkSpawn instance */
-	g_object_get (backend_spawn->priv->backend, "idle", &is_idle, NULL);
-	g_object_set (backend_spawn->priv->spawn, "idle", is_idle, NULL);
+	g_object_get (backend_spawn->priv->backend, "background", &background, NULL);
+	g_object_set (backend_spawn->priv->spawn, "background", background, NULL);
 
 	backend_spawn->priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);

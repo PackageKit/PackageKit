@@ -73,7 +73,7 @@ typedef struct {
 	guint			 commit_id;
 	gulong			 finished_id;
 	guint			 uid;
-	gboolean		 is_idle;
+	gboolean		 background;
 } PkTransactionItem;
 
 enum {
@@ -232,10 +232,10 @@ pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
 }
 
 /**
- * pk_transaction_list_set_idle:
+ * pk_transaction_list_set_background:
  **/
 gboolean
-pk_transaction_list_set_idle (PkTransactionList *tlist, const gchar *tid, gboolean is_idle)
+pk_transaction_list_set_background (PkTransactionList *tlist, const gchar *tid, gboolean background)
 {
 	PkTransactionItem *item;
 
@@ -251,8 +251,8 @@ pk_transaction_list_set_idle (PkTransactionList *tlist, const gchar *tid, gboole
 		egg_debug ("already finished, so waiting to timeout");
 		return FALSE;
 	}
-	egg_debug ("%s is now idle: %i", tid, is_idle);
-	item->is_idle = is_idle;
+	egg_debug ("%s is now background: %i", tid, background);
+	item->background = background;
 	return TRUE;
 }
 
@@ -311,17 +311,17 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 
 	array = tlist->priv->array;
 
-	/* first try the waiting non-idle transactions */
+	/* first try the waiting non-background transactions */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (item->committed &&
 		    !item->running &&
 		    !item->finished &&
-		    !item->is_idle)
+		    !item->background)
 			goto out;
 	}
 
-	/* then try the other waiting transactions (idle tasks) */
+	/* then try the other waiting transactions (background tasks) */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (item->committed &&
@@ -455,7 +455,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	item->running = FALSE;
 	item->finished = FALSE;
 	item->transaction = NULL;
-	item->is_idle = FALSE;
+	item->background = FALSE;
 	item->commit_id = 0;
 	item->remove_id = 0;
 	item->idle_id = 0;
@@ -671,9 +671,9 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 		if (item->running && item->finished)
 			wrong++;
 		role = pk_transaction_priv_get_role (item->transaction);
-		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i] idle[%i]\n", i,
+		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i] background[%i]\n", i,
 					pk_role_enum_to_text (role), item->tid, item->running,
-					item->committed, item->finished, item->is_idle);
+					item->committed, item->finished, item->background);
 	}
 
 	/* wrong flags */

@@ -63,14 +63,14 @@ struct _PkClientPrivate
 	GPtrArray		*calls;
 	PkControl		*control;
 	gchar			*locale;
-	gboolean		 idle;
+	gboolean		 background;
 	gboolean		 interactive;
 };
 
 enum {
 	PROP_0,
 	PROP_LOCALE,
-	PROP_IDLE,
+	PROP_BACKGROUND,
 	PROP_INTERACTIVE,
 	PROP_LAST
 };
@@ -148,8 +148,8 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_LOCALE:
 		g_value_set_string (value, priv->locale);
 		break;
-	case PROP_IDLE:
-		g_value_set_boolean (value, priv->idle);
+	case PROP_BACKGROUND:
+		g_value_set_boolean (value, priv->background);
 		break;
 	case PROP_INTERACTIVE:
 		g_value_set_boolean (value, priv->interactive);
@@ -174,8 +174,8 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 		g_free (priv->locale);
 		priv->locale = g_strdup (g_value_get_string (value));
 		break;
-	case PROP_IDLE:
-		priv->idle = g_value_get_boolean (value);
+	case PROP_BACKGROUND:
+		priv->background = g_value_get_boolean (value);
 		break;
 	case PROP_INTERACTIVE:
 		priv->interactive = g_value_get_boolean (value);
@@ -1609,8 +1609,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 		g_ptr_array_add (array, hint);
 	}
 
-	/* idle */
-	hint = g_strdup_printf ("idle=%s", pk_client_bool_to_text (state->client->priv->idle));
+	/* background */
+	hint = g_strdup_printf ("background=%s", pk_client_bool_to_text (state->client->priv->background));
 	g_ptr_array_add (array, hint);
 
 	/* interactive */
@@ -3680,12 +3680,12 @@ pk_client_class_init (PkClientClass *klass)
 	g_object_class_install_property (object_class, PROP_LOCALE, pspec);
 
 	/**
-	 * PkClient:idle:
+	 * PkClient:background:
 	 */
-	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
 				      G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**
 	 * PkClient:interactive:
@@ -3707,7 +3707,7 @@ pk_client_init (PkClient *client)
 	GError *error = NULL;
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->calls = g_ptr_array_new ();
-	client->priv->idle = FALSE;
+	client->priv->background = FALSE;
 	client->priv->interactive = TRUE;
 
 	/* check dbus connections, exit if not valid */
