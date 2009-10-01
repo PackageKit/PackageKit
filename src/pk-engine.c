@@ -280,7 +280,7 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 
 	ret = pk_transaction_list_create (engine->priv->transaction_list, new_tid, sender, &error_local);
 	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "getting the tid failed: %s", error_local->message);
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "could not create transaction: %s", error_local->message);
 		dbus_g_method_return_error (context, error);
 		g_error_free (error_local);
 		goto out;
