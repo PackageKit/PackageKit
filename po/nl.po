@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.nl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-30 15:31+0000\n"
-"PO-Revision-Date: 2009-09-30 19:55+0200\n"
+"POT-Creation-Date: 2009-10-01 20:34+0000\n"
+"PO-Revision-Date: 2009-10-02 01:12+0200\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: nl <nl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -343,7 +343,7 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:987 ../client/pk-generate-pack.c:223
+#: ../client/pk-console.c:989 ../client/pk-generate-pack.c:223
 #: ../client/pk-monitor.c:281
 #: ../contrib/command-not-found/pk-command-not-found.c:620
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:512
@@ -352,132 +352,145 @@ msgid "Show extra debugging information"
 msgstr "Extra debuginformatie tonen"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:990 ../client/pk-monitor.c:283
+#: ../client/pk-console.c:992 ../client/pk-monitor.c:283
 msgid "Show the program version and exit"
 msgstr "Programmaversie tonen en sluiten"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:993
+#: ../client/pk-console.c:995
 msgid "Set the filter, e.g. installed"
 msgstr "Filter instellen, bijvoorbeeld geïnstalleerd"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:996
+#: ../client/pk-console.c:998
 msgid "Exit without waiting for actions to complete"
 msgstr "Afsluiten zonder te wachten tot de transacties zijn afgerond"
 
+#. command line argument, do we ask questions
+#: ../client/pk-console.c:1001
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+msgid "Install the packages without asking for confirmation"
+msgstr "Installeer het pakket zonder goedkeuring te vragen"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: ../client/pk-console.c:1004
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Voer het commando uit met gebruik van onbenutte netwerk bandbreedte en ook "
+"om minder vermogen te gebruiken"
+
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1022
+#: ../client/pk-console.c:1030
 msgid "Failed to contact PackageKit"
 msgstr "Contact met PackageKit krijgen mislukte."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1074
+#: ../client/pk-console.c:1086
 msgid "The filter specified was invalid"
 msgstr "De opgegeven filter was ongeldig"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1093
+#: ../client/pk-console.c:1105
 msgid "A search type is required, e.g. name"
 msgstr "Een zoektype is verplicht, b.v. naam"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1100 ../client/pk-console.c:1112
-#: ../client/pk-console.c:1124 ../client/pk-console.c:1136
+#: ../client/pk-console.c:1112 ../client/pk-console.c:1124
+#: ../client/pk-console.c:1136 ../client/pk-console.c:1148
 msgid "A search term is required"
 msgstr "Een zoekterm is vereist"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1158
 msgid "Invalid search type"
 msgstr "Ongeldig zoektype"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1152
+#: ../client/pk-console.c:1164
 msgid "A package name to install is required"
 msgstr "Een pakketnaam om te installeren is vereist"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1161
+#: ../client/pk-console.c:1173
 msgid "A filename to install is required"
 msgstr "Een bestandsnaam om te installeren is vereist"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1173
+#: ../client/pk-console.c:1185
 msgid "A type, key_id and package_id are required"
 msgstr "Er moet een type worden opgegeven, key_id of package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1184
+#: ../client/pk-console.c:1196
 msgid "A package name to remove is required"
 msgstr "Een te verwijderen pakketnaam is vereist"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1193
+#: ../client/pk-console.c:1205
 msgid "A destination directory and the package names to download are required"
 msgstr "Een doelmap en dan de namen van te downloaden pakketten zijn vereist"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1200
+#: ../client/pk-console.c:1212
 msgid "Directory not found"
 msgstr "Map niet gevonden"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1209
+#: ../client/pk-console.c:1221
 msgid "A licence identifier (eula-id) is required"
 msgstr "Een licentie indentificatie (eula-id) is vereis"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1220
+#: ../client/pk-console.c:1232
 msgid "A transaction identifier (tid) is required"
 msgstr "Een transactie indentificatie (tid) is vereist"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1253
 msgid "A package name to resolve is required"
 msgstr "Een pakketnaam om te gebruiken is vereist"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1252 ../client/pk-console.c:1263
+#: ../client/pk-console.c:1264 ../client/pk-console.c:1275
 msgid "A repository name is required"
 msgstr "Een naam van een repository is vereist"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1274
+#: ../client/pk-console.c:1286
 msgid "A repo name, parameter and value are required"
 msgstr "Een repo naam, parameter en waarde zijn vereist"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1291
+#: ../client/pk-console.c:1303
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Een actie, b.v. 'update-system' is vereist"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1298
+#: ../client/pk-console.c:1310
 msgid "A correct role is required"
 msgstr "Een correcte rol is vereist"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1308 ../client/pk-console.c:1323
-#: ../client/pk-console.c:1332 ../client/pk-console.c:1352
-#: ../client/pk-console.c:1361 ../client/pk-generate-pack.c:287
+#: ../client/pk-console.c:1320 ../client/pk-console.c:1335
+#: ../client/pk-console.c:1344 ../client/pk-console.c:1364
+#: ../client/pk-console.c:1373 ../client/pk-generate-pack.c:287
 msgid "A package name is required"
 msgstr "Een pakketnaam is vereist"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1341
+#: ../client/pk-console.c:1353
 msgid "A package provide string is required"
 msgstr "Een pakket geleverde string is vereist"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1433
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Optie '%s' wordt niet ondersteund"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443
 msgid "Command failed"
 msgstr "Opdracht mislukt"
 
@@ -774,11 +787,6 @@ msgstr "Installeer geen afhankelijkheden van de kern pakketten"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not display information or progress"
 msgstr "Laat geen informatie zien over de voortgang"
-
-#. command line argument, do we ask questions
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
-msgid "Install the packages without asking for confirmation"
-msgstr "Installeer het pakket zonder goedkeuring te vragen"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:539
