@@ -967,6 +967,8 @@ main (int argc, char *argv[])
 	gboolean ret;
 	GError *error = NULL;
 	gboolean verbose = FALSE;
+	gboolean is_idle = FALSE;
+	gboolean noninteractive = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
@@ -994,6 +996,12 @@ main (int argc, char *argv[])
 		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
 			/* TRANSLATORS: command line argument, work asynchronously */
 			_("Exit without waiting for actions to complete"), NULL},
+		{ "noninteractive", 'y', 0, G_OPTION_ARG_NONE, &noninteractive,
+			/* command line argument, do we ask questions */
+			_("Install the packages without asking for confirmation"), NULL },
+		{ "idle", 'n', 0, G_OPTION_ARG_NONE, &is_idle,
+			/* TRANSLATORS: command line argument, this command is not a priority */
+			_("Run the command using idle network bandwidth and also using less power"), NULL},
 		{ NULL}
 	};
 
@@ -1065,6 +1073,10 @@ main (int argc, char *argv[])
 
 	/* create transactions */
 	task = pk_task_text_new ();
+	g_object_set (task,
+		      "idle", is_idle,
+		      "simulate", !noninteractive,
+		      NULL);
 
 	/* check filter */
 	if (filter != NULL) {
