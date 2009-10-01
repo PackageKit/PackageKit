@@ -73,8 +73,6 @@ gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 gboolean	 pk_spawn_is_running			(PkSpawn	*spawn);
 gboolean	 pk_spawn_kill				(PkSpawn	*spawn);
 gboolean	 pk_spawn_exit				(PkSpawn	*spawn);
-gboolean	 pk_spawn_set_allow_sigkill		(PkSpawn	*spawn,
-							 gboolean	 allow_sigkill);
 
 G_END_DECLS
 

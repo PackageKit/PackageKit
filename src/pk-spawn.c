@@ -88,6 +88,7 @@ enum {
 enum {
 	PROP_0,
 	PROP_IDLE,
+	PROP_ALLOW_SIGKILL,
 	PROP_LAST
 };
 
@@ -337,24 +338,6 @@ pk_spawn_kill (PkSpawn *spawn)
 }
 
 /**
- * pk_spawn_set_allow_sigkill:
- *
- * Set whether the spawned backends are allowed to be SIGKILLed if they do not
- * respond to SIGQUIT. This ensures that Cancel() works as expected, but
- * somtimes can corrupt databases if they are open.
- **/
-gboolean
-pk_spawn_set_allow_sigkill (PkSpawn *spawn, gboolean allow_sigkill)
-{
-	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
-
-	egg_debug ("setting SIGKILL: %i", allow_sigkill);
-	spawn->priv->allow_sigkill = allow_sigkill;
-
-	return TRUE;
-}
-
-/**
  * pk_spawn_send_stdin:
  *
  * Send new comands to a running (but idle) dispatcher script
@@ -589,6 +572,9 @@ pk_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 	case PROP_IDLE:
 		g_value_set_boolean (value, priv->is_idle);
 		break;
+	case PROP_ALLOW_SIGKILL:
+		g_value_set_boolean (value, priv->allow_sigkill);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -607,6 +593,9 @@ pk_spawn_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 	switch (prop_id) {
 	case PROP_IDLE:
 		priv->is_idle = g_value_get_boolean (value);
+		break;
+	case PROP_ALLOW_SIGKILL:
+		priv->allow_sigkill = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -635,6 +624,17 @@ pk_spawn_class_init (PkSpawnClass *klass)
 				      FALSE,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+
+	/**
+	 * PkSpawn:allow-sigkill:
+	 * Set whether the spawned backends are allowed to be SIGKILLed if they do not
+	 * respond to SIGQUIT. This ensures that Cancel() works as expected, but
+	 * sometimes can corrupt databases if they are open.
+	 */
+	pspec = g_param_spec_boolean ("allow-sigkill", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ALLOW_SIGKILL, pspec);
 
 	signals [SIGNAL_EXIT] =
 		g_signal_new ("exit",
@@ -950,7 +950,9 @@ pk_spawn_test (EggTest *test)
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	path = egg_test_get_data_file ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
-	pk_spawn_set_allow_sigkill (spawn, FALSE);
+	g_object_set (spawn,
+		      "allow-sigkill", FALSE,
+		      NULL);
 	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
@@ -1022,7 +1024,7 @@ pk_spawn_test (EggTest *test)
 	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
 	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
 	argv = g_strsplit (path, "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C", " ", 0);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C IDLE=TRUE", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp);
 	g_free (file);
 	g_free (path);
