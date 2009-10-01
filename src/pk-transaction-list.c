@@ -73,6 +73,7 @@ typedef struct {
 	guint			 commit_id;
 	gulong			 finished_id;
 	guint			 uid;
+	gboolean		 is_idle;
 } PkTransactionItem;
 
 enum {
@@ -231,6 +232,31 @@ pk_transaction_list_remove (PkTransactionList *tlist, const gchar *tid)
 }
 
 /**
+ * pk_transaction_list_set_idle:
+ **/
+gboolean
+pk_transaction_list_set_idle (PkTransactionList *tlist, const gchar *tid, gboolean is_idle)
+{
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
+
+	item = pk_transaction_list_get_from_tid (tlist, tid);
+	if (item == NULL) {
+		egg_warning ("could not get item");
+		return FALSE;
+	}
+	if (item->finished) {
+		egg_debug ("already finished, so waiting to timeout");
+		return FALSE;
+	}
+	egg_debug ("%s is now idle: %i", tid, is_idle);
+	item->is_idle = is_idle;
+	return TRUE;
+}
+
+/**
  * pk_transaction_list_remove_item_cb:
  **/
 static gboolean
@@ -274,13 +300,48 @@ pk_transaction_list_run_item (PkTransactionList *tlist, PkTransactionItem *item)
 }
 
 /**
+ * pk_transaction_list_get_next_item:
+ **/
+static PkTransactionItem *
+pk_transaction_list_get_next_item (PkTransactionList *tlist)
+{
+	PkTransactionItem *item = NULL;
+	GPtrArray *array;
+	guint i;
+
+	array = tlist->priv->array;
+
+	/* first try the waiting non-idle transactions */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (item->committed &&
+		    !item->running &&
+		    !item->finished &&
+		    !item->is_idle)
+			goto out;
+	}
+
+	/* then try the other waiting transactions (idle tasks) */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		if (item->committed &&
+		    !item->running &&
+		    !item->finished)
+			goto out;
+	}
+
+	/* nothing to run */
+	item = NULL;
+out:
+	return item;
+}
+
+/**
  * pk_transaction_list_transaction_finished_cb:
  **/
 static void
 pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time_ms, PkTransactionList *tlist)
 {
-	guint i;
-	guint length;
 	guint timeout;
 	PkTransactionItem *item;
 	const gchar *tid;
@@ -320,16 +381,10 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	item->remove_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_transaction_list_remove_item_cb, item);
 
 	/* do the next transaction now if we have another queued */
-	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed &&
-		    !item->running &&
-		    !item->finished) {
-			egg_debug ("running %s as previous one finished", item->tid);
-			pk_transaction_list_run_item (tlist, item);
-			break;
-		}
+	item = pk_transaction_list_get_next_item (tlist);
+	if (item != NULL) {
+		egg_debug ("running %s as previous one finished", item->tid);
+		pk_transaction_list_run_item (tlist, item);
 	}
 }
 
@@ -400,6 +455,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	item->running = FALSE;
 	item->finished = FALSE;
 	item->transaction = NULL;
+	item->is_idle = FALSE;
 	item->commit_id = 0;
 	item->remove_id = 0;
 	item->idle_id = 0;
@@ -615,9 +671,9 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 		if (item->running && item->finished)
 			wrong++;
 		role = pk_transaction_priv_get_role (item->transaction);
-		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i]\n", i,
+		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i] idle[%i]\n", i,
 					pk_role_enum_to_text (role), item->tid, item->running,
-					item->committed, item->finished);
+					item->committed, item->finished, item->is_idle);
 	}
 
 	/* wrong flags */

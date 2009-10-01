@@ -1647,6 +1647,14 @@ pk_transaction_commit (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
+	/* set the idle really early as this affects scheduling */
+	if (transaction->priv->is_idle == PK_TRISTATE_TRUE ||
+	    transaction->priv->is_idle == PK_TRISTATE_FALSE) {
+		pk_transaction_list_set_idle (transaction->priv->transaction_list,
+					      transaction->priv->tid,
+					      transaction->priv->is_idle);
+	}
+
 	/* commit, so it appears in the JobList */
 	ret = pk_transaction_list_commit (transaction->priv->transaction_list,
 					  transaction->priv->tid);
