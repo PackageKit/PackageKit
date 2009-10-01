@@ -455,6 +455,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	guint len;
 	gint nice_value;
 	gchar *command;
+	const gchar *key;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
@@ -525,7 +526,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 NULL);
 
 	/* get the nice value and ensure we are in the valid range */
-	nice_value = pk_conf_get_int (spawn->priv->conf, "BackendSpawnNiceValue");
+	key = "BackendSpawnNiceValue";
+	if (spawn->priv->is_idle)
+		key = "BackendSpawnNiceValueIdle";
+	nice_value = pk_conf_get_int (spawn->priv->conf, key);
 	nice_value = CLAMP(nice_value, -20, 19);
 
 	/* don't completely bog the system down */
@@ -535,7 +539,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	}
 
 	/* perhaps set idle IO priority */
-	idleio = pk_conf_get_bool (spawn->priv->conf, "BackendSpawnIdleIO");
+	key = "BackendSpawnIdleIO";
+	if (spawn->priv->is_idle)
+		key = "BackendSpawnIdleIOIdle";
+	idleio = pk_conf_get_bool (spawn->priv->conf, key);
 	if (idleio) {
 		egg_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (spawn->priv->child_pid);
