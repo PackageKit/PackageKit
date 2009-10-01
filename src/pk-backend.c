@@ -147,6 +147,12 @@ enum {
 	SIGNAL_LAST
 };
 
+enum {
+	PROP_0,
+	PROP_IDLE,
+	PROP_LAST
+};
+
 static guint signals[SIGNAL_LAST] = { 0 };
 
 /**
@@ -505,17 +511,6 @@ pk_backend_set_proxy (PkBackend	*backend, const gchar *proxy_http, const gchar *
 	g_free (backend->priv->proxy_ftp);
 	backend->priv->proxy_http = g_strdup (proxy_http);
 	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
-	return TRUE;
-}
-
-/**
- * pk_backend_set_is_idle:
- **/
-gboolean
-pk_backend_set_is_idle (PkBackend *backend, PkTristate is_idle)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	backend->priv->is_idle = is_idle;
 	return TRUE;
 }
 
@@ -2181,6 +2176,44 @@ pk_backend_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkBackend *back
 }
 
 /**
+ * pk_backend_get_property:
+ **/
+static void
+pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkBackend *backend = PK_BACKEND (object);
+	PkBackendPrivate *priv = backend->priv;
+
+	switch (prop_id) {
+	case PROP_IDLE:
+		g_value_set_boolean (value, priv->is_idle);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_backend_set_property:
+ **/
+static void
+pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkBackend *backend = PK_BACKEND (object);
+	PkBackendPrivate *priv = backend->priv;
+
+	switch (prop_id) {
+	case PROP_IDLE:
+		priv->is_idle = g_value_get_boolean (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_backend_finalize:
  **/
 static void
@@ -2215,8 +2248,19 @@ pk_backend_finalize (GObject *object)
 static void
 pk_backend_class_init (PkBackendClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_finalize;
+	object_class->get_property = pk_backend_get_property;
+	object_class->set_property = pk_backend_set_property;
+
+	/**
+	 * PkBackend:idle:
+	 */
+	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_IDLE, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =

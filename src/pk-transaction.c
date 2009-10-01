@@ -1366,7 +1366,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* assign */
 	pk_backend_set_current_tid (priv->backend, priv->tid);
-	pk_backend_set_is_idle (priv->backend, priv->is_idle);
+	g_object_set (priv->backend,
+		      "idle", priv->is_idle,
+		      NULL);
 
 	/* if we didn't set a locale for this transaction, we would reuse the
 	 * last set locale in the backend, or NULL if it was not ever set.
