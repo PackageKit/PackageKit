@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.nl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-25 08:37+0000\n"
-"PO-Revision-Date: 2009-09-25 14:46+0200\n"
+"POT-Creation-Date: 2009-09-30 15:31+0000\n"
+"PO-Revision-Date: 2009-09-30 19:55+0200\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: nl <nl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -133,8 +133,8 @@ msgstr "Details van de vernieuwing:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
-#: ../lib/packagekit-glib2/pk-task-text.c:172
+#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:107
+#: ../lib/packagekit-glib2/pk-task-text.c:174
 #: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
 msgid_plural "Packages"
@@ -153,7 +153,7 @@ msgstr "Verouderde pakketten"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:175
+#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:177
 msgid "Vendor"
 msgstr "Verkoper"
 
@@ -194,7 +194,7 @@ msgstr "Uitgegeven"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:498
+#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:502
 msgid "Updated"
 msgstr "Vernieuwd"
 
@@ -260,8 +260,8 @@ msgstr "Fatale fout"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:484
-#: ../contrib/command-not-found/pk-command-not-found.c:422
-#: ../contrib/command-not-found/pk-command-not-found.c:563
+#: ../contrib/command-not-found/pk-command-not-found.c:426
+#: ../contrib/command-not-found/pk-command-not-found.c:567
 msgid "The transaction failed"
 msgstr "De transactie faalde"
 
@@ -344,15 +344,15 @@ msgstr ""
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:987 ../client/pk-generate-pack.c:223
-#: ../client/pk-monitor.c:276
-#: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:511
+#: ../client/pk-monitor.c:281
+#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:512
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Extra debuginformatie tonen"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:990 ../client/pk-monitor.c:278
+#: ../client/pk-console.c:990 ../client/pk-monitor.c:283
 msgid "Show the program version and exit"
 msgstr "Programmaversie tonen en sluiten"
 
@@ -594,12 +594,12 @@ msgstr "Servicepack aangemaakt '%s'"
 msgid "Failed to create '%s': %s"
 msgstr "'%s' aanmaken niet gelukt: %s"
 
-#: ../client/pk-monitor.c:206
+#: ../client/pk-monitor.c:211
 msgid "Failed to get daemon state"
 msgstr "Daemon toestand verkrijgen mislukte."
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:294
+#: ../client/pk-monitor.c:299
 msgid "PackageKit Monitor"
 msgstr "PackageKit-monitor"
 
@@ -658,91 +658,91 @@ msgid "Installing..."
 msgstr "Aan het installeren......"
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:357
+#: ../contrib/command-not-found/pk-command-not-found.c:361
 msgid "Downloading details about the software sources."
 msgstr "Download details over de software bronnen."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:365
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Bestands lijsten downloaden (dit kan enige tijd duren)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:365
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Waiting for package manager lock."
 msgstr "Wachten op pakket beheerder blokkering."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:369
+#: ../contrib/command-not-found/pk-command-not-found.c:373
 msgid "Loading list of packages."
 msgstr "Lijst van pakketten downloaden."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:413
+#: ../contrib/command-not-found/pk-command-not-found.c:417
 msgid "Failed to search for file"
 msgstr "Zoeken naar bestand niet gelukt"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:554
+#: ../contrib/command-not-found/pk-command-not-found.c:558
 msgid "Failed to install packages"
 msgstr "Kon pakketen niet installeren"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:632
+#: ../contrib/command-not-found/pk-command-not-found.c:636
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit Command niet gevonden"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:660
+#: ../contrib/command-not-found/pk-command-not-found.c:664
 msgid "Command not found."
 msgstr "Commando niet gevonden."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:667
+#: ../contrib/command-not-found/pk-command-not-found.c:671
 msgid "Similar command is:"
 msgstr "Een gelijkend commando is:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:676
+#: ../contrib/command-not-found/pk-command-not-found.c:680
 msgid "Run similar command:"
 msgstr "Start gelijkend commando:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:688
-#: ../contrib/command-not-found/pk-command-not-found.c:697
+#: ../contrib/command-not-found/pk-command-not-found.c:692
+#: ../contrib/command-not-found/pk-command-not-found.c:701
 msgid "Similar commands are:"
 msgstr "Gelijkende commando's zijn:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:704
+#: ../contrib/command-not-found/pk-command-not-found.c:708
 msgid "Please choose a command to run"
 msgstr "Kies alstublieft een commando om te starten"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:720
+#: ../contrib/command-not-found/pk-command-not-found.c:724
 msgid "The package providing this file is:"
 msgstr "Het pakket dat dit bestand levert is:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:725
+#: ../contrib/command-not-found/pk-command-not-found.c:729
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Pakket '%s' installeren om commando '%s' te verkrijgen?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:743
+#: ../contrib/command-not-found/pk-command-not-found.c:747
 msgid "Packages providing this file are:"
 msgstr "Pakketten die dit bestand leveren zijn:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:753
+#: ../contrib/command-not-found/pk-command-not-found.c:757
 msgid "Suitable packages are:"
 msgstr "Geschikte pakketten zijn:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:762
+#: ../contrib/command-not-found/pk-command-not-found.c:766
 msgid "Please choose a package to install"
 msgstr "Kies alstublieft een pakket om te installeren"
 
@@ -758,7 +758,7 @@ msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Pakket %s vinden is mislukt, of is reeds geïnstalleerd: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:514
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:515
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr ""
@@ -766,178 +766,183 @@ msgstr ""
 "worden"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:517
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
 msgid "Do not install dependencies of the core packages"
 msgstr "Installeer geen afhankelijkheden van de kern pakketten"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:520
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not display information or progress"
 msgstr "Laat geen informatie zien over de voortgang"
 
+#. command line argument, do we ask questions
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+msgid "Install the packages without asking for confirmation"
+msgstr "Installeer het pakket zonder goedkeuring te vragen"
+
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:539
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit debuginfo installer"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "FOUT: Specificeer de te installeren pakket namen."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:579
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
 #, c-format
 msgid "Getting sources list"
 msgstr "Ophalen bronnen lijst"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:664
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:748
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:792
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:859
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:903
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 msgid "FAILED."
 msgstr "MISLUKT."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:604
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:679
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:807
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:918
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:607
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Vond %i aangezette en %i uitgezette bronnen."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:614
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Zoeken naar debug bronnen"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:647
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Vond %i uitgezette debuginfo repo's"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:654
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Debug bronnen aanzetten"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "%i debug bronnen aangezet."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:689
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Zoeken naar debug pakketten"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Pakket %s vinden mislukte: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:724
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Debug info pakket %s niet gevonden: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:752
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
 #, c-format
 msgid "Found no packages to install."
 msgstr "Geen pakketten gevonden om te installeren."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:766
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
 msgstr "Vond %i pakketten:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Zoeken naar pakketten die afhangen van deze pakketten"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Kon geen afhankelijke pakketten vinden: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Vond %i extra pakketten."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:815
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
 msgstr "Geen extra pakketten vereist."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Vond %i pakketten om te installeren:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Pakketten niet installeren in de simulatie mode"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:849
-#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../lib/packagekit-glib2/pk-console-shared.c:274
 #, c-format
 msgid "Installing packages"
 msgstr "Pakketten installeren"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:862
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Kon pakketen %s  niet installeren."
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:894
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Uitzetten van bronnen die eerst aangezet waren"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:906
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Kon de debug bronnen %s niet uitzetten"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:921
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "%i debug bronnen uitgezet."
@@ -1040,604 +1045,604 @@ msgstr "PackageKit Pakketlijst"
 msgid "PackageKit Service Pack"
 msgstr "PackageKit-servicepack"
 
-#: ../lib/packagekit-glib2/pk-console-shared.c:55
+#: ../lib/packagekit-glib2/pk-console-shared.c:59
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Voer een nummer in van 1 tot %i: "
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:177
+#: ../lib/packagekit-glib2/pk-console-shared.c:181
 msgid "More than one package matches:"
 msgstr "Er zijn meerdere pakketten die overeenkomen:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../lib/packagekit-glib2/pk-console-shared.c:186
+#: ../lib/packagekit-glib2/pk-console-shared.c:190
 msgid "Please choose the correct package: "
 msgstr "Kies alstublieft het juiste pakket: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: ../lib/packagekit-glib2/pk-console-shared.c:238
+#: ../lib/packagekit-glib2/pk-console-shared.c:242
 msgid "Unknown state"
 msgstr "Onbekende toestand"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: ../lib/packagekit-glib2/pk-console-shared.c:242
+#: ../lib/packagekit-glib2/pk-console-shared.c:246
 msgid "Starting"
 msgstr "Opstarten"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: ../lib/packagekit-glib2/pk-console-shared.c:246
+#: ../lib/packagekit-glib2/pk-console-shared.c:250
 msgid "Waiting in queue"
 msgstr "Wachten in wachtrij"
 
 #. TRANSLATORS: transaction state, just started
-#: ../lib/packagekit-glib2/pk-console-shared.c:250
+#: ../lib/packagekit-glib2/pk-console-shared.c:254
 msgid "Running"
 msgstr "Draaiende"
 
 #. TRANSLATORS: transaction state, is querying data
-#: ../lib/packagekit-glib2/pk-console-shared.c:254
+#: ../lib/packagekit-glib2/pk-console-shared.c:258
 msgid "Querying"
 msgstr "Informatie ophalen"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:258
+#: ../lib/packagekit-glib2/pk-console-shared.c:262
 msgid "Getting information"
 msgstr "Informatie krijgen"
 
 #. TRANSLATORS: transaction state, removing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:262
+#: ../lib/packagekit-glib2/pk-console-shared.c:266
 msgid "Removing packages"
 msgstr "Pakketten verwijderen"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:266
-#: ../lib/packagekit-glib2/pk-console-shared.c:644
+#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../lib/packagekit-glib2/pk-console-shared.c:648
 msgid "Downloading packages"
 msgstr "Pakketten aan het downloaden"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: ../lib/packagekit-glib2/pk-console-shared.c:274
+#: ../lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Refreshing software list"
 msgstr "Software lijst verversen"
 
 #. TRANSLATORS: transaction state, installing updates
-#: ../lib/packagekit-glib2/pk-console-shared.c:278
+#: ../lib/packagekit-glib2/pk-console-shared.c:282
 msgid "Installing updates"
 msgstr "Vernieuwingen installeren"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: ../lib/packagekit-glib2/pk-console-shared.c:282
+#: ../lib/packagekit-glib2/pk-console-shared.c:286
 msgid "Cleaning up packages"
 msgstr "Pakketten opschonen"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:286
+#: ../lib/packagekit-glib2/pk-console-shared.c:290
 msgid "Obsoleting packages"
 msgstr "Pakketten achterhaald maken"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: ../lib/packagekit-glib2/pk-console-shared.c:290
+#: ../lib/packagekit-glib2/pk-console-shared.c:294
 msgid "Resolving dependencies"
 msgstr "Afhankelijkheden oplossen"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: ../lib/packagekit-glib2/pk-console-shared.c:294
+#: ../lib/packagekit-glib2/pk-console-shared.c:298
 msgid "Checking signatures"
 msgstr "Ondertekeningen controleren"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:298
-#: ../lib/packagekit-glib2/pk-console-shared.c:604
+#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:608
 msgid "Rolling back"
 msgstr "Terug draaien"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:306
 msgid "Testing changes"
 msgstr "Veranderingen testen"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: ../lib/packagekit-glib2/pk-console-shared.c:306
+#: ../lib/packagekit-glib2/pk-console-shared.c:310
 msgid "Committing changes"
 msgstr "Veranderingen beschikbaar maken"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:310
+#: ../lib/packagekit-glib2/pk-console-shared.c:314
 msgid "Requesting data"
 msgstr "Data aanvragen"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:314
+#: ../lib/packagekit-glib2/pk-console-shared.c:318
 msgid "Finished"
 msgstr "Klaar"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:318
+#: ../lib/packagekit-glib2/pk-console-shared.c:322
 msgid "Cancelling"
 msgstr "Afbreken"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:322
+#: ../lib/packagekit-glib2/pk-console-shared.c:326
 msgid "Downloading repository information"
 msgstr "Repository informatie downloaden"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:326
+#: ../lib/packagekit-glib2/pk-console-shared.c:330
 msgid "Downloading list of packages"
 msgstr "Lijst van pakketten downloaden"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:330
+#: ../lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Downloading file lists"
 msgstr "Bestandslijsten downloaden"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:334
+#: ../lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Downloading lists of changes"
 msgstr "Lijst van veranderingen downloaden."
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:338
+#: ../lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Downloading groups"
 msgstr "Groepen downloaden"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:342
+#: ../lib/packagekit-glib2/pk-console-shared.c:346
 msgid "Downloading update information"
 msgstr "Pakketinformatie downloaden"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:346
+#: ../lib/packagekit-glib2/pk-console-shared.c:350
 msgid "Repackaging files"
 msgstr "Bestanden opnieuw inpakken"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:350
+#: ../lib/packagekit-glib2/pk-console-shared.c:354
 msgid "Loading cache"
 msgstr "Cache laden"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:354
+#: ../lib/packagekit-glib2/pk-console-shared.c:358
 msgid "Scanning applications"
 msgstr "Toepassingen doorzoeken"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:358
+#: ../lib/packagekit-glib2/pk-console-shared.c:362
 msgid "Generating package lists"
 msgstr "Pakketlijst aanmaken"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:362
+#: ../lib/packagekit-glib2/pk-console-shared.c:366
 msgid "Waiting for package manager lock"
 msgstr "Wachten op pakket beheerder blokkering"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:366
+#: ../lib/packagekit-glib2/pk-console-shared.c:370
 msgid "Waiting for authentication"
 msgstr "Wachten op authenticatie"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:370
+#: ../lib/packagekit-glib2/pk-console-shared.c:374
 msgid "Updating running applications"
 msgstr "Draaiende toepassingen vernieuwen"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:374
+#: ../lib/packagekit-glib2/pk-console-shared.c:378
 msgid "Checking applications in use"
 msgstr "Controleren van toepassingen in gebruik"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:378
+#: ../lib/packagekit-glib2/pk-console-shared.c:382
 msgid "Checking libraries in use"
 msgstr "Controleren van bibliotheken in gebruik"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:382
+#: ../lib/packagekit-glib2/pk-console-shared.c:386
 msgid "Copying files"
 msgstr "Bestanden kopiëren"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:400
+#: ../lib/packagekit-glib2/pk-console-shared.c:404
 msgid "Trivial"
 msgstr "Triviaal"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:404
+#: ../lib/packagekit-glib2/pk-console-shared.c:408
 msgid "Normal"
 msgstr "Normaal"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:408
+#: ../lib/packagekit-glib2/pk-console-shared.c:412
 msgid "Important"
 msgstr "Belangrijk"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:412
+#: ../lib/packagekit-glib2/pk-console-shared.c:416
 msgid "Security"
 msgstr "Beveiliging"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:416
+#: ../lib/packagekit-glib2/pk-console-shared.c:420
 msgid "Bug fix "
 msgstr "Fout reparatie"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:420
+#: ../lib/packagekit-glib2/pk-console-shared.c:424
 msgid "Enhancement"
 msgstr "Verbetering"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:424
+#: ../lib/packagekit-glib2/pk-console-shared.c:428
 msgid "Blocked"
 msgstr "Geblokkeerd"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:429
-#: ../lib/packagekit-glib2/pk-console-shared.c:502
+#: ../lib/packagekit-glib2/pk-console-shared.c:433
+#: ../lib/packagekit-glib2/pk-console-shared.c:506
 msgid "Installed"
 msgstr "Geïnstalleerd"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-console-shared.c:434
+#: ../lib/packagekit-glib2/pk-console-shared.c:438
 msgid "Available"
 msgstr "Beschikbaar"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:452
+#: ../lib/packagekit-glib2/pk-console-shared.c:456
 msgid "Downloading"
 msgstr "Downloaden"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:456
+#: ../lib/packagekit-glib2/pk-console-shared.c:460
 msgid "Updating"
 msgstr "Vernieuwen"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:460
-#: ../lib/packagekit-glib2/pk-console-shared.c:580
+#: ../lib/packagekit-glib2/pk-console-shared.c:464
+#: ../lib/packagekit-glib2/pk-console-shared.c:584
 msgid "Installing"
 msgstr "Installeren"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:464
-#: ../lib/packagekit-glib2/pk-console-shared.c:576
+#: ../lib/packagekit-glib2/pk-console-shared.c:468
+#: ../lib/packagekit-glib2/pk-console-shared.c:580
 msgid "Removing"
 msgstr "Verwijderen"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:468
+#: ../lib/packagekit-glib2/pk-console-shared.c:472
 msgid "Cleaning up"
 msgstr "Opschonen"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:472
+#: ../lib/packagekit-glib2/pk-console-shared.c:476
 msgid "Obsoleting"
 msgstr "Verouderd maken"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:476
+#: ../lib/packagekit-glib2/pk-console-shared.c:480
 msgid "Reinstalling"
 msgstr "Hergeïnstalleerd"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:494
+#: ../lib/packagekit-glib2/pk-console-shared.c:498
 msgid "Downloaded"
 msgstr "Downloaden"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:506
+#: ../lib/packagekit-glib2/pk-console-shared.c:510
 msgid "Removed"
 msgstr "Verwijderd"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:510
+#: ../lib/packagekit-glib2/pk-console-shared.c:514
 msgid "Cleaned up"
 msgstr "Opgeruimd"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:514
+#: ../lib/packagekit-glib2/pk-console-shared.c:518
 msgid "Obsoleted"
 msgstr "Verouderd"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:518
+#: ../lib/packagekit-glib2/pk-console-shared.c:522
 msgid "Reinstalled"
 msgstr "Herge"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:536
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
 msgid "Unknown role type"
 msgstr "Onbekend rol type"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:540
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
 msgid "Getting dependencies"
 msgstr "Afhankelijkheden ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:544
+#: ../lib/packagekit-glib2/pk-console-shared.c:548
 msgid "Getting update details"
 msgstr "Vernieuwings details ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:548
+#: ../lib/packagekit-glib2/pk-console-shared.c:552
 msgid "Getting details"
 msgstr "Details ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:552
+#: ../lib/packagekit-glib2/pk-console-shared.c:556
 msgid "Getting requires"
 msgstr "Vereisten ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:556
+#: ../lib/packagekit-glib2/pk-console-shared.c:560
 msgid "Getting updates"
 msgstr "Vernieuwingen ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:560
+#: ../lib/packagekit-glib2/pk-console-shared.c:564
 msgid "Searching by details"
 msgstr "Opzoeken volgens details"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:564
+#: ../lib/packagekit-glib2/pk-console-shared.c:568
 msgid "Searching by file"
 msgstr "Opzoeken volgens bestand"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:568
+#: ../lib/packagekit-glib2/pk-console-shared.c:572
 msgid "Searching groups"
 msgstr "Opzoeken volgens groepen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:572
+#: ../lib/packagekit-glib2/pk-console-shared.c:576
 msgid "Searching by name"
 msgstr "Opzoeken volgens naam"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:584
+#: ../lib/packagekit-glib2/pk-console-shared.c:588
 msgid "Installing files"
 msgstr "Bestanden installeren"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:588
+#: ../lib/packagekit-glib2/pk-console-shared.c:592
 msgid "Refreshing cache"
 msgstr "Cache verversen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:592
+#: ../lib/packagekit-glib2/pk-console-shared.c:596
 msgid "Updating packages"
 msgstr "Pakketten vernieuwen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:596
+#: ../lib/packagekit-glib2/pk-console-shared.c:600
 msgid "Updating system"
 msgstr "Systeem vernieuwen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:600
+#: ../lib/packagekit-glib2/pk-console-shared.c:604
 msgid "Canceling"
 msgstr "Afbreken"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:608
+#: ../lib/packagekit-glib2/pk-console-shared.c:612
 msgid "Getting repositories"
 msgstr "Repositories ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:612
+#: ../lib/packagekit-glib2/pk-console-shared.c:616
 msgid "Enabling repository"
 msgstr "Repository aanzetten"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:616
+#: ../lib/packagekit-glib2/pk-console-shared.c:620
 msgid "Setting data"
 msgstr "Data instellen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:620
+#: ../lib/packagekit-glib2/pk-console-shared.c:624
 msgid "Resolving"
 msgstr "Oplossen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:624
+#: ../lib/packagekit-glib2/pk-console-shared.c:628
 msgid "Getting file list"
 msgstr "Bestandslijst ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:628
+#: ../lib/packagekit-glib2/pk-console-shared.c:632
 msgid "Getting provides"
 msgstr "Voorzieningen ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:632
+#: ../lib/packagekit-glib2/pk-console-shared.c:636
 msgid "Installing signature"
 msgstr "Onderstekening installeren"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:636
+#: ../lib/packagekit-glib2/pk-console-shared.c:640
 msgid "Getting packages"
 msgstr "Pakketten ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:640
+#: ../lib/packagekit-glib2/pk-console-shared.c:644
 msgid "Accepting EULA"
 msgstr "EULA accepteren"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:648
+#: ../lib/packagekit-glib2/pk-console-shared.c:652
 msgid "Getting upgrades"
 msgstr "Vernieuwingen ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:652
+#: ../lib/packagekit-glib2/pk-console-shared.c:656
 msgid "Getting categories"
 msgstr "Categorieën ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:656
+#: ../lib/packagekit-glib2/pk-console-shared.c:660
 msgid "Getting transactions"
 msgstr "Transcaties ophalen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:660
 #: ../lib/packagekit-glib2/pk-console-shared.c:664
+#: ../lib/packagekit-glib2/pk-console-shared.c:668
 msgid "Simulating install"
 msgstr "Installatie simuleren"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:668
+#: ../lib/packagekit-glib2/pk-console-shared.c:672
 msgid "Simulating remove"
 msgstr "Verwijderen simuleren"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:672
+#: ../lib/packagekit-glib2/pk-console-shared.c:676
 msgid "Simulating update"
 msgstr "Vernieuwing simuleren"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
-#: ../lib/packagekit-glib2/pk-task-text.c:64
+#: ../lib/packagekit-glib2/pk-task-text.c:66
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "Wil het installeren van niet ondertekende software toestaan?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:69
+#: ../lib/packagekit-glib2/pk-task-text.c:71
 msgid "The unsigned software will not be installed."
 msgstr "De niet ondertekende software wordt niet geïnstalleerd."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
-#: ../lib/packagekit-glib2/pk-task-text.c:102
+#: ../lib/packagekit-glib2/pk-task-text.c:104
 msgid "Software source signature required"
 msgstr "Softeare bron ondertekening vereist"
 
 #. TRANSLATORS: the package repository name
-#: ../lib/packagekit-glib2/pk-task-text.c:108
+#: ../lib/packagekit-glib2/pk-task-text.c:110
 msgid "Software source name"
 msgstr "Softwarebron naam"
 
 #. TRANSLATORS: the key URL
-#: ../lib/packagekit-glib2/pk-task-text.c:111
+#: ../lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
 msgstr "Sleutel URL"
 
 #. TRANSLATORS: the username of the key
-#: ../lib/packagekit-glib2/pk-task-text.c:114
+#: ../lib/packagekit-glib2/pk-task-text.c:116
 msgid "Key user"
 msgstr "Sleutel gebruiker"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
-#: ../lib/packagekit-glib2/pk-task-text.c:117
+#: ../lib/packagekit-glib2/pk-task-text.c:119
 msgid "Key ID"
 msgstr "Sleutel ID"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
-#: ../lib/packagekit-glib2/pk-task-text.c:120
+#: ../lib/packagekit-glib2/pk-task-text.c:122
 msgid "Key fingerprint"
 msgstr "Sleutel vingerafdruk"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: ../lib/packagekit-glib2/pk-task-text.c:123
+#: ../lib/packagekit-glib2/pk-task-text.c:125
 msgid "Key Timestamp"
 msgstr "Sleutel tijdstempel"
 
 #. TRANSLATORS: ask the user if they want to import
-#: ../lib/packagekit-glib2/pk-task-text.c:129
+#: ../lib/packagekit-glib2/pk-task-text.c:131
 msgid "Do you accept this signature?"
 msgstr "Accepteert u deze signatuur?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:134
+#: ../lib/packagekit-glib2/pk-task-text.c:136
 msgid "The signature was not accepted."
 msgstr "De signatuur werd niet geaccepteerd"
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
-#: ../lib/packagekit-glib2/pk-task-text.c:169
+#: ../lib/packagekit-glib2/pk-task-text.c:171
 msgid "End user licence agreement required"
 msgstr "Eindgebruiker licentie overeenkomst vereist"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: ../lib/packagekit-glib2/pk-task-text.c:178
+#: ../lib/packagekit-glib2/pk-task-text.c:180
 msgid "Agreement"
 msgstr "Overeenkomst"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: ../lib/packagekit-glib2/pk-task-text.c:184
+#: ../lib/packagekit-glib2/pk-task-text.c:186
 msgid "Do you accept this agreement?"
 msgstr "Accepteer je deze overeenkomst?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:189
+#: ../lib/packagekit-glib2/pk-task-text.c:191
 msgid "The agreement was not accepted."
 msgstr "De overeenkomst werd niet geaccepteerd"
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
-#: ../lib/packagekit-glib2/pk-task-text.c:219
+#: ../lib/packagekit-glib2/pk-task-text.c:221
 msgid "Media change required"
 msgstr "Media verandering vereist."
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: ../lib/packagekit-glib2/pk-task-text.c:222
+#: ../lib/packagekit-glib2/pk-task-text.c:224
 msgid "Media type"
 msgstr "Media type"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: ../lib/packagekit-glib2/pk-task-text.c:225
+#: ../lib/packagekit-glib2/pk-task-text.c:227
 msgid "Media label"
 msgstr "Media label"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: ../lib/packagekit-glib2/pk-task-text.c:228
+#: ../lib/packagekit-glib2/pk-task-text.c:230
 msgid "Text"
 msgstr "Tekst"
 
 #. TRANSLATORS: ask the user to insert the media
-#: ../lib/packagekit-glib2/pk-task-text.c:232
+#: ../lib/packagekit-glib2/pk-task-text.c:234
 msgid "Please insert the correct media"
 msgstr "Breng a.u.b de juiste media in"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: ../lib/packagekit-glib2/pk-task-text.c:237
+#: ../lib/packagekit-glib2/pk-task-text.c:239
 msgid "The correct media was not inserted."
 msgstr "De juiste media was niet ingebracht."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:252
+#: ../lib/packagekit-glib2/pk-task-text.c:254
 msgid "The following packages have to be removed:"
 msgstr "De volgende pakketten moeten worden verwijderd:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:257
+#: ../lib/packagekit-glib2/pk-task-text.c:259
 msgid "The following packages have to be installed:"
 msgstr "De volgende pakketten moeten worden geïnstalleerd"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:262
+#: ../lib/packagekit-glib2/pk-task-text.c:264
 msgid "The following packages have to be updated:"
 msgstr "De volgende pakketten moeten worden vernieuwd:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:267
+#: ../lib/packagekit-glib2/pk-task-text.c:269
 msgid "The following packages have to be reinstalled:"
 msgstr "De volgende pakketten moeten opnieuw geïnstalleerd worden:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:272
+#: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "The following packages have to be downgraded:"
 msgstr "De volgende pakketten moeten gedegradeerd worden:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:331
+#: ../lib/packagekit-glib2/pk-task-text.c:333
 msgid "Proceed with changes?"
 msgstr "Doorgaan met veranderingen?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:336
+#: ../lib/packagekit-glib2/pk-task-text.c:338
 msgid "The transaction did not proceed."
 msgstr "De transactie ging niet verder."
 
