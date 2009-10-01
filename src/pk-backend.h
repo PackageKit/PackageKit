@@ -74,7 +74,6 @@ gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 
 /* get the state */
 const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);
-PkRoleEnum	 pk_backend_get_role			(PkBackend	*backend);
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
 gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*percentage,

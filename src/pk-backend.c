@@ -151,6 +151,7 @@ enum {
 	PROP_0,
 	PROP_IDLE,
 	PROP_STATUS,
+	PROP_ROLE,
 	PROP_LAST
 };
 
@@ -786,17 +787,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, status);
 	return TRUE;
-}
-
-/**
- * pk_backend_get_status:
- **/
-PkStatusEnum
-pk_backend_get_status (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
-	return backend->priv->status;
 }
 
 /**
@@ -1804,17 +1794,6 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 }
 
 /**
- * pk_backend_get_role:
- **/
-PkRoleEnum
-pk_backend_get_role (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
-	return backend->priv->role;
-}
-
-/**
  * pk_backend_set_exit_code:
  *
  * Should only be used internally, or from PkRunner when setting CANCELLED.
@@ -2192,6 +2171,9 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
 		break;
+	case PROP_ROLE:
+		g_value_set_uint (value, priv->role);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2213,6 +2195,9 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
+		break;
+	case PROP_ROLE:
+		priv->role = g_value_get_uint (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2276,6 +2261,14 @@ pk_backend_class_init (PkBackendClass *klass)
 				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
+
+	/**
+	 * PkBackend:role:
+	 */
+	pspec = g_param_spec_uint ("role", NULL, NULL,
+				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =
