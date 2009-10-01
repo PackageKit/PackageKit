@@ -66,6 +66,7 @@ struct PkSpawnPrivate
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
+	gboolean		 is_idle;
 	gboolean		 is_sending_exit;
 	gboolean		 is_changing_dispatcher;
 	gboolean		 allow_sigkill;
@@ -78,13 +79,19 @@ struct PkSpawnPrivate
 };
 
 enum {
-	PK_SPAWN_EXIT,
-	PK_SPAWN_STDOUT,
-	PK_SPAWN_STDERR,
-	PK_SPAWN_LAST_SIGNAL
+	SIGNAL_EXIT,
+	SIGNAL_STDOUT,
+	SIGNAL_STDERR,
+	SIGNAL_LAST
 };
 
-static guint	     signals [PK_SPAWN_LAST_SIGNAL] = { 0 };
+enum {
+	PROP_0,
+	PROP_IDLE,
+	PROP_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkSpawn, pk_spawn, G_TYPE_OBJECT)
 
@@ -132,7 +139,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
 	for (i=0; i<(size-1); i++) {
-		g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, lines[i]);
+		g_signal_emit (spawn, signals [SIGNAL_STDOUT], 0, lines[i]);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
 	}
@@ -186,7 +193,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* emit all lines on standard out in one callback, as it's all probably
 	* related to the error that just happened */
 	if (spawn->priv->stderr_buf->len != 0) {
-		g_signal_emit (spawn, signals [PK_SPAWN_STDERR], 0, spawn->priv->stderr_buf->str);
+		g_signal_emit (spawn, signals [SIGNAL_STDERR], 0, spawn->priv->stderr_buf->str);
 		g_string_set_size (spawn->priv->stderr_buf, 0);
 	}
 
@@ -242,7 +249,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* don't emit if we just closed an invalid dispatcher */
 	egg_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_text (spawn->priv->exit));
-	g_signal_emit (spawn, signals [PK_SPAWN_EXIT], 0, spawn->priv->exit);
+	g_signal_emit (spawn, signals [SIGNAL_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
 }
@@ -563,27 +570,76 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 }
 
 /**
+ * pk_spawn_get_property:
+ **/
+static void
+pk_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkSpawn *spawn = PK_SPAWN (object);
+	PkSpawnPrivate *priv = spawn->priv;
+
+	switch (prop_id) {
+	case PROP_IDLE:
+		g_value_set_boolean (value, priv->is_idle);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
+ * pk_spawn_set_property:
+ **/
+static void
+pk_spawn_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	PkSpawn *spawn = PK_SPAWN (object);
+	PkSpawnPrivate *priv = spawn->priv;
+
+	switch (prop_id) {
+	case PROP_IDLE:
+		priv->is_idle = g_value_get_boolean (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/**
  * pk_spawn_class_init:
  * @klass: The PkSpawnClass
  **/
 static void
 pk_spawn_class_init (PkSpawnClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->finalize = pk_spawn_finalize;
+	object_class->get_property = pk_spawn_get_property;
+	object_class->set_property = pk_spawn_set_property;
 
-	signals [PK_SPAWN_EXIT] =
+	/**
+	 * PkSpawn:idle:
+	 */
+	pspec = g_param_spec_boolean ("idle", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+
+	signals [SIGNAL_EXIT] =
 		g_signal_new ("exit",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__INT,
 			      G_TYPE_NONE, 1, G_TYPE_INT);
-	signals [PK_SPAWN_STDOUT] =
+	signals [SIGNAL_STDOUT] =
 		g_signal_new ("stdout",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_SPAWN_STDERR] =
+	signals [SIGNAL_STDERR] =
 		g_signal_new ("stderr",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
@@ -613,6 +669,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->allow_sigkill = TRUE;
 	spawn->priv->last_argv0 = NULL;
 	spawn->priv->last_envp = NULL;
+	spawn->priv->is_idle = FALSE;
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 
 	spawn->priv->stdout_buf = g_string_new ("");
