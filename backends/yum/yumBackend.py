@@ -2688,32 +2688,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # default to 100% unless method overrides
         self.yumbase.conf.throttle = "90%"
 
-    def _refresh_yum_cache(self):
-        self.status(STATUS_REFRESH_CACHE)
-        old_cache_setting = self.yumbase.conf.cache
-        self.yumbase.conf.cache = 0
-        try:
-            self.yumbase.repos.setCache(0)
-        except Exception, e:
-            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
-        try:
-            self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
-            self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
-            self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
-        except yum.Errors.RepoError, e:
-            raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
-        except exceptions.IOError, e:
-            raise PkError(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
-        except Exception, e:
-            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
-        self.yumbase.conf.cache = old_cache_setting
-        try:
-            self.yumbase.repos.setCache(old_cache_setting)
-        except Exception, e:
-            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
     def _setup_yum(self):
         try:
             # setup Yum Config
