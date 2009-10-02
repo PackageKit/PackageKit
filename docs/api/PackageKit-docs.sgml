@@ -85,7 +85,10 @@
     </partintro>
     <xi:include href="xml/egg-debug.xml"/>
     <xi:include href="xml/pk-common.xml"/>
+    <xi:include href="xml/pk-client-sync.xml"/>
+    <xi:include href="xml/pk-control-sync.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
+    <xi:include href="xml/pk-bitfield.xml"/>
     <xi:include href="xml/pk-item.xml"/>
     <xi:include href="xml/pk-package-id.xml"/>
     <xi:include href="xml/pk-package-ids.xml"/>
