@@ -323,6 +323,8 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_FINISHED,			"finished"},
 	{PK_INFO_ENUM_REINSTALLING,		"reinstalling"},
 	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
+	{PK_INFO_ENUM_PREPARING,		"preparing"},
+	{PK_INFO_ENUM_DECOMPRESSING,		"decompressing"},
 	{0, NULL}
 };
 

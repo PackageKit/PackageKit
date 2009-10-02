@@ -104,6 +104,8 @@ public:
 		StateFinished,
 		StateReinstalling,
 		StateDowngrading,
+		StatePreparing,
+		StateDecompressing,
 		UnknownState
 	} State;
 	/**
