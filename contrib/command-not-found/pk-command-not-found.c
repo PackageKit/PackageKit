@@ -538,6 +538,32 @@ out:
 }
 
 /**
+ * pk_cnf_spawn_command:
+ **/
+static gboolean
+pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
+{
+	gboolean ret;
+	gchar *cmd;
+	gchar *args;
+	GError *error = NULL;
+
+	args = g_strjoinv (" ", arguments);
+	cmd = g_strjoin (" ", exec, args, NULL);
+	ret = g_spawn_command_line_async (cmd, &error);
+	if (!ret) {
+		/* TRANSLATORS: we failed to launch the executable, the error follows */
+		g_print ("%s '%s': %s", _("Failed to launch:"), cmd, error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	g_free (args);
+	g_free (cmd);
+	return ret;
+}
+
+/**
  * pk_cnf_install_package_id:
  **/
 static gboolean
@@ -672,7 +698,7 @@ main (int argc, char *argv[])
 
 		/* run */
 		} else if (config->single_match == PK_CNF_POLICY_RUN) {
-			pk_cnf_install_package_id (possible);
+			pk_cnf_spawn_command (possible, &argv[1]);
 
 		/* ask */
 		} else if (config->single_match == PK_CNF_POLICY_ASK) {
@@ -680,7 +706,7 @@ main (int argc, char *argv[])
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
-				pk_cnf_install_package_id (possible);
+				pk_cnf_spawn_command (possible, &argv[1]);
 			g_free (text);
 		}
 		goto out;
@@ -709,7 +735,7 @@ main (int argc, char *argv[])
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
-			pk_cnf_install_package_id (possible);
+			pk_cnf_spawn_command (possible, &argv[1]);
 		}
 		goto out;
 
@@ -732,12 +758,14 @@ main (int argc, char *argv[])
 				if (ret) {
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
-						pk_cnf_install_package_id (argv[1]);
+						pk_cnf_spawn_command (argv[0], &argv[1]);
 				}
 
 			/* install */
 			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
-				pk_cnf_install_package_id (package_ids[0]);
+				ret = pk_cnf_install_package_id (package_ids[0]);
+				if (ret)
+					pk_cnf_spawn_command (argv[0], &argv[1]);
 			}
 			g_strfreev (parts);
 			goto out;
@@ -768,7 +796,7 @@ main (int argc, char *argv[])
 				/* run command */
 				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
-					pk_cnf_install_package_id (argv[1]);
+					pk_cnf_spawn_command (argv[0], &argv[1]);
 			}
 			goto out;
 		}
