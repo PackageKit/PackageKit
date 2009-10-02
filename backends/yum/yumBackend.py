@@ -711,7 +711,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not FILTER_INSTALLED in fltlist:
             for value in values:
                 try:
-                    self.yumbase.repos.populateSack(mdtype='filelists')
+                    # we don't need the filelists as we're not globbing
                     pkgs = self.yumbase.pkgSack.searchFiles(value)
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, "failed to search sack: %s" %_to_unicode(e), exit=False)
