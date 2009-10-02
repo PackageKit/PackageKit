@@ -2354,7 +2354,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the get-repo-list functionality
         '''
-        self._check_init(repo_setup=False)
+        self._check_init()
         self.yumbase.conf.cache = 0 # Allow new files
         self.status(STATUS_INFO)
 
@@ -2607,7 +2607,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def install_signature(self, sigtype, key_id, package):
         try:
-            self._check_init(repo_setup=False)
+            self._check_init()
         except PkError, e:
             self.error(e.code, e.details, exit=False)
             return
@@ -2639,7 +2639,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for %s" % pkg)
 
 
-    def _check_init(self, lazy_cache=False, repo_setup=True):
+    def _check_init(self, lazy_cache=False):
         '''Just does the caching tweaks'''
 
         # clear previous transaction data
@@ -2658,7 +2658,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if repo.mediaid:
                     continue
                 repo.metadata_expire = 60 * 60 * 24  # 24 hours
-                repo.mdpolicy = "group:all"
 
         # default
         else:
@@ -2667,18 +2666,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if repo.mediaid:
                     continue
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
-                repo.mdpolicy = "group:primary"
-
-        # make sure repos are set up
-        if repo_setup:
-            try:
-                self.yumbase.repos.doSetup()
-            except yum.Errors.RepoError, e:
-                raise PkError(ERROR_NO_CACHE, "failed to setup repos: %s" %_to_unicode(e))
-            except exceptions.IOError, e:
-                raise PkError(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
-            except Exception, e:
-                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # should we suggest yum-complete-transaction?
         unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)
