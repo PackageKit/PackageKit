@@ -118,7 +118,7 @@ pk_role_bitfield_to_text (PkBitfield roles)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_ROLE_ENUM_LAST; i++) {
 		if ((roles & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
@@ -186,7 +186,7 @@ pk_group_bitfield_to_text (PkBitfield groups)
 	guint i;
 
 	string = g_string_new ("");
-	for (i=0; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_GROUP_ENUM_LAST; i++) {
 		if ((groups & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
@@ -255,10 +255,10 @@ pk_filter_bitfield_to_text (PkBitfield filters)
 
 	/* shortcut */
 	if (filters == 0)
-		return g_strdup (pk_filter_enum_to_text (filters));
+		return g_strdup (pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
 
 	string = g_string_new ("");
-	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
 			continue;
 		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
@@ -285,7 +285,7 @@ pk_filter_bitfield_to_text (PkBitfield filters)
 PkBitfield
 pk_filter_bitfield_from_text (const gchar *filters)
 {
-	PkBitfield filters_enum = PK_FILTER_ENUM_NONE;
+	PkBitfield filters_enum = 0;
 	gchar **split;
 	guint length;
 	guint i;
@@ -491,7 +491,7 @@ pk_bitfield_test (gpointer user_data)
 	egg_test_title (test, "group bitfield to text (first and last)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, PK_GROUP_ENUM_UNKNOWN, -1);
 	text = pk_group_bitfield_to_text (values);
-	if (g_strcmp0 (text, "accessibility;unknown") == 0)
+	if (g_strcmp0 (text, "unknown;accessibility") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);
@@ -501,7 +501,7 @@ pk_bitfield_test (gpointer user_data)
 	egg_test_title (test, "group bitfield to text (random)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_REPOS, -1);
 	text = pk_group_bitfield_to_text (values);
-	if (g_strcmp0 (text, "repos;unknown") == 0)
+	if (g_strcmp0 (text, "unknown;repos") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "returned bitfield text %s (%" PK_BITFIELD_FORMAT ")", text, values);

@@ -1134,7 +1134,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the role bitfield");
-	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+	for (i=1; i<PK_ROLE_ENUM_LAST; i++) {
 		string = pk_role_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1145,7 +1145,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the status bitfield");
-	for (i=1; i<=PK_STATUS_ENUM_UNKNOWN; i++) {
+	for (i=1; i<PK_STATUS_ENUM_LAST; i++) {
 		string = pk_status_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1156,7 +1156,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the exit bitfield");
-	for (i=0; i<=PK_EXIT_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_EXIT_ENUM_LAST; i++) {
 		string = pk_exit_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1167,7 +1167,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the filter bitfield");
-	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
 		string = pk_filter_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1178,7 +1178,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the restart bitfield");
-	for (i=0; i<=PK_RESTART_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_RESTART_ENUM_LAST; i++) {
 		string = pk_restart_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1189,7 +1189,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the error_code bitfield");
-	for (i=0; i<=PK_ERROR_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_ERROR_ENUM_LAST; i++) {
 		string = pk_error_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1200,7 +1200,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the group bitfield");
-	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+	for (i=1; i<PK_GROUP_ENUM_LAST; i++) {
 		string = pk_group_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1211,7 +1211,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the info bitfield");
-	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i++) {
+	for (i=1; i<PK_INFO_ENUM_LAST; i++) {
 		string = pk_info_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1222,7 +1222,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the sig_type bitfield");
-	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_SIGTYPE_ENUM_LAST; i++) {
 		string = pk_sig_type_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1233,7 +1233,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the upgrade bitfield");
-	for (i=0; i<=PK_DISTRO_UPGRADE_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
 		string = pk_distro_upgrade_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1244,7 +1244,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the license bitfield");
-	for (i=0; i<=PK_LICENSE_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_LICENSE_ENUM_LAST; i++) {
 		string = pk_license_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
@@ -1255,7 +1255,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we convert all the media type bitfield");
-	for (i=0; i<=PK_MEDIA_TYPE_ENUM_UNKNOWN; i++) {
+	for (i=0; i<PK_MEDIA_TYPE_ENUM_LAST; i++) {
 		string = pk_media_type_enum_to_text (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
