@@ -907,18 +907,25 @@ poldek_get_vr_from_package_id_evr (const gchar *evr)
 static gchar*
 poldek_get_nvra_from_package_id (const gchar* package_id)
 {
-	PkPackageId	*pi;
-	gchar		*vr, *result;
+	gchar **parts = NULL;
+	gchar  *nvra = NULL;
 
-	pi = pk_package_id_new_from_string (package_id);
-	vr = poldek_get_vr_from_package_id_evr (pi->version);
+	g_return_val_if_fail (package_id != NULL, NULL);
 
-	result = g_strdup_printf ("%s-%s.%s", pi->name, vr, pi->arch);
+	if ((parts = pk_package_id_split (package_id))) {
+		gchar *vr = NULL;
 
-	g_free (vr);
-	pk_package_id_free (pi);
+		vr = poldek_get_vr_from_package_id_evr (parts[PK_PACKAGE_ID_VERSION]);
 
-	return result;
+		nvra = g_strdup_printf ("%s-%s.%s", parts[PK_PACKAGE_ID_NAME],
+						    vr,
+						    parts[PK_PACKAGE_ID_ARCH]);
+
+		g_free (vr);
+		g_strfreev (parts);
+	}
+
+	return nvra;
 }
 
 /**
@@ -1410,28 +1417,32 @@ poldek_backend_package (PkBackend *backend, struct pkg *pkg, PkInfoEnum infoenum
 static struct pkg*
 poldek_get_pkg_from_package_id (const gchar *package_id)
 {
-	PkPackageId		*pi;
-	struct pkg		*result = NULL;
-	gchar			*vr;
-	tn_array *packages = NULL;
+	struct pkg  *pkg = NULL;
+	gchar      **parts = NULL;
 
-	pi = pk_package_id_new_from_string (package_id);
+	g_return_val_if_fail (package_id != NULL, NULL);
 
-	vr = poldek_get_vr_from_package_id_evr (pi->version);
+	if ((parts = pk_package_id_split (package_id))) {
+		tn_array *packages = NULL;
+		gchar    *vr = NULL;
 
-	if ((packages = execute_packages_command ("cd /%s; ls -q %s-%s.%s", pi->data, pi->name, vr, pi->arch)) != NULL) {
-		if (n_array_size (packages) > 0) {
-			/* only one package is needed */
-			result = pkg_link (n_array_nth (packages, 0));
+		vr = poldek_get_vr_from_package_id_evr (parts[PK_PACKAGE_ID_VERSION]);
+
+		if ((packages = execute_packages_command ("cd /%s; ls -q %s-%s.%s", parts[PK_PACKAGE_ID_DATA],
+										    parts[PK_PACKAGE_ID_NAME],
+										    vr,
+										    parts[PK_PACKAGE_ID_ARCH]))) {
+			if (n_array_size (packages) > 0) {
+				/* only one package is needed */
+				pkg = pkg_link (n_array_nth (packages, 0));
+			}
 		}
-		n_array_free (packages);
+
+		g_free (vr);
+		g_strfreev (parts);
 	}
 
-	pk_package_id_free (pi);
-
-	g_free (vr);
-
-	return result;
+	return pkg;
 }
 
 /**
@@ -2570,7 +2581,7 @@ get_obsoletedby_pkg (struct pkg *pkg)
 static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
-	gchar **package_ids;
+	gchar **package_ids = NULL;
 	guint n;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -2578,19 +2589,20 @@ backend_get_update_detail_thread (PkBackend *backend)
 	pb_load_packages (backend);
 
 	for (n = 0; n < g_strv_length (package_ids); n++) {
-		PkPackageId *pi = NULL;
-		tn_array *packages = NULL;
+		tn_array  *packages = NULL;
+		gchar    **parts = NULL;
 
-		pi = pk_package_id_new_from_string (package_ids[n]);
+		if ((parts = pk_package_id_split (package_ids[n])) == NULL)
+			continue;
 
-		if ((packages = execute_packages_command ("cd /installed; ls -q %s", pi->name)) != NULL) {
+		if ((packages = execute_packages_command ("cd /installed; ls -q %s", parts[PK_PACKAGE_ID_NAME])) != NULL) {
 			struct pkg *pkg = NULL;
 			struct pkg *upkg = NULL;
 
 			/* get one package */
 			pkg = n_array_nth (packages, 0);
 
-			if (strcmp (pkg->name, pi->name) == 0) {
+			if (strcmp (pkg->name, parts[PK_PACKAGE_ID_NAME]) == 0) {
 				gchar *updates = NULL;
 				gchar *obsoletes = NULL;
 				gchar *cve_url = NULL;
@@ -2658,7 +2670,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 						  "", NULL, PK_UPDATE_STATE_ENUM_UNKNOWN, NULL, NULL);
 		}
 
-		pk_package_id_free (pi);
+		g_strfreev (parts);
 	}
 
 	pk_backend_finished (backend);
