@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-10-01 18:40+0000\n"
-"PO-Revision-Date: 2009-10-01 20:45+0200\n"
+"POT-Creation-Date: 2009-10-03 00:03+0000\n"
+"PO-Revision-Date: 2009-10-03 02:04+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <fedora-trans-pl@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -261,7 +261,7 @@ msgstr "Krytyczny błąd"
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:484
 #: ../contrib/command-not-found/pk-command-not-found.c:426
-#: ../contrib/command-not-found/pk-command-not-found.c:567
+#: ../contrib/command-not-found/pk-command-not-found.c:593
 msgid "The transaction failed"
 msgstr "Transakcja nie powiodła się"
 
@@ -347,7 +347,7 @@ msgstr ""
 #. TRANSLATORS: if we should show debugging data
 #: ../client/pk-console.c:989 ../client/pk-generate-pack.c:223
 #: ../client/pk-monitor.c:281
-#: ../contrib/command-not-found/pk-command-not-found.c:620
+#: ../contrib/command-not-found/pk-command-not-found.c:646
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:512
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
@@ -695,67 +695,72 @@ msgstr "Wczytywanie listy pakietów."
 msgid "Failed to search for file"
 msgstr "Odnalezienie pliku nie powiodło się"
 
+#. TRANSLATORS: we failed to launch the executable, the error follows
+#: ../contrib/command-not-found/pk-command-not-found.c:556
+msgid "Failed to launch:"
+msgstr "Uruchomienie nie powiodło się:"
+
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:558
+#: ../contrib/command-not-found/pk-command-not-found.c:584
 msgid "Failed to install packages"
 msgstr "Zainstalowanie pakietów nie powiodło się"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:636
+#: ../contrib/command-not-found/pk-command-not-found.c:662
 msgid "PackageKit Command Not Found"
 msgstr "Nie odnaleziono polecenia PackageKit"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:664
+#: ../contrib/command-not-found/pk-command-not-found.c:690
 msgid "Command not found."
 msgstr "Nie odnaleziono polecenia."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:671
+#: ../contrib/command-not-found/pk-command-not-found.c:697
 msgid "Similar command is:"
 msgstr "Podobne polecenie:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:680
+#: ../contrib/command-not-found/pk-command-not-found.c:706
 msgid "Run similar command:"
 msgstr "Wykonaj podobne polecenie:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:692
-#: ../contrib/command-not-found/pk-command-not-found.c:701
+#: ../contrib/command-not-found/pk-command-not-found.c:718
+#: ../contrib/command-not-found/pk-command-not-found.c:727
 msgid "Similar commands are:"
 msgstr "Podobne polecenia:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:708
+#: ../contrib/command-not-found/pk-command-not-found.c:734
 msgid "Please choose a command to run"
 msgstr "Proszę wybrać polecenie do wykonania"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:724
+#: ../contrib/command-not-found/pk-command-not-found.c:750
 msgid "The package providing this file is:"
 msgstr "Pakiet dostarczający ten plik:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:729
+#: ../contrib/command-not-found/pk-command-not-found.c:755
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Zainstalować pakiet \"%s\", aby dostarczyć polecenie \"%s\"?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:775
 msgid "Packages providing this file are:"
 msgstr "Pakiety dostarczające ten plik:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:757
+#: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "Suitable packages are:"
 msgstr "Odpowiednie pakiety:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:766
+#: ../contrib/command-not-found/pk-command-not-found.c:794
 msgid "Please choose a package to install"
 msgstr "Proszę wybrać pakiet do zainstalowania"
 
