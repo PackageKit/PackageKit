@@ -76,6 +76,8 @@ void		 pk_package_sack_test			(gpointer		 user_data);
 guint		 pk_package_sack_get_size		(PkPackageSack		*sack);
 PkPackage	*pk_package_sack_get_index		(PkPackageSack		*sack,
 							 guint			 i);
+void		 pk_package_sack_clear			(PkPackageSack		*sack);
+gchar		**pk_package_sack_get_ids		(PkPackageSack		*sack);
 void		 pk_package_sack_sort_package_id	(PkPackageSack		*sack);
 void		 pk_package_sack_sort_info		(PkPackageSack		*sack);
 void		 pk_package_sack_sort_summary		(PkPackageSack		*sack);

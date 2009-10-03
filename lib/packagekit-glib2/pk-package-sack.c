@@ -74,9 +74,49 @@ G_DEFINE_TYPE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
 guint
 pk_package_sack_get_size (PkPackageSack *sack)
 {
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), 0);
 
 	return sack->priv->array->len;
+}
+
+/**
+ * pk_package_sack_clear:
+ * @sack: a valid #PkPackageSack instance
+ *
+ * Empty all the packages from the sack
+ **/
+void
+pk_package_sack_clear (PkPackageSack *sack)
+{
+	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
+	g_ptr_array_set_size (sack->priv->array, 0);
+}
+
+/**
+ * pk_package_sack_get_ids:
+ * @sack: a valid #PkPackageSack instance
+ *
+ * Returns all the Package IDs in the sack
+ *
+ * Return value: the number of packages in the sack, free with g_strfreev()
+ **/
+gchar **
+pk_package_sack_get_ids (PkPackageSack *sack)
+{
+	gchar **package_ids;
+	GPtrArray *array;
+	guint i;
+	PkPackage *package;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+
+	array = sack->priv->array;
+	package_ids = g_new0 (gchar *, array->len + 1);
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		package_ids[i] = g_strdup (pk_package_get_id (package));
+	}
+	return package_ids;
 }
 
 /**
