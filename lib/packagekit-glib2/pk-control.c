@@ -2070,7 +2070,7 @@ pk_control_class_init (PkControlClass *klass)
 	 * PkControl:network-state:
 	 */
 	pspec = g_param_spec_uint ("network-state", NULL, NULL,
-				   0, G_MAXUINT, PK_NETWORK_ENUM_UNKNOWN,
+				   0, G_MAXUINT, PK_NETWORK_ENUM_LAST,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
 

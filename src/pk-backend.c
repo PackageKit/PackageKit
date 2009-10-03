@@ -2141,7 +2141,7 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 
 	switch (prop_id) {
 	case PROP_BACKGROUND:
-		g_value_set_boolean (value, priv->background);
+		g_value_set_uint (value, priv->background);
 		break;
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
@@ -2169,7 +2169,7 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 
 	switch (prop_id) {
 	case PROP_BACKGROUND:
-		priv->background = g_value_get_boolean (value);
+		priv->background = g_value_get_uint (value);
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
@@ -2232,9 +2232,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	/**
 	 * PkBackend:background:
 	 */
-	pspec = g_param_spec_boolean ("background", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE);
+	pspec = g_param_spec_uint ("background", NULL, NULL,
+				   PK_TRISTATE_FALSE, PK_TRISTATE_UNSET, PK_TRISTATE_FALSE,
+				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**

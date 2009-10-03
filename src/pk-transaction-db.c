@@ -837,7 +837,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 
 		/* create values for now */
 		timespec = pk_iso8601_present ();
-		for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
+		for (i=0; i<PK_ROLE_ENUM_LAST; i++) {
 			role_text = pk_role_enum_to_text (i);
 			/* reset to now if the role does not exist */
 			text = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);

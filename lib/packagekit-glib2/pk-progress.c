@@ -458,7 +458,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 * PkProgress:status:
 	 */
 	pspec = g_param_spec_uint ("status", NULL, NULL,
-				   0, PK_STATUS_ENUM_UNKNOWN, PK_STATUS_ENUM_UNKNOWN,
+				   0, PK_STATUS_ENUM_LAST, PK_STATUS_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
@@ -466,7 +466,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 * PkProgress:role:
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 

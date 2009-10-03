@@ -779,7 +779,7 @@ pk_results_class_init (PkResultsClass *klass)
 	 * PkResults:role:
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
-				   0, PK_ROLE_ENUM_UNKNOWN, PK_ROLE_ENUM_UNKNOWN,
+				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 

@@ -1299,7 +1299,7 @@ out:
 }
 
 /**
- * pk_transaction_set_running:
+ * pk_transaction_set_proxy:
  */
 static gboolean
 pk_transaction_set_proxy (PkTransaction *transaction, GError **error)

@@ -410,7 +410,7 @@ pk_package_class_init (PkPackageClass *klass)
 	 */
 	pspec = g_param_spec_uint ("group", NULL,
 				   "The package group",
-				   0, PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_UNKNOWN,
+				   0, PK_GROUP_ENUM_LAST, PK_GROUP_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_GROUP, pspec);
 
@@ -491,7 +491,7 @@ pk_package_class_init (PkPackageClass *klass)
 	 */
 	pspec = g_param_spec_uint ("update-restart", NULL,
 				   "The update restart type",
-				   0, PK_RESTART_ENUM_UNKNOWN, PK_RESTART_ENUM_UNKNOWN,
+				   0, PK_RESTART_ENUM_LAST, PK_RESTART_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATE_RESTART, pspec);
 
@@ -518,7 +518,7 @@ pk_package_class_init (PkPackageClass *klass)
 	 */
 	pspec = g_param_spec_uint ("update-state", NULL,
 				   "The update state",
-				   0, PK_UPDATE_STATE_ENUM_UNKNOWN, PK_UPDATE_STATE_ENUM_UNKNOWN,
+				   0, PK_UPDATE_STATE_ENUM_LAST, PK_UPDATE_STATE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATE_STATE, pspec);
 
