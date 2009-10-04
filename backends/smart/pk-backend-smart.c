@@ -116,10 +116,10 @@ backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup ("application/x-rpm;"
 	                 "application/x-deb;"
-	                 "application/x-gzip;"	/* .tgz */
-	                 "application/x-bzip2;"	/* .tbz */
-	                 "application/x-lzma;"	/* .tlz */
-	                 "application/x-xz;"	/* .txz */
+	                 "application/x-compressed-tar;"	/* .tgz */
+			 "application/x-bzip-compressed-tar;"	/* .tbz */
+			 "application/x-lzma-compressed-tar;"	/* .tlz */
+			 "application/x-xz-compressed-tar;"	/* .txz */
 	                 "application/x-arch-pkg");
 }
 
