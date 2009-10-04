@@ -698,7 +698,7 @@ backend_get_details_thread (PkBackend *backend)
 	newid = g_strdup_printf ("%s;%s;%s;%s", pkg->name, pkg->version, pkg->architecture, pkg->repository);
 
 	if (pkg->tags) {
-		for (group_index = 0; group < PK_GROUP_ENUM_UNKNOWN; group_index++) {
+		for (group_index = 0; group < PK_GROUP_ENUM_LAST; group_index++) {
 			group = 1 << group_index;
 			if (!(group & backend_get_groups(backend))) continue;
 			if (opkg_check_tag(pkg, (const gchar *)pk_group_enum_to_text(group))) 

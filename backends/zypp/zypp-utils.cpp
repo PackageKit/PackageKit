@@ -561,7 +561,7 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 		// iterate through the given filters
 		if (filters != 0){
 			gboolean print = TRUE;
-			for (guint i = 0; i < PK_FILTER_ENUM_UNKNOWN; i++) {
+			for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 				if ((filters & pk_bitfield_value (i)) == 0)
 					continue;
 				if (i == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
