@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -55,6 +56,9 @@ typedef struct {
 
 static PkTask *task = NULL;
 static GCancellable *cancellable = NULL;
+
+/* bash reserved code */
+#define EXIT_COMMAND_NOT_FOUND	127
 
 /**
  * pk_cnf_find_alternatives_swizzle:
@@ -640,6 +644,7 @@ main (int argc, char *argv[])
 	gchar *text;
 	const gchar *possible;
 	gchar **parts;
+	guint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -680,8 +685,10 @@ main (int argc, char *argv[])
 
 	/* get length */
 	len = egg_strlen (argv[1], 1024);
-	if (len < 1)
+	if (len < 1) {
+		retval = EXIT_COMMAND_NOT_FOUND;
 		goto out;
+	}
 
 	/* generate swizzles */
 	array = pk_cnf_find_alternatives (argv[1], len);
@@ -689,12 +696,19 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
 	g_print ("%s ", _("Command not found."));
 
+	/* no possibilities */
+	if (array->len == 0) {
+		retval = EXIT_COMMAND_NOT_FOUND;
+		goto out;
+	}
+
 	/* one exact possibility */
 	if (array->len == 1) {
 		possible = g_ptr_array_index (array, 0);
 		if (config->single_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: tell the user what we think the command is */
 			g_print ("%s '%s'\n", _("Similar command is:"), possible);
+			retval = EXIT_COMMAND_NOT_FOUND;
 
 		/* run */
 		} else if (config->single_match == PK_CNF_POLICY_RUN) {
@@ -707,6 +721,8 @@ main (int argc, char *argv[])
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
 				pk_cnf_spawn_command (possible, &argv[1]);
+			else
+				retval = EXIT_COMMAND_NOT_FOUND;
 			g_free (text);
 		}
 		goto out;
@@ -759,6 +775,8 @@ main (int argc, char *argv[])
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
 						pk_cnf_spawn_command (argv[0], &argv[1]);
+					else
+						retval = EXIT_COMMAND_NOT_FOUND;
 				}
 
 			/* install */
@@ -766,6 +784,8 @@ main (int argc, char *argv[])
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
 					pk_cnf_spawn_command (argv[0], &argv[1]);
+				else
+					retval = EXIT_COMMAND_NOT_FOUND;
 			}
 			g_strfreev (parts);
 			goto out;
@@ -797,6 +817,8 @@ main (int argc, char *argv[])
 				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
 					pk_cnf_spawn_command (argv[0], &argv[1]);
+				else
+					retval = EXIT_COMMAND_NOT_FOUND;
 			}
 			goto out;
 		}
@@ -817,6 +839,6 @@ out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
 
-	return 0;
+	return retval;
 }
 
