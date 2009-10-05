@@ -38,10 +38,11 @@
 #include <stdlib.h>
 
 #include <packagekit-glib2/pk-client.h>
-#include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-marshal.h>
+#include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 
 #include "egg-debug.h"
@@ -387,6 +388,7 @@ static void
 pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkClientState *state)
 {
 	gboolean ret;
+	const gchar *package_id;
 
 	/* role */
 	if (g_strcmp0 (key, "Role") == 0) {
@@ -406,7 +408,12 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 
 	/* last-package */
 	if (g_strcmp0 (key, "LastPackage") == 0) {
-		ret = pk_progress_set_package_id (state->progress, g_value_get_string (value));
+		package_id = g_value_get_string (value);
+		/* check to see if it's been set yet */
+		ret = pk_package_id_check (package_id);
+		if (!ret)
+			return;
+		ret = pk_progress_set_package_id (state->progress, package_id);
 		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
 		return;

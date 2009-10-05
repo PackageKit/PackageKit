@@ -29,8 +29,9 @@
 
 #include "config.h"
 
-#include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-progress.h>
 
 #include "egg-debug.h"
 
@@ -141,6 +142,12 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 	/* the same as before? */
 	if (g_strcmp0 (progress->priv->package_id, package_id) == 0)
 		return FALSE;
+
+	/* valid? */
+	if (!pk_package_id_check (package_id)) {
+		egg_warning ("invalid package_id %s", package_id);
+		return FALSE;
+	}
 
 	/* new value */
 	g_free (progress->priv->package_id);
