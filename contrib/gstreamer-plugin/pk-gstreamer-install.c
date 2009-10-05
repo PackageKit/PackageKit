@@ -102,7 +102,7 @@ pk_gst_parse_codec (const gchar *codec)
 	info = g_new0 (PkGstCodecInfo, 1);
 	info->app_name = g_strdup (split[2]);
 	info->codec_name = g_strdup (split[3]);
-	info->type_name = type_name;
+	info->type_name = g_strdup (type_name);
 	info->structure = s;
 
 out:
