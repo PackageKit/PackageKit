@@ -206,8 +206,15 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	GError *error = NULL;
 	PkResults *results;
 	PkPackageSack *sack = NULL;
+	PkPackage *package;
+	PkInfoEnum info;
 	guint length;
 	PkItemErrorCode *error_code;
+	guint i;
+	guint j;
+	const gchar *package_id;
+	GPtrArray *array = NULL;
+	PkItemPackage *item;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -249,17 +256,54 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get data */
 	sack = pk_results_get_package_sack (results);
 
-	/* TODO: remove all the PK_ENUM_INFO_CLEANUP packages */
+	/* remove some results */
+	length = g_strv_length (state->package_ids);
+	for (i=0; i<pk_package_sack_get_size (sack); i++) {
+		package = pk_package_sack_get_index (sack, i);
+
+		/* get package details */
+		package_id = pk_package_get_id (package);
+		g_object_get (package,
+			      "info", &info,
+			      NULL);
+
+		/* remove all the PK_ENUM_INFO_CLEANUP packages */
+		if (info == PK_INFO_ENUM_CLEANUP) {
+			pk_package_sack_remove_package (sack, package);
+			continue;
+		}
+
+		/* remove all the original packages */
+		for (j=0; j<length; j++) {
+			if (g_strcmp0 (package_id, state->package_ids[j]) == 0) {
+				pk_package_sack_remove_package (sack, package);
+				break;
+			}
+		}
+	}
+
+	/* do the same for the raw array */
+	array = pk_results_get_package_array (results);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
+
+		/* remove all the PK_ENUM_INFO_CLEANUP packages */
+		if (item->info == PK_INFO_ENUM_CLEANUP) {
+			g_ptr_array_remove (array, item);
+			continue;
+		}
+		/* remove all the original packages */
+		for (j=0; j<length; j++) {
+			if (g_strcmp0 (item->package_id, state->package_ids[j]) == 0) {
+				g_ptr_array_remove (array, item);
+				break;
+			}
+		}
+	}
 
 	/* no results from simulate */
 	length = pk_package_sack_get_size (sack);
 	if (length == 0) {
-		pk_task_do_async_action (state);
-		goto out;
-	}
-
-	/* same number of packages as the input packages */
-	if (length == g_strv_length (state->package_ids)) {
 		pk_task_do_async_action (state);
 		goto out;
 	}
@@ -270,6 +314,8 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);
 out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
 	if (results != NULL)
 		g_object_unref (results);
 	if (sack != NULL)
