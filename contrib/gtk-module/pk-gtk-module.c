@@ -192,7 +192,8 @@ pk_font_not_found (PangoLanguage *language)
 out:
 	if (pat != NULL)
 		FcPatternDestroy (pat);
-	g_free (tag);
+	if (tag != NULL)
+		free (tag);
 }
 
 
@@ -204,14 +205,14 @@ out:
 typedef struct {
 	PangoLanguage *language;
 	gboolean found;
-} FonsetForeachClosure;
+} FontsetForeachClosure;
 
 static gboolean
 fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED,
 		    PangoFont *font,
 		    gpointer data)
 {
-	FonsetForeachClosure *closure = data;
+	FontsetForeachClosure *closure = data;
 	PangoFcFont *fcfont = PANGO_FC_FONT (font);
 	const FcPattern *pattern = NULL;
 	FcLangSet *langset = NULL;
@@ -264,7 +265,7 @@ pk_pango_fc_font_map_load_fontset (PangoFontMap *font_map,
 		seen_languages = g_hash_table_new (NULL, NULL);
 
 	if (G_UNLIKELY (!g_hash_table_lookup (seen_languages, language))) {
-		FonsetForeachClosure closure;
+		FontsetForeachClosure closure;
 
 		g_hash_table_insert (seen_languages, language, language);
 
