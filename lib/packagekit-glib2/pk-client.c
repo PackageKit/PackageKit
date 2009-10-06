@@ -549,8 +549,14 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 static void
 pk_client_state_finish (PkClientState *state, const GError *error)
 {
+	gboolean ret;
 	PkClientPrivate *priv;
 	priv = state->client->priv;
+
+	/* force finished (if not already set) so clients can update the UI's */
+	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
+	if (ret && state->progress_callback != NULL)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
 
 	if (state->cancellable != NULL) {
 		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
