@@ -313,3 +313,10 @@ bool ends_with (const string &str, const char *end)
 	size_t endSize = strlen(end);
 	return str.size() >= endSize && (memcmp(str.data() + str.size() - endSize, end, endSize) == 0);
 }
+
+bool starts_with (const string &str, const char *start)
+{
+	size_t startSize = strlen(start);
+	return str.size() >= startSize && (strncmp(str.data(), start, startSize) == 0);
+}
+

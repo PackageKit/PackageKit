@@ -25,7 +25,6 @@
 
 #include <apt-pkg/pkgrecords.h>
 
-#include <packagekit-glib2/packagekit.h>
 #include <pk-backend.h>
 
 #include <string.h>
@@ -132,5 +131,10 @@ bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packag
   * Return if the given string ends with the other
   */
 bool ends_with(const string &str, const char *end);
+
+/**
+  * Return if the given string starts with the other
+  */
+bool starts_with(const string &str, const char *end);
 
 #endif

@@ -48,10 +48,11 @@ class aptcc
 {
 //     typedef int user_tag_reference;
 public:
-	aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list);
+	aptcc(PkBackend *backend, bool &cancel);
 	~aptcc();
 
 	bool init();
+	void cancel();
 
 	// Check the returned VerIterator.end()
 	// if it's true we could not find it
@@ -62,16 +63,16 @@ public:
 	bool is_held(const pkgCache::PkgIterator &pkg);
 
 	/**
-	 *  prepare a transaction to install/remove/update packages
+	 *  runs a transaction to install/remove/update packages
 	 *  - for install and update, \p remove should be set to false
 	 *  - if you are going to remove, \p remove should be true
-	 *  - If you don't want to actually install/update/remove
-	 *    simulate should be true, in this case packages with
+	 *  - if you don't want to actually install/update/remove
+	 *    \p simulate should be true, in this case packages with
 	 *    what's going to happen will be emitted.
 	 */
-	bool prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
-				 bool simulate,
-				 bool remove);
+	bool runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+			    bool simulate,
+			    bool remove);
 
 	/**
 	 *  get the state cache of the package
@@ -118,9 +119,12 @@ public:
 	 *  seems to install packages
 	 */
 	bool installPackages(pkgDepCache &Cache,
-			     bool ShwKept,
-			     bool Ask = true,
 			     bool Safety = true);
+
+	/**
+	 *  interprets dpkg status fd
+	 */
+	void updateInterface(int readFd, int writeFd);
 
 	/** Marks all upgradable and non-held packages for upgrade.
 	 *
@@ -141,6 +145,7 @@ public:
 	pkgRecords    *packageRecords;
 	pkgCache      *packageCache;
 	pkgDepCache   *packageDepCache;
+	pkgSourceList *packageSourceList;
 
 private:
 	MMap       *Map;
@@ -148,7 +153,6 @@ private:
 	pkgPolicy  *Policy;
 	PkBackend  *m_backend;
 	bool &_cancel;
-	pkgSourceList &m_pkgSourceList;
 
 	/** This flag is \b true iff the persistent state has changed (ie, we
 	 *  need to save the cache).
@@ -165,6 +169,15 @@ private:
 	bool DoAutomaticRemove(pkgCacheFile &Cache);
 	void emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
 				 pkgCacheFile &Cache);
+
+	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
+	void populateInternalPackages(pkgCacheFile &Cache);
+	void emitTransactionPackage(string name, PkInfoEnum state);
+	time_t last_term_action;
+	bool _startCounting;
+	// when the internal terminal timesout after no activity
+	int _terminalTimeout;
+	pid_t m_child_pid;
 };
 
 #endif

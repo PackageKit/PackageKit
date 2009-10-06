@@ -24,6 +24,7 @@
 #include "aptcc_show_broken.h"
 #include "acqprogress.h"
 #include "pkg_acqfile.h"
+#include "aptcc_show_error.h"
 
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
@@ -33,23 +34,27 @@
 #include <apt-pkg/sptr.h>
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
+#include <sys/wait.h>
+#include <sys/fcntl.h>
+
 #define RAMFS_MAGIC     0x858458f6
 
 #include <fstream>
 #include <dirent.h>
 #include <assert.h>
 
-aptcc::aptcc(PkBackend *backend, bool &cancel, pkgSourceList &apt_source_list)
+aptcc::aptcc(PkBackend *backend, bool &cancel)
 	:
 	packageRecords(0),
 	packageCache(0),
 	packageDepCache(0),
+	packageSourceList(0),
 	Map(0),
 	Policy(0),
 	m_backend(backend),
-	_cancel(cancel),
-	m_pkgSourceList(apt_source_list)
+	_cancel(cancel)
 {
+	_cancel = false;
 }
 
 bool aptcc::init()
@@ -57,6 +62,9 @@ bool aptcc::init()
 	gchar *locale;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
+
+	// Set PackageKit status
+	pk_backend_set_status(m_backend, PK_STATUS_ENUM_LOADING_CACHE);
 
 	// set locale
 	if (locale = pk_backend_get_locale(m_backend)) {
@@ -72,15 +80,23 @@ bool aptcc::init()
 	// set http proxy
 	if (proxy_http = pk_backend_get_proxy_http(m_backend)) {
 		_config->Set("Acquire::http::Proxy", proxy_http);
+	} else {
+		_config->Set("Acquire::http::Proxy", "");
 	}
 
 	// set ftp proxy
 	if (proxy_ftp = pk_backend_get_proxy_ftp(m_backend)) {
 		_config->Set("Acquire::ftp::Proxy", proxy_ftp);
+	} else {
+		_config->Set("Acquire::ftp::Proxy", "");
 	}
 
+	packageSourceList = new pkgSourceList;
+	// Read the source list
+	packageSourceList->ReadMainList();
+
 	// Generate it and map it
-	bool Res = pkgMakeStatusCache(m_pkgSourceList, Progress, &Map, true);
+	bool Res = pkgMakeStatusCache(*packageSourceList, Progress, &Map, true);
 	Progress.Done();
 	if(!Res) {
 		return false;
@@ -143,7 +159,23 @@ aptcc::~aptcc()
 		delete Policy;
 	}
 
+	if (packageSourceList)
+	{
+		delete packageSourceList;
+	}
+
 	delete Map;
+}
+
+void aptcc::cancel()
+{
+	if (!_cancel) {
+		_cancel = true;
+	        pk_backend_set_status(m_backend, PK_STATUS_ENUM_CANCEL);
+	}
+	if (m_child_pid > 0) {
+		kill(m_child_pid, SIGTERM);
+	}
 }
 
 pair<pkgCache::PkgIterator, pkgCache::VerIterator>
@@ -662,37 +694,36 @@ void emit_files (PkBackend *backend, const gchar *pi)
 }
 
 
-static bool CheckAuth(pkgAcquire& Fetcher, PkBackend *backend)
+static bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 {
-   string UntrustedList;
-   for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I < Fetcher.ItemsEnd(); ++I)
-   {
-      if (!(*I)->IsTrusted())
-      {
-         UntrustedList += string((*I)->ShortDesc()) + " ";
-      }
-   }
+	string UntrustedList;
+	for (pkgAcquire::ItemIterator I = fetcher.ItemsBegin(); I < fetcher.ItemsEnd(); ++I)
+	{
+		if (!(*I)->IsTrusted())
+		{
+			UntrustedList += string((*I)->ShortDesc()) + " ";
+		}
+	}
 
-   if (UntrustedList == "")
-   {
-      return true;
-   }
+	if (UntrustedList == "")
+	{
+		return true;
+	}
 
-   string warning("WARNING: The following packages cannot be authenticated!\n");
-   warning += UntrustedList;
-   pk_backend_message(backend,
-		      PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE,
-		      warning.c_str());
+	if (pk_backend_get_bool(backend, "only_trusted") == false ||
+	    _config->FindB("APT::Get::AllowUnauthenticated", false) == true)
+	{
+		egg_debug ("Authentication warning overridden.\n");
+		return true;
+	}
 
-//    ShowList(c2out,_("WARNING: The following packages cannot be authenticated!"),UntrustedList,"");
-
-   if (_config->FindB("APT::Get::AllowUnauthenticated", false) == true)
-   {
-      egg_debug ("Authentication warning overridden.\n");
-      return true;
-   }
-
-   return false;
+	string warning("The following packages cannot be authenticated:\n");
+	warning += UntrustedList;
+	pk_backend_error_code(backend,
+			      PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+			      warning.c_str());
+	_error->Discard();
+	return false;
 }
 
 bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
@@ -820,6 +851,178 @@ void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 	emit_packages(updating,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
 }
 
+void aptcc::populateInternalPackages(pkgCacheFile &Cache)
+{
+	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
+        {
+                if (Cache[pkg].NewInstall() == true) {
+                        // installing
+			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+                } else if (Cache[pkg].Delete() == true) {
+                        // removing
+			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+                } else if (Cache[pkg].Upgrade() == true) {
+                        // updating
+			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+                } else if (Cache[pkg].Downgrade() == true) {
+                        // downgrading
+                        m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
+                }
+        }
+}
+
+void aptcc::emitTransactionPackage(string name, PkInfoEnum state)
+{
+	for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=m_pkgs.begin();
+	     i != m_pkgs.end();
+	     ++i)
+	{
+		if (i->first.Name() == name) {
+			emit_package(i->first, i->second, PK_FILTER_ENUM_NONE, state);
+			return;
+		}
+	}
+
+	pair<pkgCache::PkgIterator, pkgCache::VerIterator> pkg_ver;
+	pkg_ver.first = packageCache->FindPkg(name);
+	// Ignore packages that could not be found or that exist only due to dependencies.
+	if (pkg_ver.first.end() == true ||
+	    (pkg_ver.first.VersionList().end() && pkg_ver.first.ProvidesList().end()))
+	{
+		return;
+	}
+
+	pkg_ver.second = find_ver(pkg_ver.first);
+	// check to see if the provided package isn't virtual too
+	if (pkg_ver.second.end() == false)
+	{
+		emit_package(pkg_ver.first, pkg_ver.second, PK_FILTER_ENUM_NONE, state);
+	}
+
+	pkg_ver.second = find_candidate_ver(pkg_ver.first);
+	// check to see if we found the package
+	if (pkg_ver.second.end() == false)
+	{
+		emit_package(pkg_ver.first, pkg_ver.second, PK_FILTER_ENUM_NONE, state);
+	}
+}
+
+void aptcc::updateInterface(int fd, int writeFd)
+{
+	char buf[2];
+	static char line[1024] = "";
+	int i=0;
+
+	while (1) {
+		// This algorithm should be improved (it's the same as the rpm one ;)
+		int len = read(fd, buf, 1);
+
+		// nothing was read
+		if(len < 1) {
+			break;
+		}
+
+		// update the time we last saw some action
+		last_term_action = time(NULL);
+
+		if( buf[0] == '\n') {
+			if (_cancel) {
+				kill(m_child_pid, SIGTERM);
+			}
+			//cout << "got line: " << line << endl;
+
+			gchar **split = g_strsplit(line, ":",5);
+			gchar *status = g_strstrip(split[0]);
+			gchar *pkg = g_strstrip(split[1]);
+			gchar *percent = g_strstrip(split[2]);
+			gchar *str = g_strdup(g_strstrip(split[3]));
+
+			// major problem here, we got unexpected input. should _never_ happen
+			if(!(pkg && status)) {
+				continue;
+			}
+
+			// first check for errors and conf-file prompts
+			if (strstr(status, "pmerror") != NULL) {
+				// error from dpkg, needs to be parsed different
+cout << "PK: Error in package: " << split[1] << endl;
+//				str = g_strdup_printf(_("Error in package %s"), split[1]);
+//				string err = split[1] + string(": ") + split[3];
+//				_error->Error("%s",utf8(err.c_str()));
+			} else if (strstr(status, "pmconffile") != NULL) {
+				// conffile-request from dpkg, needs to be parsed different
+cout << "PK: Oops Conf file detected!!! -> PKG: " << pkg << " " << split[2] << " " << split[3] << endl;
+cout << "write " << write(writeFd, "n\n", 2);
+				//cout << split[2] << " " << split[3] << endl;
+			} else if (strstr(status, "pmstatus") != NULL) {
+				// Let's start parsing the status:
+				if (starts_with(str, "Preparing")) {
+					// Preparing to Install/configure
+					cout << "Found Preparing! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
+				} else if (starts_with(str, "Unpacking")) {
+					cout << "Found Unpacking! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_DECOMPRESSING);
+				} else if (starts_with(str, "Configuring")) {
+					// Installing Package
+					cout << "Found Configuring! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
+				} else if (starts_with(str, "Running dpkg")) {
+					cout << "Found Running dpkg! " << line << endl;
+				} else if (starts_with(str, "Running")) {
+					cout << "Found Running! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_CLEANUP);
+				} else if (starts_with(str, "Installing")) {
+					cout << "Found Installing! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
+				} else if (starts_with(str, "Removing")) {
+					cout << "Found Removing! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
+				} else if (starts_with(str, "Installed") ||
+					   starts_with(str, "Removed")) {
+					cout << "Found FINISHED! " << line << endl;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_FINISHED);
+				} else {
+					cout << ">>>Unmaped value<<< :" << line << endl;
+				}
+			} else {
+				_startCounting = true;
+			}
+
+			int val = atoi(percent);
+			//cout << "progress: " << val << endl;
+			pk_backend_set_percentage(m_backend, val);
+
+			// clean-up
+			g_strfreev(split);
+			g_free(str);
+			line[0] = 0;
+		} else {
+			buf[1] = 0;
+			strcat(line, buf);
+		}
+	}
+
+	time_t now = time(NULL);
+
+	if(!_startCounting) {
+		usleep(100000);
+//		gtk_progress_bar_pulse (GTK_PROGRESS_BAR(_pbarTotal));
+		// wait until we get the first message from apt
+		last_term_action = now;
+	}
+
+	if ((now - last_term_action) > _terminalTimeout) {
+		// get some debug info
+		gchar *s;
+		g_warning("no statusfd changes/content updates in terminal for %i"
+			  " seconds",_terminalTimeout);
+		g_warning("TerminalTimeout in step: %s", s);
+		last_term_action = time(NULL);
+	}
+
+	usleep(5000);
+}
 									/*}}}*/
 
 // InstallPackages - Actually download and install the packages		/*{{{*/
@@ -827,29 +1030,25 @@ void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
 bool aptcc::installPackages(pkgDepCache &Cache,
-			    bool ShwKept,
-			    bool Ask,
 			    bool Safety)
 {
+cout << "installPackages() called" << endl;
 	if (_config->FindB("APT::Get::Purge",false) == true)
 	{
-	    pkgCache::PkgIterator I = Cache.PkgBegin();
-	    for (; I.end() == false; I++)
-	    {
-		if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete)
-		    Cache.MarkDelete(I,true);
-	    }
+		pkgCache::PkgIterator I = Cache.PkgBegin();
+		for (; I.end() == false; I++)
+		{
+			if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete) {
+				Cache.MarkDelete(I,true);
+			}
+		}
 	}
 
-	bool Fail = false;
+//	bool Fail = false;
 	bool Essential = false;
 
 // we don't show things here
 	// Show all the various warning indicators
-// 	ShowDel(c1out,Cache);
-// 	ShowNew(c1out,Cache);
-// 	if (ShwKept == true)
-// 	    ShowKept(c1out,Cache);
 // 	Fail |= !ShowHold(c1out,Cache);
 // 	if (_config->FindB("APT::Get::Show-Upgraded",true) == true)
 // 	    ShowUpgraded(c1out,Cache);
@@ -863,13 +1062,14 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	if (Cache.BrokenCount() != 0)
 	{
 // 	    ShowBroken(c1out,Cache,false);
-	    show_broken(m_backend, this);
-	    return _error->Error("Internal error, InstallPackages was called with broken packages!");
+		show_broken(m_backend, this);
+		return _error->Error("Internal error, InstallPackages was called with broken packages!");
 	}
 
 	if (Cache.DelCount() == 0 && Cache.InstCount() == 0 &&
-	    Cache.BadCount() == 0)
-	    return true;
+	    Cache.BadCount() == 0) {
+		return true;
+	}
 
 	// No remove flag
 	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
@@ -878,35 +1078,33 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 
 	// Create the text record parser
 	pkgRecords Recs(Cache);
-	if (_error->PendingError() == true)
-	    return false;
+	if (_error->PendingError() == true) {
+		return false;
+	}
 
 	// Lock the archive directory
 	FileFd Lock;
 	if (_config->FindB("Debug::NoLocking",false) == false &&
 	    _config->FindB("APT::Get::Print-URIs") == false)
 	{
-	    Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
-	    if (_error->PendingError() == true)
-		return _error->Error("Unable to lock the download directory");
+		Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
+		if (_error->PendingError() == true) {
+			return _error->Error("Unable to lock the download directory");
+		}
 	}
 
 	// Create the download object
 	AcqPackageKitStatus Stat(this, m_backend, _cancel, _config->FindI("quiet",0));
-	pkgAcquire Fetcher(&Stat);
 
-	// Read the source list
-// 	pkgSourceList List;
-// 	if (List.ReadMainList() == false)
-// 	    return _error->Error("The list of sources could not be read.");
+	// get a fetcher
+	pkgAcquire fetcher(&Stat);
 
 	// Create the package manager and prepare to download
 	SPtr<pkgPackageManager> PM= _system->CreatePM(&Cache);
-	if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false ||
+	if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
 	    _error->PendingError() == true) {
 		return false;
 	}
-
 
 	// Generate the list of affected packages and sort it
 	for (pkgCache::PkgIterator I = Cache.PkgBegin(); I.end() == false; I++)
@@ -932,13 +1130,13 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	}
 
 	// Display statistics
-	double FetchBytes = Fetcher.FetchNeeded();
-	double FetchPBytes = Fetcher.PartialPresent();
-	double DebBytes = Fetcher.TotalNeeded();
+	double FetchBytes = fetcher.FetchNeeded();
+	double FetchPBytes = fetcher.PartialPresent();
+	double DebBytes = fetcher.TotalNeeded();
 	if (DebBytes != Cache.DebSize())
 	{
 // 	    c0out << DebBytes << ',' << Cache.DebSize() << endl;
-	    _error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
+		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
 	}
 
 	// Number of bytes
@@ -957,21 +1155,23 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 // 	    ioprintf(c1out, "After this operation, %sB disk space will be freed.\n",
 // 		    SizeToStr(-1*Cache.UsrSize()).c_str());
 
-	if (_error->PendingError() == true)
-	    return false;
+	if (_error->PendingError() == true) {
+		return false;
+	}
 
 	/* Check for enough free space */
 	struct statvfs Buf;
 	string OutputDir = _config->FindDir("Dir::Cache::Archives");
 	if (statvfs(OutputDir.c_str(),&Buf) != 0) {
-		return _error->Errno("statvfs", "Couldn't determine free space in %s",
-				    OutputDir.c_str());
+		return _error->Errno("statvfs",
+				     "Couldn't determine free space in %s",
+				     OutputDir.c_str());
 	}
 	if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes)/Buf.f_bsize)
 	{
 		struct statfs Stat;
 		if (statfs(OutputDir.c_str(), &Stat) != 0 ||
-				unsigned(Stat.f_type) != RAMFS_MAGIC)
+		    unsigned(Stat.f_type)            != RAMFS_MAGIC)
 		{
 			pk_backend_error_code(m_backend,
 					      PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
@@ -991,147 +1191,114 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 
 	if (Essential == true && Safety == true)
 	{
-	    if (_config->FindB("APT::Get::Trivial-Only",false) == true)
-		return _error->Error("Trivial Only specified but this is not a trivial operation.");
-
-	    pk_backend_error_code(m_backend,
-				  PK_ERROR_ENUM_TRANSACTION_ERROR,
-				  "You was about to do something potentially harmful.\n"
-				  "Please use aptitude or synaptic to have more information.");
-	    return false;
-// 	    const char *Prompt = "Yes, do as I say!";
-// 	    ioprintf(c2out,
-// 		    "You are about to do something potentially harmful.\n"
-// 			"To continue type in the phrase '%s'\n"
-// 			" ?] ",Prompt);
-// 	    c2out << flush;
-// 	    if (AnalPrompt(Prompt) == false)
-// 	    {
-// 		c2out << "Abort." << endl;
-// 		exit(1);
-// 	    }
-	}
-
-	// Just print out the uris an exit if the --print-uris flag was used
-// 	if (_config->FindB("APT::Get::Print-URIs") == true)
-// 	{
-// 	    pkgAcquire::UriIterator I = Fetcher.UriBegin();
-// 	    for (; I != Fetcher.UriEnd(); I++)
-// 		cout << '\'' << I->URI << "' " << flNotDir(I->Owner->DestFile) << ' ' <<
-// 		    I->Owner->FileSize << ' ' << I->Owner->HashSum() << endl;
-// 	    return true;
-// 	}
-
-	if (!CheckAuth(Fetcher, m_backend))
-	    return false;
-
-	/* Unlock the dpkg lock if we are not going to be doing an install
-	    after. */
-// 	if (_config->FindB("APT::Get::Download-Only",false) == true)
-// 	    _system->UnLock();
-
-	// Run it
-	while (1)
-	{
-	    bool Transient = false;
-	    if (_config->FindB("APT::Get::Download",true) == false)
-	    {
-		for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I < Fetcher.ItemsEnd();)
-		{
-		    if ((*I)->Local == true)
-		    {
-		    I++;
-		    continue;
-		    }
-
-		    // Close the item and check if it was found in cache
-		    (*I)->Finished();
-		    if ((*I)->Complete == false)
-		    Transient = true;
-
-		    // Clear it out of the fetch list
-		    delete *I;
-		    I = Fetcher.ItemsBegin();
-		}
-	    }
-
-	    if (Fetcher.Run() == pkgAcquire::Failed)
-		return false;
-
-	    // Print out errors
-	    bool Failed = false;
-	    for (pkgAcquire::ItemIterator I = Fetcher.ItemsBegin(); I != Fetcher.ItemsEnd(); I++)
-	    {
-		if ((*I)->Status == pkgAcquire::Item::StatDone &&
-		    (*I)->Complete == true)
-		    continue;
-
-		if ((*I)->Status == pkgAcquire::Item::StatIdle)
-		{
-		    Transient = true;
-		    // Failed = true;
-		    continue;
+		if (_config->FindB("APT::Get::Trivial-Only",false) == true) {
+			return _error->Error("Trivial Only specified but this is not a trivial operation.");
 		}
 
-		string fetchError("Failed to fetch:\n");
-		fetchError += (*I)->DescURI() + "  ";
-		fetchError += (*I)->ErrorText;
 		pk_backend_error_code(m_backend,
-				      PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
-				      fetchError.c_str());
-// 		fprintf(stderr, "Failed to fetch %s  %s\n", (*I)->DescURI().c_str(),
-// 			(*I)->ErrorText.c_str());
-		Failed = true;
-	    }
-
-	    /* If we are in no download mode and missing files and there were
-		'failures' then the user must specify -m. Furthermore, there
-		is no such thing as a transient error in no-download mode! */
-	    if (Transient == true &&
-		_config->FindB("APT::Get::Download",true) == false)
-	    {
-		Transient = false;
-		Failed = true;
-	    }
-
-// 	    if (_config->FindB("APT::Get::Download-Only",false) == true)
-// 	    {
-// 		if (Failed == true && _config->FindB("APT::Get::Fix-Missing",false) == false)
-// 		    return _error->Error("Some files failed to download");
-// 		c1out << "Download complete and in download only mode" << endl;
-// 		return true;
-// 	    }
-
-	    if (Failed == true && _config->FindB("APT::Get::Fix-Missing",false) == false)
-	    {
-		return _error->Error("Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?");
-	    }
-
-	    if (Transient == true && Failed == true)
-		return _error->Error("--fix-missing and media swapping is not currently supported");
-
-	    // Try to deal with missing package files
-	    if (Failed == true && PM->FixMissing() == false)
-	    {
-		cerr << "Unable to correct missing packages." << endl;
-		return _error->Error("Aborting install.");
-	    }
-
-	    _system->UnLock();
-	    int status_fd = _config->FindI("APT::Status-Fd",-1);
-	    pkgPackageManager::OrderResult Res = PM->DoInstall(status_fd);
-	    if (Res == pkgPackageManager::Failed || _error->PendingError() == true)
+				      PK_ERROR_ENUM_TRANSACTION_ERROR,
+				      "You was about to do something potentially harmful.\n"
+				      "Please use aptitude or synaptic to have more information.");
 		return false;
-	    if (Res == pkgPackageManager::Completed)
-		return true;
-
-	    // Reload the fetcher object and loop again for media swapping
-	    Fetcher.Shutdown();
-	    if (PM->GetArchives(&Fetcher, &m_pkgSourceList, &Recs) == false)
-		return false;
-
-	    _system->Lock();
 	}
+
+	if (!checkTrusted(fetcher, m_backend)) {
+		return false;
+	}
+
+	// Download and check if we can continue
+	if (fetcher.Run() != pkgAcquire::Continue
+	    && _cancel == false)
+	{
+		// We failed and we did not cancel
+		show_errors(m_backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
+		return false;
+	}
+
+	// TODO true or false?
+	if (_cancel) {
+		return true;
+	}
+
+	// Download should be finished by now, changing it's status
+	pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
+	pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+
+	// TODO DBus activated does not have all vars
+	// we could try to see if this is the case
+	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
+	_system->UnLock();
+
+	pkgPackageManager::OrderResult res;
+	res = PM->DoInstallPreFork();
+	if (res == pkgPackageManager::Failed) {
+		return false;
+	}
+
+	// File descriptors for reading dpkg --status-fd
+	int readFromChildFD[2];
+	int writeToChildFD[2];
+	if (pipe(readFromChildFD) < 0 || pipe(writeToChildFD) < 0) {
+		cout << "Failed to create a pipe" << endl;
+		return false;
+	}
+
+	m_child_pid = fork();
+	if (m_child_pid == -1) {
+		return false;
+	}
+
+	if (m_child_pid == 0) {
+		cout << "FORKED: installPackages(): DoInstall" << endl;
+		// close Forked stdout and the read end of the pipe
+		close(0);
+		close(1);
+		close(readFromChildFD[0]);
+		close(writeToChildFD[1]);
+
+		// redirect writeToChildFD to stdin
+		if (dup(writeToChildFD[0]) != 0) {
+			cerr << "Aptcc: dup failed duplicate pipe to stdin" << endl;
+			close(readFromChildFD[1]);
+			close(writeToChildFD[0]);
+			_exit(1);
+		}
+
+		// Change the locale AND lang to not get it localized
+		setenv("LANG", "C", 1);
+		setlocale(LC_ALL, "C");
+
+		// Pass the write end of the pipe to the install function
+		res = PM->DoInstallPostFork(readFromChildFD[1]);
+
+		// dump errors into cerr (pass it to the parent process)
+		_error->DumpErrors();
+
+		close(readFromChildFD[1]);
+		close(writeToChildFD[0]);
+
+		_exit(res);
+	}
+	close(readFromChildFD[1]);
+	close(writeToChildFD[0]);
+
+	cout << "PARENT proccess running..." << endl;
+	// make it nonblocking, verry important otherwise
+	// when the child finish we stay stuck.
+	fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
+
+	// Check if the child died
+	int ret;
+	while (waitpid(m_child_pid, &ret, WNOHANG) == 0) {
+		updateInterface(readFromChildFD[0], writeToChildFD[1]);
+	}
+
+	close(readFromChildFD[0]);
+	close(writeToChildFD[1]);
+
+	cout << "Parent finished..." << endl;
+	return true;
 }
 
 // DoAutomaticRemove - Remove all automatic unused packages		/*{{{*/
@@ -1176,12 +1343,12 @@ bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 	return true;
 }
 
-bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
-				bool simulate,
-				bool remove)
+bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
+			   bool simulate,
+			   bool remove)
 {
 	cout << "==============================================================" << endl;
-	cout << "prepare_transaction" << simulate << remove << endl;
+	cout << "runTransaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
 				   //since for that no lock is needed
 
@@ -1203,6 +1370,7 @@ bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 			timeout--;
 		}
 	}
+	pk_backend_set_status (m_backend, PK_STATUS_ENUM_RUNNING);
 
 	// Enter the special broken fixing mode if the user specified arguments
 	bool BrokenFix = false;
@@ -1278,8 +1446,8 @@ bool aptcc::prepare_transaction(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 	    // See if we need to prompt
 	//     if (Cache->InstCount() == ExpectedInst && Cache->DelCount() == 0)
 	// 	return InstallPackages(Cache,false,false);
-
-	//     return InstallPackages(Cache,false);
-		return true;
+		populateInternalPackages(Cache);
+	        return installPackages(Cache, false);
+	//	return true;
 	}
 }
