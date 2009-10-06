@@ -46,7 +46,7 @@ static void     pk_package_finalize	(GObject     *object);
  **/
 struct _PkPackagePrivate
 {
-	gchar			*id;
+	gchar			*package_id;
 	gchar			*summary;
 	PkInfoEnum		 info;
 	gchar			*license;
@@ -74,7 +74,7 @@ enum {
 
 enum {
 	PROP_0,
-	PROP_ID,
+	PROP_PACKAGE_ID,
 	PROP_SUMMARY,
 	PROP_INFO,
 	PROP_LICENSE,
@@ -146,7 +146,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	}
 
 	/* save */
-	priv->id = g_strdup (package_id);
+	priv->package_id = g_strdup (package_id);
 out:
 	g_strfreev (sections);
 	return ret;
@@ -164,7 +164,7 @@ const gchar *
 pk_package_get_id (PkPackage *package)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
-	return package->priv->id;
+	return package->priv->package_id;
 }
 
 /**
@@ -179,7 +179,7 @@ pk_package_print (PkPackage *package)
 	gchar **parts;
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
-	parts = pk_package_id_split (package->priv->id);
+	parts = pk_package_id_split (package->priv->package_id);
 	g_print ("%s-%s.%s\t%s\t%s\n",
 		 parts[PK_PACKAGE_ID_NAME],
 		 parts[PK_PACKAGE_ID_VERSION],
@@ -199,8 +199,8 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	PkPackagePrivate *priv = package->priv;
 
 	switch (prop_id) {
-	case PROP_ID:
-		g_value_set_string (value, priv->id);
+	case PROP_PACKAGE_ID:
+		g_value_set_string (value, priv->package_id);
 		break;
 	case PROP_SUMMARY:
 		g_value_set_string (value, priv->summary);
@@ -370,13 +370,13 @@ pk_package_class_init (PkPackageClass *klass)
 	object_class->finalize = pk_package_finalize;
 
 	/**
-	 * PkPackage:id:
+	 * PkPackage:package-id:
 	 */
-	pspec = g_param_spec_string ("id", NULL,
+	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
 				     NULL,
 				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
+	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
 	 * PkPackage:summary:
@@ -574,7 +574,7 @@ pk_package_finalize (GObject *object)
 	PkPackage *package = PK_PACKAGE (object);
 	PkPackagePrivate *priv = package->priv;
 
-	g_free (priv->id);
+	g_free (priv->package_id);
 	g_free (priv->summary);
 	g_free (priv->license);
 	g_free (priv->description);
@@ -637,7 +637,7 @@ pk_package_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "get id of unset package");
-	g_object_get (package, "id", &text, NULL);
+	g_object_get (package, "package-id", &text, NULL);
 	egg_test_assert (test, (text == NULL));
 	g_free (text);
 
@@ -668,7 +668,7 @@ pk_package_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "get name of set package");
-	g_object_get (package, "id", &text, NULL);
+	g_object_get (package, "package-id", &text, NULL);
 	egg_test_assert (test, (g_strcmp0 (text, "gnome-power-manager;0.1.2;i386;fedora") == 0));
 	g_free (text);
 
