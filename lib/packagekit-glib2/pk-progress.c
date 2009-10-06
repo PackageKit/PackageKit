@@ -58,6 +58,7 @@ struct _PkProgressPrivate
 	guint				 remaining_time;
 	guint				 speed;
 	guint				 uid;
+	PkPackage			*package;
 };
 
 enum {
@@ -74,6 +75,7 @@ enum {
 	PROP_REMAINING_TIME,
 	PROP_SPEED,
 	PROP_UID,
+	PROP_PACKAGE,
 	PROP_LAST
 };
 
@@ -123,6 +125,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_UID:
 		g_value_set_uint (value, progress->priv->uid);
+		break;
+	case PROP_PACKAGE:
+		g_value_set_object (value, progress->priv->package);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -357,6 +362,26 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
 }
 
 /**
+ * pk_progress_set_package:
+ **/
+gboolean
+pk_progress_set_package (PkProgress *progress, PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (progress->priv->package == package)
+		return FALSE;
+
+	/* new value */
+	if (progress->priv->package != NULL)
+		g_object_unref (progress->priv->package);
+	progress->priv->package = g_object_ref (package);
+	egg_debug ("package now %p", package);
+	return TRUE;
+}
+
+/**
  * pk_progress_set_property:
  **/
 static void
@@ -400,6 +425,9 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 		break;
 	case PROP_UID:
 		pk_progress_set_uid (progress, g_value_get_uint (value));
+		break;
+	case PROP_PACKAGE:
+		pk_progress_set_package (progress, g_value_get_object (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -516,6 +544,14 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UID, pspec);
+
+	/**
+	 * PkProgress:package:
+	 */
+	pspec = g_param_spec_object ("package", NULL, NULL,
+				     PK_TYPE_PACKAGE,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_PACKAGE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));
 }

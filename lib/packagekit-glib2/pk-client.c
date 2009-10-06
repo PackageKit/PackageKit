@@ -858,6 +858,7 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 	gboolean ret;
 	PkInfoEnum info_enum;
 	PkItemPackage *item;
+	PkPackage *package;
 	g_return_if_fail (PK_IS_CLIENT (state->client));
 
 	/* add to results */
@@ -868,12 +869,22 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 		pk_item_package_unref (item);
 	}
 
-	/* save progress */
+	/* save package-id */
 	ret = pk_progress_set_package_id (state->progress, package_id);
-
-	/* do the callback for GUI programs */
 	if (state->progress_callback != NULL && ret)
 		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE_ID, state->progress_user_data);
+
+	/* save package object */
+	package = pk_package_new ();
+	pk_package_set_id (package, package_id, NULL);
+	g_object_set (package,
+		      "info", info_enum,
+		      "summary", summary,
+		      NULL);
+	ret = pk_progress_set_package (state->progress, package);
+	if (state->progress_callback != NULL && ret)
+		state->progress_callback (state->progress, PK_PROGRESS_TYPE_PACKAGE, state->progress_user_data);
+	g_object_unref (package);
 }
 
 /**

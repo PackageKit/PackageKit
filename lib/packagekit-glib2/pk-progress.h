@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-package.h>
 
 G_BEGIN_DECLS
 
@@ -79,6 +80,7 @@ typedef enum {
 	PK_PROGRESS_TYPE_REMAINING_TIME,
 	PK_PROGRESS_TYPE_SPEED,
 	PK_PROGRESS_TYPE_UID,
+	PK_PROGRESS_TYPE_PACKAGE,
 	PK_PROGRESS_TYPE_INVALID
 } PkProgressType;
 
@@ -110,6 +112,8 @@ gboolean	 pk_progress_set_speed			(PkProgress		*progress,
 							 guint			 speed);
 gboolean	 pk_progress_set_uid			(PkProgress		*progress,
 							 guint			 uid);
+gboolean	 pk_progress_set_package		(PkProgress		*progress,
+							 PkPackage		*package);
 
 G_END_DECLS
 
