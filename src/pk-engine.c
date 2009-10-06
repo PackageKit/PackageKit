@@ -604,34 +604,15 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	return TRUE;
 }
 
-#ifdef USE_SECURITY_POLKIT
 /**
- * pk_engine_action_obtain_authorization:
+ * pk_engine_set_proxy_internal:
  **/
-static void
-pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngine *engine)
+static gboolean
+pk_engine_set_proxy_internal (PkEngine *engine)
 {
-	PolkitAuthorizationResult *result;
-	GError *error = NULL;
 	gboolean ret;
 	guint uid;
 	gchar *session = NULL;
-
-	/* finish the call */
-	result = polkit_authority_check_authorization_finish (engine->priv->authority, res, &error);
-
-	/* failed */
-	if (result == NULL) {
-		egg_warning ("failed to check for auth: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* did not auth */
-	if (!polkit_authorization_result_get_is_authorized (result)) {
-		egg_warning ("failed to obtain auth");
-		goto out;
-	}
 
 	/* try to set the new proxy */
 	ret = pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
@@ -661,11 +642,47 @@ pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyn
 		egg_warning ("failed to save the proxy in the database");
 		goto out;
 	}
+out:
+	g_free (session);
+	return ret;
+}
 
+#ifdef USE_SECURITY_POLKIT
+/**
+ * pk_engine_action_obtain_authorization:
+ **/
+static void
+pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngine *engine)
+{
+	PolkitAuthorizationResult *result;
+	GError *error = NULL;
+	gboolean ret;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (engine->priv->authority, res, &error);
+
+	/* failed */
+	if (result == NULL) {
+		egg_warning ("failed to check for auth: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		egg_warning ("failed to obtain auth");
+		goto out;
+	}
+
+	/* try to set the new proxy and save to database */
+	ret = pk_engine_set_proxy_internal (engine);
+	if (!ret) {
+		egg_warning ("setting the proxy failed");
+		goto out;
+	}
 out:
 	if (result != NULL)
 		g_object_unref (result);
-	g_free (session);
 }
 #endif
 
@@ -743,8 +760,8 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 #else
 	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
-	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	/* try to set the new proxy and save to database */
+	ret = pk_engine_set_proxy_internal (engine);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
 		dbus_g_method_return_error (context, error);
