@@ -206,15 +206,13 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	GError *error = NULL;
 	PkResults *results;
 	PkPackageSack *sack = NULL;
-	PkPackage *package;
-	PkInfoEnum info;
 	guint length;
 	PkItemErrorCode *error_code;
+	guint idx = 0;
 	guint i;
-	guint j;
-	const gchar *package_id;
 	GPtrArray *array = NULL;
 	PkItemPackage *item;
+	gboolean ret;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -256,54 +254,43 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get data */
 	sack = pk_results_get_package_sack (results);
 
-	/* remove some results */
+	/* remove all the original packages from the sack */
 	length = g_strv_length (state->package_ids);
-	for (i=0; i<pk_package_sack_get_size (sack); i++) {
-		package = pk_package_sack_get_index (sack, i);
+	for (i=0; i<length; i++)
+		pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
 
-		/* get package details */
-		package_id = pk_package_get_id (package);
-		g_object_get (package,
-			      "info", &info,
-			      NULL);
-
-		/* remove all the PK_ENUM_INFO_CLEANUP packages */
-		if (info == PK_INFO_ENUM_CLEANUP) {
-			pk_package_sack_remove_package (sack, package);
-			continue;
-		}
-
-		/* remove all the original packages */
-		for (j=0; j<length; j++) {
-			if (g_strcmp0 (package_id, state->package_ids[j]) == 0) {
-				pk_package_sack_remove_package (sack, package);
-				break;
-			}
-		}
-	}
-
-	/* do the same for the raw array */
+	/* remove packages from the array that will not be useful */
 	array = pk_results_get_package_array (results);
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
+	while (idx < array->len) {
+		item = g_ptr_array_index (array, idx);
 
-		/* remove all the PK_ENUM_INFO_CLEANUP packages */
-		if (item->info == PK_INFO_ENUM_CLEANUP) {
+		/* remove all the cleanup and finished packages */
+		if (item->info == PK_INFO_ENUM_CLEANUP ||
+		    item->info == PK_INFO_ENUM_FINISHED) {
+			egg_debug ("removing %s", item->package_id);
 			g_ptr_array_remove (array, item);
 			continue;
 		}
+
 		/* remove all the original packages */
-		for (j=0; j<length; j++) {
-			if (g_strcmp0 (item->package_id, state->package_ids[j]) == 0) {
+		ret = FALSE;
+		for (i=0; i<length; i++) {
+			if (g_strcmp0 (item->package_id, state->package_ids[i]) == 0) {
+				egg_debug ("removing %s", item->package_id);
 				g_ptr_array_remove (array, item);
+				ret = TRUE;
 				break;
 			}
 		}
+		if (ret)
+			continue;
+
+		/* no removal done */
+		idx++;
 	}
 
 	/* no results from simulate */
-	length = pk_package_sack_get_size (sack);
-	if (length == 0) {
+	if (array->len == 0) {
 		pk_task_do_async_action (state);
 		goto out;
 	}
