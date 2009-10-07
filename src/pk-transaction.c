@@ -2238,7 +2238,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 {
 	gboolean ret;
 	GError *error = NULL;
-	gchar *sender;
+	gchar *sender = NULL;
 	guint uid;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -2251,12 +2251,15 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Cancel not yet supported by backend");
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* if it's finished, cancelling will have no action regardless of uid */
 	if (transaction->priv->finished) {
 		egg_debug ("No point trying to cancel a finished transaction, ignoring");
+
+		/* return from async with success */
+		pk_transaction_dbus_return (context);
 		goto out;
 	}
 
@@ -2264,7 +2267,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	if (transaction->priv->role == PK_ROLE_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_ROLE, "No role");
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check if it's safe to kill */
@@ -2274,7 +2277,15 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 				     transaction->priv->tid,
 				     pk_role_enum_to_text (transaction->priv->role));
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
+	}
+
+	/* first, check the sender -- if it's the same we don't need to check the uid */
+	sender = dbus_g_method_get_sender (context);
+	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
+	if (ret) {
+		egg_debug ("same sender, no need to check uid");
+		goto skip_uid;
 	}
 
 	/* check if we saved the uid */
@@ -2282,19 +2293,15 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 				     "No context from caller to get UID from");
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* get the UID of the caller */
-	sender = dbus_g_method_get_sender (context);
 	uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
-	g_free (sender);
-
-	/* check we got a valid value */
 	if (uid == PK_TRANSACTION_UID_INVALID) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE, "unable to get uid of caller");
 		pk_transaction_dbus_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check the caller uid with the originator uid */
@@ -2303,10 +2310,11 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
 		if (!ret) {
 			pk_transaction_dbus_return_error (context, error);
-			return;
+			goto out;
 		}
 	}
 
+skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
 	if (!transaction->priv->has_been_run) {
 		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
@@ -2314,6 +2322,9 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		pk_transaction_release_tid (transaction);
+
+		/* return from async with success */
+		pk_transaction_dbus_return (context);
 		goto out;
 	}
 
@@ -2329,9 +2340,10 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	/* actually run the method */
 	pk_backend_cancel (transaction->priv->backend);
 
-out:
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
+out:
+	g_free (sender);
 }
 
 /**
