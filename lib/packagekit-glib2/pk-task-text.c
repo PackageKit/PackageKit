@@ -285,15 +285,11 @@ static void
 pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
-	guint len;
 	gboolean ret;
-	const gchar *package_id;
 	const gchar *title;
 	gchar *printable;
-	gchar *summary;
-	PkPackage *package;
-	PkPackageSack *sack;
-	PkInfoEnum info;
+	PkItemPackage *item;
+	GPtrArray *array;
 	PkInfoEnum info_last = PK_INFO_ENUM_UNKNOWN;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
@@ -304,33 +300,24 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	g_print ("\n");
 
 	/* get data */
-	sack = pk_results_get_package_sack (results);
+	array = pk_results_get_package_array (results);
 
 	/* print data */
-	len = pk_package_sack_get_size (sack);
-	for (i=0; i<len; i++) {
-		package = pk_package_sack_get_index (sack, i);
-		g_object_get (package,
-			      "info", &info,
-			      "summary", &summary,
-			      NULL);
+	for (i=0; i<array->len; i++) {
+		item = g_ptr_array_index (array, i);
 		/* new header */
-		if (info != info_last) {
-			title = pk_task_text_simulate_question_type_to_text (info);
+		if (item->info != info_last) {
+			title = pk_task_text_simulate_question_type_to_text (item->info);
 			if (title == NULL) {
-				title = pk_info_enum_to_text (info);
+				title = pk_info_enum_to_text (item->info);
 				egg_warning ("cannot translate '%s', please report!", title);
 			}
 			g_print ("%s\n", title);
-			info_last = info;
+			info_last = item->info;
 		}
-		package_id = pk_package_get_id (package);
-		printable = pk_package_id_to_printable (package_id);
-		g_print (" %s\t%s\n", printable, summary);
-
-		g_free (summary);
+		printable = pk_package_id_to_printable (item->package_id);
+		g_print (" %s\t%s\n", printable, item->summary);
 		g_free (printable);
-		g_object_unref (package);
 	}
 
 	/* TRANSLATORS: ask the user if the proposed changes are okay */
@@ -343,7 +330,7 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		pk_task_user_declined (task, request);
 	}
 
-	g_object_unref (sack);
+	g_ptr_array_unref (array);
 }
 
 /**
