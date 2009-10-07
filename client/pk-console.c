@@ -840,18 +840,6 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 }
 
 /**
- * pk_console_sigint_idle_cb:
- **/
-static gboolean
-pk_console_sigint_idle_cb (gpointer user_data)
-{
-	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
-	kill (getpid (), SIGINT);
-	return FALSE;
-}
-
-/**
  * pk_console_sigint_cb:
  **/
 static void
@@ -865,8 +853,9 @@ pk_console_sigint_cb (int sig)
 	/* cancel any tasks still running */
 	g_cancellable_cancel (cancellable);
 
-	/* wait for packagekitd to cancel by waiting 100ms */
-	g_timeout_add (100, (GSourceFunc) pk_console_sigint_idle_cb, NULL);
+	/* kill ourselves */
+	egg_debug ("Retrying SIGINT");
+	kill (getpid (), SIGINT);
 }
 
 /**
