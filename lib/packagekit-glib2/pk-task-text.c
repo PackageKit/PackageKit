@@ -317,6 +317,10 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		/* new header */
 		if (info != info_last) {
 			title = pk_task_text_simulate_question_type_to_text (info);
+			if (title == NULL) {
+				title = pk_info_enum_to_text (info);
+				egg_warning ("cannot translate '%s', please report!", title);
+			}
 			g_print ("%s\n", title);
 			info_last = info;
 		}
