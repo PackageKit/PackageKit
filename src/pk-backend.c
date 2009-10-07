@@ -835,20 +835,28 @@ static gboolean
 pk_backend_package_emulate_finished_for_package (PkBackend *backend, const PkItemPackage *item)
 {
 	/* simultaneous handles this on it's own */
-	if (backend->priv->simultaneous)
+	if (backend->priv->simultaneous) {
+		egg_debug ("backend handling finished");
 		return FALSE;
+	}
 
 	/* first package in transaction */
-	if (backend->priv->last_package == NULL)
+	if (backend->priv->last_package == NULL) {
+		egg_debug ("first package, so no finished");
 		return FALSE;
+	}
 
 	/* sending finished already */
-	if (item->info == PK_INFO_ENUM_FINISHED)
+	if (item->info == PK_INFO_ENUM_FINISHED) {
+		egg_debug ("is finished ourelves");
 		return FALSE;
+	}
 
 	/* same package, just info change */
-	if (g_strcmp0 (backend->priv->last_package->package_id, item->package_id))
+	if (g_strcmp0 (backend->priv->last_package->package_id, item->package_id) == 0) {
+		egg_debug ("same package_id, ignoring");
 		return FALSE;
+	}
 
 	/* emit the old package as finished */
 	return pk_backend_package_emulate_finished (backend);
