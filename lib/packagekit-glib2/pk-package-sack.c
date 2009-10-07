@@ -230,7 +230,7 @@ pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
  * Removes a package reference from the sack. As soon as one package is removed
  * the search is stopped.
  *
- * Return value: %TRUE if the package was removed to the sack
+ * Return value: %TRUE if the package was removed from the sack
  **/
 gboolean
 pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_id)
@@ -239,17 +239,17 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
 	const gchar *id;
 	gboolean ret = FALSE;
 	guint i;
-	guint len;
+	GPtrArray *array;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	len = sack->priv->array->len;
-	for (i=0; i<len; i++) {
-		package = g_ptr_array_index (sack->priv->array, i);
+	array = sack->priv->array;
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
 		id = pk_package_get_id (package);
 		if (g_strcmp0 (package_id, id) == 0) {
-			g_ptr_array_remove_index (sack->priv->array, i);
+			g_ptr_array_remove_index (array, i);
 			ret = TRUE;
 			break;
 		}
