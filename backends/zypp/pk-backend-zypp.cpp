@@ -1850,6 +1850,12 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
 
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-rpm");
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, "
@@ -1859,7 +1865,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
