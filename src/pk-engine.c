@@ -687,6 +687,48 @@ out:
 #endif
 
 /**
+ * pk_engine_is_proxy_unchanged:
+ **/
+static gboolean
+pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	guint uid;
+	gboolean ret = FALSE;
+	gchar *session = NULL;
+	gchar *proxy_http_tmp = NULL;
+	gchar *proxy_ftp_tmp = NULL;
+
+	/* get uid */
+	uid = pk_dbus_get_uid (engine->priv->dbus, engine->priv->sender);
+	if (uid == G_MAXUINT) {
+		egg_warning ("failed to get the uid for %s", engine->priv->sender);
+		goto out;
+	}
+
+	/* get session */
+	session = pk_dbus_get_session (engine->priv->dbus, engine->priv->sender);
+	if (session == NULL) {
+		egg_warning ("failed to get the session for %s", engine->priv->sender);
+		goto out;
+	}
+
+	/* find out if they are the same as what we tried to set before */
+	ret = pk_transaction_db_get_proxy (engine->priv->transaction_db, uid, session, &proxy_http_tmp, &proxy_ftp_tmp);
+	if (!ret)
+		goto out;
+
+	/* are different? */
+	if (g_strcmp0 (proxy_http_tmp, proxy_http) != 0 ||
+	    g_strcmp0 (proxy_ftp_tmp, proxy_ftp) != 0)
+		ret = FALSE;
+out:
+	g_free (session);
+	g_free (proxy_http_tmp);
+	g_free (proxy_ftp_tmp);
+	return ret;
+}
+
+/**
  * pk_engine_set_proxy:
  **/
 void
@@ -694,12 +736,10 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 {
 	guint len;
 	GError *error = NULL;
+	gboolean ret;
 #ifdef USE_SECURITY_POLKIT
-	gchar *sender = NULL;
 	PolkitSubject *subject;
 	PolkitDetails *details;
-#else
-	gboolean ret;
 #endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -727,20 +767,29 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 		return;
 	}
 
+	/* save sender */
+	g_free (engine->priv->sender);
+	engine->priv->sender = dbus_g_method_get_sender (context);
+
+	/* is exactly the same proxy? */
+	ret = pk_engine_is_proxy_unchanged (engine, proxy_http, proxy_ftp);
+	if (ret) {
+		egg_debug ("not changing proxy as the same as before");
+		dbus_g_method_return (context);
+		return;
+	}
+
 	/* save these so we can set them after the auth success */
 	g_free (engine->priv->proxy_http);
 	g_free (engine->priv->proxy_ftp);
-	g_free (engine->priv->sender);
 	engine->priv->proxy_http = g_strdup (proxy_http);
 	engine->priv->proxy_ftp = g_strdup (proxy_ftp);
-	engine->priv->sender = dbus_g_method_get_sender (context);
 	egg_debug ("changing http proxy to %s for %s", proxy_http, engine->priv->sender);
 	egg_debug ("changing ftp proxy to %s for %s", proxy_ftp, engine->priv->sender);
 
 #ifdef USE_SECURITY_POLKIT
 	/* check subject */
-	sender = dbus_g_method_get_sender (context);
-	subject = polkit_system_bus_name_new (sender);
+	subject = polkit_system_bus_name_new (engine->priv->sender);
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
@@ -776,7 +825,6 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 
 #ifdef USE_SECURITY_POLKIT
 	g_object_unref (subject);
-	g_free (sender);
 #endif
 }
 
