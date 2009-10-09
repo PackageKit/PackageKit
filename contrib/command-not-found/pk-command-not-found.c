@@ -699,6 +699,7 @@ main (int argc, char *argv[])
 	/* no possibilities */
 	if (array->len == 0) {
 		retval = EXIT_COMMAND_NOT_FOUND;
+		g_print ("\n");
 		goto out;
 	}
 
