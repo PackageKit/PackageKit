@@ -66,6 +66,7 @@ struct _PkClientPrivate
 	gchar			*locale;
 	gboolean		 background;
 	gboolean		 interactive;
+	gboolean		 idle;
 };
 
 enum {
@@ -73,6 +74,7 @@ enum {
 	PROP_LOCALE,
 	PROP_BACKGROUND,
 	PROP_INTERACTIVE,
+	PROP_IDLE,
 	PROP_LAST
 };
 
@@ -154,6 +156,9 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 		break;
 	case PROP_INTERACTIVE:
 		g_value_set_boolean (value, priv->interactive);
+		break;
+	case PROP_IDLE:
+		g_value_set_boolean (value, priv->idle);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -544,6 +549,43 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 }
 
 /**
+ * pk_client_state_remove:
+ **/
+static void
+pk_client_state_remove (PkClient *client, PkClientState *state)
+{
+	gboolean is_idle;
+	g_ptr_array_remove (client->priv->calls, state);
+	egg_debug ("state array remove %p", state);
+
+	/* has the idle state changed? */
+	is_idle = (client->priv->calls->len == 0);
+	if (is_idle != client->priv->idle) {
+		client->priv->idle = is_idle;
+		g_object_notify (G_OBJECT(client), "idle");
+	}
+}
+
+/**
+ * pk_client_state_add:
+ **/
+static void
+pk_client_state_add (PkClient *client, PkClientState *state)
+{
+	gboolean is_idle;
+
+	g_ptr_array_add (client->priv->calls, state);
+	egg_debug ("state array add %p", state);
+
+	/* has the idle state changed? */
+	is_idle = (client->priv->calls->len == 0);
+	if (is_idle != client->priv->idle) {
+		client->priv->idle = is_idle;
+		g_object_notify (G_OBJECT(client), "idle");
+	}
+}
+
+/**
  * pk_client_state_finish:
  **/
 static void
@@ -578,8 +620,7 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	}
 
 	/* remove from list */
-	g_ptr_array_remove (priv->calls, state);
-	egg_debug ("state array remove %p", state);
+	pk_client_state_remove (state->client, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -3479,8 +3520,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 		      NULL);
 
 	/* track state */
-	g_ptr_array_add (client->priv->calls, state);
-	egg_debug ("state array add %p", state);
+	pk_client_state_add (client, state);
 
 	g_object_unref (res);
 }
@@ -3543,8 +3583,7 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 	}
 
 	/* remove from list */
-	g_ptr_array_remove (priv->calls, state);
-	egg_debug ("state array remove %p", state);
+	pk_client_state_remove (state->client, state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -3652,8 +3691,7 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	egg_debug ("getting progress on %s, started DBus call: %p", state->tid, state->call);
 
 	/* track state */
-	g_ptr_array_add (client->priv->calls, state);
-	egg_debug ("state array add %p", state);
+	pk_client_state_add (client, state);
 
 	g_object_unref (res);
 }
@@ -3719,6 +3757,14 @@ pk_client_class_init (PkClientClass *klass)
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
 
+	/**
+	 * PkClient:idle:
+	 */
+	pspec = g_param_spec_boolean ("idle", NULL, "if there are no transactions in progress on this client",
+				      TRUE,
+				      G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_IDLE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
 }
 
@@ -3733,6 +3779,7 @@ pk_client_init (PkClient *client)
 	client->priv->calls = g_ptr_array_new ();
 	client->priv->background = FALSE;
 	client->priv->interactive = TRUE;
+	client->priv->idle = TRUE;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -3866,6 +3913,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	GPtrArray *packages;
 	const PkItemPackage *item;
 	guint i;
+	gboolean idle;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -3882,6 +3930,11 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	packages = pk_results_get_package_array (results);
 	if (packages == NULL)
 		egg_test_failed (test, "no packages!");
+
+	/* check idle */
+	g_object_get (client, "idle", &idle, NULL);
+	if (!idle)
+		egg_test_failed (test, "not idle in finished handler");
 
 	/* list, just for shits and giggles */
 	for (i=0; i<packages->len; i++) {
@@ -4110,6 +4163,17 @@ pk_client_test_recursive_signal_cb (PkControl *control, EggTest *test)
 		egg_test_failed (test, "could not get properties sync");
 }
 
+/**
+ * pk_client_test_notify_idle_cb:
+ **/
+static void
+pk_client_test_notify_idle_cb (PkClient *client, GParamSpec *pspec, EggTest *test)
+{
+	gboolean idle;
+	g_object_get (client, "idle", &idle, NULL);
+	egg_debug ("idle=%i", idle);
+}
+
 void
 pk_client_test (gpointer user_data)
 {
@@ -4178,7 +4242,14 @@ pk_client_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "get client");
 	client = pk_client_new ();
+	g_signal_connect (client, "notify::idle",
+			  G_CALLBACK (pk_client_test_notify_idle_cb), test);
 	egg_test_assert (test, client != NULL);
+
+	/************************************************************/
+	egg_test_title (test, "check idle");
+	g_object_get (client, "idle", &ret, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "resolve package");
@@ -4189,6 +4260,11 @@ pk_client_test (gpointer user_data)
 	g_strfreev (package_ids);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
+
+	/************************************************************/
+	egg_test_title (test, "check idle");
+	g_object_get (client, "idle", &ret, NULL);
+	egg_test_assert (test, ret);
 
 	/************************************************************/
 	egg_test_title (test, "get progress of past transaction");
