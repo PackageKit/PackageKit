@@ -592,8 +592,6 @@ static void
 pk_client_state_finish (PkClientState *state, const GError *error)
 {
 	gboolean ret;
-	PkClientPrivate *priv;
-	priv = state->client->priv;
 
 	/* force finished (if not already set) so clients can update the UI's */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
@@ -3559,9 +3557,6 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
 static void
 pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 {
-	PkClientPrivate *priv;
-	priv = state->client->priv;
-
 	if (state->cancellable != NULL) {
 		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
 		g_object_unref (state->cancellable);
