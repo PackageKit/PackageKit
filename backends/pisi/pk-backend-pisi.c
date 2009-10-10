@@ -55,28 +55,40 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_ACCESSORIES,
-		PK_GROUP_ENUM_EDUCATION,
-		PK_GROUP_ENUM_GAMES,
-		PK_GROUP_ENUM_INTERNET,
-		PK_GROUP_ENUM_OTHER,
-		PK_GROUP_ENUM_PROGRAMMING,
-		PK_GROUP_ENUM_MULTIMEDIA,
-		PK_GROUP_ENUM_SYSTEM,
-		PK_GROUP_ENUM_DESKTOP_GNOME,
-		PK_GROUP_ENUM_DESKTOP_KDE,
-		PK_GROUP_ENUM_DESKTOP_OTHER,
-		PK_GROUP_ENUM_PUBLISHING,
-		PK_GROUP_ENUM_SERVERS,
-		PK_GROUP_ENUM_FONTS,
-		PK_GROUP_ENUM_ADMIN_TOOLS,
-		PK_GROUP_ENUM_LOCALIZATION,
-		PK_GROUP_ENUM_VIRTUALIZATION,
-		PK_GROUP_ENUM_SECURITY,
-		PK_GROUP_ENUM_POWER_MANAGEMENT,
-		PK_GROUP_ENUM_UNKNOWN,
-		-1);
+	int groups;
+	groups = pk_bitfield_from_enums(
+		   PK_GROUP_ENUM_ACCESSIBILITY,
+		   PK_GROUP_ENUM_ACCESSORIES,
+		   PK_GROUP_ENUM_ADMIN_TOOLS,
+		   PK_GROUP_ENUM_COMMUNICATION,
+		   PK_GROUP_ENUM_DESKTOP_GNOME,
+		   PK_GROUP_ENUM_DESKTOP_KDE,
+		   PK_GROUP_ENUM_DESKTOP_OTHER,
+		   PK_GROUP_ENUM_DESKTOP_XFCE,
+		   PK_GROUP_ENUM_EDUCATION,
+		   PK_GROUP_ENUM_FONTS,
+		   PK_GROUP_ENUM_GAMES,
+		   PK_GROUP_ENUM_GRAPHICS,
+		   PK_GROUP_ENUM_INTERNET,
+		   PK_GROUP_ENUM_LEGACY,
+		   PK_GROUP_ENUM_LOCALIZATION,
+		   PK_GROUP_ENUM_MULTIMEDIA,
+		   PK_GROUP_ENUM_NETWORK,
+		   PK_GROUP_ENUM_OFFICE,
+		   PK_GROUP_ENUM_OTHER,
+		   PK_GROUP_ENUM_POWER_MANAGEMENT,
+		   PK_GROUP_ENUM_PROGRAMMING,
+		   PK_GROUP_ENUM_PUBLISHING,
+		   PK_GROUP_ENUM_SECURITY,
+		   PK_GROUP_ENUM_SERVERS,
+		   PK_GROUP_ENUM_SYSTEM,
+		   PK_GROUP_ENUM_VIRTUALIZATION,
+		   PK_GROUP_ENUM_SCIENCE,
+		   PK_GROUP_ENUM_DOCUMENTATION,
+		   PK_GROUP_ENUM_ELECTRONICS,
+		   PK_GROUP_ENUM_UNKNOWN,
+		   -1);
+	return groups;
 }
 
 /**
@@ -92,6 +104,15 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-pisi");
+}
+
+/**
  * pk_backend_cancel:
  */
 static void
@@ -99,6 +120,20 @@ backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -141,6 +176,18 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkBitfield filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_text (filters);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-packages", filters_text, NULL);
+	g_free (filters_text);
+}
+
+/**
  * backend_get_requires:
  */
 static void
@@ -152,6 +199,18 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	filters_text = pk_filter_bitfield_to_text (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
 	g_free (filters_text);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-update-detail", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -230,6 +289,19 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "remove-packages", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	if (enabled == TRUE) {
+		pk_backend_spawn_helper (spawn, "pisiBackend.py", "repo-enable", rid, "true", NULL);
+	} else {
+		pk_backend_spawn_helper (spawn, "pisiBackend.py", "repo-enable", rid, "false", NULL);
+	}
 }
 
 /**
@@ -353,25 +425,25 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
+	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
-	NULL,					/* get_packages */
+	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_files,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
