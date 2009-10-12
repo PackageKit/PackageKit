@@ -25,6 +25,7 @@ our @EXPORT = qw(
   pk_print_percentage
   pk_print_sub_percentage
   pk_print_distro_upgrade
+  pk_print_repo_details
   );
 
 sub pk_print_package {
@@ -107,6 +108,11 @@ sub pk_print_sub_percentage {
 sub pk_print_distro_upgrade {
   my($dtype, $name, $summary) = @_;
   printf("distro-upgrade\t%s\t%s\t%s\n", $dtype, $name, $summary);
+}
+
+sub pk_print_repo_details {
+  my($id, $description, $enabled) = @_;
+  printf("repo-detail\t%s\t%s\t%s\n", $id, $description, $enabled);
 }
 
 1;
