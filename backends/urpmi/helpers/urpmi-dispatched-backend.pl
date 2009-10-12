@@ -97,6 +97,9 @@ sub dispatch_command {
     remove_packages($urpm, $args);
     urpm::media::configure($urpm);
   }
+  elsif($command eq "repo-enable") {
+    repo_enable($urpm, $args);
+  }
   elsif($command eq "resolve") {
     resolve($urpm, $args);
   }
@@ -509,6 +512,28 @@ sub remove_packages {
   }
 
   $urpmi_lock->unlock;
+  _finished();
+}
+
+sub repo_enable {
+
+  my ($urpm, $args) = @_;
+
+  my $name = @{$args}[0];
+  my $enable = @{$args}[1] eq "yes" ? 1 : 0;
+
+  my @media = grep { $_->{name} eq $name } @{$urpm->{media}};
+  if ($#media == 0) {
+    if ($enable) {
+      delete @media[0]->{ignore};
+    } else {
+      $media[0]->{ignore} = 1;
+    }
+    urpm::media::write_config($urpm);
+  } else {
+    pk_print_error(PK_ERROR_ENUM_REPO_NOT_FOUND, qq(Repository named "$name" not found.\n));
+  }
+
   _finished();
 }
 

@@ -225,6 +225,15 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
+ * pk_backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "repo-enable", rid, pk_backend_bool_to_text (enabled), NULL);
+}
+
+/**
  * pk_backend_search_group:
  */
 static void
@@ -376,7 +385,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
