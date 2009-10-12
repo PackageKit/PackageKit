@@ -15,6 +15,7 @@ local $| = 1; # stdout autoflush
 
 use lib;
 use File::Basename;
+use File::Temp;
 
 BEGIN {
   push @INC, dirname($0);
@@ -195,7 +196,7 @@ sub get_distro_upgrades {
   %product_id = _parse_line(<PRODUCT_FILE>);
   close(PRODUCT_FILE);
 
-  my $distribfile_path = "/tmp/distrib.list";
+  my (undef, $distribfile_path) = tempfile("packagekit_urpmi_XXXXXX", UNLINK => 1);
   _download_distrib_file($distribfile_path, \%product_id);
 
   -f $distribfile_path or goto finished;
