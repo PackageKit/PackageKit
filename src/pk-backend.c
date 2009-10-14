@@ -219,6 +219,12 @@ pk_backend_get_roles (PkBackend *backend)
 	if (backend->priv->roles != 0)
 		goto out;
 
+	/* not compulsory, but use it if we've got it */
+	if (backend->priv->desc->get_roles != NULL) {
+		backend->priv->roles = backend->priv->desc->get_roles (backend);
+		goto out;
+	}
+
 	/* lets reduce pointer dereferences... */
 	desc = backend->priv->desc;
 	if (desc->cancel != NULL)

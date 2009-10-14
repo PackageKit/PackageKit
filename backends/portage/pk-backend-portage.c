@@ -393,35 +393,36 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,			/* get_mime_types */
+	NULL,					/* get_roles */
+	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,		/* download_packages */
+	NULL,					/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
-	NULL,		/* get_distro_upgrades */
+	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,			/* install_files */
+	NULL,					/* install_files */
 	backend_install_packages,		/* install_packages */
-	NULL,			/* install_signature */
+	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
-	NULL,			/* repo_set_data */
+	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
-	NULL,			/* rollback */
+	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL,			/* what_provides */
+	NULL,					/* what_provides */
 	NULL,					/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */

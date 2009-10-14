@@ -30,6 +30,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
+	NULL,					/* get_roles */
 	NULL,					/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
