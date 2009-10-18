@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-10-18 09:50+0000\n"
-"PO-Revision-Date: 2009-10-18 11:51+0200\n"
+"PO-Revision-Date: 2009-10-18 22:38+0200\n"
 "Last-Translator: Milo Casagrande <milo@ubuntu.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
@@ -1578,7 +1578,7 @@ msgstr "URL chiave"
 #. TRANSLATORS: the username of the key
 #: ../lib/packagekit-glib2/pk-task-text.c:116
 msgid "Key user"
-msgstr "Chiave utente"
+msgstr "Utente chiave"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: ../lib/packagekit-glib2/pk-task-text.c:119
@@ -1678,7 +1678,7 @@ msgstr "I seguenti pacchetti devono essere reinstallati:"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "The following packages have to be downgraded:"
-msgstr "I seguenti pacchetti devono essere rimossi:"
+msgstr "I seguenti pacchetti devono essere portati a una vecchia versione:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: ../lib/packagekit-glib2/pk-task-text.c:324
