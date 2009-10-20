@@ -245,7 +245,9 @@ user to restart the computer or remove and re-insert the device.
 	--disable-local \
 	--disable-ruck \
 	--disable-strict \
+%if 0
 	--disable-glib \
+%endif
 	--disable-tests
 
 make %{?_smp_mflags}
@@ -421,6 +423,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/libpackagekit-glib*.so
 %{_libdir}/pkgconfig/packagekit-glib*.pc
 %dir %{_includedir}/PackageKit
+%dir %{_includedir}/PackageKit/packagekit-glib
 %dir %{_includedir}/PackageKit/packagekit-glib2
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 
