@@ -2667,6 +2667,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     continue
                 repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
 
+        # disable repos that are not contactable
+        for repo in self.yumbase.repos.listEnabled():
+            try:
+                repo.repoXML
+            except yum.Errors.RepoError, e:
+                self.yumbase.repos.disableRepo(repo.id)
+
         # should we suggest yum-complete-transaction?
         unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)
         if unfinished and not lazy_cache:
