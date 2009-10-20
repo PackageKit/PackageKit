@@ -696,13 +696,6 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
 	g_print ("%s ", _("Command not found."));
 
-	/* no possibilities */
-	if (array->len == 0) {
-		retval = EXIT_COMMAND_NOT_FOUND;
-		g_print ("\n");
-		goto out;
-	}
-
 	/* one exact possibility */
 	if (array->len == 1) {
 		possible = g_ptr_array_index (array, 0);
