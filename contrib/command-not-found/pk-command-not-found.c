@@ -394,7 +394,7 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 static gchar **
 pk_cnf_find_available (const gchar *cmd)
 {
-	const PkItemPackage *item;
+	PkPackage *item;
 	gchar **package_ids = NULL;
 	const gchar *prefixes[] = {"/usr/bin", "/usr/sbin", "/bin", "/sbin", NULL};
 	gchar **values = NULL;
@@ -404,7 +404,7 @@ pk_cnf_find_available (const gchar *cmd)
 	guint len;
 	PkBitfield filters;
 	PkResults *results = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 
 	/* create new array of full paths */
 	len = g_strv_length ((gchar **)prefixes);
@@ -424,10 +424,10 @@ pk_cnf_find_available (const gchar *cmd)
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
 		goto out;
 	}
 
@@ -436,11 +436,11 @@ pk_cnf_find_available (const gchar *cmd)
 	package_ids = g_new0 (gchar *, array->len+1);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		package_ids[i] = g_strdup (item->package_id);
+		package_ids[i] = g_strdup (pk_package_get_id (item));
 	}
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	if (array != NULL)
@@ -577,7 +577,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	PkResults *results = NULL;
 	gchar **package_ids;
 	gboolean ret = FALSE;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 
 	/* do install */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -591,17 +591,17 @@ pk_cnf_install_package_id (const gchar *package_id)
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
 		goto out;
 	}
 
 	ret = TRUE;
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	g_strfreev (package_ids);

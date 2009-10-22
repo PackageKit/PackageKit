@@ -95,7 +95,7 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	PkProgress *progress = NULL;
 	PkExitEnum exit_enum;
 	gchar *transaction_id = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -119,13 +119,13 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_text (exit_enum));
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL)
-		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL)
+		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
 out:
 	g_free (transaction_id);
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (progress != NULL)
 		g_object_unref (progress);
 	if (results != NULL)

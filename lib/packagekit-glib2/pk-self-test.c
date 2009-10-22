@@ -62,7 +62,6 @@ main (int argc, char **argv)
 	pk_package_id_test (test);
 	pk_package_ids_test (test);
 	pk_progress_test (test);
-	pk_item_test (test);
 	pk_results_test (test);
 	pk_package_test (test);
 	pk_control_test (test);

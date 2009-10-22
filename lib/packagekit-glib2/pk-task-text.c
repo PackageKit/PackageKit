@@ -22,9 +22,12 @@
 #include "config.h"
 
 #include <glib/gi18n.h>
-#include <packagekit-glib2/pk-task.h>
-#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-eula-required.h>
+#include <packagekit-glib2/pk-media-change-required.h>
+#include <packagekit-glib2/pk-package.h>
 #include <packagekit-glib2/pk-package-id.h>
+#include <packagekit-glib2/pk-repo-signature-required.h>
+#include <packagekit-glib2/pk-task.h>
 
 #include "egg-debug.h"
 
@@ -82,8 +85,15 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	guint i;
 	gboolean ret;
 	GPtrArray *array;
-	gchar *package = NULL;
-	PkItemRepoSignatureRequired *item;
+	gchar *printable = NULL;
+	gchar *package_id;
+	gchar *repository_name;
+	gchar *key_url;
+	gchar *key_userid;
+	gchar *key_id;
+	gchar *key_fingerprint;
+	gchar *key_timestamp;
+	PkRepoSignatureRequired *item;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -96,35 +106,51 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	array = pk_results_get_repo_signature_required_array (results);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		g_object_get (item,
+			      "package-id", &package_id,
+			      "repository-name", &repository_name,
+			      "key-url", &key_url,
+			      "key-userid", &key_userid,
+			      "key-id", &key_id,
+			      "key-fingerprint", &key_fingerprint,
+			      "key-timestamp", &key_timestamp,
+			      NULL);
 
 		/* create printable */
-		package = pk_package_id_to_printable (item->package_id);
+		printable = pk_package_id_to_printable (package_id);
 
 		/* TRANSLATORS: the package repository is signed by a key that is not recognised */
 		g_print ("%s\n", _("Software source signature required"));
 
 		/* TRANSLATORS: the package that is not signed by a known key */
-		g_print (" %s: %s\n", _("Package"), package);
+		g_print (" %s: %s\n", _("Package"), printable);
 
 		/* TRANSLATORS: the package repository name */
-		g_print (" %s: %s\n", _("Software source name"), item->repository_name);
+		g_print (" %s: %s\n", _("Software source name"), repository_name);
 
 		/* TRANSLATORS: the key URL */
-		g_print (" %s: %s\n", _("Key URL"), item->key_url);
+		g_print (" %s: %s\n", _("Key URL"), key_url);
 
 		/* TRANSLATORS: the username of the key */
-		g_print (" %s: %s\n", _("Key user"), item->key_userid);
+		g_print (" %s: %s\n", _("Key user"), key_userid);
 
 		/* TRANSLATORS: the key ID, usually a few hex digits */
-		g_print (" %s: %s\n", _("Key ID"), item->key_id);
+		g_print (" %s: %s\n", _("Key ID"), key_id);
 
 		/* TRANSLATORS: the key fingerprint, again, yet more hex */
-		g_print (" %s: %s\n", _("Key fingerprint"), item->key_fingerprint);
+		g_print (" %s: %s\n", _("Key fingerprint"), key_fingerprint);
 
 		/* TRANSLATORS: the timestamp (a bit like a machine readable time) */
-		g_print (" %s: %s\n", _("Key Timestamp"), item->key_timestamp);
+		g_print (" %s: %s\n", _("Key Timestamp"), key_timestamp);
 
-		g_free (package);
+		g_free (printable);
+		g_free (package_id);
+		g_free (repository_name);
+		g_free (key_url);
+		g_free (key_userid);
+		g_free (key_id);
+		g_free (key_fingerprint);
+		g_free (key_timestamp);
 	}
 
 	/* TRANSLATORS: ask the user if they want to import */
@@ -148,9 +174,12 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
 	gboolean ret;
-	gchar *package = NULL;
+	gchar *printable = NULL;
 	GPtrArray *array;
-	PkItemEulaRequired *item;
+	PkEulaRequired *item;
+	gchar *package_id;
+	gchar *vendor_name;
+	gchar *license_agreement;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -163,23 +192,31 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	array = pk_results_get_eula_required_array (results);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		g_object_get (item,
+			      "package-id", &package_id,
+			      "vendor-name", &vendor_name,
+			      "license-agreement", &license_agreement,
+			      NULL);
 
 		/* create printable */
-		package = pk_package_id_to_printable (item->package_id);
+		printable = pk_package_id_to_printable (package_id);
 
 		/* TRANSLATORS: this is another name for a software licence that has to be read before installing */
 		g_print ("%s\n", _("End user licence agreement required"));
 
 		/* TRANSLATORS: the package name that was trying to be installed */
-		g_print (" %s: %s\n", _("Package"), package);
+		g_print (" %s: %s\n", _("Package"), printable);
 
 		/* TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA */
-		g_print (" %s: %s\n", _("Vendor"), item->vendor_name);
+		g_print (" %s: %s\n", _("Vendor"), vendor_name);
 
 		/* TRANSLATORS: the EULA text itself (long and boring) */
-		g_print (" %s: %s\n", _("Agreement"), item->license_agreement);
+		g_print (" %s: %s\n", _("Agreement"), license_agreement);
 
-		g_free (package);
+		g_free (printable);
+		g_free (package_id);
+		g_free (vendor_name);
+		g_free (license_agreement);
 	}
 
 	/* TRANSLATORS: ask the user if they've read and accepted the EULA */
@@ -204,7 +241,10 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 	guint i;
 	gboolean ret;
 	GPtrArray *array;
-	PkItemMediaChangeRequired *item;
+	PkMediaChangeRequired *item;
+	gchar *media_id;
+	PkMediaTypeEnum media_type;
+	gchar *media_text;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 
 	/* set some user data, for no reason */
@@ -217,17 +257,25 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 	array = pk_results_get_media_change_required_array (results);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		g_object_get (item,
+			      "media-id", &media_id,
+			      "media-type", &media_type,
+			      "media-text", &media_text,
+			      NULL);
+
 		/* TRANSLATORS: the user needs to change media inserted into the computer */
 		g_print ("%s\n", _("Media change required"));
 
 		/* TRANSLATORS: the type, e.g. DVD, CD, etc */
-		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_text (item->media_type));
+		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_text (media_type));
 
 		/* TRANSLATORS: the media label, usually like 'disk-1of3' */
-		g_print (" %s: %s\n", _("Media label"), item->media_id);
+		g_print (" %s: %s\n", _("Media label"), media_id);
 
 		/* TRANSLATORS: the media description, usually like 'Fedora 12 disk 5' */
-		g_print (" %s: %s\n", _("Text"), item->media_text);
+		g_print (" %s: %s\n", _("Text"), media_text);
+		g_free (media_id);
+		g_free (media_text);
 	}
 
 	/* TRANSLATORS: ask the user to insert the media */
@@ -288,7 +336,10 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	gboolean ret;
 	const gchar *title;
 	gchar *printable;
-	PkItemPackage *item;
+	PkInfoEnum info;
+	gchar *package_id;
+	gchar *summary;
+	PkPackage *package;
 	GPtrArray *array;
 	PkInfoEnum info_last = PK_INFO_ENUM_UNKNOWN;
 	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
@@ -304,20 +355,27 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 
 	/* print data */
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
+		package = g_ptr_array_index (array, i);
+		g_object_get (package,
+			      "info", &info,
+			      "package-id", &package_id,
+			      "summary", &summary,
+			      NULL);
 		/* new header */
-		if (item->info != info_last) {
-			title = pk_task_text_simulate_question_type_to_text (item->info);
+		if (info != info_last) {
+			title = pk_task_text_simulate_question_type_to_text (info);
 			if (title == NULL) {
-				title = pk_info_enum_to_text (item->info);
+				title = pk_info_enum_to_text (info);
 				egg_warning ("cannot translate '%s', please report!", title);
 			}
 			g_print ("%s\n", title);
-			info_last = item->info;
+			info_last = info;
 		}
-		printable = pk_package_id_to_printable (item->package_id);
-		g_print (" %s\t%s\n", printable, item->summary);
+		printable = pk_package_id_to_printable (package_id);
+		g_print (" %s\t%s\n", printable, summary);
 		g_free (printable);
+		g_free (package_id);
+		g_free (summary);
 	}
 
 	/* TRANSLATORS: ask the user if the proposed changes are okay */
@@ -404,8 +462,6 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkItemPackage *item;
-	guint i;
 
 	/* get the results */
 	results = pk_task_generic_finish (PK_TASK (task), res, &error);
@@ -423,13 +479,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 	if (packages == NULL)
 		egg_test_failed (test, "no packages!");
 
-	/* list, just for shits and giggles */
-	for (i=0; i<packages->len; i++) {
-		item = g_ptr_array_index (packages, i);
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
-	}
-
-	if (packages->len != 3)
+	if (packages->len != 4)
 		egg_test_failed (test, "invalid number of packages: %i", packages->len);
 
 	g_ptr_array_unref (packages);

@@ -64,16 +64,29 @@
         This part documents GObjects used in libpackagekit.
       </para>
     </partintro>
+    <xi:include href="xml/pk-catalog.xml"/>
+    <xi:include href="xml/pk-category.xml"/>
     <xi:include href="xml/pk-client.xml"/>
     <xi:include href="xml/pk-control.xml"/>
-    <xi:include href="xml/pk-task.xml"/>
     <xi:include href="xml/pk-desktop.xml"/>
-    <xi:include href="xml/pk-progress.xml"/>
-    <xi:include href="xml/pk-results.xml"/>
-    <xi:include href="xml/pk-package.xml"/>
+    <xi:include href="xml/pk-details.xml"/>
+    <xi:include href="xml/pk-distro-upgrade.xml"/>
+    <xi:include href="xml/pk-error-code.xml"/>
+    <xi:include href="xml/pk-eula-required.xml"/>
+    <xi:include href="xml/pk-files.xml"/>
+    <xi:include href="xml/pk-media-change-required.xml"/>
+    <xi:include href="xml/pk-message.xml"/>
     <xi:include href="xml/pk-package-sack.xml"/>
+    <xi:include href="xml/pk-package.xml"/>
+    <xi:include href="xml/pk-progress.xml"/>
+    <xi:include href="xml/pk-repo-detail.xml"/>
+    <xi:include href="xml/pk-repo-signature-required.xml"/>
+    <xi:include href="xml/pk-require-restart.xml"/>
+    <xi:include href="xml/pk-results.xml"/>
     <xi:include href="xml/pk-service-pack.xml"/>
-    <xi:include href="xml/pk-catalog.xml"/>
+    <xi:include href="xml/pk-task.xml"/>
+    <xi:include href="xml/pk-transaction-past.xml"/>
+    <xi:include href="xml/pk-update-detail.xml"/>
   </reference>
 
   <reference id="libpackagekit-helpers">
@@ -84,14 +97,13 @@
       </para>
     </partintro>
     <xi:include href="xml/egg-debug.xml"/>
-    <xi:include href="xml/pk-common.xml"/>
+    <xi:include href="xml/pk-bitfield.xml"/>
     <xi:include href="xml/pk-client-sync.xml"/>
+    <xi:include href="xml/pk-common.xml"/>
     <xi:include href="xml/pk-control-sync.xml"/>
     <xi:include href="xml/pk-enum.xml"/>
-    <xi:include href="xml/pk-bitfield.xml"/>
-    <xi:include href="xml/pk-item.xml"/>
-    <xi:include href="xml/pk-package-id.xml"/>
     <xi:include href="xml/pk-package-ids.xml"/>
+    <xi:include href="xml/pk-package-id.xml"/>
   </reference>
 
   <reference id="faq">

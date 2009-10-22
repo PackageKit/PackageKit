@@ -20,7 +20,7 @@ ________________________________________________________________________________
 | pk_package_id_get_version			| pk_package_id_split() [PK_PACKAGE_ID_VERSION]	|
 | pk_package_id_get_arch			| pk_package_id_split() [PK_PACKAGE_ID_ARCH]	|
 | pk_package_id_get_data			| pk_package_id_split() [PK_PACKAGE_ID_DATA]	|
-| PkPackageObj					| PkItemPackage					|
+| PkPackageObj					| PkPackage					|
 | pk_package_obj_new_from_data()		| pk_item_package_new()				|
 | PkObjList					| GPtrArray					|
 | obj (as in structure references)		| item						|

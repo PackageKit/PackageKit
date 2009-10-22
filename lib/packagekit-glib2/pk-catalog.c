@@ -248,8 +248,8 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
-	PkItemPackage *item;
-	PkItemErrorCode *error_item = NULL;
+	PkPackage *package;
+	PkErrorCode *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -260,9 +260,9 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to search file: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to search file: %s", pk_error_code_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -271,16 +271,16 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	/* add all the results to the existing list */
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", item->package_id);
-		g_ptr_array_add (state->array, pk_item_package_ref (item));
+		package = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", pk_package_get_id (package));
+		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
 	/* there's nothing left to do */
 	pk_catalog_lookup_state_finish (state, NULL);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -317,8 +317,8 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
-	PkItemPackage *item;
-	PkItemErrorCode *error_item = NULL;
+	PkPackage *package;
+	PkErrorCode *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -329,9 +329,9 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to search file: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to search file: %s", pk_error_code_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -340,9 +340,9 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	/* add all the results to the existing list */
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", item->package_id);
-		g_ptr_array_add (state->array, pk_item_package_ref (item));
+		package = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", pk_package_get_id (package));
+		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
 	/* what-provides */
@@ -354,8 +354,8 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	/* just exit without any error as there's nothing to do */
 	pk_catalog_lookup_state_finish (state, NULL);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -392,8 +392,8 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
-	PkItemPackage *item;
-	PkItemErrorCode *error_item = NULL;
+	PkPackage *package;
+	PkErrorCode *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -404,9 +404,9 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to resolve: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to resolve: %s", pk_error_code_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -415,9 +415,9 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	/* add all the results to the existing list */
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", item->package_id);
-		g_ptr_array_add (state->array, pk_item_package_ref (item));
+		package = g_ptr_array_index (array, i);
+		egg_debug ("adding %s", pk_package_get_id (package));
+		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
 	/* search-file then what-provides */
@@ -433,8 +433,8 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	/* just exit without any error as there's nothing to do */
 	pk_catalog_lookup_state_finish (state, NULL);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -496,7 +496,7 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	state->array_packages = g_ptr_array_new_with_free_func (g_free);
 	state->array_files = g_ptr_array_new_with_free_func (g_free);
 	state->array_provides = g_ptr_array_new_with_free_func (g_free);;
-	state->array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
+	state->array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 
@@ -549,7 +549,7 @@ out:
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the #GPtrArray of #PkItemPackage's, or %NULL. Free with g_ptr_array_unref()
+ * Return value: the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
  **/
 GPtrArray *
 pk_catalog_lookup_finish (PkCatalog *catalog, GAsyncResult *res, GError **error)
@@ -637,7 +637,7 @@ pk_catalog_test_lookup_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	GError *error = NULL;
 	GPtrArray *array;
 	guint i;
-	PkItemPackage *item;
+	PkPackage *package;
 
 	/* get the results */
 	array = pk_catalog_lookup_finish (catalog, res, &error);
@@ -655,8 +655,8 @@ pk_catalog_test_lookup_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	/* list for shits and giggles */
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		egg_debug ("%i\t%s", i, item->package_id);
+		package = g_ptr_array_index (array, i);
+		egg_debug ("%i\t%s", i, pk_package_get_id (package));
 	}
 out:
 	if (array != NULL)

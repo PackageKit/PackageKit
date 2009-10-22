@@ -207,12 +207,14 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
-	PkItemErrorCode *error_code;
+	PkErrorCode *error_code;
 	guint idx = 0;
 	guint i;
 	GPtrArray *array = NULL;
-	PkItemPackage *item;
+	PkPackage *item;
 	gboolean ret;
+	PkInfoEnum info;
+	const gchar *package_id;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -244,10 +246,10 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
 		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
-				     "could not do simulate: %s", error_code->details);
+				     "could not do simulate: %s", pk_error_code_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
-		pk_item_error_code_unref (error_code);
+		g_object_unref (error_code);
 		goto out;
 	}
 
@@ -263,11 +265,15 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	array = pk_results_get_package_array (results);
 	while (idx < array->len) {
 		item = g_ptr_array_index (array, idx);
+		package_id = pk_package_get_id (item);
+		g_object_get (item,
+			      "info", &info,
+			      NULL);
 
 		/* remove all the cleanup and finished packages */
-		if (item->info == PK_INFO_ENUM_CLEANUP ||
-		    item->info == PK_INFO_ENUM_FINISHED) {
-			egg_debug ("removing %s", item->package_id);
+		if (info == PK_INFO_ENUM_CLEANUP ||
+		    info == PK_INFO_ENUM_FINISHED) {
+			egg_debug ("removing %s", package_id);
 			g_ptr_array_remove (array, item);
 			continue;
 		}
@@ -275,8 +281,8 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		/* remove all the original packages */
 		ret = FALSE;
 		for (i=0; i<length; i++) {
-			if (g_strcmp0 (item->package_id, state->package_ids[i]) == 0) {
-				egg_debug ("removing %s", item->package_id);
+			if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
+				egg_debug ("removing %s", package_id);
 				g_ptr_array_remove (array, item);
 				ret = TRUE;
 				break;
@@ -358,7 +364,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkItemErrorCode *error_code;
+	PkErrorCode *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -382,10 +388,10 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", error_code->details);
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", pk_error_code_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
-		pk_item_error_code_unref (error_code);
+		g_object_unref (error_code);
 		goto out;
 	}
 
@@ -405,7 +411,10 @@ pk_task_install_signatures (PkTaskState *state)
 {
 	GError *error = NULL;
 	GPtrArray *array;
-	const PkItemRepoSignatureRequired *item;
+	PkRepoSignatureRequired *item;
+	gchar *key_id;
+	gchar *package_id;
+	PkSigTypeEnum type;
 
 	/* get results */
 	array = pk_results_get_repo_signature_required_array (state->results);
@@ -431,12 +440,19 @@ pk_task_install_signatures (PkTaskState *state)
 
 	/* get first item of data */
 	item = g_ptr_array_index (array, 0);
+	g_object_get (item,
+		      "type", &type,
+		      "key-id", &key_id,
+		      "package-id", &package_id,
+		      NULL);
 
 	/* do new async method */
-	pk_client_install_signature_async (PK_CLIENT(state->task), item->type, item->key_id, item->package_id,
+	pk_client_install_signature_async (PK_CLIENT(state->task), type, key_id, package_id,
 					   state->cancellable, state->progress_callback, state->progress_user_data,
 					   (GAsyncReadyCallback) pk_task_install_signatures_ready_cb, state);
 out:
+	g_free (package_id);
+	g_free (key_id);
 	g_ptr_array_unref (array);
 }
 
@@ -449,7 +465,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkItemErrorCode *error_code;
+	PkErrorCode *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -473,10 +489,10 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		error_code = pk_results_get_error_code (state->results);
 		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", error_code->details);
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", pk_error_code_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
-		pk_item_error_code_unref (error_code);
+		g_object_unref (error_code);
 		goto out;
 	}
 
@@ -496,7 +512,8 @@ pk_task_accept_eulas (PkTaskState *state)
 {
 	GError *error = NULL;
 	GPtrArray *array;
-	const PkItemEulaRequired *item;
+	PkEulaRequired *item;
+	gchar *eula_id;
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
@@ -522,12 +539,16 @@ pk_task_accept_eulas (PkTaskState *state)
 
 	/* get first item of data */
 	item = g_ptr_array_index (array, 0);
+	g_object_get (item,
+		      "eula-id", &eula_id,
+		      NULL);
 
 	/* do new async method */
-	pk_client_accept_eula_async (PK_CLIENT(state->task), item->eula_id,
+	pk_client_accept_eula_async (PK_CLIENT(state->task), eula_id,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_task_accept_eulas_ready_cb, state);
 out:
+	g_free (eula_id);
 	g_ptr_array_unref (array);
 }
 

@@ -21,7 +21,11 @@
 
 /**
  * SECTION:pk-package
- * @short_description: TODO
+ * @short_description: Package object
+ *
+ * This GObject represents a package from a transaction.
+ * These objects represent single items of data from the transaction, and are
+ * often present in lists (#PkResults) or just refcounted in client programs.
  */
 
 #include "config.h"
@@ -46,9 +50,9 @@ static void     pk_package_finalize	(GObject     *object);
  **/
 struct _PkPackagePrivate
 {
+	PkInfoEnum		 info;
 	gchar			*package_id;
 	gchar			*summary;
-	PkInfoEnum		 info;
 	gchar			*license;
 	PkGroupEnum		 group;
 	gchar			*description;
@@ -63,8 +67,8 @@ struct _PkPackagePrivate
 	gchar			*update_text;
 	gchar			*update_changelog;
 	PkUpdateStateEnum	 update_state;
-	GDate			*update_issued;
-	GDate			*update_updated;
+	gchar			*update_issued;
+	gchar			*update_updated;
 };
 
 enum {
@@ -74,9 +78,9 @@ enum {
 
 enum {
 	PROP_0,
+	PROP_INFO,
 	PROP_PACKAGE_ID,
 	PROP_SUMMARY,
-	PROP_INFO,
 	PROP_LICENSE,
 	PROP_GROUP,
 	PROP_DESCRIPTION,
@@ -99,6 +103,42 @@ enum {
 static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkPackage, pk_package, G_TYPE_OBJECT)
+
+/**
+ * pk_package_equal:
+ * @package1: a valid #PkPackage instance
+ * @package2: a valid #PkPackage instance
+ *
+ * Do the #PkPackage's have the same ID.
+ *
+ * Return value: %TRUE if the packages have the same package_id, info and summary.
+ **/
+gboolean
+pk_package_equal (PkPackage *package1, PkPackage *package2)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
+	return (g_strcmp0 (package1->priv->summary, package2->priv->summary) == 0 &&
+	        g_strcmp0 (package1->priv->package_id, package2->priv->package_id) == 0 &&
+	        package1->priv->info == package2->priv->info);
+}
+
+/**
+ * pk_package_equal_id:
+ * @package1: a valid #PkPackage instance
+ * @package2: a valid #PkPackage instance
+ *
+ * Do the #PkPackage's have the same ID.
+ *
+ * Return value: %TRUE if the packages have the same package_id.
+ **/
+gboolean
+pk_package_equal_id (PkPackage *package1, PkPackage *package2)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
+	return (g_strcmp0 (package1->priv->package_id, package2->priv->package_id) == 0);
+}
 
 /**
  * pk_package_set_id:
@@ -153,6 +193,21 @@ out:
 }
 
 /**
+ * pk_package_get_info:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package object ID
+ *
+ * Return value: the %PkInfoEnum
+ **/
+PkInfoEnum
+pk_package_get_info (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+	return package->priv->info;
+}
+
+/**
  * pk_package_get_id:
  * @package: a valid #PkPackage instance
  *
@@ -165,6 +220,21 @@ pk_package_get_id (PkPackage *package)
 {
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	return package->priv->package_id;
+}
+
+/**
+ * pk_package_get_summary:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package object ID
+ *
+ * Return value: the summary, or %NULL if unset
+ **/
+const gchar *
+pk_package_get_summary (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+	return package->priv->summary;
 }
 
 /**
@@ -251,10 +321,10 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		g_value_set_uint (value, priv->update_state);
 		break;
 	case PROP_UPDATE_ISSUED:
-		g_value_set_pointer (value, priv->update_issued);
+		g_value_set_string (value, priv->update_issued);
 		break;
 	case PROP_UPDATE_UPDATED:
-		g_value_set_pointer (value, priv->update_updated);
+		g_value_set_string (value, priv->update_updated);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -270,15 +340,18 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 {
 	PkPackage *package = PK_PACKAGE (object);
 	PkPackagePrivate *priv = package->priv;
-	GDate *date;
 
 	switch (prop_id) {
+	case PROP_INFO:
+		priv->info = g_value_get_uint (value);
+		break;
+	case PROP_PACKAGE_ID:
+		g_free (priv->package_id);
+		priv->package_id = g_strdup (g_value_get_string (value));
+		break;
 	case PROP_SUMMARY:
 		g_free (priv->summary);
 		priv->summary = g_strdup (g_value_get_string (value));
-		break;
-	case PROP_INFO:
-		priv->info = g_value_get_uint (value);
 		break;
 	case PROP_LICENSE:
 		g_free (priv->license);
@@ -333,22 +406,12 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		priv->update_state = g_value_get_uint (value);
 		break;
 	case PROP_UPDATE_ISSUED:
-		if (priv->update_issued != NULL) {
-			g_date_free (priv->update_issued);
-			priv->update_issued = NULL;
-		}
-		date = g_value_get_pointer (value);
-		if (date != NULL)
-			priv->update_issued = g_date_new_dmy (date->day, date->month, date->year);
+		g_free (priv->update_issued);
+		priv->update_issued = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_UPDATE_UPDATED:
-		if (priv->update_updated != NULL) {
-			g_date_free (priv->update_updated);
-			priv->update_updated = NULL;
-		}
-		date = g_value_get_pointer (value);
-		if (date != NULL)
-			priv->update_updated = g_date_new_dmy (date->day, date->month, date->year);
+		g_free (priv->update_updated);
+		priv->update_updated = g_strdup (g_value_get_string (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -370,12 +433,21 @@ pk_package_class_init (PkPackageClass *klass)
 	object_class->finalize = pk_package_finalize;
 
 	/**
+	 * PkPackage:info:
+	 */
+	pspec = g_param_spec_uint ("info", NULL,
+				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
+				   0, G_MAXUINT, PK_INFO_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_INFO, pspec);
+
+	/**
 	 * PkPackage:package-id:
 	 */
 	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
 				     NULL,
-				     G_PARAM_READABLE);
+				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -386,15 +458,6 @@ pk_package_class_init (PkPackageClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
-
-	/**
-	 * PkPackage:info:
-	 */
-	pspec = g_param_spec_uint ("info", NULL,
-				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
-				   0, G_MAXUINT, PK_INFO_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_INFO, pspec);
 
 	/**
 	 * PkPackage:license:
@@ -525,17 +588,19 @@ pk_package_class_init (PkPackageClass *klass)
 	/**
 	 * PkPackage:update-issued:
 	 */
-	pspec = g_param_spec_pointer ("update-issued", NULL,
-				      "When the update was issued",
-				      G_PARAM_READWRITE);
+	pspec = g_param_spec_string ("update-issued", NULL,
+				     "When the update was issued",
+				     NULL,
+				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATE_ISSUED, pspec);
 
 	/**
 	 * PkPackage:update-updated:
 	 */
-	pspec = g_param_spec_pointer ("update-updated", NULL,
-				      "When the update was last updated",
-				      G_PARAM_READWRITE);
+	pspec = g_param_spec_string ("update-updated", NULL,
+				     "When the update was last updated",
+				     NULL,
+				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UPDATE_UPDATED, pspec);
 
 	/**
@@ -586,10 +651,8 @@ pk_package_finalize (GObject *object)
 	g_free (priv->update_cve_url);
 	g_free (priv->update_text);
 	g_free (priv->update_changelog);
-	if (priv->update_issued != NULL)
-		g_date_free (priv->update_issued);
-	if (priv->update_updated != NULL)
-		g_date_free (priv->update_updated);
+	g_free (priv->update_issued);
+	g_free (priv->update_updated);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);
 }

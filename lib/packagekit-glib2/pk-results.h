@@ -27,9 +27,21 @@
 #define __PK_RESULTS_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-category.h>
+#include <packagekit-glib2/pk-details.h>
+#include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-error-code.h>
+#include <packagekit-glib2/pk-eula-required.h>
+#include <packagekit-glib2/pk-files.h>
+#include <packagekit-glib2/pk-media-change-required.h>
+#include <packagekit-glib2/pk-message.h>
 #include <packagekit-glib2/pk-package-sack.h>
-#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-repo-detail.h>
+#include <packagekit-glib2/pk-repo-signature-required.h>
+#include <packagekit-glib2/pk-require-restart.h>
+#include <packagekit-glib2/pk-transaction-past.h>
+#include <packagekit-glib2/pk-update-detail.h>
 
 G_BEGIN_DECLS
 
@@ -72,40 +84,40 @@ void		 pk_results_test			(gpointer		 user_data);
 gboolean	 pk_results_set_exit_code		(PkResults		*results,
 							 PkExitEnum		 exit_enum);
 gboolean	 pk_results_set_error_code 		(PkResults		*results,
-							 PkItemErrorCode	*item);
+							 PkErrorCode		*item);
 
 /* add */
 gboolean	 pk_results_add_package			(PkResults		*results,
-							 PkItemPackage		*item);
+							 PkPackage		*item);
 gboolean	 pk_results_add_details			(PkResults		*results,
-							 PkItemDetails		*item);
+							 PkDetails		*item);
 gboolean	 pk_results_add_update_detail		(PkResults		*results,
-							 PkItemUpdateDetail	*item);
+							 PkUpdateDetail		*item);
 gboolean	 pk_results_add_category		(PkResults		*results,
-							 PkItemCategory		*item);
+							 PkCategory		*item);
 gboolean	 pk_results_add_distro_upgrade		(PkResults		*results,
-							 PkItemDistroUpgrade	*item);
+							 PkDistroUpgrade	*item);
 gboolean	 pk_results_add_require_restart		(PkResults		*results,
-							 PkItemRequireRestart	*item);
+							 PkRequireRestart	*item);
 gboolean	 pk_results_add_transaction		(PkResults		*results,
-							 PkItemTransaction	*item);
+							 PkTransactionPast	*item);
 gboolean	 pk_results_add_files 			(PkResults		*results,
-							 PkItemFiles		*item);
+							 PkFiles		*item);
 gboolean	 pk_results_add_repo_signature_required	(PkResults		*results,
-							 PkItemRepoSignatureRequired	*item);
+							 PkRepoSignatureRequired *item);
 gboolean	 pk_results_add_eula_required		(PkResults		*results,
-							 PkItemEulaRequired	*item);
+							 PkEulaRequired		*item);
 gboolean	 pk_results_add_media_change_required	(PkResults		*results,
-							 PkItemMediaChangeRequired	*item);
+							 PkMediaChangeRequired	*item);
 gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
-							 PkItemRepoDetail	*item);
+							 PkRepoDetail		*item);
 gboolean	 pk_results_add_message 		(PkResults		*results,
-							 PkItemMessage		*item);
+							 PkMessage		*item);
 
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-PkItemErrorCode *pk_results_get_error_code		(PkResults		*results);
+PkErrorCode *pk_results_get_error_code			(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

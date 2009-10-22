@@ -86,41 +86,51 @@ pk_strpad (const gchar *data, guint length)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (const PkItemPackage *item, gpointer data)
+pk_console_package_cb (PkPackage *package, gpointer data)
 {
-	gchar *package = NULL;
-	gchar *package_pad = NULL;
+	gchar *printable = NULL;
+	gchar *printable_pad = NULL;
+	gchar *package_id = NULL;
+	gchar *summary = NULL;
 	gchar *info_pad = NULL;
 	gchar **split = NULL;
+	PkInfoEnum info;
+
+	/* get data */
+	g_object_get (package,
+		      "info", &info,
+		      "package-id", &package_id,
+		      "summary", &summary,
+		      NULL);
 
 	/* ignore finished */
-	if (item->info == PK_INFO_ENUM_FINISHED)
+	if (info == PK_INFO_ENUM_FINISHED)
 		goto out;
 
 	/* split */
-	split = pk_package_id_split (item->package_id);
+	split = pk_package_id_split (package_id);
 	if (split == NULL)
 		goto out;
 
 	/* make these all the same length */
-	info_pad = pk_strpad (pk_info_enum_to_localised_past (item->info), 12);
+	info_pad = pk_strpad (pk_info_enum_to_localised_past (info), 12);
 
 	/* create printable */
-	package = pk_package_id_to_printable (item->package_id);
+	printable = pk_package_id_to_printable (package_id);
 
 	/* don't pretty print */
 	if (!is_console) {
-		g_print ("%s %s\n", info_pad, package);
+		g_print ("%s %s\n", info_pad, printable);
 		goto out;
 	}
 
 	/* pad the name-version */
-	package_pad = pk_strpad (package, 40);
-	g_print ("%s\t%s\t%s\n", info_pad, package_pad, item->summary);
+	printable_pad = pk_strpad (printable, 40);
+	g_print ("%s\t%s\t%s\n", info_pad, printable_pad, summary);
 out:
 	/* free all the data */
-	g_free (package);
-	g_free (package_pad);
+	g_free (printable);
+	g_free (printable_pad);
 	g_free (info_pad);
 	g_strfreev (split);
 }
@@ -129,7 +139,7 @@ out:
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
+pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 {
 	struct passwd *pw;
 	const gchar *role_text;
@@ -137,30 +147,52 @@ pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
 	gchar **parts;
 	guint i, lines_len;
 	gchar *package = NULL;
+	gchar *package_id;
+	gchar *tid;
+	gchar *timespec;
+	gboolean succeeded;
+	guint duration;
+	gchar *cmdline;
+	guint uid;
+	gchar *data;
+	PkRoleEnum role;
 
-	role_text = pk_role_enum_to_text (item->role);
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "role", &role,
+		      "tid", &tid,
+		      "timespec", &timespec,
+		      "succeeded", &succeeded,
+		      "duration", &duration,
+		      "cmdline", &cmdline,
+		      "uid", &uid,
+		      "data", &data,
+		      NULL);
+
+	role_text = pk_role_enum_to_text (role);
 	/* TRANSLATORS: this is an atomic transaction */
-	g_print ("%s: %s\n", _("Transaction"), item->tid);
+	g_print ("%s: %s\n", _("Transaction"), tid);
 	/* TRANSLATORS: this is the time the transaction was started in system timezone */
-	g_print (" %s: %s\n", _("System time"), item->timespec);
+	g_print (" %s: %s\n", _("System time"), timespec);
 	/* TRANSLATORS: this is if the transaction succeeded or not */
-	g_print (" %s: %s\n", _("Succeeded"), item->timespec ? _("True") : _("False"));
+	g_print (" %s: %s\n", _("Succeeded"), succeeded ? _("True") : _("False"));
 	/* TRANSLATORS: this is the transactions role, e.g. "update-system" */
 	g_print (" %s: %s\n", _("Role"), role_text);
 
 	/* only print if not null */
-	if (item->duration > 0) {
+	if (duration > 0) {
 		/* TRANSLATORS: this is The duration of the transaction */
-		g_print (" %s: %i %s\n", _("Duration"), item->duration, _("(seconds)"));
+		g_print (" %s: %i %s\n", _("Duration"), duration, _("(seconds)"));
 	}
 
 	/* TRANSLATORS: this is The command line used to do the action */
-	g_print (" %s: %s\n", _("Command line"), item->cmdline);
+	g_print (" %s: %s\n", _("Command line"), cmdline);
 	/* TRANSLATORS: this is the user ID of the user that started the action */
-	g_print (" %s: %i\n", _("User ID"), item->uid);
+	g_print (" %s: %i\n", _("User ID"), uid);
 
 	/* query real name */
-	pw = getpwuid (item->uid);
+	pw = getpwuid (uid);
 	if (pw != NULL) {
 		if (pw->pw_name != NULL) {
 			/* TRANSLATORS: this is the username, e.g. hughsie */
@@ -173,7 +205,7 @@ pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
 	}
 
 	/* TRANSLATORS: these are packages touched by the transaction */
-	lines = g_strsplit (item->data, "\n", -1);
+	lines = g_strsplit (data, "\n", -1);
 	lines_len = g_strv_length (lines);
 	if (lines_len > 0)
 		g_print (" %s\n", _("Affected packages:"));
@@ -188,6 +220,11 @@ pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
 		g_free (package);
 		g_strfreev (parts);
 	}
+	g_free (package_id);
+	g_free (tid);
+	g_free (timespec);
+	g_free (cmdline);
+	g_free (data);
 	g_strfreev (lines);
 }
 
@@ -195,119 +232,196 @@ pk_console_transaction_cb (const PkItemTransaction *item, gpointer user_data)
  * pk_console_distro_upgrade_cb:
  **/
 static void
-pk_console_distro_upgrade_cb (const PkItemDistroUpgrade *item, gpointer user_data)
+pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 {
+	gchar *name;
+	gchar *summary;
+	PkDistroUpgradeEnum state;
+
+	/* get data */
+	g_object_get (item,
+		      "name", &name,
+		      "state", &state,
+		      "summary", &summary,
+		      NULL);
+
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
-	g_print ("%s: %s\n", _("Distribution"), item->name);
+	g_print ("%s: %s\n", _("Distribution"), name);
 	/* TRANSLATORS: this is type of update, stable or testing */
-	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (item->state));
+	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (state));
 	/* TRANSLATORS: this is any summary text describing the upgrade */
-	g_print (" %s: %s\n", _("Summary"), item->summary);
+	g_print (" %s: %s\n", _("Summary"), summary);
+
+	g_free (name);
+	g_free (summary);
 }
 
 /**
  * pk_console_category_cb:
  **/
 static void
-pk_console_category_cb (const PkItemCategory *item, gpointer user_data)
+pk_console_category_cb (PkCategory *item, gpointer user_data)
 {
+	gchar *name;
+	gchar *cat_id;
+	gchar *parent_id;
+	gchar *summary;
+	gchar *icon;
+
+	/* get data */
+	g_object_get (item,
+		      "name", &name,
+		      "cat_id", &cat_id,
+		      "parent_id", &parent_id,
+		      "summary", &summary,
+		      "icon", &icon,
+		      NULL);
+
 	/* TRANSLATORS: this is the group category name */
-	g_print ("%s: %s\n", _("Category"), item->name);
+	g_print ("%s: %s\n", _("Category"), name);
 	/* TRANSLATORS: this is group identifier */
-	g_print (" %s: %s\n", _("ID"), item->cat_id);
-	if (item->parent_id != NULL) {
+	g_print (" %s: %s\n", _("ID"), cat_id);
+	if (parent_id != NULL) {
 		/* TRANSLATORS: this is the parent group */
-		g_print (" %s: %s\n", _("Parent"), item->parent_id);
+		g_print (" %s: %s\n", _("Parent"), parent_id);
 	}
 	/* TRANSLATORS: this is the name of the parent group */
-	g_print (" %s: %s\n", _("Name"), item->name);
-	if (item->summary != NULL) {
+	g_print (" %s: %s\n", _("Name"), name);
+	if (summary != NULL) {
 		/* TRANSLATORS: this is the summary of the group */
-		g_print (" %s: %s\n", _("Summary"), item->summary);
+		g_print (" %s: %s\n", _("Summary"), summary);
 	}
 	/* TRANSLATORS: this is preferred icon for the group */
-	g_print (" %s: %s\n", _("Icon"), item->icon);
+	g_print (" %s: %s\n", _("Icon"), icon);
+
+	g_free (name);
+	g_free (cat_id);
+	g_free (parent_id);
+	g_free (summary);
+	g_free (icon);
 }
 
 /**
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (const PkItemUpdateDetail *detail, gpointer data)
+pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 {
+	gchar *package = NULL;
+	gchar *package_id;
+	gchar *updates;
+	gchar *obsoletes;
+	gchar *vendor_url;
+	gchar *bugzilla_url;
+	gchar *cve_url;
+	PkRestartEnum restart;
+	gchar *update_text;
+	gchar *changelog;
+	PkUpdateStateEnum state;
 	gchar *issued;
 	gchar *updated;
-	gchar *package = NULL;
+
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "updates", &updates,
+		      "obsoletes", &obsoletes,
+		      "vendor-url", &vendor_url,
+		      "bugzilla-url", &bugzilla_url,
+		      "cve-url", &cve_url,
+		      "restart", &restart,
+		      "update-text", &update_text,
+		      "changelog", &changelog,
+		      "state", &state,
+		      "issued", &issued,
+		      "updated", &updated,
+		      NULL);
 
 	/* TRANSLATORS: this is a header for the package that can be updated */
 	g_print ("%s\n", _("Details about the update:"));
 
 	/* create printable */
-	package = pk_package_id_to_printable (detail->package_id);
+	package = pk_package_id_to_printable (package_id);
 
 	/* TRANSLATORS: details about the update, package name and version */
 	g_print (" %s: %s\n", _("Package"), package);
-	if (detail->updates != NULL) {
+	if (updates != NULL) {
 		/* TRANSLATORS: details about the update, any packages that this update updates */
-		g_print (" %s: %s\n", _("Updates"), detail->updates);
+		g_print (" %s: %s\n", _("Updates"), updates);
 	}
-	if (detail->obsoletes != NULL) {
+	if (obsoletes != NULL) {
 		/* TRANSLATORS: details about the update, any packages that this update obsoletes */
-		g_print (" %s: %s\n", _("Obsoletes"), detail->obsoletes);
+		g_print (" %s: %s\n", _("Obsoletes"), obsoletes);
 	}
-	if (detail->vendor_url != NULL) {
+	if (vendor_url != NULL) {
 		/* TRANSLATORS: details about the update, the vendor URLs */
-		g_print (" %s: %s\n", _("Vendor"), detail->vendor_url);
+		g_print (" %s: %s\n", _("Vendor"), vendor_url);
 	}
-	if (detail->bugzilla_url != NULL) {
+	if (bugzilla_url != NULL) {
 		/* TRANSLATORS: details about the update, the bugzilla URLs */
-		g_print (" %s: %s\n", _("Bugzilla"), detail->bugzilla_url);
+		g_print (" %s: %s\n", _("Bugzilla"), bugzilla_url);
 	}
-	if (detail->cve_url != NULL) {
+	if (cve_url != NULL) {
 		/* TRANSLATORS: details about the update, the CVE URLs */
-		g_print (" %s: %s\n", _("CVE"), detail->cve_url);
+		g_print (" %s: %s\n", _("CVE"), cve_url);
 	}
-	if (detail->restart != PK_RESTART_ENUM_NONE) {
+	if (restart != PK_RESTART_ENUM_NONE) {
 		/* TRANSLATORS: details about the update, if the package requires a restart */
-		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (detail->restart));
+		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (restart));
 	}
-	if (detail->update_text != NULL) {
+	if (update_text != NULL) {
 		/* TRANSLATORS: details about the update, any description of the update */
-		g_print (" %s: %s\n", _("Update text"), detail->update_text);
+		g_print (" %s: %s\n", _("Update text"), update_text);
 	}
-	if (detail->changelog != NULL) {
+	if (changelog != NULL) {
 		/* TRANSLATORS: details about the update, the changelog for the package */
-		g_print (" %s: %s\n", _("Changes"), detail->changelog);
+		g_print (" %s: %s\n", _("Changes"), changelog);
 	}
-	if (detail->state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
+	if (state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		/* TRANSLATORS: details about the update, the ongoing state of the update */
-		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (detail->state));
+		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (state));
 	}
-	issued = pk_iso8601_from_date (detail->issued);
 	if (issued != NULL) {
 		/* TRANSLATORS: details about the update, date the update was issued */
 		g_print (" %s: %s\n", _("Issued"), issued);
 	}
-	updated = pk_iso8601_from_date (detail->updated);
 	if (updated != NULL) {
 		/* TRANSLATORS: details about the update, date the update was updated */
 		g_print (" %s: %s\n", _("Updated"), updated);
 	}
+	g_free (package);
+	g_free (package_id);
+	g_free (updates);
+	g_free (obsoletes);
+	g_free (vendor_url);
+	g_free (bugzilla_url);
+	g_free (cve_url);
+	g_free (update_text);
+	g_free (changelog);
 	g_free (issued);
 	g_free (updated);
-	g_free (package);
 }
 
 /**
  * pk_console_repo_detail_cb:
  **/
 static void
-pk_console_repo_detail_cb (const PkItemRepoDetail *item, gpointer data)
+pk_console_repo_detail_cb (PkRepoDetail *item, gpointer data)
 {
 	gchar *enabled_pad;
 	gchar *repo_pad;
+	gchar *repo_id;
+	gboolean enabled;
+	gchar *description;
 
-	if (item->enabled) {
+	/* get data */
+	g_object_get (item,
+		      "repo-id", &repo_id,
+		      "enabled", &enabled,
+		      "description", &description,
+		      NULL);
+
+	if (enabled) {
 		/* TRANSLATORS: if the repo is enabled */
 		enabled_pad = pk_strpad (_("Enabled"), 10);
 	} else {
@@ -315,36 +429,48 @@ pk_console_repo_detail_cb (const PkItemRepoDetail *item, gpointer data)
 		enabled_pad = pk_strpad (_("Disabled"), 10);
 	}
 
-	repo_pad = pk_strpad (item->repo_id, 25);
-	g_print (" %s %s %s\n", enabled_pad, repo_pad, item->description);
+	repo_pad = pk_strpad (repo_id, 25);
+	g_print (" %s %s %s\n", enabled_pad, repo_pad, description);
 	g_free (enabled_pad);
 	g_free (repo_pad);
+	g_free (repo_id);
+	g_free (description);
 }
 
 /**
  * pk_console_require_restart_cb:
  **/
 static void
-pk_console_require_restart_cb (const PkItemRequireRestart *item, gpointer data)
+pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 {
 	gchar *package = NULL;
+	gchar *package_id;
+	PkRestartEnum restart;
+
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "restart", &restart,
+		      NULL);
+
+	g_free (package_id);
 
 	/* create printable */
-	package = pk_package_id_to_printable (item->package_id);
+	package = pk_package_id_to_printable (package_id);
 
-	if (item->restart == PK_RESTART_ENUM_SYSTEM) {
+	if (restart == PK_RESTART_ENUM_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted */
 		g_print ("%s %s\n", _("System restart required by:"), package);
-	} else if (item->restart == PK_RESTART_ENUM_SESSION) {
+	} else if (restart == PK_RESTART_ENUM_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted */
 		g_print ("%s %s\n", _("Session restart required:"), package);
-	} else if (item->restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
+	} else if (restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
 		/* TRANSLATORS: a package requires the system to be restarted due to a security update*/
 		g_print ("%s %s\n", _("System restart (security) required by:"), package);
-	} else if (item->restart == PK_RESTART_ENUM_SECURITY_SESSION) {
+	} else if (restart == PK_RESTART_ENUM_SECURITY_SESSION) {
 		/* TRANSLATORS: a package requires the session to be restarted due to a security update */
 		g_print ("%s %s\n", _("Session restart (security) required:"), package);
-	} else if (item->restart == PK_RESTART_ENUM_APPLICATION) {
+	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s\n", _("Application restart required by:"), package);
 	}
@@ -355,22 +481,42 @@ pk_console_require_restart_cb (const PkItemRequireRestart *item, gpointer data)
  * pk_console_details_cb:
  **/
 static void
-pk_console_details_cb (const PkItemDetails *item, gpointer data)
+pk_console_details_cb (PkDetails *item, gpointer data)
 {
 	gchar *package = NULL;
+	gchar *package_id;
+	gchar *license;
+	gchar *description;
+	gchar *url;
+	PkGroupEnum group;
+	guint64 size;
+
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "license", &license,
+		      "description", &description,
+		      "url", &url,
+		      "group", &group,
+		      "size", &size,
+		      NULL);
 
 	/* create printable */
-	package = pk_package_id_to_printable (item->package_id);
+	package = pk_package_id_to_printable (package_id);
 
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     %s\n", package);
-	g_print ("  license:     %s\n", item->license);
-	g_print ("  group:       %s\n", pk_group_enum_to_text (item->group));
-	g_print ("  description: %s\n", item->description);
-	g_print ("  size:        %lu bytes\n", (long unsigned int) item->size);
-	g_print ("  url:         %s\n", item->url);
+	g_print ("  license:     %s\n", license);
+	g_print ("  group:       %s\n", pk_group_enum_to_text (group));
+	g_print ("  description: %s\n", description);
+	g_print ("  size:        %lu bytes\n", (long unsigned int) size);
+	g_print ("  url:         %s\n", url);
 
+	g_free (package_id);
+	g_free (license);
+	g_free (description);
+	g_free (url);
 	g_free (package);
 }
 
@@ -378,32 +524,50 @@ pk_console_details_cb (const PkItemDetails *item, gpointer data)
  * pk_console_message_cb:
  **/
 static void
-pk_console_message_cb (const PkItemMessage *item, gpointer data)
+pk_console_message_cb (PkMessage *item, gpointer data)
 {
+	gchar *details;
+	PkMessageEnum type;
+
+	/* get data */
+	g_object_get (item,
+		      "details", &details,
+		      "type", &type,
+		      NULL);
+
 	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
-	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (item->type), item->details);
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (type), details);
+	g_free (details);
 }
 
 /**
  * pk_console_files_cb:
  **/
 static void
-pk_console_files_cb (PkItemFiles *item, gpointer data)
+pk_console_files_cb (PkFiles *item, gpointer data)
 {
 	guint i;
+	gchar **files;
+
+	/* get data */
+	g_object_get (item,
+		      "files", &files,
+		      NULL);
 
 	/* empty */
-	if (item->files == NULL || item->files[0] == NULL) {
+	if (files == NULL || files[0] == NULL) {
 		/* TRANSLATORS: This where the package has no files */
 		g_print ("%s\n", _("No files"));
-		return;
+		goto out;
 	}
 
 	/* TRANSLATORS: This a list files contained in the package */
 	g_print ("%s\n", _("Package files"));
-	for (i=0; item->files[i] != NULL; i++) {
-		g_print ("  %s\n", item->files[i]);
+	for (i=0; files[i] != NULL; i++) {
+		g_print ("  %s\n", files[i]);
 	}
+out:
+	g_strfreev (files);
 }
 
 /**
@@ -458,7 +622,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
@@ -478,10 +642,10 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
 		goto out;
 	}
 
@@ -561,8 +725,8 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	g_main_loop_quit (loop);

@@ -27,6 +27,7 @@
 #define __PK_PACKAGE_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -72,7 +73,13 @@ gboolean	 pk_package_set_id			(PkPackage	*package,
 							 const gchar	*package_id,
 							 GError		**error);
 const gchar	*pk_package_get_id			(PkPackage	*package);
+PkInfoEnum	 pk_package_get_info			(PkPackage	*package);
+const gchar	*pk_package_get_summary			(PkPackage	*package);
 void		 pk_package_print			(PkPackage	*package);
+gboolean	 pk_package_equal			(PkPackage	*package1,
+							 PkPackage	*package2);
+gboolean	 pk_package_equal_id			(PkPackage	*package1,
+							 PkPackage	*package2);
 
 G_END_DECLS
 

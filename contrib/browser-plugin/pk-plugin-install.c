@@ -240,11 +240,13 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 	GError *error = NULL;
 	PkResults *results = NULL;
 	GPtrArray *packages = NULL;
-	const PkItemPackage *item;
-	guint i;
+	PkPackage *item;
 	gchar *filename;
 	gchar **split = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
+	PkInfoEnum info;
+	gchar *package_id = NULL;
+	gchar *summary = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -255,20 +257,14 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		g_warning ("failed to install: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		g_warning ("failed to install: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
 		goto out;
 	}
 
 	/* get packages */
 	packages = pk_results_get_package_array (results);
-	for (i=0; i<packages->len; i++) {
-		item = g_ptr_array_index (packages, i);
-		g_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
-	}
-
-	/* no results */
 	if (packages->len == 0)
 		goto out;
 
@@ -278,18 +274,23 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 
 	/* choose first package */
 	item = g_ptr_array_index (packages, 0);
+	g_object_get (item,
+		      "info", &info,
+		      "package-id", &package_id,
+		      "summary", &summary,
+		      NULL);
 
 	/* if we didn't use displayname, use the summary */
 	if (self->priv->display_name == NULL)
-		self->priv->display_name = g_strdup (item->summary);
+		self->priv->display_name = g_strdup (summary);
 
 	/* parse the data */
-	if (item->info == PK_INFO_ENUM_AVAILABLE) {
+	if (info == PK_INFO_ENUM_AVAILABLE) {
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, AVAILABLE);
 		else if (self->priv->status == INSTALLED)
 			pk_plugin_install_set_status (self, UPGRADABLE);
-		split = pk_package_id_split (item->package_id);
+		split = pk_package_id_split (package_id);
 		pk_plugin_install_set_available_package_name (self, split[0]);
 		pk_plugin_install_set_available_version (self, split[1]);
 		g_strfreev (split);
@@ -297,19 +298,19 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		/* if we have data from the repo, override the user:
 		 *  * we don't want the remote site pretending to install another package
 		 *  * it might be localised if the backend supports it */
-		if (item->summary != NULL && item->summary[0] != '\0')
-			self->priv->display_name = g_strdup (item->summary);
+		if (summary != NULL && summary[0] != '\0')
+			self->priv->display_name = g_strdup (summary);
 #endif
 
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 
-	} else if (item->info == PK_INFO_ENUM_INSTALLED) {
+	} else if (info == PK_INFO_ENUM_INSTALLED) {
 		if (self->priv->status == IN_PROGRESS)
 			pk_plugin_install_set_status (self, INSTALLED);
 		else if (self->priv->status == AVAILABLE)
 			pk_plugin_install_set_status (self, UPGRADABLE);
-		split = pk_package_id_split (item->package_id);
+		split = pk_package_id_split (package_id);
 		pk_plugin_install_set_installed_package_name (self, split[0]);
 		pk_plugin_install_set_installed_version (self, split[1]);
 		g_strfreev (split);
@@ -332,14 +333,17 @@ pk_plugin_install_finished_cb (GObject *object, GAsyncResult *res, PkPluginInsta
 		pk_plugin_install_refresh (self);
 	}
 out:
+	g_free (package_id);
+	g_free (summary);
+
 	/* we didn't get any results, or we failed */
 	if (self->priv->status == IN_PROGRESS) {
 		pk_plugin_install_set_status (self, UNAVAILABLE);
 		pk_plugin_install_clear_layout (self);
 		pk_plugin_install_refresh (self);
 	}
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
 	if (results != NULL)

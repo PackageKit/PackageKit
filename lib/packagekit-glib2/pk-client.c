@@ -655,9 +655,10 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 static void
 pk_client_copy_finished_remove_old_files (PkClientState *state)
 {
-	const PkItemFiles *item;
+	PkFiles *item;
 	GPtrArray *array = NULL;
 	guint i;
+	gchar **files;
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
@@ -667,10 +668,14 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 	/* remove any without dest path */
 	for (i=0; i < array->len; ) {
 		item = g_ptr_array_index (array, i);
-		if (!g_str_has_prefix (item->files[0], state->directory))
+		g_object_get (item,
+			      "files", &files,
+			      NULL);
+		if (!g_str_has_prefix (files[0], state->directory))
 			g_ptr_array_remove_index_fast (array, i);
 		else
 			i++;
+		g_strfreev (files);
 	}
 
 	/* we're done modifying the data */
@@ -743,7 +748,7 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	gchar **files;
 	GFile *source;
 	GFile *destination;
-	PkItemFiles *item;
+	PkFiles *item;
 
 	/* generate the destination location */
 	basename = g_path_get_basename (source_file);
@@ -759,11 +764,15 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 
 	/* Add the result (as a GStrv) to the results set */
 	files = g_strsplit (path, ",", -1);
-	item = pk_item_files_new (package_id, files);
+	item = pk_files_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "files", files,
+		      NULL);
 	pk_results_add_files (state->results, item);
 
 	/* free everything we've used */
-	pk_item_files_unref (item);
+	g_object_unref (item);
 	g_object_unref (source);
 	g_object_unref (destination);
 	g_strfreev (files);
@@ -784,9 +793,11 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint i;
 	guint j;
 	guint len;
-	const PkItemFiles *item;
+	PkFiles *item;
 	GPtrArray *array = NULL;
 	gboolean ret;
+	gchar *package_id;
+	gchar **files;
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
@@ -795,7 +806,11 @@ pk_client_copy_downloaded (PkClientState *state)
 	/* get the number of files to copy */
 	for (i=0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		state->refcount += g_strv_length (item->files);
+		g_object_get (item,
+			      "files", &files,
+			      NULL);
+		state->refcount += g_strv_length (files);
+		g_strfreev (files);
 	}
 	egg_debug ("%i files to copy", state->refcount);
 
@@ -810,8 +825,14 @@ pk_client_copy_downloaded (PkClientState *state)
 	/* do the copies pipelined */
 	for (i=0; i < len; i++) {
 		item = g_ptr_array_index (array, i);
-		for (j=0; item->files[j] != NULL; j++)
-			pk_client_copy_downloaded_file (state, item->package_id, item->files[j]);
+		g_object_get (item,
+			      "package-id", &package_id,
+			      "files", &files,
+			      NULL);
+		for (j=0; files[j] != NULL; j++)
+			pk_client_copy_downloaded_file (state, package_id, files[j]);
+		g_free (package_id);
+		g_strfreev (files);
 	}
 	g_ptr_array_unref (array);
 }
@@ -824,7 +845,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 {
 	GError *error = NULL;
 	PkExitEnum exit_enum;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 
 	egg_debug ("exit_text=%s", exit_text);
 
@@ -836,10 +857,10 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	if (exit_enum == PK_EXIT_ENUM_FAILED) {
 
 		/* get error code and error message */
-		error_item = pk_results_get_error_code (state->results);
-		if (error_item != NULL) {
+		error_code = pk_results_get_error_code (state->results);
+		if (error_code != NULL) {
 			/* should only ever have one ErrorCode */
-			error = g_error_new (PK_CLIENT_ERROR, 0xFF + error_item->code, "%s", error_item->details);
+			error = g_error_new (PK_CLIENT_ERROR, 0xFF + pk_error_code_get_code (error_code), "%s", pk_error_code_get_details (error_code));
 		} else {
 			/* fallback where the daemon didn't sent ErrorCode */
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
@@ -858,8 +879,8 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	/* we're done */
 	pk_client_state_finish (state, NULL);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 }
 
 /**
@@ -896,16 +917,21 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 {
 	gboolean ret;
 	PkInfoEnum info_enum;
-	PkItemPackage *item;
+	PkPackage *item;
 	PkPackage *package;
 	g_return_if_fail (PK_IS_CLIENT (state->client));
 
 	/* add to results */
 	info_enum = pk_info_enum_from_text (info_text);
 	if (info_enum != PK_INFO_ENUM_FINISHED) {
-		item = pk_item_package_new (info_enum, package_id, summary);
+		item = pk_package_new ();
+		g_object_set (item,
+			      "info", info_enum,
+			      "package-id", package_id,
+			      "summary", summary,
+			      NULL);
 		pk_results_add_package (state->results, item);
-		pk_item_package_unref (item);
+		g_object_unref (item);
 	}
 
 	/* save package-id */
@@ -997,13 +1023,21 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 		      guint64 size, PkClientState *state)
 {
 	PkGroupEnum group_enum;
-	PkItemDetails *item;
+	PkDetails *item;
 	group_enum = pk_group_enum_from_text (group_text);
 
 	/* add to results */
-	item = pk_item_details_new (package_id, license, group_enum, description, url, size);
+	item = pk_details_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "license", license,
+		      "group", group_enum,
+		      "description", description,
+		      "url", url,
+		      "size", size,
+		      NULL);
 	pk_results_add_details (state->results, item);
-	pk_item_details_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1016,46 +1050,59 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 			    const gchar *changelog, const gchar *state_text, const gchar *issued_text,
 			    const gchar *updated_text, PkClientState *state)
 {
-	GDate *issued;
-	GDate *updated;
 	PkUpdateStateEnum state_enum;
 	PkRestartEnum restart_enum;
-	PkItemUpdateDetail *item;
+	PkUpdateDetail *item;
 
 	restart_enum = pk_restart_enum_from_text (restart_text);
 	state_enum = pk_update_state_enum_from_text (state_text);
-	issued = pk_iso8601_to_date (issued_text);
-	updated = pk_iso8601_to_date (updated_text);
 
 	/* add to results */
-	item = pk_item_update_detail_new (package_id, updates, obsoletes, vendor_url,
-					  bugzilla_url, cve_url, restart_enum, update_text, changelog,
-					  state_enum, issued, updated);
+	item = pk_update_detail_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "updates", updates,
+		      "obsoletes", obsoletes,
+		      "vendor-url", vendor_url,
+		      "bugzilla-url", bugzilla_url,
+		      "cve-url", cve_url,
+		      "restart", restart_enum,
+		      "update-text", update_text,
+		      "changelog", changelog,
+		      "state", state_enum,
+		      "issued", issued_text,
+		      "updated", updated_text,
+		      NULL);
 	pk_results_add_update_detail (state->results, item);
-	pk_item_update_detail_unref (item);
-
-	if (issued != NULL)
-		g_date_free (issued);
-	if (updated != NULL)
-		g_date_free (updated);
+	g_object_unref (item);
 }
 
 /**
  * pk_client_transaction_cb:
  */
 static void
-pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *timespec,
+pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *timespec,
 			  gboolean succeeded, const gchar *role_text, guint duration,
 			  const gchar *data, guint uid, const gchar *cmdline, PkClientState *state)
 {
 	PkRoleEnum role_enum;
-	PkItemTransaction *item;
+	PkTransactionPast *item;
 	role_enum = pk_role_enum_from_text (role_text);
 
 	/* add to results */
-	item = pk_item_transaction_new (old_tid, timespec, succeeded, role_enum, duration, data, uid, cmdline);
+	item = pk_transaction_past_new ();
+	g_object_set (item,
+		      "tid", tid,
+		      "timespec", timespec,
+		      "succeeded", succeeded,
+		      "role", role_enum,
+		      "duration", duration,
+		      "data", data,
+		      "uid", uid,
+		      "cmdline", cmdline,
+		      NULL);
 	pk_results_add_transaction (state->results, item);
-	pk_item_transaction_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1066,13 +1113,18 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 			     const gchar *summary, PkClientState *state)
 {
 	PkUpdateStateEnum type_enum;
-	PkItemDistroUpgrade *item;
+	PkDistroUpgrade *item;
 	type_enum = pk_update_state_enum_from_text (type_text);
 
 	/* add to results */
-	item = pk_item_distro_upgrade_new (type_enum, name, summary);
+	item = pk_distro_upgrade_new ();
+	g_object_set (item,
+		      "type", type_enum,
+		      "name", name,
+		      "summary", summary,
+		      NULL);
 	pk_results_add_distro_upgrade (state->results, item);
-	pk_item_distro_upgrade_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1082,13 +1134,17 @@ static void
 pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, const gchar *package_id, PkClientState *state)
 {
 	PkRestartEnum restart_enum;
-	PkItemRequireRestart *item;
+	PkRequireRestart *item;
 	restart_enum = pk_restart_enum_from_text (restart_text);
 
 	/* add to results */
-	item = pk_item_require_restart_new (restart_enum, package_id);
+	item = pk_require_restart_new ();
+	g_object_set (item,
+		      "restart", restart_enum,
+		      "package-id", package_id,
+		      NULL);
 	pk_results_add_require_restart (state->results, item);
-	pk_item_require_restart_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1098,12 +1154,19 @@ static void
 pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *cat_id,
 		       const gchar *name, const gchar *summary, const gchar *icon, PkClientState *state)
 {
-	PkItemCategory *item;
+	PkCategory *item;
 
 	/* add to results */
-	item = pk_item_category_new (parent_id, cat_id, name, summary, icon);
+	item = pk_category_new ();
+	g_object_set (item,
+		      "parent-id", parent_id,
+		      "cat-id", cat_id,
+		      "name", name,
+		      "summary", summary,
+		      "icon", icon,
+		      NULL);
 	pk_results_add_category (state->results, item);
-	pk_item_category_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1113,13 +1176,17 @@ static void
 pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *filelist, PkClientState *state)
 {
 	gchar **files;
-	PkItemFiles *item;
+	PkFiles *item;
 	files = g_strsplit (filelist, ";", -1);
 
 	/* add to results */
-	item = pk_item_files_new (package_id, files);
+	item = pk_files_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "files", files,
+		      NULL);
 	pk_results_add_files (state->results, item);
-	pk_item_files_unref (item);
+	g_object_unref (item);
 	g_strfreev (files);
 }
 
@@ -1133,14 +1200,23 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 				      const gchar *type_text, PkClientState *state)
 {
 	PkSigTypeEnum type_enum;
-	PkItemRepoSignatureRequired *item;
+	PkRepoSignatureRequired *item;
 	type_enum = pk_sig_type_enum_from_text (type_text);
 
 	/* add to results */
-	item = pk_item_repo_signature_required_new (package_id, repository_name, key_url, key_userid,
-						    key_id, key_fingerprint, key_timestamp, type_enum);
+	item = pk_repo_signature_required_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "repository-name", repository_name,
+		      "key-url", key_url,
+		      "key-userid", key_userid,
+		      "key-id", key_id,
+		      "key-fingerprint", key_fingerprint,
+		      "key-timestamp", key_timestamp,
+		      "type", type_enum,
+		      NULL);
 	pk_results_add_repo_signature_required (state->results, item);
-	pk_item_repo_signature_required_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1150,12 +1226,18 @@ static void
 pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
 			    const gchar *vendor_name, const gchar *license_agreement, PkClientState *state)
 {
-	PkItemEulaRequired *item;
+	PkEulaRequired *item;
 
 	/* add to results */
-	item = pk_item_eula_required_new (eula_id, package_id, vendor_name, license_agreement);
+	item = pk_eula_required_new ();
+	g_object_set (item,
+		      "eula-id", eula_id,
+		      "package-id", package_id,
+		      "vendor-name", vendor_name,
+		      "license-agreement", license_agreement,
+		      NULL);
 	pk_results_add_eula_required (state->results, item);
-	pk_item_eula_required_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1166,13 +1248,18 @@ pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_t
 				    const gchar *media_id, const gchar *media_text, PkClientState *state)
 {
 	PkMediaTypeEnum media_type_enum;
-	PkItemMediaChangeRequired *item;
+	PkMediaChangeRequired *item;
 	media_type_enum = pk_media_type_enum_from_text (media_type_text);
 
 	/* add to results */
-	item = pk_item_media_change_required_new (media_type_enum, media_id, media_text);
+	item = pk_media_change_required_new ();
+	g_object_set (item,
+		      "media-type", media_type_enum,
+		      "media-id", media_id,
+		      "media-text", media_text,
+		      NULL);
 	pk_results_add_media_change_required (state->results, item);
-	pk_item_media_change_required_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1182,12 +1269,17 @@ static void
 pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 			  const gchar *description, gboolean enabled, PkClientState *state)
 {
-	PkItemRepoDetail *item;
+	PkRepoDetail *item;
 
 	/* add to results */
-	item = pk_item_repo_detail_new (repo_id, description, enabled);
+	item = pk_repo_detail_new ();
+	g_object_set (item,
+		      "repo-id", repo_id,
+		      "description", description,
+		      "enabled", enabled,
+		      NULL);
 	pk_results_add_repo_detail (state->results, item);
-	pk_item_repo_detail_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1197,13 +1289,17 @@ static void
 pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar *details, PkClientState *state)
 {
 	PkErrorCodeEnum code_enum;
-	PkItemErrorCode *item;
+	PkErrorCode *item;
 	code_enum = pk_error_enum_from_text (code_text);
 
 	/* add to results */
-	item = pk_item_error_code_new (code_enum, details);
+	item = pk_error_code_new ();
+	g_object_set (item,
+		      "code", code_enum,
+		      "details", details,
+		      NULL);
 	pk_results_set_error_code (state->results, item);
-	pk_item_error_code_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -1213,13 +1309,17 @@ static void
 pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar *details, PkClientState *state)
 {
 	PkMessageEnum message_enum;
-	PkItemMessage *item;
+	PkMessage *item;
 	message_enum = pk_message_enum_from_text (message_text);
 
 	/* add to results */
-	item = pk_item_message_new (message_enum, details);
+	item = pk_message_new ();
+	g_object_set (item,
+		      "message", message_enum,
+		      "details", details,
+		      NULL);
 	pk_results_add_message (state->results, item);
-	pk_item_message_unref (item);
+	g_object_unref (item);
 }
 
 /**
@@ -3906,8 +4006,6 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkItemPackage *item;
-	guint i;
 	gboolean idle;
 
 	/* get the results */
@@ -3931,12 +4029,6 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	if (!idle)
 		egg_test_failed (test, "not idle in finished handler");
 
-	/* list, just for shits and giggles */
-	for (i=0; i<packages->len; i++) {
-		item = g_ptr_array_index (packages, i);
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
-	}
-
 	if (packages->len != 2)
 		egg_test_failed (test, "invalid number of packages: %i", packages->len);
 
@@ -3957,8 +4049,6 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	GPtrArray *details;
-	const PkItemDetails *item;
-	guint i;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -3975,12 +4065,6 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 	details = pk_results_get_details_array (results);
 	if (details == NULL)
 		egg_test_failed (test, "no details!");
-
-	/* list, just for shits and giggles */
-	for (i=0; i<details->len; i++) {
-		item = g_ptr_array_index (details, i);
-		egg_debug ("%s\t%s\t%s", item->package_id, item->url, item->description);
-	}
 
 	if (details->len != 1)
 		egg_test_failed (test, "invalid number of details: %i", details->len);
@@ -4041,7 +4125,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
-	PkItemErrorCode *error_item = NULL;
+	PkErrorCode *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -4056,14 +4140,14 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_text (exit_enum));
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item->code != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
-		egg_test_failed (test, "failed to get error code: %i", error_item->code);
-	if (g_strcmp0 (error_item->details, "The task was stopped successfully") != 0)
-		egg_test_failed (test, "failed to get error message: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (pk_error_code_get_code (error_code) != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
+		egg_test_failed (test, "failed to get error code: %i", pk_error_code_get_code (error_code));
+	if (g_strcmp0 (pk_error_code_get_details (error_code), "The task was stopped successfully") != 0)
+		egg_test_failed (test, "failed to get error message: %s", pk_error_code_get_details (error_code));
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	egg_test_loop_quit (test);
@@ -4112,9 +4196,11 @@ pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
-	const PkItemFiles *item;
+	PkFiles *item;
 	GPtrArray *array = NULL;
 	guint len;
+	gchar *package_id = NULL;
+	gchar **files = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -4135,14 +4221,20 @@ pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	/* check a result */
 	item = g_ptr_array_index (array, 0);
-	if (g_strcmp0 (item->package_id, "powertop-common;1.8-1.fc8;i386;fedora") != 0)
-		egg_test_failed (test, "invalid package_id: %s", item->package_id);
-	len = g_strv_length (item->files);
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "files", &files,
+		      NULL);
+	if (g_strcmp0 (package_id, "powertop-common;1.8-1.fc8;i386;fedora") != 0)
+		egg_test_failed (test, "invalid package_id: %s", package_id);
+	len = g_strv_length (files);
 	if (len != 1)
 		egg_test_failed (test, "invalid number of files: %i", len);
-	if (g_strcmp0 (item->files[0], "/tmp/powertop-common-1.8-1.fc8.rpm") != 0)
-		egg_test_failed (test, "invalid filename: %s, maybe not rewritten", item->files[0]);
+	if (g_strcmp0 (files[0], "/tmp/powertop-common-1.8-1.fc8.rpm") != 0)
+		egg_test_failed (test, "invalid filename: %s, maybe not rewritten", files[0]);
 out:
+	g_strfreev (files);
+	g_free (package_id);
 	g_ptr_array_unref (array);
 	if (results != NULL)
 		g_object_unref (results);

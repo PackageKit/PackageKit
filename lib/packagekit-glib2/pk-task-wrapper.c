@@ -68,32 +68,13 @@ pk_task_wrapper_untrusted_question (PkTask *task, guint request, PkResults *resu
 static void
 pk_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 {
-	guint i;
-	GPtrArray *array;
-	PkItemRepoSignatureRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
 
-	/* get data */
-	array = pk_results_get_repo_signature_required_array (results);
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_print ("KEY:\n");
-		g_print (" Package: %s\n", item->package_id);
-		g_print (" Name: %s\n", item->repository_name);
-		g_print (" URL: %s\n", item->key_url);
-		g_print (" User: %s\n", item->key_userid);
-		g_print (" ID: %s\n", item->key_id);
-		g_print (" Fingerprint: %s\n", item->key_fingerprint);
-		g_print (" Timestamp: %s\n", item->key_timestamp);
-	}
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
-
-	g_ptr_array_unref (array);
 }
 
 /**
@@ -102,29 +83,13 @@ pk_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 static void
 pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 {
-	guint i;
-	GPtrArray *array;
-	PkItemEulaRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
 
-	/* get data */
-	array = pk_results_get_eula_required_array (results);
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_print ("EULA:\n");
-		g_print (" Eula ID: %s\n", item->eula_id);
-		g_print (" Package: %s\n", item->package_id);
-		g_print (" Vendor: %s\n", item->vendor_name);
-		g_print (" Agreement: %s\n", item->license_agreement);
-	}
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
-
-	g_ptr_array_unref (array);
 }
 
 /**
@@ -133,28 +98,13 @@ pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 static void
 pk_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *results)
 {
-	guint i;
-	GPtrArray *array;
-	PkItemMediaChangeRequired *item;
 	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 
 	/* set some user data, for no reason */
 	priv->user_data = NULL;
 
-	/* get data */
-	array = pk_results_get_media_change_required_array (results);
-	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_print ("MEDIA CHANGE:\n");
-		g_print (" Media type: %s\n", pk_media_type_enum_to_text (item->media_type));
-		g_print (" ID: %s\n", item->media_id);
-		g_print (" Text: %s\n", item->media_text);
-	}
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
-
-	g_ptr_array_unref (array);
 }
 
 /**
@@ -272,8 +222,6 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	PkResults *results;
 	PkExitEnum exit_enum;
 	GPtrArray *packages;
-	const PkItemPackage *item;
-	guint i;
 
 	/* get the results */
 	results = pk_task_generic_finish (PK_TASK (task), res, &error);
@@ -291,13 +239,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 	if (packages == NULL)
 		egg_test_failed (test, "no packages!");
 
-	/* list, just for shits and giggles */
-	for (i=0; i<packages->len; i++) {
-		item = g_ptr_array_index (packages, i);
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
-	}
-
-	if (packages->len != 3)
+	if (packages->len != 4)
 		egg_test_failed (test, "invalid number of packages: %i", packages->len);
 
 	g_ptr_array_unref (packages);

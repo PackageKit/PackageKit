@@ -29,7 +29,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-desktop.h>
 #include <packagekit-glib2/pk-common.h>
@@ -85,9 +85,9 @@ pk_transaction_extra_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTr
  * pk_transaction_extra_package_cb:
  **/
 static void
-pk_transaction_extra_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactionExtra *extra)
+pk_transaction_extra_package_cb (PkBackend *backend, PkPackage *package, PkTransactionExtra *extra)
 {
-	g_ptr_array_add (extra->priv->list, pk_item_package_ref (item));
+	g_ptr_array_add (extra->priv->list, g_object_ref (package));
 }
 
 /**
@@ -123,10 +123,10 @@ pk_transaction_extra_set_progress_changed (PkTransactionExtra *extra, guint perc
 /**
  * pk_transaction_extra_get_installed_package_for_file:
  **/
-static const PkItemPackage *
+static PkPackage *
 pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, const gchar *filename)
 {
-	const PkItemPackage *obj = NULL;
+	PkPackage *package = NULL;
 
 	/* use PK to find the correct package */
 	if (extra->priv->list->len > 0)
@@ -143,14 +143,14 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 		goto out;
 	}
 
-	/* get the obj */
-	obj = g_ptr_array_index (extra->priv->list, 0);
-	if (obj == NULL) {
-		egg_warning ("cannot get obj");
+	/* get the package */
+	package = g_ptr_array_index (extra->priv->list, 0);
+	if (package == NULL) {
+		egg_warning ("cannot get package");
 		goto out;
 	}
 out:
-	return obj;
+	return package;
 }
 
 /**
@@ -262,9 +262,8 @@ static gint
 pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar *filename, const gchar *md5_opt)
 {
 	gchar *md5 = NULL;
-	gchar *package = NULL;
 	gint rc = -1;
-	const PkItemPackage *obj;
+	PkPackage *package;
 	gchar **parts = NULL;
 
 	/* if we've got it, use old data */
@@ -274,19 +273,18 @@ pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar
 		md5 = pk_transaction_extra_get_filename_md5 (filename);
 
 	/* resolve */
-	obj = pk_transaction_extra_get_installed_package_for_file (extra, filename);
-	if (obj == NULL) {
+	package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
+	if (package == NULL) {
 		egg_warning ("failed to get list");
 		goto out;
 	}
 
 	/* add */
-	parts = pk_package_id_split (obj->package_id);
+	parts = pk_package_id_split (pk_package_get_id (package));
 	rc = pk_transaction_extra_sqlite_add_filename_details (extra, filename, parts[PK_PACKAGE_ID_NAME], md5);
 out:
 	g_strfreev (parts);
 	g_free (md5);
-	g_free (package);
 	return rc;
 }
 
@@ -432,15 +430,23 @@ static gchar *
 pk_transaction_extra_package_list_to_string (GPtrArray *array)
 {
 	guint i;
-	const PkItemPackage *item;
+	PkPackage *package;
 	GString *string;
+	PkInfoEnum info;
+	gchar *package_id;
+	gchar *summary;
 
 	string = g_string_new ("");
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_text (item->info),
-					item->package_id, item->summary);
+		package = g_ptr_array_index (array, i);
+		g_object_get (package,
+			      "info", &info,
+			      "package-id", &package_id,
+			      "summary", &summary,
+			      NULL);
+		g_string_append_printf (string, "%s\t%s\t%s\n", pk_info_enum_to_text (info), package_id, summary);
+		g_free (package_id);
+		g_free (summary);
 	}
 
 	/* remove trailing newline */
@@ -878,7 +884,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 	gchar *cmdline_full;
 	GPtrArray *files_session;
 	GPtrArray *files_system;
-	const PkItemPackage *obj;
+	PkPackage *package;
 	GPtrArray *pids;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
@@ -933,24 +939,24 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 	for (i=0; i<files_session->len; i++) {
 		filename = g_ptr_array_index (files_session, i);
 
-		obj = pk_transaction_extra_get_installed_package_for_file (extra, filename);
-		if (obj == NULL) {
+		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
+		if (package == NULL) {
 			egg_warning ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SESSION, obj->package_id);
+		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SESSION, pk_package_get_id (package));
 	}
 
 	/* process all system restarts */
 	for (i=0; i<files_system->len; i++) {
 		filename = g_ptr_array_index (files_system, i);
 
-		obj = pk_transaction_extra_get_installed_package_for_file (extra, filename);
-		if (obj == NULL) {
+		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
+		if (package == NULL) {
 			egg_warning ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SYSTEM, obj->package_id);
+		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
 	}
 
 out:
@@ -1128,7 +1134,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv = PK_POST_TRANS_GET_PRIVATE (extra);
 	extra->priv->running_exec_list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_free);
 	extra->priv->loop = g_main_loop_new (NULL, FALSE);
-	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_item_package_unref);
+	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
 	extra->priv->db = NULL;
