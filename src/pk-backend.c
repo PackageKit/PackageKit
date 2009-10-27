@@ -247,6 +247,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	if (desc->install_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
+	if (desc->install_signature != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	if (desc->install_files != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
 	if (desc->refresh_cache != NULL)
