@@ -486,11 +486,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     # Methods ( client -> engine -> backend )
 
     def search_file(self, filters, filename):
-        """
-        Implement the apt2-search-file functionality
+        """Search for files in packages.
 
-        Apt specific: Works only for installed files. Since config files are
-        not removed by default even not installed packages can be reported.
+        Works only for installed file if apt-file isn't installed.
         """
         pklog.info("Searching for file: %s" % filename)
         self.status(STATUS_QUERY)
@@ -498,7 +496,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
+        result_names = set()
+        # Optionally make use of apt-file's Contents cache to search for not
+        # installed files. But still search for installed files additionally
+        # to make sure that we provide up-to-date results
+        if os.path.exists("/usr/bin/apt-file"):
+            #FIXME: Make use of rapt-file on Debian if the network is available
+            #FIXME: apt-file regex doesn't seem to work with alternation.
+            #       This makes searching for several files a real pain.
+            #FIXME: Show a warning to the user if the apt-file cache is several
+            #       weeks old
+            pklog.debug("Using apt-file")
+            apt_file = subprocess.Popen(["/usr/bin/apt-file", "--fixed-string",
+                                         "--non-interactive", "--package-only",
+                                         "find", filename],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+            stdout, stderr = apt_file.communicate()
+            if apt_file.returncode == 0:
+                #FIXME: Actually we should check if the file is part of the
+                #       candidate, e.g. if unstable and experimental are
+                #       enabled and a file would only be part of the
+                #       experimental version
+                result_names.update(stdout.split())
+                self._emit_visible_packages_by_name(filters, result_names)
+            else:
+                self.error(ERROR_INTERNAL_ERROR, "%s %s" % (stdout, stderr))
+        # Search for installed files
         for pkg in self._cache:
+            if pkg.name in result_names:
+                continue
             for installed_file in self._get_installed_files(pkg):
                 if filename in installed_file:
                     self._emit_visible_package(filters, pkg)
