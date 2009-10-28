@@ -400,16 +400,17 @@ backend_update_system_thread (PkBackend *backend)
 		return false;
 	}
 
-	if (pkgAllUpgrade(*m_apt->packageDepCache) == false)
+	egg_debug ("Calculating upgrade... ");
+	if (pkgDistUpgrade(*m_apt->packageDepCache) == false)
 	{
 		show_broken(backend, m_apt);
-		egg_debug ("Internal error, AllUpgrade broke stuff");
+		egg_debug ("Failed");
 		delete m_apt;
 		pk_backend_finished (backend);
 		return false;
 	}
 
-	printf("4KKKKKKKKKKKKKKKKKKKK\n");
+	egg_debug ("Done");
 	bool res = m_apt->installPackages(*m_apt->packageDepCache, true);
 	delete m_apt;
 	 _error->DumpErrors();
@@ -460,7 +461,7 @@ backend_get_updates_thread (PkBackend *backend)
 	// resolver.
 // 	m_apt->mark_all_upgradable(false, true);
 
-	if (pkgAllUpgrade(*m_apt->packageDepCache) == false)
+	if (pkgDistUpgrade(*m_apt->packageDepCache) == false)
 	{
 		show_broken(backend, m_apt);
 		egg_debug ("Internal error, AllUpgrade broke stuff");

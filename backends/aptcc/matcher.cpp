@@ -20,6 +20,7 @@
 
 #include "matcher.h"
 #include <stdio.h>
+#include <iostream>
 
 matcher::matcher(const string &matchers)
 	: m_hasError(false)
@@ -27,7 +28,7 @@ matcher::matcher(const string &matchers)
 	string::const_iterator start = matchers.begin();
 	parse_pattern(start, matchers.end());
 	if (m_hasError) {
-		printf("ERROR:%s:\n", m_error.c_str());
+		cerr << "ERROR: " << m_error << endl;
 	}
 }
 
@@ -100,7 +101,7 @@ bool matcher::parse_pattern(string::const_iterator &start,
 
 	while (start != end && *start != '|' && *start != ')') {
 		string subString = parse_substr(start, end);
-		printf("parse_pattern:%s:\n", subString.c_str());
+
 		if (subString.empty()) {
 			continue;
 		}
