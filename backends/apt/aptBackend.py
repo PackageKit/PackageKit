@@ -485,31 +485,33 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Methods ( client -> engine -> backend )
 
-    def search_file(self, filters, filename):
+    def search_file(self, filters, filenames_string):
         """Search for files in packages.
 
         Works only for installed file if apt-file isn't installed.
         """
-        pklog.info("Searching for file: %s" % filename)
+        pklog.info("Searching for file: %s" % filenames_string)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
 
+        filenames = filenames_string.split("&")
         result_names = set()
         # Optionally make use of apt-file's Contents cache to search for not
         # installed files. But still search for installed files additionally
         # to make sure that we provide up-to-date results
         if os.path.exists("/usr/bin/apt-file"):
             #FIXME: Make use of rapt-file on Debian if the network is available
-            #FIXME: apt-file regex doesn't seem to work with alternation.
-            #       This makes searching for several files a real pain.
             #FIXME: Show a warning to the user if the apt-file cache is several
             #       weeks old
             pklog.debug("Using apt-file")
-            apt_file = subprocess.Popen(["/usr/bin/apt-file", "--fixed-string",
+            filenames_regex = [path.lstrip("/").replace("/", "\/") \
+                               for path in filenames]
+            regex = "^(" + "|".join(filenames_regex) + ")$"
+            apt_file = subprocess.Popen(["/usr/bin/apt-file", "--regexp",
                                          "--non-interactive", "--package-only",
-                                         "find", filename],
+                                         "find", regex],
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
             stdout, stderr = apt_file.communicate()
@@ -527,7 +529,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if pkg.name in result_names:
                 continue
             for installed_file in self._get_installed_files(pkg):
-                if filename in installed_file:
+                if installed_file in filenames:
                     self._emit_visible_package(filters, pkg)
                     break
 
