@@ -501,7 +501,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Optionally make use of apt-file's Contents cache to search for not
         # installed files. But still search for installed files additionally
         # to make sure that we provide up-to-date results
-        if os.path.exists("/usr/bin/apt-file"):
+        if os.path.exists("/usr/bin/apt-file") and \
+           FILTER_INSTALLED not in filters.split(";"):
             #FIXME: Make use of rapt-file on Debian if the network is available
             #FIXME: Show a warning to the user if the apt-file cache is several
             #       weeks old
