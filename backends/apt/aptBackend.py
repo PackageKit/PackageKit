@@ -899,6 +899,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         self.percentage(100)
 
+    def simulate_remove_packages(self, ids):
+        """Emit the change required for the removal of the given packages."""
+        pklog.info("Simulating removal of package with id %s" % ids)
+        self.status(STATUS_DEP_RESOLVE)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self._check_init(progress=False)
+        pkgs = self._mark_for_removal(ids)
+        self._emit_changes()
+
     def _mark_for_removal(self, ids):
         """Resolve the given package ids and mark the packages for removal."""
         pkgs = []
@@ -1126,6 +1136,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
         pklog.debug("Sending success signal")
 
+    def simulate_update_packages(self, ids):
+        """Emit the changes required for the upgrade of the given packages."""
+        pklog.info("Simulating update of package with id %s" % ids)
+        self.status(STATUS_DEP_RESOLVE)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self._check_init(progress=False)
+        pkgs = self._mark_for_update(ids)
+        self._emit_changes()
+
     def _mark_for_upgrade(self, ids):
         """Resolve the given package ids and mark the packages for upgrade."""
         pkgs = []
@@ -1238,6 +1258,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not self._cache.has_key(p) or not self._cache[p].isInstalled:
                 self.error(ERROR_UNKNOWN, "%s was not installed" % p)
                 return
+
+    def simulate_install_packages(self, ids):
+        """Emit the changes required for the installation of the given
+        packages.
+        """
+        pklog.info("Simulating installing package with id %s" % ids)
+        self.status(STATUS_DEP_RESOLVE)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self._check_init(progress=False)
+        pkgs = self._mark_for_installation(ids)
+        self._emit_changes()
 
     def _mark_for_installation(self, ids):
         """Resolve the given package ids and mark the packages for
@@ -1793,6 +1825,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._cache.has_key(name) and \
                self._is_package_visible(self._cache[name], filters):
                 self._emit_package(self._cache[name], info)
+
+    def _emit_changes(self):
+        """Emit all changed packages."""
+        for pkg in self._cache:
+            if pkg.markedDelete:
+                self._emit_package(pkg, INFO_REMOVING, False)
+            elif pkg.markedInstall:
+                self._emit_package(pkg, INFO_INSTALLING, True)
+            elif pkg.markedUpgrade:
+                self._emit_package(pkg, INFO_UPDATING, True)
+            elif pkg.markedDowngrade:
+                self._emit_package(pkg, INFO_DOWNGRADING, True)
+            elif pkg.markedReinstall:
+                self._emit_package(pkg, INFO_REINSTALLING, True)
 
     def _is_package_visible(self, pkg, filters):
         """
