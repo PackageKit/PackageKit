@@ -49,11 +49,14 @@ logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
 pklog.setLevel(logging.NOTSET)
 
-_syslog = logging.handlers.SysLogHandler("/dev/log",
+try:
+    _syslog = logging.handlers.SysLogHandler("/dev/log",
                                       logging.handlers.SysLogHandler.LOG_DAEMON)
-formatter = logging.Formatter('PackageKit: %(levelname)s: %(message)s')
-_syslog.setFormatter(formatter)
-pklog.addHandler(_syslog)
+    formatter = logging.Formatter('PackageKit: %(levelname)s: %(message)s')
+    _syslog.setFormatter(formatter)
+    pklog.addHandler(_syslog)
+except:
+    pass
 
 # Xapian database is optionally used to speed up package description search
 XAPIAN_DB_PATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
