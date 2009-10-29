@@ -860,11 +860,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._commit_changes()
 
     @lock_cache
-    def remove_packages(self, allowdeps, autoremove, ids):
+    def remove_packages(self, allow_deps, auto_remove, ids):
         """
         Implement the {backend}-remove functionality
         """
-        # TODO: use autoremove
         pklog.info("Removing package(s): id %s" % ids)
         self.status(STATUS_REMOVE)
         self.allow_cancel(False)
@@ -912,6 +911,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "installed and so block the removal: "
                        "%s" % " ".join(installed))
             return
+        # Check if the removal would remove further packages
+        if not allow_deps and self._cache.delete_count != len(ids):
+            dependencies = [pkg.name for pkg in self._cache.getChanges() \
+                            if pkg.name not in pkgs]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages would have also to be removed: "
+                       "%s" % " ".join(dependencies))
         #FIXME: Should support only_trusted
         self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
