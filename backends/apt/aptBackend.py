@@ -1365,6 +1365,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.percentage(100)
 
+    def simulate_install_files(self, inst_files):
+        """Emit the change required for the installation of the given package
+        files.
+        """
+        pklog.info("Simulating installation of the package files: "
+                   "%s" % inst_files)
+        self.status(STATUS_DEP_RESOLVE)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self._check_init(progress=False)
+        for path in inst_files:
+            deb = apt.debfile.DebPackage(path, self._cache)
+            if not deb.check():
+                self.error(ERROR_UNKNOWN, deb._failureString)
+                return
+        self._emit_changes()
+
     @lock_cache
     def refresh_cache(self, force):
         """
