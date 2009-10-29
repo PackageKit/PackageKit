@@ -553,8 +553,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             filenames_regex.append(pattern)
         files_pattern = re.compile("|".join(filenames_regex))
         for pkg in self._cache:
-#            if pkg.name in result_names:
- #               continue
+            if pkg.name in result_names:
+                continue
             for installed_file in self._get_installed_files(pkg):
                 if files_pattern.match(installed_file):
                     self._emit_visible_package(filters, pkg)
