@@ -823,9 +823,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Implement the {backend}-update-system functionality
         """
-
-        # FIXME: use only_trusted
-
         pklog.info("Upgrading system")
         self.status(STATUS_UPDATE)
         self.allow_cancel(False)
@@ -859,7 +856,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 continue
         resolver.InstallProtect()
         resolver.Resolve(True)
-        if not self._commit_changes(): return False
+        self._check_trusted(only_trusted)
+        self._commit_changes()
 
     @lock_cache
     def remove_packages(self, allowdeps, autoremove, ids):
@@ -914,9 +912,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "installed and so block the removal: "
                        "%s" % " ".join(installed))
             return
-        if not self._commit_changes(fetch_range=(10,10),
-                                    install_range=(10,90)):
-            return False
+        #FIXME: Should support only_trusted
+        self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
         for p in pkgs:
             if self._cache.has_key(p) and self._cache[p].isInstalled:
@@ -1088,9 +1085,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Implement the {backend}-update functionality
         """
-
-        # FIXME: use only_trusted
-
         pklog.info("Updating package with id %s" % ids)
         self.status(STATUS_UPDATE)
         self.allow_cancel(False)
@@ -1134,7 +1128,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages block the update: "
                        "%s" % " ".join(deleted))
             return
-        if not self._commit_changes(): return False
+        self._check_trusted(only_trusted)
+        self._commit_changes()
         self._open_cache(prange=(90,100))
         self.percentage(100)
         pklog.debug("Checking success of operation")
@@ -1200,9 +1195,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Implement the {backend}-install functionality
         """
-
-        # FIXME: use only_trusted
-
         pklog.info("Installing package with id %s" % ids)
         self.status(STATUS_INSTALL)
         self.allow_cancel(False)
@@ -1244,7 +1236,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages block the update: "
                        "%s" % " ".join(deleted))
             return
-        if not self._commit_changes(): return False
+        self._check_trusted(only_trusted)
+        self._commit_changes()
         self._open_cache(prange=(90,100))
         self.percentage(100)
         pklog.debug("Checking success of operation")
@@ -1286,9 +1279,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.message(MESSAGE_NEWER_PACKAGE_EXISTS, 
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
-        if len(self._cache.getChanges()) > 0 and not \
-           self._commit_changes((10,25), (25,50)): 
-            return False
+        if self._cache.getChanges():
+            self._check_trusted(only_trusted)
+            self._commit_changes((10,25), (25,50))
         # Install the Debian package files
         d = PackageKitDpkgInstallProgress(self)
         try:
@@ -1629,19 +1622,27 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pass
         self._open_cache(prange)
 
-    def _check_trusted(self):
-        """Emit a message if untrusted packages would be installed."""
-        untrusted = [pkg.name for pkg in self._cache \
-                     if (pkg.markedInstall or pkg.markedUpgrade) and \
-                         not pkg.candidate.origins[0].trusted]
-        if untrusted:
-            self.message(MESSAGE_UNTRUSTED_PACKAGE, " ".join(untrusted))
+    def _check_trusted(self, only_trusted):
+        """Check if only trusted packages are allowed and fail if 
+        untrusted packages would be installed in this case.
+        """
+        untrusted = []
+        if only_trusted:
+            for pkg in self._cache:
+                if (pkg.markedInstall or pkg.markedUpgrade or
+                    pkg.markedDowngrade or pkg.markedReinstall):
+                     trusted = False
+                     for origin in pkg.candidate.origins:
+                          trusted |= origin.trusted
+                     if not trusted:
+                         untrusted.append(pkg.name)
+            if untrusted:
+                self.error(ERROR_MISSING_GPG_SIGNATURE, " ".join(untrusted))
 
     def _commit_changes(self, fetch_range=(5,50), install_range=(50,90)):
         """
         Commit changes to the cache and handle errors
         """
-        self._check_trusted()
         try:
             self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
                                PackageKitInstallProgress(self, install_range))
