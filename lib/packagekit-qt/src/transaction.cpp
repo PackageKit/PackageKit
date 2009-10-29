@@ -41,6 +41,7 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 
 	d->error = Client::NoError;
 
+	connect(d->p, SIGNAL(Changed()), this, SIGNAL(changed()));
 	connect(d->p, SIGNAL(AllowCancel(bool)), this, SIGNAL(allowCancelChanged(bool)));
 	connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)), this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(Destroy()), this, SIGNAL(destroy()));
@@ -95,12 +96,12 @@ Client::DaemonError Transaction::error () const
 	return d->error;
 }
 
-bool Transaction::allowCancel()
+bool Transaction::allowCancel() const
 {
 	return d->p->allowCancel ();
 }
 
-bool Transaction::callerActive()
+bool Transaction::callerActive() const
 {
 	return d->p->callerActive ();
 }
@@ -113,25 +114,48 @@ void Transaction::cancel()
 	}
 }
 
-Package* Transaction::lastPackage()
+Package* Transaction::lastPackage() const
 {
 	return new Package(d->p->lastPackage ());
 }
 
-Transaction::ProgressInfo Transaction::progress()
+Transaction::ProgressInfo Transaction::progress() const
 {
-	uint p, subp, elaps, rem;
-	p = d->p->GetProgress(subp, elaps, rem);
 	ProgressInfo i;
 	i.percentage = d->p->percentage ();
 	i.subpercentage = d->p->subpercentage ();
-	i.elapsed = elaps;
-	i.remaining = rem;
+	i.elapsed = d->p->elapsedTime ();
+	i.remaining = d->p->remainingTime ();
 
 	return i;
 }
 
-Client::Action Transaction::role()
+uint Transaction::percentage() const
+{
+	return d->p->percentage ();
+}
+
+uint Transaction::subpercentage() const
+{
+	return d->p->subpercentage ();
+}
+
+uint Transaction::elapsedTime() const
+{
+	return d->p->elapsedTime ();
+}
+
+uint Transaction::remainingTime() const
+{
+	return d->p->remainingTime ();
+}
+
+uint Transaction::speed() const
+{
+	return d->p->speed ();
+}
+
+Client::Action Transaction::role() const
 {
 	if(d->oldtrans)
 		return d->role;
@@ -144,32 +168,37 @@ void Transaction::setLocale(const QString& locale)
 	d->p->SetLocale(locale);
 }
 
-Transaction::Status Transaction::status()
+void Transaction::setHints(const QStringList& hints)
+{
+	d->p->SetHints(hints);
+}
+
+Transaction::Status Transaction::status() const
 {
 	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->status (), "Status", "Status");
 }
 
-QDateTime Transaction::timespec()
+QDateTime Transaction::timespec() const
 {
 	return d->timespec;
 }
 
-bool Transaction::succeeded()
+bool Transaction::succeeded() const
 {
 	return d->succeeded;
 }
 
-uint Transaction::duration()
+uint Transaction::duration() const
 {
 	return d->duration;
 }
 
-QString Transaction::data()
+QString Transaction::data() const
 {
 	return d->data;
 }
 
-uint Transaction::uid()
+uint Transaction::uid() const
 {
 	if(d->p) {
 		return d->p->uid();
@@ -177,7 +206,7 @@ uint Transaction::uid()
 	return d->uid;
 }
 
-QString Transaction::cmdline()
+QString Transaction::cmdline() const
 {
 	return d->cmdline;
 }

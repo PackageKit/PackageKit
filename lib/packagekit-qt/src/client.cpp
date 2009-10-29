@@ -74,6 +74,7 @@ Client::Client(QObject* parent) : QObject(parent)
 
 	d->error = NoError;
 
+	connect(d->daemon, SIGNAL(Changed()), this, SIGNAL(changed()));
 	connect(d->daemon, SIGNAL(Locked(bool)), this, SIGNAL(locked(bool)));
 	connect(d->daemon, SIGNAL(NetworkStateChanged(const QString&)), d, SLOT(networkStateChanged(const QString&)));
 	connect(d->daemon, SIGNAL(RepoListChanged()), this, SIGNAL(repoListChanged()));
@@ -94,9 +95,9 @@ Client::~Client()
 	delete d;
 }
 
-Client::Actions Client::getActions()
+Client::Actions Client::getActions() const
 {
-	QStringList actions = d->daemon->GetActions().value().split(";");
+	QStringList actions = d->daemon->roles().split(";");
 
 	Actions flags;
 	foreach(const QString& action, actions) {
@@ -105,19 +106,32 @@ Client::Actions Client::getActions()
 	return flags;
 }
 
-Client::BackendDetail Client::getBackendDetail()
+Client::BackendDetail Client::getBackendDetail() const
 {
 	BackendDetail detail;
-	QString name, author;
-	name = d->daemon->GetBackendDetail(author);
-	detail.name = name;
-	detail.author = author;
+	detail.name = backendName();
+	detail.author = backendAuthor();
 	return detail;
 }
 
-Client::Filters Client::getFilters()
+QString Client::backendName() const
 {
-	QStringList filters = d->daemon->GetFilters().value().split(";");
+	return d->daemon->backendName();
+}
+
+QString Client::backendDescription() const
+{
+	return d->daemon->backendDescription();
+}
+
+QString Client::backendAuthor() const
+{
+	return d->daemon->backendAuthor();
+}
+
+Client::Filters Client::getFilters() const
+{
+	QStringList filters = d->daemon->filters().split(";");
 
 	// Adapt a slight difference in the enum
 	if(filters.contains("none")) {
@@ -131,9 +145,9 @@ Client::Filters Client::getFilters()
 	return flags;
 }
 
-Client::Groups Client::getGroups()
+Client::Groups Client::getGroups() const
 {
-	QStringList groups = d->daemon->GetGroups().value().split(";");
+	QStringList groups = d->daemon->groups().split(";");
 
 	Groups flags;
 	foreach(const QString& group, groups) {
@@ -142,18 +156,23 @@ Client::Groups Client::getGroups()
 	return flags;
 }
 
-QStringList Client::getMimeTypes()
+bool Client::locked() const
 {
-	return d->daemon->GetMimeTypes().value().split(";");
+	return d->daemon->locked();
 }
 
-Client::NetworkState Client::getNetworkState()
+QStringList Client::getMimeTypes() const
 {
-	QString state = d->daemon->GetNetworkState();
+	return d->daemon->mimeTypes().split(";");
+}
+
+Client::NetworkState Client::getNetworkState() const
+{
+	QString state = d->daemon->networkState();
 	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
 }
 
-uint Client::getTimeSinceAction(Action action)
+uint Client::getTimeSinceAction(Action action) const
 {
 	QString pkName = Util::enumToString<Client>(action, "Action", "Action");
 	return d->daemon->GetTimeSinceAction(pkName);
@@ -173,6 +192,11 @@ QList<Transaction*> Client::getTransactions()
 void Client::setLocale(const QString& locale)
 {
 	d->locale = locale;
+}
+
+void Client::setHints(const QStringList& hints)
+{
+	d->hints = hints;
 }
 
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
@@ -196,9 +220,24 @@ void Client::suggestDaemonQuit()
 	d->daemon->SuggestDaemonQuit();
 }
 
-Client::DaemonError Client::getLastError ()
+Client::DaemonError Client::getLastError() const
 {
 	return d->error;
+}
+
+uint Client::versionMajor() const
+{
+	return d->daemon->versionMajor();
+}
+
+uint Client::versionMinor() const
+{
+	return d->daemon->versionMinor();
+}
+
+uint Client::versionMicro() const
+{
+	return d->daemon->versionMicro();
 }
 
 ////// Transaction functions
