@@ -382,7 +382,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
             self._backend.percentage(int(progress))
             self.pprev = progress
         # Emit a Package signal for the currently processed package
-        if pkg_name != self.last_pkg:
+        if pkg_name != self.last_pkg and self._backend._cache.has_key(pkg_name):
             pkg = self._backend._cache[pkg_name]
             # FIXME: We need an INFO enum for downgrades/rollbacks
             if pkg.markedInstall or pkg.markedReinstall or pkg.markedDowngrade:
