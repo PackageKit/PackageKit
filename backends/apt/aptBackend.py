@@ -158,13 +158,24 @@ def lock_cache(func):
     """
     def _locked_cache(*args, **kwargs):
         backend = args[0]
-        try:
-            apt_pkg.PkgSystemLock()
-        except SystemError:
-            #FIXME: Show the blocking application in the details
-            backend.error(ERROR_CANNOT_GET_LOCK,
-                          "Only use one package management programme at the "
-                          "the same time.")
+        backend.status(STATUS_WAITING_FOR_LOCK)
+        while True:
+            try:
+                # see if the lock for the download dir can be acquired
+                # (work around bug in python-apt/apps that call _fetchArchives)
+                lockfile = apt_pkg.Config.FindDir("Dir::Cache::Archives") + \
+                           "lock"
+                lock = apt_pkg.GetLock(lockfile)
+                if lock < 0:
+                    raise SystemError("failed to lock '%s'" % lockfile)
+                else:
+                    os.close(lock)
+                # then lock the main package system
+                apt_pkg.PkgSystemLock()
+            except SystemError:
+                time.sleep(3)
+            else:
+                break
         try:
             func(*args, **kwargs)
         finally:
