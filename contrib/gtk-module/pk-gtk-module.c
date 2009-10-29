@@ -227,6 +227,7 @@ fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED,
 	}
 
 	if (FcPatternGetLangSet (pattern, FC_LANG, 0, &langset) == FcResultMatch &&
+	    FcLangGetCharSet ((FcChar8 *) closure->language) != NULL &&
 	    FcLangSetHasLang (langset, (FcChar8 *) closure->language) != FcLangDifferentLang)
 		closure->found = TRUE;
 
