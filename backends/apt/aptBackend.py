@@ -872,7 +872,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
-        pkgs=[]
+        pkgs = self._mark_for_removal(ids)
+        # Error out if the installation would the installation or upgrade of
+        # other packages
+        if self._cache._depcache.InstCount:
+            installed = [pkg.name for pkg in self._cache.getChanges() if \
+                         pkg.markedInstall or pkg.markedUpgrade]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages would have to upgraded or "
+                       "installed and so block the removal: "
+                       "%s" % " ".join(installed))
+            return
+        # Check if the removal would remove further packages
+        if not allow_deps and self._cache.delete_count != len(ids):
+            dependencies = [pkg.name for pkg in self._cache.getChanges() \
+                            if pkg.name not in pkgs]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages would have also to be removed: "
+                       "%s" % " ".join(dependencies))
+        #FIXME: Should support only_trusted
+        self._commit_changes(fetch_range=(10,10), install_range=(10,90))
+        self._open_cache(prange=(90,99))
+        for p in pkgs:
+            if self._cache.has_key(p) and self._cache[p].isInstalled:
+                self.error(ERROR_UNKNOWN, "%s is still installed" % p)
+                return
+        self.percentage(100)
+
+    def _mark_for_removal(self, ids):
+        """Resolve the given package ids and mark the packages for removal."""
+        pkgs = []
         action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
@@ -904,31 +933,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "removal: %s" % " ".join(broken))
             return
         action_group.release()
-        # Error out if the installation would the installation or upgrade of
-        # other packages
-        if self._cache._depcache.InstCount:
-            installed = [pkg.name for pkg in self._cache.getChanges() if \
-                         pkg.markedInstall or pkg.markedUpgrade]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages would have to upgraded or "
-                       "installed and so block the removal: "
-                       "%s" % " ".join(installed))
-            return
-        # Check if the removal would remove further packages
-        if not allow_deps and self._cache.delete_count != len(ids):
-            dependencies = [pkg.name for pkg in self._cache.getChanges() \
-                            if pkg.name not in pkgs]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages would have also to be removed: "
-                       "%s" % " ".join(dependencies))
-        #FIXME: Should support only_trusted
-        self._commit_changes(fetch_range=(10,10), install_range=(10,90))
-        self._open_cache(prange=(90,99))
-        for p in pkgs:
-            if self._cache.has_key(p) and self._cache[p].isInstalled:
-                self.error(ERROR_UNKNOWN, "%s is still installed" % p)
-                return
-        self.percentage(100)
+        return pkgs
 
     def get_repo_list(self, filters):
         """
@@ -1099,7 +1104,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
-        pkgs=[]
+        pkgs = self._mark_for_upgrade(ids)
+        # Error out if the updates would require the removal of already
+        # installed packages
+        if self._cache._depcache.DelCount:
+            deleted = [pkg.name for pkg in self._cache.getChanges() if \
+                       pkg.markedDelete]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the update: "
+                       "%s" % " ".join(deleted))
+            return
+        self._check_trusted(only_trusted)
+        self._commit_changes()
+        self._open_cache(prange=(90,100))
+        self.percentage(100)
+        pklog.debug("Checking success of operation")
+        for p in pkgs:
+            if not self._cache.has_key(p) or not self._cache[p].isInstalled \
+               or self._cache[p].isUpgradable:
+                self.error(ERROR_UNKNOWN, "%s was not updated" % p)
+                return
+        pklog.debug("Sending success signal")
+
+    def _mark_for_upgrade(self, ids):
+        """Resolve the given package ids and mark the packages for upgrade."""
+        pkgs = []
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
@@ -1128,26 +1157,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "%s" % " ".join(broken))
             return
         ac.release()
-        # Error out if the updates would require the removal of already
-        # installed packages
-        if self._cache._depcache.DelCount:
-            deleted = [pkg.name for pkg in self._cache.getChanges() if \
-                       pkg.markedDelete]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages block the update: "
-                       "%s" % " ".join(deleted))
-            return
-        self._check_trusted(only_trusted)
-        self._commit_changes()
-        self._open_cache(prange=(90,100))
-        self.percentage(100)
-        pklog.debug("Checking success of operation")
-        for p in pkgs:
-            if not self._cache.has_key(p) or not self._cache[p].isInstalled \
-               or self._cache[p].isUpgradable:
-                self.error(ERROR_UNKNOWN, "%s was not updated" % p)
-                return
-        pklog.debug("Sending success signal")
+        return pkgs
 
     def download_packages(self, dest, ids):
         """
@@ -1209,7 +1219,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
-        pkgs=[]
+        pkgs = self._mark_for_installation(ids)
+        # Error out if the installation would require the removal of already
+        # installed packages
+        if self._cache._depcache.DelCount:
+            deleted = [pkg.name for pkg in self._cache.getChanges() if \
+                       pkg.markedDelete]
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                       "The following packages block the update: "
+                       "%s" % " ".join(deleted))
+            return
+        self._check_trusted(only_trusted)
+        self._commit_changes()
+        self._open_cache(prange=(90,100))
+        self.percentage(100)
+        pklog.debug("Checking success of operation")
+        for p in pkgs:
+            if not self._cache.has_key(p) or not self._cache[p].isInstalled:
+                self.error(ERROR_UNKNOWN, "%s was not installed" % p)
+                return
+
+    def _mark_for_installation(self, ids):
+        """Resolve the given package ids and mark the packages for
+        installation.
+        """
+        pkgs = []
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
@@ -1236,24 +1270,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "%s" % " ".join(broken))
             return
         ac.release()
-        # Error out if the installation would require the removal of already
-        # installed packages
-        if self._cache._depcache.DelCount:
-            deleted = [pkg.name for pkg in self._cache.getChanges() if \
-                       pkg.markedDelete]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "The following packages block the update: "
-                       "%s" % " ".join(deleted))
-            return
-        self._check_trusted(only_trusted)
-        self._commit_changes()
-        self._open_cache(prange=(90,100))
-        self.percentage(100)
-        pklog.debug("Checking success of operation")
-        for p in pkgs:
-            if not self._cache.has_key(p) or not self._cache[p].isInstalled:
-                self.error(ERROR_UNKNOWN, "%s was not installed" % p)
-                return
+        return pkgs
 
     @lock_cache
     def install_files(self, only_trusted, inst_files):
