@@ -521,13 +521,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             #FIXME: Show a warning to the user if the apt-file cache is several
             #       weeks old
             pklog.debug("Using apt-file")
-            filenames_regex = [path.lstrip("/").replace("/", "\/") \
-                               for path in filenames]
-            regex = "^(" + "|".join(filenames_regex) + ")$"
-            apt_file = subprocess.Popen(["/usr/bin/apt-file", "--regexp",
-                                         "--non-interactive", "--package-only",
-                                         "find", regex],
-                                        stdout=subprocess.PIPE,
+            filenames_regex = []
+            for filename in filenames:
+                if filename.startswith("/"):
+                    pattern = "^%s$" % filename[1:].replace("/", "\/")
+                else:
+                    pattern = "\/%s$" % filename
+                filenames_regex.append(pattern)
+            cmd = ["/usr/bin/apt-file", "--regexp", "--non-interactive",
+                   "--package-only", "find", "|".join(filenames_regex)]
+            pklog.debug("Calling: %s" % cmd)
+            apt_file = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
             stdout, stderr = apt_file.communicate()
             if apt_file.returncode == 0:
@@ -540,11 +544,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 self.error(ERROR_INTERNAL_ERROR, "%s %s" % (stdout, stderr))
         # Search for installed files
+        filenames_regex = []
+        for filename in filenames:
+            if filename.startswith("/"):
+                pattern = "^%s$" % filename.replace("/", "\/")
+            else:
+                pattern = ".*\/%s$" % filename
+            filenames_regex.append(pattern)
+        files_pattern = re.compile("|".join(filenames_regex))
         for pkg in self._cache:
-            if pkg.name in result_names:
-                continue
+#            if pkg.name in result_names:
+ #               continue
             for installed_file in self._get_installed_files(pkg):
-                if installed_file in filenames:
+                if files_pattern.match(installed_file):
                     self._emit_visible_package(filters, pkg)
                     break
 
