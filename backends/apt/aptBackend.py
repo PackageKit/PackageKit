@@ -586,7 +586,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         for pkg_name in self._cache.keys():
             if search in pkg_name:
-                self._emit_visible_package(filters, self._cache[pkg_name])
+                self._emit_all_visible_pkg_versions(filters,
+                                                    self._cache[pkg_name])
 
     def search_details(self, filters, search):
         """
@@ -1797,7 +1798,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             pklog.debug("Package %s hasn't got any version." % pkg.name)
 
-    def _emit_pkg_version(self, version, info):
+    def _emit_pkg_version(self, version, info=None):
         """Emit the Package signal of the given apt.package.Version."""
         if version.origins:
             origin = version.origins[0].label
@@ -1818,6 +1819,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 else:
                     info = INFO_AVAILABLE
         self.package(id, info, version.summary)
+
+    def _emit_all_visible_pkg_versions(self, filters, pkg):
+        """Emit all available versions of a package."""
+        if self._is_package_visible(pkg, filters):
+            if FILTER_NEWEST in filters:
+                if pkg.candidate:
+                    self._emit_pkg_version(pkg.candidate)
+                elif pkg.installed:
+                    self._emit_pkg_version(pkg.installed)
+            else:
+                for version in pkg.versions:
+                    self._emit_pkg_version(version)
 
     def _emit_visible_package(self, filters, pkg, info=None):
         """
