@@ -121,27 +121,6 @@ public:
 	bool installPackages(pkgDepCache &Cache,
 			     bool Safety = true);
 
-	/**
-	 *  interprets dpkg status fd
-	 */
-	void updateInterface(int readFd, int writeFd);
-
-	/** Marks all upgradable and non-held packages for upgrade.
-	 *
-	 *  \param with_autoinst if \b true, the dependencies of packages
-	 *  begin upgraded will automatically be installed.
-	 *
-	 *  \param ignore_selections if \b false, all upgradable packages
-	 *  that are not held back will be upgraded; otherwise, packages
-	 *  that are going to be removed will be ignored.
-	 *
-	 *  \param undo an undo group with which the actions taken by this
-	 *  routine will be registered, or \b NULL.
-	 */
-	void mark_all_upgradable(bool with_autoinst,
-				 bool ignore_removed/*,
-				 undo_group *undo*/);
-
 	pkgRecords    *packageRecords;
 	pkgCache      *packageCache;
 	pkgDepCache   *packageDepCache;
@@ -166,6 +145,10 @@ private:
 			  bool BrokenFix,
 			  unsigned int &ExpectedInst/*,
 			  bool AllowFail = true*/);
+	/**
+	 *  interprets dpkg status fd
+	*/
+	void updateInterface(int readFd, int writeFd);
 	bool DoAutomaticRemove(pkgCacheFile &Cache);
 	void emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
 				 pkgCacheFile &Cache);
