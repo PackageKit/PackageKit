@@ -187,7 +187,8 @@ public:
 		FilterCollections	 = 0x0400000,
 		FilterNotCollections	 = 0x0800000,
 		FilterApplication	 = 0x1000000,
-		FilterNotApplication	 = 0x2000000
+		FilterNotApplication	 = 0x2000000,
+		FilterLast		 = 0x4000000
 	} Filter;
 	Q_DECLARE_FLAGS(Filters, Filter);
 
