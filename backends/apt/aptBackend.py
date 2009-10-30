@@ -785,9 +785,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package %s isn't available" % id)
                 return
             # FIXME add some real data
-            updates = self.get_id_from_package(pkg, force_candidate=False)
-            if updates is None:
-                continue
+            if pkg.installed.origins:
+                installed_origin = pkg.installed.origins[0].label
+            else:
+                installed_origin = ""
+            updates = "%s;%s;%s;%s" % (pkg.name, pkg.installed.version,
+                                       pkg.installed.architecture,
+                                       installed_origin)
             obsoletes = ""
             vendor_url = ""
             restart = "none"
@@ -1782,40 +1786,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pass
         self._cache.clear()
 
-    def get_id_from_package(self, pkg, force_candidate=False):
-        """
-        Return the packagekit id of package. By default this will be the 
-        installed version for installed packages and the candidate version
-        for not installed packages.
-
-        The force_candidate option will also report the id of the candidate
-        version for installed packages.
-        """
-        origin = ""
-        cand_origin = pkg.candidateOrigin
-        if not pkg.isInstalled or force_candidate:
-            version = pkg.candidateVersion
-            if version is None:
-                return None
-            if cand_origin:
-                origin = cand_origin[0].label
-        else:
-            version = pkg.installedVersion
-            if cand_origin and cand_origin[0].site != "" and \
-               pkg.installedVersion == pkg.candidateVersion:
-                origin = cand_origin[0].label
-        return get_package_id(pkg.name, version, pkg.architecture, origin)
-
     def _emit_package(self, pkg, info=None, force_candidate=False):
         """
         Send the Package signal for a given apt package
         """
-        id = self.get_id_from_package(pkg, force_candidate)
-        if id is None:
-            return
-        section = pkg.section.split("/")[-1]
-        if info == None:
-            if pkg.isInstalled:
+        if pkg.installed and (not force_candidate and not pkg.candidate):
+            self._emit_pkg_version(pkg.installed, info)
+        elif pkg.candidate:
+            self._emit_pkg_version(pkg.candidate, info)
+        else:
+            pklog.debug("Package %s hasn't got any version." % pkg.name)
+
+    def _emit_pkg_version(self, version, info):
+        """Emit the Package signal of the given apt.package.Version."""
+        if version.origins:
+            origin = version.origins[0].label
+        else:
+            origin = ""
+        id = "%s;%s;%s;%s" % (version.package.name, version.version,
+                              version.architecture, origin)
+        section = version.section.split("/")[-1]
+        if not info:
+            if version.package == version.package.installed:
                 if section == "metapackages":
                     info = INFO_COLLECTION_INSTALLED
                 else:
@@ -1825,8 +1817,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     info = INFO_COLLECTION_AVAILABLE
                 else:
                     info = INFO_AVAILABLE
-        summary = pkg.summary
-        self.package(id, info, summary)
+        self.package(id, info, version.summary)
 
     def _emit_visible_package(self, filters, pkg, info=None):
         """
