@@ -2,6 +2,7 @@
 //
 //  Copyright 1999-2008 Daniel Burrows
 //  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+//  Copyright (c) 2004 Michael Vogt <mvo@debian.org>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -261,80 +262,6 @@ bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
 	    (pkg->SelectedState == pkgCache::State::Hold ||
 	    (!candver.end() && false/*candver.VerStr() == state.forbidver*/));
 	// TODO add forbid ver support
-}
-
-void aptcc::mark_all_upgradable(bool with_autoinst,
-				bool ignore_removed/*,
-				undo_group *undo*/)
-{
-//   if(read_only && !read_only_permission())
-//     {
-//       if(group_level == 0)
-// 	read_only_fail();
-//       return;
-//     }
-
-//   pre_package_state_changed();
-
-// //   action_group group(*this, NULL);
-
-
-	for(int iter=0; iter==0 || (iter==1 && with_autoinst); ++iter) {
-		// Do this twice, only turning auto-install on the second time.
-		// A reason for this is the following scenario:
-		//
-		// Packages A and B are installed at 1.0.  Package C is not installed.
-		// Version 2.0 of each package is available.
-		//
-		// Version 2.0 of A depends on "C (= 2.0) | B (= 2.0)".
-		//
-		// Upgrading A if B is not upgraded will cause this dependency to
-		// break.  Auto-install will then cheerfully fulfill it by installing
-		// C.
-		//
-		// A real-life example of this is xemacs21, xemacs21-mule, and
-		// xemacs21-nomule; aptitude would keep trying to install the mule
-		// version on upgrades.
-		bool do_autoinstall=(iter==1);
-
-		for(pkgCache::PkgIterator i=packageDepCache->PkgBegin(); !i.end(); i++) {
-			pkgDepCache::StateCache state = get_state(i);
-// 			aptitude_state &estate = get_ext_state(i);
-
-			if(i.CurrentVer().end()){
-				continue;
-			}
-
-			bool do_upgrade = false;
-
-			if(!ignore_removed) {
-			    do_upgrade = state.Status > 0 && !is_held(i);
-			} else {
-				switch(i->SelectedState) {
-				    // This case shouldn't really happen:
-				    // if this shouldn't happen i guess we don't
-				    // even need to worry? am i right?
-		    // 		case pkgCache::State::Unknown:
-		    // 		  estate.selection_state=pkgCache::State::Install;
-
-				    // Fall through
-				case pkgCache::State::Install:
-					if(state.Status > 0 && !is_held(i)) {
-						do_upgrade = true;
-					}
-					break;
-				default:
-					break;
-				}
-			}
-
-			if(do_upgrade) {
-		// 	      pre_package_state_changed();
-			    dirty = true;
-			    packageDepCache->MarkInstall(i, do_autoinstall);
-			}
-		}
-	}
 }
 
 // used to emit packages it collects all the needed info
@@ -692,7 +619,6 @@ void emit_files (PkBackend *backend, const gchar *pi)
 		}
 	}
 }
-
 
 static bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 {

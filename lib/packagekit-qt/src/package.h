@@ -84,6 +84,7 @@ public:
 	 * Describes the state of a package
 	 */
 	typedef enum {
+		UnknownState,
 		StateInstalled,
 		StateAvailable,
 		StateLow,
@@ -105,8 +106,7 @@ public:
 		StateReinstalling,
 		StateDowngrading,
 		StatePreparing,
-		StateDecompressing,
-		UnknownState
+		StateDecompressing
 	} State;
 	/**
 	 * Returns the package's state
@@ -117,6 +117,7 @@ public:
 	 * Describes a package's license
 	 */
 	typedef enum {
+		UnknownLicense,
 		LicenseGlide,
 		LicenseAfl,
 		LicenseAmpasBsd,
@@ -241,8 +242,7 @@ public:
 		LicenseVostrom,
 		LicenseXerox,
 		LicenseRicebsd,
-		LicenseQhull,
-		UnknownLicense
+		LicenseQhull
 	} License;
 
 	/**

@@ -42,6 +42,7 @@ public:
 	Client* c;
 
 	QString locale;
+	QStringList hints;
 
 	QMutex runningTransactionsLocker;
 	QHash<QString, Transaction*> runningTransactions;

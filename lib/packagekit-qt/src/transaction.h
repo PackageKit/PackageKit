@@ -70,7 +70,6 @@ public:
 	 */
 	QString tid() const;
 
-
 	/**
 	 * \brief Returns the error status of the Transaction
 	 *
@@ -83,7 +82,7 @@ public:
 	 *
 	 * \return true if you can cancel the transaction, false else
 	 */
-	bool allowCancel();
+	bool allowCancel() const;
 
 	/**
 	 * Indicates weither the transaction caller is active or not
@@ -92,7 +91,7 @@ public:
 	 *
 	 * \return true if the caller is active, false else
 	 */
-	bool callerActive();
+	bool callerActive() const;
 
 	/**
 	 * Returns the last package processed by the transaction
@@ -104,7 +103,7 @@ public:
 	 * \sa transactionListChanged
 	 * \sa getTransactionList
 	 */
-	Package* lastPackage();
+	Package* lastPackage() const;
 
 	/**
 	 * Gathers all the information about a transaction's progress in one struct
@@ -120,31 +119,86 @@ public:
 		uint remaining;
 	} ProgressInfo;
 	/**
+	 * TODO this function should be deprecated since any changes to the above
+	 * struct breaks our API
 	 * Returns the current transaction's progress
 	 * \return a ProgressInfo struct describing the transaction's progress
 	 */
-	ProgressInfo progress();
+	ProgressInfo progress() const;
+
+	/**
+	 * The percentage complete of the whole transaction.
+	 * \return percentage, or 101 if not known.
+	 */
+	uint percentage() const;
+
+	/**
+	 * The percentage complete of the individual task, for example, downloading.
+	 * \return percentage, or 101 if not known.
+	 */
+	uint subpercentage() const;
+
+	/**
+	 * The amount of time elapsed during the transaction in seconds.
+	 * \return time in seconds.
+	 */
+	uint elapsedTime() const;
+
+	/**
+	 * The estimated time remaining of the transaction in seconds, or 0 if not known.
+	 * \return time in seconds, or 0 if not known.
+	 */
+	uint remainingTime() const;
+
+	/**
+	 * Returns the estimated speed of the transaction (copying, downloading, etc.)
+	 * \return speed bits per second, or 0 if not known.
+	 */
+	uint speed() const;
 
 	/**
 	 * Returns information describing the transaction
 	 * \return the current action of the transaction
 	 */
-	Client::Action role();
+	Client::Action role() const;
 
 	/**
 	 * \brief Tells the underlying package manager to use the given \p locale
 	 *
 	 * It's recommanded to call Client::setLocale, which will in turn call setLocale
 	 * on every created transaction.
+	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+	 * Use SetHints("locale=$code") instead.
 	 *
 	 * \sa Client::setLocale
 	 */
 	void setLocale(const QString& locale);
 
 	/**
+	 * \brief Tells the underlying package manager to use the given \p hints
+	 *
+	 * This method allows the calling session to set transaction \p hints for
+	 * the package manager which can change as the transaction runs.
+	 *
+	 * This method can be sent before the transaction has been run
+	 * (by using Client::setHints) or whilst it is running
+	 * (by using Transaction::setHints).
+	 * There is no limit to the number of times this
+	 * method can be sent, although some backends may only use the values
+	 * that were set before the transaction was started.
+	 *
+	 * The \p hints can be filled with entries like these
+	 * ('locale=en_GB.utf8','idle=true','interactive=false').
+	 *
+	 * \sa Client::setHints
+	 */
+	void setHints(const QStringList& hints);
+
+	/**
 	 * Describes the current state of the transaction
 	 */
 	typedef enum {
+		UnknownStatus,
 		StatusWait,
 		StatusSetup,
 		StatusRunning,
@@ -180,61 +234,62 @@ public:
 		StatusScanProcessList,
 		StatusCheckExecutableFiles,
 		StatusCheckLibraries,
-		UnknownStatus
+		StatusCopyFiles
 	} Status;
 	/**
 	 * Returns the current state of the transaction
 	 * \return a Transaction::Status value describing the status of the transaction
 	 */
-	Status status();
+	Status status() const;
 
 	/**
 	 * Returns the date at which the transaction was created
 	 * \return a QDateTime object containing the date at which the transaction was created
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	QDateTime timespec();
+	QDateTime timespec() const;
 
 	/**
 	 * Returns weither the trasaction succeded or not
 	 * \return true if the transaction succeeded, false else
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	bool succeeded();
+	bool succeeded() const;
 
 	/**
 	 * Returns the time the transaction took to finish
 	 * \return the number of milliseconds the transaction took to finish
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	uint duration();
+	uint duration() const;
 
 	/**
 	 * Returns some data set by the backend to pass additionnal information
 	 * \return a string set by the backend
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	QString data();
+	QString data() const;
 
 	/**
 	 * Returns the UID of the calling process
 	 * \return the uid of the calling process
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	uint uid();
+	uint uid() const;
 
 	/**
 	 * Returns the command line for the calling process
 	 * \return a string of the command line for the calling process
 	 * \note This function only returns a real value for old transactions returned by getOldTransactions
 	 */
-	QString cmdline();
+	QString cmdline() const;
 
 	/**
 	 * Describes how the transaction finished
 	 * \sa finished()
 	 */
 	typedef enum {
+		UnknownExitStatus,
 		ExitSuccess,
 		ExitFailed,
 		ExitCancelled,
@@ -242,18 +297,17 @@ public:
 		ExitEulaRequired,
 		ExitKilled, /* when we forced the cancel, but had to sigkill */
 		ExitMediaChangeRequired,
-		ExitNeedUntrusted,
-		UnknownExitStatus
+		ExitNeedUntrusted
 	} ExitStatus;
 
 	/**
 	 * Describes what kind of media is required
 	 */
 	typedef enum {
+		UnknownMediaType,
 		MediaCd,
 		MediaDvd,
-		MediaDisc,
-		UnknownMediaType
+		MediaDisc
 	} MediaType;
 
 public Q_SLOTS:
@@ -263,6 +317,11 @@ public Q_SLOTS:
 	void cancel();
 
 Q_SIGNALS:
+	/**
+	 * The transaction has changed one of it's properties
+	 */
+	void changed();
+
 	/**
 	 * The transaction has changed it's "cancellability"
 	 */

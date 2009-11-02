@@ -2366,7 +2366,7 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 	/* check roles */
 	text = pk_role_bitfield_to_text (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
-			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
+			     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 			     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 			     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
@@ -2565,7 +2565,7 @@ pk_control_test (gpointer user_data)
 	/* check data */
 	text = pk_role_bitfield_to_text (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
-			     "get-requires;get-update-detail;get-updates;install-files;install-packages;"
+			     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 			     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 			     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"

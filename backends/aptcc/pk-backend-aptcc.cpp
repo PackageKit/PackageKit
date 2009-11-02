@@ -374,61 +374,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 static gboolean
-backend_update_system_thread (PkBackend *backend)
-{
-	pk_backend_set_allow_cancel (backend, true);
-
-	aptcc *m_apt = new aptcc(backend, _cancel);
-	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
-	if (m_apt->init()) {
-		egg_debug ("Failed to create apt cache");
-		delete m_apt;
-		pk_backend_finished (backend);
-		return false;
-	}
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	// create a cachefile object
-	pkgCacheFile Cache;
-	OpTextProgress Prog(*_config);
-	// open and lock the cache file
-	if (Cache.Open(Prog, true) == false) {
-		// TODO need PK_ERROR_ENUM_OPEN_PKG_CACHE_FAILED
-		show_errors(backend, PK_ERROR_ENUM_FAILED_INITIALIZATION);
-		delete m_apt;
-		pk_backend_finished (backend);
-		return false;
-	}
-
-	egg_debug ("Calculating upgrade... ");
-	if (pkgDistUpgrade(*m_apt->packageDepCache) == false)
-	{
-		show_broken(backend, m_apt);
-		egg_debug ("Failed");
-		delete m_apt;
-		pk_backend_finished (backend);
-		return false;
-	}
-
-	egg_debug ("Done");
-	bool res = m_apt->installPackages(*m_apt->packageDepCache, true);
-	delete m_apt;
-	 _error->DumpErrors();
-	pk_backend_finished (backend);
-	return res;
-}
-
-/**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
-{
-	pk_backend_thread_create (backend, backend_update_system_thread);
-}
-
-static gboolean
-backend_get_updates_thread (PkBackend *backend)
+backend_get_or_update_system_thread (PkBackend *backend)
 {
 	PkBitfield filters;
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
@@ -444,170 +390,46 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pkgset to_install, to_hold, to_remove, to_purge;
-	// Build to_install to avoid a big printout
-	for(pkgCache::PkgIterator i=m_apt->packageCache->PkgBegin(); !i.end(); ++i)
-	{
-		pkgDepCache::StateCache state= m_apt->get_state(i);
-
-		if(!i.CurrentVer().end() &&
-		    state.Upgradable() && !m_apt->is_held(i)) {
-		    to_install.insert(i);
-		}
-	}
-
-	// First try the built-in resolver; if it fails (which it shouldn't
-	// if an upgrade is possible), cancel all changes and try apt's
-	// resolver.
-// 	m_apt->mark_all_upgradable(false, true);
 
 	if (pkgDistUpgrade(*m_apt->packageDepCache) == false)
 	{
 		show_broken(backend, m_apt);
-		egg_debug ("Internal error, AllUpgrade broke stuff");
+		egg_debug ("Internal error, DistUpgrade broke stuff");
 		delete m_apt;
 		pk_backend_finished (backend);
 		return false;
 	}
 
-// //   if(!aptitude::cmdline::safe_resolve_deps(verbose, no_new_installs, true))
-// //     {
-//       {
-// 	aptcc::action_group action_group(*m_apt);
-//
-// 	// Reset all the package states.
-// 	for(pkgCache::PkgIterator i=m_apt->packageDepCache->PkgBegin();
-// 	    !i.end(); ++i)
-// 	  m_apt->mark_keep(i, false, false, NULL);
-//       }
-//
-//       // Use the apt 'upgrade' algorithm as a fallback against, e.g.,
-//       // bugs in the aptitude resolver.
-//       if(!m_apt->all_upgrade(false, NULL))
-// 	{
-// // 	  show_broken();
-//
-// 	  _error->DumpErrors();
-// 	  return -1;
-// 	}
-// //     }
+	bool res = true;
+	if (pk_backend_get_bool(backend, "getUpdates")) {
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > update,
+									    kept;
 
-	pkgvector lists[num_pkg_action_states];
-	pkgvector recommended, suggested;
-	pkgvector extra_install, extra_remove;
-	unsigned long Upgrade=0, Downgrade=0, Install=0, ReInstall=0;
-
-	for(pkgCache::PkgIterator pkg=m_apt->packageCache->PkgBegin();
-	    !pkg.end(); ++pkg)
-	{
-		if((*m_apt->packageDepCache)[pkg].NewInstall()) {
-			++Install;
-		} else if((*m_apt->packageDepCache)[pkg].Upgrade()) {
-			++Upgrade;
-		} else if((*m_apt->packageDepCache)[pkg].Downgrade()) {
-			++Downgrade;
-		} else if(!(*m_apt->packageDepCache)[pkg].Delete() &&
-			((*m_apt->packageDepCache)[pkg].iFlags & pkgDepCache::ReInstall)) {
-			++ReInstall;
-		}
-
-		pkg_action_state state=find_pkg_state(pkg, *m_apt);
-
-		switch(state)
-		    {
-		    case pkg_auto_install:
-		    case pkg_install:
-		    case pkg_upgrade:
-		    if(to_install.find(pkg)==to_install.end())
-			extra_install.push_back(pkg);
-		    break;
-		    case pkg_auto_remove:
-		    case pkg_unused_remove:
-		    case pkg_remove:
-		    if(to_remove.find(pkg)==to_remove.end())
-			extra_remove.push_back(pkg);
-		    break;
-		    case pkg_unchanged:
-		    if(pkg.CurrentVer().end())
-			{
-	    // 	      if(package_recommended(pkg))
-	    // 		recommended.push_back(pkg);
-	    // 	      else if(package_suggested(pkg))
-	    // 		suggested.push_back(pkg);
-			}
-		    default:
-		    break;
-		    }
-
-		switch(state)
+		for(pkgCache::PkgIterator pkg=m_apt->packageCache->PkgBegin();
+		    !pkg.end();
+		    ++pkg)
 		{
-		case pkg_auto_install:
-			lists[pkg_install].push_back(pkg);
-			break;
-		case pkg_unused_remove:
-		case pkg_auto_remove:
-			lists[pkg_remove].push_back(pkg);
-			break;
-		case pkg_auto_hold:
-			if(to_install.find(pkg) != to_install.end()) {
-			    lists[pkg_hold].push_back(pkg);
+			if((*m_apt->packageDepCache)[pkg].Upgrade()    == true &&
+			(*m_apt->packageDepCache)[pkg].NewInstall() == false) {
+				update.push_back(
+					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
+			} else if ((*m_apt->packageDepCache)[pkg].Upgradable() == true &&
+				pkg->CurrentVer != 0 &&
+				(*m_apt->packageDepCache)[pkg].Delete() == false) {
+				kept.push_back(
+					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
 			}
-			break;
-		case pkg_hold:
-			if(to_install.find(pkg) != to_install.end()) {
-			    lists[pkg_hold].push_back(pkg);
-			}
-			break;
-		case pkg_unchanged:
-			break;
-		default:
-			lists[state].push_back(pkg);
-		}
-	}
-
-// printf("upgrade: %lu\n", Upgrade);
-// printf("install: %lu\n", Install);
-// printf("to_install: %lu\n", to_install.size());
-// printf("to_hold: %lu\n", lists[pkg_hold].size());
-
-	for(int i=0; i < num_pkg_action_states; ++i)
-	{
-		PkInfoEnum state;
-		switch(i)
-		{
-		case pkg_hold:
-			state = PK_INFO_ENUM_BLOCKED;
-			break;
-		case pkg_upgrade:
-			state = PK_INFO_ENUM_NORMAL;
-			break;
-		default:
-			continue;
 		}
 
-		if(!lists[i].empty())
-		{
-			vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
-			for (pkgvector::iterator it = lists[i].begin(); it != lists[i].end(); ++it)
-			{
-				if (_cancel) {
-				    break;
-				}
-				pkgCache::VerIterator ver = m_apt->find_candidate_ver(*it);
-				if (ver.end() == false)
-				{
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(*it, ver));
-				}
-			}
-
-			// It's faster to emmit the packages here than in the matching part
-			m_apt->emit_packages(output, filters, state);
-		}
+		m_apt->emit_packages(update, filters, PK_INFO_ENUM_NORMAL);
+		m_apt->emit_packages(kept,   filters, PK_INFO_ENUM_BLOCKED);
+	} else {
+		res = m_apt->installPackages(*m_apt->packageDepCache, true);
 	}
 
 	delete m_apt;
 	pk_backend_finished (backend);
-	return true;
+	return res;
 }
 
 /**
@@ -616,7 +438,18 @@ backend_get_updates_thread (PkBackend *backend)
 static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	pk_backend_thread_create (backend, backend_get_updates_thread);
+	pk_backend_set_bool (backend, "getUpdates", true);
+	pk_backend_thread_create (backend, backend_get_or_update_system_thread);
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend, gboolean only_trusted)
+{
+	pk_backend_set_bool (backend, "getUpdates", false);
+	pk_backend_thread_create (backend, backend_get_or_update_system_thread);
 }
 
 /**
@@ -1268,7 +1101,6 @@ backend_manage_packages_thread (PkBackend *backend)
 	pk_backend_finished (backend);
 	return true;
 }
-
 
 /**
  * backend_install_update_packages:
