@@ -1,3 +1,65 @@
+Version 0.5.4
+~~~~~~~~~~~~~
+Released: 2009-11-02
+
+Translations
+ - Updated translation for Japanese (hyuuga)
+ - Updated translation for Tamil (ifelix)
+ - Updated translation for Brazilian Portuguese (igor)
+ - Updated translation for Serbian (kmilos)
+ - Updated translation for Ukrainian (mvdz)
+ - Updated translation for Italian (perplex)
+ - Updated translation for Portuguese (ruigo)
+ - Updated translation for Greek (thalia)
+
+Backends
+ - apt: Add support for allow_deps of RemovePackages (Sebastian Heinlein)
+ - apt: Add support for only_trusted (Sebastian Heinlein)
+ - apt: Add support for SimulateInstallFiles (Sebastian Heinlein)
+ - apt: Add support for Simulate(Install|Remove|Update) (Sebastian Heinlein)
+ - apt: Allow file name alternation in SearchFile (Sebastian Heinlein)
+ - apt: Don't fail if the syslog daemon is not available (Sebastian Heinlein)
+ - apt: wait until the lock is freed again rather than failing straight away (Sebastian Heinlein)
+ - apt: Make the InstallProgress more safe to not fail dpkg triggers messages (Sebastian Heinlein)
+ - apt: Only use apt-file when not searching exclusively for installed packages (Sebastian Heinlein)
+ - apt: Optionally make use of apt-file to search for files in not installed packages (Sebastian Heinlein)
+ - apt: Respect the SearchFile value specification (Sebastian Heinlein)
+ - aptcc: Added install/remove/update support in non-interactive mode (Daniel Nicoletti)
+ - aptcc: cleaned lots of unused code, merged the dist-upgrade code (Daniel Nicoletti)
+ - aptcc: Emit a useful message while conffiles are not well handled (Daniel Nicoletti)
+ - poldek: Implemented SimulateInstallPackages, SimulateRemovePackages and SimulateUpdatePackages (Marcin Banasiak)
+ - urpmi: Added get_repo_list method implementation (Aurelien Lefebvre)
+ - urpmi: Added repo_enable method implementation (Aurelien Lefebvre)
+ - yum: Add a few more entries in the yum-comps mapping (Richard Hughes)
+ - yum: Disable repos that are not contactable (Richard Hughes)
+ - yum: Only advertise GetDistroUpgrades if the preupgrade binary is present (Richard Hughes)
+ - yum: Copy the check for .src.rpm packages to the simulate phase to fix rh#530264 (Richard Hughes)
+ - zypp: Add support for get_mime_types (Scott Reeves)
+
+New Features
+ - Add a vtable entry get_roles() to allow the backend to override what is advertised by the daemon (Richard Hughes)
+ - glib2: Add an 'idle' parameter to PkClient to show when all pending transactions have finished (Richard Hughes)
+ - glib2: Add a package property to PkProgress so we can track the complete package object (Richard Hughes)
+ - packagekit-qt: Updated the API to have all the new enums and use the properties (Daniel Nicoletti)
+
+Bugfixes:
+ - Add the missing InstallSignature role from the backend auto-detection. Fixes rh#530945 (Richard Hughes)
+ - Ensure we emulate FINISHED correctly for non-simultaneous backends (Richard Hughes)
+ - Raise some of the DoS limits in the config file as it causes gnome-shell not to install properly (Richard Hughes)
+ - cnf: don't exit before we try to search if no alternatives were found (Richard Hughes)
+ - Fix up some html problems (Carlo Marcelo Arenas Belon)
+ - Don't prompt for the authentication dialog when we set the proxy to the same as it was before (Richard Hughes)
+ - Ensure we print a newline if command-not-found finds exactly 0 possible results (Richard Hughes)
+ - Ensure we save the proxy to the database even without PolicyKit (Richard Hughes)
+ - glib2: ensure we send PK_STATUS_ENUM_FINISHED even if the transaction has failed (Richard Hughes)
+ - glib2: Fix a TODO where we would show the original package on the simulate screen of glib2 applications (Richard Hughes)
+ - glib2: Only set the package-id in PkProgress if LastPackage has been ever set (Richard Hughes)
+ - glib2: Remove all the finished packages before we pass the result to a simulate handler (Richard Hughes)
+ - glib2: Rename the 'id' parameter 'package-id' so it matches the other objects (Richard Hughes)
+ - gtk-module: Check the language code exists before we search for it. Fixes half of rh#531105 (Richard Hughes)
+ - packagekit-qt: Fixed filters bug (Daniel Nicoletti)
+ - When cancelling, don't check the UID if the sender matches (Richard Hughes)
+
 Version 0.5.3
 ~~~~~~~~~~~~~
 Released: 2009-10-05
