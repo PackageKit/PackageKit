@@ -1364,7 +1364,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         d = PackageKitDpkgInstallProgress(self)
         try:
             d.startUpdate()
-            d.install(inst_files)
+            d.install([inst.encode(DEFAULT_ENCODING) for inst in inst_files])
             d.finishUpdate()
         except InstallTimeOutPKError, e:
             self._recover()
