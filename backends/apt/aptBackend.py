@@ -1497,8 +1497,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except Exception, e:
             #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
             #       missing dependecies
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "Dependecies for %s cannot be satisfied: %s" % e)
+                        "Removal would break the following packages: %s" % \
+                        " ".join(broken))
             return
         # Check the status of the resulting changes
         for p in self._cache.getChanges():
