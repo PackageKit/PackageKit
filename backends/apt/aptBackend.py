@@ -153,7 +153,10 @@ MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
 # Required to get translated descriptions
-locale.setlocale(locale.LC_ALL, "")
+try:
+    locale.setlocale(locale.LC_ALL, "")
+except locale.Error:
+    pklog.debug("Failed to unset locale")
 
 def lock_cache(func):
     """Lock the system package cache before excuting the decorated function and
