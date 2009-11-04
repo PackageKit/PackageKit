@@ -1791,10 +1791,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Send the Package signal for a given apt package
         """
-        if pkg.installed and (not force_candidate and not pkg.candidate):
-            self._emit_pkg_version(pkg.installed, info)
-        elif pkg.candidate:
+        if (not pkg.isInstalled or force_candidate) and pkg.candidate:
             self._emit_pkg_version(pkg.candidate, info)
+        elif pkg.isInstalled:
+            self._emit_pkg_version(pkg.installed, info)
         else:
             pklog.debug("Package %s hasn't got any version." % pkg.name)
 
@@ -1808,7 +1808,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                               version.architecture, origin)
         section = version.section.split("/")[-1]
         if not info:
-            if version.package == version.package.installed:
+            if version == version.package.installed:
                 if section == "metapackages":
                     info = INFO_COLLECTION_INSTALLED
                 else:
