@@ -1984,6 +1984,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             return None
 
+    def _get_version_by_id(self, id):
+        """Return the apt.package.Version corresponding to the given
+        package id.
+
+        If the version isn't available error out.
+        """
+        name, version_string, arch, data = id.split(";", 4)
+        try:
+            pkg = self._cache[name]
+        except:
+            self.error(ERROR_PACKAGE_NOT_FOUND,
+                       "There isn't any package named %s" % name)
+        #FIXME:This requires a not yet released fix in python-apt
+        try:
+            version = pkg.versions[version_string]
+        except:
+            self.error(ERROR_PACKAGE_NOT_FOUND,
+                       "There isn't any verion %s of %s" % (version_string,
+                                                            name))
+        if version.architecture != arch:
+            self.error(ERROR_PACKAGE_NOT_FOUND,
+                       "Version %s of %s isn't available for architecture "
+                       "%s" % (pkg.name, version.version, arch))
+        return version
+
     def _get_installed_files(self, pkg):
         """
         Return the list of unicode names of the files which have
