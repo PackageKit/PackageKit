@@ -1546,55 +1546,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         # The dependency does not exist
                         emit_blocked_dependency(base_dep, filters=filters)
 
-    def get_requires(self, filter, ids, recursive):
+    def get_requires(self, filters, ids, recursive):
+        """Emit all packages which depend on the given ids.
+
+        Recursive searching is not supported.
         """
-        Implement the apt2-get-requires functionality
-        """
-        pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive_text))
-        #FIXME: recursive is not yet implemented
-        if recursive == True:
-            pklog.warn("Recursive dependencies are not implemented")
+        pklog.info("Get requires (%s,%s,%s)" % (filter, ids, recursive))
         self.status(STATUS_DEP_RESOLVE)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
-        # Mark all packages for removal
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
-        pkgs = []
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
-            if pkg._pkg.Essential == True:
-                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
-                           "Package %s cannot be removed." % pkg.name)
-                return
-            pkgs.append(pkg)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
-            resolver.Remove(pkg._pkg)
-        resolver.InstallProtect()
-        try:
-            resolver.Resolve()
-        except Exception, e:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                       "Error removing %s: %s" % (pkg.name, e))
-            return
-        # Check the status of the resulting changes
-        for p in self._cache.getChanges():
-            if p.markedDelete:
-                if not p in pkgs and self._is_package_visible(p, filter):
-                    self._emit_package(p)
-            else:
-                self.error(ERROR_DEP_RESOLUTION_FAILED,
-                           "Please use an advanced package management tool "
-                           "e.g. Synaptic or aptitude, since there is a "
-                           "complex dependency situation.")
-                return
-        # Clean up
-        self._cache.clear()
+            version = self._get_version_by_id(id)
+            provided = [pro[0] for pro in version._cand.ProvidesList]
+            for pkg in self._cache:
+                if not self._is_package_visible(pkg, filters):
+                    continue
+                if pkg.isInstalled:
+                    pkg_ver = pkg.installed
+                elif pkg.candidate:
+                    pkg_ver = pkg.candidate
+                for dependency in pkg_ver.dependencies:
+                    satisfied = False
+                    for base_dep in dependency.or_dependencies:
+                        if version.package.name == base_dep.name or \
+                           base_dep.name in provided:
+                            satisfied = True
+                            break
+                    if satisfied:
+                        self._emit_package(pkg)
+                        break
 
     def what_provides(self, filters, provides_type, search):
         def get_mapping_db(path):
