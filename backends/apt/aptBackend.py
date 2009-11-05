@@ -1460,70 +1460,91 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "Package name %s could not be resolved" % name)
                 return
 
-    def get_depends(self, filter, ids, recursive):
-        """
-        Implement the apt2-get-depends functionality
+    def get_depends(self, filters, ids, recursive):
+        """Emit all dependencies of the given package ids.
 
-        Emit all packages that need to be installed or updated to install
-        the given package ids. It behaves like a preview of the changes
-        required for the installation. An error will be emitted if the 
-        dependecies cannot be satisfied.
-        In contrast to the yum backend the whole dependency resoltions is done 
-        by the package manager. Therefor the list of satisfied packages cannot
-        be computed easily. GDebi features this. Perhaps this should be moved
-        to python-apt.
+        Doesn't support recursive dependency resolution.
         """
-        pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive_text))
-        #FIXME: recursive is not yet implemented
-        if recursive == True:
-            pklog.warn("Recursive dependencies are not implemented")
+        def emit_blocked_dependency(base_dependency, pkg=None,
+                                    filters=""):
+            """Send a blocked package signal for the given
+            apt.package.BaseDependency.
+            """
+            filters_lst = filters.split(";")
+            if FILTER_INSTALLED in filters_lst:
+                return
+            if pkg:
+                summary = pkg.summary
+                try:
+                    filters.remove(FILTER_NOT_INSTALLED)
+                except ValueError:
+                    pass
+                if not self._is_package_visible(pkg, filters):
+                    return
+            else:
+                summary = ""
+            if base_dependency.relation:
+                version = "%s%s" % (base_dependency.relation,
+                                    base_dependency.version)
+            else:
+                version = base_dependency.version
+            self.package("%s;%s;;" % (base_dependency.name, version),
+                         INFO_BLOCKED, summary)
+
+        def check_dependency(pkg, base_dep):
+            """Check if the given apt.package.Package can satisfy the
+            BaseDepenendcy and emit the corresponding package signals.
+            """
+            if not self._is_package_visible(pkg, filters):
+                return
+            if base_dep.version:
+                satisfied = False
+                # Sort the version list to check the installed
+                # and candidate before the other ones
+                ver_list = list(pkg.versions)
+                if pkg.installed:
+                    ver_list.remove(pkg.installed)
+                    ver_list.insert(0, pkg.installed)
+                if pkg.candidate:
+                    ver_list.remove(pkg.candidate)
+                    ver_list.insert(0, pkg.candidate)
+                for dep_ver in ver_list:
+                    if apt_pkg.CheckDep(dep_ver.version,
+                                        base_dep.relation,
+                                        base_dep.version):
+                        self._emit_pkg_version(dep_ver)
+                        satisfied = True
+                        break
+                if not satisfied:
+                    emit_blocked_dependency(base_dep, pkg, filters)
+            else:
+                self._emit_package(pkg)
+
+        # Setup the transaction
+        pklog.info("Get depends (%s,%s,%s)" % (filter, ids, recursive))
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
 
-        # Mark all packages for installation
-        pkgs = []
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        dependency_types = ["PreDepends", "Depends"]
+        if apt_pkg.Config["APT::Install-Recommends"]:
+            dependency_types.append("Recommends")
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
-            pkgs.append(pkg)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
-        resolver.InstallProtect()
-        try:
-            resolver.Resolve()
-        except Exception, e:
-            #FIXME: Introduce a new info enumerate PK_INFO_MISSING for
-            #       missing dependecies
-            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                        "Removal would break the following packages: %s" % \
-                        " ".join(broken))
-            return
-        # Check the status of the resulting changes
-        for p in self._cache.getChanges():
-            if p in pkgs: continue
-            if p.markedDelete:
-                # Packagekit policy forbids removing packages for installation
-                self.error(ERROR_DEP_RESOLUTION_FAILED,
-                           "Remove the package %s before" % p.name)
-                return
-            elif p.markedInstall or p.markedUpgrade:
-                if self._is_package_visible(p, filter):
-                    self._emit_package(p)
-            else:
-                self.error(ERROR_DEP_RESOLUTION_FAILED,
-                           "Please use an advanced package management tool "
-                           "e.g. Synaptic or aptitude, since there is a "
-                           "complex dependency situation.")
-                return
-        # Clean up
-        self._cache.clear()
+            version = self._get_version_by_id(id)
+            for dependency in version.get_dependencies(*dependency_types):
+                # Walk through all or_dependencies
+                for base_dep in dependency.or_dependencies:
+                    if self._cache.isVirtualPackage(base_dep.name):
+                        # Check each proivider of a virtual package
+                        for provider in \
+                                self._cache.getProvidingPackages(base_dep.name):
+                            check_dependency(provider, base_dep)
+                    elif base_dep.name in self._cache:
+                        check_dependency(self._cache[base_dep.name], base_dep)
+                    else:
+                        # The dependency does not exist
+                        emit_blocked_dependency(base_dep, filters=filters)
 
     def get_requires(self, filter, ids, recursive):
         """
