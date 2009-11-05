@@ -783,11 +783,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            pkg = self._find_package_by_id(pkg_id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
+            pkg = self._get_package_by_id(pkg_id)
             # FIXME add some real data
             if pkg.installed.origins:
                 installed_origin = pkg.installed.origins[0].label
@@ -823,11 +819,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self._check_init(progress=False)
         for pkg_id in pkg_ids:
-            pkg = self._find_package_by_id(pkg_id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
+            pkg = self._get_package_by_id(pkg_id)
             #FIXME: We need more fine grained license information!
             candidate = pkg.candidateOrigin
             if candidate != None and  \
@@ -935,11 +927,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
+            pkg = self._get_package_by_id(id)
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
@@ -1172,11 +1160,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
+            pkg = self._get_package_by_id(id)
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "%s isn't installed" % pkg.name)
@@ -1299,11 +1283,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % id)
-                return
+            pkg = self._get_package_by_id(id)
             if pkg.isInstalled:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                            "Package %s is already installed" % pkg.name)
@@ -1666,11 +1646,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         self.status(STATUS_INFO)
         for id in package_ids:
-            pkg = self._find_package_by_id(id)
-            if pkg == None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s doesn't exist" % pkg.name)
-                return
+            pkg = self._get_package_by_id(id)
             files = string.join(self._get_installed_files(pkg), ";")
             self.files(id, files)
 
@@ -1973,18 +1949,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     return pkg_ver
         return None
 
-    def _find_package_by_id(self, id):
+    def _get_package_by_id(self, id):
+        """Return the apt.package.Package corresponding to the given
+        package id.
+
+        If the package isn't available error out.
         """
-        Return a package matching to the given package id
-        """
-        # FIXME: Should use package.Version
-        name_raw, version, arch, data = id.split(";", 4)
-        #FIXME: Python-apt doesn't allow unicode as key. See #542965
-        name = str(name_raw)
-        if self._cache.has_key(name):
-            return self._cache[name]
-        else:
-            return None
+        version = self._get_version_by_id(id)
+        return version.package
 
     def _get_version_by_id(self, id):
         """Return the apt.package.Version corresponding to the given
