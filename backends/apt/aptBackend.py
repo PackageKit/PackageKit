@@ -642,11 +642,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if META_RELEASE_SUPPORT == False:
             if self._cache.has_key("update-manager-core") and \
                self._cache["update-manager-core"].isInstalled == False:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please install the package update-manager-core to "
                            "get notified of the latest distribution releases.")
             else:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please make sure that update-manager-core is"
                            "correctly installed.")
             return
@@ -894,7 +894,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The following packages would have to upgraded or "
                        "installed and so block the removal: "
                        "%s" % " ".join(installed))
-            return
         # Check if the removal would remove further packages
         if not allow_deps and self._cache.delete_count != len(ids):
             dependencies = [pkg.name for pkg in self._cache.getChanges() \
@@ -907,8 +906,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._open_cache(prange=(90,99))
         for p in pkgs:
             if self._cache.has_key(p) and self._cache[p].isInstalled:
-                self.error(ERROR_UNKNOWN, "%s is still installed" % p)
-                return
+                self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
+                           "%s is still installed" % p)
         self.percentage(100)
 
     def simulate_remove_packages(self, ids):
@@ -931,11 +930,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
-                return
             if pkg._pkg.Essential == True:
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                            "Package %s cannot be removed." % pkg.name)
-                return
             pkgs.append(pkg.name[:])
             pkg.markDelete(False, False)
             resolver.Clear(pkg._pkg)
@@ -949,7 +946,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would break and so block the "
                        "removal: %s" % " ".join(broken))
-            return
         action_group.release()
         return pkgs
 
@@ -967,14 +963,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if REPOS_SUPPORT == False:
             if self._cache.has_key("python-software-properties") and \
                self._cache["python-software-properties"].isInstalled == False:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please install the package "
                            "python-software-properties to handle repositories")
             else:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please make sure that python-software-properties is"
                            "correctly installed.")
-            return
         filter_list = filters.split(";")
         repos = PackageKitSoftwareProperties()
         # Emit distro components as virtual repositories
@@ -1044,11 +1039,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if REPOS_SUPPORT == False:
             if self._cache.has_key("python-software-properties") and \
                self._cache["python-software-properties"].isInstalled == False:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please install the package "
                            "python-software-properties to handle repositories")
             else:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "Please make sure that python-software-properties is"
                            "correctly installed.")
             return
@@ -1110,7 +1105,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if found == False:
             self.error(ERROR_REPO_NOT_AVAILABLE,
                        "The repository of the id %s isn't available" % repo_id)
-            return
 
     @lock_cache
     def update_packages(self, only_trusted, ids):
@@ -1131,7 +1125,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the update: "
                        "%s" % " ".join(deleted))
-            return
         self._check_trusted(only_trusted)
         self._commit_changes()
         self._open_cache(prange=(90,100))
@@ -1140,8 +1133,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for p in pkgs:
             if not self._cache.has_key(p) or not self._cache[p].isInstalled \
                or self._cache[p].isUpgradable:
-                self.error(ERROR_UNKNOWN, "%s was not updated" % p)
-                return
+                self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
+                           "%s was not updated" % p)
         pklog.debug("Sending success signal")
 
     def simulate_update_packages(self, ids):
@@ -1164,7 +1157,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "%s isn't installed" % pkg.name)
-                return
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
             auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
@@ -1179,7 +1171,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
-            return
         ac.release()
         return pkgs
 
@@ -1203,9 +1194,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(0)
         # Check the destination directory
         if not os.path.isdir(dest) or not os.access(dest, os.W_OK):
-            self.error(ERROR_UNKNOWN,
+            self.error(ERROR_INTERNAL_ERROR,
                        "The directory '%s' is not writable" % dest)
-            return
         # Setup the fetcher
         self._check_init(prange=(0,10))
         versions = []
@@ -1216,11 +1206,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if pkg_ver is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "There is no package %s" % id)
-                return
             if not pkg_ver.downloadable:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
                            "package %s isn't downloadable" % id)
-                return
             total += pkg_ver.size
             versions.append(pkg_ver)
         # Start the download
@@ -1230,7 +1218,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 ver.fetch_binary(dest, progress)
             except Exception, error:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, error.message)
-                return
         self.percentage(100)
 
     @lock_cache
@@ -1252,7 +1239,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the update: "
                        "%s" % " ".join(deleted))
-            return
         self._check_trusted(only_trusted)
         self._commit_changes()
         self._open_cache(prange=(90,100))
@@ -1260,8 +1246,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Checking success of operation")
         for p in pkgs:
             if not self._cache.has_key(p) or not self._cache[p].isInstalled:
-                self.error(ERROR_UNKNOWN, "%s was not installed" % p)
-                return
+                self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
+                           "%s was not installed" % p)
 
     def simulate_install_packages(self, ids):
         """Emit the changes required for the installation of the given
@@ -1287,7 +1273,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if pkg.isInstalled:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                            "Package %s is already installed" % pkg.name)
-                return
             pkgs.append(pkg.name[:])
             pkg.markInstall(False, True, True)
             resolver.Clear(pkg._pkg)
@@ -1300,7 +1285,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
-            return
         ac.release()
         return pkgs
 
@@ -1322,19 +1306,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
             if not deb.check():
-                self.error(ERROR_UNKNOWN, deb._failureString)
-                return
+                self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
             (install, remove, unauthenticated) = deb.required_changes
             pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
                         "%s" % (install, remove, unauthenticated))
             if len(remove) > 0:
-                self.error(ERROR_DEP_RESOLUTION_FAILED, 
+                self.error(ERROR_DEP_RESOLUTION_FAILED,
                            "Remove the following packages "
                            "before: %s" % remove)
-                return
             if deb.compare_to_version_in_cache() == \
                apt.debfile.VERSION_OUTDATED:
-                self.message(MESSAGE_NEWER_PACKAGE_EXISTS, 
+                self.message(MESSAGE_NEWER_PACKAGE_EXISTS,
                              "There is a later version of %s "
                              "available in the repositories." % deb.pkgname)
         if self._cache.getChanges():
@@ -1349,20 +1331,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except InstallTimeOutPKError, e:
             self._recover()
             #FIXME: should provide more information
-            self.error(ERROR_UNKNOWN,
+            self.error(ERROR_INTERNAL_ERROR,
                        "Transaction was cancelled since the installation "
                        "of a package hung.\n"
                        "This can be caused by maintainer scripts which "
                        "require input on the terminal:\n%s" % e.message)
-            return
         except PackageManagerFailedPKError, e:
             self._recover()
-            self.error(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
-            return
+            self.error(ERROR_INTERNAL_ERROR, "%s\n%s" % (e.message, e.output))
         except Exception, e:
             self._recover()
             self.error(ERROR_INTERNAL_ERROR, e.message)
-            return
         self.percentage(100)
 
     def simulate_install_files(self, inst_files):
@@ -1378,8 +1357,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for path in inst_files:
             deb = apt.debfile.DebPackage(path, self._cache)
             if not deb.check():
-                self.error(ERROR_UNKNOWN, deb._failureString)
-                return
+                self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
         self._emit_changes()
 
     @lock_cache
@@ -1438,7 +1416,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                            "Package name %s could not be resolved" % name)
-                return
 
     def get_depends(self, filters, ids, recursive):
         """Emit all dependencies of the given package ids.
@@ -1566,27 +1543,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not os.access(path, os.R_OK):
                 if self._cache.has_key("app-install-data") and \
                    self._cache["app-install-data"].isInstalled == False:
-                    self.error(ERROR_UNKNOWN,
+                    self.error(ERROR_INTERNAL_ERROR,
                                "Please install the package "
                                "app-install data for a list of "
                                "applications that can handle files of "
                                "the given type")
                 else:
-                    self.error(ERROR_UNKNOWN,
+                    self.error(ERROR_INTERNAL_ERROR,
                                "The list of applications that can handle "
                                "files of the given type cannot be opened.\n"
                                "Try to reinstall the package "
                                "app-install-data.")
-                return None
+                return
             try:
                 db = gdbm.open(path)
             except:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "The list of applications that can handle "
                            "files of the given type cannot be opened.\n"
                            "Try to reinstall the package "
                            "app-install-data.")
-                return None
             else:
                 return db
 
@@ -1598,15 +1574,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             # The search term from the codec helper looks like this one:
             match = re.match(r"gstreamer([0-9\.]+)\((.+?)\)", search)
             if not match:
-                self.error(ERROR_UNKNOWN,
+                self.error(ERROR_INTERNAL_ERROR,
                            "The search term is invalid")
-                return
             codec = "%s:%s" % (match.group(1), match.group(2))
             db = get_mapping_db("/var/lib/PackageKit/codec-map.gdbm")
             if db == None:
                 self.error(ERROR_INTERNAL_ERROR,
                            "Failed to open codec mapping database")
-                return
             if db.has_key(codec):
                 # The codec mapping db stores the packages as a string
                 # separated by spaces. Each package has its section
@@ -1637,7 +1611,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_NOT_SUPPORTED,
                        "This function is not implemented in this backend")
-            return
 
     def get_files(self, package_ids):
         """
@@ -1673,13 +1646,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                          progress))
         except:
             self.error(ERROR_NO_CACHE, "Package cache could not be opened")
-            return
         if self._cache._depcache.BrokenCount > 0:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "There are broken dependecies on your system. "
                        "Please use an advanced package manage e.g. "
                        "Synaptic or aptitude to resolve this situation.")
-            return
         self._last_cache_refresh = time.time()
 
     def _recover(self, prange=(95,100)):
@@ -1731,14 +1702,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._recover()
             self._open_cache(prange=(95,100))
             #FIXME: should provide more information
-            self.error(ERROR_UNKNOWN,
+            self.error(ERROR_INTERNAL_ERROR,
                        "Transaction was cancelled since the installation "
                        "of a package hung.\n"
                        "This can be caused by maintainer scripts which "
                        "require input on the terminal:\n%s" % e.message)
         except PackageManagerFailedPKError, e:
             self._recover()
-            self.error(ERROR_UNKNOWN, "%s\n%s" % (e.message, e.output))
+            self.error(ERROR_INTERNAL_ERROR, "%s\n%s" % (e.message, e.output))
         else:
             return True
         return False
