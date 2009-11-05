@@ -752,6 +752,10 @@ main (int argc, char *argv[])
 	/* only search using PackageKit if configured to do so */
 	} else if (config->software_source_search) {
 		package_ids = pk_cnf_find_available (argv[1]);
+		if (package_ids == NULL) {
+			g_print ("\n");
+			goto out;
+		}
 		len = g_strv_length (package_ids);
 		if (len == 1) {
 			parts = pk_package_id_split (package_ids[0]);
