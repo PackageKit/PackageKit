@@ -778,11 +778,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        re.findall(MATCH_CVE, changelog, re.MULTILINE))
 
         pklog.info("Get update details of %s" % pkg_ids)
-        self.status(STATUS_INFO)
-        self.percentage(None)
+        self.status(STATUS_DOWNLOAD_CHANGELOG)
+        self.percentage(0)
         self.allow_cancel(True)
-        self._check_init(progress=False)
+        self._check_init(None)
+        total = len(pkg_ids)
+        count = 1
         for pkg_id in pkg_ids:
+            self.percentage(count * 100 / total)
+            count += 1
             pkg = self._get_package_by_id(pkg_id)
             # FIXME add some real data
             if pkg.installed.origins:
@@ -799,7 +803,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             state = ""
             issued = ""
             updated = ""
-            self.status(STATUS_DOWNLOAD_CHANGELOG)
             changelog = pkg.getChangelog()
             # The internal download error string of python-apt ist not
             # provided as unicode object
@@ -807,7 +810,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 changelog = changelog.decode(DEFAULT_ENCODING)
             except:
                 pass
-            self.status(STATUS_INFO)
             bugzilla_url = ";".join(get_bug_urls(changelog))
             cve_url = ";".join(get_cve_urls(changelog))
             self.update_detail(pkg_id, updates, obsoletes, vendor_url,
