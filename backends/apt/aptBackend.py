@@ -801,6 +801,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             updated = ""
             self.status(STATUS_DOWNLOAD_CHANGELOG)
             changelog = pkg.getChangelog()
+            # The internal download error string of python-apt ist not
+            # provided as unicode object
+            try:
+                changelog = changelog.decode(DEFAULT_ENCODING)
+            except:
+                pass
             self.status(STATUS_INFO)
             bugzilla_url = ";".join(get_bug_urls(changelog))
             cve_url = ";".join(get_cve_urls(changelog))
