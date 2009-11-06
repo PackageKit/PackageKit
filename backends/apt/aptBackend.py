@@ -934,10 +934,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
+            version = self._get_version_by_id(id)
+            pkg = version.package
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
+            if pkg.installed != version:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,
+                           "Version %s of %s isn't installed" % \
+                           (version.version, pkg.name))
             if pkg._pkg.Essential == True:
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                            "Package %s cannot be removed." % pkg.name)
@@ -1161,10 +1166,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
+            version = self._get_version_by_id(id)
+            pkg = version.package
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "%s isn't installed" % pkg.name)
+            # Check if the specified version is an update
+            if not apt_pkg.VersionCompare(pkg.installed.version,
+                                          version.version) == -1:
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                           "The version %s isn't an update to the current "
+                           "%s" % (version.version, pkg.installed.version))
+            pkg.candidate = version
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
             auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
@@ -1277,8 +1290,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
         resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
-            if pkg.isInstalled:
+            version = self._get_version_by_id(id)
+            pkg = version.package
+            pkg.candidate = version
+            if pkg.installed == version:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                            "Package %s is already installed" % pkg.name)
             pkgs.append(pkg.name[:])
