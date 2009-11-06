@@ -918,7 +918,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         pkgs = self._mark_for_removal(ids)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     def _mark_for_removal(self, ids):
         """Resolve the given package ids and mark the packages for removal."""
@@ -1145,7 +1145,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         pkgs = self._mark_for_upgrade(ids)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     def _mark_for_upgrade(self, ids):
         """Resolve the given package ids and mark the packages for upgrade."""
@@ -1259,7 +1259,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         pkgs = self._mark_for_installation(ids)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     def _mark_for_installation(self, ids):
         """Resolve the given package ids and mark the packages for
@@ -1354,11 +1354,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
+        pkgs = []
         for path in inst_files:
             deb = apt.debfile.DebPackage(path, self._cache)
+            pkgs.append(deb.pkgname)
             if not deb.check():
                 self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     @lock_cache
     def refresh_cache(self, force):
@@ -1813,9 +1815,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                self._is_package_visible(self._cache[name], filters):
                 self._emit_package(self._cache[name], info)
 
-    def _emit_changes(self):
+    def _emit_changes(self, ignore_pkgs=[]):
         """Emit all changed packages."""
         for pkg in self._cache:
+            if pkg.name in ignore_pkgs:
+                continue
             if pkg.markedDelete:
                 self._emit_package(pkg, INFO_REMOVING, False)
             elif pkg.markedInstall:
