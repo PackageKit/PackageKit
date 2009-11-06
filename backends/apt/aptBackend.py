@@ -1144,7 +1144,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
-        pkgs = self._mark_for_update(ids)
+        pkgs = self._mark_for_upgrade(ids)
         self._emit_changes()
 
     def _mark_for_upgrade(self, ids):
