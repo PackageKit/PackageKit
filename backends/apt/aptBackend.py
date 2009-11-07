@@ -679,19 +679,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             archive and 1.1.1 in the archive of proposed updates or the
             same version in both archives.
             """
-            inst_ver = pkg._pkg.CurrentVer
-            for ver in pkg._pkg.VersionList:
-                # Skip versions which are not later
-                if inst_ver and \
-                   apt_pkg.VersionCompare(ver.VerStr, inst_ver.VerStr) <= 0:
+            for version in pkg.versions:
+                # Only check versions between the installed and the candidate
+                if pkg.installed and \
+                   apt_pkg.VersionCompare(version.version,
+                                          pkg.installed.version) <= 0 and \
+                   apt_pkg.VersionCompare(version.version,
+                                          pkg.candidate.version) > 0:
                     continue
-                for(verFileIter, index) in ver.FileList:
-                    if verFileIter.Origin in ["Debian", "Ubuntu"] and \
-                       (verFileIter.Archive.endswith("-security") or \
-                        verFileIter.Label == "Debian-Security"):
-                        indexfile = pkg._list.FindIndex(verFileIter)
-                        if indexfile and indexfile.IsTrusted:
-                            return True
+                for origin in version.origins:
+                    if origin.origin in ["Debian", "Ubuntu"] and \
+                       (origin.archive.endswith("-security") or \
+                        origin.label == "Debian-Security") and \
+                       origin.trusted:
+                        return True
             return False
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
@@ -702,10 +703,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Start with a safe upgrade
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        resolver = apt.cache.ProblemResolver(self._cache)
         for upgrade in upgrades_safe:
-            resolver.Clear(upgrade._pkg)
-            resolver.Protect(upgrade._pkg)
+            resolver.clear(upgrade)
+            resolver.protect(upgrade)
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
         for pkg in self._cache:
@@ -715,19 +716,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not pkg in upgrades_safe:
                 # Check if the upgrade would require the removal of an already
                 # installed package. If this is the case it will be skipped
-                resolver.Clear(pkg._pkg)
-                resolver.Protect(pkg._pkg)
-                resolver.InstallProtect()
+                resolver.clear(pkg)
+                resolver.protect(pkg)
+                resolver.install_protect()
                 try:
-                    resolver.Resolve(True)
+                    resolver.resolve()
                 except:
                     self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    resolver.Clear(pkg._pkg)
+                    resolver.clear(pkg)
                     self._cache.clear()
                     continue
-                if self._cache._depcache.DelCount:
+                if self._cache.delete_count:
                     self._emit_package(pkg, INFO_BLOCKED, force_candidate=True)
-                    resolver.Clear(pkg._pkg)
+                    resolver.clear(pkg)
                     self._cache.clear()
                     continue
             # The update can be safely installed
@@ -778,11 +779,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        re.findall(MATCH_CVE, changelog, re.MULTILINE))
 
         pklog.info("Get update details of %s" % pkg_ids)
-        self.status(STATUS_INFO)
-        self.percentage(None)
+        self.status(STATUS_DOWNLOAD_CHANGELOG)
+        self.percentage(0)
         self.allow_cancel(True)
-        self._check_init(progress=False)
+        self._check_init(None)
+        total = len(pkg_ids)
+        count = 1
         for pkg_id in pkg_ids:
+            self.percentage(count * 100 / total)
+            count += 1
             pkg = self._get_package_by_id(pkg_id)
             # FIXME add some real data
             if pkg.installed.origins:
@@ -799,9 +804,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             state = ""
             issued = ""
             updated = ""
-            self.status(STATUS_DOWNLOAD_CHANGELOG)
             changelog = pkg.getChangelog()
-            self.status(STATUS_INFO)
+            # The internal download error string of python-apt ist not
+            # provided as unicode object
+            try:
+                changelog = changelog.decode(DEFAULT_ENCODING)
+            except:
+                pass
             bugzilla_url = ";".join(get_bug_urls(changelog))
             cve_url = ";".join(get_cve_urls(changelog))
             self.update_detail(pkg_id, updates, obsoletes, vendor_url,
@@ -846,31 +855,31 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Start with protecting all safe upgrades
         self._cache.upgrade()
         upgrades_safe = self._cache.getChanges()
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        resolver = apt.cache.ProblemResolver(self._cache)
         for upgrade in upgrades_safe:
-            resolver.Clear(upgrade._pkg)
-            resolver.Protect(upgrade._pkg)
+            resolver.clear(upgrade)
+            resolver.protect(upgrade)
         # Search for upgrades which are not already part of the safe upgrade
         # but would only require the installation of additional packages
         for pkg in self._cache:
             if not pkg.isUpgradable or pkg in upgrades_safe:
                 continue
             pklog.debug("Checking upgrade of %s" % pkg.name)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
-            resolver.InstallProtect()
+            resolver.clear(pkg)
+            resolver.protect(pkg)
+            resolver.install_protect()
             try:
-                resolver.Resolve(True)
+                resolver.resolve()
             except:
-                resolver.Clear(pkg._pkg)
+                resolver.clear(pkg)
                 self._cache.clear()
                 continue
-            if self._cache._depcache.DelCount:
-                resolver.Clear(pkg._pkg)
+            if self._cache.delete_count:
+                resolver.clear(pkg)
                 self._cache.clear()
                 continue
-        resolver.InstallProtect()
-        resolver.Resolve(True)
+        resolver.install_protect()
+        resolver.resolve()
         self._check_trusted(only_trusted)
         self._commit_changes()
 
@@ -887,7 +896,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = self._mark_for_removal(ids)
         # Error out if the installation would the installation or upgrade of
         # other packages
-        if self._cache._depcache.InstCount:
+        if self._cache.inst_count:
             installed = [pkg.name for pkg in self._cache.getChanges() if \
                          pkg.markedInstall or pkg.markedUpgrade]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -918,31 +927,35 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         pkgs = self._mark_for_removal(ids)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     def _mark_for_removal(self, ids):
         """Resolve the given package ids and mark the packages for removal."""
         pkgs = []
-        action_group = apt_pkg.GetPkgActionGroup(self._cache._depcache)
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        action_group = self._cache.actiongroup()
+        resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
+            version = self._get_version_by_id(id)
+            pkg = version.package
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
-            if pkg._pkg.Essential == True:
+            if pkg.installed != version:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,
+                           "Version %s of %s isn't installed" % \
+                           (version.version, pkg.name))
+            if pkg.essential == True:
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                            "Package %s cannot be removed." % pkg.name)
             pkgs.append(pkg.name[:])
             pkg.markDelete(False, False)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
-            resolver.Remove(pkg._pkg)
+            resolver.clear(pkg)
+            resolver.protect(pkg)
+            resolver.remove(pkg)
         try:
-            resolver.Resolve()
+            resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would break and so block the "
                        "removal: %s" % " ".join(broken))
@@ -1119,7 +1132,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = self._mark_for_upgrade(ids)
         # Error out if the updates would require the removal of already
         # installed packages
-        if self._cache._depcache.DelCount:
+        if self._cache.delete_count:
             deleted = [pkg.name for pkg in self._cache.getChanges() if \
                        pkg.markedDelete]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -1144,30 +1157,37 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
-        pkgs = self._mark_for_update(ids)
-        self._emit_changes()
+        pkgs = self._mark_for_upgrade(ids)
+        self._emit_changes(pkgs)
 
     def _mark_for_upgrade(self, ids):
         """Resolve the given package ids and mark the packages for upgrade."""
         pkgs = []
-        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        ac = self._cache.actiongroup()
+        resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
+            version = self._get_version_by_id(id)
+            pkg = version.package
             if not pkg.isInstalled:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "%s isn't installed" % pkg.name)
+            # Check if the specified version is an update
+            if not apt_pkg.VersionCompare(pkg.installed.version,
+                                          version.version) == -1:
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                           "The version %s isn't an update to the current "
+                           "%s" % (version.version, pkg.installed.version))
+            pkg.candidate = version
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
             auto = not self._cache._depcache.IsAutoInstalled(pkg._pkg)
             pkg.markInstall(False, True, auto)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
+            resolver.clear(pkg)
+            resolver.protect(pkg)
         try:
-            resolver.Resolve(True)
+            resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
@@ -1233,7 +1253,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = self._mark_for_installation(ids)
         # Error out if the installation would require the removal of already
         # installed packages
-        if self._cache._depcache.DelCount:
+        if self._cache.delete_count:
             deleted = [pkg.name for pkg in self._cache.getChanges() if \
                        pkg.markedDelete]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -1259,29 +1279,30 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.percentage(None)
         self._check_init(progress=False)
         pkgs = self._mark_for_installation(ids)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     def _mark_for_installation(self, ids):
         """Resolve the given package ids and mark the packages for
         installation.
         """
         pkgs = []
-        ac = apt_pkg.GetPkgActionGroup(self._cache._depcache)
-        resolver = apt_pkg.GetPkgProblemResolver(self._cache._depcache)
+        ac = self._cache.actiongroup()
+        resolver = apt.cache.ProblemResolver(self._cache)
         for id in ids:
-            pkg = self._get_package_by_id(id)
-            if pkg.isInstalled:
+            version = self._get_version_by_id(id)
+            pkg = version.package
+            pkg.candidate = version
+            if pkg.installed == version:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                            "Package %s is already installed" % pkg.name)
             pkgs.append(pkg.name[:])
             pkg.markInstall(False, True, True)
-            resolver.Clear(pkg._pkg)
-            resolver.Protect(pkg._pkg)
+            resolver.clear(pkg)
+            resolver.protect(pkg)
         try:
-            resolver.Resolve(True)
+            resolver.resolve()
         except SystemError, error:
-            broken = [pkg.name for pkg in self._cache if \
-                      self._cache._depcache.IsInstBroken(pkg._pkg)]
+            broken = [pkg.name for pkg in self._cache if pkg.is_inst_broken]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages block the installation: "
                        "%s" % " ".join(broken))
@@ -1354,11 +1375,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self._check_init(progress=False)
+        pkgs = []
         for path in inst_files:
             deb = apt.debfile.DebPackage(path, self._cache)
+            pkgs.append(deb.pkgname)
             if not deb.check():
                 self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
-        self._emit_changes()
+        self._emit_changes(pkgs)
 
     @lock_cache
     def refresh_cache(self, force):
@@ -1646,7 +1669,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                          progress))
         except:
             self.error(ERROR_NO_CACHE, "Package cache could not be opened")
-        if self._cache._depcache.BrokenCount > 0:
+        if self._cache.broken_count > 0:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "There are broken dependecies on your system. "
                        "Please use an advanced package manage e.g. "
@@ -1730,7 +1753,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # any broken packages and if the dpkg status or apt cache files have 
         # been changed since the last refresh
         if not isinstance(self._cache, apt.cache.Cache) or \
-           (self._cache._depcache.BrokenCount > 0) or \
+           (self._cache.broken_count > 0) or \
            (os.stat(apt_pkg.Config["Dir::State::status"])[stat.ST_MTIME] > \
             self._last_cache_refresh) or \
            (os.stat(pkg_cache)[stat.ST_MTIME] > self._last_cache_refresh) or \
@@ -1813,9 +1836,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                self._is_package_visible(self._cache[name], filters):
                 self._emit_package(self._cache[name], info)
 
-    def _emit_changes(self):
+    def _emit_changes(self, ignore_pkgs=[]):
         """Emit all changed packages."""
         for pkg in self._cache:
+            if pkg.name in ignore_pkgs:
+                continue
             if pkg.markedDelete:
                 self._emit_package(pkg, INFO_REMOVING, False)
             elif pkg.markedInstall:
