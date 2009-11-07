@@ -192,11 +192,15 @@ security problems before it's used in the real world.
 <h2>Adding backends to PackageKit</h2>
 <p>
 PackageKit itself is an abstract daemon, the only bits that are distro
-specific are the backends.<br/>
+specific are the backends.
+</p>
+<p>
 To make PackageKit work on a new distribution, you have to write a
 "backend" which is basically a shim layer from the distro tool to
-packagekitd. A backend can have one or more threads and also spawn other processes.<br/>
-See the developer information <a href="gtk-doc/index.html">here</a> for loads more
+packagekitd. A backend can have one or more threads and also spawn other processes.
+</p>
+<p>
+See the developer information <a href="gtk-doc/index.html">here</a> for more
 information.
 </p>
 
