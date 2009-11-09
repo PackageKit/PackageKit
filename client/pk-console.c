@@ -147,7 +147,6 @@ pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 	gchar **parts;
 	guint i, lines_len;
 	gchar *package = NULL;
-	gchar *package_id;
 	gchar *tid;
 	gchar *timespec;
 	gboolean succeeded;
@@ -159,7 +158,6 @@ pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 
 	/* get data */
 	g_object_get (item,
-		      "package-id", &package_id,
 		      "role", &role,
 		      "tid", &tid,
 		      "timespec", &timespec,
@@ -220,7 +218,6 @@ pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 		g_free (package);
 		g_strfreev (parts);
 	}
-	g_free (package_id);
 	g_free (tid);
 	g_free (timespec);
 	g_free (cmdline);
