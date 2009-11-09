@@ -53,7 +53,7 @@ struct _PkResultsPrivate
 	guint			 inputs;
 	PkProgress		*progress;
 	PkExitEnum		 exit_enum;
-	PkErrorCode		*error_code;
+	PkError		*error_code;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
 	GPtrArray		*update_detail_array;
@@ -413,7 +413,7 @@ pk_results_add_repo_detail (PkResults *results, PkRepoDetail *item)
  * Return value: %TRUE if the value was set
  **/
 gboolean
-pk_results_set_error_code (PkResults *results, PkErrorCode *item)
+pk_results_set_error_code (PkResults *results, PkError *item)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
@@ -469,9 +469,9 @@ pk_results_get_exit_code (PkResults *results)
  *
  * Gets the last error code from the transaction.
  *
- * Return value: A #PkErrorCode, or %NULL, free with g_object_unref()
+ * Return value: A #PkError, or %NULL, free with g_object_unref()
  **/
-PkErrorCode *
+PkError *
 pk_results_get_error_code (PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);

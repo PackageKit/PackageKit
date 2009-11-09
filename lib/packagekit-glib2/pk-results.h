@@ -31,7 +31,7 @@
 #include <packagekit-glib2/pk-details.h>
 #include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-error-code.h>
+#include <packagekit-glib2/pk-error.h>
 #include <packagekit-glib2/pk-eula-required.h>
 #include <packagekit-glib2/pk-files.h>
 #include <packagekit-glib2/pk-media-change-required.h>
@@ -84,7 +84,7 @@ void		 pk_results_test			(gpointer		 user_data);
 gboolean	 pk_results_set_exit_code		(PkResults		*results,
 							 PkExitEnum		 exit_enum);
 gboolean	 pk_results_set_error_code 		(PkResults		*results,
-							 PkErrorCode		*item);
+							 PkError		*item);
 
 /* add */
 gboolean	 pk_results_add_package			(PkResults		*results,
@@ -117,7 +117,7 @@ gboolean	 pk_results_add_message 		(PkResults		*results,
 /* get single data */
 PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
 PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-PkErrorCode *pk_results_get_error_code			(PkResults		*results);
+PkError *pk_results_get_error_code			(PkResults		*results);
 PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
 
 /* get array objects */

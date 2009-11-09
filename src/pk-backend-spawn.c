@@ -113,7 +113,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkGroupEnum group;
 	gulong package_size;
 	gint percentage;
-	PkErrorCodeEnum error_enum;
+	PkErrorEnum error_enum;
 	PkStatusEnum status_enum;
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;

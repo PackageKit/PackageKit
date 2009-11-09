@@ -207,7 +207,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
-	PkErrorCode *error_code;
+	PkError *error_code;
 	guint idx = 0;
 	guint i;
 	GPtrArray *array = NULL;
@@ -244,9 +244,9 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	state->exit_enum = pk_results_get_exit_code (state->results);
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		error_code = pk_results_get_error_code (state->results);
-		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
+		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
 		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
-				     "could not do simulate: %s", pk_error_code_get_details (error_code));
+				     "could not do simulate: %s", pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		g_object_unref (error_code);
@@ -364,7 +364,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkErrorCode *error_code;
+	PkError *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -387,8 +387,8 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		error_code = pk_results_get_error_code (state->results);
-		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", pk_error_code_get_details (error_code));
+		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to install signature: %s", pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		g_object_unref (error_code);
@@ -465,7 +465,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	PkTask *task = PK_TASK (source_object);
 	GError *error = NULL;
 	PkResults *results;
-	PkErrorCode *error_code;
+	PkError *error_code;
 
 	/* old results no longer valid */
 	if (state->results != NULL)
@@ -488,8 +488,8 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, PkTask
 	/* need untrusted */
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		error_code = pk_results_get_error_code (state->results);
-		/* TODO: convert the PkErrorCodeEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", pk_error_code_get_details (error_code));
+		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
+		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "failed to accept eula: %s", pk_error_get_details (error_code));
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
 		g_object_unref (error_code);

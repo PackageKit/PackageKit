@@ -42,7 +42,7 @@ static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *m
 static void pb_load_packages (PkBackend *backend);
 static void poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset);
 
-static void pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode);
+static void pb_error_show (PkBackend *backend, PkErrorEnum errorcode);
 static void pb_error_clean (void);
 static void poldek_backend_percentage_data_destroy (PkBackend *backend);
 
@@ -1804,14 +1804,14 @@ pb_load_packages (PkBackend *backend)
 }
 
 static void
-pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
+pb_error_show (PkBackend *backend, PkErrorEnum errorcode)
 {
 	if (sigint_reached()) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
 		return;
 	}
 
-	/* Before emiting error_code try to find the most suitable PkErrorCodeEnum */
+	/* Before emiting error_code try to find the most suitable PkErrorEnum */
 	if (g_strrstr (pberror->tslog->str, " unresolved depend") != NULL)
 		errorcode = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED;
 	else if (g_strrstr (pberror->tslog->str, " conflicts") != NULL)
@@ -1830,7 +1830,7 @@ pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
 static gboolean
 pb_error_check (PkBackend *backend)
 {
-	PkErrorCodeEnum	errorcode = PK_ERROR_ENUM_UNKNOWN;
+	PkErrorEnum	errorcode = PK_ERROR_ENUM_UNKNOWN;
 
 	if (g_strrstr (pberror->tslog->str, " version installed, skipped") != NULL)
 		errorcode = PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED;

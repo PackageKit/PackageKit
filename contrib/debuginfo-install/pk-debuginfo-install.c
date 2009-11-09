@@ -123,7 +123,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 	PkResults *results = NULL;
 	const gchar *repo_id;
 	GError *error_local = NULL;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* enable all debuginfo repos we found */
 	for (i=0; i<array->len; i++) {
@@ -141,7 +141,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		/* check error code */
 		error_code = pk_results_get_error_code (results);
 		if (error_code != NULL) {
-			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 			ret = FALSE;
 			goto out;
 		}
@@ -188,7 +188,7 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	PkResults *results = NULL;
 	gchar **package_ids;
 	GError *error_local = NULL;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* mush back into a char** */
 	package_ids = pk_ptr_array_to_strv (array);
@@ -209,7 +209,7 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
@@ -237,7 +237,7 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	GPtrArray *list = NULL;
 	GError *error_local = NULL;
 	gchar **names;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* resolve takes a char** */
 	names = g_strsplit (package_name, ";", -1);
@@ -253,7 +253,7 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -372,7 +372,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	gchar *name_debuginfo;
 	guint i;
 	gchar **split;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
@@ -387,7 +387,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
@@ -445,7 +445,7 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	GPtrArray *array;
 	GError *error_local = NULL;
 	PkRepoDetail *item;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 	gboolean enabled;
 	gchar *repo_id;
 
@@ -460,7 +460,7 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 

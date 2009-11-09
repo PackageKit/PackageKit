@@ -31,24 +31,24 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_ERROR_CODE		(pk_error_code_get_type ())
-#define PK_ERROR_CODE(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_ERROR_CODE, PkErrorCode))
-#define PK_ERROR_CODE_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_ERROR_CODE, PkErrorCodeClass))
+#define PK_TYPE_ERROR_CODE		(pk_error_get_type ())
+#define PK_ERROR_CODE(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_ERROR_CODE, PkError))
+#define PK_ERROR_CODE_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_ERROR_CODE, PkErrorClass))
 #define PK_IS_ERROR_CODE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_ERROR_CODE))
 #define PK_IS_ERROR_CODE_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_ERROR_CODE))
-#define PK_ERROR_CODE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_ERROR_CODE, PkErrorCodeClass))
+#define PK_ERROR_CODE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_ERROR_CODE, PkErrorClass))
 
-typedef struct _PkErrorCodePrivate	PkErrorCodePrivate;
-typedef struct _PkErrorCode		PkErrorCode;
-typedef struct _PkErrorCodeClass	PkErrorCodeClass;
+typedef struct _PkErrorPrivate	PkErrorPrivate;
+typedef struct _PkError		PkError;
+typedef struct _PkErrorClass	PkErrorClass;
 
-struct _PkErrorCode
+struct _PkError
 {
 	 GObject		 parent;
-	 PkErrorCodePrivate	*priv;
+	 PkErrorPrivate	*priv;
 };
 
-struct _PkErrorCodeClass
+struct _PkErrorClass
 {
 	GObjectClass	parent_class;
 	/* padding for future expansion */
@@ -59,11 +59,11 @@ struct _PkErrorCodeClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_error_code_get_type			(void);
-PkErrorCode	*pk_error_code_new			(void);
+GType		 pk_error_get_type			(void);
+PkError	*pk_error_new			(void);
 
-PkErrorCodeEnum	 pk_error_code_get_code			(PkErrorCode *error_code);
-const gchar	*pk_error_code_get_details		(PkErrorCode *error_code);
+PkErrorEnum	 pk_error_get_code			(PkError *error_code);
+const gchar	*pk_error_get_details		(PkError *error_code);
 
 G_END_DECLS
 

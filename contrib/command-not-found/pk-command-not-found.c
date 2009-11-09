@@ -404,7 +404,7 @@ pk_cnf_find_available (const gchar *cmd)
 	guint len;
 	PkBitfield filters;
 	PkResults *results = NULL;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* create new array of full paths */
 	len = g_strv_length ((gchar **)prefixes);
@@ -427,7 +427,7 @@ pk_cnf_find_available (const gchar *cmd)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -577,7 +577,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	PkResults *results = NULL;
 	gchar **package_ids;
 	gboolean ret = FALSE;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* do install */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -594,7 +594,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 

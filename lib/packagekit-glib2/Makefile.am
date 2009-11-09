@@ -43,7 +43,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-details.h						\
 	pk-distro-upgrade.h					\
 	pk-enum.h						\
-	pk-error-code.h						\
+	pk-error.h						\
 	pk-eula-required.h					\
 	pk-files.h						\
 	pk-media-change-required.h				\
@@ -95,8 +95,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-distro-upgrade.h					\
 	pk-enum.c						\
 	pk-enum.h						\
-	pk-error-code.c						\
-	pk-error-code.h						\
+	pk-error.c						\
+	pk-error.h						\
 	pk-eula-required.c					\
 	pk-eula-required.h					\
 	pk-files.c						\

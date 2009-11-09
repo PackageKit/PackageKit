@@ -845,7 +845,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 {
 	GError *error = NULL;
 	PkExitEnum exit_enum;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	egg_debug ("exit_text=%s", exit_text);
 
@@ -860,7 +860,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 		error_code = pk_results_get_error_code (state->results);
 		if (error_code != NULL) {
 			/* should only ever have one ErrorCode */
-			error = g_error_new (PK_CLIENT_ERROR, 0xFF + pk_error_code_get_code (error_code), "%s", pk_error_code_get_details (error_code));
+			error = g_error_new (PK_CLIENT_ERROR, 0xFF + pk_error_get_code (error_code), "%s", pk_error_get_details (error_code));
 		} else {
 			/* fallback where the daemon didn't sent ErrorCode */
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "Failed: %s", exit_text);
@@ -1288,12 +1288,12 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 static void
 pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar *details, PkClientState *state)
 {
-	PkErrorCodeEnum code_enum;
-	PkErrorCode *item;
+	PkErrorEnum code_enum;
+	PkError *item;
 	code_enum = pk_error_enum_from_text (code_text);
 
 	/* add to results */
-	item = pk_error_code_new ();
+	item = pk_error_new ();
 	g_object_set (item,
 		      "code", code_enum,
 		      "details", details,
@@ -4125,7 +4125,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	GError *error = NULL;
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -4141,10 +4141,10 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
-	if (pk_error_code_get_code (error_code) != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
-		egg_test_failed (test, "failed to get error code: %i", pk_error_code_get_code (error_code));
-	if (g_strcmp0 (pk_error_code_get_details (error_code), "The task was stopped successfully") != 0)
-		egg_test_failed (test, "failed to get error message: %s", pk_error_code_get_details (error_code));
+	if (pk_error_get_code (error_code) != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
+		egg_test_failed (test, "failed to get error code: %i", pk_error_get_code (error_code));
+	if (g_strcmp0 (pk_error_get_details (error_code), "The task was stopped successfully") != 0)
+		egg_test_failed (test, "failed to get error message: %s", pk_error_get_details (error_code));
 out:
 	if (error_code != NULL)
 		g_object_unref (error_code);

@@ -619,7 +619,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
@@ -642,7 +642,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_code_get_code (error_code)), pk_error_code_get_details (error_code));
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 

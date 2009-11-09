@@ -458,7 +458,7 @@ pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, 
  * pk_transaction_error_code_emit:
  **/
 static void
-pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorCodeEnum error_enum, const gchar *details)
+pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorEnum error_enum, const gchar *details)
 {
 	const gchar *text;
 	text = pk_error_enum_to_text (error_enum);
@@ -552,10 +552,10 @@ pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *t
  * pk_transaction_error_code_cb:
  **/
 static void
-pk_transaction_error_code_cb (PkBackend *backend, PkErrorCode *item, PkTransaction *transaction)
+pk_transaction_error_code_cb (PkBackend *backend, PkError *item, PkTransaction *transaction)
 {
 	gchar *details;
-	PkErrorCodeEnum code;
+	PkErrorEnum code;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);

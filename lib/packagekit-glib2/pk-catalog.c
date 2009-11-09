@@ -249,7 +249,7 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	GPtrArray *array = NULL;
 	guint i;
 	PkPackage *package;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -262,7 +262,7 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to search file: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to search file: %s", pk_error_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -318,7 +318,7 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	GPtrArray *array = NULL;
 	guint i;
 	PkPackage *package;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -331,7 +331,7 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to search file: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to search file: %s", pk_error_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -393,7 +393,7 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	GPtrArray *array = NULL;
 	guint i;
 	PkPackage *package;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -406,7 +406,7 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to resolve: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to resolve: %s", pk_error_get_details (error_code));
 		pk_catalog_lookup_state_finish (state, error);
 		g_error_free (error);
 		goto out;

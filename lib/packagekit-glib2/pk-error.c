@@ -32,23 +32,23 @@
 
 #include <glib-object.h>
 
-#include <packagekit-glib2/pk-error-code.h>
+#include <packagekit-glib2/pk-error.h>
 #include <packagekit-glib2/pk-enum.h>
 
 #include "egg-debug.h"
 
-static void     pk_error_code_finalize	(GObject     *object);
+static void     pk_error_finalize	(GObject     *object);
 
-#define PK_ERROR_CODE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ERROR_CODE, PkErrorCodePrivate))
+#define PK_ERROR_CODE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ERROR_CODE, PkErrorPrivate))
 
 /**
- * PkErrorCodePrivate:
+ * PkErrorPrivate:
  *
- * Private #PkErrorCode data
+ * Private #PkError data
  **/
-struct _PkErrorCodePrivate
+struct _PkErrorPrivate
 {
-	PkErrorCodeEnum			 code;
+	PkErrorEnum			 code;
 	gchar				*details;
 };
 
@@ -59,16 +59,16 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkErrorCode, pk_error_code, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkError, pk_error, G_TYPE_OBJECT)
 
 /**
- * pk_error_code_get_property:
+ * pk_error_get_property:
  **/
 static void
-pk_error_code_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+pk_error_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	PkErrorCode *error_code = PK_ERROR_CODE (object);
-	PkErrorCodePrivate *priv = error_code->priv;
+	PkError *error_code = PK_ERROR_CODE (object);
+	PkErrorPrivate *priv = error_code->priv;
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -84,13 +84,13 @@ pk_error_code_get_property (GObject *object, guint prop_id, GValue *value, GPara
 }
 
 /**
- * pk_error_code_set_property:
+ * pk_error_set_property:
  **/
 static void
-pk_error_code_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-	PkErrorCode *error_code = PK_ERROR_CODE (object);
-	PkErrorCodePrivate *priv = error_code->priv;
+	PkError *error_code = PK_ERROR_CODE (object);
+	PkErrorPrivate *priv = error_code->priv;
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -107,39 +107,39 @@ pk_error_code_set_property (GObject *object, guint prop_id, const GValue *value,
 }
 
 /**
- * pk_error_code_get_code:
+ * pk_error_get_code:
  **/
-PkErrorCodeEnum
-pk_error_code_get_code (PkErrorCode *error_code)
+PkErrorEnum
+pk_error_get_code (PkError *error_code)
 {
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), 0);
 	return error_code->priv->code;
 }
 
 /**
- * pk_error_code_get_details:
+ * pk_error_get_details:
  **/
 const gchar *
-pk_error_code_get_details (PkErrorCode *error_code)
+pk_error_get_details (PkError *error_code)
 {
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), NULL);
 	return error_code->priv->details;
 }
 
 /**
- * pk_error_code_class_init:
+ * pk_error_class_init:
  **/
 static void
-pk_error_code_class_init (PkErrorCodeClass *klass)
+pk_error_class_init (PkErrorClass *klass)
 {
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_error_code_finalize;
-	object_class->get_property = pk_error_code_get_property;
-	object_class->set_property = pk_error_code_set_property;
+	object_class->finalize = pk_error_finalize;
+	object_class->get_property = pk_error_get_property;
+	object_class->set_property = pk_error_set_property;
 
 	/**
-	 * PkErrorCode:code:
+	 * PkError:code:
 	 */
 	pspec = g_param_spec_uint ("code", NULL, NULL,
 				   0, G_MAXUINT, PK_ERROR_ENUM_UNKNOWN,
@@ -147,48 +147,48 @@ pk_error_code_class_init (PkErrorCodeClass *klass)
 	g_object_class_install_property (object_class, PROP_CODE, pspec);
 
 	/**
-	 * PkErrorCode:details:
+	 * PkError:details:
 	 */
 	pspec = g_param_spec_string ("details", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_DETAILS, pspec);
 
-	g_type_class_add_private (klass, sizeof (PkErrorCodePrivate));
+	g_type_class_add_private (klass, sizeof (PkErrorPrivate));
 }
 
 /**
- * pk_error_code_init:
+ * pk_error_init:
  **/
 static void
-pk_error_code_init (PkErrorCode *error_code)
+pk_error_init (PkError *error_code)
 {
 	error_code->priv = PK_ERROR_CODE_GET_PRIVATE (error_code);
 }
 
 /**
- * pk_error_code_finalize:
+ * pk_error_finalize:
  **/
 static void
-pk_error_code_finalize (GObject *object)
+pk_error_finalize (GObject *object)
 {
-	PkErrorCode *error_code = PK_ERROR_CODE (object);
-	PkErrorCodePrivate *priv = error_code->priv;
+	PkError *error_code = PK_ERROR_CODE (object);
+	PkErrorPrivate *priv = error_code->priv;
 
 	g_free (priv->details);
 
-	G_OBJECT_CLASS (pk_error_code_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_error_parent_class)->finalize (object);
 }
 
 /**
- * pk_error_code_new:
+ * pk_error_new:
  *
- * Return value: a new PkErrorCode object.
+ * Return value: a new PkError object.
  **/
-PkErrorCode *
-pk_error_code_new (void)
+PkError *
+pk_error_new (void)
 {
-	PkErrorCode *error_code;
+	PkError *error_code;
 	error_code = g_object_new (PK_TYPE_ERROR_CODE, NULL);
 	return PK_ERROR_CODE (error_code);
 }

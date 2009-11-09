@@ -126,7 +126,7 @@ gboolean 	 pk_backend_distro_upgrade		(PkBackend 	*backend,
 							 const gchar 	*name,
 							 const gchar 	*summary);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
-							 PkErrorCodeEnum code,
+							 PkErrorEnum code,
 							 const gchar	*details, ...);
 gboolean         pk_backend_repo_signature_required	(PkBackend      *backend,
 							 const gchar	*package_id,

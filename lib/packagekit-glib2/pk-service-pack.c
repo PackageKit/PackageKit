@@ -701,7 +701,7 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	gboolean ret;
 	gchar **files = NULL;
 	GPtrArray *array = NULL;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -714,7 +714,7 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to download: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to download: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -780,7 +780,7 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	PkPackage *package;
 	gchar **package_ids = NULL;
 	gchar **package_ids_to_download = NULL;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -793,7 +793,7 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to download: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to download: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -887,7 +887,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	GPtrArray *array = NULL;
 	guint i;
 	PkPackage *package;
-	PkErrorCode *error_code = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -900,7 +900,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		error = g_error_new (1, 0, "failed to get updates: %s", pk_error_code_get_details (error_code));
+		error = g_error_new (1, 0, "failed to get updates: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;

@@ -1688,7 +1688,7 @@ out:
  * pk_backend_error_code_is_need_untrusted:
  **/
 static gboolean
-pk_backend_error_code_is_need_untrusted (PkErrorCodeEnum error_code)
+pk_backend_error_code_is_need_untrusted (PkErrorEnum error_code)
 {
 	gboolean ret = FALSE;
 	switch (error_code) {
@@ -1709,13 +1709,13 @@ pk_backend_error_code_is_need_untrusted (PkErrorCodeEnum error_code)
  * pk_backend_error_code:
  **/
 gboolean
-pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gchar *format, ...)
+pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer;
 	gboolean ret = TRUE;
 	gboolean need_untrusted;
-	PkErrorCode *item = NULL;
+	PkError *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -1749,8 +1749,8 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum error_code, const gch
 	else
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
-	/* form PkErrorCode struct */
-	item = pk_error_code_new ();
+	/* form PkError struct */
+	item = pk_error_new ();
 	g_object_set (item,
 		      "code", error_code,
 		      "details", buffer,

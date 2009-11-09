@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool show_errors(PkBackend *backend, PkErrorCodeEnum errorCode)
+bool show_errors(PkBackend *backend, PkErrorEnum errorCode)
 {
 	stringstream errors;
 
