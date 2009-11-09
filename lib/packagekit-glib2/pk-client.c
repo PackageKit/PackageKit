@@ -1315,7 +1315,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 	/* add to results */
 	item = pk_message_new ();
 	g_object_set (item,
-		      "message", message_enum,
+		      "type", message_enum,
 		      "details", details,
 		      NULL);
 	pk_results_add_message (state->results, item);
