@@ -413,7 +413,7 @@ pk_task_install_signatures (PkTaskState *state)
 	GPtrArray *array;
 	PkRepoSignatureRequired *item;
 	gchar *key_id;
-	gchar *package_id;
+	gchar *package_id = NULL;
 	PkSigTypeEnum type;
 
 	/* get results */
@@ -513,7 +513,7 @@ pk_task_accept_eulas (PkTaskState *state)
 	GError *error = NULL;
 	GPtrArray *array;
 	PkEulaRequired *item;
-	gchar *eula_id;
+	gchar *eula_id = NULL;
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
