@@ -1172,11 +1172,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                            "%s isn't installed" % pkg.name)
             # Check if the specified version is an update
-            if not apt_pkg.VersionCompare(pkg.installed.version,
-                                          version.version) == -1:
+            if apt_pkg.VersionCompare(pkg.installed.version,
+                                      version.version) >= 0:
                 self.error(ERROR_UPDATE_NOT_FOUND,
-                           "The version %s isn't an update to the current "
-                           "%s" % (version.version, pkg.installed.version))
+                           "The version %s of %s isn't an update to the "
+                           "current %s" % (version.version, pkg.name,
+                                           pkg.installed.version))
             pkg.candidate = version
             pkgs.append(pkg.name[:])
             # Actually should be fixed in python-apt
