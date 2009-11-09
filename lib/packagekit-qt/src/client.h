@@ -84,6 +84,7 @@ public:
 	 * \sa getActions
 	 */
 	typedef enum {
+		UnknownAction,
 		ActionCancel,
 		ActionGetDepends,
 		ActionGetDetails,
@@ -117,15 +118,14 @@ public:
 		ActionSimulateInstallFiles,
 		ActionSimulateInstallPackages,
 		ActionSimulateRemovePackages,
-		ActionSimulateUpdatePackages,
-		UnknownAction
+		ActionSimulateUpdatePackages
 	} Action;
 	typedef Bitfield Actions;
 
 	/**
 	 * Returns all the actions supported by the current backend
 	 */
-	Actions getActions();
+	Actions getActions() const;
 
 	/**
 	 * Holds a backend's detail
@@ -141,50 +141,67 @@ public:
 	 * Gets the current backend's details
 	 * \return a BackendDetail struct holding the backend's details. You have to free this structure.
 	 */
-	BackendDetail getBackendDetail();
+	BackendDetail getBackendDetail() const;
+
+	/**
+	 * The backend name, e.g. "yum".
+	 */
+	QString backendName() const;
+
+	/**
+	 * The backend description, e.g. "Yellow Dog Update Modifier".
+	 */
+	QString backendDescription() const;
+
+	/**
+	 * The backend author, e.g. "Joe Bloggs <joe@blogs.com>"
+	 */
+	QString backendAuthor() const;
 
 	/**
 	 * Describes the different filters
 	 */
 	typedef enum {
-		NoFilter		 = 0x0000001,
-		FilterInstalled		 = 0x0000002,
-		FilterNotInstalled	 = 0x0000004,
-		FilterDevelopment	 = 0x0000008,
-		FilterNotDevelopment	 = 0x0000010,
-		FilterGui		 = 0x0000020,
-		FilterNotGui		 = 0x0000040,
-		FilterFree		 = 0x0000080,
-		FilterNotFree		 = 0x0000100,
-		FilterVisible		 = 0x0000200,
-		FilterNotVisible	 = 0x0000400,
-		FilterSupported		 = 0x0000800,
-		FilterNotSupported	 = 0x0001000,
-		FilterBasename		 = 0x0002000,
-		FilterNotBasename	 = 0x0004000,
-		FilterNewest		 = 0x0008000,
-		FilterNotNewest		 = 0x0010000,
-		FilterArch		 = 0x0020000,
-		FilterNotArch		 = 0x0040000,
-		FilterSource		 = 0x0080000,
-		FilterNotSource		 = 0x0100000,
-		FilterCollections	 = 0x0200000,
-		FilterNotCollections	 = 0x0400000,
-		FilterApplication	 = 0x0800000,
-		FilterNotApplication	 = 0x1000000,
-		UnknownFilter		 = 0x2000000
+		UnknownFilter		 = 0x0000001,
+		NoFilter		 = 0x0000002,
+		FilterInstalled		 = 0x0000004,
+		FilterNotInstalled	 = 0x0000008,
+		FilterDevelopment	 = 0x0000010,
+		FilterNotDevelopment	 = 0x0000020,
+		FilterGui		 = 0x0000040,
+		FilterNotGui		 = 0x0000080,
+		FilterFree		 = 0x0000100,
+		FilterNotFree		 = 0x0000200,
+		FilterVisible		 = 0x0000400,
+		FilterNotVisible	 = 0x0000800,
+		FilterSupported		 = 0x0001000,
+		FilterNotSupported	 = 0x0002000,
+		FilterBasename		 = 0x0004000,
+		FilterNotBasename	 = 0x0008000,
+		FilterNewest		 = 0x0010000,
+		FilterNotNewest		 = 0x0020000,
+		FilterArch		 = 0x0040000,
+		FilterNotArch		 = 0x0080000,
+		FilterSource		 = 0x0100000,
+		FilterNotSource		 = 0x0200000,
+		FilterCollections	 = 0x0400000,
+		FilterNotCollections	 = 0x0800000,
+		FilterApplication	 = 0x1000000,
+		FilterNotApplication	 = 0x2000000,
+		FilterLast		 = 0x4000000
 	} Filter;
 	Q_DECLARE_FLAGS(Filters, Filter);
 
 	/**
 	 * Returns the filters supported by the current backend
 	 */
-	Filters getFilters();
+	Filters getFilters() const;
 
 	/**
 	 * Describes the different groups
 	 */
 	typedef enum {
+		UnknownGroup,
 		GroupAccessibility,
 		GroupAccessories,
 		GroupAdminTools,
@@ -218,42 +235,46 @@ public:
 		GroupElectronics,
 		GroupCollections,
 		GroupVendor,
-		GroupNewest,
-		UnknownGroup
+		GroupNewest
 	} Group;
 	typedef QSet<Group> Groups;
 
 	/**
 	 * Returns the groups supported by the current backend
 	 */
-	Groups getGroups();
+	Groups getGroups() const;
+
+	/**
+	 * Set when the backend is locked and native tools would fail.
+	 */
+	bool locked() const;
 
 	/**
 	 * Returns a list containing the MIME types supported by the current backend
 	 */
-	QStringList getMimeTypes();
+	QStringList getMimeTypes() const;
 
 	/**
 	 * Describes the current network state
 	 */
 	typedef enum {
+		UnknownNetworkState,
 		NetworkOffline,
 		NetworkOnline,
 		NetworkWired,
 		NetworkWifi,
-		NetworkMobile,
-		UnknownNetworkState
+		NetworkMobile
 	} NetworkState;
 
 	/**
 	 * Returns the current network state
 	 */
-	NetworkState getNetworkState();
+	NetworkState getNetworkState() const;
 
 	/**
 	 * Returns the time (in seconds) since the specified \p action
 	 */
-	uint getTimeSinceAction(Action action);
+	uint getTimeSinceAction(Action action) const;
 
 	/**
 	 * Returns the list of current transactions
@@ -262,8 +283,30 @@ public:
 
 	/**
 	 * Sets a global locale for all the transactions to be created
+	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+	 * Use SetHints("locale=$code") instead.
 	 */
 	void setLocale(const QString& locale);
+
+	/**
+	 * \brief Sets a global hints for all the transactions to be created
+	 *
+	 * This method allows the calling session to set transaction \p hints for
+	 * the package manager which can change as the transaction runs.
+	 *
+	 * This method can be sent before the transaction has been run
+	 * (by using Client::setHints) or whilst it is running
+	 * (by using Transaction::setHints).
+	 * There is no limit to the number of times this
+	 * method can be sent, although some backends may only use the values
+	 * that were set before the transaction was started.
+	 *
+	 * The \p hints can be filled with entries like these
+	 * ('locale=en_GB.utf8','idle=true','interactive=false').
+	 *
+	 * \sa Transaction::setHints
+	 */
+	void setHints(const QStringList& hints);
 
 	/**
 	 * Sets a proxy to be used for all the network operations
@@ -287,8 +330,8 @@ public:
 	 * Describes a signature type
 	 */
 	typedef enum {
-		SignatureGpg,
-		UnknownSignatureType
+		UnknownSignatureType,
+		SignatureGpg
 	} SignatureType;
 
 	/**
@@ -314,19 +357,21 @@ public:
 	 * \sa whatProvides
 	 */
 	typedef enum {
+		UnknownProvidesType,
 		ProvidesAny,
 		ProvidesModalias,
 		ProvidesCodec,
 		ProvidesMimetype,
 		ProvidesFont,
 		ProvidesHardwareDriver,
-		UnknownProvidesType
+		ProvidesPostscriptDriver
 	} ProvidesType;
 
 	/**
 	 * Lists the different types of error
 	 */
 	typedef enum {
+		UnknownErrorType,
 		ErrorOom,
 		ErrorNoNetwork,
 		ErrorNotSupported,
@@ -385,14 +430,14 @@ public:
 		ErrorPackageFailedToConfigure,
 		ErrorPackageFailedToBuild,
 		ErrorPackageFailedToInstall,
-		ErrorPackageFailedToRemove,
-		UnknownErrorType
+		ErrorPackageFailedToRemove
 	} ErrorType;
 
 	/**
 	 * Describes a message's type
 	 */
 	typedef enum {
+		UnknownMessageType,
 		MessageBrokenMirror,
 		MessageConnectionRefused,
 		MessageParameterInvalid,
@@ -407,7 +452,6 @@ public:
 		MessagePackageAlreadyInstalled,
 		MessageAutoremoveIgnored,
 		MessageRepoMetadataDownloadFailed,
-		UnknownMessageType
 	} MessageType;
 
 	/**
@@ -428,32 +472,32 @@ public:
 	 * Describes a restart type
 	 */
 	typedef enum {
+		UnknownRestartType,
 		RestartNone,
 		RestartApplication,
 		RestartSession,
 		RestartSystem,
 		RestartSecuritySession,
 		RestartSecuritySystem,
-		UnknownRestartType
 	} RestartType;
 
 	/**
 	 * Describes an update's state
 	 */
 	typedef enum {
+		UnknownUpdateState,
 		UpdateStable,
 		UpdateUnstable,
-		UpdateTesting,
-		UnknownUpdateState
+		UpdateTesting
 	} UpdateState;
 
 	/**
 	 * Describes an distro upgrade state
 	 */
 	typedef enum {
+		UnknownDistroUpgrade,
 		DistroUpgradeStable,
-		DistroUpgradeUnstable,
-		UnknownDistroUpgrade
+		DistroUpgradeUnstable
 	} DistroUpgradeType;
 
 	/**
@@ -464,6 +508,7 @@ public:
 	 */
 	typedef enum {
 		NoError = 0,
+		UnkownError,
 		ErrorFailed,
 		ErrorFailedAuth,
 		ErrorNoTid,
@@ -473,14 +518,13 @@ public:
 		ErrorInvalidInput,
 		ErrorInvalidFile,
 		ErrorFunctionNotSupported,
-		ErrorDaemonUnreachable,
-		UnkownError
+		ErrorDaemonUnreachable
 	} DaemonError;
 
 	/**
 	 * Returns the last daemon error that was caught
 	 */
-	DaemonError getLastError();
+	DaemonError getLastError() const;
 
 	/**
 	 * Describes a software update
@@ -508,6 +552,21 @@ public:
 		QDateTime issued;
 		QDateTime updated;
 	} UpdateInfo;
+
+	/**
+	 * Returns the major version number.
+	 */
+	uint versionMajor() const;
+
+	/**
+	 * The minor version number.
+	 */
+	uint versionMinor() const;
+
+	/**
+	 * The micro version number.
+	 */
+	uint versionMicro() const;
 
 	// Transaction functions
 
@@ -772,6 +831,11 @@ public:
 	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
 
 Q_SIGNALS:
+	/**
+	 * This signal is emitted when a property on the interface changes.
+	 */
+	void changed();
+
 	/**
 	 * Emitted when the PackageKit daemon sends an error
 	 */

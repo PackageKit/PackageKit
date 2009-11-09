@@ -2,6 +2,7 @@
 //
 //  Copyright 1999-2008 Daniel Burrows
 //  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+//  Copyright (c) 2004 Michael Vogt <mvo@debian.org>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -261,80 +262,6 @@ bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
 	    (pkg->SelectedState == pkgCache::State::Hold ||
 	    (!candver.end() && false/*candver.VerStr() == state.forbidver*/));
 	// TODO add forbid ver support
-}
-
-void aptcc::mark_all_upgradable(bool with_autoinst,
-				bool ignore_removed/*,
-				undo_group *undo*/)
-{
-//   if(read_only && !read_only_permission())
-//     {
-//       if(group_level == 0)
-// 	read_only_fail();
-//       return;
-//     }
-
-//   pre_package_state_changed();
-
-// //   action_group group(*this, NULL);
-
-
-	for(int iter=0; iter==0 || (iter==1 && with_autoinst); ++iter) {
-		// Do this twice, only turning auto-install on the second time.
-		// A reason for this is the following scenario:
-		//
-		// Packages A and B are installed at 1.0.  Package C is not installed.
-		// Version 2.0 of each package is available.
-		//
-		// Version 2.0 of A depends on "C (= 2.0) | B (= 2.0)".
-		//
-		// Upgrading A if B is not upgraded will cause this dependency to
-		// break.  Auto-install will then cheerfully fulfill it by installing
-		// C.
-		//
-		// A real-life example of this is xemacs21, xemacs21-mule, and
-		// xemacs21-nomule; aptitude would keep trying to install the mule
-		// version on upgrades.
-		bool do_autoinstall=(iter==1);
-
-		for(pkgCache::PkgIterator i=packageDepCache->PkgBegin(); !i.end(); i++) {
-			pkgDepCache::StateCache state = get_state(i);
-// 			aptitude_state &estate = get_ext_state(i);
-
-			if(i.CurrentVer().end()){
-				continue;
-			}
-
-			bool do_upgrade = false;
-
-			if(!ignore_removed) {
-			    do_upgrade = state.Status > 0 && !is_held(i);
-			} else {
-				switch(i->SelectedState) {
-				    // This case shouldn't really happen:
-				    // if this shouldn't happen i guess we don't
-				    // even need to worry? am i right?
-		    // 		case pkgCache::State::Unknown:
-		    // 		  estate.selection_state=pkgCache::State::Install;
-
-				    // Fall through
-				case pkgCache::State::Install:
-					if(state.Status > 0 && !is_held(i)) {
-						do_upgrade = true;
-					}
-					break;
-				default:
-					break;
-				}
-			}
-
-			if(do_upgrade) {
-		// 	      pre_package_state_changed();
-			    dirty = true;
-			    packageDepCache->MarkInstall(i, do_autoinstall);
-			}
-		}
-	}
 }
 
 // used to emit packages it collects all the needed info
@@ -693,7 +620,6 @@ void emit_files (PkBackend *backend, const gchar *pi)
 	}
 }
 
-
 static bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 {
 	string UntrustedList;
@@ -911,7 +837,6 @@ void aptcc::updateInterface(int fd, int writeFd)
 {
 	char buf[2];
 	static char line[1024] = "";
-	int i=0;
 
 	while (1) {
 		// This algorithm should be improved (it's the same as the rpm one ;)
@@ -944,16 +869,45 @@ void aptcc::updateInterface(int fd, int writeFd)
 
 			// first check for errors and conf-file prompts
 			if (strstr(status, "pmerror") != NULL) {
-				// error from dpkg, needs to be parsed different
-cout << "PK: Error in package: " << split[1] << endl;
-//				str = g_strdup_printf(_("Error in package %s"), split[1]);
-//				string err = split[1] + string(": ") + split[3];
-//				_error->Error("%s",utf8(err.c_str()));
+				// error from dpkg
+				pk_backend_error_code(m_backend,
+						      PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
+						      str);
 			} else if (strstr(status, "pmconffile") != NULL) {
 				// conffile-request from dpkg, needs to be parsed different
-cout << "PK: Oops Conf file detected!!! -> PKG: " << pkg << " " << split[2] << " " << split[3] << endl;
-cout << "write " << write(writeFd, "n\n", 2);
-				//cout << split[2] << " " << split[3] << endl;
+				int i=0;
+				int count=0;
+				string orig_file, new_file;
+
+				// go to first ' and read until the end
+				for(;str[i] != '\'' || str[i] == 0; i++) 
+					/*nothing*/
+					;
+				i++;
+				for(;str[i] != '\'' || str[i] == 0; i++) 
+					orig_file.append(1, str[i]);
+				i++;
+
+				// same for second ' and read until the end
+				for(;str[i] != '\'' || str[i] == 0; i++) 
+					/*nothing*/
+				;
+				i++;
+				for(;str[i] != '\'' || str[i] == 0; i++) 
+					new_file.append(1, str[i]);
+				i++;
+
+				gchar *confmsg; 
+				confmsg = g_strdup_printf("The configuration file '%s' "
+							  "(modified by you or a script) "
+							  "has a newer version '%s'.\n"
+							  "Please verify your changes and update it manually.",
+							  orig_file.c_str(),
+							  new_file.c_str());
+				pk_backend_message(m_backend,
+						   PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
+						   confmsg);
+				write(writeFd, "N\n", 2);
 			} else if (strstr(status, "pmstatus") != NULL) {
 				// Let's start parsing the status:
 				if (starts_with(str, "Preparing")) {
@@ -1032,7 +986,7 @@ cout << "write " << write(writeFd, "n\n", 2);
 bool aptcc::installPackages(pkgDepCache &Cache,
 			    bool Safety)
 {
-cout << "installPackages() called" << endl;
+	//cout << "installPackages() called" << endl;
 	if (_config->FindB("APT::Get::Purge",false) == true)
 	{
 		pkgCache::PkgIterator I = Cache.PkgBegin();
@@ -1061,7 +1015,6 @@ cout << "installPackages() called" << endl;
 	// Sanity check
 	if (Cache.BrokenCount() != 0)
 	{
-// 	    ShowBroken(c1out,Cache,false);
 		show_broken(m_backend, this);
 		return _error->Error("Internal error, InstallPackages was called with broken packages!");
 	}
@@ -1084,8 +1037,7 @@ cout << "installPackages() called" << endl;
 
 	// Lock the archive directory
 	FileFd Lock;
-	if (_config->FindB("Debug::NoLocking",false) == false &&
-	    _config->FindB("APT::Get::Print-URIs") == false)
+	if (_config->FindB("Debug::NoLocking",false) == false)
 	{
 		Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
 		if (_error->PendingError() == true) {
@@ -1135,7 +1087,8 @@ cout << "installPackages() called" << endl;
 	double DebBytes = fetcher.TotalNeeded();
 	if (DebBytes != Cache.DebSize())
 	{
-// 	    c0out << DebBytes << ',' << Cache.DebSize() << endl;
+ 	    cout << DebBytes << ',' << Cache.DebSize() << endl;
+cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
 	}
 
@@ -1250,13 +1203,8 @@ cout << "installPackages() called" << endl;
 	}
 
 	if (m_child_pid == 0) {
-		cout << "FORKED: installPackages(): DoInstall" << endl;
-		// close Forked stdout and the read end of the pipe
 		close(0);
-		close(1);
-		close(readFromChildFD[0]);
-		close(writeToChildFD[1]);
-
+		//cout << "FORKED: installPackages(): DoInstall" << endl;
 		// redirect writeToChildFD to stdin
 		if (dup(writeToChildFD[0]) != 0) {
 			cerr << "Aptcc: dup failed duplicate pipe to stdin" << endl;
@@ -1265,9 +1213,21 @@ cout << "installPackages() called" << endl;
 			_exit(1);
 		}
 
-		// Change the locale AND lang to not get it localized
-		setenv("LANG", "C", 1);
+		// close Forked stdout and the read end of the pipe
+		close(1);
+
+		// Change the locale to not get libapt localization
 		setlocale(LC_ALL, "C");
+
+		// Debconf handlying
+		setenv("DEBIAN_FRONTEND", "dbus", 1);
+		gchar *locale;
+		// Set the LANGUAGE so debconf messages get localization
+		if (locale = pk_backend_get_locale(m_backend)) {
+			setenv("LANGUAGE", locale, 1);
+			setenv("LANG", locale, 1);
+		//setenv("LANG", "C", 1);
+		}
 
 		// Pass the write end of the pipe to the install function
 		res = PM->DoInstallPostFork(readFromChildFD[1]);
@@ -1275,13 +1235,13 @@ cout << "installPackages() called" << endl;
 		// dump errors into cerr (pass it to the parent process)
 		_error->DumpErrors();
 
+		close(readFromChildFD[0]);
+		close(writeToChildFD[1]);
 		close(readFromChildFD[1]);
 		close(writeToChildFD[0]);
 
 		_exit(res);
 	}
-	close(readFromChildFD[1]);
-	close(writeToChildFD[0]);
 
 	cout << "PARENT proccess running..." << endl;
 	// make it nonblocking, verry important otherwise
@@ -1295,6 +1255,8 @@ cout << "installPackages() called" << endl;
 	}
 
 	close(readFromChildFD[0]);
+	close(readFromChildFD[1]);
+	close(writeToChildFD[0]);
 	close(writeToChildFD[1]);
 
 	cout << "Parent finished..." << endl;
@@ -1347,8 +1309,7 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 			   bool simulate,
 			   bool remove)
 {
-	cout << "==============================================================" << endl;
-	cout << "runTransaction" << simulate << remove << endl;
+	//cout << "runTransaction" << simulate << remove << endl;
 	bool WithLock = !simulate; // Check to see if we are just simulating,
 				   //since for that no lock is needed
 
@@ -1383,7 +1344,6 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 
 	// new scope for the ActionGroup
 	{
-		cout << "new scope for the ActionGroup" << endl;
 		pkgDepCache::ActionGroup group(Cache);
 		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
 		    i != pkgs.end();

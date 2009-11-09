@@ -2565,6 +2565,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        for inst_file in inst_files:
+            if inst_file.endswith('.src.rpm'):
+                self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE, 'Backend will not install a src rpm file', exit=False)
+                return
+
         # common checks copied from yum
         for inst_file in inst_files:
             if not self._check_local_file(inst_file):

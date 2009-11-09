@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [5])
-m4_define([pk_micro_version], [4])
+m4_define([pk_micro_version], [5])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -35,7 +35,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=12
-LT_REVISION=2
+LT_REVISION=3
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)

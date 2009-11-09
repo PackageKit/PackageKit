@@ -46,6 +46,9 @@ Transaction* ClientPrivate::createNewTransaction()
 	if(!locale.isNull())
 		t->setLocale(locale);
 
+	if(!hints.isEmpty())
+		t->setHints(hints);
+
 //	qDebug() << "creating a transaction : " << t->tid();
 	runningTransactions.insert(t->tid(), t);
 	connect(t, SIGNAL(destroyed(const QString&)), this, SLOT(removeTransactionFromPool(const QString&)));

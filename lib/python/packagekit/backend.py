@@ -21,6 +21,7 @@
 #
 
 # imports
+import locale
 import sys
 import codecs
 import traceback
@@ -31,11 +32,9 @@ from enums import *
 PACKAGE_IDS_DELIM = '&'
 FILENAME_DELIM = '|'
 
-def _to_unicode(txt, encoding='utf-8'):
-    if isinstance(txt, basestring):
-        if not isinstance(txt, unicode):
-            txt = unicode(txt, encoding, errors='replace')
-    return txt
+STDOUT_ENCODING = sys.stdout.encoding or sys.getfilesystemencoding()
+FS_ENCODING = sys.getfilesystemencoding()
+DEFAULT_ENCODING = locale.getpreferredencoding()
 
 # Classes
 
@@ -63,14 +62,14 @@ class PackageKitBaseBackend:
         try:
             self.lang = os.environ['LANG']
         except KeyError, e:
-            print "Error: No LANG envp"
+            self._send("Error: No LANG envp")
 
         # try to get NETWORK state
         try:
             if os.environ['NETWORK'] == 'TRUE':
                 self.has_network = True
         except KeyError, e:
-            print "Error: No NETWORK envp"
+            self._send("Error: No NETWORK envp")
 
         # try to get BACKGROUND state
         try:
@@ -78,6 +77,13 @@ class PackageKitBaseBackend:
                 self.background = True
         except KeyError, e:
             print "Error: No BACKGROUND envp"
+
+    def _send(self, message):
+        '''Send the given message to stdout'''
+        if not isinstance(message, unicode):
+            message = unicode(message, DEFAULT_ENCODING, "replace")
+        sys.stdout.write(message.encode(STDOUT_ENCODING, "replace") + "\n")
+        sys.stdout.flush()
 
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
@@ -96,11 +102,10 @@ class PackageKitBaseBackend:
         @param percent: Progress percentage (int preferred)
         '''
         if percent == None:
-            print "no-percentage-updates"
+            self._send("no-percentage-updates")
         elif percent == 0 or percent > self.percentage_old:
-            print "percentage\t%i" % (percent)
+            self._send("percentage\t%i" % (percent))
             self.percentage_old = percent
-        sys.stdout.flush()
 
     def sub_percentage(self, percent=None):
         '''
@@ -108,9 +113,8 @@ class PackageKitBaseBackend:
         @param percent: subprogress percentage (int preferred)
         '''
         if percent == 0 or percent > self.sub_percentage_old:
-            print "subpercentage\t%i" % (percent)
+            self._send("subpercentage\t%i" % (percent))
             self.sub_percentage_old = percent
-        sys.stdout.flush()
 
     def error(self, err, description, exit=True):
         '''
@@ -124,11 +128,9 @@ class PackageKitBaseBackend:
             self.unLock()
 
         # this should be fast now
-        print "error\t%s\t%s" % (err, description)
-        sys.stdout.flush()
+        self._send("error\t%s\t%s" % (err, description))
         if exit:
-            print "finished"
-            sys.stdout.flush()
+            self._send("finished")
             sys.exit(1)
 
     def message(self, typ, msg):
@@ -136,8 +138,7 @@ class PackageKitBaseBackend:
         send 'message' signal
         @param typ: MESSAGE_BROKEN_MIRROR
         '''
-        print "message\t%s\t%s" % (typ, msg)
-        sys.stdout.flush()
+        self._send("message\t%s\t%s" % (typ, msg))
 
     def package(self, package_id, status, summary):
         '''
@@ -146,8 +147,7 @@ class PackageKitBaseBackend:
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
         '''
-        print >> sys.stdout, "package\t%s\t%s\t%s" % (status, package_id, summary)
-        sys.stdout.flush()
+        self._send("package\t%s\t%s\t%s" % (status, package_id, summary))
 
     def media_change_required(self, mtype, id, text):
         '''
@@ -156,8 +156,7 @@ class PackageKitBaseBackend:
         @param id: the localised label of the media
         @param text: the localised text describing the media
         '''
-        print >> sys.stdout, "media-change-required\t%s\t%s\t%s" % (mtype, id, text)
-        sys.stdout.flush()
+        self._send("media-change-required\t%s\t%s\t%s" % (mtype, id, text))
 
     def distro_upgrade(self, dtype, name, summary):
         '''
@@ -166,16 +165,14 @@ class PackageKitBaseBackend:
         @param name: The distro name, e.g. "fedora-9"
         @param summary: The localised distribution name and description
         '''
-        print >> sys.stdout, "distro-upgrade\t%s\t%s\t%s" % (dtype, name, summary)
-        sys.stdout.flush()
+        self._send("distro-upgrade\t%s\t%s\t%s" % (dtype, name, summary))
 
     def status(self, state):
         '''
         send 'status' signal
         @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
-        print "status\t%s" % (state)
-        sys.stdout.flush()
+        self._send("status\t%s" % (state))
 
     def repo_detail(self, repoid, name, state):
         '''
@@ -183,16 +180,15 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_text(state))
-        sys.stdout.flush()
+        self._send("repo-detail\t%s\t%s\t%s" % (repoid, name,
+                                                _bool_to_text(state)))
 
     def data(self, data):
         '''
         send 'data' signal:
         @param data:  The current worked on package
         '''
-        print "data\t%s" % (data)
-        sys.stdout.flush()
+        self._send("data\t%s" % (data))
 
     def details(self, package_id, package_license, group, desc, url, bytes):
         '''
@@ -204,16 +200,16 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         '''
-        print >> sys.stdout, "details\t%s\t%s\t%s\t%s\t%s\t%ld" % (package_id, package_license, group, desc, url, bytes)
-        sys.stdout.flush()
+        self._send("details\t%s\t%s\t%s\t%s\t%s\t%ld" % (package_id,
+                                                         package_license, group,
+                                                         desc, url, bytes))
 
     def files(self, package_id, file_list):
         '''
         Send 'files' signal
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout, "files\t%s\t%s" % (package_id, file_list)
-        sys.stdout.flush()
+        self._send("files\t%s\t%s" % (package_id, file_list))
 
     def category(self, parent_id, cat_id, name, summary, icon):
         '''
@@ -224,15 +220,14 @@ class PackageKitBaseBackend:
         summery   : a summary of the category in current locale.
         icon      : an icon name to represent the category
         '''
-        print >> sys.stdout,"category\t%s\t%s\t%s\t%s\t%s" % (parent_id, cat_id, name, summary, icon)
-        sys.stdout.flush()
+        self._send("category\t%s\t%s\t%s\t%s\t%s" % (parent_id, cat_id, name,
+                                                     summary, icon))
 
     def finished(self):
         '''
         Send 'finished' signal
         '''
-        print >> sys.stdout, "finished"
-        sys.stdout.flush()
+        self._send("finished")
 
     def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated):
         '''
@@ -250,8 +245,10 @@ class PackageKitBaseBackend:
         @param issued:
         @param updated:
         '''
-        print >> sys.stdout, "updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated)
-        sys.stdout.flush()
+        self._send("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t"
+                  "%s" % (package_id, updates, obsoletes, vendor_url,
+                          bugzilla_url, cve_url, restart, update_text,
+                          changelog, state, issued, updated))
 
     def require_restart(self, restart_type, details):
         '''
@@ -259,8 +256,7 @@ class PackageKitBaseBackend:
         @param restart_type: RESTART_SYSTEM, RESTART_APPLICATION, RESTART_SESSION
         @param details: Optional details about the restart
         '''
-        print "requirerestart\t%s\t%s" % (restart_type, details)
-        sys.stdout.flush()
+        self._send("requirerestart\t%s\t%s" % (restart_type, details))
 
     def allow_cancel(self, allow):
         '''
@@ -271,8 +267,7 @@ class PackageKitBaseBackend:
             data = 'true'
         else:
             data = 'false'
-        print "allow-cancel\t%s" % (data)
-        sys.stdout.flush()
+        self._send("allow-cancel\t%s" % (data))
 
     def repo_signature_required(self, package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type):
         '''
@@ -286,10 +281,9 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param sig_type:        Key type (GPG)
         '''
-        print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
-            package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type
-            )
-        sys.stdout.flush()
+        self._send("repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % \
+                   (package_id, repo_name, key_url, key_userid, key_id,
+                    key_fingerprint, key_timestamp, sig_type))
 
 #
 # Backend Action Methods
@@ -541,6 +535,7 @@ class PackageKitBaseBackend:
         self.dispatch_command(cmd, args)
 
     def dispatch_command(self, cmd, args):
+        args = [arg.decode(FS_ENCODING) for arg in args]
         if cmd == 'download-packages':
             directory = args[0]
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
@@ -629,7 +624,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-details':
             options = args[0]
-            values = _to_unicode(args[1])
+            values = args[1]
             self.search_details(options, values)
             self.finished()
         elif cmd == 'search-file':
@@ -644,7 +639,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-name':
             options = args[0]
-            values = _to_unicode(args[1])
+            values = args[1]
             self.search_name(options, values)
             self.finished()
         elif cmd == 'signature-install':
@@ -663,7 +658,7 @@ class PackageKitBaseBackend:
         elif cmd == 'what-provides':
             filters = args[0]
             provides_type = args[1]
-            values = _to_unicode(args[2])
+            values = args[2]
             self.what_provides(filters, provides_type, values)
             self.finished()
         elif cmd == 'set-locale':

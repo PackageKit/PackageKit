@@ -35,7 +35,7 @@ QStringList Util::packageListToPids(const QList<Package*>& packages)
 QString Util::filtersToString(const QFlags<PackageKit::Client::Filter>& flags)
 {
 	QStringList flagStrings;
-	for (qint64 i = 1; i < Client::UnknownFilter; i *= 2) {
+	for (int i = Client::UnknownFilter; i < Client::FilterLast; i *= 2) {
 		if ((Client::Filter) i & flags) {
 			flagStrings.append(Util::enumToString<Client>((Client::Filter) i, "Filter", "Filter"));
 		}
@@ -46,29 +46,29 @@ QString Util::filtersToString(const QFlags<PackageKit::Client::Filter>& flags)
 
 Client::DaemonError Util::errorFromString (QString errorName)
 {
-		if (errorName.startsWith ("org.freedesktop.packagekit.")) {
-			return Client::ErrorFailedAuth;
-		}
+	if (errorName.startsWith ("org.freedesktop.packagekit.")) {
+		return Client::ErrorFailedAuth;
+	}
 
-		errorName.replace ("org.freedesktop.PackageKit.Transaction.", "");
+	errorName.replace ("org.freedesktop.PackageKit.Transaction.", "");
 
-		if (errorName.startsWith ("PermissionDenied") || errorName.startsWith ("RefusedByPolicy")) {
-			return Client::ErrorFailedAuth;
-		}
+	if (errorName.startsWith ("PermissionDenied") || errorName.startsWith ("RefusedByPolicy")) {
+		return Client::ErrorFailedAuth;
+	}
 
-		if (errorName.startsWith ("PackageIdInvalid") || errorName.startsWith ("SearchInvalid") || errorName.startsWith ("FilterInvalid") || errorName.startsWith ("InvalidProvide") || errorName.startsWith ("InputInvalid")) {
-			return Client::ErrorInvalidInput;
-		}
+	if (errorName.startsWith ("PackageIdInvalid") || errorName.startsWith ("SearchInvalid") || errorName.startsWith ("FilterInvalid") || errorName.startsWith ("InvalidProvide") || errorName.startsWith ("InputInvalid")) {
+		return Client::ErrorInvalidInput;
+	}
 
-		if (errorName.startsWith ("PackInvalid") || errorName.startsWith ("NoSuchFile") || errorName.startsWith ("NoSuchDirectory")) {
-			return Client::ErrorInvalidFile;
-		}
+	if (errorName.startsWith ("PackInvalid") || errorName.startsWith ("NoSuchFile") || errorName.startsWith ("NoSuchDirectory")) {
+		return Client::ErrorInvalidFile;
+	}
 
-		if (errorName.startsWith ("NotSupported")) {
-			return Client::ErrorFunctionNotSupported;
-		}
+	if (errorName.startsWith ("NotSupported")) {
+		return Client::ErrorFunctionNotSupported;
+	}
 
-		return Client::ErrorFailed;
+	return Client::ErrorFailed;
 }
 
 

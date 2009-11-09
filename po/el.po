@@ -4,13 +4,14 @@
 #
 # Dimitris Glezos <dimitris@glezos.com>, 2008, 2009.
 # Jennie Petoumenou <epetoumenou@gmail.com>, 2009.
+# Thalia Papoutsaki <saliyath@gmail.com>, 2009
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-24 11:06+0100\n"
-"PO-Revision-Date: 2009-08-04 15:47+0300\n"
-"Last-Translator: Jennie Petoumenou <epetoumenou@gmail.com>\n"
+"POT-Creation-Date: 2009-10-23 04:23+0000\n"
+"PO-Revision-Date: 2009-10-23 12:59+0200\n"
+"Last-Translator: Thalia Papoutsaki <saliyath@gmail.com>\n"
 "Language-Team: Ελληνικά <team@gnome.gr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,1158 +20,948 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:235
+#: ../client/pk-console.c:143
 msgid "Transaction"
 msgstr "Εργασία"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:237
+#: ../client/pk-console.c:145
 msgid "System time"
 msgstr "Ώρα συστήματος"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:147
 msgid "Succeeded"
 msgstr "Επιτυχής"
 
-#. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:147
 msgid "True"
 msgstr "Αληθές"
 
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:147
 msgid "False"
 msgstr "Ψευδές"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:241 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:149
+#: ../src/pk-polkit-action-lookup.c:336
 msgid "Role"
 msgstr "Ρόλος"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:154
 msgid "Duration"
 msgstr "Διάρκεια"
 
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:154
 msgid "(seconds)"
 msgstr "(δευτερόλεπτα)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:158
+#: ../src/pk-polkit-action-lookup.c:350
 msgid "Command line"
 msgstr "Γραμμή εντολών"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:160
 msgid "User ID"
 msgstr "ID χρήστη"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:259
+#: ../client/pk-console.c:167
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:171
 msgid "Real name"
 msgstr "Πραγματικό όνομα"
 
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:179
 msgid "Affected packages:"
 msgstr "Επηρεαζόμενα πακέτα:"
 
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:181
 msgid "Affected packages: None"
 msgstr "Επηρεαζόμενα πακέτα: Κανένα"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:298
+#: ../client/pk-console.c:201
 msgid "Distribution"
 msgstr "Διανομή"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:300
+#: ../client/pk-console.c:203
 msgid "Type"
 msgstr "Τύπος"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:302 ../client/pk-console.c:325
+#: ../client/pk-console.c:205
+#: ../client/pk-console.c:226
 msgid "Summary"
 msgstr "Περίληψη"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:314
+#: ../client/pk-console.c:215
 msgid "Category"
 msgstr "Κατηγορία"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:316
+#: ../client/pk-console.c:217
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:319
+#: ../client/pk-console.c:220
 msgid "Parent"
 msgstr "Γονική"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:322
+#: ../client/pk-console.c:223
 msgid "Name"
 msgstr "Όνομα"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:328
+#: ../client/pk-console.c:229
 msgid "Icon"
 msgstr "Εικονίδιο"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:243
 msgid "Details about the update:"
 msgstr "Λεπτομέρειες ενημέρωσης:"
 
 #. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:345 ../src/pk-polkit-action-lookup.c:352
-#, fuzzy
+#: ../client/pk-console.c:249
+#: ../lib/packagekit-glib2/pk-task-text.c:107
+#: ../lib/packagekit-glib2/pk-task-text.c:174
+#: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Πακέτο"
 msgstr[1] "Πακέτο"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:348
+#: ../client/pk-console.c:252
 msgid "Updates"
 msgstr "Ενημερώνει"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:352
+#: ../client/pk-console.c:256
 msgid "Obsoletes"
 msgstr "Αντικαθιστά"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:356
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: ../client/pk-console.c:260
+#: ../lib/packagekit-glib2/pk-task-text.c:177
 msgid "Vendor"
 msgstr "Κατασκευαστής"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:360
+#: ../client/pk-console.c:264
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:364
+#: ../client/pk-console.c:268
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:368
+#: ../client/pk-console.c:272
 msgid "Restart"
 msgstr "Επανεκκίνηση"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:372
+#: ../client/pk-console.c:276
 msgid "Update text"
 msgstr "Ενημέρωση περιγραφής"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:376
+#: ../client/pk-console.c:280
 msgid "Changes"
 msgstr "Αλλαγές"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:380
+#: ../client/pk-console.c:284
 msgid "State"
 msgstr "Κατάσταση"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:385
+#: ../client/pk-console.c:289
 msgid "Issued"
 msgstr "Δημοσίευση"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:390
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:294
+#: ../lib/packagekit-glib2/pk-console-shared.c:502
 msgid "Updated"
 msgstr "Ενημέρωση"
 
-#: ../client/pk-console.c:477 ../client/pk-console.c:479
-msgid "Percentage"
-msgstr "Ποσοστό"
+#. TRANSLATORS: if the repo is enabled
+#: ../client/pk-console.c:312
+msgid "Enabled"
+msgstr "Ενεργοποιημένο"
 
-#: ../client/pk-console.c:479
-msgid "Unknown"
-msgstr "Άγνωστο"
+#. TRANSLATORS: if the repo is disabled
+#: ../client/pk-console.c:315
+msgid "Disabled"
+msgstr "Απενεργοποιημένο"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:521
+#: ../client/pk-console.c:337
 msgid "System restart required by:"
 msgstr "Απαιτείται επανεκκίνηση του συστήματος από το:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:524
+#: ../client/pk-console.c:340
 msgid "Session restart required:"
 msgstr "Απαιτείται επανεκκίνηση της συνεδρίας από το:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:527
+#: ../client/pk-console.c:343
 msgid "System restart (security) required by:"
 msgstr "Απαιτείται επανεκκίνηση του συστήματος (για λόγους ασφαλείας) από το:"
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:530
+#: ../client/pk-console.c:346
 msgid "Session restart (security) required:"
 msgstr "Απαιτείται επανεκκίνηση της συνεδρίας (για λόγους ασφαλείας) από το:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:533
+#: ../client/pk-console.c:349
 msgid "Application restart required by:"
 msgstr "Απαιτείται επανεκκίνηση της εφαρμογής από το:"
 
-#. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:588
-msgid "Please restart the computer to complete the update."
-msgstr ""
-"Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
-
-#. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:591
-msgid "Please logout and login to complete the update."
-msgstr ""
-"Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
-"ενημέρωση."
-
-#. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:594
-msgid "Please restart the application as it is being used."
-msgstr "Παρακαλώ, επανεκκινήστε την εφαρμογή, γιατί χρησιμοποιείται."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:597
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, "
-"γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:600
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
-"ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
-
-#. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:727
-#, c-format
-msgid "The package %s is already installed"
-msgstr "Το πακέτο %s είναι ήδη εγκατεστημένο"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:735
-#, c-format
-msgid "The package %s could not be installed: %s"
-msgstr "Δεν ήταν δυνατή η εγκατάσταση του πακέτου %s: %s"
-
-#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:760 ../client/pk-console.c:783
-#: ../client/pk-console.c:879 ../client/pk-console.c:996
-#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
-#: ../client/pk-tools-common.c:89
-#, c-format
-msgid "Internal error: %s"
-msgstr "Εσωτερικό σφάλμα: %s"
-
-#. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:768 ../client/pk-console.c:1392
-#, c-format
-msgid "This tool could not install the packages: %s"
-msgstr "Δεν ήταν δυνατή η εγκατάσταση των πακέτων: %s"
-
-#. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:791
-#, c-format
-msgid "This tool could not install the files: %s"
-msgstr "Δεν ήταν δυνατή η εγκατάσταση των αρχείων: %s"
-
-#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:847
-#, c-format
-msgid "This tool could not remove %s: %s"
-msgstr "Δεν ήταν δυνατή η αφαίρεση του %s: %s"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:870 ../client/pk-console.c:908
-#: ../client/pk-console.c:941
-#, c-format
-msgid "This tool could not remove the packages: %s"
-msgstr "Δεν ήταν δυνατή η αφαίρεση των πακέτων: %s"
-
-#. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:920
-msgid "The following packages have to be removed:"
-msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν:"
-
-#. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:927
-msgid "Proceed removing additional packages?"
-msgstr "Μπορούν να αφαιρεθούν τα επιπλέον πακέτα;"
-
-#. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:932
-msgid "The package removal was canceled!"
-msgstr "Η αφαίρεση των πακέτων ακυρώθηκε!"
-
-#. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:973
-#, c-format
-msgid "This tool could not download the package %s as it could not be found"
-msgstr "Δεν ήταν δυνατή η λήψη του πακέτου %s, γιατί δε βρέθηκε"
-
-#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1004
-#, c-format
-msgid "This tool could not download the packages: %s"
-msgstr "Δεν ήταν δυνατή η λήψη των πακέτων: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1031 ../client/pk-console.c:1040
-#, c-format
-msgid "This tool could not update %s: %s"
-msgstr "Δεν ήταν δυνατή η ενημέρωση του %s: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1062 ../client/pk-console.c:1070
-#, c-format
-msgid "This tool could not get the requirements for %s: %s"
-msgstr "Δεν ήταν δυνατή η λήψη των απαιτούμενων για το %s: %s"
-
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1092 ../client/pk-console.c:1100
-#, c-format
-msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Δεν ήταν δυνατή η λήψη των εξαρτήσεων του %s: %s"
-
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1122 ../client/pk-console.c:1130
-#, c-format
-msgid "This tool could not get package details for %s: %s"
-msgstr "Δεν ήταν δυνατή η λήψη των λεπτομερειών πακέτου του %s: %s"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1152
-#, c-format
-msgid "This tool could not find the files for %s: %s"
-msgstr "Δε βρέθηκαν τα αρχεία για το %s: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1160
-#, c-format
-msgid "This tool could not get the file list for %s: %s"
-msgstr "Δεν ήταν δυνατή η λήψη της λίστας αρχείων για το %s: %s"
-
-#. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1182
-#, c-format
-msgid "File already exists: %s"
-msgstr "Το αρχείο υπάρχει ήδη: %s"
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1187 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1318
-msgid "Getting package list"
-msgstr "Λήψη της λίστας πακέτων..."
-
-#. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1193 ../client/pk-console.c:1249
-#: ../client/pk-console.c:1324
-#, c-format
-msgid "This tool could not get package list: %s"
-msgstr "Δεν ήταν δυνατή η λήψη της λίστας πακέτων: %s"
-
-#. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1204
-#, c-format
-msgid "Failed to save to disk"
-msgstr "Απέτυχε η αποθήκευση στο δίσκο"
-
-#. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1238 ../client/pk-console.c:1313
-#, c-format
-msgid "File does not exist: %s"
-msgstr "Δεν υπάρχει το αρχείο: %s"
-
-#. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1270
-msgid "Packages to add"
-msgstr "Πακέτα προς εγκατάσταση"
-
-#. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1278
-msgid "Packages to remove"
-msgstr "Πακέτα προς αφαίρεση"
-
-#. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1346
-#, c-format
-msgid "No new packages need to be installed"
-msgstr "Δεν χρειάζεται να εγκατασταθούν νέα πακέτα"
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1352
-msgid "To install"
-msgstr "Προς εγκατάσταση"
-
-#. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1364
-msgid "Searching for package: "
-msgstr "Αναζήτηση για το πακέτο:"
-
-#. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1368
-msgid "not found."
-msgstr "δε βρέθηκε."
-
-#. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1379
-#, c-format
-msgid "No packages can be found to install"
-msgstr "Δε βρέθηκαν πακέτα προς εγκατάσταση"
-
-#. TRANSLATORS: installing new packages from package list
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1385
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
-#, c-format
-msgid "Installing packages"
-msgstr "Εγκατάσταση πακέτων..."
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1421
-#, c-format
-msgid "This tool could not find the update details for %s: %s"
-msgstr "Δε βρέθηκαν οι λεπτομέρειες ενημέρωσης του %s: %s"
-
-#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1429
-#, c-format
-msgid "This tool could not get the update details for %s: %s"
-msgstr "Δεν ήταν δυνατή η λήψη των λεπτομερειών ενημέρωσης του %s: %s"
-
-#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1460
-msgid "Error:"
-msgstr "Σφάλμα:"
-
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1474
+#: ../client/pk-console.c:366
 msgid "Package description"
 msgstr "Περιγραφή πακέτου"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1490
+#: ../client/pk-console.c:384
 msgid "Message:"
 msgstr "Μήνυμα:"
 
-#. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1518
-msgid "Package files"
-msgstr "Αρχεία πακέτου"
-
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1526
+#: ../client/pk-console.c:398
 msgid "No files"
 msgstr "Χωρίς αρχεία"
 
-#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1549
-msgid "Repository signature required"
-msgstr "Απαιτείται η υπογραφή του αποθετηρίου"
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:403
+msgid "Package files"
+msgstr "Αρχεία πακέτου"
 
-#. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1559
-msgid "Do you accept this signature?"
-msgstr "Αποδέχεστε την υπογραφή;"
+#. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
+#: ../client/pk-console.c:475
+msgid "Fatal error"
+msgstr "Εσωτερικό σφάλμα"
 
-#. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1563
-msgid "The signature was not accepted."
-msgstr "Η υπογραφή δεν έγινε δεκτή."
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: ../client/pk-console.c:484
+#: ../contrib/command-not-found/pk-command-not-found.c:430
+#: ../contrib/command-not-found/pk-command-not-found.c:597
+msgid "The transaction failed"
+msgstr "Η εργασία απέτυχε"
 
-#. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1597
-msgid "End user license agreement required"
-msgstr "Απαιτείται αποδοχή της άδειας τελικού χρήστη"
+#. TRANSLATORS: a package needs to restart their system
+#: ../client/pk-console.c:552
+msgid "Please restart the computer to complete the update."
+msgstr "Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
 
-#. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1604
-msgid "Do you agree to this license?"
-msgstr "Αποδέχεστε την άδεια χρήσης;"
+#. TRANSLATORS: a package needs to restart the session
+#: ../client/pk-console.c:555
+msgid "Please logout and login to complete the update."
+msgstr "Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
 
-#. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1608
-msgid "The license was refused."
-msgstr "Η άδεια χρήσης δεν έγινε δεκτή."
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: ../client/pk-console.c:558
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: ../client/pk-console.c:561
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:584
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Το εργαλείο δεν μπόρεσε να βρει κανένα διαθέσιμο πακέτο: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:612
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Το εργαλείο δεν μπόρεσε να βρει το εγκατεστημένο πακέτο: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#: ../client/pk-console.c:640
+#: ../client/pk-console.c:668
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Το εργαλείο δεν μπόρεσε να βρει το πακέτο: %s"
+
+#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#: ../client/pk-console.c:696
+#: ../client/pk-console.c:724
+#: ../client/pk-console.c:752
+#: ../client/pk-console.c:780
+#: ../client/pk-console.c:808
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Το εργαλείο δεν μπόρεσε να βρει όλα τα πακέτα: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1637
+#: ../client/pk-console.c:837
 msgid "The daemon crashed mid-transaction!"
 msgstr "Η υπηρεσία κατέρρευσε κατά τη διάρκεια της εργασίας!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1690
+#: ../client/pk-console.c:871
 msgid "PackageKit Console Interface"
 msgstr "Διεπαφή κονσόλας Packagekit"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1692
+#: ../client/pk-console.c:873
 msgid "Subcommands:"
 msgstr "Υποεντολές:"
 
+#. TRANSLATORS: we keep a database updated with the time that an action was last executed
+#: ../client/pk-console.c:952
+msgid "Failed to get the time since this action was last completed"
+msgstr "Δε βρέθηκε ο χρόνος που είχε ολοκληρωθεί για τελευταία φορά η ενέργεια"
+
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1785 ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:128
-#: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
-#: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
+#: ../client/pk-console.c:989
+#: ../client/pk-generate-pack.c:223
+#: ../client/pk-monitor.c:281
+#: ../contrib/command-not-found/pk-command-not-found.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:512
+#: ../contrib/device-rebind/pk-device-rebind.c:293
+#: ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Εμφάνιση επιπρόσθετων πληροφοριών αποσφαλμάτωσης"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1788 ../client/pk-monitor.c:130
+#: ../client/pk-console.c:992
+#: ../client/pk-monitor.c:283
 msgid "Show the program version and exit"
 msgstr "Εμφάνιση της έκδοσης του προγράμματος και έξοδος"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1791
+#: ../client/pk-console.c:995
 msgid "Set the filter, e.g. installed"
 msgstr "Ορισμός του φίλτρου, π.χ. εγκατεστημένα"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1794
+#: ../client/pk-console.c:998
 msgid "Exit without waiting for actions to complete"
 msgstr "Έξοδος χωρίς να περιμένετε να ολοκληρωθούν οι ενέργειες"
 
-#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1821
-msgid "This tool could not connect to system DBUS."
-msgstr "Δεν ήταν δυνατή η σύνδεση στο DBUS του συστήματος."
+#. command line argument, do we ask questions
+#: ../client/pk-console.c:1001
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+msgid "Install the packages without asking for confirmation"
+msgstr "Εγκαταστείστε τα πακέτα χωρίς να ζητήσετε επιβεβαίωση"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: ../client/pk-console.c:1004
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+
+#. TRANSLATORS: we failed to contact the daemon
+#: ../client/pk-console.c:1030
+msgid "Failed to contact PackageKit"
+msgstr "Απέτυχε η επικοινωνία με το PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1911
+#: ../client/pk-console.c:1086
 msgid "The filter specified was invalid"
 msgstr "Το φίλτρο που ορίστηκε δεν ήταν έγκυρο"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1930
+#: ../client/pk-console.c:1105
 msgid "A search type is required, e.g. name"
 msgstr "Πρέπει να οριστεί ο τύπος της αναζήτησης, π.χ. όνομα"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1937 ../client/pk-console.c:1946
-#: ../client/pk-console.c:1955 ../client/pk-console.c:1964
+#: ../client/pk-console.c:1112
+#: ../client/pk-console.c:1124
+#: ../client/pk-console.c:1136
+#: ../client/pk-console.c:1148
 msgid "A search term is required"
 msgstr "Πρέπει να οριστεί όρος προς αναζήτηση"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1971
+#: ../client/pk-console.c:1158
 msgid "Invalid search type"
 msgstr "Μη έγκυρος τύπος αναζήτησης"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1977
-msgid "A package name or filename to install is required"
-msgstr "Πρέπει να οριστεί όνομα πακέτου ή αρχείου προς εγκατάσταση"
+#: ../client/pk-console.c:1164
+msgid "A package name to install is required"
+msgstr "Πρέπει να οριστεί όνομα πακέτου για τον καθορισμό"
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console.c:1173
+msgid "A filename to install is required"
+msgstr "Πρέπει να οριστεί όνομα αρχείου προς εγκατάσταση"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1986
+#: ../client/pk-console.c:1185
 msgid "A type, key_id and package_id are required"
-msgstr ""
-"Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου "
-"(package_id)"
+msgstr "Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου (package_id)"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1995
+#: ../client/pk-console.c:1196
 msgid "A package name to remove is required"
 msgstr "Πρέπει να οριστεί όνομα πακέτου προς αφαίρεση"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2003
+#: ../client/pk-console.c:1205
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα "
-"ληφθούν"
+msgstr "Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα ληφθούν"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2010
+#: ../client/pk-console.c:1212
 msgid "Directory not found"
 msgstr "Δε βρέθηκε ο κατάλογος"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2018
+#: ../client/pk-console.c:1221
 msgid "A licence identifier (eula-id) is required"
 msgstr "Πρέπει να οριστεί αναγνωριστικό EULA (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2028
+#: ../client/pk-console.c:1232
 msgid "A transaction identifier (tid) is required"
 msgstr "Πρέπει να οριστεί αναγνωριστικό εργασίας (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2045
+#: ../client/pk-console.c:1253
 msgid "A package name to resolve is required"
 msgstr "Πρέπει να οριστεί όνομα πακέτου για τον καθορισμό"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2054 ../client/pk-console.c:2063
+#: ../client/pk-console.c:1264
+#: ../client/pk-console.c:1275
 msgid "A repository name is required"
 msgstr "Πρέπει να οριστεί όνομα αποθετηρίου"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2072
+#: ../client/pk-console.c:1286
 msgid "A repo name, parameter and value are required"
 msgstr "Πρέπει να οριστούν όνομα, παράμετρος και τιμή αποθετηρίου"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2086
+#: ../client/pk-console.c:1303
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Πρέπει να οριστεί μια ενέργεια, π.χ. 'ενημέρωση συστήματος'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2093
+#: ../client/pk-console.c:1310
 msgid "A correct role is required"
 msgstr "Πρέπει να οριστεί έγκυρη ενέργεια"
 
-#. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2100
-msgid "Failed to get the time since this action was last completed"
-msgstr "Δε βρέθηκε ο χρόνος που είχε ολοκληρωθεί για τελευταία φορά η ενέργεια"
-
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2110 ../client/pk-console.c:2122
-#: ../client/pk-console.c:2131 ../client/pk-console.c:2149
-#: ../client/pk-console.c:2158 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:1320
+#: ../client/pk-console.c:1335
+#: ../client/pk-console.c:1344
+#: ../client/pk-console.c:1364
+#: ../client/pk-console.c:1373
+#: ../client/pk-generate-pack.c:287
 msgid "A package name is required"
 msgstr "Πρέπει να οριστεί όνομα πακέτου"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2140
+#: ../client/pk-console.c:1353
 msgid "A package provide string is required"
 msgstr "Πρέπει να οριστεί αλφαριθμητικό με το τι παρέχει το αρχείο"
 
-#. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2167
-msgid "A list file name to create is required"
-msgstr "Πρέπει να οριστεί το όνομα του νέου αρχείου λίστας"
-
-#. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2177 ../client/pk-console.c:2187
-msgid "A list file to open is required"
-msgstr "Πρέπει να οριστεί το αρχείο λίστας που θα ανοίξει"
-
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2241
+#: ../client/pk-console.c:1433
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Η επιλογή '%s' δεν υποστηρίζεται"
 
-#. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2254
-msgid "Incorrect privileges for this operation"
-msgstr "Δεν έχετε τα κατάλληλα προνόμια για αυτή την ενέργεια"
-
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2257
+#: ../client/pk-console.c:1443
 msgid "Command failed"
 msgstr "Η εντολή απέτυχε"
 
-#. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:101
-msgid "Downloading"
-msgstr "Λήψη..."
-
-#. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:121
-msgid "Downloading packages"
-msgstr "Λήψη πακέτων..."
-
-#. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:126
-msgid "Downloading dependencies"
-msgstr "Λήψη εξαρτήσεων..."
-
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:188
+#: ../client/pk-generate-pack.c:226
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Ορισμός ονομάτων αρχείων των εξαρτήσεων που εξαιρούνται"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:191
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
-msgstr ""
-"Το αρχείο ή ο κατάλογος εξόδου (αν μείνει κενό, χρησιμοποιείται ο τρέχων "
-"κατάλογος)"
+#: ../client/pk-generate-pack.c:229
+msgid "The output file or directory (the current directory is used if ommitted)"
+msgstr "Το αρχείο ή ο κατάλογος εξόδου (αν μείνει κενό, χρησιμοποιείται ο τρέχων κατάλογος)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:194
+#: ../client/pk-generate-pack.c:232
 msgid "The package to be put into the service pack"
 msgstr "Πακέτο που θα προστεθεί στο πακέτο ενημερώσεων"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:197
+#: ../client/pk-generate-pack.c:235
 msgid "Put all updates available in the service pack"
 msgstr "Προσθήκη όλων των διαθέσιμων ενημερώσεων στο πακέτο ενημερώσεων"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:271
 msgid "Neither --package or --updates option selected."
 msgstr "Δεν έχουν οριστεί οι επιλογές --package ή --updates"
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:233
+#: ../client/pk-generate-pack.c:279
 msgid "Both options selected."
 msgstr "Έχουν οριστεί και οι δύο επιλογές."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:249
+#: ../client/pk-generate-pack.c:295
 msgid "A output directory or file name is required"
 msgstr "Πρέπει να οριστεί όνομα αρχείου ή κατάλογος εξόδου"
 
+#. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
+#: ../client/pk-generate-pack.c:313
+msgid "The dameon failed to startup"
+msgstr "Το dameon απέτυχε κατά την εκκίνηση"
+
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#: ../client/pk-generate-pack.c:324
+#: ../client/pk-generate-pack.c:330
 msgid "The package manager cannot perform this type of operation."
-msgstr ""
-"Η εφαρμογή διαχείρισης πακέτων δεν μπορεί να εκτελέσει αυτόν τον τύπο "
-"ενέργειας."
+msgstr "Η εφαρμογή διαχείρισης πακέτων δεν μπορεί να εκτελέσει αυτόν τον τύπο ενέργειας."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:280
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
-msgstr ""
-"Δεν μπορούν να δημιουργηθούν πακέτα ενημερώσεων, γιατί δεν εγκαταστάθηκε η "
-"υποστήριξη libarchive για το PackageKit."
+#: ../client/pk-generate-pack.c:337
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgstr "Δεν μπορούν να δημιουργηθούν πακέτα ενημερώσεων, γιατί δεν εγκαταστάθηκε η υποστήριξη libarchive για το PackageKit."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:291
+#: ../client/pk-generate-pack.c:348
 msgid "If specifying a file, the service pack name must end with"
-msgstr ""
-"Όταν ορίζεται όνομα αρχείου για το πακέτο ενημερώσεων, πρέπει να τελειώνει σε"
+msgstr "Όταν ορίζεται όνομα αρχείου για το πακέτο ενημερώσεων, πρέπει να τελειώνει σε"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:307
+#: ../client/pk-generate-pack.c:364
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Υπάρχει ήδη πακέτο με το ίδιο όνομα. Να αντικατασταθεί;"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:310
+#: ../client/pk-generate-pack.c:367
 msgid "The pack was not overwritten."
 msgstr "Δεν αντικαταστάθηκε το πακέτο."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:323
+#: ../client/pk-generate-pack.c:380
 msgid "Failed to create directory:"
 msgstr "Απέτυχε η δημιουργία του καταλόγου:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:333
+#: ../client/pk-generate-pack.c:392
 msgid "Failed to open package list."
 msgstr "Απέτυχε το άνοιγμα της λίστας πακέτων."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:344
+#: ../client/pk-generate-pack.c:401
 msgid "Finding package name."
 msgstr "Εύρεση ονόματος πακέτου..."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:348
+#: ../client/pk-generate-pack.c:405
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Δε βρέθηκε το πακέτο '%s': %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:365
+#: ../client/pk-generate-pack.c:413
 msgid "Creating service pack..."
 msgstr "Δημιουργία πακέτου ενημερώσεων..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:372
+#: ../client/pk-generate-pack.c:428
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "Δημιουργήθηκε το πακέτο ενημερώσεων '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:377
+#: ../client/pk-generate-pack.c:433
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "Απέτυχε η δημιουργία του '%s': %s"
 
+#: ../client/pk-monitor.c:211
+#, fuzzy
+msgid "Failed to get daemon state"
+msgstr "Απέτυχε το άνοιγμα της λίστας πακέτων."
+
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:146
+#: ../client/pk-monitor.c:299
 msgid "PackageKit Monitor"
 msgstr "Παρακολούθηση PackageKit"
 
-#: ../client/pk-monitor.c:183
-msgid "Cannot show the list of transactions"
-msgstr "Δεν είναι δυνατή η εμφάνιση της λίστας εργασιών"
-
-#. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:118
-#, c-format
-msgid "The package could not be found"
-msgstr "Δε βρέθηκε το πακέτο"
-
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:130
-msgid "More than one package matches:"
-msgstr "Βρέθηκαν πολλαπλά πακέτα:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:137
-msgid "Please choose the correct package: "
-msgstr "Παρακαλώ, επιλέξτε το σωστό πακέτο: "
-
-#: ../client/pk-tools-common.c:162
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Παρακαλώ, εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
-
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:466
+#: ../contrib/browser-plugin/pk-plugin-install.c:491
 msgid "Getting package information..."
 msgstr "Λήψη πληροφοριών πακέτου..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:472
+#: ../contrib/browser-plugin/pk-plugin-install.c:497
 #, c-format
 msgid "Run %s"
 msgstr "Εκτέλεση %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:478
+#: ../contrib/browser-plugin/pk-plugin-install.c:503
 msgid "Installed version"
 msgstr "Εγκατεστημένη έκδοση"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:486
+#: ../contrib/browser-plugin/pk-plugin-install.c:511
 #, c-format
 msgid "Run version %s now"
 msgstr "Εκτέλεση της έκδοσης %s τώρα"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:492
+#: ../contrib/browser-plugin/pk-plugin-install.c:517
 msgid "Run now"
 msgstr "Εκτέλεση τώρα"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:498
+#: ../contrib/browser-plugin/pk-plugin-install.c:523
 #, c-format
 msgid "Update to version %s"
 msgstr "Εγκατάσταση της ενημερωμένης έκδοσης %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:504
+#: ../contrib/browser-plugin/pk-plugin-install.c:529
 #, c-format
 msgid "Install %s now"
 msgstr "Εγκατάσταση %s τώρα"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:507
+#: ../contrib/browser-plugin/pk-plugin-install.c:532
 msgid "Version"
 msgstr "Έκδοση"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:512
+#: ../contrib/browser-plugin/pk-plugin-install.c:537
 msgid "No packages found for your system"
 msgstr "Δε βρέθηκαν πακέτα για το σύστημά σας"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:517
+#: ../contrib/browser-plugin/pk-plugin-install.c:542
 msgid "Installing..."
 msgstr "Εγκατάσταση..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:349
+#: ../contrib/command-not-found/pk-command-not-found.c:365
+#, fuzzy
 msgid "Downloading details about the software sources."
-msgstr ""
+msgstr "Λήψη λεπτομετειών για τις πηγές του λογισμικού."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:353
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "Λήψη λίστας αρχείων (θα πάρει κάποιο χρόνο να ολοκληρωθεί)"
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:357
+#: ../contrib/command-not-found/pk-command-not-found.c:373
 #, fuzzy
 msgid "Waiting for package manager lock."
 msgstr "Εύρεση ονόματος πακέτου..."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:377
 #, fuzzy
 msgid "Loading list of packages."
 msgstr "Λήψη πακέτων..."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:420
+#: ../contrib/command-not-found/pk-command-not-found.c:421
 msgid "Failed to search for file"
 msgstr "Δεν ήταν δυνατή η αναζήτηση για το αρχείο"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:557
+#: ../contrib/command-not-found/pk-command-not-found.c:560
 msgid "Failed to launch:"
 msgstr "Δεν ήταν δυνατή η εκκίνηση:"
 
+#. TRANSLATORS: we failed to install the package
+#: ../contrib/command-not-found/pk-command-not-found.c:588
+#, fuzzy
+msgid "Failed to install packages"
+msgstr "Δεν ήταν δυνατή η εγκατάσταση των πακέτων: %s"
+
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:632
+#: ../contrib/command-not-found/pk-command-not-found.c:667
 msgid "PackageKit Command Not Found"
 msgstr "Δε βρέθηκε η εντολή του PackageKit"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:658
+#: ../contrib/command-not-found/pk-command-not-found.c:697
 msgid "Command not found."
 msgstr "Η εντολή δε βρέθηκε."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:665
+#: ../contrib/command-not-found/pk-command-not-found.c:711
 msgid "Similar command is:"
 msgstr "Παρόμοια εντολή:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:674
+#: ../contrib/command-not-found/pk-command-not-found.c:721
 msgid "Run similar command:"
 msgstr "Εκτέλεση της παρόμοιας εντολής;"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:686
-#: ../contrib/command-not-found/pk-command-not-found.c:695
+#: ../contrib/command-not-found/pk-command-not-found.c:735
+#: ../contrib/command-not-found/pk-command-not-found.c:744
 msgid "Similar commands are:"
 msgstr "Παρόμοιες εντολές:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:702
+#: ../contrib/command-not-found/pk-command-not-found.c:751
 msgid "Please choose a command to run"
 msgstr "Παρακαλώ, επιλέξτε εντολή προς εκτέλεση"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:721
+#: ../contrib/command-not-found/pk-command-not-found.c:767
 msgid "The package providing this file is:"
 msgstr "Το πακέτο που παρέχει αυτό το αρχείο είναι το:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:726
+#: ../contrib/command-not-found/pk-command-not-found.c:772
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Εγκατάσταση του πακέτου '%s' που παρέχει την εντολή '%s';"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:796
 msgid "Packages providing this file are:"
 msgstr "Πακέτα που παρέχουν αυτό το αρχείο:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:756
+#: ../contrib/command-not-found/pk-command-not-found.c:806
 msgid "Suitable packages are:"
 msgstr "Κατάλληλα πακέτα:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:764
+#: ../contrib/command-not-found/pk-command-not-found.c:815
 msgid "Please choose a package to install"
 msgstr "Παρακαλώ, επιλέξτε πακέτο προς εγκατάσταση"
 
 #. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:197
 msgid "Starting install"
 msgstr "Εκκίνηση εγκατάστασης..."
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:409
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Το πακέτο %s δε βρέθηκε ή είναι ήδη εγκατεστημένο: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:515
+msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "Να μη γίνει πραγματική εγκατάσταση πακέτων, μόνο προσομοίωση"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
 msgid "Do not install dependencies of the core packages"
 msgstr "Να μην εγκατασταθούν οι εξαρτήσεις των πακέτων"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not display information or progress"
 msgstr "Να μην εμφανίζονται πληροφορίες ή η πρόοδος"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:539
 msgid "PackageKit Debuginfo Installer"
 msgstr "Εγκατάσταση πληροφοριών αποσφαλμάτωσης Packagekit"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ΣΦΑΛΜΑ: Πρέπει να οριστούν ονόματα πακέτων προς εγκατάσταση"
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
 #, c-format
 msgid "Getting sources list"
 msgstr "Λήψη λίστας πηγών..."
 
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
+msgid "FAILED."
+msgstr "ΑΠΟΤΥΧΙΑ."
+
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
 msgstr "Εντάξει."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Βρέθηκαν %i ενεργοποιημένες και %i απενεργοποιημένες πηγές."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Εύρεση πηγών αποσφαλμάτωσης..."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Βρέθηκαν %i απενεργοποιημένα αποθετήρια πληροφοριών αποσφαλμάτωσης."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Ενεργοποίηση πηγών αποσφαλμάτωσης..."
 
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
-msgid "FAILED."
-msgstr "ΑΠΟΤΥΧΙΑ."
-
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Ενεργοποιήθηκαν %i πηγές αποσφαλμάτωσης."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Εύρεση πακέτων αποσφαλμάτωσης"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Δε βρέθηκε το πακέτο %s: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Δε βρέθηκε το πακέτο πληροφοριών αποσφαλμάτωσης %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
 #, c-format
 msgid "Found no packages to install."
 msgstr "Δε βρέθηκαν πακέτα προς εγκατάσταση."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
 msgstr "Βρέθηκαν %i πακέτα:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Εύρεση πακέτων που εξαρτώνται από αυτά τα πακέτα..."
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Δε βρέθηκαν τα εξαρτώμενα πακέτα: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Βρέθηκαν %i επιπλέον πακέτα."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
 msgstr "Δεν απαιτούνται επιπλέον πακέτα."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Βρέθηκαν %i πακέτα προς εγκατάσταση:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Δεν εγκαθίστανται πακέτα κατά τη λειτουργία προσομοίωσης"
 
+#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
+#. TRANSLATORS: transaction state, installing packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../lib/packagekit-glib2/pk-console-shared.c:274
+#, c-format
+msgid "Installing packages"
+msgstr "Εγκατάσταση πακέτων..."
+
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Δεν ήταν δυνατή η εγκατάσταση των πακέτων: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Απενεργοποίηση των πηγών που είχαν ενεργοποιηθεί"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Δεν ήταν δυνατή η απενεργοποίηση των πηγών αποσφαλμάτωσης: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Απενεργοποιήθηκαν %i πηγές αποσφαλμάτωσης."
@@ -1284,6 +1075,643 @@ msgstr "Λίστα πακέτων PackageKit"
 msgid "PackageKit Service Pack"
 msgstr "Πακέτο τεκμηρίωσης PackageKit"
 
+#: ../lib/packagekit-glib2/pk-console-shared.c:59
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Παρακαλώ, εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
+
+#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:181
+msgid "More than one package matches:"
+msgstr "Βρέθηκαν πολλαπλά πακέτα:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../lib/packagekit-glib2/pk-console-shared.c:190
+msgid "Please choose the correct package: "
+msgstr "Παρακαλώ, επιλέξτε το σωστό πακέτο: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: ../lib/packagekit-glib2/pk-console-shared.c:242
+msgid "Unknown state"
+msgstr "Άγνωστη κατάσταση"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: ../lib/packagekit-glib2/pk-console-shared.c:246
+msgid "Starting"
+msgstr "Εκκίνηση..."
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
+#: ../lib/packagekit-glib2/pk-console-shared.c:250
+msgid "Waiting in queue"
+msgstr "Αναμονή στην ουρά"
+
+#. TRANSLATORS: transaction state, just started
+#: ../lib/packagekit-glib2/pk-console-shared.c:254
+msgid "Running"
+msgstr "Εκτελείται"
+
+#. TRANSLATORS: transaction state, is querying data
+#: ../lib/packagekit-glib2/pk-console-shared.c:258
+msgid "Querying"
+msgstr ""
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:262
+msgid "Getting information"
+msgstr "Λήψη πληροφοριών..."
+
+#. TRANSLATORS: transaction state, removing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:266
+msgid "Removing packages"
+msgstr "Αφαίρεση πακέτων"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../lib/packagekit-glib2/pk-console-shared.c:648
+msgid "Downloading packages"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: ../lib/packagekit-glib2/pk-console-shared.c:278
+#, fuzzy
+msgid "Refreshing software list"
+msgstr "Ανανέωση λίστας λογισμικού..."
+
+#. TRANSLATORS: transaction state, installing updates
+#: ../lib/packagekit-glib2/pk-console-shared.c:282
+msgid "Installing updates"
+msgstr "Εγκατάσταση ενημερώσεων..."
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
+#: ../lib/packagekit-glib2/pk-console-shared.c:286
+#, fuzzy
+msgid "Cleaning up packages"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:290
+#, fuzzy
+msgid "Obsoleting packages"
+msgstr "Εγκατάσταση πακέτων..."
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: ../lib/packagekit-glib2/pk-console-shared.c:294
+#, fuzzy
+msgid "Resolving dependencies"
+msgstr "Λήψη εξαρτήσεων..."
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
+#: ../lib/packagekit-glib2/pk-console-shared.c:298
+msgid "Checking signatures"
+msgstr "Έλεγχος υπογραφών"
+
+#. TRANSLATORS: transaction state, when we return to a previous system state
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:608
+msgid "Rolling back"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:306
+msgid "Testing changes"
+msgstr "Έλεγχος αλλαγών..."
+
+#. TRANSLATORS: transaction state, when we're writing to the system package database
+#: ../lib/packagekit-glib2/pk-console-shared.c:310
+#, fuzzy
+msgid "Committing changes"
+msgstr "Ολοκλήρωση αλλαγών"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:314
+#, fuzzy
+msgid "Requesting data"
+msgstr "Αίτηση για δεδομένα"
+
+#. TRANSLATORS: transaction state, all done!
+#: ../lib/packagekit-glib2/pk-console-shared.c:318
+msgid "Finished"
+msgstr "Ολοκληρώθηκε"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+#: ../lib/packagekit-glib2/pk-console-shared.c:322
+msgid "Cancelling"
+msgstr "Ακύρωση"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:326
+msgid "Downloading repository information"
+msgstr "Λήψη πληροφοριών αποθετηρίου"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:330
+msgid "Downloading list of packages"
+msgstr "Λήψη λίστας πακέτων..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:334
+#, fuzzy
+msgid "Downloading file lists"
+msgstr "Λήψη..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:338
+#, fuzzy
+msgid "Downloading lists of changes"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:342
+#, fuzzy
+msgid "Downloading groups"
+msgstr "Λήψη..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:346
+#, fuzzy
+msgid "Downloading update information"
+msgstr "Λήψη πληροφοριών πακέτου..."
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: ../lib/packagekit-glib2/pk-console-shared.c:350
+#, fuzzy
+msgid "Repackaging files"
+msgstr "Αρχεία πακέτου"
+
+#. TRANSLATORS: transaction state, loading databases
+#: ../lib/packagekit-glib2/pk-console-shared.c:354
+#, fuzzy
+msgid "Loading cache"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:358
+msgid "Scanning applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on the system
+#: ../lib/packagekit-glib2/pk-console-shared.c:362
+#, fuzzy
+msgid "Generating package lists"
+msgstr "Λήψη της λίστας πακέτων..."
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
+#: ../lib/packagekit-glib2/pk-console-shared.c:366
+#, fuzzy
+msgid "Waiting for package manager lock"
+msgstr "Εύρεση ονόματος πακέτου..."
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: ../lib/packagekit-glib2/pk-console-shared.c:370
+msgid "Waiting for authentication"
+msgstr "Αναμονή για πιστοποίηση"
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:374
+msgid "Updating running applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are checking executable files currently in use
+#: ../lib/packagekit-glib2/pk-console-shared.c:378
+msgid "Checking applications in use"
+msgstr "Έλεγχος εφαρμογών σε χρήση"
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in use
+#: ../lib/packagekit-glib2/pk-console-shared.c:382
+msgid "Checking libraries in use"
+msgstr "Έλεγχος βιβλιοθηκών σε χρήση"
+
+#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:386
+msgid "Copying files"
+msgstr "Αντιγραφή αρχείων"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:404
+msgid "Trivial"
+msgstr "Ασήμαντο"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:408
+#, fuzzy
+msgid "Normal"
+msgstr "Κανονική"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:412
+msgid "Important"
+msgstr "Σημαντικό"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:416
+#, fuzzy
+msgid "Security"
+msgstr "Ασφάλειας"
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:420
+msgid "Bug fix "
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:424
+msgid "Enhancement"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:428
+#, fuzzy
+msgid "Blocked"
+msgstr "Μπλοκαρισμένη"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:433
+#: ../lib/packagekit-glib2/pk-console-shared.c:506
+#, fuzzy
+msgid "Installed"
+msgstr "Εγκατεστημένη έκδοση"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:438
+msgid "Available"
+msgstr "Διαθέσιμο"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:456
+msgid "Downloading"
+msgstr "Λήψη..."
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:460
+#, fuzzy
+msgid "Updating"
+msgstr "Ενημερώνει"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:464
+#: ../lib/packagekit-glib2/pk-console-shared.c:584
+#, fuzzy
+msgid "Installing"
+msgstr "Εγκατάσταση..."
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:468
+#: ../lib/packagekit-glib2/pk-console-shared.c:580
+msgid "Removing"
+msgstr "Αφαίρεση"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:472
+msgid "Cleaning up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:476
+#, fuzzy
+msgid "Obsoleting"
+msgstr "Αντικαθιστά"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:480
+#, fuzzy
+msgid "Reinstalling"
+msgstr "Εγκατάσταση..."
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:498
+msgid "Downloaded"
+msgstr "Λήφθηκε"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:510
+msgid "Removed"
+msgstr "Έχει αφαιρεθεί"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:514
+msgid "Cleaned up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:518
+msgid "Obsoleted"
+msgstr "Αντικαταστάθηκε"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:522
+#, fuzzy
+msgid "Reinstalled"
+msgstr "Εγκαταστάθηκε ξανά"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
+msgid "Unknown role type"
+msgstr "Άγνωστος τύπος ρόλου"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
+msgid "Getting dependencies"
+msgstr "Λήψη εξαρτήσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:548
+msgid "Getting update details"
+msgstr "Λήψη λεπτομερειών ενημέρωσης"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:552
+msgid "Getting details"
+msgstr "Λήψη λεπτομερειών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:556
+#, fuzzy
+msgid "Getting requires"
+msgstr "Λήψη προϋποθέσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:560
+msgid "Getting updates"
+msgstr "Λήψη ενημερώσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:564
+msgid "Searching by details"
+msgstr "Αναζήτηση βάσει λεπτομερειών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:568
+msgid "Searching by file"
+msgstr "Αναζήτηση κατά αρχείο:"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:572
+msgid "Searching groups"
+msgstr "Αναζήτηση ομάδων:"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:576
+msgid "Searching by name"
+msgstr "Αναζήτηση κατά όνομα:"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:588
+msgid "Installing files"
+msgstr "Εγκατάσταση αρχείων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:592
+msgid "Refreshing cache"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:596
+msgid "Updating packages"
+msgstr "Ενημέρωση πακέτων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:600
+msgid "Updating system"
+msgstr "Ενημέρωση συστήματος"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:604
+msgid "Canceling"
+msgstr "Ακύρωση"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:612
+msgid "Getting repositories"
+msgstr "Λήψη αποθετηρίων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:616
+msgid "Enabling repository"
+msgstr "Ενεργοποίηση του αποθετηρίου"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:620
+#, fuzzy
+msgid "Setting data"
+msgstr "Εκκίνηση εγκατάστασης..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:624
+msgid "Resolving"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:628
+msgid "Getting file list"
+msgstr "Λήψη λίστας αρχείων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:632
+#, fuzzy
+msgid "Getting provides"
+msgstr "Λήψη της λίστας πακέτων..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:636
+msgid "Installing signature"
+msgstr "Εγκατάσταση υπογραφής"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:640
+msgid "Getting packages"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:644
+msgid "Accepting EULA"
+msgstr "Αποδοχή άδειας χρήσης (EULA)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:652
+msgid "Getting upgrades"
+msgstr "Λήψη αναβαθμίσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:656
+msgid "Getting categories"
+msgstr "Λήψη κατηγοριών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:660
+msgid "Getting transactions"
+msgstr "Λήψη εργασιών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:664
+#: ../lib/packagekit-glib2/pk-console-shared.c:668
+#, fuzzy
+msgid "Simulating install"
+msgstr "Εκκίνηση εγκατάστασης..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:672
+msgid "Simulating remove"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:676
+msgid "Simulating update"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
+#: ../lib/packagekit-glib2/pk-task-text.c:66
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Θέλετε να επιτρέπεται η εγκατάσταση μη ασφαλών πακέτων?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:71
+#, fuzzy
+msgid "The unsigned software will not be installed."
+msgstr "Τα με υπογεγραμμένα πακέτα δεν θα εγκατασταθούν."
+
+#. TRANSLATORS: the package repository is signed by a key that is not recognised
+#: ../lib/packagekit-glib2/pk-task-text.c:104
+msgid "Software source signature required"
+msgstr "Απαιτείται η υπογραφή του αποθετηρίου"
+
+#. TRANSLATORS: the package repository name
+#: ../lib/packagekit-glib2/pk-task-text.c:110
+#, fuzzy
+msgid "Software source name"
+msgstr "Αλλαγή παραμέτρων πηγών λογισμικού"
+
+#. TRANSLATORS: the key URL
+#: ../lib/packagekit-glib2/pk-task-text.c:113
+msgid "Key URL"
+msgstr "Κλειδί URL"
+
+#. TRANSLATORS: the username of the key
+#: ../lib/packagekit-glib2/pk-task-text.c:116
+msgid "Key user"
+msgstr "Κλειδί χρήστη"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: ../lib/packagekit-glib2/pk-task-text.c:119
+msgid "Key ID"
+msgstr "Κλειδί ID "
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: ../lib/packagekit-glib2/pk-task-text.c:122
+msgid "Key fingerprint"
+msgstr "Αποτύπωμα κλειδιού"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: ../lib/packagekit-glib2/pk-task-text.c:125
+msgid "Key Timestamp"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they want to import
+#: ../lib/packagekit-glib2/pk-task-text.c:131
+msgid "Do you accept this signature?"
+msgstr "Αποδέχεστε την υπογραφή;"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:136
+msgid "The signature was not accepted."
+msgstr "Η υπογραφή δεν έγινε δεκτή."
+
+#. TRANSLATORS: this is another name for a software licence that has to be read before installing
+#: ../lib/packagekit-glib2/pk-task-text.c:171
+#, fuzzy
+msgid "End user licence agreement required"
+msgstr "Απαιτείται αποδοχή της άδειας τελικού χρήστη"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: ../lib/packagekit-glib2/pk-task-text.c:180
+msgid "Agreement"
+msgstr "Συμφωνία"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: ../lib/packagekit-glib2/pk-task-text.c:186
+#, fuzzy
+msgid "Do you accept this agreement?"
+msgstr "Αποδέχεστε την υπογραφή;"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:191
+#, fuzzy
+msgid "The agreement was not accepted."
+msgstr "Η υπογραφή δεν έγινε δεκτή."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: ../lib/packagekit-glib2/pk-task-text.c:221
+#, fuzzy
+msgid "Media change required"
+msgstr "Δεν απαιτούνται επιπλέον πακέτα."
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: ../lib/packagekit-glib2/pk-task-text.c:224
+msgid "Media type"
+msgstr "Τύπος media"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: ../lib/packagekit-glib2/pk-task-text.c:227
+msgid "Media label"
+msgstr "Ετικέτα media"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: ../lib/packagekit-glib2/pk-task-text.c:230
+msgid "Text"
+msgstr "Κείμενο"
+
+#. TRANSLATORS: ask the user to insert the media
+#: ../lib/packagekit-glib2/pk-task-text.c:234
+#, fuzzy
+msgid "Please insert the correct media"
+msgstr "Παρακαλώ, επιλέξτε το σωστό πακέτο: "
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: ../lib/packagekit-glib2/pk-task-text.c:239
+#, fuzzy
+msgid "The correct media was not inserted."
+msgstr "Η υπογραφή δεν έγινε δεκτή."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:254
+msgid "The following packages have to be removed:"
+msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:259
+msgid "The following packages have to be installed:"
+msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:264
+msgid "The following packages have to be updated:"
+msgstr "Τα παρακάτω πακέτα πρέπει να ενημερωθούν:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:269
+msgid "The following packages have to be reinstalled:"
+msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν ξανά:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:274
+#, fuzzy
+msgid "The following packages have to be downgraded:"
+msgstr "Τα παρακάτω πακέτα πρέπει να υποβαθμιστούν:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: ../lib/packagekit-glib2/pk-task-text.c:324
+msgid "Proceed with changes?"
+msgstr "Να προχωρήσουν οι αλλαγές?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: ../lib/packagekit-glib2/pk-task-text.c:329
+msgid "The transaction did not proceed."
+msgstr ""
+
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
 #. licence agreements.
@@ -1299,24 +1727,16 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Απαιτείται πιστοποίηση για την αποδοχή της άδειας χρήσης (EULA)"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει "
-"εσείς"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει εσείς"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr ""
-"Απαιτείται πιστοποίηση για την αλλαγή των παραμέτρων των πηγών λογισμικού"
+msgstr "Απαιτείται πιστοποίηση για την αλλαγή των παραμέτρων των πηγών λογισμικού"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-"Απαιτείται πιστοποίηση για να οριστούν ως έμπιστα τα κλειδιά για την "
-"υπογραφή πακέτων"
+msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgstr "Απαιτείται πιστοποίηση για να οριστούν ως έμπιστα τα κλειδιά για την υπογραφή πακέτων"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to install a signed package"
@@ -1341,16 +1761,11 @@ msgstr "Απαιτείται πιστοποίηση για την αφαίρεσ
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to rollback a transaction"
-msgstr ""
-"Απαιτείται πιστοποίηση για την επαναφορά στην κατάσταση πριν από την εργασία"
+msgstr "Απαιτείται πιστοποίηση για την επαναφορά στην κατάσταση πριν από την εργασία"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-"Απαιτείται πιστοποίηση για τον ορισμό διαμεσολαβητή δικτύου για τη λήψη "
-"πακέτων"
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr "Απαιτείται πιστοποίηση για τον ορισμό διαμεσολαβητή δικτύου για τη λήψη πακέτων"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Authentication is required to update packages"
@@ -1467,8 +1882,7 @@ msgstr "Ενημέρωση πακέτων"
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr ""
-"Δεν ήταν δυνατή η εκκίνηση εξαιτίας των πολιτικών ασφαλείας του συστήματος."
+msgstr "Δεν ήταν δυνατή η εκκίνηση εξαιτίας των πολιτικών ασφαλείας του συστήματος."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1478,18 +1892,12 @@ msgstr "Αυτό μπορεί να οφείλεται σε δύο λόγους:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr ""
-"Η εκκίνηση του εκτελέσιμου αρχείου δε γίνεται από το σωστό χρήστη (συνήθως "
-"το root)"
+msgstr "Η εκκίνηση του εκτελέσιμου αρχείου δε γίνεται από το σωστό χρήστη (συνήθως το root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"Το αρχείο org.freedesktop.PackageKit.conf δεν είναι εγκατεστημένο στον "
-"κατάλογο συστήματος:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgstr "Το αρχείο org.freedesktop.PackageKit.conf δεν είναι εγκατεστημένο στον κατάλογο συστήματος:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:205
@@ -1536,49 +1944,117 @@ msgstr "Δεν είναι δυνατή η σύνδεση στο δίαυλο τ�
 msgid "Error trying to start:"
 msgstr "Σφάλμα κατα την προσπάθεια έναρξης:"
 
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr ""
-"Πρέπει να ενεργοποιηθούν επιπλέον πηγές για την εγκατάσταση πακέτων "
-"αποσφαλμάτωσης"
+msgstr "Πρέπει να ενεργοποιηθούν επιπλέον πηγές για την εγκατάσταση πακέτων αποσφαλμάτωσης"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
+#: ../src/pk-polkit-action-lookup.c:171
+#: ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
 msgstr "Το λογισμικό δεν προέρχεται από έμπιστη πηγή."
 
-#: ../src/pk-polkit-action-lookup.c:173
+#: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#: ../src/pk-polkit-action-lookup.c:174
-#, fuzzy
+#: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#: ../src/pk-polkit-action-lookup.c:192
+#: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#: ../src/pk-polkit-action-lookup.c:193
-#, fuzzy
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
 #. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:199
+#: ../src/pk-polkit-action-lookup.c:202
 msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
-"Η εγκατάσταση κακόβουλου λογισμικού μπορεί να προκαλέσει ζημιές στον "
-"υπολογιστή σας ή και αλλού."
+msgstr "Η εγκατάσταση κακόβουλου λογισμικού μπορεί να προκαλέσει ζημιές στον υπολογιστή σας ή και αλλού."
 
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:274
-#, fuzzy
+#: ../src/pk-polkit-action-lookup.c:277
 msgid "Many packages"
-msgstr "Ενημέρωση πακέτων"
+msgstr "Πολλά πακέτα"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:343
 msgid "Only trusted"
 msgstr "Μόνο έμπιστα"
+
+#~ msgid "Percentage"
+#~ msgstr "Ποσοστό"
+#~ msgid "Please restart the application as it is being used."
+#~ msgstr "Παρακαλώ, επανεκκινήστε την εφαρμογή, γιατί χρησιμοποιείται."
+#~ msgid "The package %s is already installed"
+#~ msgstr "Το πακέτο %s είναι ήδη εγκατεστημένο"
+#~ msgid "This tool could not install the files: %s"
+#~ msgstr "Δεν ήταν δυνατή η εγκατάσταση των αρχείων: %s"
+#~ msgid "This tool could not remove %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η αφαίρεση του %s: %s"
+#~ msgid "This tool could not remove the packages: %s"
+#~ msgstr "Δεν ήταν δυνατή η αφαίρεση των πακέτων: %s"
+#~ msgid "Proceed removing additional packages?"
+#~ msgstr "Μπορούν να αφαιρεθούν τα επιπλέον πακέτα;"
+#~ msgid "The package removal was canceled!"
+#~ msgstr "Η αφαίρεση των πακέτων ακυρώθηκε!"
+#~ msgid "This tool could not download the package %s as it could not be found"
+#~ msgstr "Δεν ήταν δυνατή η λήψη του πακέτου %s, γιατί δε βρέθηκε"
+#~ msgid "This tool could not download the packages: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη των πακέτων: %s"
+#~ msgid "This tool could not update %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η ενημέρωση του %s: %s"
+#~ msgid "This tool could not get the requirements for %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη των απαιτούμενων για το %s: %s"
+#~ msgid "This tool could not get the dependencies for %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη των εξαρτήσεων του %s: %s"
+#~ msgid "This tool could not get package details for %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη των λεπτομερειών πακέτου του %s: %s"
+#~ msgid "This tool could not find the files for %s: %s"
+#~ msgstr "Δε βρέθηκαν τα αρχεία για το %s: %s"
+#~ msgid "This tool could not get the file list for %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη της λίστας αρχείων για το %s: %s"
+#~ msgid "File already exists: %s"
+#~ msgstr "Το αρχείο υπάρχει ήδη: %s"
+#~ msgid "This tool could not get package list: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη της λίστας πακέτων: %s"
+#~ msgid "Failed to save to disk"
+#~ msgstr "Απέτυχε η αποθήκευση στο δίσκο"
+#~ msgid "File does not exist: %s"
+#~ msgstr "Δεν υπάρχει το αρχείο: %s"
+#~ msgid "Packages to add"
+#~ msgstr "Πακέτα προς εγκατάσταση"
+#~ msgid "Packages to remove"
+#~ msgstr "Πακέτα προς αφαίρεση"
+#~ msgid "No new packages need to be installed"
+#~ msgstr "Δεν χρειάζεται να εγκατασταθούν νέα πακέτα"
+#~ msgid "not found."
+#~ msgstr "δε βρέθηκε."
+#~ msgid "No packages can be found to install"
+#~ msgstr "Δε βρέθηκαν πακέτα προς εγκατάσταση"
+#~ msgid "This tool could not find the update details for %s: %s"
+#~ msgstr "Δε βρέθηκαν οι λεπτομέρειες ενημέρωσης του %s: %s"
+#~ msgid "This tool could not get the update details for %s: %s"
+#~ msgstr "Δεν ήταν δυνατή η λήψη των λεπτομερειών ενημέρωσης του %s: %s"
+#~ msgid "Error:"
+#~ msgstr "Σφάλμα:"
+#~ msgid "Do you agree to this license?"
+#~ msgstr "Αποδέχεστε την άδεια χρήσης;"
+#~ msgid "The license was refused."
+#~ msgstr "Η άδεια χρήσης δεν έγινε δεκτή."
+#~ msgid "This tool could not connect to system DBUS."
+#~ msgstr "Δεν ήταν δυνατή η σύνδεση στο DBUS του συστήματος."
+#~ msgid "A list file name to create is required"
+#~ msgstr "Πρέπει να οριστεί το όνομα του νέου αρχείου λίστας"
+#~ msgid "A list file to open is required"
+#~ msgstr "Πρέπει να οριστεί το αρχείο λίστας που θα ανοίξει"
+#~ msgid "Incorrect privileges for this operation"
+#~ msgstr "Δεν έχετε τα κατάλληλα προνόμια για αυτή την ενέργεια"
+#~ msgid "Cannot show the list of transactions"
+#~ msgstr "Δεν είναι δυνατή η εμφάνιση της λίστας εργασιών"
+#~ msgid "The package could not be found"
+#~ msgstr "Δε βρέθηκε το πακέτο"
+
