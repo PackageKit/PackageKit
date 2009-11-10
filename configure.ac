@@ -628,6 +628,7 @@ AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
 	PKG_CHECK_MODULES(POLKIT, \
+			  polkit-backend-1 \
 			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	AC_SUBST(POLKIT_CFLAGS)
 	AC_SUBST(POLKIT_LIBS)
