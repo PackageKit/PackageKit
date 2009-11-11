@@ -133,7 +133,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
  * pk_console_resolve_package:
  **/
 gchar *
-pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *package, GError **error)
+pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *package_name, GError **error)
 {
 	gchar *package_id = NULL;
 	gboolean valid;
@@ -142,15 +142,15 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	GPtrArray *array = NULL;
 	guint i;
 	gchar *printable;
-	const PkItemPackage *item;
+	PkPackage *package;
 
 	/* have we passed a complete package_id? */
-	valid = pk_package_id_check (package);
+	valid = pk_package_id_check (package_name);
 	if (valid)
-		return g_strdup (package);
+		return g_strdup (package_name);
 
 	/* split */
-	tmp = g_strsplit (package, ",", -1);
+	tmp = g_strsplit (package_name, ",", -1);
 
 	/* get the list of possibles */
 	results = pk_client_resolve (client, filter, tmp, NULL, NULL, NULL, error);
@@ -160,36 +160,44 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	/* get the packages returned */
 	array = pk_results_get_package_array (results);
 	if (array == NULL) {
-		*error = g_error_new (1, 0, "did not get package struct for %s", package);
+		*error = g_error_new (1, 0, "did not get package struct for %s", package_name);
 		goto out;
 	}
 
 	/* nothing found */
 	if (array->len == 0) {
-		*error = g_error_new (1, 0, "could not find %s", package);
+		*error = g_error_new (1, 0, "could not find %s", package_name);
 		goto out;
 	}
 
 	/* just one thing found */
 	if (array->len == 1) {
-		item = g_ptr_array_index (array, 0);
-		package_id = g_strdup (item->package_id);
+		package = g_ptr_array_index (array, 0);
+		g_object_get (package,
+			      "package-id", &package_id,
+			      NULL);
 		goto out;
 	}
 
 	/* TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages  */
 	g_print ("%s\n", _("More than one package matches:"));
 	for (i=0; i<array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		printable = pk_package_id_to_printable (item->package_id);
+		package = g_ptr_array_index (array, i);
+		g_object_get (package,
+			      "package-id", &package_id,
+			      NULL);
+		printable = pk_package_id_to_printable (package_id);
 		g_print ("%i. %s\n", i+1, printable);
 		g_free (printable);
+		g_free (package_id);
 	}
 
 	/* TRANSLATORS: This finds out which package in the list to use */
 	i = pk_console_get_number (_("Please choose the correct package: "), array->len);
-	item = g_ptr_array_index (array, i-1);
-	package_id = g_strdup (item->package_id);
+	package = g_ptr_array_index (array, i-1);
+	g_object_get (package,
+		      "package-id", &package_id,
+		      NULL);
 out:
 	if (results != NULL)
 		g_object_unref (results);

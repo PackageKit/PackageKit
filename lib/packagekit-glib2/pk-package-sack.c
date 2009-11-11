@@ -481,9 +481,12 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *packages = NULL;
-	const PkItemPackage *item;
+	PkPackage *item;
 	guint i;
 	PkPackage *package;
+	PkInfoEnum info;
+	gchar *summary;
+	gchar *package_id;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -507,22 +510,28 @@ pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkP
 	/* set data on each item */
 	for (i=0; i<packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
-
-		egg_debug ("%s\t%s\t%s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
+		g_object_get (item,
+			      "info", &info,
+			      "package-id", &package_id,
+			      "summary", &summary,
+			      NULL);
 
 		/* get package, and set data */
-		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", item->package_id);
-			continue;
+			egg_warning ("failed to find %s", package_id);
+			goto skip;
 		}
 
 		/* set data */
 		g_object_set (package,
-			      "info", item->info,
-			      "summary", item->summary,
+			      "info", info,
+			      "summary", summary,
 			      NULL);
 		g_object_unref (package);
+skip:
+		g_free (summary);
+		g_free (package_id);
 	}
 
 	/* all okay */
@@ -619,9 +628,15 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *details = NULL;
-	const PkItemDetails *item;
+	PkDetails *item;
 	guint i;
 	PkPackage *package;
+	PkGroupEnum group;
+	gchar *license;
+	gchar *url;
+	gchar *description;
+	gchar *package_id;
+	guint64 size;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -645,24 +660,36 @@ pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkP
 	for (i=0; i<details->len; i++) {
 		item = g_ptr_array_index (details, i);
 
-		egg_debug ("%s\t%s\t%s", item->package_id, item->url, item->license);
+		g_object_get (item,
+			      "package-id", &package_id,
+			      "group", &group,
+			      "license", &license,
+			      "url", &url,
+			      "description", &description,
+			      "size", &size,
+			      NULL);
 
 		/* get package, and set data */
-		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", item->package_id);
-			continue;
+			egg_warning ("failed to find %s", package_id);
+			goto skip;
 		}
 
 		/* set data */
 		g_object_set (package,
-			      "license", item->license,
-			      "group", item->group,
-			      "description", item->description,
-			      "url", item->url,
-			      "size", item->size,
+			      "license", license,
+			      "group", group,
+			      "description", description,
+			      "url", url,
+			      "size", size,
 			      NULL);
 		g_object_unref (package);
+skip:
+		g_free (package_id);
+		g_free (license);
+		g_free (url);
+		g_free (description);
 	}
 
 	/* all okay */
@@ -733,9 +760,21 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	GError *error = NULL;
 	PkResults *results;
 	GPtrArray *update_details = NULL;
-	const PkItemUpdateDetail *item;
+	PkUpdateDetail *item;
 	guint i;
 	PkPackage *package;
+	gchar *package_id;
+	gchar *updates;
+	gchar *obsoletes;
+	gchar *vendor_url;
+	gchar *bugzilla_url;
+	gchar *cve_url;
+	PkRestartEnum restart;
+	gchar *update_text;
+	gchar *changelog;
+	PkUpdateStateEnum state_enum;
+	gchar *issued;
+	gchar *updated;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -758,31 +797,54 @@ pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *re
 	/* set data on each item */
 	for (i=0; i<update_details->len; i++) {
 		item = g_ptr_array_index (update_details, i);
-
-		egg_debug ("%s\t%s\t%s", item->package_id, item->updates, item->changelog);
+		g_object_get (item,
+			      "package-id", &package_id,
+			      "updates", &updates,
+			      "obsoletes", &obsoletes,
+			      "vendor-url", &vendor_url,
+			      "bugzilla-url", &bugzilla_url,
+			      "cve-url", &cve_url,
+			      "restart", &restart,
+			      "update-text", &update_text,
+			      "changelog", &changelog,
+			      "state", &state_enum,
+			      "issued", &issued,
+			      "updated", &updated,
+			      NULL);
 
 		/* get package, and set data */
-		package = pk_package_sack_find_by_id (state->sack, item->package_id);
+		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", item->package_id);
-			continue;
+			egg_warning ("failed to find %s", package_id);
+			goto skip;
 		}
 
 		/* set data */
 		g_object_set (package,
-			      "update-updates", item->updates,
-			      "update-obsoletes", item->obsoletes,
-			      "update-vendor-url", item->vendor_url,
-			      "update-bugzilla-url", item->bugzilla_url,
-			      "update-cve-url", item->cve_url,
-			      "update-restart", item->restart,
-			      "update-text", item->update_text,
-			      "update-changelog", item->changelog,
-			      "update-state", item->state,
-			      "update-issued", item->issued,
-			      "update-updated", item->updated,
+			      "update-updates", updates,
+			      "update-obsoletes", obsoletes,
+			      "update-vendor-url", vendor_url,
+			      "update-bugzilla-url", bugzilla_url,
+			      "update-cve-url", cve_url,
+			      "update-restart", restart,
+			      "update-text", update_text,
+			      "update-changelog", changelog,
+			      "update-state", state_enum,
+			      "update-issued", issued,
+			      "update-updated", updated,
 			      NULL);
 		g_object_unref (package);
+skip:
+		g_free (package_id);
+		g_free (updates);
+		g_free (obsoletes);
+		g_free (vendor_url);
+		g_free (bugzilla_url);
+		g_free (cve_url);
+		g_free (update_text);
+		g_free (changelog);
+		g_free (issued);
+		g_free (updated);
 	}
 
 	/* all okay */

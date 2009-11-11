@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-28 21:59+0000\n"
-"PO-Revision-Date: 2009-09-29 00:06+0100\n"
+"POT-Creation-Date: 2009-10-30 10:08+0000\n"
+"PO-Revision-Date: 2009-10-30 21:28+0100\n"
 "Last-Translator: Miloš Komarčević <kmilos@gmail.com>\n"
 "Language-Team: Serbian (sr) <fedora-trans-sr@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -138,8 +138,8 @@ msgstr "Više o nadgradnji:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:105
-#: ../lib/packagekit-glib2/pk-task-text.c:172
+#: ../client/pk-console.c:249 ../lib/packagekit-glib2/pk-task-text.c:107
+#: ../lib/packagekit-glib2/pk-task-text.c:174
 #: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
 msgid_plural "Packages"
@@ -159,7 +159,7 @@ msgstr "Prevazilazi"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:175
+#: ../client/pk-console.c:260 ../lib/packagekit-glib2/pk-task-text.c:177
 msgid "Vendor"
 msgstr "Izdavač"
 
@@ -200,7 +200,7 @@ msgstr "Izdato"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:498
+#: ../client/pk-console.c:294 ../lib/packagekit-glib2/pk-console-shared.c:502
 msgid "Updated"
 msgstr "Datum ažuriranja"
 
@@ -266,8 +266,8 @@ msgstr "Kobna greška"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:484
-#: ../contrib/command-not-found/pk-command-not-found.c:426
-#: ../contrib/command-not-found/pk-command-not-found.c:567
+#: ../contrib/command-not-found/pk-command-not-found.c:430
+#: ../contrib/command-not-found/pk-command-not-found.c:597
 msgid "The transaction failed"
 msgstr "Transakcija nije uspela"
 
@@ -351,141 +351,154 @@ msgstr "Datum poslednjeg izvršavanja ove radnje nije pronađen"
 
 #. TRANSLATORS: command line argument, if we should show debugging information
 #. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:987 ../client/pk-generate-pack.c:223
+#: ../client/pk-console.c:989 ../client/pk-generate-pack.c:223
 #: ../client/pk-monitor.c:281
-#: ../contrib/command-not-found/pk-command-not-found.c:620
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:511
+#: ../contrib/command-not-found/pk-command-not-found.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:512
 #: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
 msgid "Show extra debugging information"
 msgstr "Prikaži dodatne podatke za otklon grešaka"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:990 ../client/pk-monitor.c:283
+#: ../client/pk-console.c:992 ../client/pk-monitor.c:283
 msgid "Show the program version and exit"
 msgstr "Prikaži verziju programa i završi rad"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:993
+#: ../client/pk-console.c:995
 msgid "Set the filter, e.g. installed"
 msgstr "Namesti filter, npr. instalirani"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:996
+#: ../client/pk-console.c:998
 msgid "Exit without waiting for actions to complete"
 msgstr "Završi rad bez čekanja da se poslovi završe"
 
+#. command line argument, do we ask questions
+#: ../client/pk-console.c:1001
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+msgid "Install the packages without asking for confirmation"
+msgstr "Instaliraj pakete bez pitanja za potvrdu"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: ../client/pk-console.c:1004
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Izvrši naredbu koristeći neiskorišćeni mrežni opseg i takođe trošeći manje "
+"energije"
+
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1022
+#: ../client/pk-console.c:1030
 msgid "Failed to contact PackageKit"
 msgstr "Neuspešno kontaktiranje PaketKita."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1074
+#: ../client/pk-console.c:1086
 msgid "The filter specified was invalid"
 msgstr "Navedeni filter nije ispravan"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1093
+#: ../client/pk-console.c:1105
 msgid "A search type is required, e.g. name"
 msgstr "Morate navesti vrstu pretrage, npr. po imenu"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1100 ../client/pk-console.c:1112
-#: ../client/pk-console.c:1124 ../client/pk-console.c:1136
+#: ../client/pk-console.c:1112 ../client/pk-console.c:1124
+#: ../client/pk-console.c:1136 ../client/pk-console.c:1148
 msgid "A search term is required"
 msgstr "Morate navesti termin za pretragu"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1158
 msgid "Invalid search type"
 msgstr "Neispravna vrsta pretrage"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1152
+#: ../client/pk-console.c:1164
 msgid "A package name to install is required"
 msgstr "Neophodno je ime paketa za instalaciju"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1161
+#: ../client/pk-console.c:1173
 msgid "A filename to install is required"
 msgstr "Neophodno je ime datoteke za instalaciju"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1173
+#: ../client/pk-console.c:1185
 msgid "A type, key_id and package_id are required"
 msgstr "Morate navesti vrstu, IB ključa i IB paketa (key_id i package_id)"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1184
+#: ../client/pk-console.c:1196
 msgid "A package name to remove is required"
 msgstr "Morate navesti naziv paketa za uklanjanje"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1193
+#: ../client/pk-console.c:1205
 msgid "A destination directory and the package names to download are required"
 msgstr "Neophodni su odredišni direktorijum i imena paketa za preuzimanje"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1200
+#: ../client/pk-console.c:1212
 msgid "Directory not found"
 msgstr "Direktorijum nije nađen"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1209
+#: ../client/pk-console.c:1221
 msgid "A licence identifier (eula-id) is required"
 msgstr "Morete navesti identifikator licence (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1220
+#: ../client/pk-console.c:1232
 msgid "A transaction identifier (tid) is required"
 msgstr "Morate navesti identifikator transakcije (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1241
+#: ../client/pk-console.c:1253
 msgid "A package name to resolve is required"
 msgstr "Morate navesti ime paketa za razrešavanje"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1252 ../client/pk-console.c:1263
+#: ../client/pk-console.c:1264 ../client/pk-console.c:1275
 msgid "A repository name is required"
 msgstr "Morate navesti ime riznice"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1274
+#: ../client/pk-console.c:1286
 msgid "A repo name, parameter and value are required"
 msgstr "Morate navesti ime, parametar i vrednost riznice"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1291
+#: ../client/pk-console.c:1303
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Morate navesti radnju, npr. „update-system“ (ažuriranje sistema)"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1298
+#: ../client/pk-console.c:1310
 msgid "A correct role is required"
 msgstr "Morate navesti važeću radnju"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1308 ../client/pk-console.c:1323
-#: ../client/pk-console.c:1332 ../client/pk-console.c:1352
-#: ../client/pk-console.c:1361 ../client/pk-generate-pack.c:287
+#: ../client/pk-console.c:1320 ../client/pk-console.c:1335
+#: ../client/pk-console.c:1344 ../client/pk-console.c:1364
+#: ../client/pk-console.c:1373 ../client/pk-generate-pack.c:287
 msgid "A package name is required"
 msgstr "Morate navesti ime paketa"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1341
+#: ../client/pk-console.c:1353
 msgid "A package provide string is required"
 msgstr "Morate navesti „provide“ niz (šta paket pruža)"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1433
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Opcija „%s“ nije podržana"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443
 msgid "Command failed"
 msgstr "Naredba nije uspela"
 
@@ -664,91 +677,96 @@ msgid "Installing..."
 msgstr "Instaliram..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:365
 msgid "Downloading details about the software sources."
 msgstr "Preuzimam detalje o izvorima softvera."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:365
+#: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Preuzimam spiskove datoteka (ovo može da potraje dok se ne završi)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:369
+#: ../contrib/command-not-found/pk-command-not-found.c:373
 msgid "Waiting for package manager lock."
 msgstr "Čekanje na zaključavanje upravnika paketa."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:373
+#: ../contrib/command-not-found/pk-command-not-found.c:377
 msgid "Loading list of packages."
 msgstr "Učitavam spisak paketa."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:417
+#: ../contrib/command-not-found/pk-command-not-found.c:421
 msgid "Failed to search for file"
 msgstr "Datoteka nije pronađena"
 
+#. TRANSLATORS: we failed to launch the executable, the error follows
+#: ../contrib/command-not-found/pk-command-not-found.c:560
+msgid "Failed to launch:"
+msgstr "Neuspešno pokretanje:"
+
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:558
+#: ../contrib/command-not-found/pk-command-not-found.c:588
 msgid "Failed to install packages"
 msgstr "Neuspešna instalacija paketa"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:636
+#: ../contrib/command-not-found/pk-command-not-found.c:667
 msgid "PackageKit Command Not Found"
 msgstr "PaketKit naredba nije nađena"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:664
+#: ../contrib/command-not-found/pk-command-not-found.c:697
 msgid "Command not found."
 msgstr "Naredba nije nađena."
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:671
+#: ../contrib/command-not-found/pk-command-not-found.c:704
 msgid "Similar command is:"
 msgstr "Slična naredba je:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:680
+#: ../contrib/command-not-found/pk-command-not-found.c:714
 msgid "Run similar command:"
 msgstr "Pokreni sličnu naredbu:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:692
-#: ../contrib/command-not-found/pk-command-not-found.c:701
+#: ../contrib/command-not-found/pk-command-not-found.c:728
+#: ../contrib/command-not-found/pk-command-not-found.c:737
 msgid "Similar commands are:"
 msgstr "Slične naredbe su:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:708
+#: ../contrib/command-not-found/pk-command-not-found.c:744
 msgid "Please choose a command to run"
 msgstr "Izaberite naredbu za pokretanje"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:724
+#: ../contrib/command-not-found/pk-command-not-found.c:760
 msgid "The package providing this file is:"
 msgstr "Paket koji pruža ovu datoteku je:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:729
+#: ../contrib/command-not-found/pk-command-not-found.c:765
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Da instaliram paket „%s“ koji pruža naredbu „%s“?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:789
 msgid "Packages providing this file are:"
 msgstr "Paketi koji pružaju ovu datoteku su:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:757
+#: ../contrib/command-not-found/pk-command-not-found.c:799
 msgid "Suitable packages are:"
 msgstr "Prikladni paketi su:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:766
+#: ../contrib/command-not-found/pk-command-not-found.c:808
 msgid "Please choose a package to install"
 msgstr "Izaberite paket za instalaciju"
 
@@ -764,186 +782,185 @@ msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Neuspelo pronalaženje paketa %s, ili je već instaliran: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:514
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:515
 msgid ""
 "Don't actually install any packages, only simulate what would be installed"
 msgstr ""
-"Nemoj stvarno da instaliraš pakete, samo simuliraj šta bi bilo instalirano"
+"Nemoj u stvari da instaliraš pakete, samo simuliraj šta bi bilo instalirano"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:517
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
 msgid "Do not install dependencies of the core packages"
 msgstr "Nemoj da instaliraš zavisnosti za osnovne pakete"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:520
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not display information or progress"
 msgstr "Ne prikazuj informacije ili napredak"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:535
-#, fuzzy
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:539
 msgid "PackageKit Debuginfo Installer"
 msgstr "PaketKit debuginfo instalater"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "GREŠKA: Navedite imena paketa za instalaciju."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:579
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
 #, c-format
 msgid "Getting sources list"
 msgstr "Dobavljam spisak izvora"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:664
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:748
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:792
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:859
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:903
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
 msgid "FAILED."
 msgstr "NEUSPELA."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:604
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:679
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:807
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:918
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
 msgstr "U REDU."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:607
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Pronađeno je %i uključenih i %i isključenih izvora."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:614
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Pronalaženje izvora za otklon grešaka"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:647
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
+#, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Pronađeno je %i isključenih debuginfo riznica."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:654
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Uključujem izvore za otklon grešaka"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:682
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Uključeno je %i izvora za otklon grešaka."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:689
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Pronalaženje paketa za otklon grešaka"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Neuspelo pronalaženje paketa %s: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:724
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
+#, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Neuspelo pronalaženje debuginfo paketa %s: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:752
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
 #, c-format
 msgid "Found no packages to install."
 msgstr "Nisu pronađeni paketi za instalaciju."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:766
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
 msgstr "Pronađeno je %i paketa:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:782
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Pronalaženje paketa koji zavise od ovih paketa"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Ne mogu da pronađem zavisan paket: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:811
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Pronađeno je %i dodatnih paketa."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:815
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
 msgstr "Nisu neophodni dodatni paketi."
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Pronađeno je %i paketa za instalaciju:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "Ne instaliram pakete u režimu simulacije"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:849
-#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../lib/packagekit-glib2/pk-console-shared.c:274
 #, c-format
 msgid "Installing packages"
 msgstr "Instaliram pakete"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:862
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Ne mogu da instaliram pakete: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:894
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Isključujem prethodno uključene izvore"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:906
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Ne mogu da isključim izvore za otklon grešaka: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:921
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Isključeno je %i izvora za otklon grešaka."
@@ -1046,604 +1063,604 @@ msgstr "PaketKit spisak paketa"
 msgid "PackageKit Service Pack"
 msgstr "Servis PaketKita"
 
-#: ../lib/packagekit-glib2/pk-console-shared.c:55
+#: ../lib/packagekit-glib2/pk-console-shared.c:59
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Unesite broj između 1 i %i: "
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:177
+#: ../lib/packagekit-glib2/pk-console-shared.c:181
 msgid "More than one package matches:"
 msgstr "Postoji više paketa koji odgovaraju upitu:"
 
 #. TRANSLATORS: This finds out which package in the list to use
-#: ../lib/packagekit-glib2/pk-console-shared.c:186
+#: ../lib/packagekit-glib2/pk-console-shared.c:190
 msgid "Please choose the correct package: "
 msgstr "Izaberite željeni paket: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: ../lib/packagekit-glib2/pk-console-shared.c:238
+#: ../lib/packagekit-glib2/pk-console-shared.c:242
 msgid "Unknown state"
 msgstr "Nepoznato stanje"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: ../lib/packagekit-glib2/pk-console-shared.c:242
+#: ../lib/packagekit-glib2/pk-console-shared.c:246
 msgid "Starting"
 msgstr "Pokretanje"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: ../lib/packagekit-glib2/pk-console-shared.c:246
+#: ../lib/packagekit-glib2/pk-console-shared.c:250
 msgid "Waiting in queue"
 msgstr "Čekanje u redu"
 
 #. TRANSLATORS: transaction state, just started
-#: ../lib/packagekit-glib2/pk-console-shared.c:250
+#: ../lib/packagekit-glib2/pk-console-shared.c:254
 msgid "Running"
 msgstr "Izvršavanje"
 
 #. TRANSLATORS: transaction state, is querying data
-#: ../lib/packagekit-glib2/pk-console-shared.c:254
+#: ../lib/packagekit-glib2/pk-console-shared.c:258
 msgid "Querying"
 msgstr "Ispitivanje"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:258
+#: ../lib/packagekit-glib2/pk-console-shared.c:262
 msgid "Getting information"
 msgstr "Dobavljanje podataka"
 
 #. TRANSLATORS: transaction state, removing packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:262
+#: ../lib/packagekit-glib2/pk-console-shared.c:266
 msgid "Removing packages"
 msgstr "Uklanjanje paketa"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:266
-#: ../lib/packagekit-glib2/pk-console-shared.c:644
+#: ../lib/packagekit-glib2/pk-console-shared.c:270
+#: ../lib/packagekit-glib2/pk-console-shared.c:648
 msgid "Downloading packages"
 msgstr "Preuzimanje paketa"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: ../lib/packagekit-glib2/pk-console-shared.c:274
+#: ../lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Refreshing software list"
 msgstr "Osvežavanje spiska softvera"
 
 #. TRANSLATORS: transaction state, installing updates
-#: ../lib/packagekit-glib2/pk-console-shared.c:278
+#: ../lib/packagekit-glib2/pk-console-shared.c:282
 msgid "Installing updates"
 msgstr "Instaliranje ažuriranja"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: ../lib/packagekit-glib2/pk-console-shared.c:282
+#: ../lib/packagekit-glib2/pk-console-shared.c:286
 msgid "Cleaning up packages"
 msgstr "Čišćenje paketa"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: ../lib/packagekit-glib2/pk-console-shared.c:286
+#: ../lib/packagekit-glib2/pk-console-shared.c:290
 msgid "Obsoleting packages"
 msgstr "Prevazilazim pakete"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: ../lib/packagekit-glib2/pk-console-shared.c:290
+#: ../lib/packagekit-glib2/pk-console-shared.c:294
 msgid "Resolving dependencies"
 msgstr "Razrešavanje zavisnosti"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: ../lib/packagekit-glib2/pk-console-shared.c:294
+#: ../lib/packagekit-glib2/pk-console-shared.c:298
 msgid "Checking signatures"
 msgstr "Provera potpisa"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:298
-#: ../lib/packagekit-glib2/pk-console-shared.c:604
+#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:608
 msgid "Rolling back"
 msgstr "Vraćanje unazad"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:302
+#: ../lib/packagekit-glib2/pk-console-shared.c:306
 msgid "Testing changes"
 msgstr "Isprobavanje promena"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: ../lib/packagekit-glib2/pk-console-shared.c:306
+#: ../lib/packagekit-glib2/pk-console-shared.c:310
 msgid "Committing changes"
 msgstr "Šaljem promene"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: ../lib/packagekit-glib2/pk-console-shared.c:310
+#: ../lib/packagekit-glib2/pk-console-shared.c:314
 msgid "Requesting data"
 msgstr "Zahtevam podatke"
 
 #. TRANSLATORS: transaction state, all done!
-#: ../lib/packagekit-glib2/pk-console-shared.c:314
+#: ../lib/packagekit-glib2/pk-console-shared.c:318
 msgid "Finished"
 msgstr "Završeno"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: ../lib/packagekit-glib2/pk-console-shared.c:318
+#: ../lib/packagekit-glib2/pk-console-shared.c:322
 msgid "Cancelling"
 msgstr "Otkazivanje"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:322
+#: ../lib/packagekit-glib2/pk-console-shared.c:326
 msgid "Downloading repository information"
 msgstr "Preuzimam podatke o riznici"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:326
+#: ../lib/packagekit-glib2/pk-console-shared.c:330
 msgid "Downloading list of packages"
 msgstr "Preuzimanje spiska paketa"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:330
+#: ../lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Downloading file lists"
 msgstr "Preuzimanje spiskova datoteka"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:334
+#: ../lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Downloading lists of changes"
 msgstr "Preuzimanje spiskova promena"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:338
+#: ../lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Downloading groups"
 msgstr "Preuzimanje grupa"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: ../lib/packagekit-glib2/pk-console-shared.c:342
+#: ../lib/packagekit-glib2/pk-console-shared.c:346
 msgid "Downloading update information"
 msgstr "Preuzimanje podataka o ažuriranju"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: ../lib/packagekit-glib2/pk-console-shared.c:346
+#: ../lib/packagekit-glib2/pk-console-shared.c:350
 msgid "Repackaging files"
 msgstr "Prepakivanje datoteka"
 
 #. TRANSLATORS: transaction state, loading databases
-#: ../lib/packagekit-glib2/pk-console-shared.c:350
+#: ../lib/packagekit-glib2/pk-console-shared.c:354
 msgid "Loading cache"
 msgstr "Učitavanje keša"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:354
+#: ../lib/packagekit-glib2/pk-console-shared.c:358
 msgid "Scanning applications"
 msgstr "Pretražujem programe"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: ../lib/packagekit-glib2/pk-console-shared.c:358
+#: ../lib/packagekit-glib2/pk-console-shared.c:362
 msgid "Generating package lists"
 msgstr "Pravljenje spiskova paketa"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: ../lib/packagekit-glib2/pk-console-shared.c:362
+#: ../lib/packagekit-glib2/pk-console-shared.c:366
 msgid "Waiting for package manager lock"
 msgstr "Čekanje na zaključavanje upravnika paketa"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: ../lib/packagekit-glib2/pk-console-shared.c:366
+#: ../lib/packagekit-glib2/pk-console-shared.c:370
 msgid "Waiting for authentication"
 msgstr "Čekanje na autentifikaciju"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: ../lib/packagekit-glib2/pk-console-shared.c:370
+#: ../lib/packagekit-glib2/pk-console-shared.c:374
 msgid "Updating running applications"
 msgstr "Ažuriram pokrenute programe"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:374
+#: ../lib/packagekit-glib2/pk-console-shared.c:378
 msgid "Checking applications in use"
 msgstr "Proveravam programe u upotrebi"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: ../lib/packagekit-glib2/pk-console-shared.c:378
+#: ../lib/packagekit-glib2/pk-console-shared.c:382
 msgid "Checking libraries in use"
 msgstr "Proveravam biblioteke u upotrebi"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: ../lib/packagekit-glib2/pk-console-shared.c:382
+#: ../lib/packagekit-glib2/pk-console-shared.c:386
 msgid "Copying files"
 msgstr "Umnožavanje datoteka"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:400
+#: ../lib/packagekit-glib2/pk-console-shared.c:404
 msgid "Trivial"
 msgstr "Trivijalno"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:404
+#: ../lib/packagekit-glib2/pk-console-shared.c:408
 msgid "Normal"
 msgstr "Obično"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:408
+#: ../lib/packagekit-glib2/pk-console-shared.c:412
 msgid "Important"
 msgstr "Važno"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:412
+#: ../lib/packagekit-glib2/pk-console-shared.c:416
 msgid "Security"
 msgstr "Bezbednosno"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:416
+#: ../lib/packagekit-glib2/pk-console-shared.c:420
 msgid "Bug fix "
 msgstr "Ispravka greške"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:420
+#: ../lib/packagekit-glib2/pk-console-shared.c:424
 msgid "Enhancement"
 msgstr "Poboljšanje"
 
 #. TRANSLATORS: The type of update
-#: ../lib/packagekit-glib2/pk-console-shared.c:424
+#: ../lib/packagekit-glib2/pk-console-shared.c:428
 msgid "Blocked"
 msgstr "Blokirano"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:429
-#: ../lib/packagekit-glib2/pk-console-shared.c:502
+#: ../lib/packagekit-glib2/pk-console-shared.c:433
+#: ../lib/packagekit-glib2/pk-console-shared.c:506
 msgid "Installed"
 msgstr "Instaliran"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: ../lib/packagekit-glib2/pk-console-shared.c:434
+#: ../lib/packagekit-glib2/pk-console-shared.c:438
 msgid "Available"
 msgstr "Dostupan"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:452
+#: ../lib/packagekit-glib2/pk-console-shared.c:456
 msgid "Downloading"
 msgstr "Preuzimanje"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:456
+#: ../lib/packagekit-glib2/pk-console-shared.c:460
 msgid "Updating"
 msgstr "Ažuriranje"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:460
-#: ../lib/packagekit-glib2/pk-console-shared.c:580
+#: ../lib/packagekit-glib2/pk-console-shared.c:464
+#: ../lib/packagekit-glib2/pk-console-shared.c:584
 msgid "Installing"
 msgstr "Instalacija"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:464
-#: ../lib/packagekit-glib2/pk-console-shared.c:576
+#: ../lib/packagekit-glib2/pk-console-shared.c:468
+#: ../lib/packagekit-glib2/pk-console-shared.c:580
 msgid "Removing"
 msgstr "Uklanjanje"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:468
+#: ../lib/packagekit-glib2/pk-console-shared.c:472
 msgid "Cleaning up"
 msgstr "Čišćenje"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:472
+#: ../lib/packagekit-glib2/pk-console-shared.c:476
 msgid "Obsoleting"
 msgstr "Prevazilaženje"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:476
+#: ../lib/packagekit-glib2/pk-console-shared.c:480
 msgid "Reinstalling"
 msgstr "Ponovna instalacija"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:494
+#: ../lib/packagekit-glib2/pk-console-shared.c:498
 msgid "Downloaded"
 msgstr "Preuzet"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:506
+#: ../lib/packagekit-glib2/pk-console-shared.c:510
 msgid "Removed"
 msgstr "Uklonjen"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:510
+#: ../lib/packagekit-glib2/pk-console-shared.c:514
 msgid "Cleaned up"
 msgstr "Očišćen"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:514
+#: ../lib/packagekit-glib2/pk-console-shared.c:518
 msgid "Obsoleted"
 msgstr "Prevaziđen"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:518
+#: ../lib/packagekit-glib2/pk-console-shared.c:522
 msgid "Reinstalled"
 msgstr "Ponovo instaliran"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:536
+#: ../lib/packagekit-glib2/pk-console-shared.c:540
 msgid "Unknown role type"
 msgstr "Nepoznata vrsta radnje"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:540
+#: ../lib/packagekit-glib2/pk-console-shared.c:544
 msgid "Getting dependencies"
 msgstr "Dobavljanje zavisnosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:544
+#: ../lib/packagekit-glib2/pk-console-shared.c:548
 msgid "Getting update details"
 msgstr "Dobavljanje detalja o ažuriranju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:548
+#: ../lib/packagekit-glib2/pk-console-shared.c:552
 msgid "Getting details"
 msgstr "Dobavljanje detalja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:552
+#: ../lib/packagekit-glib2/pk-console-shared.c:556
 msgid "Getting requires"
 msgstr "Dobavljam zahtevanja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:556
+#: ../lib/packagekit-glib2/pk-console-shared.c:560
 msgid "Getting updates"
 msgstr "Dobavljam ažuriranja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:560
+#: ../lib/packagekit-glib2/pk-console-shared.c:564
 msgid "Searching by details"
 msgstr "Pretražujem po detaljima"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:564
+#: ../lib/packagekit-glib2/pk-console-shared.c:568
 msgid "Searching by file"
 msgstr "Pretražujem po datotekama"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:568
+#: ../lib/packagekit-glib2/pk-console-shared.c:572
 msgid "Searching groups"
 msgstr "Pretražujem po grupama"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:572
+#: ../lib/packagekit-glib2/pk-console-shared.c:576
 msgid "Searching by name"
 msgstr "Pretražujem po imenu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:584
+#: ../lib/packagekit-glib2/pk-console-shared.c:588
 msgid "Installing files"
 msgstr "Instaliram datoteke"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:588
+#: ../lib/packagekit-glib2/pk-console-shared.c:592
 msgid "Refreshing cache"
 msgstr "Osvežavam keš"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:592
+#: ../lib/packagekit-glib2/pk-console-shared.c:596
 msgid "Updating packages"
 msgstr "Ažuriranje paketa"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:596
+#: ../lib/packagekit-glib2/pk-console-shared.c:600
 msgid "Updating system"
 msgstr "Ažuriranje sistema"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:600
+#: ../lib/packagekit-glib2/pk-console-shared.c:604
 msgid "Canceling"
 msgstr "Otkazivanje"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:608
+#: ../lib/packagekit-glib2/pk-console-shared.c:612
 msgid "Getting repositories"
 msgstr "Dobavljanje riznica"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:612
+#: ../lib/packagekit-glib2/pk-console-shared.c:616
 msgid "Enabling repository"
 msgstr "Uključivanje riznice"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:616
+#: ../lib/packagekit-glib2/pk-console-shared.c:620
 msgid "Setting data"
 msgstr "Postavljanje podataka"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:620
+#: ../lib/packagekit-glib2/pk-console-shared.c:624
 msgid "Resolving"
 msgstr "Razrešavanje"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:624
+#: ../lib/packagekit-glib2/pk-console-shared.c:628
 msgid "Getting file list"
 msgstr "Dobavljanje spiska datoteka"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:628
+#: ../lib/packagekit-glib2/pk-console-shared.c:632
 msgid "Getting provides"
 msgstr "Dobavljanje pružanja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:632
+#: ../lib/packagekit-glib2/pk-console-shared.c:636
 msgid "Installing signature"
 msgstr "Instaliranje potpisa"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:636
+#: ../lib/packagekit-glib2/pk-console-shared.c:640
 msgid "Getting packages"
 msgstr "Dobavljanje paketa"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:640
+#: ../lib/packagekit-glib2/pk-console-shared.c:644
 msgid "Accepting EULA"
 msgstr "Prihvatanje licence"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:648
+#: ../lib/packagekit-glib2/pk-console-shared.c:652
 msgid "Getting upgrades"
 msgstr "Dobavljanje nadgradnji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:652
+#: ../lib/packagekit-glib2/pk-console-shared.c:656
 msgid "Getting categories"
 msgstr "Dobavljanje kategorija"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:656
+#: ../lib/packagekit-glib2/pk-console-shared.c:660
 msgid "Getting transactions"
 msgstr "Dobavljanje transakcija"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:660
 #: ../lib/packagekit-glib2/pk-console-shared.c:664
+#: ../lib/packagekit-glib2/pk-console-shared.c:668
 msgid "Simulating install"
 msgstr "Simuliranje instalacije"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:668
+#: ../lib/packagekit-glib2/pk-console-shared.c:672
 msgid "Simulating remove"
 msgstr "Simuliranje uklanjanja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: ../lib/packagekit-glib2/pk-console-shared.c:672
+#: ../lib/packagekit-glib2/pk-console-shared.c:676
 msgid "Simulating update"
 msgstr "Simuliranje ažuriranja"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
-#: ../lib/packagekit-glib2/pk-task-text.c:64
+#: ../lib/packagekit-glib2/pk-task-text.c:66
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "Želite li da dozvolite instalaciju nepotpisanog softvera?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:69
+#: ../lib/packagekit-glib2/pk-task-text.c:71
 msgid "The unsigned software will not be installed."
 msgstr "Nepotpisani softver neće biti instaliran."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
-#: ../lib/packagekit-glib2/pk-task-text.c:102
+#: ../lib/packagekit-glib2/pk-task-text.c:104
 msgid "Software source signature required"
 msgstr "Neophodan je potpis izvora softvera"
 
 #. TRANSLATORS: the package repository name
-#: ../lib/packagekit-glib2/pk-task-text.c:108
+#: ../lib/packagekit-glib2/pk-task-text.c:110
 msgid "Software source name"
 msgstr "Ime izvora softvera"
 
 #. TRANSLATORS: the key URL
-#: ../lib/packagekit-glib2/pk-task-text.c:111
+#: ../lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
 msgstr "URL ključa"
 
 #. TRANSLATORS: the username of the key
-#: ../lib/packagekit-glib2/pk-task-text.c:114
+#: ../lib/packagekit-glib2/pk-task-text.c:116
 msgid "Key user"
 msgstr "Korisnik ključa"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
-#: ../lib/packagekit-glib2/pk-task-text.c:117
+#: ../lib/packagekit-glib2/pk-task-text.c:119
 msgid "Key ID"
 msgstr "IB ključa"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
-#: ../lib/packagekit-glib2/pk-task-text.c:120
+#: ../lib/packagekit-glib2/pk-task-text.c:122
 msgid "Key fingerprint"
 msgstr "Otisak ključa"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: ../lib/packagekit-glib2/pk-task-text.c:123
+#: ../lib/packagekit-glib2/pk-task-text.c:125
 msgid "Key Timestamp"
 msgstr "Vremenska oznaka ključa"
 
 #. TRANSLATORS: ask the user if they want to import
-#: ../lib/packagekit-glib2/pk-task-text.c:129
+#: ../lib/packagekit-glib2/pk-task-text.c:131
 msgid "Do you accept this signature?"
 msgstr "Prihvatate li ovaj potpis?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:134
+#: ../lib/packagekit-glib2/pk-task-text.c:136
 msgid "The signature was not accepted."
 msgstr "Ovaj potpis nije prihvaćen."
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
-#: ../lib/packagekit-glib2/pk-task-text.c:169
+#: ../lib/packagekit-glib2/pk-task-text.c:171
 msgid "End user licence agreement required"
 msgstr "Neophodan je Licenci sporazum sa krajnjim korisnikom"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: ../lib/packagekit-glib2/pk-task-text.c:178
+#: ../lib/packagekit-glib2/pk-task-text.c:180
 msgid "Agreement"
 msgstr "Sporazum"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: ../lib/packagekit-glib2/pk-task-text.c:184
+#: ../lib/packagekit-glib2/pk-task-text.c:186
 msgid "Do you accept this agreement?"
 msgstr "Prihvatate li ovaj sporazum?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: ../lib/packagekit-glib2/pk-task-text.c:189
+#: ../lib/packagekit-glib2/pk-task-text.c:191
 msgid "The agreement was not accepted."
 msgstr "Sporazum nije prihvaćen."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
-#: ../lib/packagekit-glib2/pk-task-text.c:219
+#: ../lib/packagekit-glib2/pk-task-text.c:221
 msgid "Media change required"
 msgstr "Neophodna je promena medijuma"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: ../lib/packagekit-glib2/pk-task-text.c:222
+#: ../lib/packagekit-glib2/pk-task-text.c:224
 msgid "Media type"
 msgstr "Vrsta medijuma"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: ../lib/packagekit-glib2/pk-task-text.c:225
+#: ../lib/packagekit-glib2/pk-task-text.c:227
 msgid "Media label"
 msgstr "Oznaka medijuma"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: ../lib/packagekit-glib2/pk-task-text.c:228
+#: ../lib/packagekit-glib2/pk-task-text.c:230
 msgid "Text"
 msgstr "Tekst"
 
 #. TRANSLATORS: ask the user to insert the media
-#: ../lib/packagekit-glib2/pk-task-text.c:232
+#: ../lib/packagekit-glib2/pk-task-text.c:234
 msgid "Please insert the correct media"
 msgstr "Umetnite tačan medijum"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: ../lib/packagekit-glib2/pk-task-text.c:237
+#: ../lib/packagekit-glib2/pk-task-text.c:239
 msgid "The correct media was not inserted."
 msgstr "Nije umetnut tačan medijum."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:252
+#: ../lib/packagekit-glib2/pk-task-text.c:254
 msgid "The following packages have to be removed:"
 msgstr "Sledeći paketi će biti uklonjeni:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:257
+#: ../lib/packagekit-glib2/pk-task-text.c:259
 msgid "The following packages have to be installed:"
 msgstr "Sledeći paketi moraju biti instalirani:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:262
+#: ../lib/packagekit-glib2/pk-task-text.c:264
 msgid "The following packages have to be updated:"
 msgstr "Sledeći paketi moraju biti ažurirani:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:267
+#: ../lib/packagekit-glib2/pk-task-text.c:269
 msgid "The following packages have to be reinstalled:"
 msgstr "Sledeći paketi moraju biti ponovo instalirani:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../lib/packagekit-glib2/pk-task-text.c:272
+#: ../lib/packagekit-glib2/pk-task-text.c:274
 msgid "The following packages have to be downgraded:"
 msgstr "Sledeći paketi moraju biti unazađeni:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: ../lib/packagekit-glib2/pk-task-text.c:331
+#: ../lib/packagekit-glib2/pk-task-text.c:324
 msgid "Proceed with changes?"
 msgstr "Nastaviti sa promenama?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: ../lib/packagekit-glib2/pk-task-text.c:336
+#: ../lib/packagekit-glib2/pk-task-text.c:329
 msgid "The transaction did not proceed."
 msgstr "Transakcija nije nastavljena."
 
@@ -2043,9 +2060,6 @@ msgstr "Samo poverljive"
 
 #~ msgid "The package could not be found"
 #~ msgstr "Paket nije nađen"
-
-#~ msgid "Failed to launch:"
-#~ msgstr "Neuspešno pokretanje:"
 
 #~ msgid "You need to specify a search type, e.g. name"
 #~ msgstr "Morate navesti vrstu pretrage, npr. ime"

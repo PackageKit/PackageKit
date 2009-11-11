@@ -255,7 +255,7 @@ typedef enum {
 } PkMessageEnum;
 
 /**
- * PkErrorCodeEnum:
+ * PkErrorEnum:
  *
  * The error type
  **/
@@ -321,7 +321,7 @@ typedef enum {
 	PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
 	PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
 	PK_ERROR_ENUM_LAST
-} PkErrorCodeEnum;
+} PkErrorEnum;
 
 /**
  * PkGroupEnum:
@@ -679,8 +679,8 @@ const gchar	*pk_status_enum_to_text			(PkStatusEnum	 status);
 PkRoleEnum	 pk_role_enum_from_text			(const gchar	*role);
 const gchar	*pk_role_enum_to_text			(PkRoleEnum	 role);
 
-PkErrorCodeEnum	 pk_error_enum_from_text		(const gchar	*code);
-const gchar	*pk_error_enum_to_text			(PkErrorCodeEnum code);
+PkErrorEnum	 pk_error_enum_from_text		(const gchar	*code);
+const gchar	*pk_error_enum_to_text			(PkErrorEnum code);
 
 PkRestartEnum	 pk_restart_enum_from_text		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_text		(PkRestartEnum	 restart);

@@ -42,13 +42,14 @@ static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *m
 static void pb_load_packages (PkBackend *backend);
 static void poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset);
 
-static void pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode);
+static void pb_error_show (PkBackend *backend, PkErrorEnum errorcode);
 static void pb_error_clean (void);
 static void poldek_backend_percentage_data_destroy (PkBackend *backend);
 
 typedef enum {
 	TS_TYPE_ENUM_INSTALL,
 	TS_TYPE_ENUM_UPDATE,
+	TS_TYPE_ENUM_REMOVE,
 	TS_TYPE_ENUM_REFRESH_CACHE
 } TsType;
 
@@ -523,6 +524,78 @@ poldek_pkg_in_array (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp
 		return TRUE;
 }
 
+static void
+get_ts_summary (TsType type, tn_array *ipkgs, tn_array *dpkgs, tn_array *rpkgs,
+		tn_array **install_pkgs, tn_array **update_pkgs, tn_array **remove_pkgs)
+{
+	guint  i;
+
+	if (type == TS_TYPE_ENUM_INSTALL || type == TS_TYPE_ENUM_UPDATE) {
+		*install_pkgs = n_array_new (2, (tn_fn_free)pkg_free, (tn_fn_cmp)pkg_cmp_name_evr);
+		*update_pkgs = n_array_new (2, (tn_fn_free)pkg_free, (tn_fn_cmp)pkg_cmp_name_evr);
+	}
+
+	*remove_pkgs = n_array_new (2, (tn_fn_free)pkg_free, (tn_fn_cmp)pkg_cmp_name_evr);
+
+	switch (type) {
+		case TS_TYPE_ENUM_INSTALL:
+		case TS_TYPE_ENUM_UPDATE:
+			if (rpkgs) {
+				for (i = 0; i < n_array_size (rpkgs); i++) {
+					struct pkg *rpkg = n_array_nth (rpkgs, i);
+
+					if (poldek_pkg_in_array (rpkg, ipkgs, (tn_fn_cmp)pkg_cmp_name) ||
+					    poldek_pkg_in_array (rpkg, dpkgs, (tn_fn_cmp)pkg_cmp_name)) {
+						n_array_push (*update_pkgs, pkg_link (rpkg));
+
+					} else {
+						n_array_push (*remove_pkgs, pkg_link (rpkg));
+					}
+				}
+			}
+
+			if (ipkgs) {
+				for (i = 0; i < n_array_size (ipkgs); i++) {
+					struct pkg *ipkg = n_array_nth (ipkgs, i);
+
+					if (poldek_pkg_in_array (ipkg, *update_pkgs, (tn_fn_cmp)pkg_cmp_name) == FALSE)
+						n_array_push (*install_pkgs, pkg_link (ipkg));
+				}
+			}
+
+			if (dpkgs) {
+				for (i = 0; i < n_array_size (dpkgs); i++) {
+					struct pkg *dpkg = n_array_nth (dpkgs, i);
+
+					if (poldek_pkg_in_array (dpkg, *update_pkgs, (tn_fn_cmp)pkg_cmp_name) == FALSE)
+						n_array_push (*install_pkgs, pkg_link (dpkg));
+				}
+			}
+			break;
+		case TS_TYPE_ENUM_REMOVE:
+			/* copy packages from rpkgs and dpkgs to remove_pkgs */
+			if (rpkgs)
+				n_array_concat_ex (*remove_pkgs, rpkgs, (tn_fn_dup)pkg_link);
+
+			if (dpkgs)
+				n_array_concat_ex (*remove_pkgs, dpkgs, (tn_fn_dup)pkg_link);
+
+			break;
+		default:
+			egg_error ("Unknown ts_type value: %d", type);
+	}
+
+	/* return sorted arrays */
+	if (*install_pkgs)
+		n_array_sort (*install_pkgs);
+
+	if (*update_pkgs)
+		n_array_sort (*update_pkgs);
+
+	if (*remove_pkgs)
+		n_array_sort (*remove_pkgs);
+}
+
 /**
  * ts_confirm:
  * Returns Yes - 1
@@ -535,8 +608,6 @@ ts_confirm (void *data, struct poldek_ts *ts)
 	PkBackend	*backend = (PkBackend *)data;
 	size_t		i = 0;
 	gint		result = 1;
-
-	egg_debug ("START\n");
 
 	ipkgs = poldek_ts_get_summary (ts, "I");
 	dpkgs = poldek_ts_get_summary (ts, "D");
@@ -1733,20 +1804,20 @@ pb_load_packages (PkBackend *backend)
 }
 
 static void
-pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
+pb_error_show (PkBackend *backend, PkErrorEnum errorcode)
 {
 	if (sigint_reached()) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
 		return;
 	}
 
-	/* Before emiting error_code try to find the most suitable PkErrorCodeEnum */
+	/* Before emiting error_code try to find the most suitable PkErrorEnum */
 	if (g_strrstr (pberror->tslog->str, " unresolved depend") != NULL)
 		errorcode = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED;
 	else if (g_strrstr (pberror->tslog->str, " conflicts") != NULL)
 		errorcode = PK_ERROR_ENUM_FILE_CONFLICTS;
 
-	pk_backend_error_code (backend, errorcode, pberror->tslog->str);
+	pk_backend_error_code (backend, errorcode, "%s", pberror->tslog->str);
 }
 
 /**
@@ -1759,7 +1830,7 @@ pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
 static gboolean
 pb_error_check (PkBackend *backend)
 {
-	PkErrorCodeEnum	errorcode = PK_ERROR_ENUM_UNKNOWN;
+	PkErrorEnum	errorcode = PK_ERROR_ENUM_UNKNOWN;
 
 	if (g_strrstr (pberror->tslog->str, " version installed, skipped") != NULL)
 		errorcode = PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED;
@@ -3083,6 +3154,131 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	pk_backend_thread_create (backend, search_package_thread);
 }
 
+static gboolean do_simulate_packages (PkBackend *backend)
+{
+	struct poclidek_rcmd *rcmd = NULL;
+	struct poldek_ts     *ts = NULL;
+	GString      *buf = NULL;
+	gchar        *cmd = NULL;
+	gchar       **package_ids = NULL;
+	const gchar  *command = NULL;
+	guint         i;
+	guint         ts_type;
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	command = pk_backend_get_string (backend, "command");
+	ts_type = pk_backend_get_uint (backend, "ts_type");
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+
+	buf = g_string_new (command);
+
+	for (i = 0; i < g_strv_length (package_ids); i++) {
+		gchar *nvra = poldek_get_nvra_from_package_id (package_ids[i]);
+
+		g_string_append_c (buf, ' ');
+		g_string_append (buf, nvra);
+
+		g_free (nvra);
+	}
+
+	cmd = g_string_free (buf, FALSE);
+
+	ts = poldek_ts_new (ctx, 0);
+	rcmd = poclidek_rcmd_new (cctx, ts);
+
+	ts->setop(ts, POLDEK_OP_PARTICLE, 0);
+
+	if (poclidek_rcmd_execline (rcmd, cmd)) {
+		tn_array *ipkgs = NULL, *dpkgs = NULL, *rpkgs = NULL;
+		tn_array *install_pkgs = NULL, *update_pkgs = NULL, *remove_pkgs = NULL;
+
+		ipkgs = poldek_ts_get_summary (ts, "I");
+		dpkgs = poldek_ts_get_summary (ts, "D");
+		rpkgs = poldek_ts_get_summary (ts, "R");
+
+		get_ts_summary (ts_type, ipkgs, dpkgs, rpkgs, &install_pkgs, &update_pkgs, &remove_pkgs);
+
+		if (install_pkgs) {
+			for (i = 0; i < n_array_size (install_pkgs); i++) {
+				struct pkg *pkg = n_array_nth (install_pkgs, i);
+
+				poldek_backend_package (backend, pkg, PK_INFO_ENUM_INSTALLING, PK_FILTER_ENUM_NONE);
+			}
+
+			n_array_free (install_pkgs);
+		}
+
+		if (update_pkgs) {
+			for (i = 0; i < n_array_size (update_pkgs); i++) {
+				struct pkg *pkg = n_array_nth (update_pkgs, i);
+
+				poldek_backend_package (backend, pkg, PK_INFO_ENUM_UPDATING, PK_FILTER_ENUM_NONE);
+			}
+
+			n_array_free (update_pkgs);
+		}
+
+		if (remove_pkgs) {
+			for (i = 0; i < n_array_size (remove_pkgs); i++) {
+				struct pkg *pkg = n_array_nth (remove_pkgs, i);
+
+				poldek_backend_package (backend, pkg, PK_INFO_ENUM_REMOVING, PK_FILTER_ENUM_NONE);
+			}
+
+			n_array_free (remove_pkgs);
+		}
+	}
+
+	g_free (cmd);
+
+	poclidek_rcmd_free (rcmd);
+	poldek_ts_free (ts);
+
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+/**
+ * backend_simulate_install_packages:
+ **/
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
+	pk_backend_set_string (backend, "command", "cd /all-avail; install --test");
+	pk_backend_thread_create (backend, do_simulate_packages);
+}
+
+/**
+ * backend_simulate_remove_packages:
+ **/
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_REMOVE);
+	pk_backend_set_string (backend, "command", "cd /all-avail; uninstall --test");
+	pk_backend_thread_create (backend, do_simulate_packages);
+}
+
+/**
+ * backend_simulate_update_packages:
+ **/
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
+	pk_backend_set_string (backend, "command", "cd /all-avail; upgrade --test");
+	pk_backend_thread_create (backend, do_simulate_packages);
+}
+
 PK_BACKEND_OPTIONS (
 	"poldek",					/* description */
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
@@ -3121,8 +3317,8 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,				/* update_system */
 	backend_what_provides,				/* what_provides */
 	NULL,						/* simulate_install_files */
-	NULL,						/* simulate_install_packages */
-	NULL,						/* simulate_remove_packages */
-	NULL						/* simulate_update_packages */
+	backend_simulate_install_packages,		/* simulate_install_packages */
+	backend_simulate_remove_packages,		/* simulate_remove_packages */
+	backend_simulate_update_packages		/* simulate_update_packages */
 );
 

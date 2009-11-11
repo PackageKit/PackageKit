@@ -36,7 +36,7 @@
 #include <glib/gi18n.h>
 #include <sqlite3.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-item.h>
+#include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-common.h>
 
 #include "egg-debug.h"
@@ -84,7 +84,7 @@ typedef struct {
 static gint
 pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	PkItemTransaction *item;
+	PkTransactionPast *item;
 	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
 	gint i;
 	gchar *col;
@@ -95,7 +95,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
 
-	item = g_new0 (PkItemTransaction, 1);
+	item = pk_transaction_past_new ();
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
@@ -104,41 +104,36 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 			if (!ret)
 				egg_warning ("failed to parse succeeded: %s", value);
 			if (temp == 1)
-				item->succeeded = TRUE;
+				g_object_set (item, "succeeded", TRUE, NULL);
 			else
-				item->succeeded = FALSE;
-			if (item->succeeded > 1) {
-				egg_warning ("item->succeeded %i! Resetting to 1", item->succeeded);
-				item->succeeded = 1;
-			}
+				g_object_set (item, "succeeded", FALSE, NULL);
 		} else if (g_strcmp0 (col, "role") == 0) {
 			if (value != NULL)
-				item->role = pk_role_enum_from_text (value);
+				g_object_set (item, "role", pk_role_enum_from_text (value), NULL);
 		} else if (g_strcmp0 (col, "transaction_id") == 0) {
 			if (value != NULL)
-				item->tid = g_strdup (value);
+				g_object_set (item, "tid", value, NULL);
 		} else if (g_strcmp0 (col, "timespec") == 0) {
 			if (value != NULL)
-				item->timespec = g_strdup (value);
+				g_object_set (item, "timespec", value, NULL);
 		} else if (g_strcmp0 (col, "cmdline") == 0) {
 			if (value != NULL)
-				item->cmdline = g_strdup (value);
+				g_object_set (item, "cmdline", value, NULL);
 		} else if (g_strcmp0 (col, "data") == 0) {
 			if (value != NULL)
-				item->data = g_strdup (value);
+				g_object_set (item, "data", value, NULL);
 		} else if (g_strcmp0 (col, "uid") == 0) {
 			ret = egg_strtouint (value, &temp);
 			if (ret)
-				item->uid = temp;
+				g_object_set (item, "uid", temp, NULL);
 		} else if (g_strcmp0 (col, "duration") == 0) {
-			ret = egg_strtouint (value, &item->duration);
+			ret = egg_strtouint (value, &temp);
 			if (!ret) {
 				egg_warning ("failed to parse duration: %s", value);
-				item->duration = 0;
-			}
-			if (item->duration > 60*60*12) {
-				egg_warning ("insane duration: %i", item->duration);
-				item->duration = 0;
+			} else if (temp > 60*60*12) {
+				egg_warning ("insane duration: %i", temp);
+			} else {
+				g_object_set (item, "duration", temp, NULL);
 			}
 		} else {
 			egg_warning ("%s = %s\n", col, value);
@@ -148,7 +143,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 	/* emit signal */
 	g_signal_emit (tdb, signals [SIGNAL_TRANSACTION], 0, item);
 
-	pk_item_transaction_unref (item);
+	g_object_unref (item);
 	return 0;
 }
 

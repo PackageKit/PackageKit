@@ -35,20 +35,20 @@ class PackagekitFilter(object, PackagekitPackage):
         for pkg in pkgs:
             if self.pre_process(pkg):
                 self.package_list.append((pkg, INFO_INSTALLED))
-            name = self._pkg_get_name(pkg)
+            name = self._pkg_get_unique(pkg)
             self.installed_unique[name] = pkg
 
     def add_available(self, pkgs):
         ''' add a list of packages that are available '''
         for pkg in pkgs:
-            name = self._pkg_get_name(pkg)
+            name = self._pkg_get_unique(pkg)
             if not self.installed_unique.has_key(name):
                 if self.pre_process(pkg):
                     self.package_list.append((pkg, INFO_AVAILABLE))
 
     def add_custom(self, pkg, info):
         ''' add a custom packages indervidually '''
-        name = self._pkg_get_name(pkg)
+        name = self._pkg_get_unique(pkg)
         if not self.installed_unique.has_key(name):
             if self.pre_process(pkg):
                 self.package_list.append((pkg, info))

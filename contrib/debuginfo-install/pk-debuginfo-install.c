@@ -123,7 +123,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 	PkResults *results = NULL;
 	const gchar *repo_id;
 	GError *error_local = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* enable all debuginfo repos we found */
 	for (i=0; i<array->len; i++) {
@@ -139,9 +139,9 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		}
 
 		/* check error code */
-		error_item = pk_results_get_error_code (results);
-		if (error_item != NULL) {
-			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+		error_code = pk_results_get_error_code (results);
+		if (error_code != NULL) {
+			*error = g_error_new (1, 0, "failed to enable repo: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 			ret = FALSE;
 			goto out;
 		}
@@ -150,8 +150,8 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 		g_object_unref (results);
 	}
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	return ret;
 }
 
@@ -188,7 +188,7 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	PkResults *results = NULL;
 	gchar **package_ids;
 	GError *error_local = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* mush back into a char** */
 	package_ids = pk_ptr_array_to_strv (array);
@@ -207,9 +207,9 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
@@ -217,8 +217,8 @@ pk_debuginfo_install_packages_install (PkDebuginfoInstallPrivate *priv, GPtrArra
 	/* end progressbar output */
 	pk_progress_bar_end (priv->progress_bar);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	g_strfreev (package_ids);
@@ -232,12 +232,12 @@ static gchar *
 pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const gchar *package_name, GError **error)
 {
 	PkResults *results = NULL;
-	const PkItemPackage *item;
+	PkPackage *item;
 	gchar *package_id = NULL;
 	GPtrArray *list = NULL;
 	GError *error_local = NULL;
 	gchar **names;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* resolve takes a char** */
 	names = g_strsplit (package_name, ";", -1);
@@ -251,9 +251,9 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		*error = g_error_new (1, 0, "failed to resolve: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -270,10 +270,10 @@ pk_debuginfo_install_resolve_name_to_id (PkDebuginfoInstallPrivate *priv, const 
 
 	/* get the package id */
 	item = g_ptr_array_index (list, 0);
-	package_id = g_strdup (item->package_id);
+	package_id = g_strdup (pk_package_get_id (item));
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	if (list != NULL)
@@ -364,7 +364,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 {
 	gboolean ret = TRUE;
 	PkResults *results = NULL;
-	const PkItemPackage *item;
+	PkPackage *item;
 	gchar *package_id = NULL;
 	GPtrArray *list = NULL;
 	GError *error_local = NULL;
@@ -372,7 +372,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	gchar *name_debuginfo;
 	guint i;
 	gchar **split;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
@@ -385,9 +385,9 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		*error = g_error_new (1, 0, "failed to get depends: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		ret = FALSE;
 		goto out;
 	}
@@ -396,7 +396,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 	list = pk_results_get_package_array (results);
 	for (i=0; i<list->len; i++) {
 		item = g_ptr_array_index (list, i);
-		split = pk_package_id_split (item->package_id);
+		split = pk_package_id_split (pk_package_get_id (item));
 		/* add -debuginfo */
 		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (split[PK_PACKAGE_ID_NAME]);
 		g_strfreev (split);
@@ -423,8 +423,8 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		g_free (name_debuginfo);
 	}
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	if (list != NULL)
@@ -444,8 +444,10 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	guint i;
 	GPtrArray *array;
 	GError *error_local = NULL;
-	const PkItemRepoDetail *item;
-	PkItemErrorCode *error_item = NULL;
+	PkRepoDetail *item;
+	PkError *error_code = NULL;
+	gboolean enabled;
+	gchar *repo_id;
 
 	/* get all repo details */
 	results = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
@@ -456,9 +458,9 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_text (error_item->code), error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		*error = g_error_new (1, 0, "failed to get repo list: %s, %s", pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -466,15 +468,19 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	array = pk_results_get_repo_detail_array (results);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		if (item->enabled)
-			g_ptr_array_add (priv->enabled, g_strdup (item->repo_id));
+		g_object_get (item,
+			      "enabled", &enabled,
+			      "repo-id", &repo_id,
+			      NULL);
+		if (enabled)
+			g_ptr_array_add (priv->enabled, repo_id);
 		else
-			g_ptr_array_add (priv->disabled, g_strdup (item->repo_id));
+			g_ptr_array_add (priv->disabled, repo_id);
 	}
 	ret = TRUE;
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	return ret;

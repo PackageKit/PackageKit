@@ -22,30 +22,30 @@
 <h2>Precompiled Packages</h2>
 <p>
 Your distribution may already have compiled packages that are much
-easier to install.
+easier to install.  Refer to the <a href="pk-users.html">users</a> page for
+more details or use the instructions provided below to get you going using
+your native package manager.
 </p>
 <ul>
   <li>
    Conary: Yes, just run: <code>sudo conary update PackageKit gnome-packagekit</code>
   </li>
   <li>
-   Fedora 9: Yes, just run: <code>yum install PackageKit gnome-packagekit</code> (as root)
+   Fedora: Yes, starting with 9, just run: <code>yum install PackageKit gnome-packagekit</code> (as root)
   </li>
   <li>
-  Ubuntu: Ubuntu 8.04 Hardy Heron ships an obsolete version (0.1.6) of PackageKit by default.
-  Intrepid, the upcoming Ubuntu release, features a recent version from the 0.3 series.<br/>
-  You can find the latest version of the 0.3 series for Hardy and Intrepid in this
-  <a href="https://edge.launchpad.net/~packagekit/+archive">Personal Package Archive</a>.
-  <a href="https://help.ubuntu.com/8.04/add-applications/C/extra-repositories-adding.html">Add</a>
-  the repository and <a href="https://help.ubuntu.com/8.04/add-applications/C/advanced.html">
-  install</a> the packages <code>packagekit</code> and <code>packagekit-gnome</code>.
+   Ubuntu: Yes, starting with Hardy Heron (8.04), that ships an obsolete version (0.1.6) of PackageKit by default.
+   Newer versions are used by more recent releases, but you can find the latest versions of PackageKit for all releases in this <a href="https://edge.launchpad.net/~packagekit/+archive">Personal Package Archive</a>.
+   <a href="https://help.ubuntu.com/8.04/add-applications/C/extra-repositories-adding.html">Add</a>
+   the repository and <a href="https://help.ubuntu.com/8.04/add-applications/C/advanced.html">
+   install</a> the packages <code>packagekit</code> and <code>packagekit-gnome</code>.
   </li>
   <li>
-   openSUSE 11: Yes, add <a href="http://download.opensuse.org/distribution/11.0/repo/oss/">this</a>
+   openSUSE: Yes, starting with 11.0, add <a href="http://download.opensuse.org/distribution/11.0/repo/oss/">this</a>
    repository file and run: <code>zypper install PackageKit gnome-packagekit</code> (as root)
   </li>
   <li>
-  Mandriva 2009 : Yes, just run: <code>urpmi packagekit gnome-packagekit</code> (as root)
+   Mandriva: Yes, starting with 2009, just run: <code>urpmi packagekit gnome-packagekit</code> (as root)
   </li>
   <li>
    Others: Probably not, although you can compile from source. See below for more details.
@@ -68,10 +68,11 @@ Releases are normally once every 3-4 weeks.
 </p>
 <table>
 <tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
-<tr><td>0.5.0</td><td></td><td>2009-07-06</td></tr>
-<tr><td>0.5.1</td><td></td><td>2009-08-03</td></tr>
-<tr><td>0.5.2</td><td></td><td>2009-09-07</td></tr>
+<tr><td>0.5.4</td><td></td><td>2009-11-02</td></tr>
 <tr><td>0.5.3</td><td></td><td>2009-10-05</td></tr>
+<tr><td>0.5.2</td><td></td><td>2009-09-07</td></tr>
+<tr><td>0.5.1</td><td></td><td>2009-08-03</td></tr>
+<tr><td>0.5.0</td><td></td><td>2009-07-06</td></tr>
 </table>
 <h3>
 ABI Stable Versions:
@@ -191,11 +192,15 @@ security problems before it's used in the real world.
 <h2>Adding backends to PackageKit</h2>
 <p>
 PackageKit itself is an abstract daemon, the only bits that are distro
-specific are the backends.<br/>
+specific are the backends.
+</p>
+<p>
 To make PackageKit work on a new distribution, you have to write a
 "backend" which is basically a shim layer from the distro tool to
-packagekitd. A backend can have one or more threads and also spawn other processes.<br/>
-See the developer information <a href="gtk-doc/index.html">here</a> for loads more
+packagekitd. A backend can have one or more threads and also spawn other processes.
+</p>
+<p>
+See the developer information <a href="gtk-doc/index.html">here</a> for more
 information.
 </p>
 

@@ -394,7 +394,7 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 static gchar **
 pk_cnf_find_available (const gchar *cmd)
 {
-	const PkItemPackage *item;
+	PkPackage *item;
 	gchar **package_ids = NULL;
 	const gchar *prefixes[] = {"/usr/bin", "/usr/sbin", "/bin", "/sbin", NULL};
 	gchar **values = NULL;
@@ -404,7 +404,7 @@ pk_cnf_find_available (const gchar *cmd)
 	guint len;
 	PkBitfield filters;
 	PkResults *results = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* create new array of full paths */
 	len = g_strv_length ((gchar **)prefixes);
@@ -413,7 +413,9 @@ pk_cnf_find_available (const gchar *cmd)
 		values[i] = g_build_filename (prefixes[i], cmd, NULL);
 
 	/* do search */
-	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
+	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
+					  PK_FILTER_ENUM_NEWEST,
+					  PK_FILTER_ENUM_ARCH, -1);
 	results = pk_client_search_file (PK_CLIENT(task), filters, values, cancellable,
 					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
 	if (results == NULL) {
@@ -424,10 +426,10 @@ pk_cnf_find_available (const gchar *cmd)
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -436,11 +438,11 @@ pk_cnf_find_available (const gchar *cmd)
 	package_ids = g_new0 (gchar *, array->len+1);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		package_ids[i] = g_strdup (item->package_id);
+		package_ids[i] = g_strdup (pk_package_get_id (item));
 	}
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	if (array != NULL)
@@ -577,7 +579,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	PkResults *results = NULL;
 	gchar **package_ids;
 	gboolean ret = FALSE;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* do install */
 	package_ids = pk_package_ids_from_id (package_id);
@@ -591,17 +593,17 @@ pk_cnf_install_package_id (const gchar *package_id)
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (error_item->code), error_item->details);
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
 	ret = TRUE;
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (results != NULL)
 		g_object_unref (results);
 	g_strfreev (package_ids);
@@ -706,7 +708,7 @@ main (int argc, char *argv[])
 
 		/* run */
 		} else if (config->single_match == PK_CNF_POLICY_RUN) {
-			pk_cnf_spawn_command (possible, &argv[1]);
+			pk_cnf_spawn_command (possible, &argv[2]);
 
 		/* ask */
 		} else if (config->single_match == PK_CNF_POLICY_ASK) {
@@ -714,7 +716,7 @@ main (int argc, char *argv[])
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
-				pk_cnf_spawn_command (possible, &argv[1]);
+				pk_cnf_spawn_command (possible, &argv[2]);
 			else
 				retval = EXIT_COMMAND_NOT_FOUND;
 			g_free (text);
@@ -745,13 +747,17 @@ main (int argc, char *argv[])
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
-			pk_cnf_spawn_command (possible, &argv[1]);
+			pk_cnf_spawn_command (possible, &argv[2]);
 		}
 		goto out;
 
 	/* only search using PackageKit if configured to do so */
 	} else if (config->software_source_search) {
 		package_ids = pk_cnf_find_available (argv[1]);
+		if (package_ids == NULL) {
+			g_print ("\n");
+			goto out;
+		}
 		len = g_strv_length (package_ids);
 		if (len == 1) {
 			parts = pk_package_id_split (package_ids[0]);
@@ -768,7 +774,7 @@ main (int argc, char *argv[])
 				if (ret) {
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
-						pk_cnf_spawn_command (argv[0], &argv[1]);
+						pk_cnf_spawn_command (argv[1], &argv[2]);
 					else
 						retval = EXIT_COMMAND_NOT_FOUND;
 				}
@@ -777,7 +783,7 @@ main (int argc, char *argv[])
 			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
-					pk_cnf_spawn_command (argv[0], &argv[1]);
+					pk_cnf_spawn_command (argv[1], &argv[2]);
 				else
 					retval = EXIT_COMMAND_NOT_FOUND;
 			}
@@ -810,7 +816,7 @@ main (int argc, char *argv[])
 				/* run command */
 				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
-					pk_cnf_spawn_command (argv[0], &argv[1]);
+					pk_cnf_spawn_command (argv[1], &argv[2]);
 				else
 					retval = EXIT_COMMAND_NOT_FOUND;
 			}

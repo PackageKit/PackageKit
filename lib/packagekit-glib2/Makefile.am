@@ -33,23 +33,35 @@ libpackagekit_glib2_include_HEADERS =				\
 	packagekit.h						\
 	pk-bitfield.h						\
 	pk-catalog.h						\
+	pk-category.h						\
 	pk-client.h						\
 	pk-client-sync.h					\
 	pk-common.h						\
 	pk-control.h						\
 	pk-control-sync.h					\
 	pk-desktop.h						\
+	pk-details.h						\
+	pk-distro-upgrade.h					\
 	pk-enum.h						\
-	pk-item.h						\
+	pk-error.h						\
+	pk-eula-required.h					\
+	pk-files.h						\
+	pk-media-change-required.h				\
+	pk-message.h						\
 	pk-package.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-sack.h					\
 	pk-progress.h						\
+	pk-repo-detail.h					\
+	pk-repo-signature-required.h				\
+	pk-require-restart.h					\
 	pk-results.h						\
 	pk-service-pack.h					\
 	pk-task.h						\
+	pk-transaction-past.h					\
 	pk-transaction-list.h					\
+	pk-update-detail.h					\
 	pk-version.h						\
 	$(NULL)
 
@@ -63,6 +75,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-bitfield.h						\
 	pk-catalog.c						\
 	pk-catalog.h						\
+	pk-category.c						\
+	pk-category.h						\
 	pk-client.c						\
 	pk-client.h						\
 	pk-client-sync.c					\
@@ -75,10 +89,24 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-control-sync.h					\
 	pk-desktop.c						\
 	pk-desktop.h						\
+	pk-details.c						\
+	pk-details.h						\
+	pk-distro-upgrade.c					\
+	pk-distro-upgrade.h					\
 	pk-enum.c						\
 	pk-enum.h						\
+	pk-error.c						\
+	pk-error.h						\
+	pk-eula-required.c					\
+	pk-eula-required.h					\
+	pk-files.c						\
+	pk-files.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
+	pk-media-change-required.c				\
+	pk-media-change-required.h				\
+	pk-message.c						\
+	pk-message.h						\
 	pk-package.c						\
 	pk-package.h						\
 	pk-package-id.c						\
@@ -89,16 +117,24 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-package-sack.h					\
 	pk-progress.c						\
 	pk-progress.h						\
-	pk-service-pack.c					\
-	pk-service-pack.h					\
+	pk-repo-detail.c					\
+	pk-repo-detail.h					\
+	pk-repo-signature-required.c				\
+	pk-repo-signature-required.h				\
+	pk-require-restart.c					\
+	pk-require-restart.h					\
 	pk-results.c						\
 	pk-results.h						\
-	pk-item.c						\
-	pk-item.h						\
+	pk-service-pack.c					\
+	pk-service-pack.h					\
 	pk-task.c						\
 	pk-task.h						\
+	pk-transaction-past.c					\
+	pk-transaction-past.h					\
 	pk-transaction-list.c					\
 	pk-transaction-list.h					\
+	pk-update-detail.c					\
+	pk-update-detail.h					\
 	pk-version.h						\
 	$(NULL)
 

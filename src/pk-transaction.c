@@ -458,7 +458,7 @@ pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, 
  * pk_transaction_error_code_emit:
  **/
 static void
-pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorCodeEnum error_enum, const gchar *details)
+pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorEnum error_enum, const gchar *details)
 {
 	const gchar *text;
 	text = pk_error_enum_to_text (error_enum);
@@ -510,9 +510,15 @@ pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gbool
  * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_details_cb (PkBackend *backend, PkItemDetails *item, PkTransaction *transaction)
+pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *transaction)
 {
 	const gchar *group_text;
+	gchar *package_id;
+	gchar *description;
+	gchar *license;
+	gchar *url;
+	guint64 size;
+	PkGroupEnum group;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -520,23 +526,47 @@ pk_transaction_details_cb (PkBackend *backend, PkItemDetails *item, PkTransactio
 	/* add to results */
 	pk_results_add_details (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "group", &group,
+		      "description", &description,
+		      "license", &license,
+		      "url", &url,
+		      "size", &size,
+		      NULL);
+
 	/* emit */
-	group_text = pk_group_enum_to_text (item->group);
+	group_text = pk_group_enum_to_text (group);
 	egg_debug ("emitting details");
-	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, item->package_id,
-		       item->license, group_text, item->description, item->url, item->size);
+	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, package_id,
+		       license, group_text, description, url, size);
+
+	g_free (package_id);
+	g_free (description);
+	g_free (license);
+	g_free (url);
 }
 
 /**
  * pk_transaction_error_code_cb:
  **/
 static void
-pk_transaction_error_code_cb (PkBackend *backend, PkItemErrorCode *item, PkTransaction *transaction)
+pk_transaction_error_code_cb (PkBackend *backend, PkError *item, PkTransaction *transaction)
 {
+	gchar *details;
+	PkErrorEnum code;
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	if (item->code == PK_ERROR_ENUM_UNKNOWN) {
+	/* get data */
+	g_object_get (item,
+		      "code", &code,
+		      "details", &details,
+		      NULL);
+
+	if (code == PK_ERROR_ENUM_UNKNOWN) {
 		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "%s emitted 'unknown error' rather than a specific error "
 				    "- this is a backend problem and should be fixed!", pk_role_enum_to_text (transaction->priv->role));
@@ -546,28 +576,38 @@ pk_transaction_error_code_cb (PkBackend *backend, PkItemErrorCode *item, PkTrans
 	pk_results_set_error_code (transaction->priv->results, item);
 
 	/* emit */
-	pk_transaction_error_code_emit (transaction, item->code, item->details);
+	pk_transaction_error_code_emit (transaction, code, details);
+
+	g_free (details);
 }
 
 /**
  * pk_transaction_files_cb:
  **/
 static void
-pk_transaction_files_cb (PkBackend *backend, PkItemFiles *item, PkTransaction *transaction)
+pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *transaction)
 {
 	gchar *filelist = NULL;
 	guint i;
+	gchar *package_id;
+	gchar **files;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "files", &files,
+		      NULL);
+
 	/* ensure the files have the correct prefix */
 	if (transaction->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		for (i=0; item->files[i] != NULL; i++) {
-			if (!g_str_has_prefix (item->files[i], transaction->priv->cached_directory)) {
+		for (i=0; files[i] != NULL; i++) {
+			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
 				pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 						    "%s does not have the correct prefix (%s)",
-						    item->files[i], transaction->priv->cached_directory);
+						    files[i], transaction->priv->cached_directory);
 			}
 		}
 	}
@@ -576,36 +616,62 @@ pk_transaction_files_cb (PkBackend *backend, PkItemFiles *item, PkTransaction *t
 	pk_results_add_files (transaction->priv->results, item);
 
 	/* emit */
-	filelist = g_strjoinv (";", item->files);
-	egg_debug ("emitting files %s, %s", item->package_id, filelist);
-	g_signal_emit (transaction, signals[SIGNAL_FILES], 0, item->package_id, filelist);
+	filelist = g_strjoinv (";", files);
+	egg_debug ("emitting files %s, %s", package_id, filelist);
+	g_signal_emit (transaction, signals[SIGNAL_FILES], 0, package_id, filelist);
 	g_free (filelist);
+	g_free (package_id);
+	g_strfreev (files);
 }
 
 /**
  * pk_transaction_category_cb:
  **/
 static void
-pk_transaction_category_cb (PkBackend *backend, PkItemCategory *item, PkTransaction *transaction)
+pk_transaction_category_cb (PkBackend *backend, PkCategory *item, PkTransaction *transaction)
 {
+	gchar *parent_id;
+	gchar *cat_id;
+	gchar *name;
+	gchar *summary;
+	gchar *icon;
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	/* add to results */
 	pk_results_add_category (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "parent-id", &parent_id,
+		      "cat-id", &cat_id,
+		      "name", &name,
+		      "summary", &summary,
+		      "icon", &icon,
+		      NULL);
+
 	/* emit */
-	egg_debug ("emitting category %s, %s, %s, %s, %s ", item->parent_id, item->cat_id, item->name, item->summary, item->icon);
-	g_signal_emit (transaction, signals[SIGNAL_CATEGORY], 0, item->parent_id, item->cat_id, item->name, item->summary, item->icon);
+	egg_debug ("emitting category %s, %s, %s, %s, %s ", parent_id, cat_id, name, summary, icon);
+	g_signal_emit (transaction, signals[SIGNAL_CATEGORY], 0, parent_id, cat_id, name, summary, icon);
+
+	g_free (parent_id);
+	g_free (cat_id);
+	g_free (name);
+	g_free (summary);
+	g_free (icon);
 }
 
 /**
  * pk_transaction_distro_upgrade_cb:
  **/
 static void
-pk_transaction_distro_upgrade_cb (PkBackend *backend, PkItemDistroUpgrade *item, PkTransaction *transaction)
+pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgrade *item, PkTransaction *transaction)
 {
 	const gchar *type_text;
+	gchar *name;
+	gchar *summary;
+	PkUpdateStateEnum state;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -613,10 +679,20 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkItemDistroUpgrade *item,
 	/* add to results */
 	pk_results_add_distro_upgrade (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "state", &state,
+		      "name", &name,
+		      "summary", &summary,
+		      NULL);
+
 	/* emit */
-	type_text = pk_distro_upgrade_enum_to_text (item->state);
-	egg_debug ("emitting distro-upgrade %s, %s, %s", type_text, item->name, item->summary);
-	g_signal_emit (transaction, signals[SIGNAL_DISTRO_UPGRADE], 0, type_text, item->name, item->summary);
+	type_text = pk_distro_upgrade_enum_to_text (state);
+	egg_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
+	g_signal_emit (transaction, signals[SIGNAL_DISTRO_UPGRADE], 0, type_text, name, summary);
+
+	g_free (name);
+	g_free (summary);
 }
 
 /**
@@ -626,15 +702,25 @@ static gchar *
 pk_transaction_package_list_to_string (GPtrArray *array)
 {
 	guint i;
-	const PkItemPackage *item;
+	PkPackage *item;
 	GString *string;
+	PkInfoEnum info;
+	gchar *package_id = NULL;
+	gchar *summary = NULL;
 
 	string = g_string_new ("");
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		g_object_get (item,
+			      "info", &info,
+			      "package-id", &package_id,
+			      "summary", &summary,
+			      NULL);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_text (item->info),
-					item->package_id, item->summary);
+					pk_info_enum_to_text (info),
+					package_id, summary);
+		g_free (package_id);
+		g_free (summary);
 	}
 
 	/* remove trailing newline */
@@ -656,9 +742,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	guint i;
 	GPtrArray *list;
 	GPtrArray *array;
-	const PkItemPackage *item;
+	PkPackage *item;
 	gchar *package_id;
+	gchar *package_id_tmp;
 	gchar **split;
+	PkInfoEnum info;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -696,21 +784,26 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			array = pk_results_get_package_array (transaction->priv->results);
 
 			/* filter on UPDATING */
-			list = g_ptr_array_new ();
+			list = g_ptr_array_new_with_free_func (g_free);
 			for (i=0; i<array->len; i++) {
 				item = g_ptr_array_index (array, i);
-				if (item->info == PK_INFO_ENUM_UPDATING) {
+				g_object_get (item,
+					      "info", &info,
+					      "package-id", &package_id,
+					      NULL);
+				if (info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' as this means
 					 * we can use the local package database for GetFiles rather than
 					 * downloading new remote metadata */
-					split = pk_package_id_split (item->package_id);
-					package_id = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
-									  split[PK_PACKAGE_ID_VERSION],
-									  split[PK_PACKAGE_ID_ARCH],
-									  "installed");
+					split = pk_package_id_split (package_id);
+					package_id_tmp = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
+									      split[PK_PACKAGE_ID_VERSION],
+									      split[PK_PACKAGE_ID_ARCH],
+									      "installed");
+					g_ptr_array_add (list, package_id_tmp);
 					g_strfreev (split);
-					g_ptr_array_add (list, package_id);
 				}
+				g_free (package_id);
 			}
 
 			/* process file lists on these packages */
@@ -720,8 +813,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_unref (array);
-			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
-			g_ptr_array_free (list, TRUE);
+			g_ptr_array_unref (list);
 		}
 	}
 
@@ -736,20 +828,25 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			array = pk_results_get_package_array (transaction->priv->results);
 
 			/* filter on INSTALLING | UPDATING */
-			list = g_ptr_array_new ();
+			list = g_ptr_array_new_with_free_func (g_free);
 			for (i=0; i<array->len; i++) {
 				item = g_ptr_array_index (array, i);
-				if (item->info == PK_INFO_ENUM_INSTALLING ||
-				    item->info == PK_INFO_ENUM_UPDATING) {
+				g_object_get (item,
+					      "info", &info,
+					      "package-id", &package_id,
+					      NULL);
+				if (info == PK_INFO_ENUM_INSTALLING ||
+				    info == PK_INFO_ENUM_UPDATING) {
 					/* we convert the package_id data to be 'installed' */
-					split = pk_package_id_split (item->package_id);
-					package_id = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
-									  split[PK_PACKAGE_ID_VERSION],
-									  split[PK_PACKAGE_ID_ARCH],
-									  "installed");
+					split = pk_package_id_split (package_id);
+					package_id_tmp = pk_package_id_build (split[PK_PACKAGE_ID_NAME],
+									      split[PK_PACKAGE_ID_VERSION],
+									      split[PK_PACKAGE_ID_ARCH],
+									      "installed");
+					g_ptr_array_add (list, package_id_tmp);
 					g_strfreev (split);
-					g_ptr_array_add (list, package_id);
 				}
+				g_free (package_id);
 			}
 
 			egg_debug ("processing %i packags for desktop files", list->len);
@@ -760,8 +857,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				g_strfreev (package_ids);
 			}
 			g_ptr_array_unref (array);
-			g_ptr_array_foreach (list, (GFunc) g_free, NULL);
-			g_ptr_array_free (list, TRUE);
+			g_ptr_array_unref (list);
 		}
 	}
 
@@ -842,13 +938,18 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* report to syslog */
 		for (i=0; i<array->len; i++) {
 			item = g_ptr_array_index (array, i);
-			if (item->info == PK_INFO_ENUM_REMOVING ||
-			    item->info == PK_INFO_ENUM_INSTALLING ||
-			    item->info == PK_INFO_ENUM_UPDATING) {
+			g_object_get (item,
+				      "info", &info,
+				      "package-id", &package_id,
+				      NULL);
+			if (info == PK_INFO_ENUM_REMOVING ||
+			    info == PK_INFO_ENUM_INSTALLING ||
+			    info == PK_INFO_ENUM_UPDATING) {
 				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
 					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role),
-					       item->package_id, pk_info_enum_to_text (item->info), transaction->priv->uid);
+					       package_id, pk_info_enum_to_text (info), transaction->priv->uid);
 			}
+			g_free (package_id);
 		}
 		g_free (packages);
 		g_ptr_array_unref (array);
@@ -890,20 +991,28 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
  * pk_transaction_message_cb:
  **/
 static void
-pk_transaction_message_cb (PkBackend *backend, PkItemMessage *item, PkTransaction *transaction)
+pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *transaction)
 {
 	const gchar *message_text;
 	gboolean developer_mode;
+	gchar *details;
+	PkMessageEnum type;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	/* get data */
+	g_object_get (item,
+		      "type", &type,
+		      "details", &details,
+		      NULL);
+
 	/* if not running in developer mode, then skip these types */
 	developer_mode = pk_conf_get_bool (transaction->priv->conf, "DeveloperMode");
 	if (!developer_mode &&
-	    (item->type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
-	     item->type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
-		egg_warning ("ignoring message: %s", item->details);
+	    (type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
+	     type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
+		egg_warning ("ignoring message: %s", details);
 		return;
 	}
 
@@ -911,19 +1020,24 @@ pk_transaction_message_cb (PkBackend *backend, PkItemMessage *item, PkTransactio
 	pk_results_add_message (transaction->priv->results, item);
 
 	/* emit */
-	message_text = pk_message_enum_to_text (item->type);
-	egg_debug ("emitting message %s, '%s'", message_text, item->details);
-	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, item->details);
+	message_text = pk_message_enum_to_text (type);
+	egg_debug ("emitting message %s, '%s'", message_text, details);
+	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, details);
+
+	g_free (details);
 }
 
 /**
  * pk_transaction_package_cb:
  **/
 static void
-pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransaction *transaction)
+pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *transaction)
 {
 	const gchar *info_text;
 	const gchar *role_text;
+	PkInfoEnum info;
+	gchar *package_id = NULL;
+	gchar *summary = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -937,11 +1051,18 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 	/* we need this in warnings */
 	role_text = pk_role_enum_to_text (transaction->priv->role);
 
+	/* get data */
+	g_object_get (item,
+		      "info", &info,
+		      "package-id", &package_id,
+		      "summary", &summary,
+		      NULL);
+
 	/* check the backend is doing the right thing */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		if (item->info == PK_INFO_ENUM_INSTALLED) {
+		if (info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted 'installed' rather than 'installing' "
 					    "- you need to do the package *before* you do the action", role_text);
@@ -951,7 +1072,7 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 
 	/* check we are respecting the filters */
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		if (item->info == PK_INFO_ENUM_INSTALLED) {
+		if (info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was installed when "
 					    "the ~installed filter is in place", role_text);
@@ -959,7 +1080,7 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 		}
 	}
 	if (pk_bitfield_contain (transaction->priv->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
-		if (item->info == PK_INFO_ENUM_AVAILABLE) {
+		if (info == PK_INFO_ENUM_AVAILABLE) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "%s emitted package that was ~installed when "
 					    "the installed filter is in place", role_text);
@@ -968,16 +1089,17 @@ pk_transaction_package_cb (PkBackend *backend, PkItemPackage *item, PkTransactio
 	}
 
 	/* add to results even if we already got a result */
-	if (item->info != PK_INFO_ENUM_FINISHED)
+	if (info != PK_INFO_ENUM_FINISHED)
 		pk_results_add_package (transaction->priv->results, item);
 
 	/* emit */
 	g_free (transaction->priv->last_package_id);
-	transaction->priv->last_package_id = g_strdup (item->package_id);
-	info_text = pk_info_enum_to_text (item->info);
-	egg_debug ("emit package %s, %s, %s", pk_info_enum_to_text (item->info), item->package_id, item->summary);
-	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text,
-		       item->package_id, item->summary);
+	transaction->priv->last_package_id = g_strdup (package_id);
+	info_text = pk_info_enum_to_text (info);
+	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text, package_id, summary);
+	g_free (package_id);
+	g_free (summary);
 }
 
 /**
@@ -997,76 +1119,138 @@ pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint 
  * pk_transaction_repo_detail_cb:
  **/
 static void
-pk_transaction_repo_detail_cb (PkBackend *backend, PkItemRepoDetail *item, PkTransaction *transaction)
+pk_transaction_repo_detail_cb (PkBackend *backend, PkRepoDetail *item, PkTransaction *transaction)
 {
+	gchar *repo_id;
+	gchar *description;
+	gboolean enabled;
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	/* add to results */
 	pk_results_add_repo_detail (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "repo-id", &repo_id,
+		      "description", &description,
+		      "enabled", &enabled,
+		      NULL);
+
 	/* emit */
-	egg_debug ("emitting repo-detail %s, %s, %i", item->repo_id, item->description, item->enabled);
-	g_signal_emit (transaction, signals[SIGNAL_REPO_DETAIL], 0, item->repo_id, item->description, item->enabled);
+	egg_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
+	g_signal_emit (transaction, signals[SIGNAL_REPO_DETAIL], 0, repo_id, description, enabled);
+
+	g_free (repo_id);
+	g_free (description);
 }
 
 /**
  * pk_transaction_repo_signature_required_cb:
  **/
 static void
-pk_transaction_repo_signature_required_cb (PkBackend *backend, PkItemRepoSignatureRequired *item, PkTransaction *transaction)
+pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRequired *item, PkTransaction *transaction)
 {
 	const gchar *type_text;
+	gchar *package_id;
+	gchar *repository_name;
+	gchar *key_url;
+	gchar *key_userid;
+	gchar *key_id;
+	gchar *key_fingerprint;
+	gchar *key_timestamp;
+	PkSigTypeEnum type;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	type_text = pk_sig_type_enum_to_text (item->type);
-
 	/* add to results */
 	pk_results_add_repo_signature_required (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "type", &type,
+		      "package-id", &package_id,
+		      "repository-name", &repository_name,
+		      "key-url", &key_url,
+		      "key-userid", &key_userid,
+		      "key-id", &key_id,
+		      "key-fingerprint", &key_fingerprint,
+		      "key-timestamp", &key_timestamp,
+		      NULL);
+
 	/* emit */
+	type_text = pk_sig_type_enum_to_text (type);
 	egg_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
-		   item->package_id, item->repository_name, item->key_url, item->key_userid, item->key_id,
-		   item->key_fingerprint, item->key_timestamp, type_text);
+		   package_id, repository_name, key_url, key_userid, key_id,
+		   key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (transaction, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0,
-		       item->package_id, item->repository_name, item->key_url, item->key_userid, item->key_id,
-		       item->key_fingerprint, item->key_timestamp, type_text);
+		       package_id, repository_name, key_url, key_userid, key_id,
+		       key_fingerprint, key_timestamp, type_text);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_signature_required = TRUE;
+
+	g_free (package_id);
+	g_free (repository_name);
+	g_free (key_url);
+	g_free (key_userid);
+	g_free (key_id);
+	g_free (key_fingerprint);
+	g_free (key_timestamp);
 }
 
 /**
  * pk_transaction_eula_required_cb:
  **/
 static void
-pk_transaction_eula_required_cb (PkBackend *backend, PkItemEulaRequired *item, PkTransaction *transaction)
+pk_transaction_eula_required_cb (PkBackend *backend, PkEulaRequired *item, PkTransaction *transaction)
 {
+	gchar *eula_id;
+	gchar *package_id;
+	gchar *vendor_name;
+	gchar *license_agreement;
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	/* add to results */
 	pk_results_add_eula_required (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "eula-id", &eula_id,
+		      "package-id", &package_id,
+		      "vendor-name", &vendor_name,
+		      "license-agreement", &license_agreement,
+		      NULL);
+
 	/* emit */
 	egg_debug ("emitting eula-required %s, %s, %s, %s",
-		   item->eula_id, item->package_id, item->vendor_name, item->license_agreement);
+		   eula_id, package_id, vendor_name, license_agreement);
 	g_signal_emit (transaction, signals[SIGNAL_EULA_REQUIRED], 0,
-		       item->eula_id, item->package_id, item->vendor_name, item->license_agreement);
+		       eula_id, package_id, vendor_name, license_agreement);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_eula_required = TRUE;
+
+	g_free (eula_id);
+	g_free (package_id);
+	g_free (vendor_name);
+	g_free (license_agreement);
 }
 
 /**
  * pk_transaction_media_change_required_cb:
  **/
 static void
-pk_transaction_media_change_required_cb (PkBackend *backend, PkItemMediaChangeRequired *item, PkTransaction *transaction)
+pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequired *item, PkTransaction *transaction)
 {
 	const gchar *media_type_text;
+	gchar *media_id;
+	gchar *media_text;
+	PkMediaTypeEnum media_type;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1074,47 +1258,71 @@ pk_transaction_media_change_required_cb (PkBackend *backend, PkItemMediaChangeRe
 	/* add to results */
 	pk_results_add_media_change_required (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "media-type", &media_type,
+		      "media-id", &media_id,
+		      "media-text", &media_text,
+		      NULL);
+
 	/* emit */
-	media_type_text = pk_media_type_enum_to_text (item->media_type);
+	media_type_text = pk_media_type_enum_to_text (media_type);
 	egg_debug ("emitting media-change-required %s, %s, %s",
-		   media_type_text, item->media_id, item->media_text);
+		   media_type_text, media_id, media_text);
 	g_signal_emit (transaction, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0,
-		       media_type_text, item->media_id, item->media_text);
+		       media_type_text, media_id, media_text);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_media_change_required = TRUE;
+
+	g_free (media_id);
+	g_free (media_text);
 }
 
 /**
  * pk_transaction_require_restart_cb:
  **/
 static void
-pk_transaction_require_restart_cb (PkBackend *backend, PkItemRequireRestart *item, PkTransaction *transaction)
+pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, PkTransaction *transaction)
 {
 	const gchar *restart_text;
-	PkItemRequireRestart *item_tmp;
+	PkRequireRestart *item_tmp;
 	GPtrArray *array;
 	gboolean found = FALSE;
 	guint i;
+	gchar *package_id;
+	gchar *package_id_tmp;
+	PkRestartEnum restart;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* get data */
+	g_object_get (item,
+		      "package-id", &package_id,
+		      "restart", &restart,
+		      NULL);
 
 	/* filter out duplicates */
 	array = pk_results_get_require_restart_array (transaction->priv->results);
 	for (i=0; i<array->len; i++) {
 		item_tmp = g_ptr_array_index (array, i);
-		if (g_strcmp0 (item->package_id, item_tmp->package_id) == 0) {
+		g_object_get (item_tmp,
+			      "package-id", &package_id_tmp,
+			      NULL);
+		if (g_strcmp0 (package_id, package_id_tmp) == 0) {
+			g_free (package_id_tmp);
 			found = TRUE;
 			break;
 		}
+		g_free (package_id_tmp);
 	}
 	g_ptr_array_unref (array);
 
 	/* ignore */
-	restart_text = pk_restart_enum_to_text (item->restart);
+	restart_text = pk_restart_enum_to_text (restart);
 	if (found) {
-		egg_debug ("ignoring %s (%s) as already sent", restart_text, item->package_id);
+		egg_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
 		return;
 	}
 
@@ -1122,8 +1330,10 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkItemRequireRestart *ite
 	pk_results_add_require_restart (transaction->priv->results, item);
 
 	/* emit */
-	egg_debug ("emitting require-restart %s, '%s'", restart_text, item->package_id);
-	g_signal_emit (transaction, signals[SIGNAL_REQUIRE_RESTART], 0, restart_text, item->package_id);
+	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
+	g_signal_emit (transaction, signals[SIGNAL_REQUIRE_RESTART], 0, restart_text, package_id);
+
+	g_free (package_id);
 }
 
 /**
@@ -1148,9 +1358,17 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
  * pk_transaction_transaction_cb:
  **/
 static void
-pk_transaction_transaction_cb (PkTransactionDb *tdb, PkItemTransaction *item, PkTransaction *transaction)
+pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, PkTransaction *transaction)
 {
 	const gchar *role_text;
+	gchar *tid;
+	gchar *timespec;
+	gchar *data;
+	gchar *cmdline;
+	guint duration;
+	guint uid;
+	gboolean succeeded;
+	PkRoleEnum role;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1158,45 +1376,93 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, PkItemTransaction *item, Pk
 	/* add to results */
 	pk_results_add_transaction (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "role", &role,
+		      "tid", &tid,
+		      "timespec", &timespec,
+		      "succeeded", &succeeded,
+		      "duration", &duration,
+		      "data", &data,
+		      "uid", &uid,
+		      "cmdline", &cmdline,
+		      NULL);
+
 	/* emit */
-	role_text = pk_role_enum_to_text (item->role);
+	role_text = pk_role_enum_to_text (role);
 	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
-		   item->tid, item->timespec, item->succeeded, role_text,
-		   item->duration, item->data, item->uid, item->cmdline);
+		   tid, timespec, succeeded, role_text,
+		   duration, data, uid, cmdline);
 	g_signal_emit (transaction, signals[SIGNAL_TRANSACTION], 0,
-		       item->tid, item->timespec, item->succeeded, role_text,
-		       item->duration, item->data, item->uid, item->cmdline);
+		       tid, timespec, succeeded, role_text,
+		       duration, data, uid, cmdline);
+
+	g_free (tid);
+	g_free (timespec);
+	g_free (data);
+	g_free (cmdline);
 }
 
 /**
  * pk_transaction_update_detail_cb:
  **/
 static void
-pk_transaction_update_detail_cb (PkBackend *backend, PkItemUpdateDetail *item, PkTransaction *transaction)
+pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTransaction *transaction)
 {
-	const gchar *restart_text;
 	const gchar *state_text;
+	const gchar *restart_text;
+	gchar *package_id;
+	gchar *updates;
+	gchar *obsoletes;
+	gchar *vendor_url;
+	gchar *bugzilla_url;
+	gchar *cve_url;
+	gchar *update_text;
+	gchar *changelog;
 	gchar *issued;
 	gchar *updated;
+	PkRestartEnum restart;
+	PkUpdateStateEnum state;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	restart_text = pk_restart_enum_to_text (item->restart);
-	state_text = pk_update_state_enum_to_text (item->state);
-	issued = pk_iso8601_from_date (item->issued);
-	updated = pk_iso8601_from_date (item->updated);
-
 	/* add to results */
 	pk_results_add_update_detail (transaction->priv->results, item);
 
+	/* get data */
+	g_object_get (item,
+		      "restart", &restart,
+		      "state", &state,
+		      "package-id", &package_id,
+		      "updates", &updates,
+		      "obsoletes", &obsoletes,
+		      "vendor-url", &vendor_url,
+		      "bugzilla-url", &bugzilla_url,
+		      "cve-url", &cve_url,
+		      "update-text", &update_text,
+		      "changelog", &changelog,
+		      "issued", &issued,
+		      "updated", &updated,
+		      NULL);
+
 	/* emit */
 	egg_debug ("emitting update-detail");
+	restart_text = pk_restart_enum_to_text (restart);
+	state_text = pk_update_state_enum_to_text (state);
 	g_signal_emit (transaction, signals[SIGNAL_UPDATE_DETAIL], 0,
-		       item->package_id, item->updates, item->obsoletes, item->vendor_url,
-		       item->bugzilla_url, item->cve_url, restart_text, item->update_text,
-		       item->changelog, state_text, issued, updated);
+		       package_id, updates, obsoletes, vendor_url,
+		       bugzilla_url, cve_url, restart_text, update_text,
+		       changelog, state_text, issued, updated);
 
+	g_free (package_id);
+	g_free (updates);
+	g_free (obsoletes);
+	g_free (vendor_url);
+	g_free (bugzilla_url);
+	g_free (cve_url);
+	g_free (update_text);
+	g_free (changelog);
 	g_free (issued);
 	g_free (updated);
 }
@@ -1211,12 +1477,14 @@ static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
 {
 	GPtrArray *updates;
-	const PkItemPackage *item;
+	PkPackage *item;
 	guint i;
 	guint j = 0;
 	guint length = 0;
 	gboolean ret = FALSE;
 	gchar **package_ids_security = NULL;
+	gchar *package_id;
+	PkInfoEnum info;
 
 	/* chekc we have anything to process */
 	if (package_ids == NULL) {
@@ -1249,10 +1517,15 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	/* find security update packages */
 	for (i=0; i<updates->len; i++) {
 		item = g_ptr_array_index (updates, i);
-		if (item->info == PK_INFO_ENUM_SECURITY) {
-			egg_debug ("security update: %s", item->package_id);
+		g_object_get (item,
+			      "info", &info,
+			      "package-id", &package_id,
+			      NULL);
+		if (info == PK_INFO_ENUM_SECURITY) {
+			egg_debug ("security update: %s", package_id);
 			length++;
 		}
+		g_free (package_id);
 	}
 
 	/* nothing to scan for */
@@ -1265,8 +1538,13 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	package_ids_security = g_new0 (gchar *, length+1);
 	for (i=0; i<updates->len; i++) {
 		item = g_ptr_array_index (updates, i);
-		if (item->info == PK_INFO_ENUM_SECURITY)
-			package_ids_security[j++] = g_strdup (item->package_id);
+		g_object_get (item,
+			      "info", &info,
+			      "package-id", &package_id,
+			      NULL);
+		if (info == PK_INFO_ENUM_SECURITY)
+			package_ids_security[j++] = g_strdup (package_id);
+		g_free (package_id);
 	}
 
 
@@ -3225,19 +3503,29 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	/* try and reuse cache */
 	updates_cache = pk_cache_get_updates (transaction->priv->cache);
 	if (updates_cache != NULL) {
-		const PkItemPackage *item;
+		PkPackage *item;
 		const gchar *info_text;
 		guint i;
+		PkInfoEnum info;
+		gchar *package_id;
+		gchar *summary;
 
 		egg_debug ("we have cached data (%i) we should use!", updates_cache->len);
 
 		/* emulate the backend */
 		for (i=0; i<updates_cache->len; i++) {
 			item = g_ptr_array_index (updates_cache, i);
-			info_text = pk_info_enum_to_text (item->info);
+			g_object_get (item,
+				      "info", &info,
+				      "package-id", &package_id,
+				      "summary", &summary,
+				      NULL);
+			info_text = pk_info_enum_to_text (info);
 			egg_debug ("emitting package");
 			g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
-				       info_text, item->package_id, item->summary);
+				       info_text, package_id, summary);
+			g_free (package_id);
+			g_free (summary);
 		}
 
 		/* set finished */

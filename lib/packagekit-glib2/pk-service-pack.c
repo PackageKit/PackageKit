@@ -665,7 +665,8 @@ pk_service_pack_get_files_from_array (const GPtrArray *array)
 {
 	gchar **files = NULL;
 	guint i;
-	const PkItemFiles *item;
+	PkFiles *item;
+	gchar **files_tmp = NULL;
 
 	/* internal error */
 	if (array == NULL) {
@@ -677,8 +678,12 @@ pk_service_pack_get_files_from_array (const GPtrArray *array)
 	files = g_new0 (gchar *, array->len + 1);
 	for (i=0; i<array->len; i++) {
 		item = g_ptr_array_index (array, i);
+		g_object_get (item,
+			      "files", &files_tmp,
+			      NULL);
 		/* assume only one file per package */
-		files[i] = g_strdup (item->files[0]);
+		files[i] = g_strdup (files_tmp[0]);
+		g_strfreev (files_tmp);
 	}
 out:
 	return files;
@@ -696,7 +701,7 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	gboolean ret;
 	gchar **files = NULL;
 	GPtrArray *array = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -707,9 +712,9 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to download: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to download: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -734,8 +739,8 @@ pk_service_pack_download_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	pk_service_pack_generic_state_finish (state, error);
 out:
 	g_strfreev (files);
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -772,10 +777,10 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	GPtrArray *array = NULL;
 	guint i;
 	guint j = 0;
-	const PkItemPackage *package;
+	PkPackage *package;
 	gchar **package_ids = NULL;
 	gchar **package_ids_to_download = NULL;
-	PkItemErrorCode *error_item = NULL;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -786,9 +791,9 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to download: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to download: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -800,8 +805,8 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
 		/* only add if the ID is not in the excludes list */
-		if (!pk_service_pack_in_excludes_list (state, package->package_id))
-			package_ids[j++] = g_strdup (package->package_id);
+		if (!pk_service_pack_in_excludes_list (state, pk_package_get_id (package)))
+			package_ids[j++] = g_strdup (pk_package_get_id (package));
 	}
 	package_ids_to_download = pk_package_ids_add_ids (state->package_ids, package_ids);
 
@@ -812,8 +817,8 @@ pk_service_pack_get_depends_ready_cb (GObject *source_object, GAsyncResult *res,
 out:
 	g_strfreev (package_ids);
 	g_strfreev (package_ids_to_download);
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)
@@ -881,8 +886,8 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
-	const PkItemPackage *package;
-	PkItemErrorCode *error_item = NULL;
+	PkPackage *package;
+	PkError *error_code = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -893,9 +898,9 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* check error code */
-	error_item = pk_results_get_error_code (results);
-	if (error_item != NULL) {
-		error = g_error_new (1, 0, "failed to get updates: %s", error_item->details);
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		error = g_error_new (1, 0, "failed to get updates: %s", pk_error_get_details (error_code));
 		pk_service_pack_generic_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -906,7 +911,7 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	state->package_ids = g_new0 (gchar *, array->len + 1);
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		state->package_ids[i] = g_strdup (package->package_id);
+		state->package_ids[i] = g_strdup (pk_package_get_id (package));
 	}
 
 	/* get deps, TODO: use NEWEST? */
@@ -914,8 +919,8 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 out:
-	if (error_item != NULL)
-		pk_item_error_code_unref (error_item);
+	if (error_code != NULL)
+		g_object_unref (error_code);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (results != NULL)

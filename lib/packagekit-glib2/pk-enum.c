@@ -839,7 +839,7 @@ pk_role_enum_to_text (PkRoleEnum role)
  *
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
-PkErrorCodeEnum
+PkErrorEnum
 pk_error_enum_from_text (const gchar *code)
 {
 	return pk_enum_find_value (enum_error, code);
@@ -854,7 +854,7 @@ pk_error_enum_from_text (const gchar *code)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_error_enum_to_text (PkErrorCodeEnum code)
+pk_error_enum_to_text (PkErrorEnum code)
 {
 	return pk_enum_find_string (enum_error, code);
 }

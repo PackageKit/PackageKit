@@ -589,7 +589,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self._handle_collections(fltlist)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
-            values.remove
+            return
 
         # handle newest packages
         if GROUP_NEWEST in values:
@@ -1054,9 +1054,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         deps_list = []
         resolve_list = []
 
-        for package in package_ids:
+        for package_id in package_ids:
             self.percentage(percentage)
-            grp = self._is_meta_package(package)
+            grp = self._is_meta_package(package_id)
             if grp:
                 if not grp.installed:
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The Group %s is not installed" % grp.groupid)
@@ -1068,7 +1068,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 # This simulates the removal of the package
                 if inst and pkg:
                     resolve_list.append(pkg)
@@ -1391,18 +1391,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         grp_pkgs = []
 
         # resolve each package_id to a pkg object
-        for package in package_ids:
+        for package_id in package_ids:
             self.percentage(percentage)
-            grp = self._is_meta_package(package)
+            grp = self._is_meta_package(package_id)
             if grp:
                 pkgs = self._get_group_packages(grp)
                 grp_pkgs.extend(pkgs)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 if pkg:
                     resolve_list.append(pkg)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package)
+                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package_id)
                     break
             percentage += bump
 
@@ -1487,7 +1487,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the refresh_cache functionality
         '''
-        # TODO: use force ?
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
@@ -1630,7 +1629,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.yumbase.deselectGroup(grp.groupid)
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                     if not txmbr:
-                        self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)));
+                        self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
@@ -2063,8 +2062,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_RUNNING)
 
         txmbrs = []
-        for package in package_ids:
-            grp = self._is_meta_package(package)
+        for package_id in package_ids:
+            grp = self._is_meta_package(package_id)
             if grp:
                 if not grp.installed:
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "This Group %s is not installed" % grp.groupid)
@@ -2074,7 +2073,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 if pkg and inst:
                     try:
                         txmbr = self.yumbase.remove(po=pkg)
@@ -2116,8 +2115,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        for package in package_ids:
-            grp = self._is_meta_package(package)
+        for package_id in package_ids:
+            grp = self._is_meta_package(package_id)
             if grp:
                 package_id = "%s;;;meta" % grp.groupid
                 desc = grp.descriptionByLang(self.lang)
@@ -2131,11 +2130,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.details(package_id, "", group, desc, "", size)
 
             else:
-                pkg, inst = self._findPackage(package)
+                pkg, inst = self._findPackage(package_id)
                 if pkg:
                     self._show_details_pkg(pkg)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package)
+                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package_id)
 
     def _show_details_pkg(self, pkg):
 
@@ -2169,15 +2168,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        for package in package_ids:
-            pkg, inst = self._findPackage(package)
+        for package_id in package_ids:
+            pkg, inst = self._findPackage(package_id)
             if pkg:
                 files = pkg.returnFileEntries('dir')
                 files.extend(pkg.returnFileEntries()) # regular files
                 file_list = ";".join(files)
-                self.files(package, file_list)
+                self.files(package_id, file_list)
             else:
-                self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package)
+                self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package_id)
 
     def _pkg_to_id(self, pkg):
         pkgver = _get_package_ver(pkg)
@@ -2466,10 +2465,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        for package in package_ids:
-            pkg, inst = self._findPackage(package)
+        for package_id in package_ids:
+            pkg, inst = self._findPackage(package_id)
             if pkg == None:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package_id)
                 continue
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
@@ -2522,7 +2521,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             cve_url = _format_list(urls['cve'])
             bz_url = _format_list(urls['bugzilla'])
             vendor_url = _format_list(urls['vendor'])
-            self.update_detail(package, update, obsolete, vendor_url, bz_url, cve_url, reboot, desc, changelog, state, issued, updated)
+            self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url, reboot, desc, changelog, state, issued, updated)
 
     def repo_set_data(self, repoid, parameter, value):
         '''
@@ -2610,7 +2609,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self._show_package_list(package_list)
         self.percentage(100)
 
-    def install_signature(self, sigtype, key_id, package):
+    def install_signature(self, sigtype, key_id, package_id):
         try:
             self._check_init()
         except PkError, e:
@@ -2620,8 +2619,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        if package.startswith(';;;'): #This is a repo signature
-            repoid = package.split(';')[-1]
+        if package_id.startswith(';;;'): #This is a repo signature
+            repoid = package_id.split(';')[-1]
             repo = self.yumbase.repos.getRepo(repoid)
             if repo:
                 try:
@@ -2632,7 +2631,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except Exception, e:
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository: %s" % (repo, str(e)))
         else: # This is a package signature
-            pkg, inst = self._findPackage(package)
+            pkg, inst = self._findPackage(package_id)
             if pkg:
                 try:
                     self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
@@ -2949,7 +2948,7 @@ class PackageKitYumBase(yum.YumBase):
         self.missingGPGKey = None
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
-        # TODO: disable until we have a backend we can use by default
+        # disable until we have a backend we can use by default
         # self.mediagrabber = self.MediaGrabber
         # Setup Repo GPG support callbacks
         try:

@@ -16,7 +16,7 @@
  * Call the Packagekit error dialog
  */
 bool show_errors(PkBackend *backend,
-		PkErrorCodeEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
+		PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN);
 
 /**
  * Call the Packagekit message dialog
