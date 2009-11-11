@@ -315,13 +315,14 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
     """
     Handle the package download process
     """
-    def __init__(self, backend, prange=(0,100)):
+    def __init__(self, backend, prange=(0,100), status=STATUS_DOWNLOAD):
         self._backend = backend
         apt.progress.FetchProgress.__init__(self)
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
         self.last_pkg = None
+        self.status = status
 
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -345,7 +346,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
             self.last_pkg = shortDescr
 
     def start(self):
-        self._backend.status(STATUS_DOWNLOAD)
+        self._backend.status(self.status)
         self._backend.allow_cancel(True)
 
     def stop(self):
@@ -1436,7 +1437,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False);
         self.percentage(0)
         self._check_init((0,10))
-        progress = PackageKitFetchProgress(self, prange=(10,95))
+        progress = PackageKitFetchProgress(self, prange=(10,95),
+                                           status=STATUS_DOWNLOAD_REPOSITORY)
         try:
             ret = self._cache.update(progress)
         except Exception, error:
