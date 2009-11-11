@@ -156,7 +156,13 @@ HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 try:
     locale.setlocale(locale.LC_ALL, "")
 except locale.Error:
-    pklog.debug("Failed to unset locale")
+    pklog.debug("Failed to unset LC_ALL")
+
+# Required to parse RFC822 time stamps
+try:
+    locale.setlocale(locale.LC_TIME, "C")
+except locale.Error:
+    pklog.debug("Failed to unset LC_TIME")
 
 def lock_cache(func):
     """Lock the system package cache before excuting the decorated function and
@@ -804,17 +810,51 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             state = ""
             issued = ""
             updated = ""
-            changelog = pkg.getChangelog()
+            #FIXME: make this more configurable. E.g. a dbus update requires
+            #       a reboot on Ubuntu but not on Debian
+            if pkg.name.startswith("linux-image-") or \
+               pkg.name in ["libc6", "dbus"]:
+                restart == RESTART_SYSTEM
+            changelog_raw = pkg.getChangelog()
             # The internal download error string of python-apt ist not
             # provided as unicode object
             try:
-                changelog = changelog.decode(DEFAULT_ENCODING)
+                changelog_raw = changelog_raw.decode(DEFAULT_ENCODING)
             except:
                 pass
-            bugzilla_url = ";".join(get_bug_urls(changelog))
-            cve_url = ";".join(get_cve_urls(changelog))
+            # Convert the changelog to markdown syntax
+            changelog = ""
+            for line in changelog_raw.split("\n"):
+                if line == "":
+                    changelog += "\n\n\n\n"
+                else:
+                    changelog += "`%s`  \n\n" % line
+                if line.startswith(pkg.candidate.source_name):
+                    source, version, dist, urgency = \
+                        re.match(r"(.+) \((.*)\) (.+); urgency=(.+)",
+                                 line).groups()
+                    update_text += "# %s #\n\n  \n\n" % version
+                elif line.startswith("  "):
+                    update_text += "`%s`\n\n" % line[2:]
+                elif line.startswith(" --"):
+                    #FIXME: Add %z for the time zone - requires Python 2.6
+                    maint, mail, date_raw, offset = \
+                        re.match("^ -- (.+) (<.+>)  (.+) ([-\+][0-9]+)$",
+                                 line).groups()
+                    date = datetime.datetime.strptime(date_raw,
+                                                      "%a, %d %b %Y %H:%M:%S")
+
+                    issued = date.isoformat()
+                    if not updated:
+                        updated = date.isoformat()
+                    update_text += "\n\n\n\n"
+            if issued == updated:
+                updated = ""
+            bugzilla_url = ";;".join(get_bug_urls(changelog))
+            cve_url = ";;".join(get_cve_urls(changelog))
             self.update_detail(pkg_id, updates, obsoletes, vendor_url,
-                               bugzilla_url, cve_url, restart, update_text,
+                               bugzilla_url, cve_url, restart,
+                               format_string(update_text),
                                format_string(changelog), state, issued,
                                updated)
 
