@@ -321,8 +321,8 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
-        self.last_pkg = None
         self.status = status
+        self.package_states = {}
 
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -336,14 +336,22 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
             self.pprev = progress
         return True
 
-    def updateStatus(self, uri, descr, shortDescr, status):
+    def updateStatus(self, uri, descr, pkg_name, status):
         """Callback for a fetcher status update."""
         # Emit a Package signal for the currently processed package
-        if shortDescr != self.last_pkg and \
-           self._backend._cache.has_key(shortDescr):
-            self._backend._emit_package(self._backend._cache[shortDescr],
-                                        INFO_DOWNLOADING, True)
-            self.last_pkg = shortDescr
+        try:
+            pkg = self._backend._cache[pkg_name]
+        except KeyError:
+            pass
+        else:
+            if not pkg_name in self.package_states or \
+               self.package_states[pkg_name] != status:
+                if status == 0:
+                    info = INFO_FINISHED
+                else:
+                    info = INFO_DOWNLOADING
+                self.package_states[pkg_name] = status
+                self._backend._emit_package(pkg, info, True)
 
     def start(self):
         self._backend.status(self.status)
@@ -1281,6 +1289,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 self.files(id, os.path.join(dest,
                                             os.path.basename(ver.filename)))
+                self._emit_pkg_version(ver, INFO_FINISHED)
         self.percentage(100)
 
     @lock_cache
