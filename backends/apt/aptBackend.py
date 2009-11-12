@@ -1240,15 +1240,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Implement the {backend}-download-packages functionality
         """
-        def get_range(versions, total):
+        def get_download_details(ids):
+            """Calculate the start and end point of a package download
+            progress.
             """
-            Calculate the start and end point of a package download progress.
-            """
+            total = 0
             downloaded = 0
-            for ver in versions:
+            versions = []
+            # Check if all ids are vaild and calculate the total download size
+            for id in ids:
+                pkg_ver = self._get_pkg_version_by_id(id)
+                if not pkg_ver.downloadable:
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
+                               "package %s isn't downloadable" % id)
+                total += pkg_ver.size
+                versions.append((id, pkg_ver))
+            for id, ver in versions:
                 start = downloaded * 100 / total
                 end = start + ver.size * 100 / total
-                yield ver, start, end
+                yield id, ver, start, end
                 downloaded += ver.size
         pklog.info("Downloading packages: %s" % ids)
         self.status(STATUS_DOWNLOAD)
@@ -1260,26 +1270,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The directory '%s' is not writable" % dest)
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        versions = []
-        total = 0
-        # Check if all ids are vaild and calculate the total download size
-        for id in ids:
-            pkg_ver = self._get_pkg_version_by_id(id)
-            if pkg_ver is None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "There is no package %s" % id)
-            if not pkg_ver.downloadable:
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
-                           "package %s isn't downloadable" % id)
-            total += pkg_ver.size
-            versions.append(pkg_ver)
         # Start the download
-        for ver, start, end in get_range(versions, total):
+        for id, ver, start, end in get_download_details(ids):
             progress = PackageKitFetchProgress(self, prange=(start, end))
             try:
                 ver.fetch_binary(dest, progress)
             except Exception, error:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, error.message)
+            else:
+                self.files(id, os.path.join(dest,
+                                            os.path.basename(ver.filename)))
         self.percentage(100)
 
     @lock_cache
