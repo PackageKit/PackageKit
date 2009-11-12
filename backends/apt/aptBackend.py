@@ -405,13 +405,14 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         # Emit a Package signal for the currently processed package
         if pkg_name != self.last_pkg and self._backend._cache.has_key(pkg_name):
             pkg = self._backend._cache[pkg_name]
-            # FIXME: We need an INFO enum for downgrades/rollbacks
-            if pkg.markedInstall or pkg.markedReinstall or pkg.markedDowngrade:
+            if pkg.markedInstall or pkg.markedReinstall:
                 self._backend._emit_package(pkg, INFO_INSTALLING, True)
             elif pkg.markedDelete:
                 self._backend._emit_package(pkg, INFO_REMOVING, False)
             elif pkg.markedUpgrade:
                 self._backend._emit_package(pkg, INFO_UPDATING, True)
+            elif pkg.markedDowngrade:
+                self._backend._emit_package(pkg, INFO_DOWNGRADING, True)
             self.last_pkg = pkg_name
         pklog.debug("APT status: %s" % status)
 
