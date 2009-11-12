@@ -1780,6 +1780,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return True
         return False
 
+    def _get_id_from_version(self, version):
+        """Return the package id of an apt.package.Version instance."""
+        if version.origins:
+            origin = version.origins[0].label
+        else:
+            origin = ""
+        id = "%s;%s;%s;%s" % (version.package.name, version.version,
+                              version.architecture, origin)
+        return id
+ 
     def _check_init(self, prange=(0,10), progress=True):
         """
         Check if the backend was initialized well and try to recover from
@@ -1820,12 +1830,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def _emit_pkg_version(self, version, info=None):
         """Emit the Package signal of the given apt.package.Version."""
-        if version.origins:
-            origin = version.origins[0].label
-        else:
-            origin = ""
-        id = "%s;%s;%s;%s" % (version.package.name, version.version,
-                              version.architecture, origin)
+        id = self._get_id_from_version(version)
         section = version.section.split("/")[-1]
         if not info:
             if version == version.package.installed:
