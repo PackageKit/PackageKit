@@ -1273,6 +1273,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # Start the download
         for id, ver, start, end in get_download_details(ids):
             progress = PackageKitFetchProgress(self, prange=(start, end))
+            self._emit_pkg_version(ver, INFO_DOWNLOADING)
             try:
                 ver.fetch_binary(dest, progress)
             except Exception, error:
