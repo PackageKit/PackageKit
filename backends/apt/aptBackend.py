@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import datetime
 import errno
 import fcntl
 import gdbm
