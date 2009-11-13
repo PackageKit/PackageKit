@@ -2134,7 +2134,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if pkg:
                     self._show_details_pkg(pkg)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package_id)
+                    self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, 'Package %s was not found' % _format_package_id(package_id))
+                    continue
 
     def _show_details_pkg(self, pkg):
 
@@ -2468,7 +2469,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             pkg, inst = self._findPackage(package_id)
             if pkg == None:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package_id)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % _format_package_id(package_id))
                 continue
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
