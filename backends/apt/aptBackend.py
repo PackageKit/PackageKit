@@ -950,7 +950,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = self._mark_for_removal(ids)
         # Error out if the installation would the installation or upgrade of
         # other packages
-        if self._cache.inst_count:
+        if self._cache.install_count:
             installed = [pkg.name for pkg in self._cache.getChanges() if \
                          pkg.markedInstall or pkg.markedUpgrade]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
