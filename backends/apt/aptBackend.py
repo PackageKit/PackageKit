@@ -944,6 +944,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
+        if auto_remove:
+            auto_removables = [pkg.name for pkg in self._cache \
+                               if pkg.isAutoRemovable]
         pkgs = self._mark_for_removal(ids)
         # Error out if the installation would the installation or upgrade of
         # other packages
@@ -961,6 +964,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would have also to be removed: "
                        "%s" % " ".join(dependencies))
+        # Check for no longer required dependencies which should be removed too
+        if auto_remove:
+            for pkg in self._cache:
+                if pkg.isAutoRemovable and pkg.name not in auto_removables:
+                    pkg.markDelete(False)
         #FIXME: Should support only_trusted
         self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
