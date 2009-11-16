@@ -1651,32 +1651,65 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "app-install-data.")
             else:
                 return db
-
+        def extract_gstreamer_request(search):
+            # The search term from PackageKit daemon:
+            # gstreamer0.10(urisource-foobar)
+            # gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
+            match = re.match("^gstreamer(?P<version>[0-9\.]+)"
+                             "\((?P<kind>.+?)-(?P<data>.+?)\)"
+                             "(\((?P<opt>.*)\))?",
+                             search)
+            caps = None
+            if not match:
+                self.error(ERROR_INTERNAL_ERROR,
+                           "The search term is invalid: %s" % search)
+            if match.group("opt"):
+                caps_str = "%s, %s" % (match.group("data"), match.group("opt"))
+                # gst.Caps.__init__ cannot handle unicode instances
+                caps = gst.Caps(str(caps_str))
+            record = GSTREAMER_RECORD_MAP[match.group("kind")]
+            return match.group("version"), record, match.group("data"), caps
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(False)
         if provides_type == PROVIDES_CODEC:
-            # The search term from the codec helper looks like this one:
-            match = re.match(r"gstreamer([0-9\.]+)\((.+?)\)", search)
-            if not match:
-                self.error(ERROR_INTERNAL_ERROR,
-                           "The search term is invalid")
-            codec = "%s:%s" % (match.group(1), match.group(2))
-            db = get_mapping_db("/var/lib/PackageKit/codec-map.gdbm")
-            if db == None:
-                self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to open codec mapping database")
-            if db.has_key(codec):
-                # The codec mapping db stores the packages as a string
-                # separated by spaces. Each package has its section
-                # prefixed and separated by a slash
-                # FIXME: Should make use of the section and emit a 
-                #        RepositoryRequired signal if the package does 
-                #        not exist
-                pkgs = map(lambda s: s.split("/")[1],
-                           db[codec].split(" "))
-                self._emit_visible_packages_by_name(filters, pkgs)
+            # Search for privided gstreamer plugins using the package
+            # metadata
+            import gst
+            GSTREAMER_RECORD_MAP = {"encoder": "Gstreamer-Encoders",
+                                    "decoder": "Gstreamer-Decoders",
+                                    "urisource": "Gstreamer-Uri-Sources",
+                                    "urisink": "Gstreamer-Uri-Sinks",
+                                    "element": "Gstreamer-Elements"}
+            for pkg in self._cache:
+                if pkg.installed:
+                    version = pkg.installed
+                elif pkg.candidate:
+                    version = pkg.candidate
+                else:
+                    continue
+                if not "Gstreamer-Version" in version.record:
+                    continue
+                gst_version, gst_record, gst_data, gst_caps = \
+                        extract_gstreamer_request(search)
+                if version.record["Gstreamer-Version"] != gst_version:
+                    continue
+                if gst_caps:
+                    try:
+                        pkg_caps = gst.Caps(version.record[gst_record])
+                    except KeyError:
+                        continue
+                    if gst_caps.intersect(pkg_caps):
+                        self._emit_visible_package(filters, pkg)
+                else:
+                    try:
+                        elements = version.record[gst_record]
+                    except KeyError:
+                        continue
+                    if gst_data in elements:
+                        self._emit_visible_package(filters, pkg)
+
         elif provides_type == PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type
