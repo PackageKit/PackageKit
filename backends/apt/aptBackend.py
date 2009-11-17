@@ -843,16 +843,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             changelog = ""
             for line in changelog_raw.split("\n"):
                 if line == "":
-                    changelog += "\n\n\n\n"
+                    changelog += " \n"
                 else:
-                    changelog += "`%s`  \n\n" % line
+                    changelog += "    %s  \n" % line
                 if line.startswith(pkg.candidate.source_name):
-                    source, version, dist, urgency = \
-                        re.match(r"(.+) \((.*)\) (.+); urgency=(.+)",
-                                 line).groups()
-                    update_text += "# %s #\n\n  \n\n" % version
+                    match = re.match(r"(?P<source>.+) \((?P<version>.*)\) "
+                                      "(?P<dist>.+); urgency=(?P<urgency>.+)",
+                                     line)
+                    update_text += "%s\n%s\n\n" % (match.group("version"),
+                                                   "=" * \
+                                                   len(match.group("version")))
                 elif line.startswith("  "):
-                    update_text += "`%s`\n\n" % line[2:]
+                    update_text += "  %s  \n" % line
                 elif line.startswith(" --"):
                     #FIXME: Add %z for the time zone - requires Python 2.6
                     maint, mail, date_raw, offset = \
@@ -864,7 +866,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     issued = date.isoformat()
                     if not updated:
                         updated = date.isoformat()
-                    update_text += "\n\n\n\n"
             if issued == updated:
                 updated = ""
             bugzilla_url = ";;".join(get_bug_urls(changelog))
