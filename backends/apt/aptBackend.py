@@ -857,10 +857,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     update_text += "  %s  \n" % line
                 elif line.startswith(" --"):
                     #FIXME: Add %z for the time zone - requires Python 2.6
-                    maint, mail, date_raw, offset = \
-                        re.match("^ -- (.+) (<.+>)  (.+) ([-\+][0-9]+)$",
-                                 line).groups()
-                    date = datetime.datetime.strptime(date_raw,
+                    update_text += "  \n"
+                    match = re.match("^ -- (?P<maintainer>.+) (?P<mail><.+>)  "
+                                     "(?P<date>.+) (?P<offset>[-\+][0-9]+)$",
+                                     line)
+                    date = datetime.datetime.strptime(match.group("date"),
                                                       "%a, %d %b %Y %H:%M:%S")
 
                     issued = date.isoformat()
