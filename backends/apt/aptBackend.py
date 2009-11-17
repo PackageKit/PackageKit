@@ -153,6 +153,8 @@ HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
 MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
+SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
+
 # Required to get translated descriptions
 try:
     locale.setlocale(locale.LC_ALL, "")
@@ -728,6 +730,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # but would only require the installation of additional packages
         for pkg in self._cache:
             if not pkg.isUpgradable:
+                continue
+            # This may occur on pinned packages which have been updated to
+            # later version than the pinned one
+            if not pkg.candidateOrigin:
                 continue
             pklog.debug("Checking upgrade of %s" % pkg.name)
             if not pkg in upgrades_safe:
@@ -1868,6 +1874,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange, progress)
         else:
             pass
+        # Read the pin file of Synaptic if available
+        self._cache._depcache.ReadPinFile()
+        if os.path.exists(SYNAPTIC_PIN_FILE):
+            self._cache._depcache.ReadPinFile(SYNAPTIC_PIN_FILE)
+        # Reset the depcache
         self._cache.clear()
 
     def _emit_package(self, pkg, info=None, force_candidate=False):
