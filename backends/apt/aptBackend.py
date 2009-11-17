@@ -153,6 +153,8 @@ HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
 MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
 
+SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
+
 # Required to get translated descriptions
 try:
     locale.setlocale(locale.LC_ALL, "")
@@ -729,6 +731,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for pkg in self._cache:
             if not pkg.isUpgradable:
                 continue
+            # This may occur on pinned packages which have been updated to
+            # later version than the pinned one
+            if not pkg.candidateOrigin:
+                continue
             pklog.debug("Checking upgrade of %s" % pkg.name)
             if not pkg in upgrades_safe:
                 # Check if the upgrade would require the removal of an already
@@ -837,28 +843,30 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             changelog = ""
             for line in changelog_raw.split("\n"):
                 if line == "":
-                    changelog += "\n\n\n\n"
+                    changelog += " \n"
                 else:
-                    changelog += "`%s`  \n\n" % line
+                    changelog += "    %s  \n" % line
                 if line.startswith(pkg.candidate.source_name):
-                    source, version, dist, urgency = \
-                        re.match(r"(.+) \((.*)\) (.+); urgency=(.+)",
-                                 line).groups()
-                    update_text += "# %s #\n\n  \n\n" % version
+                    match = re.match(r"(?P<source>.+) \((?P<version>.*)\) "
+                                      "(?P<dist>.+); urgency=(?P<urgency>.+)",
+                                     line)
+                    update_text += "%s\n%s\n\n" % (match.group("version"),
+                                                   "=" * \
+                                                   len(match.group("version")))
                 elif line.startswith("  "):
-                    update_text += "`%s`\n\n" % line[2:]
+                    update_text += "  %s  \n" % line
                 elif line.startswith(" --"):
                     #FIXME: Add %z for the time zone - requires Python 2.6
-                    maint, mail, date_raw, offset = \
-                        re.match("^ -- (.+) (<.+>)  (.+) ([-\+][0-9]+)$",
-                                 line).groups()
-                    date = datetime.datetime.strptime(date_raw,
+                    update_text += "  \n"
+                    match = re.match("^ -- (?P<maintainer>.+) (?P<mail><.+>)  "
+                                     "(?P<date>.+) (?P<offset>[-\+][0-9]+)$",
+                                     line)
+                    date = datetime.datetime.strptime(match.group("date"),
                                                       "%a, %d %b %Y %H:%M:%S")
 
                     issued = date.isoformat()
                     if not updated:
                         updated = date.isoformat()
-                    update_text += "\n\n\n\n"
             if issued == updated:
                 updated = ""
             bugzilla_url = ";;".join(get_bug_urls(changelog))
@@ -1868,6 +1876,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange, progress)
         else:
             pass
+        # Read the pin file of Synaptic if available
+        self._cache._depcache.ReadPinFile()
+        if os.path.exists(SYNAPTIC_PIN_FILE):
+            self._cache._depcache.ReadPinFile(SYNAPTIC_PIN_FILE)
+        # Reset the depcache
         self._cache.clear()
 
     def _emit_package(self, pkg, info=None, force_candidate=False):
