@@ -1039,6 +1039,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 {
 	gchar *update_text_safe = NULL;
 	PkUpdateDetail *item = NULL;
+	GTimeVal timeval;
 	gboolean ret = FALSE;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -1049,6 +1050,28 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	if (backend->priv->set_error) {
 		egg_warning ("already set error, cannot process: update_detail %s", package_id);
 		goto out;
+	}
+
+	/* check the dates are not empty */
+	if (issued_text != NULL && issued_text[0] == '\0')
+		issued_text = NULL;
+	if (updated_text != NULL && updated_text[0] == '\0')
+		updated_text = NULL;
+
+	/* check the issued dates are valid */
+	if (issued_text != NULL) {
+		ret = g_time_val_from_iso8601 (issued_text, &timeval);
+		if (!ret) {
+			egg_warning ("failed to parse '%s'", issued_text);
+			goto out;
+		}
+	}
+	if (updated_text != NULL) {
+		ret = g_time_val_from_iso8601 (updated_text, &timeval);
+		if (!ret) {
+			egg_warning ("failed to parse '%s'", updated_text);
+			goto out;
+		}
 	}
 
 	/* replace unsafe chars */

@@ -2475,6 +2475,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
 
+            # the metadata stores broken ISO8601 formatted values
+            issued = issued.replace(" ", "T")
+            updated = updated.replace(" ", "T")
+
             # extract the changelog for the local package
             if len(changelog) == 0:
 
