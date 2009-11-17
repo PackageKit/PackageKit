@@ -309,7 +309,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 						  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 						  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source",
-						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2008-07-31", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_STABLE, "2009-11-17T09:19:00", "2009-11-19T09:19:00");
 		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed"
@@ -323,7 +323,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "Update to newest upstream version.\n"
 						  "* This should fix many driver bugs when using nouveau\n"
 						  " * This also introduces the new `frobnicator` driver for *vibrating* rabbit hardware.",
-						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNSTABLE, "2008-06-28T09:19:00", NULL);
 		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
 			pk_backend_update_detail (backend, package_id,
 						  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
@@ -334,7 +334,7 @@ backend_get_update_detail_timeout (gpointer data)
 						  "* support this new thing\n"
 						  "* something else\n"
 						  "- and that new thing",
-						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25", NULL);
+						  changelog, PK_UPDATE_STATE_ENUM_UNKNOWN, "2008-07-25T09:19:00", NULL);
 
 		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
 			pk_backend_update_detail (backend, package_id,
