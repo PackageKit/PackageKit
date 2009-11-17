@@ -149,6 +149,9 @@ MATCH_BUG_NUMBERS=r"\#?\s?(\d+)"
 # URL pointing to a bug in the Debian bug tracker
 HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
 
+MATCH_BUG_CLOSES_UBUNTU = r"lp:\s+\#\d+(?:,\s*\#\d+)*"
+HREF_BUG_UBUNTU = "https://bugs.launchpad.net/bugs/%s"
+
 # Regular expression to find cve references
 MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
@@ -787,11 +790,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             Create a list of urls pointing to closed bugs in the changelog
             """
             urls = []
-            #FIXME: Add support for Launchpad/Ubuntu
             for r in re.findall(MATCH_BUG_CLOSES_DEBIAN, changelog,
                                 re.IGNORECASE | re.MULTILINE):
-                urls.extend(map(lambda b: HREF_BUG_DEBIAN % b,
-                                re.findall(MATCH_BUG_NUMBERS, r)))
+                urls.extend([HREF_BUG_DEBIAN % bug for bug in \
+                             re.findall(MATCH_BUG_NUMBERS, r)])
+            for r in re.findall(MATCH_BUG_CLOSES_UBUNTU, changelog,
+                                re.IGNORECASE | re.MULTILINE):
+                urls.extend([HREF_BUG_UBUNTU % bug for bug in \
+                             re.findall(MATCH_BUG_NUMBERS, r)])
             return urls
 
         def get_cve_urls(changelog):
