@@ -1006,6 +1006,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
             return None, False
 
+        # the repo might have been disabled if it is no longer contactable
+        if not repos[0].isEnabled():
+            self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, '%s cannot be found as %s is disabled' % (n, repos[0].id))
+            return None, False
+
         # populate the sack with data
         try:
             self.yumbase.repos.populateSack(repo)
@@ -1932,9 +1937,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
                         return
                     txmbrs.extend(txmbr)
-                else:
-                    self.error(ERROR_UPDATE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
-                    return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
         except Exception, e:
