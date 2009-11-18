@@ -2794,7 +2794,7 @@ class DownloadCallback(BaseMeter):
         val = int(frac*100)
 
         # new package
-        if val == 0 and len(name) > 0:
+        if val == 0 and name:
             pkg = self._getPackage(name)
             if pkg: # show package to download
                 self.base._show_package(pkg, INFO_DOWNLOADING)
@@ -2806,7 +2806,7 @@ class DownloadCallback(BaseMeter):
                         break
 
         # package finished
-        if val == 100 and len(name) > 0:
+        if val == 100 and name:
             pkg = self._getPackage(name)
             if pkg:
                 self.base._show_package(pkg, INFO_FINISHED)
