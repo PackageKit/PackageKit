@@ -172,7 +172,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
-        end
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -209,7 +208,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
-        end
         for path in paths:
             self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
@@ -273,7 +271,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
-        end
         packages = []
         for packageid in packageids:
             ratio, results, suggestions = self._search_packageid(packageid)
@@ -325,7 +322,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if only_trusted:
             self.error(ERROR_MISSING_GPG_SIGNATURE, "Trusted packages not available.")
             return
-        end
         self.status(STATUS_INFO)
         cache = self.ctrl.getCache()
 
