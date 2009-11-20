@@ -381,9 +381,9 @@ class PackageKitClient:
         return self._run_transaction("Rollback", [transaction_id], 
                                      exit_handler)
 
-    def what_provides(self, provides, search, exit_handler=None):
+    def what_provides(self, filters, enum, search, exit_handler=None):
         '''Search for packages that provide the supplied attributes'''
-        return self._run_transaction("WhatProvides", [provides, search], 
+        return self._run_transaction("WhatProvides", [filters, enum, search], 
                                      exit_handler)
 
     def set_locale(self, code):
