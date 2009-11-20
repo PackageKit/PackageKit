@@ -1816,7 +1816,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
@@ -3642,7 +3642,7 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))

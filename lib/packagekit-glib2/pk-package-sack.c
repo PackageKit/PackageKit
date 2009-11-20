@@ -133,7 +133,7 @@ pk_package_sack_get_index (PkPackageSack *sack, guint i)
 {
 	PkPackage *package = NULL;
 
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
 
 	/* index invalid */
 	if (i >= sack->priv->array->len)
@@ -277,8 +277,8 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 	guint i;
 	guint len;
 
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+	g_return_val_if_fail (package_id != NULL, NULL);
 
 	len = sack->priv->array->len;
 	for (i=0; i<len; i++) {

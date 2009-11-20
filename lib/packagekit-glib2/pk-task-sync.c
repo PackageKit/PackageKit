@@ -83,7 +83,7 @@ pk_task_update_system_sync (PkTask *task, GCancellable *cancellable,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
@@ -133,7 +133,7 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
@@ -179,7 +179,7 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
@@ -225,7 +225,7 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
@@ -272,7 +272,7 @@ pk_task_install_files_sync (PkTask *task, gchar **files, GCancellable *cancellab
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkTaskHelper, 1);
