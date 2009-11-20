@@ -1457,8 +1457,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Finds out if the repo that contains the package is signed
         '''
-        repo = self.yumbase.repos.getRepo(pkg.repoid)
-        return repo.gpgcheck
+        signed = False
+        try:
+            repo = self.yumbase.repos.getRepo(pkg.repoid)
+            signed = repo.gpgcheck
+        except yum.Errors.RepoError, e:
+            raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        return signed
 
     def update_system(self, only_trusted):
         '''
@@ -1494,7 +1501,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     for t in txmbr:
                         pkg = t.po
-                        signed = self._is_package_repo_signed(pkg)
+                        try:
+                            signed = self._is_package_repo_signed(pkg)
+                        except PkError, e:
+                            self.error(e.code, e.details, exit=False)
+                            return
                         if not signed:
                             self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
@@ -1672,7 +1683,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if only_trusted:
                 for t in txmbrs:
                     pkg = t.po
-                    signed = self._is_package_repo_signed(pkg)
+                    try:
+                        signed = self._is_package_repo_signed(pkg)
+                    except PkError, e:
+                        self.error(e.code, e.details, exit=False)
+                        return
                     if not signed:
                         self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
@@ -1954,6 +1969,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except PkError, e:
                     if e.code == ERROR_PACKAGE_NOT_FOUND:
                         self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                        package_ids.remove(package_id)
                         continue
                     self.error(e.code, e.details, exit=True)
                     return
@@ -1975,7 +1991,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     for t in txmbrs:
                         pkg = t.po
-                        signed = self._is_package_repo_signed(pkg)
+                        try:
+                            signed = self._is_package_repo_signed(pkg)
+                        except PkError, e:
+                            self.error(e.code, e.details, exit=False)
+                            return
                         if not signed:
                             self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
