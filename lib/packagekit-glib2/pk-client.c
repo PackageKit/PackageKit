@@ -1875,7 +1875,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 }
 
 /**
- * pk_client_search_name_async:
+ * pk_client_search_names_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: free text to search for, for instance, "power"
@@ -1889,7 +1889,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  * that matches a specific name.
  **/
 void
-pk_client_search_name_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1899,7 +1899,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, gchar **value
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_name_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_names_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
@@ -1934,7 +1934,7 @@ pk_client_search_name_async (PkClient *client, PkBitfield filters, gchar **value
  * @user_data: the data to pass to @callback_ready
  *
  * Search all detailed summary information to try and find a keyword.
- * Think of this as pk_client_search_name(), but trying much harder and
+ * Think of this as pk_client_search_names(), but trying much harder and
  * taking longer.
  **/
 void
@@ -1972,7 +1972,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 }
 
 /**
- * pk_client_search_group_async:
+ * pk_client_search_groups_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: a group enum to search for, for instance, "system-tools"
@@ -1985,7 +1985,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
  * Return all packages in a specific group.
  **/
 void
-pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -1995,7 +1995,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **valu
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_group_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_groups_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
@@ -2019,7 +2019,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **valu
 }
 
 /**
- * pk_client_search_file_async:
+ * pk_client_search_files_async:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: file to search for, for instance, "/sbin/service"
@@ -2032,7 +2032,7 @@ pk_client_search_group_async (PkClient *client, PkBitfield filters, gchar **valu
  * Search for packages that provide a specific file.
  **/
 void
-pk_client_search_file_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -2042,7 +2042,7 @@ pk_client_search_file_async (PkClient *client, PkBitfield filters, gchar **value
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_file_async);
+	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_files_async);
 
 	/* save state */
 	state = g_slice_new0 (PkClientState);
@@ -4444,7 +4444,7 @@ pk_client_test (gpointer user_data)
 	egg_test_title (test, "search by name");
 	cancellable = g_cancellable_new ();
 	values = g_strsplit ("power", "&", -1);
-	pk_client_search_name_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
+	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_search_name_cb, test);
 	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);

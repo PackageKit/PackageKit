@@ -416,7 +416,7 @@ pk_cnf_find_available (const gchar *cmd)
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
 					  PK_FILTER_ENUM_NEWEST,
 					  PK_FILTER_ENUM_ARCH, -1);
-	results = pk_client_search_file (PK_CLIENT(task), filters, values, cancellable,
+	results = pk_client_search_files (PK_CLIENT(task), filters, values, cancellable,
 					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */

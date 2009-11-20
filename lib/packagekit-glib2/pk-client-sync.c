@@ -104,7 +104,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
 }
 
 /**
- * pk_client_search_name:
+ * pk_client_search_names:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: free text to search for, for instance, "power"
@@ -122,7 +122,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -137,7 +137,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCa
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_name_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_names_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -162,7 +162,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCa
  * @error: the #GError to store any failure, or %NULL
  *
  * Search all detailed summary information to try and find a keyword.
- * Think of this as pk_client_search_name(), but trying much harder and
+ * Think of this as pk_client_search_names(), but trying much harder and
  * taking longer.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
@@ -201,7 +201,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
 }
 
 /**
- * pk_client_search_group:
+ * pk_client_search_groups:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: a group enum to search for, for instance, "system-tools"
@@ -218,7 +218,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -233,7 +233,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_group_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_groups_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -248,7 +248,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
 }
 
 /**
- * pk_client_search_file:
+ * pk_client_search_files:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: file to search for, for instance, "/sbin/service"
@@ -265,7 +265,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_file (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -280,7 +280,7 @@ pk_client_search_file (PkClient *client, PkBitfield filters, gchar **values, GCa
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_file_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_files_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);

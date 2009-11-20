@@ -223,7 +223,7 @@ gboolean	 pk_client_update_system		(PkClient	*client,
 							 gboolean	 only_trusted,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_search_name			(PkClient	*client,
+gboolean	 pk_client_search_names			(PkClient	*client,
 							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)
@@ -232,12 +232,12 @@ gboolean	 pk_client_search_details		(PkClient	*client,
 							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error);
-gboolean	 pk_client_search_group			(PkClient	*client,
+gboolean	 pk_client_search_groups			(PkClient	*client,
 							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_search_file			(PkClient	*client,
+gboolean	 pk_client_search_files			(PkClient	*client,
 							 PkBitfield	 filters,
 							 const gchar	*search,
 							 GError		**error)

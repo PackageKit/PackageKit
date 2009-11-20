@@ -35,7 +35,7 @@ PkResults	*pk_client_resolve			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_search_name			(PkClient		*client,
+PkResults	*pk_client_search_names			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,
@@ -51,7 +51,7 @@ PkResults	*pk_client_search_details		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_search_group			(PkClient		*client,
+PkResults	*pk_client_search_groups		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,
@@ -59,7 +59,7 @@ PkResults	*pk_client_search_group			(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
-PkResults	*pk_client_search_file			(PkClient		*client,
+PkResults	*pk_client_search_files			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,

@@ -1275,7 +1275,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_name_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_names_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1299,7 +1299,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_group_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_groups_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1311,7 +1311,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_file_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_files_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
