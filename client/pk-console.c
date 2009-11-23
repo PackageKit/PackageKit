@@ -1127,7 +1127,6 @@ main (int argc, char *argv[])
 {
 	gboolean ret;
 	GError *error = NULL;
-	gboolean verbose = FALSE;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean program_version = FALSE;
@@ -1145,9 +1144,6 @@ main (int argc, char *argv[])
 	gint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			/* TRANSLATORS: command line argument, if we should show debugging information */
-			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			/* TRANSLATORS: command line argument, just show the version string */
 			_("Show the program version and exit"), NULL},
@@ -1207,13 +1203,11 @@ main (int argc, char *argv[])
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
-
-	/* we are now parsed */
-	egg_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");

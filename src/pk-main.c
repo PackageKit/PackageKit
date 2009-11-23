@@ -179,7 +179,6 @@ main (int argc, char *argv[])
 	DBusGConnection *system_connection;
 	EggDbusMonitor *monitor;
 	gboolean ret;
-	gboolean verbose = FALSE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
 	gboolean use_daemon = FALSE;
@@ -193,11 +192,6 @@ main (int argc, char *argv[])
 	PkSyslog *syslog = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
-#ifdef HAVE_CLEARENV
-	const gchar *env_pk_verbose;
-	const gchar *env_pk_console;
-	const gchar *env_pk_logging;
-#endif
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -206,9 +200,6 @@ main (int argc, char *argv[])
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
 		  /* TRANSLATORS: if we should run in the background */
 		  _("Daemonize and detach from the terminal"), NULL },
-		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
-		  /* TRANSLATORS: if we should show debugging data */
-		  _("Show extra debugging information"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
 		  /* TRANSLATORS: if we should not monitor how long we are inactive for */
 		  _("Disable the idle timer"), NULL },
@@ -237,9 +228,9 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: describing the service that is running */
 	context = g_option_context_new (_("PackageKit service"));
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
-	egg_debug_init (verbose);
 
 	if (version) {
 		g_print ("Version %s\n", VERSION);
@@ -280,16 +271,7 @@ main (int argc, char *argv[])
 	/* we don't actually need to do this, except it rules out the
 	 * 'it works from the command line but not service activation' bugs */
 #ifdef HAVE_CLEARENV
-	env_pk_verbose = g_getenv (EGG_VERBOSE);
-	env_pk_console = g_getenv (EGG_CONSOLE);
-	env_pk_logging = g_getenv (EGG_LOGGING);
 	clearenv ();
-	if (env_pk_verbose != NULL)
-		g_setenv (EGG_VERBOSE, env_pk_verbose, FALSE);
-	if (env_pk_console != NULL)
-		g_setenv (EGG_CONSOLE, env_pk_console, FALSE);
-	if (env_pk_logging != NULL)
-		g_setenv (EGG_LOGGING, env_pk_logging, FALSE);
 #endif
 
 	/* get values from the config file */
@@ -302,7 +284,8 @@ main (int argc, char *argv[])
 	/* do we log? */
 	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
 	egg_debug ("Log all transactions: %i", do_logging);
-	egg_debug_set_logging (do_logging);
+	if (do_logging)
+		egg_debug_set_log_filename ("/var/log/PackageKit");
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");

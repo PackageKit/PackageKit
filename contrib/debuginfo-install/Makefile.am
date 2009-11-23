@@ -23,10 +23,6 @@ INCLUDES =						\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
-	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
-	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
-	-DEGG_LOGGING="\"PK_LOGGING\""			\
-	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-I$(top_srcdir)/lib
 
 bin_PROGRAMS = pk-debuginfo-install

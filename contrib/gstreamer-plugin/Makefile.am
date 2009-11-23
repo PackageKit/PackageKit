@@ -14,7 +14,6 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
-	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 

@@ -48,7 +48,7 @@ main (int argc, char **argv)
 		g_thread_init (NULL);
 	g_type_init ();
 	test = egg_test_init ();
-	egg_debug_init (TRUE);
+	egg_debug_init (&argc, &argv);
 
 	/* egg */
 	egg_string_test (test);

@@ -30,7 +30,6 @@
 
 #include "egg-debug.h"
 
-static gboolean verbose = FALSE;
 static PkClient *client = NULL;
 
 /**
@@ -234,7 +233,7 @@ static void
 pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
 {
 	/* only print state when verbose */
-	if (verbose)
+	if (egg_debug_is_verbose ())
 		pk_monitor_get_daemon_state (control);
 }
 
@@ -277,8 +276,6 @@ main (int argc, char *argv[])
 	guint i;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			_("Show the program version and exit"), NULL},
 		{ NULL}
@@ -298,6 +295,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: this is a program that monitors PackageKit */
 	g_option_context_set_summary (context, _("PackageKit Monitor"));
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
@@ -305,8 +303,6 @@ main (int argc, char *argv[])
 		g_print (VERSION "\n");
 		goto out;
 	}
-
-	egg_debug_init (verbose);
 
 	loop = g_main_loop_new (NULL, FALSE);
 
@@ -341,7 +337,7 @@ main (int argc, char *argv[])
 	pk_monitor_list_print (tlist);
 
 	/* only print state when verbose */
-	if (verbose)
+	if (egg_debug_is_verbose ())
 		pk_monitor_get_daemon_state (control);
 
 	/* spin */
