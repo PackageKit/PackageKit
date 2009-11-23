@@ -47,6 +47,7 @@
 #include "pk-store.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
+#include "pk-notify.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -1667,6 +1668,24 @@ out:
 		g_object_unref (item);
 	g_free (summary_safe);
 	return ret;
+}
+
+/**
+ * pk_backend_repo_list_changed:
+ **/
+gboolean
+pk_backend_repo_list_changed (PkBackend *backend)
+{
+	PkNotify *notify;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	notify = pk_notify_new ();
+	pk_notify_repo_list_changed (notify);
+	g_object_unref (notify);
+
+	return TRUE;
 }
 
 /**
