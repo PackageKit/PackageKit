@@ -100,6 +100,14 @@ manpage.1: manpage.xml
           <para>Failed as a file or directory was not found.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>
+          <option>5</option>
+        </term>
+        <listitem>
+          <para>Nothing useful was done.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>

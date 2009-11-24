@@ -37,6 +37,7 @@
 
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
+#define PK_EXIT_CODE_NOTHING_USEFUL	5
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles;
@@ -46,6 +47,7 @@ static PkControl *control = NULL;
 static PkTaskText *task = NULL;
 static PkProgressBar *progressbar = NULL;
 static GCancellable *cancellable = NULL;
+static gint retval = EXIT_SUCCESS;
 
 /**
  * pk_strpad:
@@ -690,6 +692,10 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
 		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+
+		/* special case */
+		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE)
+			retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		goto out;
 	}
 
@@ -707,9 +713,13 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	}
 
 	/* special case */
-	if (role == PK_ROLE_ENUM_GET_UPDATES && array->len == 0) {
+	if (array->len == 0 &&
+	    (role == PK_ROLE_ENUM_GET_UPDATES ||
+	     role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	     role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		/* TRANSLATORS: print a message when there are no updates */
 		g_print ("%s\n", _("There are no updates available at this time."));
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
 	}
 
 	g_ptr_array_unref (array);
@@ -717,26 +727,51 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* transaction */
 	array = pk_results_get_transaction_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_transaction_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* distro_upgrade */
 	array = pk_results_get_distro_upgrade_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_distro_upgrade_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* category */
 	array = pk_results_get_category_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_category_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_CATEGORIES)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* update_detail */
 	array = pk_results_get_update_detail_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_update_detail_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* repo_detail */
 	array = pk_results_get_repo_detail_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_repo_detail_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_REPO_LIST)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* require_restart */
@@ -747,6 +782,11 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* details */
 	array = pk_results_get_details_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_details_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DETAILS)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* message */
@@ -1197,7 +1237,6 @@ main (int argc, char *argv[])
 	PkBitfield groups;
 	gchar *text;
 	PkBitfield filters = 0;
-	gint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
