@@ -450,8 +450,6 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 		      "restart", &restart,
 		      NULL);
 
-	g_free (package_id);
-
 	/* create printable */
 	package = pk_package_id_to_printable (package_id);
 
@@ -471,6 +469,8 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s\n", _("Application restart required by:"), package);
 	}
+
+	g_free (package_id);
 	g_free (package);
 }
 
