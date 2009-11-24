@@ -697,15 +697,22 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* package */
+	array = pk_results_get_package_array (results);
 	if (!is_console ||
 	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
 	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
 	     role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
 	     role != PK_ROLE_ENUM_REMOVE_PACKAGES)) {
-		array = pk_results_get_package_array (results);
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, NULL);
-		g_ptr_array_unref (array);
 	}
+
+	/* special case */
+	if (role == PK_ROLE_ENUM_GET_UPDATES && array->len == 0) {
+		/* TRANSLATORS: print a message when there are no updates */
+		g_print ("%s\n", _("There are no updates available at this time."));
+	}
+
+	g_ptr_array_unref (array);
 
 	/* transaction */
 	array = pk_results_get_transaction_array (results);
