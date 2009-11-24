@@ -577,6 +577,8 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	PkStatusEnum status;
 	PkRoleEnum role;
 	const gchar *text;
+	gchar *package_id = NULL;
+	gchar *printable = NULL;
 
 	/* role */
 	if (type == PK_PROGRESS_TYPE_ROLE) {
@@ -584,11 +586,34 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "role", &role,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
-			return;
+			goto out;
 
 		/* show new status on the bar */
 		text = pk_role_enum_to_localised_present (role);
+		if (!is_console) {
+			/* TRANSLATORS: the role is the point of the transaction, e.g. update-system */
+			g_print ("%s:\t%s\n", _("Transaction"), text);
+			goto out;
+		}
 		pk_progress_bar_start (progressbar, text);
+	}
+
+	/* package-id */
+	if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
+		g_object_get (progress,
+			      "package-id", &package_id,
+			      NULL);
+		if (package_id == NULL)
+			goto out;
+
+		if (!is_console) {
+			/* create printable */
+			printable = pk_package_id_to_printable (package_id);
+
+			/* TRANSLATORS: the package that is being processed */
+			g_print ("%s:\t%s\n", _("Package"), printable);
+			goto out;
+		}
 	}
 
 	/* percentage */
@@ -596,6 +621,15 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		g_object_get (progress,
 			      "percentage", &percentage,
 			      NULL);
+		if (!is_console) {
+			/* only print the 10's */
+			if (percentage % 10 != 0)
+				goto out;
+
+			/* TRANSLATORS: the percentage complete of the transaction */
+			g_print ("%s:\t%i\n", _("Percentage"), percentage);
+			goto out;
+		}
 		pk_progress_bar_set_percentage (progressbar, percentage);
 	}
 
@@ -605,12 +639,20 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "status", &status,
 			      NULL);
 		if (status == PK_STATUS_ENUM_FINISHED)
-			return;
+			goto out;
 
 		/* show new status on the bar */
 		text = pk_status_enum_to_localised_text (status);
+		if (!is_console) {
+			/* TRANSLATORS: the status of the transaction (e.g. downloading) */
+			g_print ("%s: \t%s\n", _("Status"), text);
+			goto out;
+		}
 		pk_progress_bar_start (progressbar, text);
 	}
+out:
+	g_free (printable);
+	g_free (package_id);
 }
 
 /**
@@ -627,7 +669,12 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	PkRoleEnum role;
 
 	/* no more progress */
-	pk_progress_bar_end (progressbar);
+	if (is_console) {
+		pk_progress_bar_end (progressbar);
+	} else {
+		/* TRANSLATORS: the results from the transaction */
+		g_print ("%s\n", _("Results:"));
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
@@ -650,10 +697,11 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* package */
-	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
-	    role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	    role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    role != PK_ROLE_ENUM_REMOVE_PACKAGES) {
+	if (!is_console ||
+	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
+	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	     role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	     role != PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		array = pk_results_get_package_array (results);
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, NULL);
 		g_ptr_array_unref (array);
@@ -1129,6 +1177,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
+	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
@@ -1159,6 +1208,9 @@ main (int argc, char *argv[])
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
+		{ "plain", 'p', 0, G_OPTION_ARG_NONE, &plain,
+			/* TRANSLATORS: command line argument, just output without fancy formatting */
+			_("Print to screen a machine readable output, rather than using animated widgets"), NULL},
 		{ NULL}
 	};
 
@@ -1174,10 +1226,6 @@ main (int argc, char *argv[])
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
-
-	/* check if we are on console */
-	if (isatty (fileno (stdout)) == 1)
-		is_console = TRUE;
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
@@ -1208,6 +1256,10 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
+
+	/* check if we are on console */
+	if (!plain && isatty (fileno (stdout)) == 1)
+		is_console = TRUE;
 
 	if (program_version) {
 		g_print (VERSION "\n");
