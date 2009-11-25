@@ -412,6 +412,11 @@ Transaction* Client::searchFile(const QString& search, Filters filters)
 	RUN_TRANSACTION(SearchFile(Util::filtersToString(filters), search))
 }
 
+Transaction* Client::searchFile(const QStringList& search, Filters filters)
+{
+        searchFile(search.join("&"), filters);
+}
+
 Transaction* Client::searchDetails(const QString& search, Filters filters)
 {
 	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))

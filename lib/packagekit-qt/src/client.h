@@ -740,6 +740,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchFile(const QString& search, Filters filters = NoFilter);
+	Transaction* searchFile(const QStringList& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages details
