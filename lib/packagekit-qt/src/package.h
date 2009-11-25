@@ -311,6 +311,13 @@ public:
 	 */
 	Details* details() const;
 
+	/**
+	 * \brief Returns the path to the package icon, if known
+	 *
+	 * \return A QString holding the path to the package icon if known, an empty QString else
+	 */
+	QString iconPath ();
+
 	bool operator==(const Package *package) const;
 
 private:

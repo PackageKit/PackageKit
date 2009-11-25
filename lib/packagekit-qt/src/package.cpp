@@ -18,6 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#include <QtSql>
+
 #include "package.h"
 #include "util.h"
 
@@ -93,6 +95,7 @@ public:
 	QString summary;
 	Package::State state;
 	Package::Details* details;
+	QString iconPath;
 };
 
 Package::Package(const QString& packageId, const QString& state, const QString& summary) : QObject(NULL), d(new Private)
@@ -111,6 +114,7 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 	d->state = (State)Util::enumFromString<Package>(state, "State", "State");
 	d->summary = summary;
 	d->details = NULL;
+	d->iconPath = QString ();
 }
 
 Package::~Package()
@@ -167,6 +171,43 @@ Package::Details* Package::details() const
 void Package::setDetails(Package::Details* det)
 {
 	d->details = det;
+}
+
+QString Package::iconPath ()
+{
+	if (d->iconPath.isNull ()) {
+		QSqlDatabase db = QSqlDatabase::database();
+		if (!db.isOpen()) {
+			qDebug() << "Desktop files database is not open";
+			return NULL;
+		}
+
+		QSqlQuery q(db);
+		q.prepare("SELECT filename FROM cache WHERE package = :pid");
+		q.bindValue(":pid", d->id);
+		if(q.exec()) {
+			d->iconPath = QString("");
+			if (q.next()) {
+				QFile desktopFile (q.value(0).toString());
+				if (desktopFile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+					while (!desktopFile.atEnd ()) {
+						QByteArray line = desktopFile.readLine ().trimmed ();
+						if (line.startsWith ("Icon=") && line.length () > 5 /* strlen("Icon=") */) {
+							int startChar = line.indexOf ('=')+1;
+							d->iconPath = line.mid (startChar);
+						}
+					}
+					desktopFile.close ();
+				} else {
+					qDebug() << "Cannot open desktop file " << q.value(0).toString ();
+				}
+			}
+		} else {
+			qDebug() << "Error while running query " << q.executedQuery();
+		}
+	}
+
+	return d->iconPath;
 }
 
 bool Package::operator==(const Package *package) const
