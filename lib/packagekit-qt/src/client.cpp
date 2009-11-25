@@ -414,7 +414,7 @@ Transaction* Client::searchFile(const QString& search, Filters filters)
 
 Transaction* Client::searchFile(const QStringList& search, Filters filters)
 {
-        searchFile(search.join("&"), filters);
+	searchFile(search.join("&"), filters);
 }
 
 Transaction* Client::searchDetails(const QString& search, Filters filters)
