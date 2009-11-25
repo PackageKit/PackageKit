@@ -20,23 +20,29 @@ fi
 [ -z "$SYSTEMNAME" ]  && SYSTEMNAME=$(hostname)
 
 PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
+PKCON_OPTIONS="--background --noninteractive --plain"
 
 # wait a random amount of time to avoid hammering the servers
 sleep $RANDOM
 
 # do action
 if [ "$CHECK_ONLY" = "yes" ]; then
-	pkcon get-updates > $PKTMP
+	pkcon $PKCON_OPTIONS get-updates &> $PKTMP
+	PKCON_RETVAL=$?
 else
-	pkcon update > $PKTMP
+	pkcon $PKCON_OPTIONS update &> $PKTMP
+	PKCON_RETVAL=$?
 fi
 
-# send email
-if [ -n "$MAILTO" ]; then
-	mail -s "System updates available: $SYSTEMNAME" $MAILTO < $PKTMP
-else
-	# default behavior is to use cron's internal mailing of output from cron-script
-	cat $PKTMP
+# this is when seomthing useful was done
+if [ $PKCON_RETVAL -ne 5 ]; then
+	# send email
+	if [ -n "$MAILTO" ]; then
+		mail -s "System updates available: $SYSTEMNAME" $MAILTO < $PKTMP
+	else
+		# default behavior is to use cron's internal mailing of output from cron-script
+		cat $PKTMP
+	fi
 fi
 
 rm -f $PKTMP

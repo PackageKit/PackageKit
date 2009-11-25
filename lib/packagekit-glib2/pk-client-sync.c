@@ -81,7 +81,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -104,7 +104,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
 }
 
 /**
- * pk_client_search_name:
+ * pk_client_search_names:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: free text to search for, for instance, "power"
@@ -122,14 +122,14 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -137,7 +137,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCa
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_name_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_names_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -162,7 +162,7 @@ pk_client_search_name (PkClient *client, PkBitfield filters, gchar **values, GCa
  * @error: the #GError to store any failure, or %NULL
  *
  * Search all detailed summary information to try and find a keyword.
- * Think of this as pk_client_search_name(), but trying much harder and
+ * Think of this as pk_client_search_names(), but trying much harder and
  * taking longer.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
@@ -178,7 +178,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -201,7 +201,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
 }
 
 /**
- * pk_client_search_group:
+ * pk_client_search_groups:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: a group enum to search for, for instance, "system-tools"
@@ -218,14 +218,14 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 			PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -233,7 +233,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_group_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_groups_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				      (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -248,7 +248,7 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
 }
 
 /**
- * pk_client_search_file:
+ * pk_client_search_files:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: file to search for, for instance, "/sbin/service"
@@ -265,14 +265,14 @@ pk_client_search_group (PkClient *client, PkBitfield filters, gchar **values, GC
  * Return value: a %PkResults object, or NULL for error
  **/
 PkResults *
-pk_client_search_file (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
+pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
 		       PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -280,7 +280,7 @@ pk_client_search_file (PkClient *client, PkBitfield filters, gchar **values, GCa
 	helper->error = error;
 
 	/* run async method */
-	pk_client_search_file_async (client, filters, values, cancellable, progress_callback, progress_user_data,
+	pk_client_search_files_async (client, filters, values, cancellable, progress_callback, progress_user_data,
 				     (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
@@ -319,7 +319,7 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *canc
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -366,7 +366,7 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -413,7 +413,7 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -459,7 +459,7 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cance
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -505,7 +505,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -556,7 +556,7 @@ pk_client_update_system (PkClient *client, gboolean only_trusted, GCancellable *
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -604,7 +604,7 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -650,7 +650,7 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -698,7 +698,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -748,7 +748,7 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -794,7 +794,7 @@ pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -840,7 +840,7 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancel
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -885,7 +885,7 @@ pk_client_get_categories (PkClient *client, GCancellable *cancellable,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -935,7 +935,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -984,7 +984,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancell
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1031,7 +1031,7 @@ pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **pac
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1079,7 +1079,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1126,7 +1126,7 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1174,7 +1174,7 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1220,7 +1220,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *can
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1266,7 +1266,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GCancellable 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1312,7 +1312,7 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *can
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1359,7 +1359,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1408,7 +1408,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1455,7 +1455,7 @@ pk_client_simulate_install_files (PkClient *client, gchar **files, GCancellable 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1501,7 +1501,7 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCan
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1547,7 +1547,7 @@ pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCanc
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1593,7 +1593,7 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1639,7 +1639,7 @@ pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *ca
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);
@@ -1699,7 +1699,7 @@ pk_client_get_progress (PkClient *client, const gchar *transaction_id, GCancella
 	PkProgress *progress;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkClientHelper, 1);

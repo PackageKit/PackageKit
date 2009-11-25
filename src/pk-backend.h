@@ -152,6 +152,7 @@ gboolean         pk_backend_category			(PkBackend      *backend,
 							 const gchar    *name,
 							 const gchar    *summary,
 							 const gchar    *icon);
+gboolean         pk_backend_repo_list_changed		(PkBackend      *backend);
 
 /* set backend instance data */
 gboolean	 pk_backend_set_array			(PkBackend	*backend,

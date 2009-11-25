@@ -210,8 +210,6 @@ main (int argc, char *argv[])
 	gchar **excludes = NULL;
 	gchar *package_id = NULL;
 	PkServicePack *pack = NULL;
-
-	gboolean verbose = FALSE;
 	gchar *directory = NULL;
 	gchar *package_list = NULL;
 	gchar *package = NULL;
@@ -219,8 +217,6 @@ main (int argc, char *argv[])
 	gint retval = 1;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			_("Show extra debugging information"), NULL },
 		{ "with-package-list", 'l', 0, G_OPTION_ARG_STRING, &package_list,
 			/* TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target */
 			_("Set the file name of dependencies to be excluded"), NULL},
@@ -252,11 +248,11 @@ main (int argc, char *argv[])
 
 	context = g_option_context_new ("PackageKit Pack Generator");
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
-	egg_debug_init (verbose);
 
 	client = pk_client_new ();
 	pack = pk_service_pack_new ();

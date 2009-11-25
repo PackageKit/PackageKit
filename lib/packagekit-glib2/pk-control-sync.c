@@ -119,8 +119,8 @@ pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, 
 	gchar **transaction_list;
 	PkControlHelper *helper;
 
-	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
 	helper = g_new0 (PkControlHelper, 1);

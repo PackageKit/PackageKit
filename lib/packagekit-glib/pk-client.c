@@ -1622,7 +1622,7 @@ out:
 }
 
 /**
- * pk_client_search_name:
+ * pk_client_search_names:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
@@ -1634,7 +1634,7 @@ out:
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_name (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
+pk_client_search_names (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *filter_text = NULL;
@@ -1709,7 +1709,7 @@ out:
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Search all detailed summary information to try and find a keyword.
- * Think of this as pk_client_search_name(), but trying much harder and
+ * Think of this as pk_client_search_names(), but trying much harder and
  * taking longer.
  *
  * Return value: %TRUE if the daemon queued the transaction
@@ -1783,7 +1783,7 @@ out:
 }
 
 /**
- * pk_client_search_group:
+ * pk_client_search_groups:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: a group enum to search for, for instance, "system-tools"
@@ -1794,7 +1794,7 @@ out:
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_group (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
+pk_client_search_groups (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *filter_text = NULL;
@@ -1862,7 +1862,7 @@ out:
 }
 
 /**
- * pk_client_search_file:
+ * pk_client_search_files:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: file to search for, for instance, "/sbin/service"
@@ -1873,7 +1873,7 @@ out:
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_file (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
+pk_client_search_files (PkClient *client, PkBitfield filters, const gchar *search, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *filter_text = NULL;
@@ -4288,11 +4288,11 @@ pk_client_requeue (PkClient *client, GError **error)
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS)
 		ret = pk_client_search_details (client, priv->cached_filters, priv->cached_search, error);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE)
-		ret = pk_client_search_file (client, priv->cached_filters, priv->cached_search, error);
+		ret = pk_client_search_files (client, priv->cached_filters, priv->cached_search, error);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP)
-		ret = pk_client_search_group (client, priv->cached_filters, priv->cached_search, error);
+		ret = pk_client_search_groups (client, priv->cached_filters, priv->cached_search, error);
 	else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME)
-		ret = pk_client_search_name (client, priv->cached_filters, priv->cached_search, error);
+		ret = pk_client_search_names (client, priv->cached_filters, priv->cached_search, error);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES)
 		ret = pk_client_install_packages (client, priv->cached_only_trusted, priv->cached_package_ids, error);
 	else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES)
@@ -5355,7 +5355,7 @@ pk_client_test (EggTest *test)
 	egg_test_assert (test, ret);
 
 	/* run the method */
-	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
+	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/
 	egg_test_title (test, "we finished?");
@@ -5378,7 +5378,7 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "search name sync, with a reset in finalise");
-	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
+	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", NULL);
 	egg_test_assert (test, ret);
 
 	/************************************************************/
@@ -5443,7 +5443,7 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "search for power");
-	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
@@ -5465,7 +5465,7 @@ pk_client_test (EggTest *test)
 			egg_test_failed (test, "failed: to reset: %s", error->message);
 			g_error_free (error);
 		}
-		ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+		ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", &error);
 		if (!ret) {
 			egg_test_failed (test, "failed to search: %s", error->message);
 			g_error_free (error);
@@ -5493,7 +5493,7 @@ pk_client_test (EggTest *test)
 			  G_CALLBACK (pk_client_test_copy_package_cb), test);
 
 	/* search with the source */
-	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
@@ -5622,7 +5622,7 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "do first task (which will fail after 500ms)");
-	ret = pk_client_search_name (client_copy, PK_FILTER_ENUM_NONE, "power", &error);
+	ret = pk_client_search_names (client_copy, PK_FILTER_ENUM_NONE, "power", &error);
 	if (ret) {
 		egg_test_success (test, NULL);
 	} else {
@@ -5632,7 +5632,7 @@ pk_client_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "do second task which should fail outright");
-	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		egg_test_success (test, "failed (in a good way): %s", error->message);
 		g_error_free (error);

@@ -12,7 +12,19 @@ if [ "$USER" != "root" ]; then
     exit 1
 fi
 
+# check some important things are installed systemwide
+if [ ! -e "/etc/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
+    echo "You need to install the DBus policy. Use sudo ../data/org.freedesktop.PackageKit.conf /etc/dbus-1/system.d"
+    exit 1
+fi
+if [ ! -e "/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy" ]; then
+    echo "You need to install the PolicyKit rules. Use sudo ../policy/org.freedesktop.packagekit.policy /usr/share/polkit-1/actions"
+    exit 1
+fi
+
+
 if [ "$1x" = "x" ]; then
+    echo "NO BACKEND SPECIFIED, using dummy"
     BACKEND=dummy
 else
     BACKEND=$1

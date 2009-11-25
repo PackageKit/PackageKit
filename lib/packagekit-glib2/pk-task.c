@@ -105,8 +105,8 @@ pk_task_find_by_request (PkTask *task, guint request)
 	guint i;
 	GPtrArray *array;
 
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	g_return_val_if_fail (request != 0, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (request != 0, NULL);
 
 	array = task->priv->array;
 	for (i=0; i<array->len; i++) {
@@ -1028,14 +1028,14 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 
 	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
+		return NULL;
 
 	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }

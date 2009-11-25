@@ -53,7 +53,7 @@ struct _PkResultsPrivate
 	guint			 inputs;
 	PkProgress		*progress;
 	PkExitEnum		 exit_enum;
-	PkError		*error_code;
+	PkError			*error_code;
 	GPtrArray		*package_array;
 	GPtrArray		*details_array;
 	GPtrArray		*update_detail_array;
@@ -474,7 +474,7 @@ pk_results_get_exit_code (PkResults *results)
 PkError *
 pk_results_get_error_code (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 
 	/* failed, but no exit code? */
 	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
@@ -496,7 +496,7 @@ pk_results_get_error_code (PkResults *results)
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->package_array);
 }
 
@@ -543,7 +543,7 @@ pk_results_get_package_sack (PkResults *results)
 GPtrArray *
 pk_results_get_details_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->details_array);
 }
 
@@ -558,7 +558,7 @@ pk_results_get_details_array (PkResults *results)
 GPtrArray *
 pk_results_get_update_detail_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->update_detail_array);
 }
 
@@ -573,7 +573,7 @@ pk_results_get_update_detail_array (PkResults *results)
 GPtrArray *
 pk_results_get_category_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->category_array);
 }
 
@@ -588,7 +588,7 @@ pk_results_get_category_array (PkResults *results)
 GPtrArray *
 pk_results_get_distro_upgrade_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->distro_upgrade_array);
 }
 
@@ -603,7 +603,7 @@ pk_results_get_distro_upgrade_array (PkResults *results)
 GPtrArray *
 pk_results_get_require_restart_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->require_restart_array);
 }
 
@@ -656,7 +656,7 @@ pk_results_get_require_restart_worst (PkResults *results)
 GPtrArray *
 pk_results_get_transaction_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->transaction_array);
 }
 
@@ -671,7 +671,7 @@ pk_results_get_transaction_array (PkResults *results)
 GPtrArray *
 pk_results_get_files_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->files_array);
 }
 
@@ -686,7 +686,7 @@ pk_results_get_files_array (PkResults *results)
 GPtrArray *
 pk_results_get_repo_signature_required_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->repo_signature_required_array);
 }
 
@@ -701,7 +701,7 @@ pk_results_get_repo_signature_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_eula_required_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->eula_required_array);
 }
 
@@ -716,7 +716,7 @@ pk_results_get_eula_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_media_change_required_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->media_change_required_array);
 }
 
@@ -731,7 +731,7 @@ pk_results_get_media_change_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_repo_detail_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->repo_detail_array);
 }
 
@@ -746,7 +746,7 @@ pk_results_get_repo_detail_array (PkResults *results)
 GPtrArray *
 pk_results_get_message_array (PkResults *results)
 {
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
+	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 	return g_ptr_array_ref (results->priv->message_array);
 }
 

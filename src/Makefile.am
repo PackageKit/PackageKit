@@ -29,10 +29,6 @@ INCLUDES =						\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\"			\
 	-DPK_COMPILATION				\
-	-DEGG_LOG_FILE=\""$(PK_LOG_DIR)/PackageKit"\"	\
-	-DEGG_VERBOSE="\"PK_VERBOSE\""			\
-	-DEGG_LOGGING="\"PK_LOGGING\""			\
-	-DEGG_CONSOLE="\"PK_CONSOLE\""			\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
 	-I$(top_srcdir)/lib				\
 	$(NULL)

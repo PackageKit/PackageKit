@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -59,23 +59,23 @@ G_BEGIN_DECLS
 #define egg_error(...)
 #endif
 
-void		egg_debug_init			(gboolean	 debug);
-void		egg_debug_set_logging		(gboolean	 enabled);
-gboolean	egg_debug_enabled		(void);
-gboolean	egg_debug_is_logging		(void);
-gboolean	egg_debug_is_console		(void);
-void		egg_debug_backtrace		(void);
-void		egg_debug_real			(const gchar	*func,
+gboolean	 egg_debug_init			(gint		*argc,
+						 gchar		***argv);
+GOptionGroup	*egg_debug_get_option_group	(void);
+gboolean	 egg_debug_is_verbose		(void);
+void		 egg_debug_backtrace		(void);
+void		 egg_debug_set_log_filename	(const gchar	*filename);
+void		 egg_debug_real			(const gchar	*func,
 						 const gchar	*file,
-						 int		 line,
+						 gint		 line,
 						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
-void		egg_warning_real		(const gchar	*func,
+void		 egg_warning_real		(const gchar	*func,
 						 const gchar	*file,
-						 int		 line,
+						 gint		 line,
 						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
-void		egg_error_real			(const gchar	*func,
+void		 egg_error_real			(const gchar	*func,
 						 const gchar	*file,
-						 int		 line,
+						 gint		 line,
 						 const gchar	*format, ...) G_GNUC_NORETURN __attribute__((format (printf,4,5)));
 
 G_END_DECLS

@@ -37,6 +37,7 @@
 
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
+#define PK_EXIT_CODE_NOTHING_USEFUL	5
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles;
@@ -46,6 +47,7 @@ static PkControl *control = NULL;
 static PkTaskText *task = NULL;
 static PkProgressBar *progressbar = NULL;
 static GCancellable *cancellable = NULL;
+static gint retval = EXIT_SUCCESS;
 
 /**
  * pk_strpad:
@@ -450,8 +452,6 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 		      "restart", &restart,
 		      NULL);
 
-	g_free (package_id);
-
 	/* create printable */
 	package = pk_package_id_to_printable (package_id);
 
@@ -471,6 +471,8 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 		/* TRANSLATORS: a package requires the application to be restarted */
 		g_print ("%s %s\n", _("Application restart required by:"), package);
 	}
+
+	g_free (package_id);
 	g_free (package);
 }
 
@@ -577,6 +579,8 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	PkStatusEnum status;
 	PkRoleEnum role;
 	const gchar *text;
+	gchar *package_id = NULL;
+	gchar *printable = NULL;
 
 	/* role */
 	if (type == PK_PROGRESS_TYPE_ROLE) {
@@ -584,11 +588,34 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "role", &role,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
-			return;
+			goto out;
 
 		/* show new status on the bar */
 		text = pk_role_enum_to_localised_present (role);
+		if (!is_console) {
+			/* TRANSLATORS: the role is the point of the transaction, e.g. update-system */
+			g_print ("%s:\t%s\n", _("Transaction"), text);
+			goto out;
+		}
 		pk_progress_bar_start (progressbar, text);
+	}
+
+	/* package-id */
+	if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
+		g_object_get (progress,
+			      "package-id", &package_id,
+			      NULL);
+		if (package_id == NULL)
+			goto out;
+
+		if (!is_console) {
+			/* create printable */
+			printable = pk_package_id_to_printable (package_id);
+
+			/* TRANSLATORS: the package that is being processed */
+			g_print ("%s:\t%s\n", _("Package"), printable);
+			goto out;
+		}
 	}
 
 	/* percentage */
@@ -596,6 +623,15 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 		g_object_get (progress,
 			      "percentage", &percentage,
 			      NULL);
+		if (!is_console) {
+			/* only print the 10's */
+			if (percentage % 10 != 0)
+				goto out;
+
+			/* TRANSLATORS: the percentage complete of the transaction */
+			g_print ("%s:\t%i\n", _("Percentage"), percentage);
+			goto out;
+		}
 		pk_progress_bar_set_percentage (progressbar, percentage);
 	}
 
@@ -605,12 +641,20 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			      "status", &status,
 			      NULL);
 		if (status == PK_STATUS_ENUM_FINISHED)
-			return;
+			goto out;
 
 		/* show new status on the bar */
 		text = pk_status_enum_to_localised_text (status);
+		if (!is_console) {
+			/* TRANSLATORS: the status of the transaction (e.g. downloading) */
+			g_print ("%s: \t%s\n", _("Status"), text);
+			goto out;
+		}
 		pk_progress_bar_start (progressbar, text);
 	}
+out:
+	g_free (printable);
+	g_free (package_id);
 }
 
 /**
@@ -627,7 +671,12 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	PkRoleEnum role;
 
 	/* no more progress */
-	pk_progress_bar_end (progressbar);
+	if (is_console) {
+		pk_progress_bar_end (progressbar);
+	} else {
+		/* TRANSLATORS: the results from the transaction */
+		g_print ("%s\n", _("Results:"));
+	}
 
 	/* get the results */
 	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
@@ -643,6 +692,10 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
 		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+
+		/* special case */
+		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE)
+			retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		goto out;
 	}
 
@@ -650,38 +703,75 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* package */
-	if (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
-	    role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	    role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    role != PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		array = pk_results_get_package_array (results);
+	array = pk_results_get_package_array (results);
+	if (!is_console ||
+	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
+	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	     role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	     role != PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, NULL);
-		g_ptr_array_unref (array);
 	}
+
+	/* special case */
+	if (array->len == 0 &&
+	    (role == PK_ROLE_ENUM_GET_UPDATES ||
+	     role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	     role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+		/* TRANSLATORS: print a message when there are no updates */
+		g_print ("%s\n", _("There are no updates available at this time."));
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+	}
+
+	g_ptr_array_unref (array);
 
 	/* transaction */
 	array = pk_results_get_transaction_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_transaction_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* distro_upgrade */
 	array = pk_results_get_distro_upgrade_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_distro_upgrade_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* category */
 	array = pk_results_get_category_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_category_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_CATEGORIES)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* update_detail */
 	array = pk_results_get_update_detail_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_update_detail_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* repo_detail */
 	array = pk_results_get_repo_detail_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_repo_detail_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_REPO_LIST)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* require_restart */
@@ -692,6 +782,11 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* details */
 	array = pk_results_get_details_array (results);
 	g_ptr_array_foreach (array, (GFunc) pk_console_details_cb, NULL);
+
+	/* special case */
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DETAILS)
+		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+
 	g_ptr_array_unref (array);
 
 	/* message */
@@ -1127,9 +1222,9 @@ main (int argc, char *argv[])
 {
 	gboolean ret;
 	GError *error = NULL;
-	gboolean verbose = FALSE;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
+	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
@@ -1142,12 +1237,8 @@ main (int argc, char *argv[])
 	PkBitfield groups;
 	gchar *text;
 	PkBitfield filters = 0;
-	gint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			/* TRANSLATORS: command line argument, if we should show debugging information */
-			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			/* TRANSLATORS: command line argument, just show the version string */
 			_("Show the program version and exit"), NULL},
@@ -1163,6 +1254,9 @@ main (int argc, char *argv[])
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
+		{ "plain", 'p', 0, G_OPTION_ARG_NONE, &plain,
+			/* TRANSLATORS: command line argument, just output without fancy formatting */
+			_("Print to screen a machine readable output, rather than using animated widgets"), NULL},
 		{ NULL}
 	};
 
@@ -1178,10 +1272,6 @@ main (int argc, char *argv[])
 
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
-
-	/* check if we are on console */
-	if (isatty (fileno (stdout)) == 1)
-		is_console = TRUE;
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
@@ -1207,13 +1297,15 @@ main (int argc, char *argv[])
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
 
-	/* we are now parsed */
-	egg_debug_init (verbose);
+	/* check if we are on console */
+	if (!plain && isatty (fileno (stdout)) == 1)
+		is_console = TRUE;
 
 	if (program_version) {
 		g_print (VERSION "\n");
@@ -1275,7 +1367,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_name_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_names_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1299,7 +1391,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_group_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_groups_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						      (PkProgressCallback) pk_console_progress_cb, NULL,
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
@@ -1311,7 +1403,7 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_file_async (PK_CLIENT(task), filters, argv+3, cancellable,
+			pk_client_search_files_async (PK_CLIENT(task), filters, argv+3, cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {

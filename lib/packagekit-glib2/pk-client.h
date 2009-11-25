@@ -112,7 +112,7 @@ void		 pk_client_resolve_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_search_name_async		(PkClient		*client,
+void		 pk_client_search_names_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,
@@ -130,7 +130,7 @@ void		 pk_client_search_details_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_search_group_async		(PkClient		*client,
+void		 pk_client_search_groups_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,
@@ -139,7 +139,7 @@ void		 pk_client_search_group_async		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
-void		 pk_client_search_file_async		(PkClient		*client,
+void		 pk_client_search_files_async		(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**values,
 							 GCancellable		*cancellable,

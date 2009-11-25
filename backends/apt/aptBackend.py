@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 
+import datetime
 import errno
 import fcntl
 import gdbm
@@ -148,9 +149,14 @@ MATCH_BUG_NUMBERS=r"\#?\s?(\d+)"
 # URL pointing to a bug in the Debian bug tracker
 HREF_BUG_DEBIAN="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s"
 
+MATCH_BUG_CLOSES_UBUNTU = r"lp:\s+\#\d+(?:,\s*\#\d+)*"
+HREF_BUG_UBUNTU = "https://bugs.launchpad.net/bugs/%s"
+
 # Regular expression to find cve references
 MATCH_CVE="CVE-\d{4}-\d{4}"
 HREF_CVE="http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s"
+
+SYNAPTIC_PIN_FILE = "/var/lib/synaptic/preferences"
 
 # Required to get translated descriptions
 try:
@@ -321,8 +327,8 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self.pstart = prange[0]
         self.pend = prange[1]
         self.pprev = None
-        self.last_pkg = None
         self.status = status
+        self.package_states = {}
 
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -336,14 +342,22 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
             self.pprev = progress
         return True
 
-    def updateStatus(self, uri, descr, shortDescr, status):
+    def updateStatus(self, uri, descr, pkg_name, status):
         """Callback for a fetcher status update."""
         # Emit a Package signal for the currently processed package
-        if shortDescr != self.last_pkg and \
-           self._backend._cache.has_key(shortDescr):
-            self._backend._emit_package(self._backend._cache[shortDescr],
-                                        INFO_DOWNLOADING, True)
-            self.last_pkg = shortDescr
+        try:
+            pkg = self._backend._cache[pkg_name]
+        except KeyError:
+            pass
+        else:
+            if not pkg_name in self.package_states or \
+               self.package_states[pkg_name] != status:
+                if status == 0:
+                    info = INFO_FINISHED
+                else:
+                    info = INFO_DOWNLOADING
+                self.package_states[pkg_name] = status
+                self._backend._emit_package(pkg, info, True)
 
     def start(self):
         self._backend.status(self.status)
@@ -397,13 +411,14 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         # Emit a Package signal for the currently processed package
         if pkg_name != self.last_pkg and self._backend._cache.has_key(pkg_name):
             pkg = self._backend._cache[pkg_name]
-            # FIXME: We need an INFO enum for downgrades/rollbacks
-            if pkg.markedInstall or pkg.markedReinstall or pkg.markedDowngrade:
+            if pkg.markedInstall or pkg.markedReinstall:
                 self._backend._emit_package(pkg, INFO_INSTALLING, True)
             elif pkg.markedDelete:
                 self._backend._emit_package(pkg, INFO_REMOVING, False)
             elif pkg.markedUpgrade:
                 self._backend._emit_package(pkg, INFO_UPDATING, True)
+            elif pkg.markedDowngrade:
+                self._backend._emit_package(pkg, INFO_DOWNGRADING, True)
             self.last_pkg = pkg_name
         pklog.debug("APT status: %s" % status)
 
@@ -719,6 +734,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for pkg in self._cache:
             if not pkg.isUpgradable:
                 continue
+            # This may occur on pinned packages which have been updated to
+            # later version than the pinned one
+            if not pkg.candidateOrigin:
+                continue
             pklog.debug("Checking upgrade of %s" % pkg.name)
             if not pkg in upgrades_safe:
                 # Check if the upgrade would require the removal of an already
@@ -771,11 +790,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             Create a list of urls pointing to closed bugs in the changelog
             """
             urls = []
-            #FIXME: Add support for Launchpad/Ubuntu
             for r in re.findall(MATCH_BUG_CLOSES_DEBIAN, changelog,
                                 re.IGNORECASE | re.MULTILINE):
-                urls.extend(map(lambda b: HREF_BUG_DEBIAN % b,
-                                re.findall(MATCH_BUG_NUMBERS, r)))
+                urls.extend([HREF_BUG_DEBIAN % bug for bug in \
+                             re.findall(MATCH_BUG_NUMBERS, r)])
+            for r in re.findall(MATCH_BUG_CLOSES_UBUNTU, changelog,
+                                re.IGNORECASE | re.MULTILINE):
+                urls.extend([HREF_BUG_UBUNTU % bug for bug in \
+                             re.findall(MATCH_BUG_NUMBERS, r)])
             return urls
 
         def get_cve_urls(changelog):
@@ -827,28 +849,30 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             changelog = ""
             for line in changelog_raw.split("\n"):
                 if line == "":
-                    changelog += "\n\n\n\n"
+                    changelog += " \n"
                 else:
-                    changelog += "`%s`  \n\n" % line
+                    changelog += "    %s  \n" % line
                 if line.startswith(pkg.candidate.source_name):
-                    source, version, dist, urgency = \
-                        re.match(r"(.+) \((.*)\) (.+); urgency=(.+)",
-                                 line).groups()
-                    update_text += "# %s #\n\n  \n\n" % version
+                    match = re.match(r"(?P<source>.+) \((?P<version>.*)\) "
+                                      "(?P<dist>.+); urgency=(?P<urgency>.+)",
+                                     line)
+                    update_text += "%s\n%s\n\n" % (match.group("version"),
+                                                   "=" * \
+                                                   len(match.group("version")))
                 elif line.startswith("  "):
-                    update_text += "`%s`\n\n" % line[2:]
+                    update_text += "  %s  \n" % line
                 elif line.startswith(" --"):
                     #FIXME: Add %z for the time zone - requires Python 2.6
-                    maint, mail, date_raw, offset = \
-                        re.match("^ -- (.+) (<.+>)  (.+) ([-\+][0-9]+)$",
-                                 line).groups()
-                    date = datetime.datetime.strptime(date_raw,
+                    update_text += "  \n"
+                    match = re.match("^ -- (?P<maintainer>.+) (?P<mail><.+>)  "
+                                     "(?P<date>.+) (?P<offset>[-\+][0-9]+)$",
+                                     line)
+                    date = datetime.datetime.strptime(match.group("date"),
                                                       "%a, %d %b %Y %H:%M:%S")
 
                     issued = date.isoformat()
                     if not updated:
                         updated = date.isoformat()
-                    update_text += "\n\n\n\n"
             if issued == updated:
                 updated = ""
             bugzilla_url = ";;".join(get_bug_urls(changelog))
@@ -934,10 +958,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self._check_init(prange=(0,10))
+        if auto_remove:
+            auto_removables = [pkg.name for pkg in self._cache \
+                               if pkg.isAutoRemovable]
         pkgs = self._mark_for_removal(ids)
         # Error out if the installation would the installation or upgrade of
         # other packages
-        if self._cache.inst_count:
+        if self._cache.install_count:
             installed = [pkg.name for pkg in self._cache.getChanges() if \
                          pkg.markedInstall or pkg.markedUpgrade]
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -951,6 +978,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                        "The following packages would have also to be removed: "
                        "%s" % " ".join(dependencies))
+        # Check for no longer required dependencies which should be removed too
+        if auto_remove:
+            for pkg in self._cache:
+                if pkg.isAutoRemovable and pkg.name not in auto_removables:
+                    pkg.markDelete(False)
         #FIXME: Should support only_trusted
         self._commit_changes(fetch_range=(10,10), install_range=(10,90))
         self._open_cache(prange=(90,99))
@@ -1240,15 +1272,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Implement the {backend}-download-packages functionality
         """
-        def get_range(versions, total):
+        def get_download_details(ids):
+            """Calculate the start and end point of a package download
+            progress.
             """
-            Calculate the start and end point of a package download progress.
-            """
+            total = 0
             downloaded = 0
-            for ver in versions:
+            versions = []
+            # Check if all ids are vaild and calculate the total download size
+            for id in ids:
+                pkg_ver = self._get_pkg_version_by_id(id)
+                if not pkg_ver.downloadable:
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
+                               "package %s isn't downloadable" % id)
+                total += pkg_ver.size
+                versions.append((id, pkg_ver))
+            for id, ver in versions:
                 start = downloaded * 100 / total
                 end = start + ver.size * 100 / total
-                yield ver, start, end
+                yield id, ver, start, end
                 downloaded += ver.size
         pklog.info("Downloading packages: %s" % ids)
         self.status(STATUS_DOWNLOAD)
@@ -1260,26 +1302,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                        "The directory '%s' is not writable" % dest)
         # Setup the fetcher
         self._check_init(prange=(0,10))
-        versions = []
-        total = 0
-        # Check if all ids are vaild and calculate the total download size
-        for id in ids:
-            pkg_ver = self._get_pkg_version_by_id(id)
-            if pkg_ver is None:
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                           "There is no package %s" % id)
-            if not pkg_ver.downloadable:
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
-                           "package %s isn't downloadable" % id)
-            total += pkg_ver.size
-            versions.append(pkg_ver)
         # Start the download
-        for ver, start, end in get_range(versions, total):
+        for id, ver, start, end in get_download_details(ids):
             progress = PackageKitFetchProgress(self, prange=(start, end))
+            self._emit_pkg_version(ver, INFO_DOWNLOADING)
             try:
                 ver.fetch_binary(dest, progress)
             except Exception, error:
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, error.message)
+            else:
+                self.files(id, os.path.join(dest,
+                                            os.path.basename(ver.filename)))
+                self._emit_pkg_version(ver, INFO_FINISHED)
         self.percentage(100)
 
     @lock_cache
@@ -1631,32 +1665,65 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                            "app-install-data.")
             else:
                 return db
-
+        def extract_gstreamer_request(search):
+            # The search term from PackageKit daemon:
+            # gstreamer0.10(urisource-foobar)
+            # gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
+            match = re.match("^gstreamer(?P<version>[0-9\.]+)"
+                             "\((?P<kind>.+?)-(?P<data>.+?)\)"
+                             "(\((?P<opt>.*)\))?",
+                             search)
+            caps = None
+            if not match:
+                self.error(ERROR_INTERNAL_ERROR,
+                           "The search term is invalid: %s" % search)
+            if match.group("opt"):
+                caps_str = "%s, %s" % (match.group("data"), match.group("opt"))
+                # gst.Caps.__init__ cannot handle unicode instances
+                caps = gst.Caps(str(caps_str))
+            record = GSTREAMER_RECORD_MAP[match.group("kind")]
+            return match.group("version"), record, match.group("data"), caps
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(False)
         if provides_type == PROVIDES_CODEC:
-            # The search term from the codec helper looks like this one:
-            match = re.match(r"gstreamer([0-9\.]+)\((.+?)\)", search)
-            if not match:
-                self.error(ERROR_INTERNAL_ERROR,
-                           "The search term is invalid")
-            codec = "%s:%s" % (match.group(1), match.group(2))
-            db = get_mapping_db("/var/lib/PackageKit/codec-map.gdbm")
-            if db == None:
-                self.error(ERROR_INTERNAL_ERROR,
-                           "Failed to open codec mapping database")
-            if db.has_key(codec):
-                # The codec mapping db stores the packages as a string
-                # separated by spaces. Each package has its section
-                # prefixed and separated by a slash
-                # FIXME: Should make use of the section and emit a 
-                #        RepositoryRequired signal if the package does 
-                #        not exist
-                pkgs = map(lambda s: s.split("/")[1],
-                           db[codec].split(" "))
-                self._emit_visible_packages_by_name(filters, pkgs)
+            # Search for privided gstreamer plugins using the package
+            # metadata
+            import gst
+            GSTREAMER_RECORD_MAP = {"encoder": "Gstreamer-Encoders",
+                                    "decoder": "Gstreamer-Decoders",
+                                    "urisource": "Gstreamer-Uri-Sources",
+                                    "urisink": "Gstreamer-Uri-Sinks",
+                                    "element": "Gstreamer-Elements"}
+            for pkg in self._cache:
+                if pkg.installed:
+                    version = pkg.installed
+                elif pkg.candidate:
+                    version = pkg.candidate
+                else:
+                    continue
+                if not "Gstreamer-Version" in version.record:
+                    continue
+                gst_version, gst_record, gst_data, gst_caps = \
+                        extract_gstreamer_request(search)
+                if version.record["Gstreamer-Version"] != gst_version:
+                    continue
+                if gst_caps:
+                    try:
+                        pkg_caps = gst.Caps(version.record[gst_record])
+                    except KeyError:
+                        continue
+                    if gst_caps.intersect(pkg_caps):
+                        self._emit_visible_package(filters, pkg)
+                else:
+                    try:
+                        elements = version.record[gst_record]
+                    except KeyError:
+                        continue
+                    if gst_data in elements:
+                        self._emit_visible_package(filters, pkg)
+
         elif provides_type == PROVIDES_MIMETYPE:
             # Emit packages that contain an application that can handle
             # the given mime type
@@ -1780,6 +1847,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return True
         return False
 
+    def _get_id_from_version(self, version):
+        """Return the package id of an apt.package.Version instance."""
+        if version.origins:
+            origin = version.origins[0].label
+        else:
+            origin = ""
+        id = "%s;%s;%s;%s" % (version.package.name, version.version,
+                              version.architecture, origin)
+        return id
+ 
     def _check_init(self, prange=(0,10), progress=True):
         """
         Check if the backend was initialized well and try to recover from
@@ -1805,6 +1882,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache(prange, progress)
         else:
             pass
+        # Read the pin file of Synaptic if available
+        self._cache._depcache.ReadPinFile()
+        if os.path.exists(SYNAPTIC_PIN_FILE):
+            self._cache._depcache.ReadPinFile(SYNAPTIC_PIN_FILE)
+        # Reset the depcache
         self._cache.clear()
 
     def _emit_package(self, pkg, info=None, force_candidate=False):
@@ -1820,12 +1902,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def _emit_pkg_version(self, version, info=None):
         """Emit the Package signal of the given apt.package.Version."""
-        if version.origins:
-            origin = version.origins[0].label
-        else:
-            origin = ""
-        id = "%s;%s;%s;%s" % (version.package.name, version.version,
-                              version.architecture, origin)
+        id = self._get_id_from_version(version)
         section = version.section.split("/")[-1]
         if not info:
             if version == version.package.installed:

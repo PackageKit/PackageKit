@@ -502,7 +502,6 @@ main (int argc, char *argv[])
 	gchar *package_id;
 	gchar *name;
 	gchar *name_debuginfo;
-	gboolean verbose = FALSE;
 	gboolean simulate = FALSE;
 	gboolean no_depends = FALSE;
 	gboolean quiet = FALSE;
@@ -514,8 +513,6 @@ main (int argc, char *argv[])
 	guint step = 1;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-		  _("Show extra debugging information"), NULL },
 		{ "simulate", 's', 0, G_OPTION_ARG_NONE, &simulate,
 		   /* command line argument, simulate what would be done, but don't actually do it */
 		  _("Don't actually install any packages, only simulate what would be installed"), NULL },
@@ -544,10 +541,9 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: tool that gets called when the command is not found */
 	g_option_context_set_summary (context, _("PackageKit Debuginfo Installer"));
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
-
-	egg_debug_init (verbose);
 
 	/* new private struct */
 	priv = g_new0 (PkDebuginfoInstallPrivate, 1);

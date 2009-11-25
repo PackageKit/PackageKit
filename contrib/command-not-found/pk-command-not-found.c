@@ -416,7 +416,7 @@ pk_cnf_find_available (const gchar *cmd)
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
 					  PK_FILTER_ENUM_NEWEST,
 					  PK_FILTER_ENUM_ARCH, -1);
-	results = pk_client_search_file (PK_CLIENT(task), filters, values, cancellable,
+	results = pk_client_search_files (PK_CLIENT(task), filters, values, cancellable,
 					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
@@ -546,17 +546,21 @@ out:
 /**
  * pk_cnf_spawn_command:
  **/
-static gboolean
+static gint
 pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 {
 	gboolean ret;
+	gint exit_status;
 	gchar *cmd;
 	gchar *args;
 	GError *error = NULL;
 
+	/* ensure program starts on a fresh line */
+	g_print ("\n");
+
 	args = g_strjoinv (" ", arguments);
 	cmd = g_strjoin (" ", exec, args, NULL);
-	ret = g_spawn_command_line_async (cmd, &error);
+	ret = g_spawn_command_line_sync (cmd, NULL, NULL, &exit_status, &error);
 	if (!ret) {
 		/* TRANSLATORS: we failed to launch the executable, the error follows */
 		g_print ("%s '%s': %s", _("Failed to launch:"), cmd, error->message);
@@ -636,7 +640,6 @@ int
 main (int argc, char *argv[])
 {
 	gboolean ret;
-	gboolean verbose = FALSE;
 	GOptionContext *context;
 	GPtrArray *array = NULL;
 	gchar **package_ids = NULL;
@@ -649,8 +652,6 @@ main (int argc, char *argv[])
 	guint retval = EXIT_SUCCESS;
 
 	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-		  _("Show extra debugging information"), NULL },
 		{ NULL}
 	};
 
@@ -668,10 +669,9 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: tool that gets called when the command is not found */
 	g_option_context_set_summary (context, _("PackageKit Command Not Found"));
 	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, egg_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
-
-	egg_debug_init (verbose);
 
 	/* no input */
 	if (argv[1] == NULL)
@@ -708,7 +708,7 @@ main (int argc, char *argv[])
 
 		/* run */
 		} else if (config->single_match == PK_CNF_POLICY_RUN) {
-			pk_cnf_spawn_command (possible, &argv[2]);
+			retval = pk_cnf_spawn_command (possible, &argv[2]);
 
 		/* ask */
 		} else if (config->single_match == PK_CNF_POLICY_ASK) {
@@ -716,7 +716,7 @@ main (int argc, char *argv[])
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
-				pk_cnf_spawn_command (possible, &argv[2]);
+				retval = pk_cnf_spawn_command (possible, &argv[2]);
 			else
 				retval = EXIT_COMMAND_NOT_FOUND;
 			g_free (text);
@@ -747,7 +747,7 @@ main (int argc, char *argv[])
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
-			pk_cnf_spawn_command (possible, &argv[2]);
+			retval = pk_cnf_spawn_command (possible, &argv[2]);
 		}
 		goto out;
 
@@ -774,7 +774,7 @@ main (int argc, char *argv[])
 				if (ret) {
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
-						pk_cnf_spawn_command (argv[1], &argv[2]);
+						retval = pk_cnf_spawn_command (argv[1], &argv[2]);
 					else
 						retval = EXIT_COMMAND_NOT_FOUND;
 				}
@@ -783,7 +783,7 @@ main (int argc, char *argv[])
 			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
-					pk_cnf_spawn_command (argv[1], &argv[2]);
+					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
 				else
 					retval = EXIT_COMMAND_NOT_FOUND;
 			}
@@ -816,7 +816,7 @@ main (int argc, char *argv[])
 				/* run command */
 				ret = pk_cnf_install_package_id (package_ids[i]);
 				if (ret)
-					pk_cnf_spawn_command (argv[1], &argv[2]);
+					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
 				else
 					retval = EXIT_COMMAND_NOT_FOUND;
 			}

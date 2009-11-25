@@ -891,7 +891,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # download each package
         for package_id in package_ids:
             self.percentage(percentage)
-            pkg, inst = self._findPackage(package_id)
+            try:
+                pkg, inst = self._findPackage(package_id)
+            except PkError, e:
+                self.error(e.code, e.details, exit=True)
+                return
             # if we couldn't map package_id -> pkg
             if not pkg:
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find the package %s" % package_id)
@@ -977,8 +981,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # is this an real id?
         if len(package_id.split(';')) <= 1:
-            self.error(ERROR_PACKAGE_ID_INVALID, "package_id '%s' cannot be parsed" % package_id)
-            return
+            raise PkError(ERROR_PACKAGE_ID_INVALID, "package_id '%s' cannot be parsed" % _format_package_id(package_id))
 
         # Split up the id
         (n, idver, a, repo) = self.get_package_from_id(package_id)
@@ -990,7 +993,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
             except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             # if the package is found, then return it (do not have to match the repo_id)
             if len(pkgs) != 0:
                 return pkgs[0], True
@@ -1000,33 +1003,31 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             repos = self.yumbase.repos.findRepos(repo)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            return None, False
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
-            self.error(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
-            return None, False
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+
+        # the repo might have been disabled if it is no longer contactable
+        if not repos[0].isEnabled():
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
 
         # populate the sack with data
         try:
             self.yumbase.repos.populateSack(repo)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            return None, False
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # search the pkgSack for the nevra
         try:
             pkgs = repos[0].sack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
-            return None, False
+            raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            return None, False
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
 	# multiple entries
         if len(pkgs) > 1:
-            self.error(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
-            return pkgs[0], False
+            raise PkError(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
 
         # one NEVRA in a single repo
         if len(pkgs) == 1:
@@ -1068,7 +1069,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     for txmbr in self.yumbase.tsInfo:
                         deps_list.append(txmbr.po)
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    if e.code == ERROR_PACKAGE_NOT_FOUND:
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                        continue
+                    self.error(e.code, e.details, exit=True)
+                    return
                 # This simulates the removal of the package
                 if inst and pkg:
                     resolve_list.append(pkg)
@@ -1315,7 +1323,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    self.error(e.code, e.details, exit=True)
+                    return
                 # This simulates the addition of the package
                 if not inst and pkg:
                     resolve_list.append(pkg)
@@ -1346,7 +1358,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # remove any of the packages we passed in
         for package_id in package_ids:
-            pkg, inst = self._findPackage(package_id)
+            try:
+                pkg, inst = self._findPackage(package_id)
+            except PkError, e:
+                self.error(e.code, e.details, exit=True)
+                return
             if pkg in deps_list:
                 deps_list.remove(pkg)
 
@@ -1398,7 +1414,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgs = self._get_group_packages(grp)
                 grp_pkgs.extend(pkgs)
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    if e.code == ERROR_PACKAGE_NOT_FOUND:
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                        continue
+                    self.error(e.code, e.details, exit=True)
+                    return
                 if pkg:
                     resolve_list.append(pkg)
                 else:
@@ -1434,8 +1457,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Finds out if the repo that contains the package is signed
         '''
-        repo = self.yumbase.repos.getRepo(pkg.repoid)
-        return repo.gpgcheck
+        signed = False
+        try:
+            repo = self.yumbase.repos.getRepo(pkg.repoid)
+            signed = repo.gpgcheck
+        except yum.Errors.RepoError, e:
+            raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        return signed
 
     def update_system(self, only_trusted):
         '''
@@ -1471,7 +1501,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     for t in txmbr:
                         pkg = t.po
-                        signed = self._is_package_repo_signed(pkg)
+                        try:
+                            signed = self._is_package_repo_signed(pkg)
+                        except PkError, e:
+                            self.error(e.code, e.details, exit=False)
+                            return
                         if not signed:
                             self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
@@ -1634,7 +1668,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    self.error(e.code, e.details, exit=True)
+                    return
                 if pkg and not inst:
                     txmbr = self.yumbase.install(po=pkg)
                     txmbrs.extend(txmbr)
@@ -1645,7 +1683,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if only_trusted:
                 for t in txmbrs:
                     pkg = t.po
-                    signed = self._is_package_repo_signed(pkg)
+                    try:
+                        signed = self._is_package_repo_signed(pkg)
+                    except PkError, e:
+                        self.error(e.code, e.details, exit=False)
+                        return
                     if not signed:
                         self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                         return
@@ -1922,7 +1964,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         txmbrs = []
         try:
             for package_id in package_ids:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    if e.code == ERROR_PACKAGE_NOT_FOUND:
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                        package_ids.remove(package_id)
+                        continue
+                    self.error(e.code, e.details, exit=True)
+                    return
                 if pkg:
                     try:
                         txmbr = self.yumbase.update(po=pkg)
@@ -1932,9 +1982,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.error(ERROR_TRANSACTION_ERROR, "could not add package update for %s: %s" % (_format_package_id(package_id), pkg), exit=False)
                         return
                     txmbrs.extend(txmbr)
-                else:
-                    self.error(ERROR_UPDATE_NOT_FOUND, "cannot find package '%s'" % _format_package_id(package_id), exit=False)
-                    return
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
         except Exception, e:
@@ -1944,7 +1991,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if only_trusted:
                     for t in txmbrs:
                         pkg = t.po
-                        signed = self._is_package_repo_signed(pkg)
+                        try:
+                            signed = self._is_package_repo_signed(pkg)
+                        except PkError, e:
+                            self.error(e.code, e.details, exit=False)
+                            return
                         if not signed:
                             self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
                             return
@@ -2073,7 +2124,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    self.error(e.code, e.details, exit=True)
+                    return
                 if pkg and inst:
                     try:
                         txmbr = self.yumbase.remove(po=pkg)
@@ -2130,11 +2185,19 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.details(package_id, "", group, desc, "", size)
 
             else:
-                pkg, inst = self._findPackage(package_id)
+                try:
+                    pkg, inst = self._findPackage(package_id)
+                except PkError, e:
+                    if e.code == ERROR_PACKAGE_NOT_FOUND:
+                        self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                        continue
+                    self.error(e.code, e.details, exit=True)
+                    return
                 if pkg:
                     self._show_details_pkg(pkg)
                 else:
-                    self.error(ERROR_PACKAGE_NOT_FOUND, 'Package %s was not found' % package_id)
+                    self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, 'Package %s was not found' % _format_package_id(package_id))
+                    continue
 
     def _show_details_pkg(self, pkg):
 
@@ -2169,7 +2232,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_INFO)
 
         for package_id in package_ids:
-            pkg, inst = self._findPackage(package_id)
+            try:
+                pkg, inst = self._findPackage(package_id)
+            except PkError, e:
+                self.error(e.code, e.details, exit=True)
+                return
             if pkg:
                 files = pkg.returnFileEntries('dir')
                 files.extend(pkg.returnFileEntries()) # regular files
@@ -2466,13 +2533,24 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         self.status(STATUS_INFO)
         for package_id in package_ids:
-            pkg, inst = self._findPackage(package_id)
+            try:
+                pkg, inst = self._findPackage(package_id)
+            except PkError, e:
+                if e.code == ERROR_PACKAGE_NOT_FOUND:
+                    self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, e.details)
+                    continue
+                self.error(e.code, e.details, exit=True)
+                return
             if pkg == None:
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % package_id)
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % _format_package_id(package_id))
                 continue
             update = self._get_updated(pkg)
             obsolete = self._get_obsoleted(pkg.name)
             desc, urls, reboot, changelog, state, issued, updated = self._get_update_extras(pkg)
+
+            # the metadata stores broken ISO8601 formatted values
+            issued = issued.replace(" ", "T")
+            updated = updated.replace(" ", "T")
 
             # extract the changelog for the local package
             if len(changelog) == 0:
@@ -2631,7 +2709,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except Exception, e:
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository: %s" % (repo, str(e)))
         else: # This is a package signature
-            pkg, inst = self._findPackage(package_id)
+            try:
+                pkg, inst = self._findPackage(package_id)
+            except PkError, e:
+                self.error(e.code, e.details, exit=True)
+                return
             if pkg:
                 try:
                     self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
@@ -2789,7 +2871,7 @@ class DownloadCallback(BaseMeter):
         val = int(frac*100)
 
         # new package
-        if val == 0:
+        if val == 0 and name:
             pkg = self._getPackage(name)
             if pkg: # show package to download
                 self.base._show_package(pkg, INFO_DOWNLOADING)
@@ -2801,7 +2883,7 @@ class DownloadCallback(BaseMeter):
                         break
 
         # package finished
-        if val == 100:
+        if val == 100 and name:
             pkg = self._getPackage(name)
             if pkg:
                 self.base._show_package(pkg, INFO_FINISHED)

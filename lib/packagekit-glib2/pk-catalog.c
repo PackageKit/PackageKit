@@ -373,7 +373,7 @@ pk_catalog_do_search_files (PkCatalogState *state)
 	data = pk_ptr_array_to_strv (state->array_files);
 	dbg = g_strjoinv ("&", data);
 	egg_debug ("searching for %s", dbg);
-	pk_client_search_file_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
+	pk_client_search_files_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
 				     data,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_catalog_search_file_ready_cb, state);
@@ -556,14 +556,14 @@ pk_catalog_lookup_finish (PkCatalog *catalog, GAsyncResult *res, GError **error)
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (PK_IS_CATALOG (catalog), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CATALOG (catalog), NULL);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 
 	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
+		return NULL;
 
 	return g_ptr_array_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }

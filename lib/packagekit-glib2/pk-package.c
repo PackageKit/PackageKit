@@ -218,7 +218,7 @@ pk_package_get_info (PkPackage *package)
 const gchar *
 pk_package_get_id (PkPackage *package)
 {
-	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 	return package->priv->package_id;
 }
 
@@ -233,7 +233,7 @@ pk_package_get_id (PkPackage *package)
 const gchar *
 pk_package_get_summary (PkPackage *package)
 {
-	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 	return package->priv->summary;
 }
 

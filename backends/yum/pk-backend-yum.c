@@ -19,13 +19,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <gio/gio.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <string.h>
 
 #define PREUPGRADE_BINARY	"/usr/bin/preupgrade"
+#define YUM_REPOS_DIRECTORY	"/etc/yum.repos.d"
 
 static PkBackendSpawn *spawn;
+static GFileMonitor *monitor;
 
 /**
  * backend_stderr_cb:
@@ -53,18 +56,42 @@ backend_stdout_cb (PkBackend *backend, const gchar *output)
 }
 
 /**
+ * backend_yum_repos_changed_cb:
+ **/
+static void
+backend_yum_repos_changed_cb (GFileMonitor *monitor_, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
+{
+	pk_backend_repo_list_changed (backend);
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
 backend_initialize (PkBackend *backend)
 {
+	GFile *file;
+	GError *error = NULL;
+
 	egg_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_filter_stderr (spawn, backend_stderr_cb);
 	pk_backend_spawn_set_filter_stdout (spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (spawn, "yum");
 	pk_backend_spawn_set_allow_sigkill (spawn, FALSE);
+
+	/* setup a file monitor on the repos directory */
+	file = g_file_new_for_path (YUM_REPOS_DIRECTORY);
+	monitor = g_file_monitor_directory (file, G_FILE_MONITOR_NONE, NULL, &error);
+	if (monitor != NULL) {
+		g_signal_connect (monitor, "changed", G_CALLBACK (backend_yum_repos_changed_cb), backend);
+	} else {
+		egg_warning ("failed to setup monitor: %s", error->message);
+		g_error_free (error);
+	}
+
+	g_object_unref (file);
 }
 
 /**
@@ -76,6 +103,8 @@ backend_destroy (PkBackend *backend)
 {
 	egg_debug ("backend: destroy");
 	g_object_unref (spawn);
+	if (monitor != NULL)
+		g_object_unref (monitor);
 }
 
 /**
