@@ -173,6 +173,11 @@ void Transaction::setHints(const QStringList& hints)
 	d->p->SetHints(hints);
 }
 
+void Transaction::setHints(const QString& hints)
+{
+	setHints(QStringList() << hints);
+}
+
 Transaction::Status Transaction::status() const
 {
 	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->status (), "Status", "Status");

@@ -199,6 +199,11 @@ void Client::setHints(const QStringList& hints)
 	d->hints = hints;
 }
 
+void Client::setHints(const QString& hints)
+{
+	d->hints = QStringList() << hints;
+}
+
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
 	QDBusReply<void> r = d->daemon->SetProxy(http_proxy, ftp_proxy);

@@ -192,6 +192,7 @@ public:
 	 *
 	 * \sa Client::setHints
 	 */
+	void setHints(const QString& hints);
 	void setHints(const QStringList& hints);
 
 	/**

@@ -306,6 +306,7 @@ public:
 	 *
 	 * \sa Transaction::setHints
 	 */
+	void setHints(const QString& hints);
 	void setHints(const QStringList& hints);
 
 	/**
