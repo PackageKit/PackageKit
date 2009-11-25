@@ -6,6 +6,7 @@ INCLUDES = \
 	$(QTCORE_CFLAGS)					\
 	$(QTDBUS_CFLAGS)					\
 	$(QTSQL_CFLAGS)						\
+	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
 METASOURCES = AUTO
