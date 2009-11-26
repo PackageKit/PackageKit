@@ -174,17 +174,6 @@ pk_common_test (gpointer user_data)
 		return;
 
 	/************************************************************
-	 ****************        test distro-id        **************
-	 ************************************************************/
-	egg_test_title (test, "get distro id");
-	text_safe = pk_get_distro_id ();
-	if (text_safe != NULL)
-		egg_test_success (test, "distro_id=%s", text_safe);
-	else
-		egg_test_failed (test, NULL);
-	g_free (text_safe);
-
-	/************************************************************
 	 **************            iso8601           ****************
 	 ************************************************************/
 	egg_test_title (test, "get present iso8601");
