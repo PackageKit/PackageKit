@@ -460,14 +460,27 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 	GError *error = NULL;
 	GKeyFile *file = NULL;
 	gchar *data = NULL;
+	PkControl *control;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (state->filename != NULL, FALSE);
 	g_return_val_if_fail (state->type != PK_SERVICE_PACK_TYPE_UNKNOWN, FALSE);
 
 	file = g_key_file_new ();
 
+	/* get this system id */
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, NULL, &error_local);
+	if (!ret) {
+		egg_error ("Failed to contact PackageKit: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
 	/* get needed data */
-	distro_id = pk_get_distro_id ();
+	g_object_get (control,
+		      "distro-id", &distro_id,
+		      NULL);
 	if (distro_id == NULL)
 		goto out;
 	iso_time = pk_iso8601_present ();
@@ -498,6 +511,7 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 		goto out;
 	}
 out:
+	g_object_unref (control);
 	g_key_file_free (file);
 	g_free (data);
 	g_free (distro_id);

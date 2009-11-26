@@ -372,6 +372,17 @@ pk_engine_get_distro_id (PkEngine *engine)
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
 
+	/* The distro id property should have the
+	   format "distro;version;arch" as this is
+	   used to determine if a specific package
+	   can be installed on a certain machine.
+	   For instance, x86_64 packages cannot be
+	   installed on a i386 machine.
+	*/
+
+	/* we can't get arch from /etc */
+	arch = pk_engine_get_machine_type ();
+
 	/* check for fedora */
 	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
 	if (ret) {
@@ -380,13 +391,8 @@ pk_engine_get_distro_id (PkEngine *engine)
 		if (split == NULL)
 			goto out;
 
-		/* we can't get arch from /etc */
-		arch = pk_engine_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* complete! */
-		distro = g_strdup_printf ("fedora-%s-%s", split[2], arch);
+		distro = g_strdup_printf ("fedora;%s;%s", split[2], arch);
 		goto out;
 	}
 
@@ -402,7 +408,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("suse-%s-%s", split[1], split[3]);
+		distro = g_strdup_printf ("suse;%s-%s;%s", split[1], split[3], arch);
 		goto out;
 	}
 
@@ -415,7 +421,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("foresight-%s", split[2]);
+		distro = g_strdup_printf ("foresight;%s;%s", split[2], arch);
 		goto out;
 	}
 
@@ -427,37 +433,22 @@ pk_engine_get_distro_id (PkEngine *engine)
 		if (split == NULL)
 			goto out;
 
-		/* we can't get arch from /etc */
-		arch = pk_engine_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* complete! */
-		distro = g_strdup_printf ("pld-%s-%s", split[0], arch);
+		distro = g_strdup_printf ("pld;%s;%s", split[0], arch);
 		goto out;
 	}
 
 	/* check for Arch */
 	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
 	if (ret) {
-		/* we can't get arch from /etc */
-		arch = pk_engine_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* complete! */
-		distro = g_strdup_printf ("arch-current-%s", arch);
+		distro = g_strdup_printf ("arch;current;%s", arch);
 		goto out;
 	}
 
 	/* check for LSB */
 	ret = g_file_get_contents ("/etc/lsb-release", &contents, NULL, NULL);
 	if (ret) {
-		/* we can't get arch from /etc */
-		arch = pk_engine_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* split by lines */
 		split = g_strsplit (contents, "\n", -1);
 		for (i=0; split[i] != NULL; i++) {
@@ -468,7 +459,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 		}
 
 		/* complete! */
-		distro = g_strdup_printf ("%s-%s-%s", distro, version, arch);
+		distro = g_strdup_printf ("%s;%s;%s", distro, version, arch);
 		goto out;
 	}
 
@@ -481,7 +472,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 		g_strstrip (contents);
 
 		/* complete! */
-		distro = g_strdup_printf ("debian-(%s)", contents);
+		distro = g_strdup_printf ("debian;%s;%s", contents, arch);
 		goto out;
 	}
 
@@ -500,13 +491,8 @@ pk_engine_get_distro_id (PkEngine *engine)
 		if (split == NULL)
 			goto out;
 
-		/* we can't get arch from /etc */
-		arch = pk_engine_get_machine_type ();
-		if (arch == NULL)
-			goto out;
-
 		/* complete! */
-		distro = g_strdup_printf ("freebsd-%s-%s", split[0], arch);
+		distro = g_strdup_printf ("freebsd;%s;%s", split[0], arch);
 		goto out;
 	}
 out:
