@@ -145,7 +145,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	gchar *type = NULL;
 	gchar *distro_id = NULL;
 	gchar *distro_id_us = NULL;
-	PkControl *control;
+	PkControl *control = NULL;
 
 	/* load the file */
 	file = g_key_file_new ();
@@ -201,7 +201,8 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 		*error = g_error_new (1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
 out:
-	g_object_unref (control);
+	if (control != NULL)
+		g_object_unref (control);
 	g_key_file_free (file);
 	g_free (type);
 	g_free (distro_id);

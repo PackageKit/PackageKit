@@ -368,7 +368,8 @@ pk_engine_get_distro_id (PkEngine *engine)
 	gchar *arch = NULL;
 	gchar *version = NULL;
 	gchar **split = NULL;
-	gchar *distro;
+	gchar *distro = NULL;
+	gchar *distro_id = NULL;
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
 
@@ -392,7 +393,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("fedora;%s;%s", split[2], arch);
+		distro_id = g_strdup_printf ("fedora;%s;%s", split[2], arch);
 		goto out;
 	}
 
@@ -408,7 +409,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("suse;%s-%s;%s", split[1], split[3], arch);
+		distro_id = g_strdup_printf ("suse;%s-%s;%s", split[1], split[3], arch);
 		goto out;
 	}
 
@@ -421,7 +422,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("foresight;%s;%s", split[2], arch);
+		distro_id = g_strdup_printf ("foresight;%s;%s", split[2], arch);
 		goto out;
 	}
 
@@ -434,7 +435,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("pld;%s;%s", split[0], arch);
+		distro_id = g_strdup_printf ("pld;%s;%s", split[0], arch);
 		goto out;
 	}
 
@@ -442,7 +443,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* complete! */
-		distro = g_strdup_printf ("arch;current;%s", arch);
+		distro_id = g_strdup_printf ("arch;current;%s", arch);
 		goto out;
 	}
 
@@ -459,7 +460,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 		}
 
 		/* complete! */
-		distro = g_strdup_printf ("%s;%s;%s", distro, version, arch);
+		distro_id = g_strdup_printf ("%s;%s;%s", distro, version, arch);
 		goto out;
 	}
 
@@ -472,7 +473,7 @@ pk_engine_get_distro_id (PkEngine *engine)
 		g_strstrip (contents);
 
 		/* complete! */
-		distro = g_strdup_printf ("debian;%s;%s", contents, arch);
+		distro_id = g_strdup_printf ("debian;%s;%s", contents, arch);
 		goto out;
 	}
 
@@ -492,15 +493,16 @@ pk_engine_get_distro_id (PkEngine *engine)
 			goto out;
 
 		/* complete! */
-		distro = g_strdup_printf ("freebsd;%s;%s", split[0], arch);
+		distro_id = g_strdup_printf ("freebsd;%s;%s", split[0], arch);
 		goto out;
 	}
 out:
 	g_strfreev (split);
 	g_free (version);
+	g_free (distro);
 	g_free (arch);
 	g_free (contents);
-	return distro;
+	return distro_id;
 }
 
 /**

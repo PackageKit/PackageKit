@@ -412,7 +412,7 @@ pk_task_install_signatures (PkTaskState *state)
 	GError *error = NULL;
 	GPtrArray *array;
 	PkRepoSignatureRequired *item;
-	gchar *key_id;
+	gchar *key_id = NULL;
 	gchar *package_id = NULL;
 	PkSigTypeEnum type;
 
