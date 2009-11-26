@@ -176,10 +176,10 @@ void Package::setDetails(Package::Details* det)
 QString Package::iconPath ()
 {
 	if (d->iconPath.isNull ()) {
+		d->iconPath = QString("");
 		QSqlDatabase db = QSqlDatabase::database();
 		if (!db.isOpen()) {
 			qDebug() << "Desktop files database is not open";
-			d->iconPath = QString ("");
 			return d->iconPath;
 		}
 
@@ -187,15 +187,14 @@ QString Package::iconPath ()
 		q.prepare("SELECT filename FROM cache WHERE package = :name");
 		q.bindValue(":name", d->name);
 		if(q.exec()) {
-			d->iconPath = QString("");
 			if (q.next()) {
 				QFile desktopFile (q.value(0).toString());
 				if (desktopFile.open (QIODevice::ReadOnly | QIODevice::Text)) {
 					while (!desktopFile.atEnd ()) {
 						QByteArray line = desktopFile.readLine ().trimmed ();
-						if (line.startsWith ("Icon=") && line.length () > 5 /* strlen("Icon=") */) {
-							int startChar = line.indexOf ('=')+1;
-							d->iconPath = line.mid (startChar);
+						if (line.startsWith ("Icon=")) {
+							d->iconPath = line.mid (6);
+							break;
 						}
 					}
 					desktopFile.close ();
