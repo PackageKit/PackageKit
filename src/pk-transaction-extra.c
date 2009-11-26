@@ -338,6 +338,47 @@ out:
 }
 
 /**
+ * pk_transaction_extra_get_desktop_files:
+ **/
+static void
+pk_transaction_extra_get_desktop_files (PkTransactionExtra *extra,
+					const gchar *app_dir,
+					GPtrArray *array)
+{
+	GError *error = NULL;
+	GDir *dir;
+	const gchar *filename;
+	gpointer data;
+	gchar *path;
+
+	/* open directory */
+	dir = g_dir_open (app_dir, 0, &error);
+	if (dir == NULL) {
+		egg_warning ("failed to open directory %s: %s", app_dir, error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* go through desktop files and add them to an array if not present */
+	filename = g_dir_read_name (dir);
+	while (filename != NULL) {
+		path = g_build_filename (app_dir, filename, NULL);
+		if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
+			pk_transaction_extra_get_desktop_files (extra, path, array);
+		} else if (g_str_has_suffix (filename, ".desktop")) {
+			data = g_hash_table_lookup (extra->priv->hash, path);
+			if (data == NULL) {
+				egg_debug ("add of %s as not present in db", path);
+				g_ptr_array_add (array, g_strdup (path));
+			}
+		}
+		g_free (path);
+		filename = g_dir_read_name (dir);
+	}
+	g_dir_close (dir);
+}
+
+/**
  * pk_transaction_extra_import_desktop_files:
  **/
 gboolean
@@ -346,10 +387,6 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 	gchar *statement;
 	gchar *error_msg = NULL;
 	gint rc;
-	GError *error = NULL;
-	GDir *dir;
-	const gchar *filename;
-	gpointer data;
 	gchar *path;
 	GPtrArray *array;
 	gfloat step;
@@ -380,44 +417,22 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 		sqlite3_free (error_msg);
 	}
 
-	/* open directory */
-	dir = g_dir_open (PK_DESKTOP_DEFAULT_APPLICATION_DIR, 0, &error);
-	if (dir == NULL) {
-		egg_warning ("failed to open file %s: %s", PK_DESKTOP_DEFAULT_APPLICATION_DIR, error->message);
-		g_error_free (error);
-		goto out;
-	}
+	array = g_ptr_array_new_with_free_func (g_free);
+	pk_transaction_extra_get_desktop_files (extra, PK_DESKTOP_DEFAULT_APPLICATION_DIR, array);
 
-	/* go through desktop files and add them to an array if not present */
-	filename = g_dir_read_name (dir);
-	array = g_ptr_array_new ();
-	while (filename != NULL) {
-		if (g_str_has_suffix (filename, ".desktop")) {
-			path = g_build_filename (PK_DESKTOP_DEFAULT_APPLICATION_DIR, filename, NULL);
-			data = g_hash_table_lookup (extra->priv->hash, path);
-			if (data == NULL) {
-				egg_debug ("add of %s as not present in db", path);
-				g_ptr_array_add (array, g_strdup (path));
-			}
-			g_free (path);
+	if (array->len) {
+		step = 100.0f / array->len;
+		pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+
+		/* process files in an array */
+		for (i=0; i<array->len; i++) {
+			pk_transaction_extra_set_progress_changed (extra, i * step);
+			path = g_ptr_array_index (array, i);
+			pk_transaction_extra_sqlite_add_filename (extra, path, NULL);
 		}
-		filename = g_dir_read_name (dir);
 	}
-	g_dir_close (dir);
-
-	step = 100.0f / array->len;
-	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
-
-	/* process files in an array */
-	for (i=0; i<array->len; i++) {
-		pk_transaction_extra_set_progress_changed (extra, i * step);
-		path = g_ptr_array_index (array, i);
-		pk_transaction_extra_sqlite_add_filename (extra, path, NULL);
-	}
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
 	g_ptr_array_free (array, TRUE);
 
-out:
 	pk_transaction_extra_set_progress_changed (extra, 100);
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_FINISHED);
 	return TRUE;
