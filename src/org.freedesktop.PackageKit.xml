@@ -156,8 +156,9 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            The distribution identification, e.g.
-            <doc:tt>"debian-(squeeze/sid)"</doc:tt>.
+            The distribution identification, in the
+            distro;version;arch form e.g.
+            <doc:tt>"debian;squeeze/sid;x86_64"</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
