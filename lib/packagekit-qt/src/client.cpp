@@ -49,6 +49,8 @@
 		CHECK_TRANSACTION      \
 		return t;              \
 
+#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
+
 using namespace PackageKit;
 
 Client* Client::m_instance = 0;
@@ -84,7 +86,7 @@ Client::Client(QObject* parent) : QObject(parent)
 	// Set up database for desktop files
 	QSqlDatabase db;
 	db = QSqlDatabase::addDatabase("QSQLITE");
-	db.setDatabaseName ("/var/lib/PackageKit/desktop-files.db");
+	db.setDatabaseName (PK_DESKTOP_DEFAULT_DATABASE);
 	if (!db.open()) {
 		qDebug() << "Failed to initialize the desktop files database";
 	}
