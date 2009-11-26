@@ -193,7 +193,7 @@ QString Package::iconPath ()
 					while (!desktopFile.atEnd ()) {
 						QByteArray line = desktopFile.readLine ().trimmed ();
 						if (line.startsWith ("Icon=")) {
-							d->iconPath = line.mid (6);
+							d->iconPath = line.mid (5);
 							break;
 						}
 					}
