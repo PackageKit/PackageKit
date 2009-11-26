@@ -272,7 +272,9 @@ public:
 	NetworkState getNetworkState() const;
 
 	/**
-	 * The distributed identifier, e.g. "debian-(squeeze/sid)".
+	 * The distribution identifier in the
+	 * distro;version;arch form,
+	 * e.g. "debian;squeeze/sid;x86_64".
 	 */
 	QString distroId() const;
 
