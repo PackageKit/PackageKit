@@ -179,12 +179,13 @@ QString Package::iconPath ()
 		QSqlDatabase db = QSqlDatabase::database();
 		if (!db.isOpen()) {
 			qDebug() << "Desktop files database is not open";
-			return NULL;
+			d->iconPath = QString ("");
+			return d->iconPath;
 		}
 
 		QSqlQuery q(db);
-		q.prepare("SELECT filename FROM cache WHERE package = :pid");
-		q.bindValue(":pid", d->id);
+		q.prepare("SELECT filename FROM cache WHERE package = :name");
+		q.bindValue(":name", d->name);
 		if(q.exec()) {
 			d->iconPath = QString("");
 			if (q.next()) {
