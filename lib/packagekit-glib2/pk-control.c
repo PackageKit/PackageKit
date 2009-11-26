@@ -72,6 +72,7 @@ struct _PkControlPrivate
 	gboolean		 connected;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
+	gchar			*distro_id;
 	guint			 transaction_list_changed_id;
 	guint			 restart_schedule_id;
 	guint			 updates_changed_id;
@@ -101,6 +102,7 @@ enum {
 	PROP_LOCKED,
 	PROP_NETWORK_STATE,
 	PROP_CONNECTED,
+	PROP_DISTRO_ID,
 	PROP_LAST
 };
 
@@ -1456,6 +1458,23 @@ pk_control_set_network_state (PkControl *control, PkNetworkEnum network_state)
 }
 
 /**
+ * pk_control_set_distro_id:
+ **/
+static void
+pk_control_set_distro_id (PkControl *control, const gchar *distro_id)
+{
+	/* is the same as before */
+	if (g_strcmp0 (control->priv->distro_id, distro_id) == 0)
+		return;
+	g_free (control->priv->distro_id);
+	control->priv->distro_id = g_strdup (distro_id);
+
+	/* notify we're changed */
+	egg_debug ("notify::distro-id");
+	g_object_notify (G_OBJECT(control), "distro-id");
+}
+
+/**
  * pk_control_get_properties_collect_cb:
  **/
 static void
@@ -1485,6 +1504,8 @@ pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkCo
 		pk_control_set_locked (control, g_value_get_boolean (value));
 	} else if (g_strcmp0 (key, "NetworkState") == 0) {
 		pk_control_set_network_state (control, pk_network_enum_from_text (g_value_get_string (value)));
+	} else if (g_strcmp0 (key, "DistroId") == 0) {
+		pk_control_set_distro_id (control, g_value_get_string (value));
 	} else {
 		egg_warning ("unhandled property '%s'", key);
 	}
@@ -1943,6 +1964,9 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_NETWORK_STATE:
 		g_value_set_uint (value, priv->network_state);
 		break;
+	case PROP_DISTRO_ID:
+		g_value_set_string (value, priv->distro_id);
+		break;
 	case PROP_CONNECTED:
 		g_value_set_boolean (value, priv->connected);
 		break;
@@ -2075,6 +2099,14 @@ pk_control_class_init (PkControlClass *klass)
 	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
 
 	/**
+	 * PkControl:distro-id:
+	 */
+	pspec = g_param_spec_string ("distro-id", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_DISTRO_ID, pspec);
+
+	/**
 	 * PkControl:connected:
 	 */
 	pspec = g_param_spec_boolean ("connected", NULL, NULL,
@@ -2161,6 +2193,7 @@ pk_control_init (PkControl *control)
 	control->priv->updates_changed_id = 0;
 	control->priv->repo_list_changed_id = 0;
 	control->priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
+	control->priv->distro_id = NULL;
 	control->priv->calls = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
@@ -2274,6 +2307,7 @@ pk_control_finalize (GObject *object)
 	g_free (priv->backend_description);
 	g_free (priv->backend_author);
 	g_free (priv->mime_types);
+	g_free (priv->distro_id);
 	g_object_unref (G_OBJECT (priv->proxy));
 	g_object_unref (G_OBJECT (priv->proxy_props));
 	g_object_unref (G_OBJECT (priv->proxy_dbus));

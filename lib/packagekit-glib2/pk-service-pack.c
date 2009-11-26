@@ -49,6 +49,7 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
+#include <packagekit-glib2/pk-control-sync.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -144,6 +145,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	gchar *type = NULL;
 	gchar *distro_id = NULL;
 	gchar *distro_id_us = NULL;
+	PkControl *control;
 
 	/* load the file */
 	file = g_key_file_new ();
@@ -180,7 +182,18 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	}
 
 	/* get this system id */
-	distro_id_us = pk_get_distro_id ();
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, NULL, &error_local);
+	if (!ret) {
+		egg_error ("Failed to contact PackageKit: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* get data */
+	g_object_get (control,
+		      "distro-id", &distro_id_us,
+		      NULL);
 
 	/* do we match? */
 	ret = (g_strcmp0 (distro_id_us, distro_id) == 0);
@@ -188,6 +201,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 		*error = g_error_new (1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
 out:
+	g_object_unref (control);
 	g_key_file_free (file);
 	g_free (type);
 	g_free (distro_id);

@@ -152,6 +152,18 @@
     </property>
 
     <!--*****************************************************************************************-->
+    <property name="DistroId" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The distribution identification, e.g.
+            <doc:tt>"debian-(squeeze/sid)"</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
+
+    <!--*****************************************************************************************-->
     <method name="CanAuthorize">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

@@ -174,6 +174,11 @@ Client::NetworkState Client::getNetworkState() const
 	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
 }
 
+QString Client::distroId() const
+{
+	return d->daemon->distroId();
+}
+
 uint Client::getTimeSinceAction(Action action) const
 {
 	QString pkName = Util::enumToString<Client>(action, "Action", "Action");

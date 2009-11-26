@@ -272,6 +272,11 @@ public:
 	NetworkState getNetworkState() const;
 
 	/**
+	 * The distributed identifier, e.g. "debian-(squeeze/sid)".
+	 */
+	QString distroId() const;
+
+	/**
 	 * Returns the time (in seconds) since the specified \p action
 	 */
 	uint getTimeSinceAction(Action action) const;

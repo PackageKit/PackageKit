@@ -29,6 +29,8 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
+#include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -88,6 +90,7 @@ struct PkEnginePrivate
 	gchar			*backend_name;
 	gchar			*backend_description;
 	gchar			*backend_author;
+	gchar			*distro_id;
 	guint			 timeout_priority;
 	guint			 timeout_normal;
 	guint			 timeout_priority_id;
@@ -128,6 +131,7 @@ enum {
 	PROP_MIME_TYPES,
 	PROP_LOCKED,
 	PROP_NETWORK_STATE,
+	PROP_DISTRO_ID,
 	PROP_LAST,
 };
 
@@ -314,6 +318,203 @@ pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
 	pk_engine_reset_timer (engine);
 
 	return TRUE;
+}
+
+/**
+ * pk_get_os_release:
+ *
+ * Return value: The current OS release, e.g. "7.2-RELEASE"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_engine_get_os_release (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0)
+		return g_strdup ("unknown");
+	return g_strdup (buf.release);
+}
+
+/**
+ * pk_get_machine_type:
+ *
+ * Return value: The current machine ID, e.g. "i386"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_engine_get_machine_type (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0)
+		return g_strdup ("unknown");
+	return g_strdup (buf.machine);
+}
+
+/**
+ * pk_engine_get_distro_id:
+ **/
+static gchar *
+pk_engine_get_distro_id (PkEngine *engine)
+{
+	guint i;
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *arch = NULL;
+	gchar *version = NULL;
+	gchar **split = NULL;
+	gchar *distro;
+
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
+
+	/* check for fedora */
+	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Fedora release 8.92 (Rawhide) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_engine_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("fedora-%s-%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for suse */
+	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
+	if (ret) {
+		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
+		g_strdelimit (contents, "()\n", ' ');
+
+		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("suse-%s-%s", split[1], split[3]);
+		goto out;
+	}
+
+	/* check for foresight or foresight derivatives */
+	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Foresight Linux 2 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("foresight-%s", split[2]);
+		goto out;
+	}
+
+	/* check for PLD */
+	ret = g_file_get_contents ("/etc/pld-release", &contents, NULL, NULL);
+	if (ret) {
+		/* 2.99 PLD Linux (Th) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_engine_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("pld-%s-%s", split[0], arch);
+		goto out;
+	}
+
+	/* check for Arch */
+	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
+	if (ret) {
+		/* we can't get arch from /etc */
+		arch = pk_engine_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("arch-current-%s", arch);
+		goto out;
+	}
+
+	/* check for LSB */
+	ret = g_file_get_contents ("/etc/lsb-release", &contents, NULL, NULL);
+	if (ret) {
+		/* we can't get arch from /etc */
+		arch = pk_engine_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* split by lines */
+		split = g_strsplit (contents, "\n", -1);
+		for (i=0; split[i] != NULL; i++) {
+			if (g_str_has_prefix (split[i], "DISTRIB_ID="))
+				distro = g_ascii_strdown (&split[i][11], -1);
+			if (g_str_has_prefix (split[i], "DISTRIB_RELEASE="))
+				version = g_ascii_strdown (&split[i][16], -1);
+		}
+
+		/* complete! */
+		distro = g_strdup_printf ("%s-%s-%s", distro, version, arch);
+		goto out;
+	}
+
+	/* check for Debian or Debian derivatives */
+	ret = g_file_get_contents ("/etc/debian_version", &contents, NULL, NULL);
+	if (ret) {
+		/* remove "\n": "squeeze/sid\n" */
+		g_strdelimit (contents, "\n", '\0');
+		/* removes leading and trailing whitespace */
+		g_strstrip (contents);
+
+		/* complete! */
+		distro = g_strdup_printf ("debian-(%s)", contents);
+		goto out;
+	}
+
+#ifdef __FreeBSD__
+	ret = TRUE;
+#endif
+	/* FreeBSD */
+	if (ret) {
+		/* we can't get version from /etc */
+		version = pk_engine_get_os_release ();
+		if (version == NULL)
+			goto out;
+
+		/* 7.2-RELEASE */
+		split = g_strsplit (version, "-", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_engine_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("freebsd-%s-%s", split[0], arch);
+		goto out;
+	}
+out:
+	g_strfreev (split);
+	g_free (version);
+	g_free (arch);
+	g_free (contents);
+	return distro;
 }
 
 /**
@@ -965,6 +1166,8 @@ pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_NETWORK_STATE:
 		g_value_set_string (value, pk_network_enum_to_text (engine->priv->network_state));
 		break;
+	case PROP_DISTRO_ID:
+		g_value_set_string (value, engine->priv->distro_id);
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -1004,7 +1207,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-major", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_VERSION_MAJOR, pspec);
 
 	/**
@@ -1012,7 +1215,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_VERSION_MINOR, pspec);
 
 	/**
@@ -1020,7 +1223,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
 
 	/**
@@ -1028,7 +1231,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_BACKEND_NAME, pspec);
 
 	/**
@@ -1036,7 +1239,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-description", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_BACKEND_DESCRIPTION, pspec);
 
 	/**
@@ -1044,7 +1247,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-author", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_BACKEND_AUTHOR, pspec);
 
 	/**
@@ -1052,7 +1255,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("roles", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_ROLES, pspec);
 
 	/**
@@ -1060,7 +1263,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("groups", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_GROUPS, pspec);
 
 	/**
@@ -1068,7 +1271,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("filters", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_FILTERS, pspec);
 
 	/**
@@ -1076,7 +1279,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("mime-types", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/**
@@ -1084,7 +1287,7 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("locked", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_LOCKED, pspec);
 
 	/**
@@ -1092,8 +1295,16 @@ pk_engine_class_init (PkEngineClass *klass)
 	 */
 	pspec = g_param_spec_string ("network-state", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
+
+	/**
+	 * PkEngine:distro-id:
+	 */
+	pspec = g_param_spec_string ("distro-id", NULL, NULL,
+				     NULL,
+				     G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_DISTRO_ID, pspec);
 
 	/* signals */
 	signals[SIGNAL_LOCKED] =
@@ -1206,6 +1417,7 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend_author = NULL;
 	engine->priv->sender = NULL;
 	engine->priv->locked = FALSE;
+	engine->priv->distro_id = NULL;
 
 	/* use the config file */
 	engine->priv->conf = pk_conf_new ();
@@ -1240,6 +1452,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend_name = pk_backend_get_name (engine->priv->backend);
 	engine->priv->backend_description = pk_backend_get_description (engine->priv->backend);
 	engine->priv->backend_author = pk_backend_get_author (engine->priv->backend);
+
+	/* try to get the distro id */
+	engine->priv->distro_id = pk_engine_get_distro_id (engine);
 
 	/* we allow fallback to these legacy methods */
 	if (pk_bitfield_contain (engine->priv->roles, PK_ROLE_ENUM_GET_DEPENDS))
@@ -1368,6 +1583,7 @@ pk_engine_finalize (GObject *object)
 	g_free (engine->priv->backend_name);
 	g_free (engine->priv->backend_description);
 	g_free (engine->priv->backend_author);
+	g_free (engine->priv->distro_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

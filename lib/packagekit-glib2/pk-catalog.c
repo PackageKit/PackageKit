@@ -43,6 +43,7 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
+#include <packagekit-glib2/pk-control-sync.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -604,11 +605,27 @@ pk_catalog_class_init (PkCatalogClass *klass)
 static void
 pk_catalog_init (PkCatalog *catalog)
 {
+	PkControl *control;
+	gboolean ret;
+	GError *error = NULL;
+
 	catalog->priv = PK_CATALOG_GET_PRIVATE (catalog);
 	catalog->priv->client = pk_client_new ();
-	catalog->priv->distro_id = pk_get_distro_id ();
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, NULL, &error);
+	if (!ret) {
+		egg_error ("Failed to contact PackageKit: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* get data */
+	g_object_get (control,
+		      "distro-id", &catalog->priv->distro_id,
+		      NULL);
+
 	if (catalog->priv->distro_id == NULL)
-		egg_error ("no distro_id, your distro needs to implement this in pk-common.c!");
+		egg_error ("no distro_id, your distro needs to implement this in pk-engine.c!");
 }
 
 /**

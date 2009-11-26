@@ -69,6 +69,10 @@ public:
     inline QString networkState() const
     { return qvariant_cast< QString >(internalPropGet("NetworkState")); }
 
+    Q_PROPERTY(QString DistroId READ distroId)
+    inline QString distroId() const
+    { return qvariant_cast< QString >(internalPropGet("DistroId")); }
+
     Q_PROPERTY(QString Roles READ roles)
     inline QString roles() const
     { return qvariant_cast< QString >(internalPropGet("Roles")); }

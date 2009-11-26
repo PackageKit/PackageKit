@@ -47,8 +47,23 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 	gchar *filename = NULL;
 	gchar *distro_id;
 	gchar *iso_time = NULL;
+	PkControl *control;
+	gboolean ret;
+	GError *error = NULL;
 
-	distro_id = pk_get_distro_id ();
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, NULL, &error);
+	if (!ret) {
+		egg_error ("Failed to contact PackageKit: %s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+
+	/* get data */
+	g_object_get (control,
+		      "distro-id", &distro_id,
+		      NULL);
+
 	if (name != NULL) {
 		filename = g_strdup_printf ("%s/%s-%s.%s", directory, name, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	} else {
