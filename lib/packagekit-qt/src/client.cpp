@@ -526,6 +526,11 @@ Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filt
 	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search))
 }
 
+Transaction* Client::whatProvides(ProvidesType type, const QStringList& search, Filters filters)
+{
+	return whatProvides(type, search.join("&"), filters);
+}
+
 void Client::setLastError (DaemonError e)
 {
 	d->error = e;

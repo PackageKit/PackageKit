@@ -838,6 +838,7 @@ public:
 	 * Searchs for a package providing a file/a mimetype
 	 */
 	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
+	Transaction* whatProvides(ProvidesType type, const QStringList& search, Filters filters = NoFilter);
 
 Q_SIGNALS:
 	/**
