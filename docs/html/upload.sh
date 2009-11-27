@@ -30,4 +30,5 @@ scp api-reference-session.html $USER@$SERVER:/$LOCATION/gtk-doc/
 rm api-reference-session.html
 doxygen ../../lib/packagekit-qt/Doxyfile
 scp ../packagekit-qt/html/* $USER@$SERVER:/$LOCATION/qt-doc/
+scp ../example.catalog $USER@$SERVER:/$LOCATION/packagekit.catalog
 
