@@ -2138,6 +2138,22 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if pkg and not inst:
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "The package %s is not installed" % pkg.name)
         if txmbrs:
+            # check to find any system packages
+            try:
+                rc, msgs =  self.yumbase.buildTransaction()
+            except yum.Errors.RepoError, e:
+                self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            if rc != 2:
+                self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
+            else:
+                for txmbr in self.yumbase.tsInfo:
+                    pkg = txmbr.po
+                    system_packages = ['yum','rpm', 'glibc']
+                    if pkg.name in system_packages:
+                        self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
+                        return
             try:
                 if not allowdep:
                     self._runYumTransaction(allow_remove_deps=False)
