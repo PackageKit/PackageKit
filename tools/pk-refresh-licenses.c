@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
 
 typedef struct {
 	gchar	*enum_name;
@@ -71,32 +72,18 @@ pk_refresh_licenses_compare_func (gconstpointer a, gconstpointer b)
 }
 
 /**
- * main:
+ * pk_refresh_licenses_get_data:
  **/
-int
-main (int argc, char *argv[])
+static gchar *
+pk_refresh_licenses_get_data (const gchar *url)
 {
+	gchar *command;
 	gboolean ret;
-	gint retval = EXIT_FAILURE;
 	GError *error = NULL;
-	const gchar *command;
 	gchar *contents = NULL;
-	gchar **lines = NULL;
-	gchar **parts;
-	guint i, j;
-	const gchar *trim;
-	gint fullname = -1;
-	gint fsf_free = -1;
-	gint shortname = -1;
-	GPtrArray *data = NULL;
-	gboolean is_col;
-	GString *string_h = NULL;
-	GString *string_c = NULL;
-	PkRefreshLicenseItem *item;
-	PkRefreshLicenseItem *item_tmp;
 
 	/* get file */
-	command = "wget \"https://fedoraproject.org/w/index.php?title=Licensing:Main&action=edit\" --output-document=./Licensing.wiki";
+	command = g_strdup_printf ("wget \"%s&action=edit\" --output-document=./Licensing.wiki", url);
 	ret = g_spawn_command_line_sync (command, NULL, NULL, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to download file: %s", error->message);
@@ -111,12 +98,56 @@ main (int argc, char *argv[])
 		g_error_free (error);
 		goto out;
 	}
+out:
+	g_unlink ("./Licensing.wiki");
+	g_free (command);
+	return contents;
+}
+
+/**
+ * main:
+ **/
+int
+main (int argc, char *argv[])
+{
+	gboolean ret;
+	gint retval = EXIT_FAILURE;
+	GError *error = NULL;
+	gchar *contents_tmp = NULL;
+	GString *contents;
+	gchar **lines = NULL;
+	gchar **parts;
+	guint i, j;
+	const gchar *trim;
+	gint fullname = -1;
+	gint fsf_free = -1;
+	gint shortname = -1;
+	GPtrArray *data = NULL;
+	gboolean is_col;
+	GString *string_h = NULL;
+	GString *string_c = NULL;
+	PkRefreshLicenseItem *item;
+	PkRefreshLicenseItem *item_tmp;
+	const gchar *locations[] =  {
+		"https://fedoraproject.org/w/index.php?title=Licensing:Main",
+		"https://fedoraproject.org/w/index.php?title=Licensing:Fonts/Preferred",
+		"https://fedoraproject.org/w/index.php?title=Licensing:Fonts/Good",
+		NULL };
+
+	/* get all the data from several sources */
+	contents = g_string_new ("");
+	for (i=0; locations[i] != NULL; i++) {
+		g_print ("GETTING: %s\n", locations[i]);
+		contents_tmp = pk_refresh_licenses_get_data (locations[i]);
+		g_string_append (contents, contents_tmp);
+		g_free (contents_tmp);
+	}
 
 	/* output arrays */
 	data = g_ptr_array_new ();
 
 	/* split into lines */
-	lines = g_strsplit (contents, "\n", -1);
+	lines = g_strsplit (contents->str, "\n", -1);
 	for (i=0; lines[i] != NULL; i++) {
 		if (lines[i][0] != '|') {
 			fullname = -1;
@@ -282,7 +313,7 @@ out:
 		g_string_free (string_c, TRUE);
 	if (data != NULL)
 		g_ptr_array_unref (data);
-	g_free (contents);
+	g_string_free (contents, TRUE);
 	g_strfreev (lines);
 	return retval;
 }
