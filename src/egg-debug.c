@@ -122,6 +122,24 @@ egg_debug_filter_function (const gchar *function)
 }
 
 /**
+ * egg_debug_is_console:
+ *
+ * Returns: TRUE if we are on a console
+ **/
+static gboolean
+egg_debug_is_console (void)
+{
+	/* local first */
+	if (_console)
+		return TRUE;
+
+	/* fall back to env variable */
+	if (g_getenv ("CONSOLE") != NULL)
+		return TRUE;
+	return FALSE;
+}
+
+/**
  * egg_debug_set_console_mode:
  **/
 static void
@@ -130,7 +148,7 @@ egg_debug_set_console_mode (guint console_code)
 	gchar command[13];
 
 	/* don't put extra commands into logs */
-	if (!_console)
+	if (!egg_debug_is_console ())
 		return;
 
 	/* Command is the control command to the terminal */
@@ -232,6 +250,24 @@ egg_debug_print_line (const gchar *func, const gchar *file, const int line, cons
 }
 
 /**
+ * egg_debug_is_verbose:
+ *
+ * Returns: TRUE if we have debugging enabled
+ **/
+gboolean
+egg_debug_is_verbose (void)
+{
+	/* local first */
+	if (_verbose)
+		return TRUE;
+
+	/* fall back to env variable */
+	if (g_getenv ("VERBOSE") != NULL)
+		return TRUE;
+	return FALSE;
+}
+
+/**
  * egg_debug_real:
  **/
 void
@@ -240,7 +276,7 @@ egg_debug_real (const gchar *func, const gchar *file, const int line, const gcha
 	va_list args;
 	gchar *buffer = NULL;
 
-	if (!_verbose && !egg_debug_filter_module (file) && !egg_debug_filter_function (func))
+	if (!egg_debug_is_verbose () && !egg_debug_filter_module (file) && !egg_debug_filter_function (func))
 		return;
 
 	va_start (args, format);
@@ -261,7 +297,7 @@ egg_warning_real (const gchar *func, const gchar *file, const int line, const gc
 	va_list args;
 	gchar *buffer = NULL;
 
-	if (!_verbose && !egg_debug_filter_module (file) && !egg_debug_filter_function (func))
+	if (!egg_debug_is_verbose () && !egg_debug_filter_module (file) && !egg_debug_filter_function (func))
 		return;
 
 	va_start (args, format);
@@ -269,7 +305,7 @@ egg_warning_real (const gchar *func, const gchar *file, const int line, const gc
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	if (!_console)
+	if (!egg_debug_is_console ())
 		printf ("*** WARNING ***\n");
 	egg_debug_print_line (func, file, line, buffer, CONSOLE_RED);
 
@@ -290,7 +326,7 @@ egg_error_real (const gchar *func, const gchar *file, const int line, const gcha
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	if (!_console)
+	if (!egg_debug_is_console ())
 		printf ("*** ERROR ***\n");
 	egg_debug_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free (buffer);
@@ -299,17 +335,6 @@ egg_error_real (const gchar *func, const gchar *file, const int line, const gcha
 	egg_debug_backtrace ();
 
 	exit (1);
-}
-
-/**
- * egg_debug_is_verbose:
- *
- * Returns: TRUE if we have debugging enabled
- **/
-gboolean
-egg_debug_is_verbose (void)
-{
-	return _verbose;
 }
 
 /**
@@ -357,18 +382,12 @@ out:
 static gboolean
 egg_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer data, GError **error)
 {
-	const gchar *env_string;
 	const GOptionEntry main_entries[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose,
 		  /* TRANSLATORS: turn on all debugging */
 		  N_("Show debugging information for all files"), NULL },
 		{ NULL}
 	};
-
-	/* global variable */
-	env_string = g_getenv ("VERBOSE");
-	if (env_string != NULL)
-		_verbose = TRUE;
 
 	/* add main entry */
 	g_option_context_add_main_entries (context, main_entries, NULL);
