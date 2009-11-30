@@ -45,7 +45,7 @@ public:
 
 	void addPackagePair(pair<pkgCache::PkgIterator, pkgCache::VerIterator> packagePair);
 
-	AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled, unsigned int Quiet);
+	AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled);
 };
 
 #endif

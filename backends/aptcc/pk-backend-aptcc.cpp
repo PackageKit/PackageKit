@@ -476,7 +476,7 @@ backend_download_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	// Create the progress
-	AcqPackageKitStatus Stat(m_apt, backend, _cancel, _config->FindI("quiet",0));
+	AcqPackageKitStatus Stat(m_apt, backend, _cancel);
 
 	// get a fetcher
 	pkgAcquire fetcher(&Stat);
@@ -611,7 +611,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 		}
 	}
 	// Create the progress
-	AcqPackageKitStatus Stat(m_apt, backend, _cancel, _config->FindI("quiet",0));
+	AcqPackageKitStatus Stat(m_apt, backend, _cancel);
 
 	// do the work
 	if (_config->FindB("APT::Get::Download",true) == true) {

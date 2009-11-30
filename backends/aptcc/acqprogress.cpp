@@ -24,11 +24,10 @@ using namespace std;
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
-AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled, unsigned int Quiet) :
+AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &cancelled) :
 	m_apt(apt),
 	m_backend(backend),
 	_cancelled(cancelled),
-	Quiet(Quiet),
 	last_percent(0),
 	last_sub_percent(0)
 {
@@ -49,16 +48,13 @@ void AcqPackageKitStatus::Start()
 /* */
 void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
-   if (Quiet > 1)
-      return;
-
-   if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';
-
-   cout << /*_*/("Hit ") << Itm.Description;
-   if (Itm.Owner->FileSize != 0)
-      cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
-   cout << endl;
+//    if (Quiet <= 0)
+//       cout << '\r' << BlankLine << '\r';
+// 
+//    cout << /*_*/("Hit ") << Itm.Description;
+//    if (Itm.Owner->FileSize != 0)
+//       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
+//    cout << endl;
    Update = true;
 };
 									/*}}}*/
@@ -73,16 +69,16 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
 
    Itm.Owner->ID = ID++;
 
-   if (Quiet > 1)
-      return;
-
-   if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';
-
-   cout << /*_*/("Get:") << Itm.Owner->ID << ' ' << Itm.Description;
-   if (Itm.Owner->FileSize != 0)
-      cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
-   cout << endl;
+//    if (Quiet > 1)
+//       return;
+// 
+//    if (Quiet <= 0)
+//       cout << '\r' << BlankLine << '\r';
+// 
+//    cout << /*_*/("Get:") << Itm.Owner->ID << ' ' << Itm.Description;
+//    if (Itm.Owner->FileSize != 0)
+//       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
+//    cout << endl;
 };
 									/*}}}*/
 // AcqPackageKitStatus::Done - Completed a download				/*{{{*/
@@ -98,27 +94,24 @@ void AcqPackageKitStatus::Done(pkgAcquire::ItemDesc &Itm)
 /* We print out the error text  */
 void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 {
-   if (Quiet > 1)
-      return;
+	// Ignore certain kinds of transient failures (bad code)
+	if (Itm.Owner->Status == pkgAcquire::Item::StatIdle) {
+		return;
+	}
 
-   // Ignore certain kinds of transient failures (bad code)
-   if (Itm.Owner->Status == pkgAcquire::Item::StatIdle)
-      return;
+	if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
+	{
+		// TODO add a PK message
+		cout << /*_*/("Ign ") << Itm.Description << endl;
+	} else {
+		// an error was found (maybe 404, 403...)
+		// the item that got the error and the error text
+		_error->Error("Error %s\n  %s",
+			      Itm.Description.c_str(),
+			      Itm.Owner->ErrorText.c_str());
+	}
 
-   if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r';
-
-   if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
-   {
-      cout << /*_*/("Ign ") << Itm.Description << endl;
-   }
-   else
-   {
-      cout << /*_*/("Err ") << Itm.Description << endl;
-      cout << "  " << Itm.Owner->ErrorText << endl;
-   }
-
-   Update = true;
+	Update = true;
 };
 									/*}}}*/
 // AcqPackageKitStatus::Stop - Finished downloading				/*{{{*/
@@ -128,11 +121,6 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 void AcqPackageKitStatus::Stop()
 {
    pkgAcquireStatus::Stop();
-   if (Quiet > 1)
-      return;
-
-   if (Quiet <= 0)
-      cout << '\r' << BlankLine << '\r' << flush;
 
    if (FetchedBytes != 0 && _error->PendingError() == false)
       ioprintf(cout,/*_*/("Fetched %sB in %s (%sB/s)\n"),
@@ -148,150 +136,88 @@ void AcqPackageKitStatus::Stop()
    bandwidth and ETA indicator. */
 bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 {
-   if (Quiet > 0)
-      return true;
+	pkgAcquireStatus::Pulse(Owner);
 
-   pkgAcquireStatus::Pulse(Owner);
+	enum {Long = 0,Medium,Short} Mode = Long;
 
-   enum {Long = 0,Medium,Short} Mode = Long;
+	char Buffer[sizeof(BlankLine)];
+	char *End = Buffer + sizeof(Buffer);
+	char *S = Buffer;
 
-   char Buffer[sizeof(BlankLine)];
-   char *End = Buffer + sizeof(Buffer);
-   char *S = Buffer;
-//    if (ScreenWidth >= sizeof(Buffer))
-//       ScreenWidth = sizeof(Buffer)-1;
-    unsigned long percent_done;
-    percent_done = long(double((CurrentBytes + CurrentItems)*100.0)/double(TotalBytes+TotalItems));
-   // Put in the percent done
-   sprintf(S,"%ld%%", percent_done);
-//    printf("-----------------%ld\n", percent_done);
-    if (last_percent != percent_done) {
-	    if (last_percent < percent_done) {
-		    pk_backend_set_percentage(m_backend, percent_done);
-	    } else {
-		    pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
-		    pk_backend_set_percentage(m_backend, percent_done);
-	    }
-	    last_percent = percent_done;
-    }
-   bool Shown = false;
-   for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
-	I = Owner->WorkerStep(I))
-   {
-      S += strlen(S);
+	unsigned long percent_done;
+	percent_done = long(double((CurrentBytes + CurrentItems)*100.0)/double(TotalBytes+TotalItems));
+	
+	// Emit the percent done
+	if (last_percent != percent_done) {
+		if (last_percent < percent_done) {
+			pk_backend_set_percentage(m_backend, percent_done);
+		} else {
+			pk_backend_set_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+			pk_backend_set_percentage(m_backend, percent_done);
+		}
+		last_percent = percent_done;
+	}
 
-      // There is no item running 
-      if (I->CurrentItem == 0)
-      {
-	 if (I->Status.empty() == false)
-	 {
-	    snprintf(S,End-S," [%s]",I->Status.c_str());
-	    Shown = true;
-	 }
-	 
-	 continue;
-      }
+	for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
+		I = Owner->WorkerStep(I))
+	{
+		// There is no item running
+		if (I->CurrentItem == 0)
+		{
+			continue;
+		}
+		emit_package(I->CurrentItem->ShortDesc);
 
-      Shown = true;
-
-//    printf("==================%s=\n", I->CurrentItem->ShortDesc.c_str());
-   emit_package(I->CurrentItem->ShortDesc);
-      // Add in the short description
-      if (I->CurrentItem->Owner->ID != 0)
-	 snprintf(S,End-S," [%lu %s",I->CurrentItem->Owner->ID,
-		  I->CurrentItem->ShortDesc.c_str());
-      else
-	 snprintf(S,End-S," [%s",I->CurrentItem->ShortDesc.c_str());
-      S += strlen(S);
-
-      // Show the short mode string
-      if (I->CurrentItem->Owner->Mode != 0)
-      {
-	 snprintf(S,End-S," %s",I->CurrentItem->Owner->Mode);
-	 S += strlen(S);
-      }
-
-      // Add the current progress
-      if (Mode == Long)
-	 snprintf(S,End-S," %lu",I->CurrentSize);
-      else
-      {
-	 if (Mode == Medium || I->TotalSize == 0)
-	    snprintf(S,End-S," %sB",SizeToStr(I->CurrentSize).c_str());
-      }
-      S += strlen(S);
-
-      // Add the total size and percent
-      if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
-      {
-	unsigned long sub_percent;
-	sub_percent = long(double(I->CurrentSize*100.0)/double(I->TotalSize));
-	 if (Mode == Short)
-	    snprintf(S,End-S," %lu%%",
-		     sub_percent);
-	 else
-	    snprintf(S,End-S,"/%sB %lu%%",SizeToStr(I->TotalSize).c_str(),
-		     sub_percent);
-
-		if (last_sub_percent != sub_percent) {
-			if (last_sub_percent < sub_percent) {
-				pk_backend_set_sub_percentage(m_backend, sub_percent);
-			} else {
-				pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
-				pk_backend_set_sub_percentage(m_backend, sub_percent);
+		// Add the total size and percent
+		if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
+		{
+			unsigned long sub_percent;
+			sub_percent = long(double(I->CurrentSize*100.0)/double(I->TotalSize));
+			if (last_sub_percent != sub_percent) {
+				if (last_sub_percent < sub_percent) {
+					pk_backend_set_sub_percentage(m_backend, sub_percent);
+				} else {
+					pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
+					pk_backend_set_sub_percentage(m_backend, sub_percent);
+				}
+				last_sub_percent = sub_percent;
 			}
-			last_sub_percent = sub_percent;
+		} else {
+			if (last_sub_percent != PK_BACKEND_PERCENTAGE_INVALID) {
+				pk_backend_set_sub_percentage(m_backend,
+							      PK_BACKEND_PERCENTAGE_INVALID);
+				last_sub_percent = PK_BACKEND_PERCENTAGE_INVALID;
+			}
 		}
-// 		printf("====================%lu\n", sub_percent);
-      } else {
-		if (last_sub_percent != PK_BACKEND_PERCENTAGE_INVALID) {
-			pk_backend_set_sub_percentage(m_backend, PK_BACKEND_PERCENTAGE_INVALID);
-			last_sub_percent = PK_BACKEND_PERCENTAGE_INVALID;
-		}
-      }
-      S += strlen(S);
-      snprintf(S,End-S,"]");
-   }
+	}
 
-   // Show something..
-   if (Shown == false)
-      snprintf(S,End-S,/*_*/(" [Working]"));
+	/* Put in the ETA and cps meter, block off signals to prevent strangeness
+	    during resizing */
+	sigset_t Sigs,OldSigs;
+	sigemptyset(&Sigs);
+	sigaddset(&Sigs,SIGWINCH);
+	sigprocmask(SIG_BLOCK,&Sigs,&OldSigs);
 
-   /* Put in the ETA and cps meter, block off signals to prevent strangeness
-      during resizing */
-   sigset_t Sigs,OldSigs;
-   sigemptyset(&Sigs);
-   sigaddset(&Sigs,SIGWINCH);
-   sigprocmask(SIG_BLOCK,&Sigs,&OldSigs);
+// 	if (CurrentCPS != 0)
+// 	{
+// 		char Tmp[300];
+// 		unsigned long ETA = (unsigned long)((TotalBytes - CurrentBytes)/CurrentCPS);
+// 		sprintf(Tmp," %sB/s %s",SizeToStr(CurrentCPS).c_str(),TimeToStr(ETA).c_str());
+// 		unsigned int Len = strlen(Buffer);
+// 		unsigned int LenT = strlen(Tmp);
+// 	//       if (Len + LenT < ScreenWidth)
+// 	//       {
+// 	// 	 memset(Buffer + Len,' ',ScreenWidth - Len);
+// 	// 	 strcpy(Buffer + ScreenWidth - LenT,Tmp);
+// 	//       }
+// 	}
+	Buffer[/*ScreenWidth*/1024] = 0;
+	BlankLine[/*ScreenWidth*/1024] = 0;
+	sigprocmask(SIG_SETMASK,&OldSigs,0);
 
-   if (CurrentCPS != 0)
-   {
-      char Tmp[300];
-      unsigned long ETA = (unsigned long)((TotalBytes - CurrentBytes)/CurrentCPS);
-      sprintf(Tmp," %sB/s %s",SizeToStr(CurrentCPS).c_str(),TimeToStr(ETA).c_str());
-      unsigned int Len = strlen(Buffer);
-      unsigned int LenT = strlen(Tmp);
-//       if (Len + LenT < ScreenWidth)
-//       {	 
-// 	 memset(Buffer + Len,' ',ScreenWidth - Len);
-// 	 strcpy(Buffer + ScreenWidth - LenT,Tmp);
-//       }
-   }
-   Buffer[/*ScreenWidth*/1024] = 0;
-   BlankLine[/*ScreenWidth*/1024] = 0;
-   sigprocmask(SIG_SETMASK,&OldSigs,0);
+	Update = false;
 
-   // Draw the current status
-   if (strlen(Buffer) == strlen(BlankLine))
-      cout << '\r' << Buffer << flush;
-   else
-      cout << '\r' << BlankLine << '\r' << Buffer << flush;
-   memset(BlankLine,' ',strlen(Buffer));
-   BlankLine[strlen(Buffer)] = 0;
-
-   Update = false;
-
-   return !_cancelled;;
+	return !_cancelled;;
 }
 									/*}}}*/
 // AcqPackageKitStatus::MediaChange - Media need to be swapped		/*{{{*/
