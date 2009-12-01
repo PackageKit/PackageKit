@@ -326,7 +326,7 @@ public:
 	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
 	 * Use SetHints("locale=$code") instead.
 	 */
-	void setLocale(const QString& locale);
+	void Q_DECL_DEPRECATED setLocale(const QString& locale);
 
 	/**
 	 * \brief Sets a global hints for all the transactions to be created
