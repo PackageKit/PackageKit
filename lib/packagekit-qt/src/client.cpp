@@ -82,6 +82,7 @@ Client::Client(QObject* parent) : QObject(parent)
 	connect(d->daemon, SIGNAL(RepoListChanged()), this, SIGNAL(repoListChanged()));
 	connect(d->daemon, SIGNAL(RestartSchedule()), this, SIGNAL(restartScheduled()));
 	connect(d->daemon, SIGNAL(TransactionListChanged(const QStringList&)), d, SLOT(transactionListChanged(const QStringList&)));
+	connect(d->daemon, SIGNAL(UpdatesChanged()), this, SIGNAL(updatesChanged()));
 
 	// Set up database for desktop files
 	QSqlDatabase db;
@@ -97,7 +98,7 @@ Client::~Client()
 	delete d;
 }
 
-Client::Actions Client::getActions() const
+Client::Actions Client::actions() const
 {
 	QStringList actions = d->daemon->roles().split(";");
 
@@ -106,6 +107,11 @@ Client::Actions Client::getActions() const
 		flags |= (Action) Util::enumFromString<Client>(action, "Action", "Action");
 	}
 	return flags;
+}
+
+Client::Actions Client::getActions() const
+{
+	return actions();
 }
 
 Client::BackendDetail Client::getBackendDetail() const
@@ -131,7 +137,7 @@ QString Client::backendAuthor() const
 	return d->daemon->backendAuthor();
 }
 
-Client::Filters Client::getFilters() const
+Client::Filters Client::filters() const
 {
 	QStringList filters = d->daemon->filters().split(";");
 
@@ -147,7 +153,12 @@ Client::Filters Client::getFilters() const
 	return flags;
 }
 
-Client::Groups Client::getGroups() const
+Client::Filters Client::getFilters() const
+{
+	return filters();
+}
+
+Client::Groups Client::groups() const
 {
 	QStringList groups = d->daemon->groups().split(";");
 
@@ -158,20 +169,35 @@ Client::Groups Client::getGroups() const
 	return flags;
 }
 
+Client::Groups Client::getGroups() const
+{
+	return groups();
+}
+
 bool Client::locked() const
 {
 	return d->daemon->locked();
 }
 
-QStringList Client::getMimeTypes() const
+QStringList Client::mimeTypes() const
 {
 	return d->daemon->mimeTypes().split(";");
 }
 
-Client::NetworkState Client::getNetworkState() const
+QStringList Client::getMimeTypes() const
+{
+	return mimeTypes();
+}
+
+Client::NetworkState Client::networkState() const
 {
 	QString state = d->daemon->networkState();
 	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
+}
+
+Client::NetworkState Client::getNetworkState() const
+{
+	return networkState();
 }
 
 QString Client::distroId() const

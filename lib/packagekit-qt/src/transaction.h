@@ -119,12 +119,16 @@ public:
 		uint remaining;
 	} ProgressInfo;
 	/**
-	 * TODO this function should be deprecated since any changes to the above
-	 * struct breaks our API
 	 * Returns the current transaction's progress
 	 * \return a ProgressInfo struct describing the transaction's progress
+	 *
+	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
+	 * Use \sa percentage(), \sa subpercentage(), \sa elapsedTime(),
+	 * \sa remainingTime() and \sa speed() instead.
+	 *
+	 * \sa Client::setLocale
 	 */
-	ProgressInfo progress() const;
+	ProgressInfo Q_DECL_DEPRECATED progress() const;
 
 	/**
 	 * The percentage complete of the whole transaction.
@@ -172,7 +176,7 @@ public:
 	 *
 	 * \sa Client::setLocale
 	 */
-	void setLocale(const QString& locale);
+	void Q_DECL_DEPRECATED setLocale(const QString& locale);
 
 	/**
 	 * \brief Tells the underlying package manager to use the given \p hints
@@ -325,11 +329,15 @@ Q_SIGNALS:
 
 	/**
 	 * The transaction has changed it's "cancellability"
+	* \warning THIS signal IS DEPRECATED and will be removed in a future release,
+	 * use \sa changed() and \sa allowCancel() property.
 	 */
 	void allowCancelChanged(bool allow);
 
 	/**
 	 * The transaction's caller activity changed
+	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
+	 * use \sa changed() and \sa callerActive() property.
 	 */
 	void callerActiveChanged(bool isActive);
 
@@ -409,6 +417,8 @@ Q_SIGNALS:
 
 	/**
 	 * Emitted when the progress of the transaction has changed
+	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
+	 * use \sa changed() and progress properties.
 	 */
 	void progressChanged(PackageKit::Transaction::ProgressInfo info);
 
@@ -431,6 +441,8 @@ Q_SIGNALS:
 
 	/**
 	 * Emitted when the transaction's status has changed
+	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
+	 * use \sa changed() and \sa status() property.
 	 */
 	void statusChanged(PackageKit::Transaction::Status s);
 

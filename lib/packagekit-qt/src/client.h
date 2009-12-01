@@ -124,8 +124,15 @@ public:
 
 	/**
 	 * Returns all the actions supported by the current backend
+	 * This function is DEPRECATED and will be removed in a
+	 * future release, use \sa actions() instead.
 	 */
-	Actions getActions() const;
+	Actions Q_DECL_DEPRECATED getActions() const;
+
+	/**
+	 * Returns all the actions supported by the current backend
+	 */
+	Actions actions() const;
 
 	/**
 	 * Holds a backend's detail
@@ -140,8 +147,10 @@ public:
 	/**
 	 * Gets the current backend's details
 	 * \return a BackendDetail struct holding the backend's details. You have to free this structure.
+	 * This method is DEPRECATED use backendAuthor(), backendName()
+	 * and backendDescription() instead.
 	 */
-	BackendDetail getBackendDetail() const;
+	BackendDetail Q_DECL_DEPRECATED getBackendDetail() const;
 
 	/**
 	 * The backend name, e.g. "yum".
@@ -194,8 +203,14 @@ public:
 
 	/**
 	 * Returns the filters supported by the current backend
+	 * This method is DEPRECATED use \sa filters() instead.
 	 */
-	Filters getFilters() const;
+	Filters Q_DECL_DEPRECATED getFilters() const;
+
+	/**
+	 * Returns the filters supported by the current backend
+	 */
+	Filters filters() const;
 
 	/**
 	 * Describes the different groups
@@ -241,8 +256,14 @@ public:
 
 	/**
 	 * Returns the groups supported by the current backend
+	 * This method is DEPRECATED use \sa groups() instead.
 	 */
-	Groups getGroups() const;
+	Groups Q_DECL_DEPRECATED getGroups() const;
+
+	/**
+	 * Returns the groups supported by the current backend
+	 */
+	Groups groups() const;
 
 	/**
 	 * Set when the backend is locked and native tools would fail.
@@ -251,8 +272,14 @@ public:
 
 	/**
 	 * Returns a list containing the MIME types supported by the current backend
+	 * This method is DEPRECATED use \sa mimeTypes() instead.
 	 */
-	QStringList getMimeTypes() const;
+	QStringList Q_DECL_DEPRECATED getMimeTypes() const;
+
+	/**
+	 * Returns a list containing the MIME types supported by the current backend
+	 */
+	QStringList mimeTypes() const;
 
 	/**
 	 * Describes the current network state
@@ -268,8 +295,14 @@ public:
 
 	/**
 	 * Returns the current network state
+	 * This method is DEPRECATED use \sa networkState() instead.
 	 */
-	NetworkState getNetworkState() const;
+	NetworkState Q_DECL_DEPRECATED getNetworkState() const;
+
+	/**
+	 * Returns the current network state
+	 */
+	NetworkState networkState() const;
 
 	/**
 	 * The distribution identifier in the
@@ -853,11 +886,13 @@ Q_SIGNALS:
 
 	/**
 	 * Emitted when the daemon's locked state changes
+	 * This signal is DEPRECATED use \sa changed() and \sa locked() instead.
 	 */
 	void locked(bool locked);
 
 	/**
 	 * Emitted when the network state changes
+	 * This signal is DEPRECATED use \sa changed() and \sa networkState() instead.
 	 */
 	void networkStateChanged(PackageKit::Client::NetworkState state);
 
