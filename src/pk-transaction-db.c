@@ -246,11 +246,11 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
-		return 0;
+		return G_MAXUINT;
 	}
 	if (timespec == NULL) {
-		egg_warning ("no response, assume zero");
-		return 0;
+		egg_warning ("no response, assume maximum value");
+		return G_MAXUINT;
 	}
 
 	/* work out the difference */
@@ -270,29 +270,41 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	gchar *error_msg = NULL;
 	gint rc;
 	const gchar *role_text;
+	gboolean ret = TRUE;
 	gchar *statement;
 	gchar *timespec;
+	guint since;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
 	role_text = pk_role_enum_to_text (role);
-	egg_debug ("reset action time=%s to %s", role_text, timespec);
 
-	statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
+	/* get the previous entry */
+	since = pk_transaction_db_action_time_since (tdb, role);
+	if (since == G_MAXUINT) {
+		egg_debug ("set action time=%s to %s", role_text, timespec);
+		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+	} else {
+		egg_debug ("reset action time=%s to %s", role_text, timespec);
+		statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
+	}
+
+	/* update or insert the entry */
 	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
-	g_free (timespec);
-	g_free (statement);
 
 	/* did we fail? */
 	if (rc != SQLITE_OK) {
 		egg_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-
-	return TRUE;
+out:
+	g_free (timespec);
+	g_free (statement);
+	return ret;
 }
 
 /**
@@ -771,11 +783,8 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	const gchar *statement;
 	gint rc;
 	gchar *error_msg = NULL;
-	const gchar *role_text;
 	gchar *text;
-	gchar *timespec;
 	gboolean ret;
-	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
@@ -829,17 +838,6 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		egg_debug ("adding last action details: %s", error_msg);
 		statement = "CREATE TABLE last_action (role TEXT PRIMARY KEY, timespec TEXT);";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-
-		/* create values for now */
-		timespec = pk_iso8601_present ();
-		for (i=0; i<PK_ROLE_ENUM_LAST; i++) {
-			role_text = pk_role_enum_to_text (i);
-			/* reset to now if the role does not exist */
-			text = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
-			sqlite3_exec (tdb->priv->db, text, NULL, NULL, NULL);
-			g_free (text);
-		}
-		g_free (timespec);
 	}
 
 	/* check config (since 0.4.6) */
@@ -973,6 +971,14 @@ pk_transaction_db_test (EggTest *test)
 	else
 		egg_test_failed (test, "took a long time: %ims", ms);
 
+	/************************************************************/
+	egg_test_title (test, "do we get the correct time on a blank database");
+	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
+	if (value == G_MAXUINT)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct time, got %i", value);
+
 	/************************************************************
 	 ****************          IDENT           ******************
 	 ************************************************************/
@@ -1021,7 +1027,7 @@ pk_transaction_db_test (EggTest *test)
 	if (value > 1 && value <= 4)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "failed to get correct time, %i", value);
+		egg_test_failed (test, "failed to get correct time, %u", value);
 
 	/************************************************************
 	 ****************          PROXIES         ******************

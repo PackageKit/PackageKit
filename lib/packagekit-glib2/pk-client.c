@@ -119,6 +119,7 @@ typedef struct {
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
 	guint				 refcount;
+	gboolean			 signals_connected;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -1328,6 +1329,12 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 static void
 pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 {
+	/* sanity check */
+	if (state->signals_connected) {
+		egg_warning ("not connecting as already connected");
+		return;
+	}
+
 	/* add the signal types */
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -1399,6 +1406,9 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 				     G_CALLBACK (pk_client_media_change_required_cb), state, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Changed",
 				     G_CALLBACK (pk_client_changed_cb), state, NULL);
+
+	/* save for sanity check */
+	state->signals_connected = TRUE;
 }
 
 /**
@@ -1407,6 +1417,12 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 static void
 pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 {
+	/* sanity check */
+	if (!state->signals_connected) {
+		egg_debug ("not disconnecting as never connected");
+		return;
+	}
+
 	dbus_g_proxy_disconnect_signal (proxy, "Finished",
 					G_CALLBACK (pk_client_finished_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
@@ -1435,6 +1451,9 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 					G_CALLBACK (pk_client_media_change_required_cb), state);
 	dbus_g_proxy_disconnect_signal (proxy, "Changed",
 					G_CALLBACK (pk_client_changed_cb), state);
+
+	/* save for sanity check */
+	state->signals_connected = FALSE;
 }
 
 /**

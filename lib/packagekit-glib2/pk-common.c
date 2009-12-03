@@ -111,7 +111,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 	 * time value - try and parse this case */
 	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
 	if (retval != 3) {
-		egg_warning ("could not parse '%s'", iso_date);
+		egg_warning ("could not parse date '%s'", iso_date);
 		goto out;
 	}
 
@@ -166,7 +166,6 @@ void
 pk_common_test (gpointer user_data)
 {
 	EggTest *test = (EggTest *) user_data;
-	gchar *text_safe;
 	gchar *present;
 	GDate *date;
 

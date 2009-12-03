@@ -254,6 +254,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
 
+        # we only check these types
+        self.transaction_sig_check_map = [TS_UPDATE, TS_INSTALL, TS_TRUEINSTALL, TS_OBSOLETING]
+
         # this is global so we can catch sigquit and closedown
         yumbase = self.yumbase
         try:
@@ -1500,6 +1503,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # check all the packages in the transaction if only-trusted
                 if only_trusted:
                     for t in txmbr:
+                        # ignore transactions that do not have to be checked, e.g. obsoleted
+                        if t.output_state not in self.transaction_sig_check_map:
+                            continue
                         pkg = t.po
                         try:
                             signed = self._is_package_repo_signed(pkg)
@@ -1683,6 +1689,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if only_trusted:
                 for t in txmbrs:
                     pkg = t.po
+                    # ignore transactions that do not have to be checked, e.g. obsoleted
+                    if t.output_state not in self.transaction_sig_check_map:
+                        continue
                     try:
                         signed = self._is_package_repo_signed(pkg)
                     except PkError, e:
@@ -1990,6 +1999,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if txmbrs:
                 if only_trusted:
                     for t in txmbrs:
+                        # ignore transactions that do not have to be checked, e.g. obsoleted
+                        if t.output_state not in self.transaction_sig_check_map:
+                            continue
                         pkg = t.po
                         try:
                             signed = self._is_package_repo_signed(pkg)
