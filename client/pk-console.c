@@ -1607,7 +1607,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_CODEC, argv+2, cancellable,
+		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_ANY, argv+2, cancellable,
 					       (PkProgressCallback) pk_console_progress_cb, NULL,
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
