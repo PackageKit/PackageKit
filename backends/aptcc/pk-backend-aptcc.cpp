@@ -20,9 +20,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string>
-
-#include <apt-pkg/error.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/algorithms.h>
 
@@ -36,11 +33,6 @@
 #include "rsources.h"
 
 #include <config.h>
-
-#include <errno.h>
-#include <stdio.h>
-
-using namespace std;
 
 /* static bodges */
 static bool _cancel = false;
@@ -450,6 +442,107 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_set_bool (backend, "getUpdates", false);
 	pk_backend_thread_create (backend, backend_get_or_update_system_thread);
+}
+
+static gboolean
+backend_what_provides_thread (PkBackend *backend)
+{
+	PkProvidesEnum provides;
+	PkBitfield filters;
+	const gchar *search;
+	const gchar *provides_text;
+	gchar **values;
+	bool error = false;
+
+	filters  = (PkBitfield)     pk_backend_get_uint (backend, "filters");
+	provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
+	search   = pk_backend_get_string (backend, "search");
+	values   = g_strsplit (search, ";", 0);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	if (provides == PK_PROVIDES_ENUM_MIMETYPE ||
+	    provides == PK_PROVIDES_ENUM_CODEC ||
+	    provides == PK_PROVIDES_ENUM_ANY) {
+		aptcc *m_apt = new aptcc(backend, _cancel);
+		pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
+		if (m_apt->init()) {
+			egg_debug ("Failed to create apt cache");
+			g_strfreev (values);
+			delete m_apt;
+			pk_backend_finished (backend);
+			return false;
+		}
+
+
+		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+		vector<string> packages;
+		if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+			packages = searchMimeType (backend, values, error, _cancel);
+		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+			packages = searchCodec (backend, values, error, _cancel);
+		} else {
+			// any...
+			packages = searchMimeType (backend, values, error, _cancel);
+			packages = searchCodec (backend, values, error, _cancel);
+		}
+		
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+		for(vector<string>::iterator i = packages.begin();
+		    i != packages.end(); ++i)
+		{
+			if (_cancel) {
+			    break;
+			}
+			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
+			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+			if (ver.end() == true) {
+				continue;
+			}
+			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+		}
+
+		if (error) {
+			// check if app-install-data is installed
+			pkgCache::PkgIterator pkg;
+			pkg = m_apt->packageCache->FindPkg("app-install-data");
+			if (pkg->CurrentState != pkgCache::State::Installed) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_INTERNAL_ERROR,
+						       "You need the app-install-data "
+						       "package to be able to look for "
+						       "applications that can handle "
+						       "this kind of file");
+			}
+		} else {
+			// It's faster to emmit the packages here rather than in the matching part
+			m_apt->emit_packages(output, filters);
+		}
+
+		delete m_apt;
+	} else {
+		provides_text = pk_provides_enum_to_text (provides);
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_NOT_SUPPORTED,
+				       "Provides %s not supported",
+				       provides_text);
+	}
+
+	g_strfreev (values);
+	pk_backend_finished (backend);
+	return true;
+}
+
+/**
+  * backend_what_provides
+  */
+static void
+backend_what_provides (PkBackend *backend,
+		       PkBitfield filters,
+		       PkProvidesEnum provide,
+		       const gchar *search)
+{
+	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
 
 /**
@@ -1360,7 +1453,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_install_update_packages,		/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL,						/* what_provides */
+	backend_what_provides,				/* what_provides */
 	NULL,						/* simulate_install_files */
 	backend_simulate_install_update_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,		/* simulate_remove_packages */

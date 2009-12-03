@@ -32,7 +32,6 @@
 
 #include "apt.h"
 
-typedef std::set<pkgCache::PkgIterator> pkgset;
 typedef std::vector<pkgCache::PkgIterator> pkgvector;
 
 using namespace std;
@@ -103,23 +102,6 @@ string get_long_description_parsed(const pkgCache::VerIterator &ver,
   * Return the PkEnumGroup of the give group string.
   */
 PkGroupEnum get_enum_group(string group);
-
-enum pkg_action_state {pkg_unchanged=-1,
-		       pkg_broken,
-		       pkg_unused_remove,
-		       pkg_auto_hold,
-		       pkg_auto_install,
-		       pkg_auto_remove,
-		       pkg_downgrade,
-		       pkg_hold,
-		       pkg_reinstall,
-		       pkg_install,
-		       pkg_remove,
-		       pkg_upgrade,
-                       pkg_unconfigured};
-const int num_pkg_action_states=12;
-pkg_action_state find_pkg_state(pkgCache::PkgIterator pkg,
-				aptcc &cache);
 
 /**
   * Return if the given vector contain a package

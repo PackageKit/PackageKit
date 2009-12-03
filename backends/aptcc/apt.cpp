@@ -245,25 +245,6 @@ pkgCache::VerIterator aptcc::find_ver(const pkgCache::PkgIterator &pkg)
 	return pkg.VersionList();
 }
 
-pkgDepCache::StateCache aptcc::get_state(const pkgCache::PkgIterator &pkg)
-{
-	return (*packageDepCache)[pkg];
-}
-
-bool aptcc::is_held(const pkgCache::PkgIterator &pkg)
-{
-//   aptitude_state state=get_ext_state(pkg);
-//       pkgTagFile tagfile(&state_file);
-//       pkgTagSection section;
-
-	pkgCache::VerIterator candver = find_candidate_ver(pkg);
-
-	return !pkg.CurrentVer().end() &&
-	    (pkg->SelectedState == pkgCache::State::Hold ||
-	    (!candver.end() && false/*candver.VerStr() == state.forbidver*/));
-	// TODO add forbid ver support
-}
-
 // used to emit packages it collects all the needed info
 void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 			 const pkgCache::VerIterator &ver,
@@ -406,12 +387,10 @@ void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
 
 	std::string homepage;
-// TODO support this
-// #ifdef APT_HAS_HOMEPAGE
+
 	if(rec.Homepage() != "") {
 		homepage = rec.Homepage();
 	}
-// #endif
 
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
@@ -547,7 +526,7 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 	vector<string> packageList;
 	regex_t re;
 
-	if(regcomp(&re, file_name.c_str(), REG_ICASE|REG_NOSUB) != 0) {
+	if(regcomp(&re, file_name.c_str(), REG_NOSUB) != 0) {
 		egg_debug("Regex compilation error");
 		return vector<string>();
 	}
@@ -571,7 +550,6 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 			if (!in != 0) {
 				continue;
 			}
-			map<int, bool> matchers_used;
 			while (!in.eof()) {
 				getline(in, line);
 				if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
@@ -587,17 +565,150 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 	return packageList;
 }
 
+// used to return files it reads, using the info from the files in /var/lib/dpkg/info/
+vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel)
+{
+	vector<string> packageList;
+	regex_t re;
+	gchar *value;
+	gchar *values_str;
+
+	values_str = g_strjoinv("|", values);
+	value = g_strdup_printf("^MimeType=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
+				values_str);
+	g_free(values_str);
+
+	if(regcomp(&re, value, REG_NOSUB) != 0) {
+		egg_debug("Regex compilation error");
+		g_free(value);
+		return vector<string>();
+	}
+	g_free(value);
+
+	DIR *dp;
+	struct dirent *dirp;
+	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
+		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
+		regfree(&re);
+		error = true;
+		return vector<string>();
+	}
+
+	string line;
+	while ((dirp = readdir(dp)) != NULL) {
+		if (_cancel) {
+			break;
+		}
+		if (ends_with(dirp->d_name, ".desktop")) {
+			string f = "/usr/share/app-install/desktop/" + string(dirp->d_name);
+			ifstream in(f.c_str());
+			if (!in != 0) {
+				continue;
+			}
+			bool getName = false;
+			while (!in.eof()) {
+				getline(in, line);
+				if (getName) {
+					if (starts_with(line, "X-AppInstall-Package=")) {
+						// Remove the X-AppInstall-Package=
+						packageList.push_back(line.substr(21));
+						break;
+					}
+				} else {
+				    if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
+						in.seekg(ios_base::beg);
+						getName = true;
+					}
+				}
+			}
+		}
+	}
+
+	closedir(dp);
+	regfree(&re);
+	return packageList;
+}
+
+// TODO this was replaced with data in the cache
+// used to return files it reads, using the info from the files in /var/lib/dpkg/info/
+vector<string> searchCodec (PkBackend *backend, gchar **values, bool &error, bool &_cancel)
+{
+	vector<string> packageList;
+	regex_t re;
+	gchar *value;
+	gchar *values_str;
+
+	values_str = g_strjoinv("|", values);
+	value = g_strdup_printf("^X-AppInstall-Codecs=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
+				values_str);
+	g_free(values_str);
+
+	if(regcomp(&re, value, REG_NOSUB) != 0) {
+		egg_debug("Regex compilation error");
+		g_free(value);
+		return vector<string>();
+	}
+	g_free(value);
+
+	DIR *dp;
+	struct dirent *dirp;
+	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
+		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
+		regfree(&re);
+		error = true;
+		return vector<string>();
+	}
+
+	string line;
+	while ((dirp = readdir(dp)) != NULL) {
+		if (_cancel) {
+			break;
+		}
+		if (ends_with(dirp->d_name, ".desktop")) {
+			string f = "/usr/share/app-install/desktop/" + string(dirp->d_name);
+			ifstream in(f.c_str());
+			if (!in != 0) {
+				continue;
+			}
+			bool getName = false;
+			while (!in.eof()) {
+				getline(in, line);
+				if (getName) {
+					if (starts_with(line, "X-AppInstall-Package=")) {
+						// Remove the X-AppInstall-Package=
+						packageList.push_back(line.substr(21));
+						break;
+					}
+				} else {
+				    if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
+						in.seekg(ios_base::beg);
+						getName = true;
+					}
+				}
+			}
+		}
+	}
+
+	closedir(dp);
+	regfree(&re);
+	return packageList;
+}
+
 // used to emit files it reads the info directly from the files
 void emit_files (PkBackend *backend, const gchar *pi)
 {
 	static string filelist;
 	string line;
+	gchar **parts;
 
+	parts = pk_package_id_split (pi);
 	filelist.erase(filelist.begin(), filelist.end());
 
 	string f = "/var/lib/dpkg/info/" +
-		   string(pk_package_id_split(pi)[PK_PACKAGE_ID_NAME]) +
+		   string(parts[PK_PACKAGE_ID_NAME]) +
 		   ".list";
+	g_strfreev (parts);
+
 	if (FileExists(f)) {
 		ifstream in(f.c_str());
 		if (!in != 0) {

@@ -43,6 +43,16 @@ void emit_files (PkBackend *backend, const gchar *pi);
 */
 vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel);
 
+/**
+*  returns a list of packages names
+*/
+vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
+
+/**
+*  returns a list of packages names
+*/
+vector<string> searchCodec (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
+
 class pkgProblemResolver;
 class aptcc
 {
@@ -60,7 +70,6 @@ public:
 			find_package_id(const gchar *package_id);
 	pkgCache::VerIterator find_ver(const pkgCache::PkgIterator &pkg);
 	pkgCache::VerIterator find_candidate_ver(const pkgCache::PkgIterator &pkg);
-	bool is_held(const pkgCache::PkgIterator &pkg);
 
 	/**
 	 *  runs a transaction to install/remove/update packages
@@ -73,11 +82,6 @@ public:
 	bool runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
 			    bool simulate,
 			    bool remove);
-
-	/**
-	 *  get the state cache of the package
-	 */
-	pkgDepCache::StateCache get_state(const pkgCache::PkgIterator &pkg);
 
 	/**
 	 *  Get depends
@@ -131,20 +135,14 @@ private:
 	OpProgress Progress;
 	pkgPolicy  *Policy;
 	PkBackend  *m_backend;
-	bool &_cancel;
-
-	/** This flag is \b true iff the persistent state has changed (ie, we
-	 *  need to save the cache).
-	 */
-	bool dirty;
+	bool       &_cancel;
 
 	bool TryToInstall(pkgCache::PkgIterator Pkg,
 			  pkgDepCache &Cache,
 			  pkgProblemResolver &Fix,
 			  bool Remove,
 			  bool BrokenFix,
-			  unsigned int &ExpectedInst/*,
-			  bool AllowFail = true*/);
+			  unsigned int &ExpectedInst);
 	/**
 	 *  interprets dpkg status fd
 	*/
