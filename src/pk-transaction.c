@@ -4687,7 +4687,7 @@ pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethod
 			ret = pk_transaction_set_hint (transaction, sections[0], sections[1], &error);
 		} else {
 			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					     "Could not parse '%s'", hints[i]);
+					     "Could not parse hint '%s'", hints[i]);
 			ret = FALSE;
 		}
 		g_strfreev (sections);

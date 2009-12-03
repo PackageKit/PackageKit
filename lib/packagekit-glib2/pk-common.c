@@ -111,7 +111,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 	 * time value - try and parse this case */
 	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
 	if (retval != 3) {
-		egg_warning ("could not parse '%s'", iso_date);
+		egg_warning ("could not parse date '%s'", iso_date);
 		goto out;
 	}
 
