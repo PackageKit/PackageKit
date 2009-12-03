@@ -4682,7 +4682,7 @@ pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethod
 
 	/* parse */
 	for (i=0; hints[i] != NULL; i++) {
-		sections = g_strsplit (hints[i], "=", 3);
+		sections = g_strsplit (hints[i], "=", 2);
 		if (g_strv_length (sections) == 2) {
 			ret = pk_transaction_set_hint (transaction, sections[0], sections[1], &error);
 		} else {
