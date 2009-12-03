@@ -372,7 +372,6 @@ pk_desktop_test (gpointer user_data)
 		egg_test_success (test, "created db with dummy, skipping remaining tests");
 		goto out;
 	}
-
 	if (g_strcmp0 (package, "gnome-packagekit") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -382,22 +381,24 @@ pk_desktop_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "get files");
 	array = pk_desktop_get_files_for_package (desktop, "gnome-packagekit", NULL);
-	if (array->len >= 5)
+	if (array == NULL)
+		egg_test_failed (test, "array NULL");
+	else if (array->len >= 5)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "length=%i", array->len);
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
+	g_ptr_array_unref (array);
 
 	/************************************************************/
 	egg_test_title (test, "get shown files");
-	array = pk_desktop_get_shown_for_package (desktop, "f-spot", NULL);
-	if (array->len == 1)
+	array = pk_desktop_get_shown_for_package (desktop, "gnome-packagekit", NULL);
+	if (array == NULL)
+		egg_test_failed (test, "array NULL");
+	else if (array->len == 5)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "length=%i", array->len);
-	g_ptr_array_foreach (array, (GFunc) g_free, NULL);
-	g_ptr_array_free (array, TRUE);
+	g_ptr_array_unref (array);
 out:
 	g_object_unref (desktop);
 
