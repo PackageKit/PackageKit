@@ -190,7 +190,7 @@ pk_catalog_process_type (PkCatalogState *state, PkCatalogMode mode)
 	gchar *distro_id_part;
 
 	/* split distro id */
-	parts = g_strsplit (state->catalog->priv->distro_id, "-", 0);
+	parts = g_strsplit (state->catalog->priv->distro_id, ";", 0);
 
 	/* no specifier */
 	pk_catalog_process_type_part (state, mode, NULL);
@@ -199,7 +199,7 @@ pk_catalog_process_type (PkCatalogState *state, PkCatalogMode mode)
 	pk_catalog_process_type_part (state, mode, parts[0]);
 
 	/* distro-ver */
-	distro_id_part = g_strjoin ("-", parts[0], parts[1], NULL);
+	distro_id_part = g_strjoin (";", parts[0], parts[1], NULL);
 	pk_catalog_process_type_part (state, mode, distro_id_part);
 	g_free (distro_id_part);
 

@@ -166,7 +166,6 @@ void
 pk_common_test (gpointer user_data)
 {
 	EggTest *test = (EggTest *) user_data;
-	gchar *text_safe;
 	gchar *present;
 	GDate *date;
 
