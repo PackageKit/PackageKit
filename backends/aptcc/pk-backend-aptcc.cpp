@@ -457,7 +457,7 @@ backend_what_provides_thread (PkBackend *backend)
 	filters  = (PkBitfield)     pk_backend_get_uint (backend, "filters");
 	provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	search   = pk_backend_get_string (backend, "search");
-	values   = g_strsplit (search, ";", 0);
+	values   = g_strsplit (search, "&", 0);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -477,17 +477,17 @@ backend_what_provides_thread (PkBackend *backend)
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 		vector<string> packages;
+		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 		if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			packages = searchMimeType (backend, values, error, _cancel);
 		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
-			packages = searchCodec (backend, values, error, _cancel);
+			m_apt->povidesCodec(output, values);
 		} else {
 			// any...
 			packages = searchMimeType (backend, values, error, _cancel);
-			packages = searchCodec (backend, values, error, _cancel);
+			m_apt->povidesCodec(output, values);
 		}
-		
-		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
+
 		for(vector<string>::iterator i = packages.begin();
 		    i != packages.end(); ++i)
 		{

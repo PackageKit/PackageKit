@@ -20,6 +20,7 @@
  */
 
 #include "apt-utils.h"
+#include <iostream>
 
 static int descrBufferSize = 4096;
 static char *descrBuffer = new char[descrBufferSize];
@@ -121,6 +122,7 @@ static char *debParser(string descr)
 	}
 
 	while (nlpos < descr.length()) {
+		// new line position
 		nlpos = descr.find('\n', nlpos);
 		if (nlpos == string::npos) {
 			break;
@@ -130,19 +132,25 @@ static char *debParser(string descr)
 		// del char after '\n' (always " ")
 		i++;
 		descr.erase(i, 1);
+		
 
-		// delete lines likes this: " .", makeing it a \n
+		// replace lines likes this: " .", making it a \n
 		if (descr[i] == '.') {
-			descr.erase(i, 1);
-			nlpos++;
+			descr.replace(i, 1, "\n");
+			nlpos = ++i;
 			continue;
 		}
+
 		// skip ws
 		while (descr[++i] == ' ');
 
-// 		// not a list, erase nl
-// 		if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o'))
-// 			descr.erase(nlpos,1);
+		// not a list, replace nl with " "
+		if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o')) {
+			descr.replace(nlpos, 1, " ");
+		} else {
+			// since 'o' is not a markdown list let it all be just "-"
+			descr.replace(i, 1, "-");
+		}
 
 		nlpos++;
 	}

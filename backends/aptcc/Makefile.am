@@ -10,7 +10,7 @@ libpk_backend_aptcc_la_SOURCES = pk-backend-aptcc.cpp \
 				 pkg_acqfile.cpp \
 				 rsources.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt $(PK_PLUGIN_LIBS)
-libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS)
+libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GST_LIBS)
 libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
 libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(APTCC_CFLAGS)
 EXTRA_DIST = apt.h \

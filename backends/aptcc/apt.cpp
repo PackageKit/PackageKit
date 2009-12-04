@@ -44,6 +44,9 @@
 #include <dirent.h>
 #include <assert.h>
 
+// Gstreamer stuff
+// #include <gst/gst.h>
+
 aptcc::aptcc(PkBackend *backend, bool &cancel)
 	:
 	packageRecords(0),
@@ -373,6 +376,135 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 	}
 }
 
+void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 gchar **values)
+{
+	// The search term from PackageKit daemon:
+	// gstreamer0.10(urisource-foobar)
+	// gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
+
+	// The optional field is more complicated, it can have
+	// types, like int, float...
+	// TODO use some GST helper :/
+ 	regex_t pkre;
+
+	const char *pkreg = "^gstreamer\\([0-9\\.]\\+\\)"
+			    "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
+			    "\\((.*)\\)\\?";
+
+	if(regcomp(&pkre, pkreg, 0) != 0) {
+		egg_debug("Regex compilation error: ", pkreg);
+		return;
+	}
+
+	gchar *value;
+	vector<pair<string, regex_t> > search;
+	for (uint i = 0; i < g_strv_length(values); i++) {
+		value = values[i];
+		regmatch_t matches[5];
+		if (regexec(&pkre, value, 5, matches, 0) == 0) {
+			string version, type, data, opt;
+			version = "\nGstreamer-Version: ";
+			version.append(string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so));
+			type = string(value, matches[2].rm_so, matches[2].rm_eo - matches[2].rm_so);
+			data = string(value, matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
+			if (matches[4].rm_so != -1) {
+				// remove the '(' ')' that the regex matched
+				opt = string(value, matches[4].rm_so + 1, matches[4].rm_eo - matches[4].rm_so - 2);
+			} else {
+				// if the 4th element did not match match everything
+				opt = ".*";
+			}
+
+			if (type.compare("encoder") == 0) {
+				type = "Gstreamer-Encoders";
+			} else if (type.compare("decoder") == 0) {
+				type = "Gstreamer-Decoders";
+			} else if (type.compare("urisource") == 0) {
+				type = "Gstreamer-Uri-Sources";
+			} else if (type.compare("urisink") == 0) {
+				type = "Gstreamer-Uri-Sinks";
+			} else if (type.compare("element") == 0) {
+				type = "Gstreamer-Elements";
+			}
+			cout << version << endl;
+			cout << type << endl;
+			cout << data << endl;
+			cout << opt << endl;
+			regex_t sre;
+			gchar *itemreg;
+// 			GstCaps *caps;
+// 			caps = gst_caps_new_simple(data.c_str(), opt.c_str());
+			itemreg = g_strdup_printf("^%s:.* %s\\(, %s\\(,.*\\|;.*\\|$\\)\\|;\\|$\\)",
+						  type.c_str(),
+						  data.c_str(),
+						  opt.c_str());
+			if(regcomp(&sre, itemreg, REG_NEWLINE | REG_NOSUB) == 0) {
+				search.push_back(pair<string, regex_t>(version, sre));
+			} else {
+				egg_debug("Search regex compilation error: ", itemreg);
+			}
+			g_free(itemreg);
+		} else {
+			egg_debug("Did not match: %", value);
+		}
+	}
+	regfree(&pkre);
+
+	// If nothing matched just return
+	if (search.size() == 0) {
+		return;
+	}
+
+	for (pkgCache::PkgIterator pkg = packageCache->PkgBegin(); !pkg.end(); ++pkg)
+	{
+		if (_cancel) {
+			break;
+		}
+		// Ignore packages that exist only due to dependencies.
+		if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
+			continue;
+		}
+
+		// TODO search in updates packages
+		// Ignore virtual packages
+		pkgCache::VerIterator ver = find_ver(pkg);
+		if (ver.end() == true) {
+			ver = find_candidate_ver(pkg);
+			if (ver.end() == true) {
+				continue;
+			}
+		}
+		pkgCache::VerFileIterator vf = ver.FileList();
+		pkgRecords::Parser &rec = packageRecords->Lookup(vf);
+		const char *start, *stop;
+		rec.GetRec(start, stop);
+		string record(start, stop - start);
+		for (vector<pair<string, regex_t> >::iterator i=search.begin();
+		     i != search.end();
+		++i) {
+			if (_cancel) {
+				break;
+			}
+
+			// if Gstreamer-version: xxx is found try to match the regex
+			if (record.find(i->first) != string::npos) {
+				if (regexec(&i->second, record.c_str(), 0, NULL, 0) == 0) {
+					cout << record << endl;
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+				}
+			}
+		}
+	}
+
+	// frees ours regexs
+	for (vector<pair<string, regex_t> >::iterator i=search.begin();
+		     i != search.end();
+		++i) {
+		regfree(&i->second);
+	}
+}
+
 // used to emit packages it collects all the needed info
 void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 {
@@ -386,23 +518,17 @@ void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 	pkgCache::VerFileIterator vf = ver.FileList();
 	pkgRecords::Parser &rec = packageRecords->Lookup(vf);
 
-	std::string homepage;
-
-	if(rec.Homepage() != "") {
-		homepage = rec.Homepage();
-	}
-
 	gchar *package_id;
 	package_id = pk_package_id_build(pkg.Name(),
-					ver.VerStr(),
-					ver.Arch(),
-					vf.File().Archive());
+					 ver.VerStr(),
+					 ver.Arch(),
+					 vf.File().Archive());
 	pk_backend_details(m_backend,
 			   package_id,
 			   "unknown",
 			   get_enum_group(section),
 			   get_long_description_parsed(ver, packageRecords).c_str(),
-			   homepage.c_str(),
+			   rec.Homepage().c_str(),
 			   ver->Size);
 }
 
@@ -631,68 +757,68 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 
 // TODO this was replaced with data in the cache
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
-vector<string> searchCodec (PkBackend *backend, gchar **values, bool &error, bool &_cancel)
-{
-	vector<string> packageList;
-	regex_t re;
-	gchar *value;
-	gchar *values_str;
-
-	values_str = g_strjoinv("|", values);
-	value = g_strdup_printf("^X-AppInstall-Codecs=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
-				values_str);
-	g_free(values_str);
-
-	if(regcomp(&re, value, REG_NOSUB) != 0) {
-		egg_debug("Regex compilation error");
-		g_free(value);
-		return vector<string>();
-	}
-	g_free(value);
-
-	DIR *dp;
-	struct dirent *dirp;
-	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
-		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
-		regfree(&re);
-		error = true;
-		return vector<string>();
-	}
-
-	string line;
-	while ((dirp = readdir(dp)) != NULL) {
-		if (_cancel) {
-			break;
-		}
-		if (ends_with(dirp->d_name, ".desktop")) {
-			string f = "/usr/share/app-install/desktop/" + string(dirp->d_name);
-			ifstream in(f.c_str());
-			if (!in != 0) {
-				continue;
-			}
-			bool getName = false;
-			while (!in.eof()) {
-				getline(in, line);
-				if (getName) {
-					if (starts_with(line, "X-AppInstall-Package=")) {
-						// Remove the X-AppInstall-Package=
-						packageList.push_back(line.substr(21));
-						break;
-					}
-				} else {
-				    if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
-						in.seekg(ios_base::beg);
-						getName = true;
-					}
-				}
-			}
-		}
-	}
-
-	closedir(dp);
-	regfree(&re);
-	return packageList;
-}
+// vector<string> searchCodec (PkBackend *backend, gchar **values, bool &error, bool &_cancel)
+// {
+// 	vector<string> packageList;
+// 	regex_t re;
+// 	gchar *value;
+// 	gchar *values_str;
+// 
+// 	values_str = g_strjoinv("|", values);
+// 	value = g_strdup_printf("^X-AppInstall-Codecs=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
+// 				values_str);
+// 	g_free(values_str);
+// 
+// 	if(regcomp(&re, value, REG_NOSUB) != 0) {
+// 		egg_debug("Regex compilation error");
+// 		g_free(value);
+// 		return vector<string>();
+// 	}
+// 	g_free(value);
+// 
+// 	DIR *dp;
+// 	struct dirent *dirp;
+// 	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
+// 		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
+// 		regfree(&re);
+// 		error = true;
+// 		return vector<string>();
+// 	}
+// 
+// 	string line;
+// 	while ((dirp = readdir(dp)) != NULL) {
+// 		if (_cancel) {
+// 			break;
+// 		}
+// 		if (ends_with(dirp->d_name, ".desktop")) {
+// 			string f = "/usr/share/app-install/desktop/" + string(dirp->d_name);
+// 			ifstream in(f.c_str());
+// 			if (!in != 0) {
+// 				continue;
+// 			}
+// 			bool getName = false;
+// 			while (!in.eof()) {
+// 				getline(in, line);
+// 				if (getName) {
+// 					if (starts_with(line, "X-AppInstall-Package=")) {
+// 						// Remove the X-AppInstall-Package=
+// 						packageList.push_back(line.substr(21));
+// 						break;
+// 					}
+// 				} else {
+// 				    if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
+// 						in.seekg(ios_base::beg);
+// 						getName = true;
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 
+// 	closedir(dp);
+// 	regfree(&re);
+// 	return packageList;
+// }
 
 // used to emit files it reads the info directly from the files
 void emit_files (PkBackend *backend, const gchar *pi)

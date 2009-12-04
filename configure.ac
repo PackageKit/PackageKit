@@ -705,8 +705,11 @@ if test x$enable_aptcc = xyes; then
 
 	AC_CHECK_LIB(apt-pkg, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
 	AC_CHECK_HEADER(apt-pkg/init.h, , [AC_MSG_ERROR([Can't find the APT header files -- please install libapt-pkg-dev])])
+
 	AC_SUBST(APTCC_CFLAGS)
 	AC_SUBST(APTCC_LIBS)
+
+	AC_CHECK_LIB([gstreamer-0.10], [gst_init], AC_SUBST([GST_LIBS], [`pkg-config –libs gstreamer-0.10`]), AC_MSG_ERROR([Gstreamer-0.10 not found], [2]))
 
 	AC_MSG_CHECKING([whether apt includes the automatic dependency removal patch (required)])
 

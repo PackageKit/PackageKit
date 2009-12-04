@@ -48,11 +48,6 @@ vector<string> search_file (PkBackend *backend, const string &file_name, bool &_
 */
 vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
 
-/**
-*  returns a list of packages names
-*/
-vector<string> searchCodec (PkBackend *backend, gchar **values, bool &error, bool &_cancel);
-
 class pkgProblemResolver;
 class aptcc
 {
@@ -124,6 +119,12 @@ public:
 	 */
 	bool installPackages(pkgDepCache &Cache,
 			     bool Safety = true);
+
+	/**
+	 *  check if the package provides the codec
+	 */
+	void povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			  gchar **values);
 
 	pkgRecords    *packageRecords;
 	pkgCache      *packageCache;
