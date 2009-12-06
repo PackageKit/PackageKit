@@ -129,9 +129,9 @@ void TransactionTest::getRepos_cb(const QString& repoName, const QString& repoDe
 	success = TRUE;
 }
 
-void TransactionTest::error ()
+void TransactionTest::error (PackageKit::Client::DaemonError e)
 {
-	qDebug() << "Aieeeeee";
+	qDebug() << "Aieeeeee, daemon error!" << e;
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TransactionTest);

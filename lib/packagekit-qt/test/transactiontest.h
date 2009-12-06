@@ -37,7 +37,7 @@ public slots:
 	void getDistroUpgrades_cb();
 	void getRepos_cb(const QString& repoName, const QString& repoDetail, bool enabled);
 
-	void error();
+	void error(PackageKit::Client::DaemonError e);
 
 private:
 	bool success;
