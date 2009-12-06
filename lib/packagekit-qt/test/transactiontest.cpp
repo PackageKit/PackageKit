@@ -5,7 +5,7 @@ using namespace PackageKit;
 TransactionTest::TransactionTest(QObject* parent) : QObject(parent) 
 {
 	currentPackage = NULL;
-	connect (PackageKit::Client::instance(), SIGNAL(daemonError(PackageKit::Client::DaemonError)), this, SLOT(error()));
+	connect (PackageKit::Client::instance(), SIGNAL(error(PackageKit::Client::DaemonError)), this, SLOT(error(PackageKit::Client::DaemonError)));
 }
 
 TransactionTest::~TransactionTest()
