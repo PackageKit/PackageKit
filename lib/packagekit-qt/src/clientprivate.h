@@ -60,6 +60,7 @@ public slots:
 	// restartScheduled
 	// repoListChanged
 	// updatesChanged
+	void serviceOwnerChanged (const QString&, const QString&, const QString&);
 
 private:
 	friend class Client;

@@ -23,6 +23,7 @@
 #include "daemonproxy.h"
 #include "transaction.h"
 #include "util.h"
+#include "common.h"
 
 using namespace PackageKit;
 
@@ -84,6 +85,17 @@ void ClientPrivate::networkStateChanged(const QString& state)
 		return;
 	}
 	c->networkStateChanged((Client::NetworkState)value);
+}
+
+void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& oldOnwer, const QString& newOwner)
+{
+	if (name != PK_NAME)
+		return;
+	if (!newOwner.isEmpty ())
+		return;
+	
+	error = Client::ErrorDaemonUnreachable;
+	c->error(error);
 }
 
 void ClientPrivate::removeTransactionFromPool(const QString& tid)
