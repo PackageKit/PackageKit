@@ -180,7 +180,7 @@ pk_catalog_process_type (PkCatalog *catalog, const gchar *type)
 						 packages, &error);
 			g_strfreev (packages);
 		} else if (mode == PK_CATALOG_PROGRESS_FILES) {
-			ret = pk_client_search_files (catalog->priv->client,
+			ret = pk_client_search_file (catalog->priv->client,
 						     pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1),
 						     package, &error);
 		} else if (mode == PK_CATALOG_PROGRESS_PROVIDES) {

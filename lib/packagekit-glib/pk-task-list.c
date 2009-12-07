@@ -564,7 +564,7 @@ pk_task_list_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search for power");
 	client = pk_client_new ();
-	ret = pk_client_search_names (client, PK_FILTER_ENUM_NONE, "power", &error);
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		egg_test_failed (test, "failed: %s", error->message);
 		g_error_free (error);
