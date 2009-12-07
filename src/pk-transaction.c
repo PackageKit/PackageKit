@@ -1825,7 +1825,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		} else {
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
-				pk_backend_package (priv->backend, PK_INFO_ENUM_REMOVING, priv->cached_package_ids[i], "");
+				pk_backend_package (priv->backend, PK_INFO_ENUM_UPDATING, priv->cached_package_ids[i], "");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
