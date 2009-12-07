@@ -924,157 +924,6 @@ pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, 
 /***************************************************************************************************/
 
 /**
- * pk_control_get_network_state_state_finish:
- **/
-static void
-pk_control_get_network_state_state_finish (PkControlState *state, const GError *error)
-{
-	/* get result */
-	if (state->network != PK_NETWORK_ENUM_UNKNOWN) {
-		g_simple_async_result_set_op_res_gssize (state->res, state->network);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
-	else
-		egg_debug ("state array remove %p", state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	g_slice_free (PkControlState, state);
-}
-
-/**
- * pk_control_get_network_state_cb:
- **/
-static void
-pk_control_get_network_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *state)
-{
-	GError *error = NULL;
-	gboolean ret;
-	gchar *network_state = NULL;
-
-	/* finished this call */
-	state->call = NULL;
-
-	/* get the result */
-	ret = dbus_g_proxy_end_call (proxy, call, &error,
-				     G_TYPE_STRING, &network_state,
-				     G_TYPE_INVALID);
-	if (!ret) {
-		/* fix up the D-Bus error */
-		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
-		pk_control_get_network_state_state_finish (state, error);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* save data */
-	state->network = pk_network_enum_from_text (network_state);
-	if (state->network == PK_NETWORK_ENUM_UNKNOWN) {
-		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
-		pk_control_get_network_state_state_finish (state, error);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* we're done */
-	pk_control_get_network_state_state_finish (state, NULL);
-out:
-	g_free (network_state);
-	return;
-}
-
-/**
- * pk_control_get_network_state_async:
- * @control: a valid #PkControl instance
- * @cancellable: a #GCancellable or %NULL
- * @callback: the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * Gets the network state.
- **/
-void
-pk_control_get_network_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
-{
-	GSimpleAsyncResult *res;
-	PkControlState *state;
-
-	g_return_if_fail (PK_IS_CONTROL (control));
-	g_return_if_fail (callback != NULL);
-
-	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_network_state_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	state->network = PK_NETWORK_ENUM_UNKNOWN;
-	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
-	}
-
-	/* call D-Bus async */
-	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetNetworkState",
-					       (DBusGProxyCallNotify) pk_control_get_network_state_cb, state, NULL,
-					       G_TYPE_INVALID);
-	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
-
-	g_object_unref (res);
-}
-
-/**
- * pk_control_get_network_state_finish:
- * @control: a valid #PkControl instance
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: an enumerated network state
- **/
-PkNetworkEnum
-pk_control_get_network_state_finish (PkControl *control, GAsyncResult *res, GError **error)
-{
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
-	g_return_val_if_fail (PK_IS_CONTROL (control), PK_NETWORK_ENUM_UNKNOWN);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), PK_NETWORK_ENUM_UNKNOWN);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_network_state_async, PK_NETWORK_ENUM_UNKNOWN);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return PK_NETWORK_ENUM_UNKNOWN;
-
-	return (PkNetworkEnum) g_simple_async_result_get_op_res_gssize (simple);
-}
-
-/***************************************************************************************************/
-
-/**
  * pk_control_can_authorize_state_finish:
  **/
 static void
@@ -2451,24 +2300,6 @@ pk_control_test_get_time_since_action_cb (GObject *object, GAsyncResult *res, Eg
 }
 
 static void
-pk_control_test_get_network_state_cb (GObject *object, GAsyncResult *res, EggTest *test)
-{
-	PkControl *control = PK_CONTROL (object);
-	GError *error = NULL;
-	PkNetworkEnum network;
-
-	/* get the result */
-	network = pk_control_get_network_state_finish (control, res, &error);
-	if (network == PK_NETWORK_ENUM_UNKNOWN) {
-		egg_test_failed (test, "failed to get network state: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	egg_test_loop_quit (test);
-}
-
-static void
 pk_control_test_can_authorize_cb (GObject *object, GAsyncResult *res, EggTest *test)
 {
 	PkControl *control = PK_CONTROL (object);
@@ -2556,12 +2387,6 @@ pk_control_test (gpointer user_data)
 	pk_control_get_time_since_action_async (control, PK_ROLE_ENUM_GET_UPDATES, NULL, (GAsyncReadyCallback) pk_control_test_get_time_since_action_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got get time since in %i", egg_test_elapsed (test));
-
-	/************************************************************/
-	egg_test_title (test, "get network state async");
-	pk_control_get_network_state_async (control, NULL, (GAsyncReadyCallback) pk_control_test_get_network_state_cb, test);
-	egg_test_loop_wait (test, 5000);
-	egg_test_success (test, "get network state in %i", egg_test_elapsed (test));
 
 	/************************************************************/
 	egg_test_title (test, "get auth state async");
