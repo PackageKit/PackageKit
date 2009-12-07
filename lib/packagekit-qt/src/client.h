@@ -725,7 +725,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchFile(const QString& search, Filters filters = NoFilter);
-	Transaction* searchFile(const QStringList& search, Filters filters = NoFilter);
+	Transaction* searchFiles(const QStringList& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages details
@@ -740,6 +740,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchGroup(Client::Group group, Filters filters = NoFilter);
+	Transaction* searchGroups(Client::Groups group, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages names
@@ -747,6 +748,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchName(const QString& search, Filters filters = NoFilter);
+	Transaction* searchNames(const QStringList& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Tries to find a package name from a desktop file

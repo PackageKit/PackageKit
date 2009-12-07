@@ -407,14 +407,14 @@ Transaction* Client::rollback(Transaction* oldtrans)
 	RUN_TRANSACTION(Rollback(oldtrans->tid()))
 }
 
-Transaction* Client::searchFile(const QString& search, Filters filters)
+Transaction* Client::searchFiles(const QStringList& search, Filters filters)
 {
-	RUN_TRANSACTION(SearchFile(Util::filtersToString(filters), search))
+	RUN_TRANSACTION(SearchFiles(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchFile(const QStringList& search, Filters filters)
+Transaction* Client::searchFile(const QString& search, Filters filters)
 {
-	return searchFile(search.join("&"), filters);
+	return searchFiles(QStringList() << search, filters);
 }
 
 Transaction* Client::searchDetails(const QString& search, Filters filters)
@@ -422,14 +422,29 @@ Transaction* Client::searchDetails(const QString& search, Filters filters)
 	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))
 }
 
+Transaction* Client::searchGroups(Client::Groups groups, Filters filters)
+{
+	QStringList groupsSL;
+	foreach (Client::Group group, groups) {
+		groupsSL << Util::enumToString<Client>(group, "Group", "Group");
+	}
+
+	RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groupsSL))
+}
+
 Transaction* Client::searchGroup(Client::Group group, Filters filters)
 {
-	RUN_TRANSACTION(SearchGroup(Util::filtersToString(filters), Util::enumToString<Client>(group, "Group", "Group")))
+	return searchGroups(Groups() << group, filters);
+}
+
+Transaction* Client::searchNames(const QStringList& search, Filters filters)
+{
+	RUN_TRANSACTION(SearchNames(Util::filtersToString(filters), search))
 }
 
 Transaction* Client::searchName(const QString& search, Filters filters)
 {
-	RUN_TRANSACTION(SearchName(Util::filtersToString(filters), search))
+	return searchNames(QStringList() << search, filters);
 }
 
 Package* Client::searchFromDesktopFile(const QString& path)

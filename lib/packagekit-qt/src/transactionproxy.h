@@ -302,25 +302,25 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("SearchDetails"), argumentList);
     }
 
-    inline QDBusPendingReply<> SearchFile(const QString &filter, const QString &values)
+    inline QDBusPendingReply<> SearchFiles(const QString &filter, const QStringList &values)
     {
         QList<QVariant> argumentList;
         argumentList << qVariantFromValue(filter) << qVariantFromValue(values);
-        return asyncCallWithArgumentList(QLatin1String("SearchFile"), argumentList);
+        return asyncCallWithArgumentList(QLatin1String("SearchFiles"), argumentList);
     }
 
-    inline QDBusPendingReply<> SearchGroup(const QString &filter, const QString &values)
+    inline QDBusPendingReply<> SearchGroups(const QString &filter, const QStringList &values)
     {
         QList<QVariant> argumentList;
         argumentList << qVariantFromValue(filter) << qVariantFromValue(values);
-        return asyncCallWithArgumentList(QLatin1String("SearchGroup"), argumentList);
+        return asyncCallWithArgumentList(QLatin1String("SearchGroups"), argumentList);
     }
 
-    inline QDBusPendingReply<> SearchName(const QString &filter, const QString &values)
+    inline QDBusPendingReply<> SearchNames(const QString &filter, const QStringList &values)
     {
         QList<QVariant> argumentList;
         argumentList << qVariantFromValue(filter) << qVariantFromValue(values);
-        return asyncCallWithArgumentList(QLatin1String("SearchName"), argumentList);
+        return asyncCallWithArgumentList(QLatin1String("SearchNames"), argumentList);
     }
 
     inline QDBusPendingReply<> SetHints(const QStringList &hints)
