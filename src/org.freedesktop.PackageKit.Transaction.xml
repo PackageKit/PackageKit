@@ -992,7 +992,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="as" name="package" direction="in">
+      <arg type="as" name="packages" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1075,7 +1075,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="values" direction="in">
+      <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1089,25 +1089,13 @@
             <doc:para>
               The search should not be treated as case sensitive.
             </doc:para>
-            <doc:para>
-              NOTE: On some backends an OR search can be specified by delimiting
-              each value with <doc:tt>&amp;</doc:tt>, so this query would become
-              <doc:tt>games-text&amp;games-gui</doc:tt>.
-              It is recommended that front-end clients do not depend on this
-              functionality at this time.
-              In future versions of this specification the <doc:tt>values</doc:tt>
-              argument will become a string array (and no delimiters), and all backends
-              will have to accept multiple requests.
-              In this instance the failure to find one of the values would not be
-              fatal, but the failure to find all of the values would be fatal.
-            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="SearchFile">
+    <method name="SearchFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
@@ -1139,29 +1127,16 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="values" direction="in">
+      <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               A filename or fully qualified path and filename on the system.
               If the search term begins with a <doc:tt>/</doc:tt> it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned.
               If the search term does not start with <doc:tt>/</doc:tt> then it should be treated as a single filename, which can be in any directory.
-              Only one filename can be specified, which should not be escaped or surrounded in quotes.
             </doc:para>
             <doc:para>
               The search is case sensitive, and should not be escaped or surrounded in quotes.
-            </doc:para>
-            <doc:para>
-              NOTE: On some backends an OR search can be specified by delimiting
-              each value with <doc:tt>&amp;</doc:tt>, so this query would become
-              <doc:tt>games-text&amp;games-gui</doc:tt>.
-              It is recommended that front-end clients do not depend on this
-              functionality at this time.
-              In future versions of this specification the <doc:tt>values</doc:tt>
-              argument will become a string array (and no delimiters), and all backends
-              will have to accept multiple requests.
-              In this instance the failure to find one of the values would not be
-              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1169,7 +1144,7 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="SearchGroup">
+    <method name="SearchGroups">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
@@ -1212,24 +1187,12 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="values" direction="in">
+      <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               An enumerated group_type, or <doc:tt>unknown</doc:tt>. The search
               can't contain spaces. It must contains only one group_type.
-            </doc:para>
-            <doc:para>
-              NOTE: On some backends an OR search can be specified by delimiting
-              each value with <doc:tt>&amp;</doc:tt>, so this query would become
-              <doc:tt>games-text&amp;games-gui</doc:tt>.
-              It is recommended that front-end clients do not depend on this
-              functionality at this time.
-              In future versions of this specification the <doc:tt>values</doc:tt>
-              argument will become a string array (and no delimiters), and all backends
-              will have to accept multiple requests.
-              In this instance the failure to find one of the values would not be
-              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1237,7 +1200,7 @@
     </method>
 
     <!--*****************************************************************************************-->
-    <method name="SearchName">
+    <method name="SearchNames">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
         <doc:description>
@@ -1286,7 +1249,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="values" direction="in">
+      <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
@@ -1299,18 +1262,6 @@
             </doc:para>
             <doc:para>
               The search should not be treated as case sensitive.
-            </doc:para>
-            <doc:para>
-              NOTE: On some backends an OR search can be specified by delimiting
-              each value with <doc:tt>&amp;</doc:tt>, so this query would become
-              <doc:tt>games-text&amp;games-gui</doc:tt>.
-              It is recommended that front-end clients do not depend on this
-              functionality at this time.
-              In future versions of this specification the <doc:tt>values</doc:tt>
-              argument will become a string array (and no delimiters), and all backends
-              will have to accept multiple requests.
-              In this instance the failure to find one of the values would not be
-              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -1545,24 +1496,12 @@
           </doc:summary>
         </doc:doc>
       </arg>
-      <arg type="s" name="values" direction="in">
+      <arg type="as" name="values" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               The data to send to the backend to get the packages.
               Note: This is backend specific.
-            </doc:para>
-            <doc:para>
-              NOTE: On some backends an OR search can be specified by delimiting
-              each value with <doc:tt>&amp;</doc:tt>, so this query would become
-              <doc:tt>games-text&amp;games-gui</doc:tt>.
-              It is recommended that front-end clients do not depend on this
-              functionality at this time.
-              In future versions of this specification the <doc:tt>values</doc:tt>
-              argument will become a string array (and no delimiters), and all backends
-              will have to accept multiple requests.
-              In this instance the failure to find one of the values would not be
-              fatal, but the failure to find all of the values would be fatal.
             </doc:para>
           </doc:summary>
         </doc:doc>

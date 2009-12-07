@@ -54,9 +54,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
-	NULL,					/* search_file */
-	NULL,					/* search_group */
-	NULL,					/* search_name */
+	NULL,					/* search_files */
+	NULL,					/* search_groups */
+	NULL,					/* search_names */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
 	NULL,					/* what_provides */

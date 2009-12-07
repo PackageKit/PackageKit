@@ -28,17 +28,20 @@
 static PkBackendSpawn *spawn;
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
+	gchar *search;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	filters_text = pk_filter_bitfield_to_text (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, "search-name.sh", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
@@ -95,9 +98,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
-	NULL,					/* search_file */
-	NULL,					/* search_group */
-	backend_search_name,			/* search_name */
+	NULL,					/* search_files */
+	NULL,					/* search_groups */
+	backend_search_names,			/* search_names */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
 	NULL,					/* what_provides */

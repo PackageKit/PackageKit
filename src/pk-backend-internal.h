@@ -116,21 +116,21 @@ void		pk_backend_remove_packages		(PkBackend	*backend,
 							 gboolean	 autoremove);
 void		pk_backend_resolve			(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 gchar		**package_ids);
+							 gchar		**packages);
 void		pk_backend_rollback			(PkBackend	*backend,
 							 const gchar	*transaction_id);
 void		pk_backend_search_details		(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*search);
-void		pk_backend_search_file			(PkBackend	*backend,
+							 gchar		**search);
+void		pk_backend_search_files			(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*search);
-void		pk_backend_search_group			(PkBackend	*backend,
+							 gchar		**search);
+void		pk_backend_search_groups		(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*search);
-void		pk_backend_search_name			(PkBackend	*backend,
+							 gchar		**search);
+void		pk_backend_search_names			(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*search);
+							 gchar		**search);
 void		pk_backend_update_packages		(PkBackend	*backend,
 							 gboolean	 only_trusted,
 							 gchar		**package_ids);
@@ -148,7 +148,7 @@ void		pk_backend_repo_set_data		(PkBackend	*backend,
 void		pk_backend_what_provides		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 PkProvidesEnum provides,
-							 const gchar	*search);
+							 gchar		**search);
 void		pk_backend_get_packages			(PkBackend	*backend,
 							 PkBitfield	 filters);
 void		pk_backend_simulate_install_files	(PkBackend	*backend,

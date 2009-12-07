@@ -191,16 +191,16 @@ backend_rollback (PkBackend *backend, const gchar *transaction_id)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_search_file:
+ * backend_search_files:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Error number 1");
@@ -210,19 +210,19 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
- * backend_search_group:
+ * backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Error number 1");
@@ -278,9 +278,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	backend_rollback,			/* rollback */
 	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	backend_search_files,			/* search_files */
+	backend_search_groups,			/* search_groups */
+	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */

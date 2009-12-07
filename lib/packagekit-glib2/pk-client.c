@@ -96,7 +96,7 @@ typedef struct {
 	gchar				**package_ids;
 	gchar				*parameter;
 	gchar				*repo_id;
-	gchar				*search;
+	gchar				**search;
 	gchar				*tid;
 	gchar				*transaction_id;
 	gchar				*value;
@@ -631,7 +631,7 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	g_free (state->package_id);
 	g_free (state->parameter);
 	g_free (state->repo_id);
-	g_free (state->search);
+	g_strfreev (state->search);
 	g_free (state->value);
 	g_free (state->tid);
 	g_free (state->transaction_id);
@@ -1516,31 +1516,31 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchName",
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchNames",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRING, state->search,
+						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchDetails",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRING, state->search,
+						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchGroup",
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchGroups",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRING, state->search,
+						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_FILE) {
 		filters_text = pk_filter_bitfield_to_text (state->filters);
-		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchFile",
+		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchFiles",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
-						       G_TYPE_STRING, state->search,
+						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_DETAILS) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDetails",
@@ -1607,7 +1607,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_STRING, enum_text,
-						       G_TYPE_STRING, state->search,
+						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDistroUpgrades",
@@ -1930,7 +1930,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->filters = filters;
-	state->search = g_strjoinv ("&", values);
+	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -1979,7 +1979,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->filters = filters;
-	state->search = g_strjoinv ("&", values);
+	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2026,7 +2026,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->filters = filters;
-	state->search = g_strjoinv ("&", values);
+	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2073,7 +2073,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->filters = filters;
-	state->search = g_strjoinv ("&", values);
+	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2551,7 +2551,7 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
 	}
 	state->filters = filters;
 	state->provides = provides;
-	state->search = g_strjoinv ("&", values);
+	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();

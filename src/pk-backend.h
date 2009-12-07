@@ -274,16 +274,16 @@ typedef struct {
 							 const gchar	*transaction_id);
 	void		(*search_details)		(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*values);
-	void		(*search_file)			(PkBackend	*backend,
+							 gchar		**values);
+	void		(*search_files)			(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*values);
-	void		(*search_group)			(PkBackend	*backend,
+							 gchar		**values);
+	void		(*search_groups)		(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*values);
-	void		(*search_name)			(PkBackend	*backend,
+							 gchar		**values);
+	void		(*search_names)			(PkBackend	*backend,
 							 PkBitfield	 filters,
-							 const gchar	*values);
+							 gchar		**values);
 	void		(*update_packages)		(PkBackend	*backend,
 							 gboolean	 only_trusted,
 							 gchar		**package_ids);
@@ -292,7 +292,7 @@ typedef struct {
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkBitfield	 filters,
 							 PkProvidesEnum	 provides,
-							 const gchar	*values);
+							 gchar		**values);
 	void		(*simulate_install_files)	(PkBackend	*backend,
 							 gchar		**full_paths);
 	void		(*simulate_install_packages)	(PkBackend	*backend,

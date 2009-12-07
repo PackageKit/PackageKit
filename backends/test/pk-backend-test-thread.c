@@ -67,7 +67,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -121,7 +121,7 @@ backend_search_name_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_search_name_thread);
 }
@@ -167,9 +167,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
-	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	NULL,					/* search_files */
+	backend_search_group,			/* search_groups */
+	backend_search_name,			/* search_names */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
 	NULL,					/* what_provides */

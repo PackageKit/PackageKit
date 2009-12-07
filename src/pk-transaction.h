@@ -180,19 +180,19 @@ void		 pk_transaction_rollback			(PkTransaction	*transaction,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_search_details			(PkTransaction	*transaction,
 								 const gchar	*filter,
-								 const gchar	*values,
+								 gchar		**values,
 								 DBusGMethodInvocation *context);
-void		 pk_transaction_search_file			(PkTransaction	*transaction,
+void		 pk_transaction_search_files			(PkTransaction	*transaction,
 								 const gchar	*filter,
-								 const gchar	*values,
+								 gchar		**values,
 								 DBusGMethodInvocation *context);
-void		 pk_transaction_search_group			(PkTransaction	*transaction,
+void		 pk_transaction_search_groups			(PkTransaction	*transaction,
 								 const gchar	*filter,
-								 const gchar	*values,
+								 gchar		**values,
 								 DBusGMethodInvocation *context);
-void		 pk_transaction_search_name			(PkTransaction	*transaction,
+void		 pk_transaction_search_names			(PkTransaction	*transaction,
 								 const gchar	*filter,
-								 const gchar	*values,
+								 gchar		**values,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_set_locale			(PkTransaction	*transaction,
 								 const gchar	*code,
@@ -222,7 +222,7 @@ void		 pk_transaction_update_system			(PkTransaction	*transaction,
 void		 pk_transaction_what_provides			(PkTransaction	*transaction,
 								 const gchar	*filter,
 								 const gchar	*type,
-								 const gchar	*values,
+								 gchar		**values,
 								 DBusGMethodInvocation *context);
 
 G_END_DECLS

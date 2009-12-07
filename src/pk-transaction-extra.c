@@ -127,12 +127,15 @@ static PkPackage *
 pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, const gchar *filename)
 {
 	PkPackage *package = NULL;
+	gchar **filenames;
 
 	/* use PK to find the correct package */
 	if (extra->priv->list->len > 0)
 		g_ptr_array_remove_range (extra->priv->list, 0, extra->priv->list->len);
 	pk_backend_reset (extra->priv->backend);
-	pk_backend_search_file (extra->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filename);
+	filenames = g_strsplit (filename, "|||", -1);
+	pk_backend_search_files (extra->priv->backend, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), filenames);
+	g_strfreev (filenames);
 
 	/* wait for finished */
 	g_main_loop_run (extra->priv->loop);
