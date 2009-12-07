@@ -393,8 +393,14 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 	guint i;
 
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
+	/* no database */
+	if (extra->priv->db == NULL) {
+		egg_debug ("unable to import: no database");
+		return FALSE;
+	}
+
+	/* no support */
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
 		egg_debug ("cannot search files");
 		return FALSE;
