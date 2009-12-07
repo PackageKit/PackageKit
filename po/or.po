@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.or\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-14 08:42+0000\n"
-"PO-Revision-Date: 2009-11-14 15:18+0530\n"
+"POT-Creation-Date: 2009-12-07 08:29+0000\n"
+"PO-Revision-Date: 2009-12-07 17:46+0530\n"
 "Last-Translator: Manoj Kumar Giri <mgiri@redhat.com>\n"
 "Language-Team: Oriya <oriya-it@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -31,125 +31,130 @@ msgstr ""
 "\n"
 "\n"
 "\n"
+"\n"
+"\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:173
+#. TRANSLATORS: the role is the point of the transaction, e.g. update-system
+#: ../client/pk-console.c:175 ../client/pk-console.c:597
 msgid "Transaction"
 msgstr "କାରବାର"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:175
+#: ../client/pk-console.c:177
 msgid "System time"
 msgstr "ତନ୍ତ୍ର ସମୟ"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:177
+#: ../client/pk-console.c:179
 msgid "Succeeded"
 msgstr "ସଫଳ ହୋଇଛି"
 
-#: ../client/pk-console.c:177
+#: ../client/pk-console.c:179
 msgid "True"
 msgstr "True (ସତ୍ୟ)"
 
-#: ../client/pk-console.c:177
+#: ../client/pk-console.c:179
 msgid "False"
 msgstr "False (ମିଥ୍ୟା)"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:179 ../src/pk-polkit-action-lookup.c:336
+#: ../client/pk-console.c:181 ../src/pk-polkit-action-lookup.c:336
 msgid "Role"
 msgstr "ଭୂମିକା"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:184
+#: ../client/pk-console.c:186
 msgid "Duration"
 msgstr "ଅବଧି"
 
-#: ../client/pk-console.c:184
+#: ../client/pk-console.c:186
 msgid "(seconds)"
 msgstr "(ସେକଣ୍ଡ)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:188 ../src/pk-polkit-action-lookup.c:350
+#: ../client/pk-console.c:190 ../src/pk-polkit-action-lookup.c:350
 msgid "Command line"
 msgstr "ପାଠ୍ୟ ନିର୍ଦ୍ଦେଶ"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:190
+#: ../client/pk-console.c:192
 msgid "User ID"
 msgstr "ଚାଳକ ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:197
+#: ../client/pk-console.c:199
 msgid "Username"
 msgstr "ଚାଳକ ନାମ"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:201
+#: ../client/pk-console.c:203
 msgid "Real name"
 msgstr "ପ୍ରକୃତ ନାମ"
 
-#: ../client/pk-console.c:209
+#: ../client/pk-console.c:211
 msgid "Affected packages:"
 msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ:"
 
-#: ../client/pk-console.c:211
+#: ../client/pk-console.c:213
 msgid "Affected packages: None"
 msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ: କିଛିନୁହଁ"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:248
 msgid "Distribution"
 msgstr "ବଣ୍ଟନ"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:248
+#: ../client/pk-console.c:250
 msgid "Type"
 msgstr "ପ୍ରକାର"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:250 ../client/pk-console.c:289
+#: ../client/pk-console.c:252 ../client/pk-console.c:291
 msgid "Summary"
 msgstr "ସାରାଂଶ"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:278
+#: ../client/pk-console.c:280
 msgid "Category"
 msgstr "ବିଭାଗ"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:280
+#: ../client/pk-console.c:282
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:283
+#: ../client/pk-console.c:285
 msgid "Parent"
 msgstr "ମୂଖ୍ୟ"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:286
+#: ../client/pk-console.c:288
 msgid "Name"
 msgstr "ନାମ"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:292
+#: ../client/pk-console.c:294
 msgid "Icon"
 msgstr "ଚିତ୍ରସଂକେତ"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:338
+#: ../client/pk-console.c:340
 msgid "Details about the update:"
 msgstr "ଅଦ୍ୟତନ ବିଷୟରେ ବିସ୍ତୃତ ବିବରଣୀ:"
 
 #. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:344 ../lib/packagekit-glib2/pk-task-text.c:126
+#: ../client/pk-console.c:346 ../client/pk-console.c:616
+#: ../lib/packagekit-glib2/pk-task-text.c:126
 #: ../lib/packagekit-glib2/pk-task-text.c:208
 #: ../src/pk-polkit-action-lookup.c:361
 msgid "Package"
@@ -158,69 +163,69 @@ msgstr[0] "ପ୍ୟାକେଜ"
 msgstr[1] "ପ୍ୟାକେଜଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:347
+#: ../client/pk-console.c:349
 msgid "Updates"
 msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:351
+#: ../client/pk-console.c:353
 msgid "Obsoletes"
 msgstr "ଅଚଳଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:355 ../lib/packagekit-glib2/pk-task-text.c:211
+#: ../client/pk-console.c:357 ../lib/packagekit-glib2/pk-task-text.c:211
 msgid "Vendor"
 msgstr "ବିକ୍ରେତା"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:359
+#: ../client/pk-console.c:361
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:363
+#: ../client/pk-console.c:365
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:367
+#: ../client/pk-console.c:369
 msgid "Restart"
 msgstr "ପୁନଃଚାଳନ"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:371
+#: ../client/pk-console.c:373
 msgid "Update text"
 msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:375
+#: ../client/pk-console.c:377
 msgid "Changes"
 msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:379
+#: ../client/pk-console.c:381
 msgid "State"
 msgstr "ଅବସ୍ଥା"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:383
+#: ../client/pk-console.c:385
 msgid "Issued"
 msgstr "ପ୍ରଦତ୍ତ"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:387 ../lib/packagekit-glib2/pk-console-shared.c:510
+#: ../client/pk-console.c:389 ../lib/packagekit-glib2/pk-console-shared.c:510
 msgid "Updated"
 msgstr "ଅଦ୍ୟତିତ"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:423
+#: ../client/pk-console.c:425
 msgid "Enabled"
 msgstr "ସକ୍ରିୟ"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:426
+#: ../client/pk-console.c:428
 msgid "Disabled"
 msgstr "ନିଷ୍କ୍ରିୟ"
 
@@ -250,49 +255,69 @@ msgid "Application restart required by:"
 msgstr "ପାଇଁ ପ୍ରୟୋଗ ପୁନଃଚାଳନ ଆବଶ୍ୟକ:"
 
 #. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:505
+#: ../client/pk-console.c:507
 msgid "Package description"
 msgstr "ପ୍ୟାକେଜ ବର୍ଣ୍ଣନା"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:536
+#: ../client/pk-console.c:538
 msgid "Message:"
 msgstr "ସନ୍ଦେଶ:"
 
 #. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:557
+#: ../client/pk-console.c:559
 msgid "No files"
 msgstr "କୌଣସି ଫାଇଲ ନାହିଁ"
 
 #. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:562
+#: ../client/pk-console.c:564
 msgid "Package files"
 msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
 
+#. TRANSLATORS: the percentage complete of the transaction
+#: ../client/pk-console.c:632
+msgid "Percentage"
+msgstr "ପ୍ରତିଶତ"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: ../client/pk-console.c:650
+msgid "Status"
+msgstr "ଅବସ୍ଥିତି"
+
+#. TRANSLATORS: the results from the transaction
+#: ../client/pk-console.c:678
+msgid "Results:"
+msgstr "ଫଳାଫଳ:"
+
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:636
+#: ../client/pk-console.c:685
 msgid "Fatal error"
 msgstr "ମାରାତ୍ମକ ତ୍ରୁଟି"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:645
+#: ../client/pk-console.c:694
 #: ../contrib/command-not-found/pk-command-not-found.c:432
-#: ../contrib/command-not-found/pk-command-not-found.c:599
+#: ../contrib/command-not-found/pk-command-not-found.c:603
 msgid "The transaction failed"
 msgstr "କାରବାର ବିଫଳ ହୋଇଛି"
 
+#. TRANSLATORS: print a message when there are no updates
+#: ../client/pk-console.c:721
+msgid "There are no updates available at this time."
+msgstr "ଏହି ସମୟରେ କୌଣସି ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ।"
+
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:713
+#: ../client/pk-console.c:808
 msgid "Please restart the computer to complete the update."
 msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ।"
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:716
+#: ../client/pk-console.c:811
 msgid "Please logout and login to complete the update."
 msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ।"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:719
+#: ../client/pk-console.c:814
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -301,7 +326,7 @@ msgstr ""
 "ସ୍ଥାପିତ ହୋଇସାରିଛି।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:722
+#: ../client/pk-console.c:817
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -310,19 +335,19 @@ msgstr ""
 "ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:745
+#: ../client/pk-console.c:840
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:773
+#: ../client/pk-console.c:868
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ଏହି ସାଧନ ସ୍ଥାପିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:801 ../client/pk-console.c:829
+#: ../client/pk-console.c:896 ../client/pk-console.c:924
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
@@ -331,232 +356,229 @@ msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋ
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:857 ../client/pk-console.c:885
-#: ../client/pk-console.c:913 ../client/pk-console.c:941
-#: ../client/pk-console.c:969
+#: ../client/pk-console.c:952 ../client/pk-console.c:980
+#: ../client/pk-console.c:1008 ../client/pk-console.c:1036
+#: ../client/pk-console.c:1064
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "ଏହି ସାଧନ ସମସ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:998
+#: ../client/pk-console.c:1093
 msgid "The daemon crashed mid-transaction!"
 msgstr "ଡେମନ ମଧ୍ଯ-କାରବାରକୁ ନଷ୍ଟ କରିଛି!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1032
+#: ../client/pk-console.c:1127
 msgid "PackageKit Console Interface"
 msgstr "PackageKit କୋନସୋଲ ଅନ୍ତରାପୃଷ୍ଠ"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1034
+#: ../client/pk-console.c:1129
 msgid "Subcommands:"
 msgstr "ଉପ ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:1113
+#: ../client/pk-console.c:1208
 msgid "Failed to get the time since this action was last completed"
 msgstr "ଏହି କାର୍ଯ୍ୟଟି ଶେଷରେ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଥିବା ହେତୁ ସମୟ ପାଇବାରେ ବିଫଳ"
 
-#. TRANSLATORS: command line argument, if we should show debugging information
-#. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1150 ../client/pk-generate-pack.c:223
-#: ../client/pk-monitor.c:281
-#: ../contrib/command-not-found/pk-command-not-found.c:653
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
-#: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
-msgid "Show extra debugging information"
-msgstr "ଅତିରିକ୍ତ ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ଦର୍ଶାନ୍ତୁ"
-
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1153 ../client/pk-monitor.c:283
+#: ../client/pk-console.c:1244 ../client/pk-monitor.c:280
 msgid "Show the program version and exit"
 msgstr "ପ୍ରଗ୍ରାମ ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1156
+#: ../client/pk-console.c:1247
 msgid "Set the filter, e.g. installed"
 msgstr "ଛାଣକ ସେଟ କରନ୍ତୁ, ଯେପରିକି ସ୍ଥାପିତ"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1159
+#: ../client/pk-console.c:1250
 msgid "Exit without waiting for actions to complete"
 msgstr "କାର୍ଯ୍ୟ ସମ୍ପୂର୍ଣ୍ଣ ହେବା ପର୍ଯ୍ୟନ୍ତ ଅପେକ୍ଷା ନକରି ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1162
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:530
+#: ../client/pk-console.c:1253
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "ନିଶ୍ଚିତକରଣ ବିନା ପ୍ୟାକେଟଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1165
+#: ../client/pk-console.c:1256
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "ସ୍ଥିର ନେଟୱର୍କ ବ୍ୟାଣ୍ଡୱିଡ଼ଥ ବ୍ୟବହାର କରି ନିର୍ଦ୍ଦେଶକୁ ଚଲାନ୍ତୁ ଏବଂ କମ ବିଦ୍ୟୁତ ଶକ୍ତି ବ୍ୟବହାର କରି"
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: ../client/pk-console.c:1259
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"ଜୀବନାୟନ ୱିଜେଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପରିବର୍ତ୍ତେ ପରଦାରେ ଗୋଟିଏ ଯନ୍ତ୍ର ପଠନ ଯୋଗ୍ୟ "
+"ଫଳାଫଳକୁ ମୁଦ୍ରଣ କରନ୍ତୁ"
+
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1191
+#: ../client/pk-console.c:1281
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1247
+#: ../client/pk-console.c:1339
 msgid "The filter specified was invalid"
 msgstr "ଉଲ୍ଲିଖିତ ଛାଣକଟି ଅବୈଧ ଅଟେ"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1266
+#: ../client/pk-console.c:1358
 msgid "A search type is required, e.g. name"
 msgstr "ଗୋଟିଏ ସନ୍ଧାନ ପ୍ରକାର ଆବଶ୍ୟକ, ଯେପରିକି ନାମ"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1273 ../client/pk-console.c:1285
-#: ../client/pk-console.c:1297 ../client/pk-console.c:1309
+#: ../client/pk-console.c:1365 ../client/pk-console.c:1377
+#: ../client/pk-console.c:1389 ../client/pk-console.c:1401
 msgid "A search term is required"
 msgstr "ଗୋଟିଏ ସନ୍ଧାନ ନିତି ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1319
+#: ../client/pk-console.c:1411
 msgid "Invalid search type"
 msgstr "ଅବୈଧ ସନ୍ଧାନ ପ୍ରକାର"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1325
+#: ../client/pk-console.c:1417
 msgid "A package name to install is required"
 msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1334
+#: ../client/pk-console.c:1426
 msgid "A filename to install is required"
 msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଗୋଟିଏ ଫାଇଲ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1438
 msgid "A type, key_id and package_id are required"
 msgstr "ଗୋଟିଏ ପ୍ରକାର, key_id ଏବଂ package_id ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1357
+#: ../client/pk-console.c:1449
 msgid "A package name to remove is required"
 msgstr "କାଢ଼ିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1366
+#: ../client/pk-console.c:1458
 msgid "A destination directory and the package names to download are required"
 msgstr "ଗୋଟିଏ ଲକ୍ଷ୍ଯସ୍ଥଳ ଡିରେକ୍ଟୋରୀ ଏବଂ ଆହରଣ କରିବା ପାଇଁ ପ୍ୟାକେଜ ନାମଗୁଡ଼ିକ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1373
+#: ../client/pk-console.c:1465
 msgid "Directory not found"
 msgstr "ଡିରେକ୍ଟୋରୀ ମିଳୁନାହିଁ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1382
+#: ../client/pk-console.c:1474
 msgid "A licence identifier (eula-id) is required"
 msgstr "ଗୋଟିଏ ଅନୁମତିପତ୍ର ପରିଚାୟକ (eula-id) ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1393
+#: ../client/pk-console.c:1485
 msgid "A transaction identifier (tid) is required"
 msgstr "ଗୋଟିଏ କାରବାର ପରିଚାୟକ (tid) ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1414
+#: ../client/pk-console.c:1506
 msgid "A package name to resolve is required"
 msgstr "ସମାଧାନ କରିବା ପାଇଁ ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1425 ../client/pk-console.c:1436
+#: ../client/pk-console.c:1517 ../client/pk-console.c:1528
 msgid "A repository name is required"
 msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1447
+#: ../client/pk-console.c:1539
 msgid "A repo name, parameter and value are required"
 msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ, ପ୍ରାଚଳ ଏବଂ ମୂଲ୍ୟ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1556
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ଗୋଟିଏ କାର୍ଯ୍ୟ, ଉଦାହରଣ ସ୍ୱରୂପ 'update-system' ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1471
+#: ../client/pk-console.c:1563
 msgid "A correct role is required"
 msgstr "ଗୋଟିଏ ସଠିକ ଭୂମିକା ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1481 ../client/pk-console.c:1496
-#: ../client/pk-console.c:1505 ../client/pk-console.c:1525
-#: ../client/pk-console.c:1534 ../client/pk-generate-pack.c:287
+#: ../client/pk-console.c:1573 ../client/pk-console.c:1588
+#: ../client/pk-console.c:1597 ../client/pk-console.c:1617
+#: ../client/pk-console.c:1626 ../client/pk-generate-pack.c:298
 msgid "A package name is required"
 msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1514
+#: ../client/pk-console.c:1606
 msgid "A package provide string is required"
 msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ପ୍ରଦତ୍ତ ବାକ୍ୟଖଣ୍ଡ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1686
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ବିକଳ୍ପ '%s' ଟି ସମର୍ଥିତ ନୁହଁ"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1604
+#: ../client/pk-console.c:1696
 msgid "Command failed"
 msgstr "ନିର୍ଦ୍ଦେଶ ବିଫଳ ହୋଇଛି"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:226
+#: ../client/pk-generate-pack.c:237
 msgid "Set the file name of dependencies to be excluded"
 msgstr "ବାହାର କରିବା ପାଇଁ ନିର୍ଭରତାଗୁଡ଼ିକର ଫାଇଲ ନାମକୁ ସେଟ କରନ୍ତୁ"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:229
+#: ../client/pk-generate-pack.c:240
 msgid "The output file or directory (the current directory is used if ommitted)"
 msgstr "ନିର୍ଗମ ଫାଇଲ କିମ୍ବା ଡିରେକ୍ଟୋରୀ (ଛାଡ଼ି ଯାଇଥିଲେ ପ୍ରଚଳିତ ଡିରେକ୍ଟୋରୀକୁ ବ୍ୟବହାର କରାଯାଇଛି)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:232
+#: ../client/pk-generate-pack.c:243
 msgid "The package to be put into the service pack"
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ମଧ୍ଯରେ ରଖିବାକୁ ଥିବା ପ୍ୟାକେଜ"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:235
+#: ../client/pk-generate-pack.c:246
 msgid "Put all updates available in the service pack"
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ମଧ୍ଯରେ ସମସ୍ତ ଉପଲବ୍ଧ ଅଦ୍ୟତନଗୁଡ଼ିକୁ ରଖନ୍ତୁ"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:271
+#: ../client/pk-generate-pack.c:282
 msgid "Neither --package or --updates option selected."
 msgstr "--package କିମ୍ବା --updates ବିକଳ୍ପକୁ ବଛାହୋଇନାହିଁ।"
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:279
+#: ../client/pk-generate-pack.c:290
 msgid "Both options selected."
 msgstr "ଉଭୟ ବିକଳ୍ପଗୁଡ଼ିକୁ ବଛାହୋଇଛି।"
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:295
+#: ../client/pk-generate-pack.c:306
 msgid "A output directory or file name is required"
 msgstr "ଗୋଟିଏ ନିର୍ଗମ ଡିରେକ୍ଟୋରୀ କିମ୍ବା ଫାଇଲ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
-#: ../client/pk-generate-pack.c:313
+#: ../client/pk-generate-pack.c:324
 msgid "The dameon failed to startup"
 msgstr "ଡେମନ ଆରମ୍ଭ ହେବାରେ ବିଫଳ ହୋଇଛି"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:324 ../client/pk-generate-pack.c:330
+#: ../client/pk-generate-pack.c:335 ../client/pk-generate-pack.c:341
 msgid "The package manager cannot perform this type of operation."
 msgstr "ପ୍ୟାକେଜ ପରିଚାଳକ ଏହି ପ୍ରକାର ପ୍ରୟୋଗକୁ କାର୍ଯ୍ୟକାରୀ କରିପାରେ ନାହିଁ।"
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:337
+#: ../client/pk-generate-pack.c:348
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
@@ -565,64 +587,64 @@ msgstr ""
 "ହୋଇନାହିଁ।"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:348
+#: ../client/pk-generate-pack.c:359
 msgid "If specifying a file, the service pack name must end with"
 msgstr "ଯଦି ଗୋଟିଏ ଫାଇଲକୁ ଉଲ୍ଲେଖ କରାଯାଏ, ତେବେ ସର୍ଭିସ ପ୍ୟାକ ନାମ ଏହା ସହିତ ସମାପ୍ତ ହୋଇଥାଏ"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:364
+#: ../client/pk-generate-pack.c:375
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "ସମାନ ନାମ ବିଶିଷ୍ଟ ଗୋଟିଏ ପ୍ୟାକ ପୂର୍ବରୁ ଅବସ୍ଥିତ, ଆପଣ ଏହାକୁ ନବଲିଖନ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:367
+#: ../client/pk-generate-pack.c:378
 msgid "The pack was not overwritten."
 msgstr "ପ୍ୟାକଟି ନବଲିଖନ ହୋଇନାହିଁ।"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:380
+#: ../client/pk-generate-pack.c:391
 msgid "Failed to create directory:"
 msgstr "ଡିରେକ୍ଟୋରୀ ନିର୍ମାଣ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:392
+#: ../client/pk-generate-pack.c:403
 msgid "Failed to open package list."
 msgstr "ପ୍ୟାକେଜ ତାଲିକା ଖୋଲିବାରେ ବିଫଳ।"
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:401
+#: ../client/pk-generate-pack.c:412
 msgid "Finding package name."
 msgstr "ପ୍ୟାକେଜ ନାମ ଖୋଜୁଅଛି।"
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:405
+#: ../client/pk-generate-pack.c:416
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "ପ୍ୟାକେଜ '%s'କୁ ଖୋଜିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:413
+#: ../client/pk-generate-pack.c:424
 msgid "Creating service pack..."
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ କରୁଅଛି..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:428
+#: ../client/pk-generate-pack.c:439
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "ସର୍ଭିସ ପ୍ୟାକ ନିର୍ମାଣ ହୋଇଅଛି '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:433
+#: ../client/pk-generate-pack.c:444
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s'କୁ ନିର୍ମାଣ କରିବାରେ ବିଫଳ: %s"
 
-#: ../client/pk-monitor.c:211
+#: ../client/pk-monitor.c:210
 msgid "Failed to get daemon state"
 msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:299
+#: ../client/pk-monitor.c:296
 msgid "PackageKit Monitor"
 msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
 
@@ -706,17 +728,17 @@ msgid "Failed to search for file"
 msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:562
+#: ../contrib/command-not-found/pk-command-not-found.c:566
 msgid "Failed to launch:"
 msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: we failed to install the package
-#: ../contrib/command-not-found/pk-command-not-found.c:590
+#: ../contrib/command-not-found/pk-command-not-found.c:594
 msgid "Failed to install packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:669
+#: ../contrib/command-not-found/pk-command-not-found.c:670
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit ନିର୍ଦ୍ଦେଶ ମିଳିଲା ନାହିଁ"
 
@@ -786,183 +808,183 @@ msgid "Failed to find the package %s, or already installed: %s"
 msgstr "ପ୍ୟାକେଜ %s କୁ ଖୋଜିପାଇବାରେ ଅସଫଳ, ଅଥବା ପୂର୍ବରୁ ସ୍ଥାପିତ ହୋଇଛି: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
 msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "ପ୍ରକୃତରେ କୌଣସି ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିନଥାଏ, କେବଳ ଯାହାକୁ ସ୍ଥାପନ କରିବା ଉଚିତ ତାହାକୁ ସକ୍ରିୟ କରନ୍ତୁ"
 
 #. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not install dependencies of the core packages"
 msgstr "ମୂଖ୍ୟ ପ୍ୟାକେଜଗୁଡ଼ିକର ନିର୍ଭରକଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ ନାହିଁ"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
 msgid "Do not display information or progress"
 msgstr "ସୂଚନା ଅଥବା ଉନ୍ନତିକୁ ଦର୍ଶାନ୍ତୁ ନାହିଁ"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:545
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:542
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ସ୍ଥାପକ"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:560
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "ତ୍ରୁଟି: ସ୍ଥାପନ କରିବାକୁ ଥିବା ପ୍ୟାକେଜ ନାମଗୁଡ଼ିକୁ ଉଲ୍ଲେଖ କରନ୍ତୁ।"
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:596
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:592
 #, c-format
 msgid "Getting sources list"
 msgstr "ଉତ୍ସଗୁଡ଼ିକର ତାଲିକା ଗ୍ରହଣ କରୁଅଛି"
 
 #. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:606
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:765
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:809
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:876
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:920
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:602
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:677
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:805
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:872
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:916
 msgid "FAILED."
 msgstr "FAILED."
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:621
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:661
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:696
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:780
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:891
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:935
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:617
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:657
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:692
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:776
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:820
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:887
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "OK."
 msgstr "OK."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:624
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:620
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "%i ସକ୍ରିୟ ଏବଂ %i ନିଷ୍କ୍ରିୟ ଉତ୍ସଗୁଡ଼ିକୁ ପାଇଛି।"
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:631
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:627
 #, c-format
 msgid "Finding debugging sources"
 msgstr "ତ୍ରୁଟି ନିବାରଣ ଉତ୍ସଗୁଡ଼ିକୁ ପାଇଅଛି"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:664
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:660
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "%i ନିଷ୍କ୍ରିୟ ତ୍ରୁଟି ନିବାରଣ ଉତ୍ସ ସଂଗ୍ରହଳୟ ମିଳିଛି।"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:671
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:667
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "ତ୍ରୁଟିନିବାରଣ ଉତ୍ସଗୁଡ଼ିକୁ ସକ୍ରିୟ କରୁଅଛି"
 
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:699
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:695
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "%i ତ୍ରୁଟିନିବାରଣ ଉତ୍ସଗୁଡ଼ିକୁ ସକ୍ରିୟ କରିଅଛି।"
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:706
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:702
 #, c-format
 msgid "Finding debugging packages"
 msgstr "ତ୍ରୁଟି ନିବାରଣ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜୁଅଛି"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:714
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "ପ୍ୟାକେଜ %s କୁ ଖୋଜିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:741
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "ତ୍ରୁଟିନିବାରଣ ପ୍ୟାକେଜ %sକୁ ଖୋଜିବାରେ ବିଫଳ: %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:769
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:765
 #, c-format
 msgid "Found no packages to install."
 msgstr "ସ୍ଥାପନ କରିବା କୌଣସି ପ୍ୟାକେଜ ମିଳିଲା ନାହିଁ।"
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:783
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:779
 #, c-format
 msgid "Found %i packages:"
 msgstr "%i ପ୍ୟାକେଜଗୁଡ଼ିକ ମିଳିଲା:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "ଏହି ପ୍ୟାକେଜଗୁଡ଼ିକ ଉପରେ ନିର୍ଭର କରୁଥିବା ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜୁଅଛି"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:812
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "ନିର୍ଭରକ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
 #, c-format
 msgid "Found %i extra packages."
 msgstr "%i ଅତିରିକ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜିପାଇଲା।"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
 #, c-format
 msgid "No extra packages required."
 msgstr "କୌଣସି ଅତିରିକ୍ତ ପ୍ୟାକେଜ ଆବଶ୍ୟକ ନାହିଁ।"
 
 #. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:841
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ %i ପ୍ୟାକେଜଗୁଡ଼ିକ ମିଳିଲା:"
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:854
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:850
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସକ୍ରିୟ ଅବସ୍ଥାରେ ସ୍ଥାପନ କରୁନାହିଁ"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:866
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:862
 #: ../lib/packagekit-glib2/pk-console-shared.c:282
 #, c-format
 msgid "Installing packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:879
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:875
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "ପୂର୍ବରୁ ସକ୍ରିୟ ଉତ୍ସଗୁଡ଼ିକୁ ନିଷ୍କ୍ରିୟ କରୁଅଛି"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:923
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:919
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "ତ୍ରୁଟି ନିବାରଣ ଉତ୍ସଗୁଡ଼ିକୁ ନିଷ୍କ୍ରିୟ କରିପାରିଲା ନାହିଁ: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:938
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:934
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "%i ତ୍ରୁଟି ନିବାରଣ ଉତ୍ସଗୁଡ଼ିକୁ ନିଷ୍କ୍ରିୟ କରିଥାଏ।"
@@ -1007,6 +1029,10 @@ msgstr "ଉପକରଣ ପଥ ମିଳିଲା ନାହିଁ"
 #: ../contrib/device-rebind/pk-device-rebind.c:268
 msgid "Incorrect device path specified"
 msgstr "ଭୁଲ ଉପକରଣ ପଥକୁ ଉଲ୍ଲେଖ କରାଯାଇଛି"
+
+#: ../contrib/device-rebind/pk-device-rebind.c:293
+msgid "Show extra debugging information"
+msgstr "ଅତିରିକ୍ତ ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ଦର୍ଶାନ୍ତୁ"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/device-rebind/pk-device-rebind.c:296
@@ -1859,47 +1885,47 @@ msgid ""
 msgstr "org.freedesktop.PackageKit.conf ଫାଇଲଟି ତନ୍ତ୍ର ଡିରେକ୍ଟୋରୀରେ ସ୍ଥାପିତ ହୋଇନାହିଁ:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:199
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "ବ୍ୟବହାର କରିବା ପାଇଁ ପୃଷ୍ଠଭୂମିକୁ ପ୍ୟାକେଜ କରୁଅଛି, ଯେପରିକି ନକଲି"
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:202
 msgid "Daemonize and detach from the terminal"
 msgstr "ଟର୍ମିନାଲରୁ ପରିସରମୟ ଏବଂ ପୃଥକ କରନ୍ତୁ"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:205
 msgid "Disable the idle timer"
 msgstr "ଅଚଳ ସମୟ ମାପକକୁ ନିଷ୍କ୍ରିୟ କରନ୍ତୁ"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:217
+#: ../src/pk-main.c:208
 msgid "Show version and exit"
 msgstr "ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:220
+#: ../src/pk-main.c:211
 msgid "Exit after a small delay"
 msgstr "ଗୋଟିଏ ଛୋଟ ବିଳମ୍ବ ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:223
+#: ../src/pk-main.c:214
 msgid "Exit after the engine has loaded"
 msgstr "ଯନ୍ତ୍ରଟି ଧାରଣ ହୋଇସାରିବା ପରେ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:238
+#: ../src/pk-main.c:229
 msgid "PackageKit service"
 msgstr "PackageKit ସର୍ଭିସ"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:275
+#: ../src/pk-main.c:266
 msgid "Cannot connect to the system bus"
 msgstr "ତନ୍ତ୍ର ବସ ସହିତ ସଂଯୋଗ କରିପାରିବେ ନାହିଁ"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
-#: ../src/pk-main.c:334
+#: ../src/pk-main.c:317
 msgid "Error trying to start:"
 msgstr "ଆରମ୍ଭ କରିବାକୁ ଚେଷ୍ଟା କରିବାରେ ତ୍ରୁଟି:"
 
@@ -1950,4 +1976,32 @@ msgstr "ଅନେକ ପ୍ୟାକେଜଗୁଡ଼ିକ"
 #: ../src/pk-polkit-action-lookup.c:343
 msgid "Only trusted"
 msgstr "କେବଳ ବିଶ୍ୱସ୍ତ"
+
+#. TRANSLATORS: turn on all debugging
+#: ../src/egg-debug.c:388
+msgid "Show debugging information for all files"
+msgstr "ସମସ୍ତ ଫାଇଲଗୁଡ଼ିକ ପାଇଁ ତ୍ରୁଟି ନିବାରଣ ସୂଚନା ଦର୍ଶାନ୍ତୁ"
+
+#. TRANSLATORS: a list of modules to debug
+#: ../src/egg-debug.c:459
+msgid "Debug these specific modules"
+msgstr "ଏହି ନିର୍ଦ୍ଦିଷ୍ଟ ଏକକାଂଶଗୁଡ଼ିକର ତ୍ରୁଟି ନିବାରଣ କରନ୍ତୁ"
+
+#. TRANSLATORS: a list of functions to debug
+#: ../src/egg-debug.c:462
+msgid "Debug these specific functions"
+msgstr "ଏହି ନିର୍ଦ୍ଦିଷ୍ଟ ଫଳନଗୁଡ଼ିକର ତ୍ରୁଟି ନିବାରଣ କରନ୍ତୁ"
+
+#. TRANSLATORS: save to a log
+#: ../src/egg-debug.c:465
+msgid "Log debugging data to a file"
+msgstr "ତ୍ରୁଟିନିବାରଣ ତଥ୍ୟକୁ ଗୋଟିଏ ଫାଇଲରେ ଲଗ କରନ୍ତୁ"
+
+#: ../src/egg-debug.c:469
+msgid "Debugging Options"
+msgstr "ତ୍ରୁଟି ନିବାରଣ ବିକଳ୍ପଗୁଡ଼ିକ"
+
+#: ../src/egg-debug.c:469
+msgid "Show debugging options"
+msgstr "ତ୍ରୁଟି ନିବାରଣ ବିକଳ୍ପଗୁଡ଼ିକୁ ଦର୍ଶାନ୍ତୁ"
 
