@@ -538,16 +538,6 @@ AC_ARG_ENABLE(ruck, AS_HELP_STRING([--enable-ruck],[Build ruck client]),
 	      build_ruck=$enableval,build_ruck=yes)
 AM_CONDITIONAL(PK_BUILD_RUCK, test $build_ruck = "yes")
 
-dnl ---------------------------------------------------------------------------
-dnl - Able to build GLib (legacy) library
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(glib, AS_HELP_STRING([--enable-glib],[Build glib library (legacy)]),
-	      build_glib=$enableval,build_glib=yes)
-AM_CONDITIONAL(PK_BUILD_GLIB, test $build_glib = "yes")
-if test x$build_glib = xyes; then
-	AC_DEFINE(PK_BUILD_GLIB,1,[Build glib code])
-fi
-
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
@@ -847,9 +837,6 @@ data/Makefile
 data/org.freedesktop.PackageKit.conf
 data/tests/Makefile
 lib/Makefile
-lib/packagekit-glib/pk-version.h
-lib/packagekit-glib/Makefile
-lib/packagekit-glib/packagekit-glib.pc
 lib/packagekit-glib2/pk-version.h
 lib/packagekit-glib2/Makefile
 lib/packagekit-glib2/packagekit-glib2.pc
@@ -893,7 +880,6 @@ echo "
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
-        GLib library (legacy):     ${build_glib}
 	Managed bindings:          ${build_managed}
 
         Backends:
