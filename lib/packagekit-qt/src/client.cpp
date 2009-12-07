@@ -72,13 +72,10 @@ Client::Client(QObject* parent) : QObject(parent)
 	d = new ClientPrivate(this);
 
 	d->daemon = new DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
-	d->locale = QString();
 
 	d->error = NoError;
 
 	connect(d->daemon, SIGNAL(Changed()), this, SIGNAL(changed()));
-	connect(d->daemon, SIGNAL(Locked(bool)), this, SIGNAL(locked(bool)));
-	connect(d->daemon, SIGNAL(NetworkStateChanged(const QString&)), d, SLOT(networkStateChanged(const QString&)));
 	connect(d->daemon, SIGNAL(RepoListChanged()), this, SIGNAL(repoListChanged()));
 	connect(d->daemon, SIGNAL(RestartSchedule()), this, SIGNAL(restartScheduled()));
 	connect(d->daemon, SIGNAL(TransactionListChanged(const QStringList&)), d, SLOT(transactionListChanged(const QStringList&)));
@@ -112,19 +109,6 @@ Client::Actions Client::actions() const
 	return flags;
 }
 
-Client::Actions Client::getActions() const
-{
-	return actions();
-}
-
-Client::BackendDetail Client::getBackendDetail() const
-{
-	BackendDetail detail;
-	detail.name = backendName();
-	detail.author = backendAuthor();
-	return detail;
-}
-
 QString Client::backendName() const
 {
 	return d->daemon->backendName();
@@ -156,11 +140,6 @@ Client::Filters Client::filters() const
 	return flags;
 }
 
-Client::Filters Client::getFilters() const
-{
-	return filters();
-}
-
 Client::Groups Client::groups() const
 {
 	QStringList groups = d->daemon->groups().split(";");
@@ -170,11 +149,6 @@ Client::Groups Client::groups() const
 		flags.insert((Group) Util::enumFromString<Client>(group, "Group", "Group"));
 	}
 	return flags;
-}
-
-Client::Groups Client::getGroups() const
-{
-	return groups();
 }
 
 bool Client::locked() const
@@ -187,20 +161,10 @@ QStringList Client::mimeTypes() const
 	return d->daemon->mimeTypes().split(";");
 }
 
-QStringList Client::getMimeTypes() const
-{
-	return mimeTypes();
-}
-
 Client::NetworkState Client::networkState() const
 {
 	QString state = d->daemon->networkState();
 	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
-}
-
-Client::NetworkState Client::getNetworkState() const
-{
-	return networkState();
 }
 
 QString Client::distroId() const
@@ -223,11 +187,6 @@ QList<Transaction*> Client::getTransactions()
 	}
 
 	return transactions;
-}
-
-void Client::setLocale(const QString& locale)
-{
-	d->locale = locale;
 }
 
 void Client::setHints(const QStringList& hints)

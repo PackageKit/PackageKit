@@ -42,7 +42,6 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	d->error = Client::NoError;
 
 	connect(d->p, SIGNAL(Changed()), this, SIGNAL(changed()));
-	connect(d->p, SIGNAL(AllowCancel(bool)), this, SIGNAL(allowCancelChanged(bool)));
 	connect(d->p, SIGNAL(Category(const QString&, const QString&, const QString&, const QString&, const QString&)), this, SIGNAL(category(const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(Destroy()), this, SIGNAL(destroy()));
 	connect(d->p, SIGNAL(Details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)), d, SLOT(details(const QString&, const QString&, const QString&, const QString&, const QString&, qulonglong)));
@@ -52,13 +51,11 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 	connect(d->p, SIGNAL(Finished(const QString&, uint)), d, SLOT(finished(const QString&, uint)));
 	connect(d->p, SIGNAL(Message(const QString&, const QString&)), d, SLOT(message(const QString&, const QString&)));
 	connect(d->p, SIGNAL(Package(const QString&, const QString&, const QString&)), d, SLOT(package(const QString&, const QString&, const QString&)));
-	connect(d->p, SIGNAL(ProgressChanged(uint, uint, uint, uint)), d, SLOT(progressChanged(uint, uint, uint, uint)));
 	connect(d->p, SIGNAL(RepoDetail(const QString&, const QString&, bool)), this, SIGNAL(repoDetail(const QString&, const QString&, bool)));
 	connect(d->p, SIGNAL(RepoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)), d, SLOT(repoSignatureRequired(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(EulaRequired(const QString&, const QString&, const QString&, const QString&)), d, SLOT(eulaRequired(const QString&, const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(MediaChangeRequired(const QString&, const QString&, const QString&)), d, SLOT(mediaChangeRequired(const QString&, const QString&, const QString&)));
 	connect(d->p, SIGNAL(RequireRestart(const QString&, const QString&)), d, SLOT(requireRestart(const QString&, const QString&)));
-	connect(d->p, SIGNAL(StatusChanged(const QString&)), d, SLOT(statusChanged(const QString&)));
 	connect(d->p, SIGNAL(Transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)), d, SLOT(transaction(const QString&, const QString&, bool, const QString&, uint, const QString&, uint, const QString&)));
 	connect(d->p, SIGNAL(UpdateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)), d, SLOT(updateDetail(const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&, const QString&)));
 
@@ -119,17 +116,6 @@ Package* Transaction::lastPackage() const
 	return new Package(d->p->lastPackage ());
 }
 
-Transaction::ProgressInfo Transaction::progress() const
-{
-	ProgressInfo i;
-	i.percentage = d->p->percentage ();
-	i.subpercentage = d->p->subpercentage ();
-	i.elapsed = d->p->elapsedTime ();
-	i.remaining = d->p->remainingTime ();
-
-	return i;
-}
-
 uint Transaction::percentage() const
 {
 	return d->p->percentage ();
@@ -161,11 +147,6 @@ Client::Action Transaction::role() const
 		return d->role;
 
 	return (Client::Action) Util::enumFromString<Client>(d->p->role (), "Action", "Action");
-}
-
-void Transaction::setLocale(const QString& locale)
-{
-	d->p->SetLocale(locale);
 }
 
 void Transaction::setHints(const QStringList& hints)

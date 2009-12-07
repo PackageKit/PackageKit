@@ -96,16 +96,6 @@ void TransactionPrivate::package(const QString& info, const QString& pid, const 
 	t->package(new Package(pid, info, summary));
 }
 
-void TransactionPrivate::progressChanged(uint percentage, uint subpercentage, uint elapsed, uint remaining)
-{
-	Transaction::ProgressInfo i;
-	i.percentage = percentage;
-	i.subpercentage = subpercentage;
-	i.elapsed = elapsed;
-	i.remaining = remaining;
-	t->progressChanged(i);
-}
-
 void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type)
 {
 	Client::SignatureInfo i;
@@ -124,11 +114,6 @@ void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString
 void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
 {
 	t->requireRestart((Client::RestartType)Util::enumFromString<Client>(type, "RestartType", "Restart"), new Package(pid));
-}
-
-void TransactionPrivate::statusChanged(const QString& status)
-{
-	t->statusChanged((Transaction::Status)Util::enumFromString<Transaction>(status, "Status", "Status"));
 }
 
 void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)

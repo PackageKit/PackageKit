@@ -388,7 +388,6 @@ public Q_SLOTS: // METHODS
 
 Q_SIGNALS: // SIGNALS
     void AllowCancel(bool allow_cancel);
-    void CallerActiveChanged(bool is_active);
     void Category(const QString &parent_id, const QString &cat_id, const QString &name, const QString &summary, const QString &icon);
     void Changed();
     void Destroy();
@@ -401,11 +400,9 @@ Q_SIGNALS: // SIGNALS
     void MediaChangeRequired(const QString &media_type, const QString &media_id, const QString &media_text);
     void Message(const QString &type, const QString &details);
     void Package(const QString &info, const QString &package_id, const QString &summary);
-    void ProgressChanged(uint percentage, uint subpercentage, uint elapsed, uint remaining);
     void RepoDetail(const QString &repo_id, const QString &description, bool enabled);
     void RepoSignatureRequired(const QString &package_id, const QString &repository_name, const QString &key_url, const QString &key_userid, const QString &key_id, const QString &key_fingerprint, const QString &key_timestamp, const QString &type);
     void RequireRestart(const QString &type, const QString &package_id);
-    void StatusChanged(const QString &status);
     void Transaction(const QString &old_tid, const QString &timespec, bool succeeded, const QString &role, uint duration, const QString &data, uint uid, const QString &cmdline);
     void UpdateDetail(const QString &package_id, const QString &updates, const QString &obsoletes, const QString &vendor_url, const QString &bugzilla_url, const QString &cve_url, const QString &restart, const QString &update_text, const QString &changelog, const QString &state, const QString &issued, const QString &updated);
 };

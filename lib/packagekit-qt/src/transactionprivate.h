@@ -66,10 +66,8 @@ public slots:
 	void finished(const QString& exitCode, uint runtime);
 	void message(const QString& type, const QString& message);
 	void package(const QString& info, const QString& pid, const QString& summary);
-	void progressChanged(uint percentage, uint subpercentage, uint elapsed, uint remaining);
 	void repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type);
 	void requireRestart(const QString& type, const QString& pid);
-	void statusChanged(const QString& status);
 	void transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline);
 	void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated);
 

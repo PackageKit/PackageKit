@@ -44,9 +44,6 @@ Transaction* ClientPrivate::createNewTransaction()
 		return t;
 	}
 
-	if(!locale.isNull())
-		t->setLocale(locale);
-
 	if(!hints.isEmpty())
 		t->setHints(hints);
 
@@ -76,15 +73,6 @@ void ClientPrivate::transactionListChanged(const QStringList& tids)
 
 	c->transactionListChanged(transactions);
 //	qDebug() << "leaving transactionListChanged";
-}
-
-void ClientPrivate::networkStateChanged(const QString& state)
-{
-	int value = Util::enumFromString<Client>(state, "NetworkState", "Network");
-	if(value == -1) {
-		return;
-	}
-	c->networkStateChanged((Client::NetworkState)value);
 }
 
 void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& oldOnwer, const QString& newOwner)
