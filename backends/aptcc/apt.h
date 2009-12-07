@@ -149,8 +149,7 @@ private:
 	*/
 	void updateInterface(int readFd, int writeFd);
 	bool DoAutomaticRemove(pkgCacheFile &Cache);
-	void emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
-				 pkgCacheFile &Cache);
+	void emitChangedPackages(pkgCacheFile &Cache);
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);

@@ -965,49 +965,32 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 // emitChangedPackages - Show packages to newly install				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
-void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &pkgs,
-				pkgCacheFile &Cache)
+void aptcc::emitChangedPackages(pkgCacheFile &Cache)
 {
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > installing,
 								    removing,
 								    updating,
 								    downgrading;
 
-	// Create a set of package names to fast search if the package is in the list
-	set<string> pkgNames;
-	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=pkgs.begin();
-		    i != pkgs.end();
-		    ++i) {
-		pkgNames.insert(i->first.Name());
-	}
-
 	string VersionsList;
 	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
 	{
 		if (Cache[pkg].NewInstall() == true) {
 			// installing
-			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
-				installing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-			}
+			installing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
 		} else if (Cache[pkg].Delete() == true) {
 			// removing
-			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
-				removing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-			}
+			removing.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_ver(pkg)));
 		} else if (Cache[pkg].Upgrade() == true) {
 			// updating
-			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
-				updating.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-			}
+			updating.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
 		} else if (Cache[pkg].Downgrade() == true) {
 			// downgrading
-			if (pkgNames.find(pkg.Name()) == pkgNames.end()) {
-				downgrading.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-			}
+			downgrading.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
 		}
 	}
 
-	// emit packages tha have changes
+	// emit packages that have changes
 	emit_packages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
 	emit_packages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
 	emit_packages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
@@ -1016,22 +999,21 @@ void aptcc::emitChangedPackages(vector<pair<pkgCache::PkgIterator, pkgCache::Ver
 
 void aptcc::populateInternalPackages(pkgCacheFile &Cache)
 {
-	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg)
-        {
-                if (Cache[pkg].NewInstall() == true) {
-                        // installing
+	for (pkgCache::PkgIterator pkg = Cache->PkgBegin(); ! pkg.end(); ++pkg) {
+		if (Cache[pkg].NewInstall() == true) {
+			// installing
 			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-                } else if (Cache[pkg].Delete() == true) {
-                        // removing
+		} else if (Cache[pkg].Delete() == true) {
+			// removing
+			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_ver(pkg)));
+		} else if (Cache[pkg].Upgrade() == true) {
+			// updating
 			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-                } else if (Cache[pkg].Upgrade() == true) {
-                        // updating
+		} else if (Cache[pkg].Downgrade() == true) {
+			// downgrading
 			m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-                } else if (Cache[pkg].Downgrade() == true) {
-                        // downgrading
-                        m_pkgs.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, find_candidate_ver(pkg)));
-                }
-        }
+		}
+	}
 }
 
 void aptcc::emitTransactionPackage(string name, PkInfoEnum state)
@@ -1350,7 +1332,7 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 
 	if (simulate) {
 		// Print out a list of packages that are going to be installed extra
-		emitChangedPackages(pkgs, Cache);
+		emitChangedPackages(Cache);
 		return true;
 	} else {
 		// Store the packages that are going to change
