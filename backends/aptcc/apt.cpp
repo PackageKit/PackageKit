@@ -647,15 +647,19 @@ void aptcc::get_requires(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 }
 
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
-vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel)
+vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 {
 	vector<string> packageList;
 	regex_t re;
+	gchar *search;
 
-	if(regcomp(&re, file_name.c_str(), REG_NOSUB) != 0) {
+	search = g_strjoinv("|", values);
+	if(regcomp(&re, search, REG_NOSUB) != 0) {
 		egg_debug("Regex compilation error");
+		g_free(search);
 		return vector<string>();
 	}
+	g_free(search);
 
 	DIR *dp;
 	struct dirent *dirp;
