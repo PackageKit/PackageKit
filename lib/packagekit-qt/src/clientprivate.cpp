@@ -96,6 +96,11 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
 	
 	error = Client::ErrorDaemonUnreachable;
 	c->error(error);
+
+	foreach(Transaction *t, runningTransactions.values ()) {
+		t->finished (Transaction::ExitFailed, 0);
+	}
+	runningTransactions.clear ();
 }
 
 void ClientPrivate::removeTransactionFromPool(const QString& tid)
