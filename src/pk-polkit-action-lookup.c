@@ -196,10 +196,6 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 				    N_("Do not install these packages unless you are sure it is safe to do so."),
 				    len);
 		g_string_append (string, text);
-		g_string_append (string, "\n\n");
-
-		/* TRANSLATORS: warn the user that all bets are off */
-		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("Malicious software can damage your computer or cause other harm.")));
 
 		message = g_string_free (string, FALSE);
 		goto out;
