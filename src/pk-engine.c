@@ -106,10 +106,8 @@ struct PkEnginePrivate
 };
 
 enum {
-	SIGNAL_LOCKED,
 	SIGNAL_TRANSACTION_LIST_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
-	SIGNAL_NETWORK_STATE_CHANGED,
 	SIGNAL_RESTART_SCHEDULE,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_CHANGED,
@@ -216,8 +214,6 @@ static void
 pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("emitting locked %i", is_locked);
-	g_signal_emit (engine, signals[SIGNAL_LOCKED], 0, is_locked);
 
 	/* already set */
 	if (engine->priv->locked == is_locked)
@@ -300,24 +296,6 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 out:
 	g_free (new_tid);
 	g_free (sender);
-}
-
-/**
- * pk_engine_get_network_state:
- **/
-gboolean
-pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
-{
-	PkNetworkEnum network;
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	/* get the network state */
-	network = pk_network_get_network_state (engine->priv->network);
-	*state = g_strdup (pk_network_enum_to_text (network));
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-	return TRUE;
 }
 
 /**
@@ -622,92 +600,6 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 out:
-	return TRUE;
-}
-
-/**
- * pk_engine_get_actions:
- **/
-gboolean
-pk_engine_get_actions (PkEngine *engine, gchar **roles, GError **error)
-{
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*roles = pk_role_bitfield_to_text (engine->priv->roles);
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_groups:
- **/
-gboolean
-pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
-{
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*groups = pk_group_bitfield_to_text (engine->priv->groups);
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_mime_types:
- **/
-gboolean
-pk_engine_get_mime_types (PkEngine *engine, gchar **types, GError **error)
-{
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* not compulsory for backends */
-	if (engine->priv->mime_types == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "Backend does not provide this information");
-		return FALSE;
-	}
-
-	*types = g_strdup (engine->priv->mime_types);
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_filters:
- **/
-gboolean
-pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
-{
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*filters = pk_filter_bitfield_to_text (engine->priv->filters);
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_backend_detail:
- **/
-gboolean
-pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GError **error)
-{
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	egg_debug ("GetBackendDetail method called");
-	*name = pk_backend_get_description (engine->priv->backend);
-	*author = pk_backend_get_author (engine->priv->backend);
-
-	/* reset the timer */
-	pk_engine_reset_timer (engine);
-
 	return TRUE;
 }
 
@@ -1296,11 +1188,6 @@ pk_engine_class_init (PkEngineClass *klass)
 	g_object_class_install_property (object_class, PROP_DISTRO_ID, pspec);
 
 	/* signals */
-	signals[SIGNAL_LOCKED] =
-		g_signal_new ("locked",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals[SIGNAL_TRANSACTION_LIST_CHANGED] =
 		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1316,11 +1203,6 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals[SIGNAL_NETWORK_STATE_CHANGED] =
-		g_signal_new ("network-state-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals[SIGNAL_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1370,11 +1252,7 @@ pk_engine_binary_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 static void
 pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_state, PkEngine *engine)
 {
-	const gchar *state_text;
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	state_text = pk_network_enum_to_text (network_state);
-	egg_debug ("emitting network-state-changed: %s", state_text);
-	g_signal_emit (engine, signals[SIGNAL_NETWORK_STATE_CHANGED], 0, state_text);
 
 	/* already set */
 	if (engine->priv->network_state == network_state)

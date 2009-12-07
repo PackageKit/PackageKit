@@ -75,27 +75,8 @@ PkEngine	*pk_engine_new				(void);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 /* dbus methods */
-gboolean	 pk_engine_get_actions			(PkEngine	*engine,
-							 gchar		**roles,
-							 GError		**error);
-gboolean	 pk_engine_get_backend_detail		(PkEngine	*engine,
-							 gchar		**name,
-							 gchar		**author,
-							 GError		**error);
-gboolean	 pk_engine_get_filters			(PkEngine	*engine,
-							 gchar		**filters,
-							 GError		**error);
-gboolean	 pk_engine_get_groups			(PkEngine	*engine,
-							 gchar		**groups,
-							 GError		**error);
-gboolean	 pk_engine_get_mime_types		(PkEngine	*engine,
-							 gchar		**types,
-							 GError		**error);
 void		 pk_engine_get_tid			(PkEngine	*engine,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_engine_get_network_state		(PkEngine	*engine,
-							 gchar		**state,
-							 GError		**error);
 gboolean	 pk_engine_get_daemon_state		(PkEngine	*engine,
 							 gchar		**state,
 							 GError		**error);

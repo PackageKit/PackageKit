@@ -168,8 +168,6 @@ struct PkTransactionPrivate
 };
 
 enum {
-	SIGNAL_ALLOW_CANCEL,
-	SIGNAL_CALLER_ACTIVE_CHANGED,
 	SIGNAL_DETAILS,
 	SIGNAL_ERROR_CODE,
 	SIGNAL_DISTRO_UPGRADE,
@@ -177,13 +175,11 @@ enum {
 	SIGNAL_FINISHED,
 	SIGNAL_MESSAGE,
 	SIGNAL_PACKAGE,
-	SIGNAL_PROGRESS_CHANGED,
 	SIGNAL_REPO_DETAIL,
 	SIGNAL_REPO_SIGNATURE_REQUIRED,
 	SIGNAL_EULA_REQUIRED,
 	SIGNAL_MEDIA_CHANGE_REQUIRED,
 	SIGNAL_REQUIRE_RESTART,
-	SIGNAL_STATUS_CHANGED,
 	SIGNAL_TRANSACTION,
 	SIGNAL_UPDATE_DETAIL,
 	SIGNAL_CATEGORY,
@@ -296,31 +292,6 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 }
 
 /**
- * pk_transaction_get_text:
- **/
-static gchar *
-pk_transaction_get_text (PkTransaction *transaction)
-{
-	gchar *text = NULL;
-	const gchar *data;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
-
-	if (transaction->priv->cached_package_id != NULL) {
-		data = transaction->priv->cached_package_id;
-		text = pk_package_id_to_printable (data);
-	} else if (transaction->priv->cached_package_ids != NULL) {
-		data = transaction->priv->cached_package_ids[0];
-		text = pk_package_id_to_printable (data);
-	} else if (transaction->priv->cached_values != NULL) {
-		text = g_strdup (transaction->priv->cached_values);
-	}
-
-	return text;
-}
-
-/**
  * pk_transaction_finish_invalidate_caches:
  **/
 static gboolean
@@ -380,9 +351,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percenta
 	transaction->priv->elapsed_time = elapsed;
 	transaction->priv->remaining_time = remaining;
 
-	egg_debug ("emitting percentage-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
-	g_signal_emit (transaction, signals[SIGNAL_PROGRESS_CHANGED], 0, percentage, subpercentage, elapsed, remaining);
-
 	/* emit */
 	egg_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
@@ -408,9 +376,6 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 	else
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
 
-	egg_debug ("emitting allow-cancel %i", allow_cancel);
-	g_signal_emit (transaction, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
-
 	/* emit */
 	egg_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
@@ -422,8 +387,6 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 static void
 pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum status)
 {
-	const gchar *status_text;
-
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -432,10 +395,6 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 		return;
 
 	transaction->priv->status = status;
-	status_text = pk_status_enum_to_text (status);
-
-	egg_debug ("emitting status-changed '%s'", status_text);
-	g_signal_emit (transaction, signals[SIGNAL_STATUS_CHANGED], 0, status_text);
 
 	/* emit */
 	egg_debug ("emitting changed");
@@ -494,12 +453,6 @@ pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gbool
 
 	/* save as a property */
 	transaction->priv->caller_active = caller_active;
-
-	/* only send if false, a client can hardly re-connect... */
-	if (caller_active == FALSE) {
-		egg_debug ("client disconnected....");
-		g_signal_emit (transaction, signals[SIGNAL_CALLER_ACTIVE_CHANGED], 0, FALSE);
-	}
 
 	/* emit */
 	egg_debug ("emitting changed");
@@ -1625,7 +1578,8 @@ pk_transaction_speed_cb (GObject *object, GParamSpec *pspec, PkTransaction *tran
 		      "speed", &transaction->priv->speed,
 		      NULL);
 	/* emit */
-	egg_warning ("need to emit changed event");
+	egg_debug ("emitting changed");
+	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
 /**
@@ -2716,21 +2670,6 @@ out:
 }
 
 /**
- * pk_transaction_get_allow_cancel:
- **/
-gboolean
-pk_transaction_get_allow_cancel (PkTransaction *transaction, gboolean *allow_cancel, GError **error)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* we do not need to get the context and check the uid */
-	egg_debug ("GetAllowCancel method called");
-	*allow_cancel = transaction->priv->allow_cancel;
-	return TRUE;
-}
-
-/**
  * pk_transaction_get_categories:
  **/
 void
@@ -3153,46 +3092,6 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 }
 
 /**
- * pk_transaction_get_package_last:
- **/
-gboolean
-pk_transaction_get_package_last (PkTransaction *transaction, gchar **package_id, GError **error)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	egg_debug ("GetPackageLast method called");
-
-	if (transaction->priv->last_package_id == NULL) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE,
-			     "No package data available");
-		return FALSE;
-	}
-	*package_id = g_strdup (transaction->priv->last_package_id);
-	return TRUE;
-}
-
-/**
- * pk_transaction_get_progress:
- **/
-gboolean
-pk_transaction_get_progress (PkTransaction *transaction,
-			     guint *percentage, guint *subpercentage,
-			     guint *elapsed, guint *remaining, GError **error)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	egg_debug ("GetProgress method called, using cached values");
-	*percentage = transaction->priv->percentage;
-	*subpercentage = transaction->priv->subpercentage;
-	*elapsed = transaction->priv->elapsed_time;
-	*remaining = transaction->priv->remaining_time;
-
-	return TRUE;
-}
-
-/**
  * pk_transaction_get_repo_list:
  **/
 void
@@ -3335,47 +3234,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
-}
-
-/**
- * pk_transaction_get_role:
- **/
-gboolean
-pk_transaction_get_role (PkTransaction *transaction,
-			 const gchar **role, const gchar **text, GError **error)
-{
-	gchar *text_temp;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-
-	egg_debug ("GetRole method called");
-
-	/* we might not have this set yet */
-	if (transaction->priv->tid == NULL) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION, "Role not set");
-		return FALSE;
-	}
-
-	text_temp = pk_transaction_get_text (transaction);
-	*role = g_strdup (pk_role_enum_to_text (transaction->priv->role));
-	*text = g_strdup (text_temp);
-	g_free (text_temp);
-	return TRUE;
-}
-
-/**
- * pk_transaction_get_status:
- **/
-gboolean
-pk_transaction_get_status (PkTransaction *transaction, const gchar **status, GError **error)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	egg_debug ("GetStatus method called");
-
-	*status = g_strdup (pk_status_enum_to_text (transaction->priv->status));
-	return TRUE;
 }
 
 /**
@@ -3865,21 +3723,6 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
-}
-
-/**
- * pk_transaction_is_caller_active:
- **/
-gboolean
-pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active, GError **error)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	egg_debug ("is caller active");
-
-	*is_active = egg_dbus_monitor_is_connected (transaction->priv->monitor);
-	return TRUE;
 }
 
 /**
@@ -5414,16 +5257,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 				  G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_SPEED, spec);
 
-	signals[SIGNAL_ALLOW_CANCEL] =
-		g_signal_new ("allow-cancel",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals[SIGNAL_CALLER_ACTIVE_CHANGED] =
-		g_signal_new ("caller-active-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals[SIGNAL_DETAILS] =
 		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -5465,11 +5298,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_PROGRESS_CHANGED] =
-		g_signal_new ("progress-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	signals[SIGNAL_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -5497,11 +5325,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals[SIGNAL_STATUS_CHANGED] =
-		g_signal_new ("status-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals[SIGNAL_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

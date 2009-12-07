@@ -106,9 +106,6 @@ void		 pk_transaction_cancel				(PkTransaction	*transaction,
 void		 pk_transaction_download_packages		(PkTransaction  *transaction,
 								 gchar		**package_ids,
 								 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_get_allow_cancel		(PkTransaction	*transaction,
-								 gboolean	*allow_cancel,
-								 GError		**error);
 void		 pk_transaction_get_categories			(PkTransaction	*transaction,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_get_depends			(PkTransaction	*transaction,
@@ -127,18 +124,9 @@ void		 pk_transaction_get_files			(PkTransaction	*transaction,
 gboolean	 pk_transaction_get_old_transactions		(PkTransaction	*transaction,
 								 guint		 number,
 								 GError		**error);
-gboolean	 pk_transaction_get_package_last		(PkTransaction	*transaction,
-								 gchar		**package,
-								 GError		**error);
 void		 pk_transaction_get_packages			(PkTransaction	*transaction,
 								 const gchar	*filter,
 								 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_get_progress			(PkTransaction	*transaction,
-								 guint		*percentage,
-								 guint		*subpercentage,
-								 guint		*elapsed,
-								 guint		*remaining,
-								 GError		**error);
 void		 pk_transaction_get_repo_list			(PkTransaction	*transaction,
 								 const gchar	*filter,
 								 DBusGMethodInvocation *context);
@@ -147,13 +135,6 @@ void		 pk_transaction_get_requires			(PkTransaction	*transaction,
 								 gchar		**package_ids,
 								 gboolean	 recursive,
 								 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_get_role			(PkTransaction	*transaction,
-								 const gchar	**role,
-								 const gchar	**text,
-								 GError		**error);
-gboolean	 pk_transaction_get_status			(PkTransaction	*transaction,
-								 const gchar	**status,
-								 GError		**error);
 void		 pk_transaction_get_update_detail		(PkTransaction	*transaction,
 								 gchar		**package_ids,
 								 DBusGMethodInvocation *context);
@@ -173,9 +154,6 @@ void		 pk_transaction_install_signature		(PkTransaction	*transaction,
 								 const gchar	*key_id,
 								 const gchar	*package_id,
 								DBusGMethodInvocation *context);
-gboolean	 pk_transaction_is_caller_active		(PkTransaction	*transaction,
-								 gboolean	*is_active,
-								 GError		**error);
 void		 pk_transaction_refresh_cache			(PkTransaction	*transaction,
 								 gboolean	 force,
 								 DBusGMethodInvocation *context);
