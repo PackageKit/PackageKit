@@ -99,6 +99,7 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
 
 	foreach(Transaction *t, runningTransactions.values ()) {
 		t->finished (Transaction::ExitFailed, 0);
+		t->deleteLater ();
 	}
 	runningTransactions.clear ();
 }
