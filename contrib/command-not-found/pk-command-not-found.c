@@ -420,7 +420,7 @@ pk_cnf_find_available (const gchar *cmd)
 					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
-		egg_warning ("%s: %s", _("Failed to search for file"), error->message);
+		g_printerr ("%s: %s\n", _("Failed to search for file"), error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -429,7 +429,7 @@ pk_cnf_find_available (const gchar *cmd)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_printerr ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -563,7 +563,7 @@ pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 	ret = g_spawn_command_line_sync (cmd, NULL, NULL, &exit_status, &error);
 	if (!ret) {
 		/* TRANSLATORS: we failed to launch the executable, the error follows */
-		g_print ("%s '%s': %s", _("Failed to launch:"), cmd, error->message);
+		g_printerr ("%s '%s': %s\n", _("Failed to launch:"), cmd, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -591,7 +591,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 						 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to install the package */
-		egg_warning ("%s: %s", _("Failed to install packages"), error->message);
+		g_printerr ("%s: %s\n", _("Failed to install packages"), error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -600,7 +600,7 @@ pk_cnf_install_package_id (const gchar *package_id)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_printerr ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 		goto out;
 	}
 
@@ -696,14 +696,14 @@ main (int argc, char *argv[])
 	array = pk_cnf_find_alternatives (argv[1], len);
 
 	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
-	g_print ("%s ", _("Command not found."));
+	g_printerr ("%s ", _("Command not found."));
 
 	/* one exact possibility */
 	if (array->len == 1) {
 		possible = g_ptr_array_index (array, 0);
 		if (config->single_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: tell the user what we think the command is */
-			g_print ("%s '%s'\n", _("Similar command is:"), possible);
+			g_printerr ("%s '%s'\n", _("Similar command is:"), possible);
 			retval = EXIT_COMMAND_NOT_FOUND;
 
 		/* run */
@@ -727,19 +727,19 @@ main (int argc, char *argv[])
 	} else if (array->len > 1) {
 		if (config->multiple_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: show the user a list of commands that they could have meant */
-			g_print ("%s:\n", _("Similar commands are:"));
+			g_printerr ("%s:\n", _("Similar commands are:"));
 			for (i=0; i<array->len; i++) {
 				possible = g_ptr_array_index (array, i);
-				g_print ("'%s'\n", possible);
+				g_printerr ("'%s'\n", possible);
 			}
 
 		/* ask */
 		} else if (config->multiple_match == PK_CNF_POLICY_ASK) {
 			/* TRANSLATORS: show the user a list of commands we could run */
-			g_print ("%s:\n", _("Similar commands are:"));
+			g_printerr ("%s:\n", _("Similar commands are:"));
 			for (i=0; i<array->len; i++) {
 				possible = g_ptr_array_index (array, i);
-				g_print ("%i\t'%s'\n", i+1, possible);
+				g_printerr ("%i\t'%s'\n", i+1, possible);
 			}
 
 			/* TRANSLATORS: ask the user to choose a file to run */
@@ -754,16 +754,14 @@ main (int argc, char *argv[])
 	/* only search using PackageKit if configured to do so */
 	} else if (config->software_source_search) {
 		package_ids = pk_cnf_find_available (argv[1]);
-		if (package_ids == NULL) {
-			g_print ("\n");
+		if (package_ids == NULL)
 			goto out;
-		}
 		len = g_strv_length (package_ids);
 		if (len == 1) {
 			parts = pk_package_id_split (package_ids[0]);
 			if (config->single_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: tell the user what package provides the command */
-				g_print ("%s '%s'\n", _("The package providing this file is:"), parts[PK_PACKAGE_ID_NAME]);
+				g_printerr ("%s '%s'\n", _("The package providing this file is:"), parts[PK_PACKAGE_ID_NAME]);
 
 			/* ask */
 			} else if (config->single_install == PK_CNF_POLICY_ASK) {
@@ -792,20 +790,20 @@ main (int argc, char *argv[])
 		} else if (len > 1) {
 			if (config->multiple_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: Show the user a list of packages that provide this command */
-				g_print ("%s\n", _("Packages providing this file are:"));
+				g_printerr ("%s\n", _("Packages providing this file are:"));
 				for (i=0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
-					g_print ("'%s'\n", parts[PK_PACKAGE_ID_NAME]);
+					g_printerr ("'%s'\n", parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
 				}
 
 			/* ask */
 			} else if (config->multiple_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: Show the user a list of packages that they can install to provide this command */
-				g_print ("%s:\n", _("Suitable packages are:"));
+				g_printerr ("%s:\n", _("Suitable packages are:"));
 				for (i=0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
-					g_print ("%i\t'%s'\n", i+1, parts[PK_PACKAGE_ID_NAME]);
+					g_printerr ("%i\t'%s'\n", i+1, parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
 				}
 
@@ -824,7 +822,7 @@ main (int argc, char *argv[])
 		}
 	}
 
-	g_print ("\n");
+	g_printerr ("\n");
 
 out:
 	g_strfreev (package_ids);
