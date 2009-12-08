@@ -540,7 +540,7 @@ static void
 backend_what_provides (PkBackend *backend,
 		       PkBitfield filters,
 		       PkProvidesEnum provide,
-		       const gchar *search)
+		       gchar **values)
 {
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
@@ -823,12 +823,12 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 }
 
 static gboolean
-backend_search_file_thread (PkBackend *backend)
+backend_search_files_thread (PkBackend *backend)
 {
-	const gchar *search;
+	gchar **values;
 	PkBitfield filters;
 
-	search = pk_backend_get_string (backend, "search");
+	values = pk_backend_get_strv (backend, "search");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_allow_cancel (backend, true);
@@ -845,7 +845,7 @@ backend_search_file_thread (PkBackend *backend)
 		}
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-		vector<string> packages = search_file (backend, search, _cancel);
+		vector<string> packages = search_files (backend, values, _cancel);
 		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > output;
 		for(vector<string>::iterator i = packages.begin();
 		    i != packages.end(); ++i)
@@ -872,35 +872,37 @@ backend_search_file_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_file:
+ * backend_search_files:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_search_file_thread);
+	pk_backend_thread_create (backend, backend_search_files_thread);
 }
 
 static gboolean
-backend_search_group_thread (PkBackend *backend)
+backend_search_groups_thread (PkBackend *backend)
 {
-	const gchar *group;
+	gchar **values;
 	PkBitfield filters;
+	vector<PkGroupEnum> groups;
 
-	group = pk_backend_get_string (backend, "search");
+	values = pk_backend_get_strv (backend, "search");
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	pk_backend_set_allow_cancel (backend, true);
 
-	if (group == NULL) {
-		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_GROUP_NOT_FOUND,
-				       group);
-		pk_backend_finished (backend);
-		return false;
+	int len = g_strv_length(values);
+	for (uint i = 0; i < len; i++) {
+		if (values[i] == NULL) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_GROUP_NOT_FOUND,
+					       values[i]);
+			pk_backend_finished (backend);
+			return false;
+		} else {
+			groups.push_back(pk_group_enum_from_text(values[i]));
+		}
 	}
-
-	pk_backend_set_percentage (backend, 0);
-
-	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
 
 	aptcc *m_apt = new aptcc(backend, _cancel);
 	pk_backend_set_pointer(backend, "aptcc_obj", m_apt);
@@ -932,8 +934,13 @@ backend_search_group_thread (PkBackend *backend)
 			section = section.substr(found + 1);
 
 			// Don't insert virtual packages instead add what it provides
-			if (pkGroup == get_enum_group(section)) {
-				output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+			for (vector<PkGroupEnum>::iterator i = groups.begin();
+			     i != groups.end();
+			     ++i) {
+				if (*i == get_enum_group(section)) {
+					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+					break;
+				}
 			}
 		}
 	}
@@ -949,27 +956,30 @@ backend_search_group_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_group:
+ * backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGroup)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_search_group_thread);
+	pk_backend_thread_create (backend, backend_search_groups_thread);
 }
 
 static gboolean
 backend_search_package_thread (PkBackend *backend)
 {
-	const gchar *search;
+	gchar **values;
+	gchar *search;
 	PkBitfield filters;
 
-	search = pk_backend_get_string (backend, "search");
+	values = pk_backend_get_strv (backend, "search");
+	search = g_strjoinv("|", values);
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, true);
 
-	matcher *m_matcher = new matcher(string(search));
+	matcher *m_matcher = new matcher(search);
+	g_free(search);
 	if (m_matcher->hasError()) {
 		egg_debug("Regex compilation error");
 		delete m_matcher;
@@ -1106,10 +1116,10 @@ backend_search_package_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_bool(backend, "search_details", false);
 	pk_backend_thread_create(backend, backend_search_package_thread);
@@ -1119,7 +1129,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_bool(backend, "search_details", true);
 	pk_backend_thread_create(backend, backend_search_package_thread);
@@ -1448,9 +1458,9 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
-	backend_search_file,				/* search_file */
-	backend_search_group,				/* search_group */
-	backend_search_name,				/* search_name */
+	backend_search_files,				/* search_files */
+	backend_search_groups,				/* search_groups */
+	backend_search_names,				/* search_names */
 	backend_install_update_packages,		/* update_packages */
 	backend_update_system,				/* update_system */
 	backend_what_provides,				/* what_provides */

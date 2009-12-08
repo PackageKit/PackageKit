@@ -106,31 +106,6 @@ public:
 	Package* lastPackage() const;
 
 	/**
-	 * Gathers all the information about a transaction's progress in one struct
-	 * \li \c percentage is the global percentage (for example, 40\% when having installed 4 packages out of 10)
-	 * \li \c subpercentage is the percentage of the current subtask (for example, 60\% of the 4th package installation)
-	 * \li \c elapsed is the number of seconds elapsed since the beginning of the transaction
-	 * \li \c remaining is the estimated number of seconds remaining until the transaction finishes
-	 */
-	typedef struct {
-		uint percentage;
-		uint subpercentage;
-		uint elapsed;
-		uint remaining;
-	} ProgressInfo;
-	/**
-	 * Returns the current transaction's progress
-	 * \return a ProgressInfo struct describing the transaction's progress
-	 *
-	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
-	 * Use \sa percentage(), \sa subpercentage(), \sa elapsedTime(),
-	 * \sa remainingTime() and \sa speed() instead.
-	 *
-	 * \sa Client::setLocale
-	 */
-	ProgressInfo Q_DECL_DEPRECATED progress() const;
-
-	/**
 	 * The percentage complete of the whole transaction.
 	 * \return percentage, or 101 if not known.
 	 */
@@ -165,18 +140,6 @@ public:
 	 * \return the current action of the transaction
 	 */
 	Client::Action role() const;
-
-	/**
-	 * \brief Tells the underlying package manager to use the given \p locale
-	 *
-	 * It's recommanded to call Client::setLocale, which will in turn call setLocale
-	 * on every created transaction.
-	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
-	 * Use SetHints("locale=$code") instead.
-	 *
-	 * \sa Client::setLocale
-	 */
-	void Q_DECL_DEPRECATED setLocale(const QString& locale);
 
 	/**
 	 * \brief Tells the underlying package manager to use the given \p hints
@@ -328,20 +291,6 @@ Q_SIGNALS:
 	void changed();
 
 	/**
-	 * The transaction has changed it's "cancellability"
-	* \warning THIS signal IS DEPRECATED and will be removed in a future release,
-	 * use \sa changed() and \sa allowCancel() property.
-	 */
-	void allowCancelChanged(bool allow);
-
-	/**
-	 * The transaction's caller activity changed
-	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
-	 * use \sa changed() and \sa callerActive() property.
-	 */
-	void callerActiveChanged(bool isActive);
-
-	/**
 	 * \brief Sends a category
 	 *
 	 * \li \p parent_id is the id of the parent category. A blank parent means a root category
@@ -416,13 +365,6 @@ Q_SIGNALS:
 	void package(PackageKit::Package* p);
 
 	/**
-	 * Emitted when the progress of the transaction has changed
-	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
-	 * use \sa changed() and progress properties.
-	 */
-	void progressChanged(PackageKit::Transaction::ProgressInfo info);
-
-	/**
 	 * Sends some additional details about a software repository
 	 * \sa Client::getRepoList
 	 */
@@ -438,13 +380,6 @@ Q_SIGNALS:
 	 * \p package is the package who triggered the restart signal
 	 */
 	void requireRestart(PackageKit::Client::RestartType type, Package* p);
-
-	/**
-	 * Emitted when the transaction's status has changed
-	 * \warning THIS signal IS DEPRECATED and will be removed in a future release,
-	 * use \sa changed() and \sa status() property.
-	 */
-	void statusChanged(PackageKit::Transaction::Status s);
 
 	/**
 	 * Sends an old transaction

@@ -124,33 +124,8 @@ public:
 
 	/**
 	 * Returns all the actions supported by the current backend
-	 * This function is DEPRECATED and will be removed in a
-	 * future release, use \sa actions() instead.
-	 */
-	Actions Q_DECL_DEPRECATED getActions() const;
-
-	/**
-	 * Returns all the actions supported by the current backend
 	 */
 	Actions actions() const;
-
-	/**
-	 * Holds a backend's detail
-	 * \li \c name is the name of the backend
-	 * \li \c author is the name of the person who wrote the backend
-	 */
-	typedef struct {
-		QString name;
-		QString author;
-	} BackendDetail;
-
-	/**
-	 * Gets the current backend's details
-	 * \return a BackendDetail struct holding the backend's details. You have to free this structure.
-	 * This method is DEPRECATED use backendAuthor(), backendName()
-	 * and backendDescription() instead.
-	 */
-	BackendDetail Q_DECL_DEPRECATED getBackendDetail() const;
 
 	/**
 	 * The backend name, e.g. "yum".
@@ -203,12 +178,6 @@ public:
 
 	/**
 	 * Returns the filters supported by the current backend
-	 * This method is DEPRECATED use \sa filters() instead.
-	 */
-	Filters Q_DECL_DEPRECATED getFilters() const;
-
-	/**
-	 * Returns the filters supported by the current backend
 	 */
 	Filters filters() const;
 
@@ -256,12 +225,6 @@ public:
 
 	/**
 	 * Returns the groups supported by the current backend
-	 * This method is DEPRECATED use \sa groups() instead.
-	 */
-	Groups Q_DECL_DEPRECATED getGroups() const;
-
-	/**
-	 * Returns the groups supported by the current backend
 	 */
 	Groups groups() const;
 
@@ -269,12 +232,6 @@ public:
 	 * Set when the backend is locked and native tools would fail.
 	 */
 	bool locked() const;
-
-	/**
-	 * Returns a list containing the MIME types supported by the current backend
-	 * This method is DEPRECATED use \sa mimeTypes() instead.
-	 */
-	QStringList Q_DECL_DEPRECATED getMimeTypes() const;
 
 	/**
 	 * Returns a list containing the MIME types supported by the current backend
@@ -292,12 +249,6 @@ public:
 		NetworkWifi,
 		NetworkMobile
 	} NetworkState;
-
-	/**
-	 * Returns the current network state
-	 * This method is DEPRECATED use \sa networkState() instead.
-	 */
-	NetworkState Q_DECL_DEPRECATED getNetworkState() const;
 
 	/**
 	 * Returns the current network state
@@ -320,13 +271,6 @@ public:
 	 * Returns the list of current transactions
 	 */
 	QList<Transaction*> getTransactions();
-
-	/**
-	 * Sets a global locale for all the transactions to be created
-	 * \warning THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
-	 * Use SetHints("locale=$code") instead.
-	 */
-	void Q_DECL_DEPRECATED setLocale(const QString& locale);
 
 	/**
 	 * \brief Sets a global hints for all the transactions to be created
@@ -781,7 +725,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchFile(const QString& search, Filters filters = NoFilter);
-	Transaction* searchFile(const QStringList& search, Filters filters = NoFilter);
+	Transaction* searchFiles(const QStringList& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages details
@@ -796,6 +740,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchGroup(Client::Group group, Filters filters = NoFilter);
+	Transaction* searchGroups(Client::Groups group, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages names
@@ -803,6 +748,7 @@ public:
 	 * \p filters can be used to restrict the returned packages
 	 */
 	Transaction* searchName(const QString& search, Filters filters = NoFilter);
+	Transaction* searchNames(const QStringList& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Tries to find a package name from a desktop file
@@ -883,18 +829,6 @@ Q_SIGNALS:
 	 * Emitted when the PackageKit daemon sends an error
 	 */
 	void error(PackageKit::Client::DaemonError e);
-
-	/**
-	 * Emitted when the daemon's locked state changes
-	 * This signal is DEPRECATED use \sa changed() and \sa locked() instead.
-	 */
-	void locked(bool locked);
-
-	/**
-	 * Emitted when the network state changes
-	 * This signal is DEPRECATED use \sa changed() and \sa networkState() instead.
-	 */
-	void networkStateChanged(PackageKit::Client::NetworkState state);
 
 	/**
 	 * Emitted when the list of repositories changes

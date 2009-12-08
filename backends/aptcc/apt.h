@@ -41,7 +41,7 @@ void emit_files (PkBackend *backend, const gchar *pi);
 /**
 *  returns a list of packages names
 */
-vector<string> search_file (PkBackend *backend, const string &file_name, bool &_cancel);
+vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel);
 
 /**
 *  returns a list of packages names

@@ -41,7 +41,6 @@ public:
 	DaemonProxy* daemon;
 	Client* c;
 
-	QString locale;
 	QStringList hints;
 
 	QMutex runningTransactionsLocker;
@@ -55,8 +54,6 @@ public:
 public slots:
 	// org.freedesktop.PackageKit
 	void transactionListChanged(const QStringList& tids);
-	// locked
-	void networkStateChanged(const QString& state);
 	// restartScheduled
 	// repoListChanged
 	// updatesChanged
