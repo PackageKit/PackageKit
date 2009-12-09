@@ -30,6 +30,7 @@
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gudev/gudev.h>
+#include <locale.h>
 
 #define PK_DEVICE_REBIND_EXIT_CODE_SUCCESS			0
 #define PK_DEVICE_REBIND_EXIT_CODE_FAILED			1
