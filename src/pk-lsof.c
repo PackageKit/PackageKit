@@ -161,7 +161,6 @@ pk_lsof_refresh (PkLsof *lsof)
 	}
 
 	/* clear */
-	g_ptr_array_foreach (lsof->priv->list_data, (GFunc) pk_lsof_data_free, NULL);
 	g_ptr_array_set_size (lsof->priv->list_data, 0);
 
 	/* split into lines */
@@ -252,6 +251,7 @@ pk_lsof_get_pids_for_filenames (PkLsof *lsof, gchar **filenames)
 	for (i=0; filenames[i] != NULL; i++) {
 		for (j=0; j < list_data->len; j++) {
 			data = g_ptr_array_index (list_data, j);
+			egg_debug ("got %s", data->filename);
 			if (g_strcmp0 (filenames[i], data->filename) == 0) {
 				pk_lsof_add_pid (pids, data->pid);
 			}
@@ -273,8 +273,7 @@ pk_lsof_finalize (GObject *object)
 	g_return_if_fail (PK_IS_LSOF (object));
 	lsof = PK_LSOF (object);
 
-	g_ptr_array_foreach (lsof->priv->list_data, (GFunc) pk_lsof_data_free, NULL);
-	g_ptr_array_free (lsof->priv->list_data, TRUE);
+	g_ptr_array_unref (lsof->priv->list_data);
 
 	G_OBJECT_CLASS (pk_lsof_parent_class)->finalize (object);
 }
@@ -301,7 +300,7 @@ static void
 pk_lsof_init (PkLsof *lsof)
 {
 	lsof->priv = PK_LSOF_GET_PRIVATE (lsof);
-	lsof->priv->list_data = g_ptr_array_new ();
+	lsof->priv->list_data = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_lsof_data_free);
 }
 
 /**
@@ -347,7 +346,7 @@ pk_lsof_test (EggTest *test)
 	egg_test_title (test, "get pids for files");
 	pids = pk_lsof_get_pids_for_filenames (lsof, files);
 	egg_test_assert (test, pids->len > 0);
-	g_ptr_array_free (pids, TRUE);
+	g_ptr_array_unref (pids);
 
 	g_object_unref (lsof);
 
