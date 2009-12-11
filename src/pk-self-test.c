@@ -27,6 +27,7 @@
 /* prototypes */
 void egg_string_test (EggTest *test);
 void pk_lsof_test (EggTest *test);
+void pk_proc_test (EggTest *test);
 void pk_conf_test (EggTest *test);
 void pk_store_test (EggTest *test);
 void pk_inhibit_test (EggTest *test);
@@ -54,6 +55,7 @@ main (int argc, char **argv)
 	egg_string_test (test);
 
 	/* components */
+	pk_proc_test (test);
 	pk_lsof_test (test);
 	pk_file_monitor_test (test);
 	pk_time_test (test);
