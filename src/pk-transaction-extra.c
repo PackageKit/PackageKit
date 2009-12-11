@@ -877,7 +877,7 @@ pk_transaction_extra_get_uid (PkTransactionExtra *extra, guint pid)
 	filename = g_strdup_printf ("/proc/%i/loginuid", pid);
 	ret = g_file_get_contents (filename, &uid_text, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to get cmdline: %s", error->message);
+		egg_warning ("failed to get loginuid: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
