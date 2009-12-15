@@ -558,23 +558,27 @@ pk_transaction_extra_clear_firmware_requests (PkTransactionExtra *extra)
  * pk_transaction_extra_update_files_check_running_cb:
  **/
 static void
-pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gchar *package_id,
-					     const gchar *filelist, PkTransactionExtra *extra)
+pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
 {
 	guint i, j;
 	guint len;
 	gboolean ret;
-	gchar **files;
 	const gchar *tmp;
 	GPtrArray *array;
+	gchar **filenames = NULL;
+	gchar *package_id = NULL;
 
-	files = g_strsplit (filelist, ";", 0);
+	/* get data */
+	g_object_get (files,
+		      "package-id", &package_id,
+		      "files", &filenames,
+		      NULL);
 
 	/* check each file */
-	len = g_strv_length (files);
+	len = g_strv_length (filenames);
 	for (i=0; i<len; i++) {
 		/* executable? */
-		ret = g_file_test (files[i], G_FILE_TEST_IS_REGULAR | G_FILE_TEST_IS_EXECUTABLE | G_FILE_TEST_EXISTS);
+		ret = g_file_test (filenames[i], G_FILE_TEST_IS_REGULAR | G_FILE_TEST_IS_EXECUTABLE | G_FILE_TEST_EXISTS);
 		if (!ret)
 			continue;
 
@@ -583,7 +587,7 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gc
 		array = extra->priv->running_exec_list;
 		for (j=0; j<array->len; j++) {
 			tmp = g_ptr_array_index (array, j);
-			if (g_strcmp0 (tmp, files[i]) == 0) {
+			if (g_strcmp0 (tmp, filenames[i]) == 0) {
 				ret = TRUE;
 				break;
 			}
@@ -595,10 +599,11 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, const gc
 		 * suggest an application restart instead */
 
 		/* send signal about session restart */
-		egg_debug ("package %s updated, and %s is running", package_id, files[i]);
+		egg_debug ("package %s updated, and %s is running", package_id, filenames[i]);
 		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SESSION, package_id);
 	}
-	g_strfreev (files);
+	g_strfreev (filenames);
+	g_free (package_id);
 }
 
 #ifdef USE_SECURITY_POLKIT
@@ -739,39 +744,45 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
  * pk_transaction_extra_update_files_check_desktop_cb:
  **/
 static void
-pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, const gchar *package_id,
-					     const gchar *filelist, PkTransactionExtra *extra)
+pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
 {
 	guint i;
 	guint len;
 	gboolean ret;
-	gchar **files;
 	gchar **package;
 	gchar *md5;
+	gchar **filenames = NULL;
+	gchar *package_id = NULL;
 
-	files = g_strsplit (filelist, ";", 0);
+	/* get data */
+	g_object_get (files,
+		      "package-id", &package_id,
+		      "files", &filenames,
+		      NULL);
+
 	package = pk_package_id_split (package_id);
 
 	/* check each file */
-	len = g_strv_length (files);
+	len = g_strv_length (filenames);
 	for (i=0; i<len; i++) {
 		/* exists? */
-		ret = g_file_test (files[i], G_FILE_TEST_EXISTS);
+		ret = g_file_test (filenames[i], G_FILE_TEST_EXISTS);
 		if (!ret)
 			continue;
 
 		/* .desktop file? */
-		ret = g_str_has_suffix (files[i], ".desktop");
+		ret = g_str_has_suffix (filenames[i], ".desktop");
 		if (!ret)
 			continue;
 
-		egg_debug ("adding filename %s", files[i]);
-		md5 = pk_transaction_extra_get_filename_md5 (files[i]);
-		pk_transaction_extra_sqlite_add_filename_details (extra, files[i], package[PK_PACKAGE_ID_NAME], md5);
+		egg_debug ("adding filename %s", filenames[i]);
+		md5 = pk_transaction_extra_get_filename_md5 (filenames[i]);
+		pk_transaction_extra_sqlite_add_filename_details (extra, filenames[i], package[PK_PACKAGE_ID_NAME], md5);
 		g_free (md5);
 	}
-	g_strfreev (files);
+	g_strfreev (filenames);
 	g_strfreev (package);
+	g_free (package_id);
 }
 
 /**
@@ -811,30 +822,33 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
  * pk_transaction_extra_files_check_library_restart_cb:
  **/
 static void
-pk_transaction_extra_files_check_library_restart_cb (PkBackend *backend, const gchar *package_id,
-					      const gchar *filelist, PkTransactionExtra *extra)
+pk_transaction_extra_files_check_library_restart_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
 {
 	guint i;
 	guint len;
-	gchar **files = NULL;
+	gchar **filenames = NULL;
 
-	files = g_strsplit (filelist, ";", 0);
+	/* get data */
+	g_object_get (files,
+		      "files", &filenames,
+		      NULL);
 
 	/* check each file to see if it's a system shared library */
-	len = g_strv_length (files);
+	len = g_strv_length (filenames);
 	for (i=0; i<len; i++) {
 		/* not a system library */
-		if (strstr (files[i], "/lib") == NULL)
+		if (strstr (filenames[i], "/lib") == NULL)
 			continue;
 
 		/* not a shared object */
-		if (strstr (files[i], ".so") == NULL)
+		if (strstr (filenames[i], ".so") == NULL)
 			continue;
 
 		/* add as it matches the criteria */
-		egg_debug ("adding filename %s", files[i]);
-		g_ptr_array_add (extra->priv->files_list, g_strdup (files[i]));
+		egg_debug ("adding filename %s", filenames[i]);
+		g_ptr_array_add (extra->priv->files_list, g_strdup (filenames[i]));
 	}
+	g_strfreev (filenames);
 }
 
 /**
