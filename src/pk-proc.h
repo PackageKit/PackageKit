@@ -46,12 +46,16 @@ typedef struct
 	GObjectClass	parent_class;
 } PkProcClass;
 
-GType		 pk_proc_get_type		(void);
-PkProc		*pk_proc_new			(void);
+GType		 pk_proc_get_type			(void);
+PkProc		*pk_proc_new				(void);
 
-gboolean	 pk_proc_refresh		(PkProc		*proc);
-GPtrArray	*pk_proc_get_pids_for_filenames	(PkProc		*proc,
-						 gchar		**filenames);
+gboolean	 pk_proc_refresh			(PkProc		*proc);
+gchar		*pk_proc_get_process_for_cmdlines	(PkProc		*proc,
+							 gchar		**filenames);
+gboolean	 pk_proc_find_execs			(PkProc		*proc,
+							 gchar		**filenames);
+gboolean	 pk_proc_find_exec			(PkProc		*proc,
+							 const gchar	*filename);
 
 G_END_DECLS
 
