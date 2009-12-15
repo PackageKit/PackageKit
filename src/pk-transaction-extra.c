@@ -1015,7 +1015,6 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	}
 
 	/* reset */
-	g_ptr_array_foreach (extra->priv->files_list, (GFunc) g_free, NULL);
 	g_ptr_array_set_size (extra->priv->files_list, 0);
 
 	if (extra->priv->pids != NULL) {
@@ -1100,8 +1099,7 @@ pk_transaction_extra_finalize (GObject *object)
 	g_main_loop_unref (extra->priv->loop);
 	sqlite3_close (extra->priv->db);
 	g_hash_table_unref (extra->priv->hash);
-	g_ptr_array_foreach (extra->priv->files_list, (GFunc) g_free, NULL);
-	g_ptr_array_free (extra->priv->files_list, TRUE);
+	g_ptr_array_unref (extra->priv->files_list);
 
 	g_object_unref (extra->priv->backend);
 	g_object_unref (extra->priv->lsof);
@@ -1161,7 +1159,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	extra->priv->db = NULL;
 	extra->priv->pids = NULL;
 	extra->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	extra->priv->files_list = g_ptr_array_new ();
+	extra->priv->files_list = g_ptr_array_new_with_free_func (g_free);
 
 	extra->priv->finished_id =
 		g_signal_connect (extra->priv->backend, "finished",
