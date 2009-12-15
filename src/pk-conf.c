@@ -68,6 +68,28 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 }
 
 /**
+ * pk_conf_get_strv:
+ **/
+gchar **
+pk_conf_get_strv (PkConf *conf, const gchar *key)
+{
+	gchar **value = NULL;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	value = g_key_file_get_string_list (conf->priv->keyfile, "Daemon", key, NULL, &error);
+	if (error != NULL) {
+		/* set to missing value */
+		value = PK_CONF_VALUE_STRING_MISSING;
+		egg_debug ("%s read error: %s", key, error->message);
+		g_error_free (error);
+	}
+	return value;
+}
+
+/**
  * pk_conf_get_int:
  **/
 gint
