@@ -42,35 +42,10 @@ struct PkProcPrivate
 G_DEFINE_TYPE (PkProc, pk_proc, G_TYPE_OBJECT)
 
 typedef struct {
-	guint			 pid;
 	gchar			*cmdline;
+	guint			 pid;
+	guint			 uid;
 } PkProcData;
-
-/**
- * pk_proc_add_pid:
- **/
-static gboolean
-pk_proc_add_pid (GPtrArray *array, guint pid)
-{
-	guint i;
-	guint pid_tmp;
-	gboolean found = FALSE;
-
-	/* search already list */
-	for (i=0; i<array->len; i++) {
-		pid_tmp = GPOINTER_TO_INT (g_ptr_array_index (array, i));
-		if (pid_tmp == pid) {
-			found = TRUE;
-			break;
-		}
-	}
-
-	/* not found, so add */
-	if (!found)
-		g_ptr_array_add (array, GINT_TO_POINTER (pid));
-
-	return !found;
-}
 
 /**
  * pk_proc_data_free:
@@ -86,16 +61,15 @@ pk_proc_data_free (PkProcData *proc)
  * pk_proc_data_new:
  **/
 static PkProcData *
-pk_proc_data_new (guint pid, const gchar *cmdline)
+pk_proc_data_new (const gchar *cmdline, guint pid, guint uid)
 {
 	PkProcData *data;
 	data = g_new0 (PkProcData, 1);
 	data->pid = pid;
+	data->uid = uid;
 	data->cmdline = g_strdup (cmdline);
 	return data;
 }
-
-
 
 /**
  * pk_proc_refresh_find_file:
@@ -133,8 +107,12 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	GError *error = NULL;
 	gchar *cmdline = NULL;
 	gint pid = -1;
+	guint uid;
 	PkProcData *data;
 	gchar *cmdline_full = NULL;
+	gchar *offset;
+	gchar *uid_file = NULL;
+	gchar *contents = NULL;
 
 	/* get cmdline */
 	ret = g_file_get_contents (path, &cmdline, NULL, &error);
@@ -143,6 +121,11 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 		g_error_free (error);
 		goto out;
 	}
+
+	/* remove prelink junk */
+	offset = g_strrstr (cmdline, ".#prelink#.");
+	if (offset != NULL)
+		*(offset) = '\0';
 
 	/* remove added junk */
 	g_strdelimit (cmdline, " \t:;", '\0');
@@ -179,13 +162,34 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 		goto out;
 	}
 
+	/* get UID */
+	uid_file = g_build_filename ("/proc", pid_text, "loginuid", NULL);
+
+	/* is a process file */
+	if (!g_file_test (uid_file, G_FILE_TEST_EXISTS))
+		goto out;
+
+	/* able to get contents */
+	ret = g_file_get_contents (uid_file, &contents, 0, NULL);
+	if (!ret)
+		goto out;
+
+	/* parse UID */
+	ret = egg_strtouint (contents, &uid);
+	if (!ret) {
+		egg_warning ("failed to parse uid: '%s' for %s", contents, pid_text);
+		goto out;
+	}
+
 	/* add data to array */
-	data = pk_proc_data_new (pid, cmdline_full);
+	data = pk_proc_data_new (cmdline_full, pid, uid);
 	g_ptr_array_add (proc->priv->list_data, data);
-	egg_debug ("adding %s (%i)", data->cmdline, data->pid);
+	egg_debug ("adding %s pid:%i uid:%i", data->cmdline, data->pid, data->uid);
 out:
 	g_free (cmdline_full);
 	g_free (cmdline);
+	g_free (contents);
+	g_free (uid_file);
 	return ret;
 }
 
@@ -240,42 +244,51 @@ out:
 }
 
 /**
- * pk_proc_get_pids_for_cmdlines:
+ * pk_proc_find_exec:
  **/
-GPtrArray *
-pk_proc_get_pids_for_filenames (PkProc *proc, gchar **filenames)
+gboolean
+pk_proc_find_exec (PkProc *proc, const gchar *filename)
 {
-	guint i;
 	guint j;
-	gboolean ret;
+	gboolean ret = FALSE;
 	GPtrArray *list_data;
-	GPtrArray *pids = NULL;
 	const PkProcData *data;
 
-	g_return_val_if_fail (PK_IS_PROC (proc), NULL);
+	g_return_val_if_fail (PK_IS_PROC (proc), FALSE);
 
-	/* might not have been refreshed ever */
+	/* setup state */
 	list_data = proc->priv->list_data;
-	if (list_data->len == 0) {
-		ret = pk_proc_refresh (proc);
-		if (!ret) {
-			egg_warning ("failed to refresh");
-			goto out;
-		}
+
+	/* find executable that matches the pattern */
+	for (j=0; j < list_data->len; j++) {
+		data = g_ptr_array_index (list_data, j);
+		ret = g_pattern_match_simple (filename, data->cmdline);
+		if (ret)
+			break;
 	}
 
-	/* create array of pids that are using this library */
-	pids = g_ptr_array_new ();
+	return ret;
+}
+
+/**
+ * pk_proc_find_execs:
+ **/
+gboolean
+pk_proc_find_execs (PkProc *proc, gchar **filenames)
+{
+	guint i;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_PROC (proc), FALSE);
+
+	/* find executable that matches the pattern */
 	for (i=0; filenames[i] != NULL; i++) {
-		for (j=0; j < list_data->len; j++) {
-			data = g_ptr_array_index (list_data, j);
-			if (g_strcmp0 (filenames[i], data->cmdline) == 0) {
-				pk_proc_add_pid (pids, data->pid);
-			}
-		}
+		ret = pk_proc_find_exec (proc, filenames[i]);
+		if (ret)
+			break;
 	}
-out:
-	return pids;
+
+	return ret;
 }
 
 /**
@@ -343,8 +356,7 @@ pk_proc_test (EggTest *test)
 {
 	gboolean ret;
 	PkProc *proc;
-	GPtrArray *pids;
-	gchar *files[] = { "/sbin/udevd", NULL };
+//	gchar *files[] = { "/sbin/udevd", NULL };
 
 	if (!egg_test_start (test, "PkProc"))
 		return;
@@ -358,12 +370,6 @@ pk_proc_test (EggTest *test)
 	egg_test_title (test, "refresh proc data");
 	ret = pk_proc_refresh (proc);
 	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "get pids for files");
-	pids = pk_proc_get_pids_for_filenames (proc, files);
-	egg_test_assert (test, pids->len > 0);
-	g_ptr_array_unref (pids);
 
 	g_object_unref (proc);
 
