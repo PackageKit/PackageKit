@@ -43,6 +43,7 @@
 #include "pk-marshal.h"
 #include "pk-backend-internal.h"
 #include "pk-lsof.h"
+#include "pk-proc.h"
 
 #define PK_POST_TRANS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_POST_TRANS, PkTransactionExtraPrivate))
 
@@ -51,9 +52,9 @@ struct PkTransactionExtraPrivate
 	sqlite3			*db;
 	PkBackend		*backend;
 	GMainLoop		*loop;
-	GPtrArray		*running_exec_list;
 	GPtrArray		*list;
 	PkLsof			*lsof;
+	PkProc			*proc;
 	guint			 finished_id;
 	guint			 package_id;
 	GHashTable		*hash;
@@ -557,11 +558,9 @@ pk_transaction_extra_clear_firmware_requests (PkTransactionExtra *extra)
 static void
 pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles *files, PkTransactionExtra *extra)
 {
-	guint i, j;
+	guint i;
 	guint len;
 	gboolean ret;
-	const gchar *tmp;
-	GPtrArray *array;
 	gchar **filenames = NULL;
 	gchar *package_id = NULL;
 
@@ -580,15 +579,7 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles 
 			continue;
 
 		/* running? */
-		ret = FALSE;
-		array = extra->priv->running_exec_list;
-		for (j=0; j<array->len; j++) {
-			tmp = g_ptr_array_index (array, j);
-			if (g_strcmp0 (tmp, filenames[i]) == 0) {
-				ret = TRUE;
-				break;
-			}
-		}
+		ret = pk_proc_find_exec (extra->priv->proc, filenames[i]);
 		if (!ret)
 			continue;
 
@@ -601,105 +592,6 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles 
 	}
 	g_strfreev (filenames);
 	g_free (package_id);
-}
-
-#ifdef USE_SECURITY_POLKIT
-/**
- * dkp_extra_trans_get_cmdline:
- **/
-static gchar *
-dkp_extra_trans_get_cmdline (guint pid)
-{
-	gboolean ret;
-	gchar *filename = NULL;
-	gchar *cmdline = NULL;
-	GError *error = NULL;
-
-	/* get command line from proc */
-	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
-	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
-	if (!ret) {
-		egg_debug ("failed to get cmdline: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	g_free (filename);
-	return cmdline;
-}
-#endif
-
-/**
- * pk_transaction_extra_update_process_list:
- **/
-static gboolean
-pk_transaction_extra_update_process_list (PkTransactionExtra *extra)
-{
-	GDir *dir;
-	const gchar *name;
-	gchar *offset;
-	gchar *uid_file;
-	gchar *contents;
-	gboolean ret;
-	guint uid;
-	pid_t pid;
-	gchar *exec;
-
-	uid = getuid ();
-	dir = g_dir_open ("/proc", 0, NULL);
-	name = g_dir_read_name (dir);
-	if (extra->priv->running_exec_list->len > 0)
-		g_ptr_array_remove_range (extra->priv->running_exec_list, 0, extra->priv->running_exec_list->len);
-	while (name != NULL) {
-		contents = NULL;
-		exec = NULL;
-		uid_file = g_build_filename ("/proc", name, "loginuid", NULL);
-
-		/* is a process file */
-		if (!g_file_test (uid_file, G_FILE_TEST_EXISTS))
-			goto out;
-
-		/* able to get contents */
-		ret = g_file_get_contents (uid_file, &contents, 0, NULL);
-		if (!ret)
-			goto out;
-
-		/* parse UID */
-		ret = egg_strtouint (contents, &uid);
-		if (!ret) {
-			egg_warning ("failed to parse uid: '%s'", contents);
-			goto out;
-		}
-
-		/* parse PID */
-		ret = egg_strtoint (name, &pid);
-		if (!ret) {
-			egg_warning ("failed to parse pid: '%s'", name);
-			goto out;
-		}
-
-#ifdef USE_SECURITY_POLKIT
-		exec = dkp_extra_trans_get_cmdline (pid);
-		if (exec == NULL)
-			goto out;
-#else
-		goto out;
-#endif
-
-		/* can be /usr/libexec/notification-daemon.#prelink#.9sOhao */
-		offset = g_strrstr (exec, ".#prelink#.");
-		if (offset != NULL)
-			*(offset) = '\0';
-		egg_debug ("uid=%i, pid=%i, exec=%s", uid, pid, exec);
-		g_ptr_array_add (extra->priv->running_exec_list, g_strdup (exec));
-out:
-		g_free (exec);
-		g_free (uid_file);
-		g_free (contents);
-		name = g_dir_read_name (dir);
-	}
-	g_dir_close (dir);
-	return TRUE;
 }
 
 /**
@@ -720,7 +612,7 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 	pk_transaction_extra_set_status_changed (extra, PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES);
 	pk_transaction_extra_set_progress_changed (extra, 101);
 
-	pk_transaction_extra_update_process_list (extra);
+	pk_proc_refresh (extra->priv->proc);
 
 	signal_files = g_signal_connect (extra->priv->backend, "files",
 					 G_CALLBACK (pk_transaction_extra_update_files_check_running_cb), extra);
@@ -1117,8 +1009,8 @@ pk_transaction_extra_finalize (GObject *object)
 
 	g_object_unref (extra->priv->backend);
 	g_object_unref (extra->priv->lsof);
+	g_object_unref (extra->priv->proc);
 	g_ptr_array_unref (extra->priv->list);
-	g_ptr_array_unref (extra->priv->running_exec_list);
 
 	G_OBJECT_CLASS (pk_transaction_extra_parent_class)->finalize (object);
 }
@@ -1165,11 +1057,11 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	gint rc;
 
 	extra->priv = PK_POST_TRANS_GET_PRIVATE (extra);
-	extra->priv->running_exec_list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_free);
 	extra->priv->loop = g_main_loop_new (NULL, FALSE);
 	extra->priv->list = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	extra->priv->backend = pk_backend_new ();
 	extra->priv->lsof = pk_lsof_new ();
+	extra->priv->proc = pk_proc_new ();
 	extra->priv->db = NULL;
 	extra->priv->pids = NULL;
 	extra->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
