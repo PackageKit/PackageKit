@@ -63,13 +63,13 @@ struct PkTransactionExtraPrivate
 };
 
 enum {
-	PK_POST_TRANS_STATUS_CHANGED,
-	PK_POST_TRANS_PROGRESS_CHANGED,
-	PK_POST_TRANS_REQUIRE_RESTART,
-	PK_POST_TRANS_LAST_SIGNAL
+	SIGNAL_STATUS_CHANGED,
+	SIGNAL_PROGRESS_CHANGED,
+	SIGNAL_REQUIRE_RESTART,
+	SIGNAL_LAST
 };
 
-static guint signals [PK_POST_TRANS_LAST_SIGNAL] = { 0 };
+static guint signals [SIGNAL_LAST] = { 0 };
 G_DEFINE_TYPE (PkTransactionExtra, pk_transaction_extra, G_TYPE_OBJECT)
 
 /**
@@ -97,8 +97,14 @@ pk_transaction_extra_package_cb (PkBackend *backend, PkPackage *package, PkTrans
 static void
 pk_transaction_extra_set_require_restart (PkTransactionExtra *extra, PkRestartEnum restart, const gchar *package_id)
 {
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
-	g_signal_emit (extra, signals [PK_POST_TRANS_REQUIRE_RESTART], 0, restart, package_id);
+	PkRequireRestart *item;
+	item = pk_require_restart_new ();
+	g_object_set (item,
+		      "restart", restart,
+		      "package-id", package_id,
+		      NULL);
+	g_signal_emit (extra, signals [SIGNAL_REQUIRE_RESTART], 0, item);
+	g_object_unref (item);
 }
 
 /**
@@ -107,8 +113,7 @@ pk_transaction_extra_set_require_restart (PkTransactionExtra *extra, PkRestartEn
 static void
 pk_transaction_extra_set_status_changed (PkTransactionExtra *extra, PkStatusEnum status)
 {
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
-	g_signal_emit (extra, signals [PK_POST_TRANS_STATUS_CHANGED], 0, status);
+	g_signal_emit (extra, signals [SIGNAL_STATUS_CHANGED], 0, status);
 }
 
 /**
@@ -117,8 +122,7 @@ pk_transaction_extra_set_status_changed (PkTransactionExtra *extra, PkStatusEnum
 static void
 pk_transaction_extra_set_progress_changed (PkTransactionExtra *extra, guint percentage)
 {
-	egg_debug ("emiting progress-changed %i", percentage);
-	g_signal_emit (extra, signals [PK_POST_TRANS_PROGRESS_CHANGED], 0, percentage, 0, 0, 0);
+	g_signal_emit (extra, signals [SIGNAL_PROGRESS_CHANGED], 0, percentage, 0, 0, 0);
 }
 
 /**
@@ -1023,21 +1027,21 @@ pk_transaction_extra_class_init (PkTransactionExtraClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_transaction_extra_finalize;
-	signals [PK_POST_TRANS_STATUS_CHANGED] =
+	signals [SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_POST_TRANS_PROGRESS_CHANGED] =
+	signals [SIGNAL_PROGRESS_CHANGED] =
 		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
-	signals [PK_POST_TRANS_REQUIRE_RESTART] =
+	signals [SIGNAL_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__OBJECT,
+			      G_TYPE_NONE, 1, G_TYPE_OBJECT);
 	g_type_class_add_private (klass, sizeof (PkTransactionExtraPrivate));
 }
 
