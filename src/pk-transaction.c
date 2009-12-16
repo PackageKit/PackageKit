@@ -1424,10 +1424,10 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
  * pk_transaction_pre_transaction_checks:
  * @package_ids: the list of packages to process
  *
- * This function does any pre-transaction checks
+ * This function does any pre-transaction checks before the backend is connected
  */
 static gboolean
-pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids)
+pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids, GError **error)
 {
 	GPtrArray *updates;
 	PkPackage *item;
@@ -1435,11 +1435,19 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	guint j = 0;
 	guint length = 0;
 	gboolean ret = FALSE;
+	gboolean success = TRUE;
 	gchar **package_ids_security = NULL;
 	gchar *package_id;
 	PkInfoEnum info;
 
-	/* chekc we have anything to process */
+	/* only do this for update actions, FIXME: need to get cached updtae list for update */
+	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		success = pk_transaction_extra_applications_are_running (transaction->priv->transaction_extra, package_ids, error);
+		if (!success)
+			goto out;
+	}
+
+	/* check we have anything to process */
 	if (package_ids == NULL) {
 		egg_debug ("no package_ids for %s", pk_role_enum_to_text (transaction->priv->role));
 		goto out;
@@ -1526,7 +1534,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
 out:
 	g_strfreev (package_ids_security);
-	return ret;
+	return success;
 }
 
 /**
@@ -1625,11 +1633,22 @@ pk_transaction_set_running (PkTransaction *transaction)
 	}
 
 	/* do any pre transaction checks */
-	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids);
+	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids, &error);
+	if (!ret) {
+		/* run a fake transaction */
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (transaction, PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS, error->message);
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
+
+		/* do not fail the tranaction */
+		ret = TRUE;
+
+		g_error_free (error);
+		goto out;
+	}
 
 	/* might have to reset again if we used the backend */
-	if (ret)
-		pk_backend_reset (transaction->priv->backend);
+	pk_backend_reset (transaction->priv->backend);
 
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
@@ -1785,9 +1804,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 		}
 	} else {
 		egg_error ("failed to run as role not assigned");
-		return FALSE;
+		ret = FALSE;
 	}
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
