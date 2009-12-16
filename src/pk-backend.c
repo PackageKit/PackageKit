@@ -1834,12 +1834,9 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
-	/* can we do the action? */
-	if (backend->priv->desc->cancel != NULL) {
-		/* emit */
-		g_signal_emit (backend, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
-		backend->priv->allow_cancel = allow_cancel;
-	}
+	/* emit */
+	g_signal_emit (backend, signals[SIGNAL_ALLOW_CANCEL], 0, allow_cancel);
+	backend->priv->allow_cancel = allow_cancel;
 	return TRUE;
 }
 
