@@ -56,7 +56,7 @@ public:
 
 	Client::DaemonError error;
 
-public slots:
+public Q_SLOTS:
 	void details(const QString& pid, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size);
 	void distroUpgrade(const QString& type, const QString& name, const QString& description);
 	void errorCode(const QString& error, const QString& details);
@@ -70,6 +70,7 @@ public slots:
 	void requireRestart(const QString& type, const QString& pid);
 	void transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline);
 	void updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated);
+	void destroy();
 
 private:
 	friend class Transaction;

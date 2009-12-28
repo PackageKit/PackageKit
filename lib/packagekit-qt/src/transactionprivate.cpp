@@ -81,9 +81,12 @@ void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 {
 	int exitValue = Util::enumFromString<Transaction>(exitCode, "ExitStatus", "Exit");
 	t->finished((Transaction::ExitStatus)exitValue, runtime);
-	t->destroyed(tid);
+}
 
-	t->deleteLater();
+void TransactionPrivate::destroy()
+{
+	emit t->destroy();
+	client->destroyTransaction(tid);
 }
 
 void TransactionPrivate::message(const QString& type, const QString& message)
@@ -149,4 +152,3 @@ void TransactionPrivate::updateDetail(const QString& pid, const QString& updates
 }
 
 #include "transactionprivate.moc"
-

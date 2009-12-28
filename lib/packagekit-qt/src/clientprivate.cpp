@@ -19,9 +19,9 @@
  */
 
 #include "clientprivate.h"
-#include "client.h"
 #include "daemonproxy.h"
 #include "transaction.h"
+#include "transactionprivate.h"
 #include "util.h"
 #include "common.h"
 
@@ -37,7 +37,6 @@ ClientPrivate::~ClientPrivate()
 
 Transaction* ClientPrivate::createNewTransaction()
 {
-	QMutexLocker locker(&runningTransactionsLocker);
 	Transaction* t = new Transaction(daemon->GetTid(), c);
 	if (t->tid().isEmpty()) {
 		qDebug() << "empty tid, the daemon is probably not here anymore";
@@ -47,32 +46,33 @@ Transaction* ClientPrivate::createNewTransaction()
 	if(!hints.isEmpty())
 		t->setHints(hints);
 
-//	qDebug() << "creating a transaction : " << t->tid();
+// 	qDebug() << "creating a transaction : " << t->tid();
 	runningTransactions.insert(t->tid(), t);
-	connect(t, SIGNAL(destroyed(const QString&)), this, SLOT(removeTransactionFromPool(const QString&)));
 
 	return t;
 }
 
-void ClientPrivate::transactionListChanged(const QStringList& tids)
+QList<Transaction*> ClientPrivate::transactions(const QStringList& tids)
 {
-	QMutexLocker locker(&runningTransactionsLocker);
-//	qDebug() << "entering transactionListChanged";
-	QList<Transaction*> transactions;
+// 	qDebug() << "entering transactionListChanged";
+	QList<Transaction*> trans;
 	foreach(const QString& tid, tids) {
-		if(runningTransactions.keys().contains(tid)) {
+		if(runningTransactions.contains(tid)) {
 //			qDebug() << "reusing transaction from pool : " << tid;
-			transactions.append(runningTransactions.value(tid));
+			trans.append(runningTransactions.value(tid));
 		} else {
 //			qDebug() << "external transaction : " << tid;
 			Transaction* t = new Transaction(tid, c);
-			transactions.append(t);
+			trans.append(t);
 			runningTransactions.insert(tid, t);
 		}
 	}
+	return trans;
+}
 
-	c->transactionListChanged(transactions);
-//	qDebug() << "leaving transactionListChanged";
+void ClientPrivate::transactionListChanged(const QStringList& tids)
+{
+	c->transactionListChanged(transactions(tids));
 }
 
 void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& oldOnwer, const QString& newOwner)
@@ -87,16 +87,16 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
 
 	foreach(Transaction *t, runningTransactions.values ()) {
 		t->finished (Transaction::ExitFailed, 0);
-		t->deleteLater ();
+		t->d->destroy ();
 	}
-	runningTransactions.clear ();
 }
 
-void ClientPrivate::removeTransactionFromPool(const QString& tid)
+void ClientPrivate::removeTransactionFromPool(const QString &tid)
 {
-	qDebug() << "removing transaction from pool : " << tid;
+// 	qDebug() << "removing transaction from pool: " << tid;
+
+	runningTransactions[tid]->deleteLater();
 	runningTransactions.remove(tid);
 }
 
 #include "clientprivate.moc"
-

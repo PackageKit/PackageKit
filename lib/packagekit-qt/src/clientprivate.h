@@ -22,12 +22,10 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
-#include <QtSql>
 #include "client.h"
 
 namespace PackageKit {
 
-class Client;
 class DaemonProxy;
 class Transaction;
 
@@ -43,28 +41,30 @@ public:
 
 	QStringList hints;
 
-	QMutex runningTransactionsLocker;
 	QHash<QString, Transaction*> runningTransactions;
 
-	// Get a tid, creates a new transaction and sets it up (ie call SetLocale)
+	// Get a tid, creates a new transaction and sets it up (ie call SetHints)
 	Transaction* createNewTransaction();
 
 	Client::DaemonError error;
 
-public slots:
+	Package* packageFromCache(const QString& pid);
+	void removeTransactionFromPool(const QString &tid);
+
+public Q_SLOTS:
 	// org.freedesktop.PackageKit
 	void transactionListChanged(const QStringList& tids);
+	QList<Transaction*> transactions(const QStringList& tids);
 	// restartScheduled
 	// repoListChanged
 	// updatesChanged
-	void serviceOwnerChanged (const QString&, const QString&, const QString&);
+	void serviceOwnerChanged(const QString&, const QString&, const QString&);
 
 private:
 	friend class Client;
 	ClientPrivate(Client* parent);
 
-private slots:
-	void removeTransactionFromPool(const QString& tid);
+	QHash<QString, Package*> retrievedPackages;
 };
 
 } // End namespace PackageKit

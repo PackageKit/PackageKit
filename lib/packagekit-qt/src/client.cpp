@@ -181,12 +181,8 @@ uint Client::getTimeSinceAction(Action action) const
 QList<Transaction*> Client::getTransactions()
 {
 	QStringList tids = d->daemon->GetTransactionList();
-	QList<Transaction*> transactions;
-	foreach(const QString& tid, tids) {
-		transactions.append(new Transaction(tid, this));
-	}
 
-	return transactions;
+	return d->transactions(tids);
 }
 
 void Client::setHints(const QStringList& hints)
@@ -543,6 +539,11 @@ void Client::setLastError (DaemonError e)
 void Client::setTransactionError (Transaction* t, DaemonError e)
 {
 	t->d->error = e;
+}
+
+void Client::destroyTransaction(const QString &tid)
+{
+	d->removeTransactionFromPool(tid);
 }
 
 #include "client.moc"

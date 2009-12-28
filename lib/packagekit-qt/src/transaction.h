@@ -27,7 +27,6 @@
 
 namespace PackageKit {
 
-class Client;
 class ClientPrivate;
 class Package;
 class TransactionPrivate;
@@ -310,6 +309,7 @@ Q_SIGNALS:
 	/**
 	 * Sent when the transaction has been destroyed and is
 	 * no longer available for use.
+	 * \warning the object will get deleted after this method is called
 	 */
 	void destroy ();
 
@@ -392,12 +392,6 @@ Q_SIGNALS:
 	 * \sa Client::getUpdateDetail
 	 */
 	void updateDetail(PackageKit::Client::UpdateInfo info);
-
-	/**
-	 * \internal
-	 * Used to clean the transaction pool in Client
-	 */
-	void destroyed(const QString& tid);
 
 private:
 	friend class Client;

@@ -22,7 +22,6 @@
 #define CLIENT_H
 
 #include <QtCore>
-#include <QDBusReply>
 #include <bitfield.h>
 
 namespace PackageKit {
@@ -856,10 +855,13 @@ private:
 	Client(QObject* parent = 0);
 	static Client* m_instance;
 	friend class ClientPrivate;
+	friend class TransactionPrivate;
 	ClientPrivate* d;
 
 	void setLastError (DaemonError e);
 	void setTransactionError (Transaction* t, DaemonError e);
+
+	void destroyTransaction(const QString &tid);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)
 
