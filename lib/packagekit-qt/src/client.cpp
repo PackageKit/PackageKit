@@ -252,7 +252,7 @@ Transaction* Client::downloadPackages(const QList<Package*>& packages)
 	RUN_TRANSACTION(DownloadPackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::downloadPackage(Package* package)
+Transaction* Client::downloadPackages(Package* package)
 {
 	return downloadPackages(QList<Package*>() << package);
 }
@@ -347,7 +347,7 @@ Transaction* Client::installFiles(const QStringList& files, bool only_trusted)
 	RUN_TRANSACTION(InstallFiles(only_trusted, files))
 }
 
-Transaction* Client::installFile(const QString& file, bool only_trusted)
+Transaction* Client::installFiles(const QString& file, bool only_trusted)
 {
 	return installFiles(QStringList() << file, only_trusted);
 }
@@ -357,7 +357,7 @@ Transaction* Client::installPackages(bool only_trusted, const QList<Package*>& p
 	RUN_TRANSACTION(InstallPackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::installPackage(bool only_trusted, Package* p)
+Transaction* Client::installPackages(bool only_trusted, Package* p)
 {
 	return installPackages(only_trusted, QList<Package*>() << p);
 }
@@ -377,7 +377,7 @@ Transaction* Client::removePackages(const QList<Package*>& packages, bool allow_
 	RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove))
 }
 
-Transaction* Client::removePackage(Package* p, bool allow_deps, bool autoremove)
+Transaction* Client::removePackages(Package* p, bool allow_deps, bool autoremove)
 {
 	return removePackages(QList<Package*>() << p, allow_deps, autoremove);
 }
@@ -412,7 +412,7 @@ Transaction* Client::searchFiles(const QStringList& search, Filters filters)
 	RUN_TRANSACTION(SearchFiles(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchFile(const QString& search, Filters filters)
+Transaction* Client::searchFiles(const QString& search, Filters filters)
 {
 	return searchFiles(QStringList() << search, filters);
 }
@@ -432,7 +432,7 @@ Transaction* Client::searchGroups(Client::Groups groups, Filters filters)
 	RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groupsSL))
 }
 
-Transaction* Client::searchGroup(Client::Group group, Filters filters)
+Transaction* Client::searchGroups(Client::Group group, Filters filters)
 {
 	return searchGroups(Groups() << group, filters);
 }
@@ -442,7 +442,7 @@ Transaction* Client::searchNames(const QStringList& search, Filters filters)
 	RUN_TRANSACTION(SearchNames(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchName(const QString& search, Filters filters)
+Transaction* Client::searchNames(const QString& search, Filters filters)
 {
 	return searchNames(QStringList() << search, filters);
 }
@@ -474,7 +474,7 @@ Transaction* Client::simulateInstallFiles(const QStringList& files)
 	RUN_TRANSACTION(SimulateInstallFiles(files))
 }
 
-Transaction* Client::simulateInstallFile(const QString& file)
+Transaction* Client::simulateInstallFiles(const QString& file)
 {
 	return simulateInstallFiles(QStringList() << file);
 }
@@ -484,7 +484,7 @@ Transaction* Client::simulateInstallPackages(const QList<Package*>& packages)
 	RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateInstallPackage(Package* package)
+Transaction* Client::simulateInstallPackages(Package* package)
 {
 	return simulateInstallPackages(QList<Package*>() << package);
 }
@@ -494,7 +494,7 @@ Transaction* Client::simulateRemovePackages(const QList<Package*>& packages)
 	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateRemovePackage(Package* package)
+Transaction* Client::simulateRemovePackages(Package* package)
 {
 	return simulateRemovePackages(QList<Package*>() << package);
 }
@@ -504,7 +504,7 @@ Transaction* Client::simulateUpdatePackages(const QList<Package*>& packages)
 	RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateUpdatePackage(Package* package)
+Transaction* Client::simulateUpdatePackages(Package* package)
 {
 	return simulateUpdatePackages(QList<Package*>() << package);
 }
@@ -514,7 +514,7 @@ Transaction* Client::updatePackages(bool only_trusted, const QList<Package*>& pa
 	RUN_TRANSACTION(UpdatePackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::updatePackage(bool only_trusted, Package* package)
+Transaction* Client::updatePackages(bool only_trusted, Package* package)
 {
 	return updatePackages(only_trusted, QList<Package*>() << package);
 }
