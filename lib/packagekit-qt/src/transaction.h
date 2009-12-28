@@ -75,7 +75,7 @@ public:
 	 *
 	 * \return A value from TransactionError describing the state of the transaction
 	 */
-	Client::DaemonError error () const;
+	Client::DaemonError error() const;
 
 	/**
 	 * Indicates weither you can cancel the transaction or not

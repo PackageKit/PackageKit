@@ -574,7 +574,7 @@ public:
 	/**
 	 * This is a convenience function
 	 */
-	Transaction* downloadPackage(Package* package);
+	Transaction* downloadPackages(Package* package);
 
 	/**
 	 * Returns the collection categories
@@ -664,7 +664,7 @@ public:
 	 * \p only_trusted indicate if the packages are signed by a trusted authority
 	 */
 	Transaction* installFiles(const QStringList& files, bool only_trusted);
-	Transaction* installFile(const QString& file, bool only_trusted);
+	Transaction* installFiles(const QString& file, bool only_trusted);
 
 	/**
 	 * Install the given \p packages
@@ -672,7 +672,7 @@ public:
 	 * \p only_trusted indicates if we should allow installation of untrusted packages (requires a different authorization)
 	 */
 	Transaction* installPackages(bool only_trusted, const QList<Package*>& packages);
-	Transaction* installPackage(bool only_trusted, Package* p);
+	Transaction* installPackages(bool only_trusted, Package* p);
 
 	/**
 	 * \brief Installs a signature
@@ -694,7 +694,7 @@ public:
 	 * won't be needed anymore after the packages are uninstalled.
 	 */
 	Transaction* removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove);
-	Transaction* removePackage(Package* p, bool allow_deps, bool autoremove);
+	Transaction* removePackages(Package* p, bool allow_deps, bool autoremove);
 
 	/**
 	 * Activates or disables a repository
@@ -724,8 +724,8 @@ public:
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchFile(const QString& search, Filters filters = NoFilter);
 	Transaction* searchFiles(const QStringList& search, Filters filters = NoFilter);
+	Transaction* searchFiles(const QString& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages details
@@ -739,16 +739,16 @@ public:
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchGroup(Client::Group group, Filters filters = NoFilter);
 	Transaction* searchGroups(Client::Groups group, Filters filters = NoFilter);
+	Transaction* searchGroups(Client::Group group, Filters filters = NoFilter);
 
 	/**
 	 * \brief Search in the packages names
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchName(const QString& search, Filters filters = NoFilter);
 	Transaction* searchNames(const QStringList& search, Filters filters = NoFilter);
+	Transaction* searchNames(const QString& search, Filters filters = NoFilter);
 
 	/**
 	 * \brief Tries to find a package name from a desktop file
@@ -768,7 +768,7 @@ public:
 	 *        REINSTALLING or OBSOLETING status.
 	 */
 	Transaction* simulateInstallFiles(const QStringList& files);
-	Transaction* simulateInstallFile(const QString& file);
+	Transaction* simulateInstallFiles(const QString& file);
 
 	/**
 	 * \brief Simulates an installation of \p packages.
@@ -778,7 +778,7 @@ public:
 	 *        REINSTALLING or OBSOLETING status.
 	 */
 	Transaction* simulateInstallPackages(const QList<Package*>& packages);
-	Transaction* simulateInstallPackage(Package* package);
+	Transaction* simulateInstallPackages(Package* package);
 
 	/**
 	 * \brief Simulates a removal of \p packages.
@@ -788,7 +788,7 @@ public:
 	 *        REINSTALLING or OBSOLETING status.
 	 */
 	Transaction* simulateRemovePackages(const QList<Package*>& packages);
-	Transaction* simulateRemovePackage(Package* package);
+	Transaction* simulateRemovePackages(Package* package);
 
 	/**
 	 * \brief Simulates an update of \p packages.
@@ -798,13 +798,13 @@ public:
 	 *        REINSTALLING or OBSOLETING status.
 	 */
 	Transaction* simulateUpdatePackages(const QList<Package*>& packages);
-	Transaction* simulateUpdatePackage(Package* package);
+	Transaction* simulateUpdatePackages(Package* package);
 
 	/**
 	 * Update the given \p packages
 	 */
 	Transaction* updatePackages(bool only_trusted, const QList<Package*>& packages);
-	Transaction* updatePackage(bool only_trusted, Package* package);
+	Transaction* updatePackages(bool only_trusted, Package* package);
 
 	/**
 	 * Updates the whole system
@@ -816,8 +816,8 @@ public:
 	/**
 	 * Searchs for a package providing a file/a mimetype
 	 */
-	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
 	Transaction* whatProvides(ProvidesType type, const QStringList& search, Filters filters = NoFilter);
+	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
 
 Q_SIGNALS:
 	/**
