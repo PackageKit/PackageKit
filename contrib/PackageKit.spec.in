@@ -370,7 +370,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files glib
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libdir}/*packagekit-glib*.so.*
+%{_libdir}/*packagekit-glib2.so.*
 
 %files qt
 %defattr(-,root,root,-)
@@ -420,10 +420,9 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files glib-devel
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libdir}/libpackagekit-glib*.so
-%{_libdir}/pkgconfig/packagekit-glib*.pc
+%{_libdir}/libpackagekit-glib2.so
+%{_libdir}/pkgconfig/packagekit-glib2.pc
 %dir %{_includedir}/PackageKit
-%dir %{_includedir}/PackageKit/packagekit-glib
 %dir %{_includedir}/PackageKit/packagekit-glib2
 %{_includedir}/PackageKit/packagekit-glib*/*.h
 
