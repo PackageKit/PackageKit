@@ -1296,11 +1296,19 @@ pk_transaction_list_test (EggTest *test)
 			  G_CALLBACK (pk_transaction_list_test_finished_cb), test);
 
 	/* this starts one action */
-	pk_transaction_search_details (item1->transaction, "none", "dave", NULL);
+	array = g_strsplit ("dave", " ", -1);
+	pk_transaction_search_details (item1->transaction, "none", array, NULL);
+	g_strfreev (array);
+
 	/* this should be chained after the first action completes */
-	pk_transaction_search_name (item2->transaction, "none", "power", NULL);
+	array = g_strsplit ("power", " ", -1);
+	pk_transaction_search_names (item2->transaction, "none", array, NULL);
+	g_strfreev (array);
+
 	/* this starts be chained after the second action completes */
-	pk_transaction_search_details (item3->transaction, "none", "paul", NULL);
+	array = g_strsplit ("paul", " ", -1);
+	pk_transaction_search_details (item3->transaction, "none", array, NULL);
+	g_strfreev (array);
 
 	/************************************************************/
 	egg_test_title (test, "get transactions (committed, not finished) in progress (all)");

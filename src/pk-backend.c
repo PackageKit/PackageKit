@@ -1710,7 +1710,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* form PkMessage struct */
 	item = pk_message_new ();
 	g_object_set (item,
-		      "code", PK_MESSAGE_ENUM_BACKEND_ERROR,
+		      "type", PK_MESSAGE_ENUM_BACKEND_ERROR,
 		      "details", "ErrorCode() has to be followed with Finished()!",
 		      NULL);
 
@@ -3133,15 +3133,6 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "eula was accepted twice");
-
-	/************************************************************/
-	egg_test_title (test, "get backend name");
-	text = pk_backend_get_name (backend);
-	if (text == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
-	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "load an invalid backend");
