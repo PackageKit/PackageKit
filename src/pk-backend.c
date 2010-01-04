@@ -2115,8 +2115,8 @@ gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->name);
 }
 
@@ -2127,8 +2127,8 @@ gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->desc->description);
 }
 
@@ -2139,8 +2139,8 @@ gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->desc->author);
 }
 
