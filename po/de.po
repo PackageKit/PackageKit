@@ -1952,7 +1952,7 @@ msgstr ""
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
-msgstr "Sie Software stammt nicht aus einer vertrauenswürdigen Quelle."
+msgstr "Die Software stammt nicht aus einer vertrauenswürdigen Quelle."
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
