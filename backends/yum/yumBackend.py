@@ -2162,7 +2162,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 for txmbr in self.yumbase.tsInfo:
                     pkg = txmbr.po
-                    system_packages = ['yum','rpm', 'glibc']
+                    system_packages = ['yum','rpm','glibc','PackageKit']
                     if pkg.name in system_packages:
                         self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
                         return
