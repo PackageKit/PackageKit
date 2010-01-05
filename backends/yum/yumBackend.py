@@ -2787,6 +2787,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.repoXML
             except yum.Errors.RepoError, e:
                 self.yumbase.repos.disableRepo(repo.id)
+                self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, "Could not contact source '%s', so it will be disabled" % repo.id)
 
         # should we suggest yum-complete-transaction?
         unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)
