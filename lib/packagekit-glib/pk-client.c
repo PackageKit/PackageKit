@@ -1573,7 +1573,7 @@ pk_client_update_system (PkClient *client, gboolean only_trusted, GError **error
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -2951,7 +2951,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3032,7 +3032,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3120,7 +3120,7 @@ pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **pac
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3202,7 +3202,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3294,7 +3294,7 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3419,7 +3419,7 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files_
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3588,7 +3588,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3664,7 +3664,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
@@ -3746,7 +3746,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	}
 
 	/* get and set a new ID */
-	ret = pk_client_allocate_transaction_id (client, &error_local);
+	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret)
 		goto out;
 
