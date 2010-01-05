@@ -1,3 +1,25 @@
+Version 0.5.6
+~~~~~~~~~~~~~
+Released: 2010-01-05
+
+Translations:
+ - Fix a trivial German translation typo (Matthias Clasen)
+
+Backends:
+ - yum: show a message to the user if the repo could not be reached. Fixes rh#531838 (Richard Hughes)
+ - yum: include PackageKit in the list of essential packages (Richard Hughes)
+
+New Features:
+ - Add PkProc, to monitor the running applications on the system (Richard Hughes)
+ - Add a new error enum 'failed-due-to-running-process' for future code (Richard Hughes)
+ - Add functionality to check if certain running applications should prevent an update (Richard Hughes)
+
+Bugfixes:
+ - Fix a crash where the extra library check file callbacks had the wrong signature (Richard Hughes)
+ - Correct the transaction RequireRestart extra callback to fix a potential crash (Richard Hughes)
+ - Ensure to set the correct error if getting the transaction ID fails. Fixes rh#551546 (Richard Hughes)
+ - cnf: Ensure we send error messages to stderr, not stdout. Fixes rh#545220 (Richard Hughes)
+
 Version 0.5.5
 ~~~~~~~~~~~~~
 Released: 2009-12-07
