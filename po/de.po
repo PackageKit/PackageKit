@@ -1567,7 +1567,7 @@ msgstr "Zur Installation von Fehlerdiagnose-Paketen müssen zusätzliche Quellen
 #: ../src/pk-polkit-action-lookup.c:168
 #: ../src/pk-polkit-action-lookup.c:187
 msgid "The software is not from a trusted source."
-msgstr "Sie Software stammt nicht aus einer vertrauenswürdigen Quelle."
+msgstr "Die Software stammt nicht aus einer vertrauenswürdigen Quelle."
 
 #: ../src/pk-polkit-action-lookup.c:173
 msgid "Do not update this package unless you are sure it is safe to do so."
