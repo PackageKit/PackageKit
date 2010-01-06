@@ -1678,6 +1678,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 		g_error_free (error);
 	}
 
+	/* we are no longer waiting, we are setting up */
+	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_SETUP);
+
 	/* do any pre transaction checks */
 	ret = pk_transaction_pre_transaction_checks (transaction, priv->cached_package_ids, &error);
 	if (!ret) {
@@ -1757,8 +1761,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->has_been_run = TRUE;
 	transaction->priv->allow_cancel = FALSE;
 
-	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
+	/* reset after the pre-transaction checks */
 	pk_backend_set_percentage (priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* do the correct action with the cached parameters */
