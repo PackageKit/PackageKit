@@ -100,7 +100,8 @@ struct PkTransactionPrivate
 	gboolean		 emit_signature_required;
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
-	PkTristate		 background;
+	PkHintEnum		 background;
+	PkHintEnum		 interactive;
 	gchar			*locale;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
@@ -1601,6 +1602,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	GError *error = NULL;
 	PkBitfield filters;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
+
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1610,6 +1612,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* assign */
 	g_object_set (priv->backend,
 		      "background", priv->background,
+		      "interactive", priv->interactive,
 		      "transaction-id", priv->tid,
 		      NULL);
 
@@ -1908,8 +1911,8 @@ pk_transaction_commit (PkTransaction *transaction)
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	/* set the idle really early as this affects scheduling */
-	if (transaction->priv->background == PK_TRISTATE_TRUE ||
-	    transaction->priv->background == PK_TRISTATE_FALSE) {
+	if (transaction->priv->background == PK_HINT_ENUM_TRUE ||
+	    transaction->priv->background == PK_HINT_ENUM_FALSE) {
 		pk_transaction_list_set_background (transaction->priv->transaction_list,
 					      transaction->priv->tid,
 					      transaction->priv->background);
@@ -4500,44 +4503,48 @@ static gboolean
 pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gchar *value, GError **error)
 {
 	gboolean ret = TRUE;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	/* locale=en_GB.utf8 */
 	if (g_strcmp0 (key, "locale") == 0) {
 
 		/* already set */
-		if (transaction->priv->locale != NULL) {
+		if (priv->locale != NULL) {
 			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					      "Already set locale to %s", transaction->priv->locale);
+					      "Already set locale to %s", priv->locale);
 			ret = FALSE;
 			goto out;
 		}
 
 		/* success */
-		transaction->priv->locale = g_strdup (value);
+		priv->locale = g_strdup (value);
 		goto out;
 	}
 
-	/* idle=true */
+	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
-
-		/* idle true */
-		if (g_strcmp0 (value, "true") == 0) {
-			transaction->priv->background = PK_TRISTATE_TRUE;
-			goto out;
+		priv->background = pk_hint_enum_from_text (value);
+		if (priv->background == PK_HINT_ENUM_INVALID) {
+			priv->background = PK_HINT_ENUM_UNSET;
+			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					      "background hint expects true or false, not %s", value);
+			ret = FALSE;
 		}
-
-		/* idle false */
-		if (g_strcmp0 (value, "false") == 0) {
-			transaction->priv->background = PK_TRISTATE_FALSE;
-			goto out;
-		}
-
-		/* nothing recognised */
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				      "idle hint expects true or false, not %s", value);
-		ret = FALSE;
 		goto out;
 	}
+
+	/* interactive=true */
+	if (g_strcmp0 (key, "interactive") == 0) {
+		priv->interactive = pk_hint_enum_from_text (value);
+		if (priv->interactive == PK_HINT_ENUM_INVALID) {
+			priv->interactive = PK_HINT_ENUM_UNSET;
+			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					      "interactive hint expects true or false, not %s", value);
+			ret = FALSE;
+		}
+		goto out;
+	}
+
 	/* to preserve forwards and backwards compatibility, we ignore extra options here */
 	egg_warning ("unknown option: %s with value %s", key, value);
 out:
@@ -5442,7 +5449,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
-	transaction->priv->background = PK_TRISTATE_UNSET;
+	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->elapsed_time = 0;
 	transaction->priv->remaining_time = 0;
 	transaction->priv->backend = pk_backend_new ();

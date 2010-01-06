@@ -56,6 +56,7 @@ class PackageKitBaseBackend:
         self.lang = "C"
         self.has_network = False
         self.background = False
+        self.interactive = False
         self.percentage_old = 0
         self.sub_percentage_old = 0
 
@@ -78,6 +79,13 @@ class PackageKitBaseBackend:
                 self.background = True
         except KeyError, e:
             print "Error: No BACKGROUND envp"
+
+        # try to get INTERACTIVE state
+        try:
+            if os.environ['INTERACTIVE'] == 'TRUE':
+                self.interactive = True
+        except KeyError, e:
+            print "Error: No INTERACTIVE envp"
 
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
