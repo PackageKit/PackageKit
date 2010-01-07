@@ -534,9 +534,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 				} else if (g_strcmp0 (key, "UseDelta") == 0) {
 					alpm_option_set_usedelta (1);
 					egg_debug ("config: usedelta");
-				} else if (g_strcmp0 (key, "ILoveCandy") == 0) {
-					continue;
-				} else {
+				} else if (g_strcmp0 (key, "ILoveCandy") != 0 && g_strcmp0 (key, "ShowSize") != 0 && g_strcmp0 (key, "TotalDownload") != 0) {
 					egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 					return 1;
 				}
@@ -573,7 +571,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 					} else if (g_strcmp0 (key, "LogFile") == 0) {
 						alpm_option_set_logfile (ptr);
 						egg_debug ("config: logfile: %s", ptr);
-					} else {
+					} else if (g_strcmp0 (key, "XferCommand") != 0 && g_strcmp0 (key, "CleanMethod") != 0) {
 						egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 						return 1;
 					}
@@ -583,6 +581,8 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 					if (alpm_db_setserver (db, server) != 0) {
 						/* pm_errno is set by alpm_db_setserver */
+						egg_error ("config file %s, line %d: could not add server URL to database (%s).", file, linenum, alpm_strerrorlast ());
+						free (server);
 						return 1;
 					}
 					free (server);
