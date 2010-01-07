@@ -2438,7 +2438,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                                   "Please use these packages if you want to work with the " \
                                   "Fedora developers by testing these new development packages.\n\n" \
                                   "If this is not correct, please disable the %s software source." % repoid
-                        self.message(MESSAGE_BACKEND_ERROR, warning.replace("\n", ";"))
+                        self.message(MESSAGE_REPO_FOR_DEVELOPERS_ONLY, warning.replace("\n", ";"))
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
         except Exception, e:
