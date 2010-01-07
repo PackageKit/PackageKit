@@ -222,6 +222,7 @@ static const PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_PACKAGE_ALREADY_INSTALLED, "package-already-installed"},
 	{PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "autoremove-ignored"},
 	{PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED, "repo-metadata-download-failed"},
+	{PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY, "repo-for-developers-only"},
 	{0, NULL}
 };
 
