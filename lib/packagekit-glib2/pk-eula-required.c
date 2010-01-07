@@ -62,7 +62,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
 
 /**
  * pk_eula_required_get_property:

@@ -58,7 +58,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkFiles, pk_files, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkFiles, pk_files, PK_TYPE_SOURCE)
 
 /**
  * pk_files_get_property:

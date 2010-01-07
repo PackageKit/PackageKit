@@ -28,6 +28,8 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-source.h>
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_MESSAGE			(pk_message_get_type ())
@@ -43,13 +45,13 @@ typedef struct _PkMessageClass		PkMessageClass;
 
 struct _PkMessage
 {
-	 GObject		 parent;
+	 PkSource		 parent;
 	 PkMessagePrivate	*priv;
 };
 
 struct _PkMessageClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

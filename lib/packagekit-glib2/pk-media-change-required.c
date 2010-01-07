@@ -61,7 +61,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkMediaChangeRequired, pk_media_change_required, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkMediaChangeRequired, pk_media_change_required, PK_TYPE_SOURCE)
 
 /**
  * pk_media_change_required_get_property:

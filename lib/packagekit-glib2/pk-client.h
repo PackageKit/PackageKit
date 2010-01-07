@@ -32,6 +32,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-source.h>
 
 G_BEGIN_DECLS
 

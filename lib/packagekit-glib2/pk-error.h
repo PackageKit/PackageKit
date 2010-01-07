@@ -27,7 +27,9 @@
 #define __PK_ERROR_CODE_H
 
 #include <glib-object.h>
+
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-source.h>
 
 G_BEGIN_DECLS
 
@@ -44,13 +46,13 @@ typedef struct _PkErrorClass	PkErrorClass;
 
 struct _PkError
 {
-	 GObject		 parent;
+	 PkSource		 parent;
 	 PkErrorPrivate	*priv;
 };
 
 struct _PkErrorClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

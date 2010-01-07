@@ -59,7 +59,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkMessage, pk_message, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkMessage, pk_message, PK_TYPE_SOURCE)
 
 /**
  * pk_message_get_property:

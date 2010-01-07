@@ -71,7 +71,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRepoSignatureRequired, pk_repo_signature_required, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkRepoSignatureRequired, pk_repo_signature_required, PK_TYPE_SOURCE)
 
 /**
  * pk_repo_signature_required_get_property:

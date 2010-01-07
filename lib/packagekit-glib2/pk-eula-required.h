@@ -28,6 +28,8 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-source.h>
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_EULA_REQUIRED		(pk_eula_required_get_type ())
@@ -43,13 +45,13 @@ typedef struct _PkEulaRequiredClass	PkEulaRequiredClass;
 
 struct _PkEulaRequired
 {
-	 GObject		 parent;
+	 PkSource		 parent;
 	 PkEulaRequiredPrivate	*priv;
 };
 
 struct _PkEulaRequiredClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

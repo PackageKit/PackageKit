@@ -123,6 +123,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-results.h						\
 	pk-service-pack.c					\
 	pk-service-pack.h					\
+	pk-source.c						\
+	pk-source.h						\
 	pk-task.c						\
 	pk-task.h						\
 	pk-transaction-past.c					\

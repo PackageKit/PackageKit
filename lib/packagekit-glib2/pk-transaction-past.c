@@ -71,7 +71,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkTransactionPast, pk_transaction_past, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOURCE)
 
 /**
  * pk_transaction_past_get_property:

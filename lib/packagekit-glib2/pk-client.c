@@ -769,6 +769,8 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	g_object_set (item,
 		      "package-id", package_id,
 		      "files", files,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_files (state->results, item);
 
@@ -946,6 +948,8 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 	g_object_set (package,
 		      "info", info_enum,
 		      "summary", summary,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	ret = pk_progress_set_package (state->progress, package);
 	if (state->progress_callback != NULL && ret)
@@ -1036,6 +1040,8 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 		      "description", description,
 		      "url", url,
 		      "size", size,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_details (state->results, item);
 	g_object_unref (item);
@@ -1073,6 +1079,8 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 		      "state", state_enum,
 		      "issued", issued_text,
 		      "updated", updated_text,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_update_detail (state->results, item);
 	g_object_unref (item);
@@ -1101,6 +1109,8 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *time
 		      "data", data,
 		      "uid", uid,
 		      "cmdline", cmdline,
+		      "PkSource::role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_transaction (state->results, item);
 	g_object_unref (item);
@@ -1123,6 +1133,8 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 		      "type", type_enum,
 		      "name", name,
 		      "summary", summary,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_distro_upgrade (state->results, item);
 	g_object_unref (item);
@@ -1143,6 +1155,8 @@ pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, con
 	g_object_set (item,
 		      "restart", restart_enum,
 		      "package-id", package_id,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_require_restart (state->results, item);
 	g_object_unref (item);
@@ -1165,6 +1179,8 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 		      "name", name,
 		      "summary", summary,
 		      "icon", icon,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_category (state->results, item);
 	g_object_unref (item);
@@ -1185,6 +1201,8 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 	g_object_set (item,
 		      "package-id", package_id,
 		      "files", files,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_files (state->results, item);
 	g_object_unref (item);
@@ -1215,6 +1233,8 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 		      "key-fingerprint", key_fingerprint,
 		      "key-timestamp", key_timestamp,
 		      "type", type_enum,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_repo_signature_required (state->results, item);
 	g_object_unref (item);
@@ -1236,6 +1256,8 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 		      "package-id", package_id,
 		      "vendor-name", vendor_name,
 		      "license-agreement", license_agreement,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_eula_required (state->results, item);
 	g_object_unref (item);
@@ -1258,6 +1280,8 @@ pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_t
 		      "media-type", media_type_enum,
 		      "media-id", media_id,
 		      "media-text", media_text,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_media_change_required (state->results, item);
 	g_object_unref (item);
@@ -1278,6 +1302,8 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 		      "repo-id", repo_id,
 		      "description", description,
 		      "enabled", enabled,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_repo_detail (state->results, item);
 	g_object_unref (item);
@@ -1298,6 +1324,8 @@ pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar 
 	g_object_set (item,
 		      "code", code_enum,
 		      "details", details,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_set_error_code (state->results, item);
 	g_object_unref (item);
@@ -1318,6 +1346,8 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 	g_object_set (item,
 		      "type", message_enum,
 		      "details", details,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_message (state->results, item);
 	g_object_unref (item);

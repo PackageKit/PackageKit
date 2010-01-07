@@ -62,7 +62,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkCategory, pk_category, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkCategory, pk_category, PK_TYPE_SOURCE)
 
 /**
  * pk_category_get_property:
