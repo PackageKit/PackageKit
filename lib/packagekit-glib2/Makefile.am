@@ -54,6 +54,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-require-restart.h					\
 	pk-results.h						\
 	pk-service-pack.h					\
+	pk-source.h						\
 	pk-task.h						\
 	pk-transaction-past.h					\
 	pk-transaction-list.h					\
