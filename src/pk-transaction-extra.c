@@ -781,23 +781,17 @@ pk_transaction_extra_get_uid (PkTransactionExtra *extra, guint pid)
 	gint uid = -1;
 	gchar *filename = NULL;
 	gchar *uid_text = NULL;
-	GError *error = NULL;
 
 	/* get command line from proc */
 	filename = g_strdup_printf ("/proc/%i/loginuid", pid);
-	ret = g_file_get_contents (filename, &uid_text, NULL, &error);
-	if (!ret) {
-		egg_warning ("failed to get loginuid: %s", error->message);
-		g_error_free (error);
+	ret = g_file_get_contents (filename, &uid_text, NULL, NULL);
+	if (!ret)
 		goto out;
-	}
 
 	/* convert from text */
 	ret = egg_strtoint (uid_text, &uid);
-	if (!ret) {
-		egg_warning ("failed to parse uid: '%s'", uid_text);
+	if (!ret)
 		goto out;
-	}
 out:
 	g_free (filename);
 	g_free (uid_text);
@@ -855,7 +849,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 		else
 			cmdline_full = g_strdup_printf ("/usr/bin/%s", cmdline);
 
-		egg_warning ("pid=%i: %s (%i)", pid, cmdline_full, uid);
+		egg_debug ("pid=%i: %s (%i)", pid, cmdline_full, uid);
 		if (uid < 500)
 			g_ptr_array_add (files_system, cmdline_full);
 		else
@@ -875,7 +869,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
 		if (package == NULL) {
-			egg_warning ("failed to find package for %s", filename);
+			egg_debug ("failed to find package for %s", filename);
 			continue;
 		}
 		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SESSION, pk_package_get_id (package));
@@ -887,7 +881,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
 		if (package == NULL) {
-			egg_warning ("failed to find package for %s", filename);
+			egg_debug ("failed to find package for %s", filename);
 			continue;
 		}
 		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
@@ -1100,7 +1094,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 
 	/* nothing to do */
 	if (extra->priv->files_list->len == 0) {
-		egg_warning ("no files");
+		egg_debug ("no files");
 		goto out;
 	}
 
@@ -1116,7 +1110,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 
 	/* nothing depends on these libraries */
 	if (extra->priv->pids->len == 0) {
-		egg_warning ("no processes depend on these libraries");
+		egg_debug ("no processes depend on these libraries");
 		goto out;
 	}
 
