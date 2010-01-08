@@ -157,10 +157,8 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 
 	/* parse PID */
 	ret = egg_strtoint (pid_text, &pid);
-	if (!ret) {
-		egg_warning ("failed to parse pid: '%s'", pid_text);
+	if (!ret)
 		goto out;
-	}
 
 	/* get UID */
 	uid_file = g_build_filename ("/proc", pid_text, "loginuid", NULL);
@@ -176,10 +174,8 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 
 	/* parse UID */
 	ret = egg_strtouint (contents, &uid);
-	if (!ret) {
-		egg_warning ("failed to parse uid: '%s' for %s", contents, pid_text);
+	if (!ret)
 		goto out;
-	}
 
 	/* add data to array */
 	data = pk_proc_data_new (cmdline_full, pid, uid);
