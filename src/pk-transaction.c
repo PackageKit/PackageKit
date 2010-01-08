@@ -4021,6 +4021,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 
 	/* save so we can run later */
 	transaction->priv->cached_allow_deps = allow_deps;
+	transaction->priv->cached_autoremove = autoremove;
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
 
