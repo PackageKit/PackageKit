@@ -418,11 +418,7 @@ pk_task_install_signatures (PkTaskState *state)
 
 	/* get results */
 	array = pk_results_get_repo_signature_required_array (state->results);
-	if (array == NULL)
-		egg_error ("failed to get signatures, fatal error");
-
-	/* did we get no results? */
-	if (array->len == 0) {
+	if (array == NULL || array->len == 0) {
 		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no signatures to install");
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
@@ -453,7 +449,8 @@ pk_task_install_signatures (PkTaskState *state)
 out:
 	g_free (package_id);
 	g_free (key_id);
-	g_ptr_array_unref (array);
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**
@@ -517,11 +514,7 @@ pk_task_accept_eulas (PkTaskState *state)
 
 	/* get results */
 	array = pk_results_get_eula_required_array (state->results);
-	if (array == NULL)
-		egg_error ("failed to get eulas, fatal error");
-
-	/* did we get no results? */
-	if (array->len == 0) {
+	if (array == NULL || array->len == 0) {
 		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "no eulas to accept");
 		pk_task_generic_state_finish (state, error);
 		g_error_free (error);
@@ -549,7 +542,8 @@ pk_task_accept_eulas (PkTaskState *state)
 				     (GAsyncReadyCallback) pk_task_accept_eulas_ready_cb, state);
 out:
 	g_free (eula_id);
-	g_ptr_array_unref (array);
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**

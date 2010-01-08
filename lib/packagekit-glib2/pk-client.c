@@ -663,8 +663,10 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL)
-		egg_error ("internal error");
+	if (array == NULL) {
+		egg_warning ("internal error, no files in array");
+		goto out;
+	}
 
 	/* remove any without dest path */
 	for (i=0; i < array->len; ) {
@@ -678,9 +680,9 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 			i++;
 		g_strfreev (files);
 	}
-
-	/* we're done modifying the data */
-	g_ptr_array_unref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**
@@ -804,8 +806,11 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL)
-		egg_error ("internal error");
+	if (array == NULL) {
+		egg_warning ("internal error, no files in array");
+		goto out;
+	}
+
 	/* get the number of files to copy */
 	for (i=0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
@@ -837,7 +842,9 @@ pk_client_copy_downloaded (PkClientState *state)
 		g_free (package_id);
 		g_strfreev (files);
 	}
-	g_ptr_array_unref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**
