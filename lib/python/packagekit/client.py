@@ -258,11 +258,11 @@ class PackageKitClient:
         return self._run_transaction("SearchFile", [filters, search],
                                      exit_handler)
 
-    def install_packages(self, packages, exit_handler=None):
+    def install_packages(self, packages, only_trusted=True, exit_handler=None):
         '''Install the packages of the given package ids'''
         package_ids = self._to_package_id_list(packages)
-        return self._run_transaction("InstallPackages", [package_ids], 
-                                     exit_handler)
+        return self._run_transaction("InstallPackages",
+                                     [only_trusted, package_ids], exit_handler)
 
     def update_packages(self, packages, exit_handler=None):
         '''Update the packages of the given package ids'''
