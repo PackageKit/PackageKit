@@ -625,7 +625,7 @@ pk_catalog_init (PkCatalog *catalog)
 		      NULL);
 
 	if (catalog->priv->distro_id == NULL)
-		egg_error ("no distro_id, your distro needs to implement this in pk-engine.c!");
+		egg_warning ("no distro_id, your distro needs to implement this in pk-engine.c!");
 }
 
 /**

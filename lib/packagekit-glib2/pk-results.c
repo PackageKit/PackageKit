@@ -478,7 +478,7 @@ pk_results_get_error_code (PkResults *results)
 
 	/* failed, but no exit code? */
 	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_error ("internal error: failed, but no exit code");
+		egg_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_text (results->priv->exit_enum));
 
 	if (results->priv->error_code == NULL)
 		return NULL;
