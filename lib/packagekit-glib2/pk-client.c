@@ -3567,6 +3567,17 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
 		g_hash_table_unref (hash);
 	}
 
+	/* this is the first time we'll know the actual role */
+	if (state->role == PK_ROLE_ENUM_UNKNOWN) {
+		g_object_get (state->progress,
+			      "role", &state->role,
+			      NULL);
+		/* proxy this */
+		g_object_set (state->results,
+			      "role", state->role,
+			      NULL);
+	}
+
 	/* we're waiting for finished */
 }
 
