@@ -394,7 +394,7 @@ pk_desktop_test (gpointer user_data)
 	array = pk_desktop_get_shown_for_package (desktop, "gnome-packagekit", NULL);
 	if (array == NULL)
 		egg_test_failed (test, "array NULL");
-	else if (array->len == 5)
+	else if (array->len > 3)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "length=%i", array->len);
