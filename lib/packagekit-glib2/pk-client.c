@@ -4180,7 +4180,8 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	error_code = pk_results_get_error_code (results);
 	if (pk_error_get_code (error_code) != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
 		egg_test_failed (test, "failed to get error code: %i", pk_error_get_code (error_code));
-	if (g_strcmp0 (pk_error_get_details (error_code), "The task was stopped successfully") != 0)
+	if (g_strcmp0 (pk_error_get_details (error_code), "The task was stopped successfully") != 0 &&
+	    g_strcmp0 (pk_error_get_details (error_code), "transaction was cancelled") != 0)
 		egg_test_failed (test, "failed to get error message: %s", pk_error_get_details (error_code));
 out:
 	if (error_code != NULL)
@@ -4219,7 +4220,7 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 }
 
 static gboolean
-pk_client_test_cancel (GCancellable *cancellable)
+pk_client_test_cancel_cb (GCancellable *cancellable)
 {
 	egg_warning ("cancelling method");
 	g_cancellable_cancel (cancellable);
@@ -4484,7 +4485,7 @@ pk_client_test (gpointer user_data)
 	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_search_name_cb, test);
-	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);
+	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel_cb, cancellable);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "cancelled in %i", egg_test_elapsed (test));
 
