@@ -2531,7 +2531,13 @@ void
 pk_backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* call into the backend */
 	backend->priv->desc->cancel (backend);
+
+	/* set an error if the backend didn't do it for us */
+	if (!backend->priv->set_error)
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "transaction was cancelled");
 }
 
 /**
