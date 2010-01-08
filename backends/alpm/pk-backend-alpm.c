@@ -1061,6 +1061,17 @@ backend_search (PkBackend *backend, pmdb_t *repo, const gchar *needle, PkAlpmSea
 }
 
 /**
+ * backend_search_values:
+ */
+static void
+backend_search_values (PkBackend *backend, pmdb_t *repo, gchar **values, PkAlpmSearchType search_type) {
+	unsigned int iterator;
+
+	for (iterator = 0; iterator < g_strv_length (values); ++iterator)
+		backend_search (backend, repo, values[iterator], search_type);
+}
+
+/**
  * backend_get_packages_thread:
  */
 static gboolean
@@ -1350,14 +1361,19 @@ static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
 	unsigned int iterator;
+	alpm_list_t *list_iterator = NULL;
 	alpm_list_t *data = NULL;
+	gchar *holdpkgs = NULL;
 
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	gboolean allow_deps = pk_backend_get_bool (backend, "allow_deps");
+	gboolean autoremove = pk_backend_get_bool (backend, "autoremove");
 
 	pmtransflag_t flags = 0;
 	if (allow_deps)
 		flags |= PM_TRANS_FLAG_CASCADE;
+	if (autoremove)
+		flags |= PM_TRANS_FLAG_RECURSE;
 
 	/* create a new transaction */
 	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
@@ -1380,8 +1396,41 @@ backend_remove_packages_thread (PkBackend *backend)
 		g_strfreev (package_id_data);
 	}
 
-	/* prepare and commit transaction */
-	if (alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
+	/* prepare transaction */
+	if (alpm_trans_prepare (&data) != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+		alpm_trans_release ();
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	/* search for HoldPkg's in target list */
+	for (list_iterator = alpm_trans_get_pkgs (); list_iterator; list_iterator = alpm_list_next (list_iterator)) {
+		pmpkg_t *pkg = alpm_list_getdata (list_iterator);
+		const gchar *pkgname = alpm_pkg_get_name (pkg);
+
+		if (alpm_list_find_str (holdpkg, pkgname) != NULL) {
+			if (holdpkgs == NULL)
+				holdpkgs = g_strdup (pkgname);
+			else {
+				gchar *new_holdpkgs = g_strdup_printf ("%s, %s", holdpkgs, pkgname);
+				g_free (holdpkgs);
+				holdpkgs = new_holdpkgs;
+			}
+		}
+	}
+
+	/* pacman just asks for confirmation, but here we fail to be safe */
+	if (holdpkgs != NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "The following packages are designated HoldPkg: %s", holdpkgs);
+		free (holdpkgs);
+		alpm_trans_release ();
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	/* commit transaction */
+	if (alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
@@ -1438,6 +1487,7 @@ backend_resolve_thread (PkBackend *backend)
 			}
 		} else {
 			/* good old way with backend_search */
+			/* TODO: check, is it still needed? */
 			if (!search_not_installed) {
 				/* search in local db */
 				backend_search (backend, alpm_option_get_localdb (), package_ids[iterator], PK_ALPM_SEARCH_TYPE_RESOLVE);
@@ -1475,7 +1525,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 static gboolean
 backend_search_thread (PkBackend *backend)
 {
-	const gchar *search = pk_backend_get_string (backend, "search");
+	gchar **values = pk_backend_get_strv (backend, "values");
 	PkBitfield filters = pk_backend_get_uint (backend, "filters");
 	PkAlpmSearchType search_type = pk_backend_get_uint (backend, "search-type");
 
@@ -1484,7 +1534,7 @@ backend_search_thread (PkBackend *backend)
 
 	if (!search_not_installed) {
 		/* search in local db */
-		backend_search (backend, alpm_option_get_localdb (), search, search_type);
+		backend_search_values (backend, alpm_option_get_localdb (), values, search_type);
 	}
 
 	if (!search_installed) {
@@ -1492,7 +1542,7 @@ backend_search_thread (PkBackend *backend)
 		alpm_list_t *repos;
 		/* iterate repos */
 		for (repos = alpm_option_get_syncdbs (); repos; repos = alpm_list_next (repos))
-			backend_search (backend, alpm_list_getdata (repos), search, search_type);
+			backend_search_values (backend, alpm_list_getdata (repos), values, search_type);
 	}
 
 	pk_backend_finished (backend);
@@ -1503,37 +1553,40 @@ backend_search_thread (PkBackend *backend)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_DETAILS);
+	pk_backend_set_strv (backend, "values", values);
 
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
- * backend_search_group:
+ * backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_GROUP);
+	pk_backend_set_strv (backend, "values", values);
 
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_NAME);
+	pk_backend_set_strv (backend, "values", values);
 
 	pk_backend_thread_create (backend, backend_search_thread);
 }
@@ -1596,11 +1649,12 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
  * backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_uint (backend, "search-type", PK_ALPM_SEARCH_TYPE_PROVIDES);
+	pk_backend_set_strv (backend, "values", values);
 
 	pk_backend_thread_create (backend, backend_search_thread);
 }
@@ -1636,9 +1690,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
-	NULL,						/* search_file */
-	backend_search_group,				/* search_group */
-	backend_search_name,				/* search_name */
+	NULL,						/* search_files */
+	backend_search_groups,				/* search_groups */
+	backend_search_names,				/* search_names */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
 	backend_what_provides,				/* what_provides */
