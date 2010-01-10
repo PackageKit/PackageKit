@@ -99,7 +99,7 @@ gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
 							 GError			**error);
 
 /* merging in data to the array using Resolve() */
-void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
+void		 pk_package_sack_resolve_async		(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
@@ -107,7 +107,7 @@ void		 pk_package_sack_merge_resolve_async	(PkPackageSack		*sack,
 							 gpointer		 user_data);
 
 /* merging in data to the array using Details() */
-void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
+void		 pk_package_sack_get_details_async	(PkPackageSack		*sack,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
@@ -115,7 +115,7 @@ void		 pk_package_sack_merge_details_async	(PkPackageSack		*sack,
 							 gpointer		 user_data);
 
 /* merging in data to the array using UpdateDetail() */
-void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
+void		 pk_package_sack_get_update_detail_async (PkPackageSack		*sack,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
