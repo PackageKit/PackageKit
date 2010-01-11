@@ -60,7 +60,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRepoDetail, pk_repo_detail, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
 
 /**
  * pk_repo_detail_get_property:

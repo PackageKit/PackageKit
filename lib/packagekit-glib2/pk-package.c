@@ -102,7 +102,7 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE (PkPackage, pk_package, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkPackage, pk_package, PK_TYPE_SOURCE)
 
 /**
  * pk_package_equal:

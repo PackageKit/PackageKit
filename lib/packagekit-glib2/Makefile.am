@@ -48,12 +48,14 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-sack.h					\
+	pk-package-sack-sync.h					\
 	pk-progress.h						\
 	pk-repo-detail.h					\
 	pk-repo-signature-required.h				\
 	pk-require-restart.h					\
 	pk-results.h						\
 	pk-service-pack.h					\
+	pk-source.h						\
 	pk-task.h						\
 	pk-transaction-past.h					\
 	pk-transaction-list.h					\
@@ -111,6 +113,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-package-ids.h					\
 	pk-package-sack.c					\
 	pk-package-sack.h					\
+	pk-package-sack-sync.c					\
+	pk-package-sack-sync.h					\
 	pk-progress.c						\
 	pk-progress.h						\
 	pk-repo-detail.c					\
@@ -123,6 +127,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-results.h						\
 	pk-service-pack.c					\
 	pk-service-pack.h					\
+	pk-source.c						\
+	pk-source.h						\
 	pk-task.c						\
 	pk-task.h						\
 	pk-transaction-past.c					\

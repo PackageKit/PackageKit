@@ -472,10 +472,10 @@ pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError
 }
 
 /**
- * pk_package_sack_merge_resolve_cb:
+ * pk_package_sack_resolve_cb:
  **/
 static void
-pk_package_sack_merge_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
@@ -547,7 +547,7 @@ out:
 }
 
 /**
- * pk_package_sack_merge_resolve_async:
+ * pk_package_sack_resolve_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
@@ -558,7 +558,7 @@ out:
  * Merges in details about packages using resolve.
  **/
 void
-pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
+pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback, gpointer user_data)
 {
@@ -569,7 +569,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_resolve_async);
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_resolve_async);
 
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
@@ -584,7 +584,7 @@ pk_package_sack_merge_resolve_async (PkPackageSack *sack, GCancellable *cancella
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_resolve_async (sack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
 				 cancellable, progress_callback, progress_user_data,
-				 (GAsyncReadyCallback) pk_package_sack_merge_resolve_cb, state);
+				 (GAsyncReadyCallback) pk_package_sack_resolve_cb, state);
 	g_strfreev (package_ids);
 	g_object_unref (res);
 }
@@ -619,10 +619,10 @@ pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GE
 /***************************************************************************************************/
 
 /**
- * pk_package_sack_merge_details_cb:
+ * pk_package_sack_get_details_cb:
  **/
 static void
-pk_package_sack_merge_details_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
@@ -705,7 +705,7 @@ out:
 }
 
 /**
- * pk_package_sack_merge_details_async:
+ * pk_package_sack_get_details_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
@@ -716,9 +716,9 @@ out:
  * Merges in details about packages.
  **/
 void
-pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancellable,
-				     PkProgressCallback progress_callback, gpointer progress_user_data,
-				     GAsyncReadyCallback callback, gpointer user_data)
+pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellable,
+				   PkProgressCallback progress_callback, gpointer progress_user_data,
+				   GAsyncReadyCallback callback, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkPackageSackState *state;
@@ -727,7 +727,7 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_details_async);
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_get_details_async);
 
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
@@ -742,7 +742,7 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_details_async (sack->priv->client, package_ids,
 				     cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_package_sack_merge_details_cb, state);
+				     (GAsyncReadyCallback) pk_package_sack_get_details_cb, state);
 
 	g_strfreev (package_ids);
 	g_object_unref (res);
@@ -751,10 +751,10 @@ pk_package_sack_merge_details_async (PkPackageSack *sack, GCancellable *cancella
 /***************************************************************************************************/
 
 /**
- * pk_package_sack_merge_update_detail_cb:
+ * pk_package_sack_get_update_detail_cb:
  **/
 static void
-pk_package_sack_merge_update_detail_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
 {
 	PkClient *client = PK_CLIENT (source_object);
 	GError *error = NULL;
@@ -860,7 +860,7 @@ out:
 }
 
 /**
- * pk_package_sack_merge_update_detail_async:
+ * pk_package_sack_get_update_detail_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
@@ -871,9 +871,9 @@ out:
  * Merges in update details about packages.
  **/
 void
-pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *cancellable,
-					   PkProgressCallback progress_callback, gpointer progress_user_data,
-					   GAsyncReadyCallback callback, gpointer user_data)
+pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *cancellable,
+					 PkProgressCallback progress_callback, gpointer progress_user_data,
+					 GAsyncReadyCallback callback, gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkPackageSackState *state;
@@ -882,7 +882,7 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_merge_update_detail_async);
+	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_get_update_detail_async);
 
 	/* save state */
 	state = g_slice_new0 (PkPackageSackState);
@@ -897,7 +897,7 @@ pk_package_sack_merge_update_detail_async (PkPackageSack *sack, GCancellable *ca
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_update_detail_async (sack->priv->client, package_ids,
 					   cancellable, progress_callback, progress_user_data,
-					   (GAsyncReadyCallback) pk_package_sack_merge_update_detail_cb, state);
+					   (GAsyncReadyCallback) pk_package_sack_get_update_detail_cb, state);
 
 	g_strfreev (package_ids);
 	g_object_unref (res);
@@ -1081,7 +1081,7 @@ pk_package_sack_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "merge resolve results");
-	pk_package_sack_merge_resolve_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_resolve_cb, test);
+	pk_package_sack_resolve_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_resolve_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "resolved in %i", egg_test_elapsed (test));
 
@@ -1107,7 +1107,7 @@ pk_package_sack_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "merge details results");
-	pk_package_sack_merge_details_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_details_cb, test);
+	pk_package_sack_get_details_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_details_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got details in %i", egg_test_elapsed (test));
 
@@ -1127,7 +1127,7 @@ pk_package_sack_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "merge update detail results");
-	pk_package_sack_merge_update_detail_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_update_detail_cb, test);
+	pk_package_sack_get_update_detail_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_test_update_detail_cb, test);
 	egg_test_loop_wait (test, 5000);
 	egg_test_success (test, "got update detail in %i", egg_test_elapsed (test));
 

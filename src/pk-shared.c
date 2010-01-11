@@ -82,3 +82,32 @@ out:
 	return ret;
 }
 
+/**
+ * pk_hint_enum_to_text:
+ **/
+const gchar *
+pk_hint_enum_to_text (PkHintEnum hint)
+{
+	if (hint == PK_HINT_ENUM_FALSE)
+		return "false";
+	if (hint == PK_HINT_ENUM_TRUE)
+		return "true";
+	if (hint == PK_HINT_ENUM_UNSET)
+		return "unset";
+	return NULL;
+}
+
+/**
+ * pk_hint_enum_from_text:
+ **/
+PkHintEnum
+pk_hint_enum_from_text (const gchar *hint)
+{
+	if (g_strcmp0 (hint, "false") == 0)
+		return PK_HINT_ENUM_FALSE;
+	if (g_strcmp0 (hint, "true") == 0)
+		return PK_HINT_ENUM_TRUE;
+	if (g_strcmp0 (hint, "unset") == 0)
+		return PK_HINT_ENUM_UNSET;
+	return PK_HINT_ENUM_UNSET;
+}

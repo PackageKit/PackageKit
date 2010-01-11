@@ -1,3 +1,50 @@
+Version 0.6.0
+~~~~~~~~~~~~~
+Released: 2010-01-2010
+
+Translations:
+ - Updated translation for Assamese (amitakhya)
+ - Updated translation for Malayalam (anipeter)
+ - Updated translation for German (hedda)
+ - Updated translation for Tamil (ifelix)
+ - Updated translation for Brazilian Portuguese (igor)
+ - Updated translation for Punjabi (jassy)
+ - Updated translation for Japanese (khasida)
+ - Updated translation for Telugu (kkrothap)
+ - Updated translation for Chinese (Simplified) (leahliu)
+ - Updated translation for Italian (perplex)
+ - Updated translation for Hindi (rajesh)
+ - Updated translation for Bengali (India) (runab)
+ - Updated translation for Marathi (sandeeps)
+ - Updated translation for Kannada (shanky)
+ - Updated translation for Chinese (Traditional) (snowlet)
+ - Updated translation for French (troubi51)
+ - Updated translation for Finnish (vpv)
+ - Updated translation for Dutch (warrink)
+ - Updated translation for Russian (ypoyarko)
+
+Libraries:
+
+Backends:
+ - smart: Convert search params to array values (Anders F Bjorklund)
+ - aptcc: Updated searchNames, files and groups. (Daniel Nicoletti)
+
+New Features:
+ - Remove the deprecated DBus methods from the daemon (Richard Hughes)
+ - Break internal and external API to support OR queries (Richard Hughes)
+ - Add a new error enum 'failed-due-to-running-process' for future code (Richard Hughes)
+ - Add a new config file entry, NoUpdateProcessList that specifies processes that should not be updated when running (Richard Hughes)
+ - glib: Remove the deprecated glib library (Richard Hughes)
+ - packagekit-qt: Removed deprecated methods (Daniel Nicoletti)
+ - packagekit-qt: Added searchNames, searchFiles and searchGroups (Daniel Nicoletti)
+
+Bugfixes:
+ - cnf: Ensure we send error messages to stderr, not stdout. Fxes rh#545220 (Richard Hughes)
+ - Fix a crash where the extra library check file callbacks had the wrong signature (Richard Hughes)
+ - Allow the inhibit call to go through even if cancel is not implemented (Scott Reeves)
+ - packagekit-qt: Improved and fixed transaction handling so does not crash kded module anymore (Daniel Nicoletti)
+ - packagekit-qt: Fixed the naming of the conviniece functions to match the same function (Daniel Nicoletti)
+
 Version 0.5.5
 ~~~~~~~~~~~~~
 Released: 2009-12-07

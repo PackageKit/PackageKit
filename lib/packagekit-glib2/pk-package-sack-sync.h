@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,26 +19,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_SHARED_H
-#define __PK_SHARED_H
+#ifndef __PK_PACKAGE_SACK_SYNC_H
+#define __PK_PACKAGE_SACK_SYNC_H
 
 #include <glib.h>
+#include <packagekit-glib2/pk-package-sack.h>
 
-G_BEGIN_DECLS
+gboolean	 pk_package_sack_resolve		(PkPackageSack		*package_sack,
+							 GCancellable		*cancellable,
+							 GError			**error);
+gboolean	 pk_package_sack_get_details		(PkPackageSack		*package_sack,
+							 GCancellable		*cancellable,
+							 GError			**error);
+gboolean	 pk_package_sack_get_update_detail	(PkPackageSack		*package_sack,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
-/* a boolean with unset */
-typedef enum {
-	PK_HINT_ENUM_FALSE = FALSE,
-	PK_HINT_ENUM_TRUE = TRUE,
-	PK_HINT_ENUM_UNSET,
-	PK_HINT_ENUM_INVALID,
-	PK_HINT_ENUM_LAST
-} PkHintEnum;
+#endif /* __PK_PACKAGE_SACK_SYNC_H */
 
-gboolean	 pk_directory_remove_contents		(const gchar	*directory);
-const gchar	*pk_hint_enum_to_text			(PkHintEnum	 hint);
-PkHintEnum	 pk_hint_enum_from_text			(const gchar	*hint);
 
-G_END_DECLS
 
-#endif /* __PK_SHARED_H */

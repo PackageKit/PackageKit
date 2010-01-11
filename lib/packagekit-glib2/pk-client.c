@@ -663,8 +663,10 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL)
-		egg_error ("internal error");
+	if (array == NULL) {
+		egg_warning ("internal error, no files in array");
+		goto out;
+	}
 
 	/* remove any without dest path */
 	for (i=0; i < array->len; ) {
@@ -678,9 +680,9 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 			i++;
 		g_strfreev (files);
 	}
-
-	/* we're done modifying the data */
-	g_ptr_array_unref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**
@@ -769,6 +771,8 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	g_object_set (item,
 		      "package-id", package_id,
 		      "files", files,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_files (state->results, item);
 
@@ -802,8 +806,11 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL)
-		egg_error ("internal error");
+	if (array == NULL) {
+		egg_warning ("internal error, no files in array");
+		goto out;
+	}
+
 	/* get the number of files to copy */
 	for (i=0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
@@ -835,7 +842,9 @@ pk_client_copy_downloaded (PkClientState *state)
 		g_free (package_id);
 		g_strfreev (files);
 	}
-	g_ptr_array_unref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
 }
 
 /**
@@ -946,6 +955,8 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 	g_object_set (package,
 		      "info", info_enum,
 		      "summary", summary,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	ret = pk_progress_set_package (state->progress, package);
 	if (state->progress_callback != NULL && ret)
@@ -1036,6 +1047,8 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 		      "description", description,
 		      "url", url,
 		      "size", size,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_details (state->results, item);
 	g_object_unref (item);
@@ -1073,6 +1086,8 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 		      "state", state_enum,
 		      "issued", issued_text,
 		      "updated", updated_text,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_update_detail (state->results, item);
 	g_object_unref (item);
@@ -1101,6 +1116,8 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *time
 		      "data", data,
 		      "uid", uid,
 		      "cmdline", cmdline,
+		      "PkSource::role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_transaction (state->results, item);
 	g_object_unref (item);
@@ -1123,6 +1140,8 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 		      "type", type_enum,
 		      "name", name,
 		      "summary", summary,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_distro_upgrade (state->results, item);
 	g_object_unref (item);
@@ -1143,6 +1162,8 @@ pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, con
 	g_object_set (item,
 		      "restart", restart_enum,
 		      "package-id", package_id,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_require_restart (state->results, item);
 	g_object_unref (item);
@@ -1165,6 +1186,8 @@ pk_client_category_cb (DBusGProxy  *proxy, const gchar *parent_id, const gchar *
 		      "name", name,
 		      "summary", summary,
 		      "icon", icon,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_category (state->results, item);
 	g_object_unref (item);
@@ -1185,6 +1208,8 @@ pk_client_files_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *fil
 	g_object_set (item,
 		      "package-id", package_id,
 		      "files", files,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_files (state->results, item);
 	g_object_unref (item);
@@ -1215,6 +1240,8 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 		      "key-fingerprint", key_fingerprint,
 		      "key-timestamp", key_timestamp,
 		      "type", type_enum,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_repo_signature_required (state->results, item);
 	g_object_unref (item);
@@ -1236,6 +1263,8 @@ pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar
 		      "package-id", package_id,
 		      "vendor-name", vendor_name,
 		      "license-agreement", license_agreement,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_eula_required (state->results, item);
 	g_object_unref (item);
@@ -1258,6 +1287,8 @@ pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_t
 		      "media-type", media_type_enum,
 		      "media-id", media_id,
 		      "media-text", media_text,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_media_change_required (state->results, item);
 	g_object_unref (item);
@@ -1278,6 +1309,8 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 		      "repo-id", repo_id,
 		      "description", description,
 		      "enabled", enabled,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_repo_detail (state->results, item);
 	g_object_unref (item);
@@ -1298,6 +1331,8 @@ pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar 
 	g_object_set (item,
 		      "code", code_enum,
 		      "details", details,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_set_error_code (state->results, item);
 	g_object_unref (item);
@@ -1318,6 +1353,8 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 	g_object_set (item,
 		      "type", message_enum,
 		      "details", details,
+		      "role", state->role,
+		      "transaction-id", state->transaction_id,
 		      NULL);
 	pk_results_add_message (state->results, item);
 	g_object_unref (item);
@@ -3560,6 +3597,17 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
 		g_hash_table_unref (hash);
 	}
 
+	/* this is the first time we'll know the actual role */
+	if (state->role == PK_ROLE_ENUM_UNKNOWN) {
+		g_object_get (state->progress,
+			      "role", &state->role,
+			      NULL);
+		/* proxy this */
+		g_object_set (state->results,
+			      "role", state->role,
+			      NULL);
+	}
+
 	/* we're waiting for finished */
 }
 
@@ -4162,7 +4210,8 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 	error_code = pk_results_get_error_code (results);
 	if (pk_error_get_code (error_code) != PK_ERROR_ENUM_TRANSACTION_CANCELLED)
 		egg_test_failed (test, "failed to get error code: %i", pk_error_get_code (error_code));
-	if (g_strcmp0 (pk_error_get_details (error_code), "The task was stopped successfully") != 0)
+	if (g_strcmp0 (pk_error_get_details (error_code), "The task was stopped successfully") != 0 &&
+	    g_strcmp0 (pk_error_get_details (error_code), "transaction was cancelled") != 0)
 		egg_test_failed (test, "failed to get error message: %s", pk_error_get_details (error_code));
 out:
 	if (error_code != NULL)
@@ -4201,7 +4250,7 @@ pk_client_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest *
 }
 
 static gboolean
-pk_client_test_cancel (GCancellable *cancellable)
+pk_client_test_cancel_cb (GCancellable *cancellable)
 {
 	egg_warning ("cancelling method");
 	g_cancellable_cancel (cancellable);
@@ -4466,7 +4515,7 @@ pk_client_test (gpointer user_data)
 	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 				     (PkProgressCallback) pk_client_test_progress_cb, test,
 				     (GAsyncReadyCallback) pk_client_test_search_name_cb, test);
-	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel, cancellable);
+	g_timeout_add (1000, (GSourceFunc) pk_client_test_cancel_cb, cancellable);
 	egg_test_loop_wait (test, 15000);
 	egg_test_success (test, "cancelled in %i", egg_test_elapsed (test));
 

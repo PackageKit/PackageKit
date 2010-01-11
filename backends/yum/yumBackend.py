@@ -2162,7 +2162,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 for txmbr in self.yumbase.tsInfo:
                     pkg = txmbr.po
-                    system_packages = ['yum','rpm', 'glibc']
+                    system_packages = ['yum','rpm','glibc','PackageKit']
                     if pkg.name in system_packages:
                         self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
                         return
@@ -2438,7 +2438,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                                   "Please use these packages if you want to work with the " \
                                   "Fedora developers by testing these new development packages.\n\n" \
                                   "If this is not correct, please disable the %s software source." % repoid
-                        self.message(MESSAGE_BACKEND_ERROR, warning.replace("\n", ";"))
+                        self.message(MESSAGE_REPO_FOR_DEVELOPERS_ONLY, warning.replace("\n", ";"))
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
         except Exception, e:
@@ -2787,6 +2787,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.repoXML
             except yum.Errors.RepoError, e:
                 self.yumbase.repos.disableRepo(repo.id)
+                self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, "Could not contact source '%s', so it will be disabled" % repo.id)
 
         # should we suggest yum-complete-transaction?
         unfinished = yum.misc.find_unfinished_transactions(yumlibpath=self.yumbase.conf.persistdir)

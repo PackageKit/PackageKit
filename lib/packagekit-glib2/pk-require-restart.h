@@ -28,6 +28,8 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-source.h>
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_REQUIRE_RESTART		(pk_require_restart_get_type ())
@@ -43,13 +45,13 @@ typedef struct _PkRequireRestartClass		PkRequireRestartClass;
 
 struct _PkRequireRestart
 {
-	 GObject			 parent;
+	 PkSource			 parent;
 	 PkRequireRestartPrivate	*priv;
 };
 
 struct _PkRequireRestartClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

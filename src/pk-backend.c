@@ -45,6 +45,7 @@
 #include "pk-backend.h"
 #include "pk-conf.h"
 #include "pk-store.h"
+#include "pk-shared.h"
 #include "pk-time.h"
 #include "pk-file-monitor.h"
 #include "pk-notify.h"
@@ -91,7 +92,6 @@ struct _PkBackendPrivate
 	gboolean		 use_time;
 	gchar			*transaction_id;
 	gchar			*locale;
-	PkTristate		 background;
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
@@ -108,7 +108,9 @@ struct _PkBackendPrivate
 	GThread			*thread;
 	PkBackendDesc		*desc;
 	PkBackendFileChanged	 file_changed_func;
-	PkTristate		 allow_cancel;
+	PkHintEnum		 background;
+	PkHintEnum		 interactive;
+	PkHintEnum		 allow_cancel;
 	PkBitfield		 roles;
 	PkConf			*conf;
 	PkExitEnum		 exit;
@@ -150,6 +152,7 @@ enum {
 enum {
 	PROP_0,
 	PROP_BACKGROUND,
+	PROP_INTERACTIVE,
 	PROP_STATUS,
 	PROP_ROLE,
 	PROP_TRANSACTION_ID,
@@ -1710,7 +1713,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	/* form PkMessage struct */
 	item = pk_message_new ();
 	g_object_set (item,
-		      "code", PK_MESSAGE_ENUM_BACKEND_ERROR,
+		      "type", PK_MESSAGE_ENUM_BACKEND_ERROR,
 		      "details", "ErrorCode() has to be followed with Finished()!",
 		      NULL);
 
@@ -1829,7 +1832,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	}
 
 	/* same as last state? */
-	if (backend->priv->allow_cancel == (PkTristate) allow_cancel) {
+	if (backend->priv->allow_cancel == (PkHintEnum) allow_cancel) {
 		egg_debug ("ignoring same allow-cancel state");
 		return FALSE;
 	}
@@ -1852,7 +1855,7 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* return FALSE if we never set state */
-	if (backend->priv->allow_cancel != PK_TRISTATE_UNSET)
+	if (backend->priv->allow_cancel != PK_HINT_ENUM_UNSET)
 		allow_cancel = backend->priv->allow_cancel;
 
 	return allow_cancel;
@@ -2062,12 +2065,16 @@ pk_backend_is_online (PkBackend *backend)
 }
 
 /**
- * pk_backend_use_idle_bandwidth:
+ * pk_backend_use_background:
  **/
 gboolean
-pk_backend_use_idle_bandwidth (PkBackend *backend)
+pk_backend_use_background (PkBackend *backend)
 {
 	gboolean ret;
+
+	/* we're watching the GUI, do as fast as possible */
+	if (backend->priv->interactive == PK_HINT_ENUM_TRUE)
+		return FALSE;
 
 	/* check we are allowed */
 	ret = pk_conf_get_bool (backend->priv->conf, "UseIdleBandwidth");
@@ -2075,9 +2082,9 @@ pk_backend_use_idle_bandwidth (PkBackend *backend)
 		return FALSE;
 
 	/* the session has set it one way or the other */
-	if (backend->priv->background == PK_TRISTATE_TRUE)
+	if (backend->priv->background == PK_HINT_ENUM_TRUE)
 		return TRUE;
-	if (backend->priv->background == PK_TRISTATE_FALSE)
+	if (backend->priv->background == PK_HINT_ENUM_FALSE)
 		return FALSE;
 
 	/* use a metric to try to guess a correct value */
@@ -2115,8 +2122,8 @@ gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->name);
 }
 
@@ -2127,8 +2134,8 @@ gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->desc->description);
 }
 
@@ -2139,8 +2146,8 @@ gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->desc->author);
 }
 
@@ -2232,6 +2239,9 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_BACKGROUND:
 		g_value_set_uint (value, priv->background);
 		break;
+	case PROP_INTERACTIVE:
+		g_value_set_uint (value, priv->interactive);
+		break;
 	case PROP_STATUS:
 		g_value_set_uint (value, priv->status);
 		break;
@@ -2259,6 +2269,9 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	switch (prop_id) {
 	case PROP_BACKGROUND:
 		priv->background = g_value_get_uint (value);
+		break;
+	case PROP_INTERACTIVE:
+		priv->interactive = g_value_get_uint (value);
 		break;
 	case PROP_STATUS:
 		priv->status = g_value_get_uint (value);
@@ -2322,9 +2335,17 @@ pk_backend_class_init (PkBackendClass *klass)
 	 * PkBackend:background:
 	 */
 	pspec = g_param_spec_uint ("background", NULL, NULL,
-				   PK_TRISTATE_FALSE, PK_TRISTATE_UNSET, PK_TRISTATE_FALSE,
+				   PK_HINT_ENUM_FALSE, PK_HINT_ENUM_UNSET, PK_HINT_ENUM_UNSET,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
+
+	/**
+	 * PkBackend:interactive:
+	 */
+	pspec = g_param_spec_uint ("interactive", NULL, NULL,
+				   PK_HINT_ENUM_FALSE, PK_HINT_ENUM_UNSET, PK_HINT_ENUM_UNSET,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
 
 	/**
 	 * PkBackend:status:
@@ -2485,7 +2506,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->download_files = 0;
 	backend->priv->thread = NULL;
 	backend->priv->last_package = NULL;
-	backend->priv->allow_cancel = PK_TRISTATE_UNSET;
+	backend->priv->allow_cancel = PK_HINT_ENUM_UNSET;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -2510,7 +2531,13 @@ void
 pk_backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* call into the backend */
 	backend->priv->desc->cancel (backend);
+
+	/* set an error if the backend didn't do it for us */
+	if (!backend->priv->set_error)
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "transaction was cancelled");
 }
 
 /**
@@ -3133,15 +3160,6 @@ pk_backend_test (EggTest *test)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "eula was accepted twice");
-
-	/************************************************************/
-	egg_test_title (test, "get backend name");
-	text = pk_backend_get_name (backend);
-	if (text == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid name %s (test suite needs to unref backend?)", text);
-	g_free (text);
 
 	/************************************************************/
 	egg_test_title (test, "load an invalid backend");

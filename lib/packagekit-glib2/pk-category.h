@@ -28,6 +28,8 @@
 
 #include <glib-object.h>
 
+#include <packagekit-glib2/pk-source.h>
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_CATEGORY		(pk_category_get_type ())
@@ -43,13 +45,13 @@ typedef struct _PkCategoryClass		PkCategoryClass;
 
 struct _PkCategory
 {
-	 GObject		 parent;
+	 PkSource		 parent;
 	 PkCategoryPrivate	*priv;
 };
 
 struct _PkCategoryClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);

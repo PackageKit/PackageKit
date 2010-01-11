@@ -196,7 +196,7 @@ typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
 							 PkBackendThreadFunc func);
 gboolean	 pk_backend_is_online			(PkBackend	*backend);
-gboolean	 pk_backend_use_idle_bandwidth		(PkBackend	*backend);
+gboolean	 pk_backend_use_background		(PkBackend	*backend);
 
 /* config changed functions */
 typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,

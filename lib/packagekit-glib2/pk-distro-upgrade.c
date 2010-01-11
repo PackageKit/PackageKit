@@ -61,7 +61,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkDistroUpgrade, pk_distro_upgrade, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkDistroUpgrade, pk_distro_upgrade, PK_TYPE_SOURCE)
 
 /**
  * pk_distro_upgrade_get_property:

@@ -491,7 +491,8 @@ pk_engine_get_daemon_state (PkEngine *engine, gchar **state, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	*state = pk_transaction_list_get_state (engine->priv->transaction_list);
+	if (state != NULL)
+		*state = pk_transaction_list_get_state (engine->priv->transaction_list);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -509,7 +510,8 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	egg_debug ("GetTransactionList method called");
-	*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
+	if (transaction_list != NULL)
+		*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -1489,12 +1491,14 @@ pk_test_quit_cb (PkEngine *engine, EggTest *test)
 }
 
 /**
- * pk_test_locked_cb:
+ * pk_test_changed_cb:
  **/
 static void
-pk_test_locked_cb (PkEngine *engine, gboolean is_locked, EggTest *test)
+pk_test_changed_cb (PkEngine *engine, EggTest *test)
 {
-	_locked = is_locked;
+	g_object_get (engine,
+		      "locked", &_locked,
+		      NULL);
 }
 
 /**
@@ -1559,7 +1563,7 @@ pk_engine_test (EggTest *test)
 	PkBackend *backend;
 	PkInhibit *inhibit;
 	guint idle;
-	gchar *actions;
+	gchar *state;
 	guint elapsed;
 
 	if (!egg_test_start (test, "PkEngine"))
@@ -1589,8 +1593,8 @@ pk_engine_test (EggTest *test)
 	/* connect up signals */
 	g_signal_connect (engine, "quit",
 			  G_CALLBACK (pk_test_quit_cb), test);
-	g_signal_connect (engine, "locked",
-			  G_CALLBACK (pk_test_locked_cb), test);
+	g_signal_connect (engine, "changed",
+			  G_CALLBACK (pk_test_changed_cb), test);
 	g_signal_connect (engine, "updates-changed",
 			  G_CALLBACK (pk_test_updates_changed_cb), test);
 	g_signal_connect (engine, "repo-list-changed",
@@ -1621,8 +1625,8 @@ pk_engine_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "get idle after method");
-	pk_engine_get_actions (engine, &actions, NULL);
-	g_free (actions);
+	pk_engine_get_daemon_state (engine, &state, NULL);
+	g_free (state);
 	idle = pk_engine_get_seconds_idle (engine);
 	if (idle < 1)
 		egg_test_success (test, NULL);

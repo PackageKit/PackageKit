@@ -74,13 +74,6 @@ G_BEGIN_DECLS
  */
 #define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
 
-/* a boolean with unset */
-typedef enum {
-	PK_TRISTATE_FALSE = FALSE,
-	PK_TRISTATE_TRUE = TRUE,
-	PK_TRISTATE_UNSET
-} PkTristate;
-
 void		 pk_common_test				(gpointer	 user_data);
 gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
 							 G_GNUC_WARN_UNUSED_RESULT;

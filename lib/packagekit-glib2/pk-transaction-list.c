@@ -341,14 +341,14 @@ out:
 static void
 pk_transaction_list_test_added_cb (PkTransactionList *tlist, const gchar *tid, EggTest *test)
 {
-	egg_warning ("added %s", tid);
+	egg_debug ("added %s", tid);
 	_added++;
 }
 
 static void
 pk_transaction_list_test_removed_cb (PkTransactionList *tlist, const gchar *tid, EggTest *test)
 {
-	egg_warning ("removed %s", tid);
+	egg_debug ("removed %s", tid);
 	_removed++;
 }
 

@@ -23,35 +23,33 @@
 #error "Only <packagekit.h> can be included directly."
 #endif
 
-#ifndef __PK_TRANSACTION_PAST_H
-#define __PK_TRANSACTION_PAST_H
+#ifndef __PK_SOURCE_H
+#define __PK_SOURCE_H
 
 #include <glib-object.h>
 
-#include <packagekit-glib2/pk-source.h>
-
 G_BEGIN_DECLS
 
-#define PK_TYPE_TRANSACTION_PAST		(pk_transaction_past_get_type ())
-#define PK_TRANSACTION_PAST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION_PAST, PkTransactionPast))
-#define PK_TRANSACTION_PAST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION_PAST, PkTransactionPastClass))
-#define PK_IS_TRANSACTION_PAST(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION_PAST))
-#define PK_IS_TRANSACTION_PAST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_PAST))
-#define PK_TRANSACTION_PAST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_PAST, PkTransactionPastClass))
+#define PK_TYPE_SOURCE			(pk_source_get_type ())
+#define PK_SOURCE(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_SOURCE, PkSource))
+#define PK_SOURCE_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_SOURCE, PkSourceClass))
+#define PK_IS_SOURCE(o)			(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_SOURCE))
+#define PK_IS_SOURCE_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SOURCE))
+#define PK_SOURCE_GET_CLASS(o)		(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SOURCE, PkSourceClass))
 
-typedef struct _PkTransactionPastPrivate	PkTransactionPastPrivate;
-typedef struct _PkTransactionPast		PkTransactionPast;
-typedef struct _PkTransactionPastClass		PkTransactionPastClass;
+typedef struct _PkSourcePrivate		PkSourcePrivate;
+typedef struct _PkSource		PkSource;
+typedef struct _PkSourceClass		PkSourceClass;
 
-struct _PkTransactionPast
+struct _PkSource
 {
-	 PkSource			 parent;
-	 PkTransactionPastPrivate	*priv;
+	 GObject			 parent;
+	 PkSourcePrivate		*priv;
 };
 
-struct _PkTransactionPastClass
+struct _PkSourceClass
 {
-	PkSourceClass	parent_class;
+	GObjectClass	parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -60,10 +58,10 @@ struct _PkTransactionPastClass
 	void (*_pk_reserved5) (void);
 };
 
-GType			 pk_transaction_past_get_type		(void);
-PkTransactionPast	*pk_transaction_past_new		(void);
+GType		 pk_source_get_type		(void);
+PkSource	*pk_source_new			(void);
 
 G_END_DECLS
 
-#endif /* __PK_TRANSACTION_PAST_H */
+#endif /* __PK_SOURCE_H */
 

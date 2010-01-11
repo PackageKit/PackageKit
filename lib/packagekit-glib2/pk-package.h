@@ -27,7 +27,9 @@
 #define __PK_PACKAGE_H
 
 #include <glib-object.h>
+
 #include <packagekit-glib2/pk-enum.h>
+#include <packagekit-glib2/pk-source.h>
 
 G_BEGIN_DECLS
 
@@ -46,13 +48,13 @@ typedef struct _PkPackageClass		PkPackageClass;
 
 struct _PkPackage
 {
-	 GObject		 parent;
+	 PkSource		 parent;
 	 PkPackagePrivate	*priv;
 };
 
 struct _PkPackageClass
 {
-	GObjectClass	parent_class;
+	PkSourceClass	parent_class;
 
 	/* signals */
 	void		(* changed)			(PkPackage	*package);

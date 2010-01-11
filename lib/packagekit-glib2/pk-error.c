@@ -59,7 +59,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkError, pk_error, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkError, pk_error, PK_TYPE_SOURCE)
 
 /**
  * pk_error_get_property:

@@ -59,7 +59,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRequireRestart, pk_require_restart, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkRequireRestart, pk_require_restart, PK_TYPE_SOURCE)
 
 /**
  * pk_require_restart_get_property:

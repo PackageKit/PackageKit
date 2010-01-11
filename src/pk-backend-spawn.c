@@ -49,6 +49,7 @@
 #include "pk-backend-spawn.h"
 #include "pk-marshal.h"
 #include "pk-spawn.h"
+#include "pk-shared.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
 #include "pk-conf.h"
@@ -576,6 +577,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *uri;
 	GPtrArray *array;
 	gboolean ret;
+	PkHintEnum interactive;
 
 	array = g_ptr_array_new_with_free_func (g_free);
 
@@ -616,9 +618,17 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
 
-	/* IDLE */
-	ret = pk_backend_use_idle_bandwidth (backend_spawn->priv->backend);
-	line = g_strdup_printf ("%s=%s", "IDLE", ret ? "TRUE" : "FALSE");
+	/* BACKGROUND */
+	ret = pk_backend_use_background (backend_spawn->priv->backend);
+	line = g_strdup_printf ("%s=%s", "BACKGROUND", ret ? "TRUE" : "FALSE");
+	egg_debug ("setting evp '%s'", line);
+	g_ptr_array_add (array, line);
+
+	/* INTERACTIVE */
+	g_object_get (backend_spawn->priv->backend,
+		      "interactive", &interactive,
+		      NULL);
+	line = g_strdup_printf ("%s=%s", "INTERACTIVE", interactive ? "TRUE" : "FALSE");
 	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
 
@@ -678,7 +688,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	gchar *filename;
 	gchar **argv;
 	gchar **envp;
-	PkTristate background;
+	PkHintEnum background;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
 #endif
@@ -719,8 +729,12 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	argv[0] = g_strdup (filename);
 
 	/* copy idle setting from backend to PkSpawn instance */
-	g_object_get (backend_spawn->priv->backend, "background", &background, NULL);
-	g_object_set (backend_spawn->priv->spawn, "background", (background == PK_TRISTATE_TRUE), NULL);
+	g_object_get (backend_spawn->priv->backend,
+		      "background", &background,
+		      NULL);
+	g_object_set (backend_spawn->priv->spawn,
+		      "background", (background == PK_HINT_ENUM_TRUE),
+		      NULL);
 
 	backend_spawn->priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);

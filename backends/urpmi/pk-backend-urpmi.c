@@ -102,11 +102,11 @@ backend_get_filters (PkBackend *backend)
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-name", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-name", filters_text, search[0], NULL);
 	g_free (filters_text);
 }
 
@@ -234,14 +234,14 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 }
 
 /**
- * pk_backend_search_group:
+ * pk_backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-group", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-group", filters_text, search[0], NULL);
 	g_free (filters_text);
 }
 
@@ -284,23 +284,23 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-details", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-details", filters_text, search[0], NULL);
 	g_free (filters_text);
 }
 
 /**
- * pk_backend_search_file:
+ * pk_backend_search_files:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	gchar *filters_text;
 	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-file", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "search-file", filters_text, search[0], NULL);
 	g_free (filters_text);
 }
 
@@ -391,9 +391,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	backend_search_files,			/* search_files */
+	backend_search_groups,			/* search_groups */
+	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */

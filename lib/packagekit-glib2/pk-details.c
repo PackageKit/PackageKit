@@ -67,7 +67,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkDetails, pk_details, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkDetails, pk_details, PK_TYPE_SOURCE)
 
 /**
  * pk_details_get_property:
