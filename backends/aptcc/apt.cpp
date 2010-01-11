@@ -652,8 +652,12 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 	vector<string> packageList;
 	regex_t re;
 	gchar *search;
+	gchar *values_str;
 
-	search = g_strjoinv("|", values);
+	values_str = g_strjoinv("$|^", values);
+	search = g_strdup_printf("^%s$",
+				 values_str);
+	g_free(values_str);
 	if(regcomp(&re, search, REG_NOSUB) != 0) {
 		egg_debug("Regex compilation error");
 		g_free(search);
