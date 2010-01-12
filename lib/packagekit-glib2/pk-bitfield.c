@@ -104,7 +104,7 @@ pk_bitfield_from_enums (gint value, ...)
 }
 
 /**
- * pk_role_bitfield_to_text:
+ * pk_role_bitfield_to_string:
  * @roles: The enumerated type values
  *
  * Converts a enumerated type bitfield to its text representation
@@ -112,7 +112,7 @@ pk_bitfield_from_enums (gint value, ...)
  * Return value: the enumerated constant value, e.g. "install-file;update-system"
  **/
 gchar *
-pk_role_bitfield_to_text (PkBitfield roles)
+pk_role_bitfield_to_string (PkBitfield roles)
 {
 	GString *string;
 	guint i;
@@ -121,12 +121,12 @@ pk_role_bitfield_to_text (PkBitfield roles)
 	for (i=0; i<PK_ROLE_ENUM_LAST; i++) {
 		if ((roles & pk_bitfield_value (i)) == 0)
 			continue;
-		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
+		g_string_append_printf (string, "%s;", pk_role_enum_to_string (i));
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
 		egg_warning ("not valid!");
-		g_string_append (string, pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+		g_string_append (string, pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
 		g_string_set_size (string, string->len - 1);
@@ -135,7 +135,7 @@ pk_role_bitfield_to_text (PkBitfield roles)
 }
 
 /**
- * pk_role_bitfield_from_text:
+ * pk_role_bitfield_from_string:
  * @roles: the enumerated constant value, e.g. "available;~gui"
  *
  * Converts text representation to its enumerated type bitfield
@@ -143,7 +143,7 @@ pk_role_bitfield_to_text (PkBitfield roles)
  * Return value: The enumerated type values, or 0 for invalid
  **/
 PkBitfield
-pk_role_bitfield_from_text (const gchar *roles)
+pk_role_bitfield_from_string (const gchar *roles)
 {
 	PkBitfield roles_enum = 0;
 	gchar **split;
@@ -159,7 +159,7 @@ pk_role_bitfield_from_text (const gchar *roles)
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
-		role = pk_role_enum_from_text (split[i]);
+		role = pk_role_enum_from_string (split[i]);
 		if (role == PK_ROLE_ENUM_UNKNOWN) {
 			roles_enum = 0;
 			break;
@@ -172,7 +172,7 @@ out:
 }
 
 /**
- * pk_groups_bitfield_to_text:
+ * pk_groups_bitfield_to_string:
  * @groups: The enumerated type values
  *
  * Converts a enumerated type bitfield to its text representation
@@ -180,7 +180,7 @@ out:
  * Return value: the enumerated constant value, e.g. "gnome;kde"
  **/
 gchar *
-pk_group_bitfield_to_text (PkBitfield groups)
+pk_group_bitfield_to_string (PkBitfield groups)
 {
 	GString *string;
 	guint i;
@@ -189,12 +189,12 @@ pk_group_bitfield_to_text (PkBitfield groups)
 	for (i=0; i<PK_GROUP_ENUM_LAST; i++) {
 		if ((groups & pk_bitfield_value (i)) == 0)
 			continue;
-		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
+		g_string_append_printf (string, "%s;", pk_group_enum_to_string (i));
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
 		egg_warning ("not valid!");
-		g_string_append (string, pk_group_enum_to_text (PK_GROUP_ENUM_UNKNOWN));
+		g_string_append (string, pk_group_enum_to_string (PK_GROUP_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
 		g_string_set_size (string, string->len - 1);
@@ -203,7 +203,7 @@ pk_group_bitfield_to_text (PkBitfield groups)
 }
 
 /**
- * pk_group_bitfield_from_text:
+ * pk_group_bitfield_from_string:
  * @groups: the enumerated constant value, e.g. "available;~gui"
  *
  * Converts text representation to its enumerated type bitfield
@@ -211,7 +211,7 @@ pk_group_bitfield_to_text (PkBitfield groups)
  * Return value: The enumerated type values, or 0 for invalid
  **/
 PkBitfield
-pk_group_bitfield_from_text (const gchar *groups)
+pk_group_bitfield_from_string (const gchar *groups)
 {
 	PkBitfield groups_enum = 0;
 	gchar **split;
@@ -227,7 +227,7 @@ pk_group_bitfield_from_text (const gchar *groups)
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
-		group = pk_group_enum_from_text (split[i]);
+		group = pk_group_enum_from_string (split[i]);
 		if (group == PK_GROUP_ENUM_UNKNOWN) {
 			groups_enum = 0;
 			break;
@@ -240,7 +240,7 @@ out:
 }
 
 /**
- * pk_filter_bitfield_to_text:
+ * pk_filter_bitfield_to_string:
  * @filters: The enumerated type values
  *
  * Converts a enumerated type bitfield to its text representation
@@ -248,25 +248,25 @@ out:
  * Return value: the enumerated constant value, e.g. "available;~gui"
  **/
 gchar *
-pk_filter_bitfield_to_text (PkBitfield filters)
+pk_filter_bitfield_to_string (PkBitfield filters)
 {
 	GString *string;
 	guint i;
 
 	/* shortcut */
 	if (filters == 0)
-		return g_strdup (pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
+		return g_strdup (pk_filter_enum_to_string (PK_FILTER_ENUM_NONE));
 
 	string = g_string_new ("");
 	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
 			continue;
-		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
+		g_string_append_printf (string, "%s;", pk_filter_enum_to_string (i));
 	}
 	/* do we have a 'none' filter? \n */
 	if (string->len == 0) {
 		egg_warning ("not valid!");
-		g_string_append (string, pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
+		g_string_append (string, pk_filter_enum_to_string (PK_FILTER_ENUM_NONE));
 	} else {
 		/* remove last \n */
 		g_string_set_size (string, string->len - 1);
@@ -275,7 +275,7 @@ pk_filter_bitfield_to_text (PkBitfield filters)
 }
 
 /**
- * pk_filter_bitfield_from_text:
+ * pk_filter_bitfield_from_string:
  * @filters: the enumerated constant value, e.g. "available;~gui"
  *
  * Converts text representation to its enumerated type bitfield, or 0 for invalid
@@ -283,7 +283,7 @@ pk_filter_bitfield_to_text (PkBitfield filters)
  * Return value: The enumerated type values
  **/
 PkBitfield
-pk_filter_bitfield_from_text (const gchar *filters)
+pk_filter_bitfield_from_string (const gchar *filters)
 {
 	PkBitfield filters_enum = 0;
 	gchar **split;
@@ -299,7 +299,7 @@ pk_filter_bitfield_from_text (const gchar *filters)
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
-		filter = pk_filter_enum_from_text (split[i]);
+		filter = pk_filter_enum_from_string (split[i]);
 		if (filter == PK_FILTER_ENUM_UNKNOWN) {
 			filters_enum = 0;
 			break;
@@ -331,7 +331,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (none)");
-	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NONE));
+	text = pk_filter_bitfield_to_string (pk_bitfield_value (PK_FILTER_ENUM_NONE));
 	if (g_strcmp0 (text, "none") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -358,7 +358,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (single)");
-	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
+	text = pk_filter_bitfield_to_string (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
 	if (g_strcmp0 (text, "~devel") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -367,7 +367,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter bitfield to text (plural)");
-	text = pk_filter_bitfield_to_text (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
+	text = pk_filter_bitfield_to_string (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 					   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 					   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
 	if (g_strcmp0 (text, "~devel;gui;newest") == 0)
@@ -378,7 +378,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (none)");
-	filter = pk_filter_bitfield_from_text ("none");
+	filter = pk_filter_bitfield_from_string ("none");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NONE))
 		egg_test_success (test, NULL);
 	else
@@ -386,7 +386,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (single)");
-	filter = pk_filter_bitfield_from_text ("~devel");
+	filter = pk_filter_bitfield_from_string ("~devel");
 	if (filter == pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT))
 		egg_test_success (test, NULL);
 	else
@@ -394,7 +394,7 @@ pk_bitfield_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "check we can convert filter text to bitfield (plural)");
-	filter = pk_filter_bitfield_from_text ("~devel;gui;newest");
+	filter = pk_filter_bitfield_from_string ("~devel;gui;newest");
 	if (filter == (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
 		       pk_bitfield_value (PK_FILTER_ENUM_GUI) |
 		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)))
@@ -409,7 +409,7 @@ pk_bitfield_test (gpointer user_data)
 		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	text = pk_filter_bitfield_to_text (filter);
+	text = pk_filter_bitfield_to_string (filter);
 	if (g_strcmp0 (text, "gui;~free;newest") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -437,7 +437,7 @@ pk_bitfield_test (gpointer user_data)
 	egg_test_title (test, "check we can add / remove bitfield to nothing");
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
-	text = pk_filter_bitfield_to_text (filter);
+	text = pk_filter_bitfield_to_string (filter);
 	if (g_strcmp0 (text, "none") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -480,7 +480,7 @@ pk_bitfield_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "group bitfield to text (unknown)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, -1);
-	text = pk_group_bitfield_to_text (values);
+	text = pk_group_bitfield_to_string (values);
 	if (g_strcmp0 (text, "unknown") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -490,7 +490,7 @@ pk_bitfield_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "group bitfield to text (first and last)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, PK_GROUP_ENUM_UNKNOWN, -1);
-	text = pk_group_bitfield_to_text (values);
+	text = pk_group_bitfield_to_string (values);
 	if (g_strcmp0 (text, "unknown;accessibility") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -500,7 +500,7 @@ pk_bitfield_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "group bitfield to text (random)");
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, PK_GROUP_ENUM_REPOS, -1);
-	text = pk_group_bitfield_to_text (values);
+	text = pk_group_bitfield_to_string (values);
 	if (g_strcmp0 (text, "unknown;repos") == 0)
 		egg_test_success (test, NULL);
 	else

@@ -701,7 +701,7 @@ backend_get_details_thread (PkBackend *backend)
 		for (group_index = 0; group < PK_GROUP_ENUM_LAST; group_index++) {
 			group = 1 << group_index;
 			if (!(group & backend_get_groups(backend))) continue;
-			if (opkg_check_tag(pkg, (const gchar *)pk_group_enum_to_text(group))) 
+			if (opkg_check_tag(pkg, (const gchar *)pk_group_enum_to_string(group))) 
 				break;
 		}
 	}

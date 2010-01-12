@@ -103,10 +103,10 @@ typedef enum {
 } PkLsofType;
 
 /**
- * pk_lsof_type_to_text:
+ * pk_lsof_type_to_string:
  **/
 static const gchar *
-pk_lsof_type_to_text (PkLsofType type)
+pk_lsof_type_to_string (PkLsofType type)
 {
 	if (type == PK_LSOF_TYPE_MEM)
 		return "mem";
@@ -118,10 +118,10 @@ pk_lsof_type_to_text (PkLsofType type)
 }
 
 /**
- * pk_lsof_type_from_text:
+ * pk_lsof_type_from_string:
  **/
 static PkLsofType
-pk_lsof_type_from_text (const gchar *type)
+pk_lsof_type_from_string (const gchar *type)
 {
 	if (g_ascii_strcasecmp (type, "mem") == 0)
 		return PK_LSOF_TYPE_MEM;
@@ -185,7 +185,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			}
 			break;
 		case 'f':
-			type = pk_lsof_type_from_text (value);
+			type = pk_lsof_type_from_string (value);
 			break;
 		case 'n':
 			if (type == PK_LSOF_TYPE_DEL ||
@@ -209,7 +209,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			}
 			break;
 		default:
-			egg_debug ("ignoring %c=%s (type=%s)", mode, value, pk_lsof_type_to_text (type));
+			egg_debug ("ignoring %c=%s (type=%s)", mode, value, pk_lsof_type_to_string (type));
 			break;
 		}
 	}

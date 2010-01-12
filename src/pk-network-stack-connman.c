@@ -167,7 +167,7 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 	value = g_hash_table_lookup (hash_service, "Type");
 	type = pk_network_stack_connman_get_connection_type (value);
 
-	egg_debug ("network type is %s", pk_network_enum_to_text (type));
+	egg_debug ("network type is %s", pk_network_enum_to_string (type));
 	g_object_unref (proxy_service);
 	return type;
 }
@@ -193,7 +193,7 @@ pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 		else
 			ret = FALSE;
 		/* TODO: this is a PkNetworkState, not a gboolean */
-		egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (ret));
+		egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (ret));
 		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", ret);
 	}
 

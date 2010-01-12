@@ -170,7 +170,7 @@ pk_console_transaction_cb (PkTransactionPast *item, gpointer user_data)
 		      "data", &data,
 		      NULL);
 
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 	/* TRANSLATORS: this is an atomic transaction */
 	g_print ("%s: %s\n", _("Transaction"), tid);
 	/* TRANSLATORS: this is the time the transaction was started in system timezone */
@@ -247,7 +247,7 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
 	g_print ("%s: %s\n", _("Distribution"), name);
 	/* TRANSLATORS: this is type of update, stable or testing */
-	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_text (state));
+	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_string (state));
 	/* TRANSLATORS: this is any summary text describing the upgrade */
 	g_print (" %s: %s\n", _("Summary"), summary);
 
@@ -366,7 +366,7 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	}
 	if (restart != PK_RESTART_ENUM_NONE) {
 		/* TRANSLATORS: details about the update, if the package requires a restart */
-		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_text (restart));
+		g_print (" %s: %s\n", _("Restart"), pk_restart_enum_to_string (restart));
 	}
 	if (update_text != NULL) {
 		/* TRANSLATORS: details about the update, any description of the update */
@@ -378,7 +378,7 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	}
 	if (state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 		/* TRANSLATORS: details about the update, the ongoing state of the update */
-		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_text (state));
+		g_print (" %s: %s\n", _("State"), pk_update_state_enum_to_string (state));
 	}
 	if (issued != NULL) {
 		/* TRANSLATORS: details about the update, date the update was issued */
@@ -507,7 +507,7 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     %s\n", package);
 	g_print ("  license:     %s\n", license);
-	g_print ("  group:       %s\n", pk_group_enum_to_text (group));
+	g_print ("  group:       %s\n", pk_group_enum_to_string (group));
 	g_print ("  description: %s\n", description);
 	g_print ("  size:        %lu bytes\n", (long unsigned int) size);
 	g_print ("  url:         %s\n", url);
@@ -535,7 +535,7 @@ pk_console_message_cb (PkMessage *item, gpointer data)
 		      NULL);
 
 	/* TRANSLATORS: This a message (like a little note that may be of interest) from the transaction */
-	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_text (type), details);
+	g_print ("%s %s: %s\n", _("Message:"), pk_message_enum_to_string (type), details);
 	g_free (details);
 }
 
@@ -691,7 +691,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 
 		/* special case */
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE)
@@ -1333,7 +1333,7 @@ main (int argc, char *argv[])
 
 	/* check filter */
 	if (filter != NULL) {
-		filters = pk_filter_bitfield_from_text (filter);
+		filters = pk_filter_bitfield_from_string (filter);
 		if (filters == 0) {
 			/* TRANSLATORS: The user specified an incorrect filter */
 			error = g_error_new (1, 0, "%s: %s", _("The filter specified was invalid"), filter);
@@ -1557,7 +1557,7 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		role = pk_role_enum_from_text (value);
+		role = pk_role_enum_from_string (value);
 		if (role == PK_ROLE_ENUM_UNKNOWN) {
 			/* TRANSLATORS: The user specified an invalid action */
 			error = g_error_new (1, 0, "%s", _("A correct role is required"));
@@ -1645,7 +1645,7 @@ main (int argc, char *argv[])
 					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-roles") == 0) {
-		text = pk_role_bitfield_to_text (roles);
+		text = pk_role_bitfield_to_string (roles);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1655,7 +1655,7 @@ main (int argc, char *argv[])
 		g_object_get (control,
 			      "filters", &filters,
 			      NULL);
-		text = pk_filter_bitfield_to_text (filters);
+		text = pk_filter_bitfield_to_string (filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);
@@ -1665,7 +1665,7 @@ main (int argc, char *argv[])
 		g_object_get (control,
 			      "groups", &groups,
 			      NULL);
-		text = pk_group_bitfield_to_text (groups);
+		text = pk_group_bitfield_to_string (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
 		g_free (text);

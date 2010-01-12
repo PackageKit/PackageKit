@@ -51,7 +51,7 @@ pk_package_ids_from_id (const gchar *package_id)
 }
 
 /**
- * pk_package_ids_from_text:
+ * pk_package_ids_from_string:
  * @package_id: A single package_id
  *
  * Form a composite string array of package_id's from
@@ -60,7 +60,7 @@ pk_package_ids_from_id (const gchar *package_id)
  * Return value: the string array, or %NULL if invalid, free with g_strfreev()
  **/
 gchar **
-pk_package_ids_from_text (const gchar *package_id)
+pk_package_ids_from_string (const gchar *package_id)
 {
 	g_return_val_if_fail (package_id != NULL, NULL);
 	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 0);
@@ -97,7 +97,7 @@ out:
 }
 
 /**
- * pk_package_ids_to_text:
+ * pk_package_ids_to_string:
  * @package_ids: a string array of package_id's
  *
  * Cats the string array of package_id's into one delimited string
@@ -105,7 +105,7 @@ out:
  * Return value: a string representation of all the package_id's.
  **/
 gchar *
-pk_package_ids_to_text (gchar **package_ids)
+pk_package_ids_to_string (gchar **package_ids)
 {
 	/* special case as this is allowed */
 	if (package_ids == NULL)
@@ -252,7 +252,7 @@ pk_package_ids_test (gpointer user_data)
 	 ************************************************************/
 
 	egg_test_title (test, "parse va_list");
-	package_ids = pk_package_ids_from_text ("foo;0.0.1;i386;fedora&bar;0.1.1;noarch;livna");
+	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora&bar;0.1.1;noarch;livna");
 	egg_test_assert (test, package_ids != NULL);
 
 	/************************************************************/

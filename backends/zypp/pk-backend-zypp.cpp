@@ -1233,7 +1233,7 @@ backend_resolve_thread (PkBackend *backend)
 {
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	gchar *filters = pk_filter_bitfield_to_text(filters_field);
+	gchar *filters = pk_filter_bitfield_to_string(filters_field);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1382,7 +1382,7 @@ backend_search_group_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 30);
 
 	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
-	PkGroupEnum pkGroup = pk_group_enum_from_text (group);
+	PkGroupEnum pkGroup = pk_group_enum_from_string (group);
 
 	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
 
@@ -1768,7 +1768,7 @@ backend_what_provides_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	gchar *filters = pk_filter_bitfield_to_text(filters_field);
+	gchar *filters = pk_filter_bitfield_to_string(filters_field);
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 

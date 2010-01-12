@@ -190,7 +190,7 @@ pk_network_stack_unix_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkNe
 
 	/* new state */
 	nstack_unix->priv->state_old = state;
-	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (state));
+	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
 	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_unix), "state-changed", state);
 }
 

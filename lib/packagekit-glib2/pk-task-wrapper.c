@@ -139,7 +139,7 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 			      NULL);
 		package_id = pk_package_get_id (package);
 		printable = pk_package_id_to_printable (package_id);
-		g_print ("%s\t%s\t%s\n", pk_info_enum_to_text (info), printable, summary);
+		g_print ("%s\t%s\t%s\n", pk_info_enum_to_string (info), printable, summary);
 
 		g_free (summary);
 		g_free (printable);
@@ -233,7 +233,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to install packages: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to install packages: %s", pk_exit_enum_to_string (exit_enum));
 
 	packages = pk_results_get_package_array (results);
 	if (packages == NULL)
@@ -244,7 +244,7 @@ pk_task_wrapper_test_install_packages_cb (GObject *object, GAsyncResult *res, Eg
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -259,7 +259,7 @@ pk_task_wrapper_test_progress_cb (PkProgress *progress, PkProgressType type, Egg
 		g_object_get (progress,
 			      "status", &status,
 			      NULL);
-		egg_debug ("now %s", pk_status_enum_to_text (status));
+		egg_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 

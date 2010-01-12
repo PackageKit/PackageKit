@@ -102,7 +102,7 @@ pk_generate_pack_progress_cb (PkProgress *progress, PkProgressType type, gpointe
 		if (status == PK_STATUS_ENUM_FINISHED)
 			return;
 		/* TODO: translate */
-		pk_progress_bar_start (progressbar, pk_status_enum_to_text (status));
+		pk_progress_bar_start (progressbar, pk_status_enum_to_string (status));
 	}
 }
 

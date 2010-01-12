@@ -1792,13 +1792,13 @@
       </method>
     </class>
     <class name="Distro" cname="PkDistro_">
-      <method name="UpgradeEnumFromText" cname="pk_distro_upgrade_enum_from_text" shared="true">
+      <method name="UpgradeEnumFromText" cname="pk_distro_upgrade_enum_from_string" shared="true">
         <return-type type="PkDistroUpgradeEnum" />
         <parameters>
           <parameter type="const-gchar*" name="upgrade" />
         </parameters>
       </method>
-      <method name="UpgradeEnumToText" cname="pk_distro_upgrade_enum_to_text" shared="true">
+      <method name="UpgradeEnumToText" cname="pk_distro_upgrade_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkDistroUpgradeEnum" name="upgrade" />
@@ -1822,13 +1822,13 @@
       </method>
     </class>
     <class name="Error" cname="PkError_">
-      <method name="EnumFromText" cname="pk_error_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_error_enum_from_string" shared="true">
         <return-type type="PkErrorCodeEnum" />
         <parameters>
           <parameter type="const-gchar*" name="code" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_error_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_error_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkErrorCodeEnum" name="code" />
@@ -1836,13 +1836,13 @@
       </method>
     </class>
     <class name="Exit" cname="PkExit_">
-      <method name="EnumFromText" cname="pk_exit_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_exit_enum_from_string" shared="true">
         <return-type type="PkExitEnum" />
         <parameters>
           <parameter type="const-gchar*" name="exit" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_exit_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_exit_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkExitEnum" name="exit" />
@@ -1850,25 +1850,25 @@
       </method>
     </class>
     <class name="Filter" cname="PkFilter_">
-      <method name="BitfieldFromText" cname="pk_filter_bitfield_from_text" shared="true">
+      <method name="BitfieldFromText" cname="pk_filter_bitfield_from_string" shared="true">
         <return-type type="PkBitfield" />
         <parameters>
           <parameter type="const-gchar*" name="filters" />
         </parameters>
       </method>
-      <method name="BitfieldToText" cname="pk_filter_bitfield_to_text" shared="true">
+      <method name="BitfieldToText" cname="pk_filter_bitfield_to_string" shared="true">
         <return-type type="gchar*" />
         <parameters>
           <parameter type="PkBitfield" name="filters" />
         </parameters>
       </method>
-      <method name="EnumFromText" cname="pk_filter_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_filter_enum_from_string" shared="true">
         <return-type type="PkFilterEnum" />
         <parameters>
           <parameter type="const-gchar*" name="filter" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_filter_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_filter_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkFilterEnum" name="filter" />
@@ -1900,25 +1900,25 @@
       </method>
     </class>
     <class name="Group" cname="PkGroup_">
-      <method name="BitfieldFromText" cname="pk_group_bitfield_from_text" shared="true">
+      <method name="BitfieldFromText" cname="pk_group_bitfield_from_string" shared="true">
         <return-type type="PkBitfield" />
         <parameters>
           <parameter type="const-gchar*" name="groups" />
         </parameters>
       </method>
-      <method name="BitfieldToText" cname="pk_group_bitfield_to_text" shared="true">
+      <method name="BitfieldToText" cname="pk_group_bitfield_to_string" shared="true">
         <return-type type="gchar*" />
         <parameters>
           <parameter type="PkBitfield" name="groups" />
         </parameters>
       </method>
-      <method name="EnumFromText" cname="pk_group_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_group_enum_from_string" shared="true">
         <return-type type="PkGroupEnum" />
         <parameters>
           <parameter type="const-gchar*" name="group" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_group_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_group_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkGroupEnum" name="group" />
@@ -1926,13 +1926,13 @@
       </method>
     </class>
     <class name="Info" cname="PkInfo_">
-      <method name="EnumFromText" cname="pk_info_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_info_enum_from_string" shared="true">
         <return-type type="PkInfoEnum" />
         <parameters>
           <parameter type="const-gchar*" name="info" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_info_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_info_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkInfoEnum" name="info" />
@@ -1940,13 +1940,13 @@
       </method>
     </class>
     <class name="License" cname="PkLicense_">
-      <method name="EnumFromText" cname="pk_license_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_license_enum_from_string" shared="true">
         <return-type type="PkLicenseEnum" />
         <parameters>
           <parameter type="const-gchar*" name="license" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_license_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_license_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkLicenseEnum" name="license" />
@@ -1954,13 +1954,13 @@
       </method>
     </class>
     <class name="Message" cname="PkMessage_">
-      <method name="EnumFromText" cname="pk_message_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_message_enum_from_string" shared="true">
         <return-type type="PkMessageEnum" />
         <parameters>
           <parameter type="const-gchar*" name="message" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_message_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_message_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkMessageEnum" name="message" />
@@ -1968,13 +1968,13 @@
       </method>
     </class>
     <class name="Network" cname="PkNetwork_">
-      <method name="EnumFromText" cname="pk_network_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_network_enum_from_string" shared="true">
         <return-type type="PkNetworkEnum" />
         <parameters>
           <parameter type="const-gchar*" name="network" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_network_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_network_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkNetworkEnum" name="network" />
@@ -2000,7 +2000,7 @@
           <parameter type="const-gchar*" name="package_id" />
         </parameters>
       </method>
-      <method name="IdsFromText" cname="pk_package_ids_from_text" shared="true">
+      <method name="IdsFromText" cname="pk_package_ids_from_string" shared="true">
         <return-type type="gchar**" />
         <parameters>
           <parameter type="const-gchar*" name="package_id" />
@@ -2025,7 +2025,7 @@
           <parameter type="gchar**" name="package_ids" />
         </parameters>
       </method>
-      <method name="IdsToText" cname="pk_package_ids_to_text" shared="true">
+      <method name="IdsToText" cname="pk_package_ids_to_string" shared="true">
         <return-type type="gchar*" />
         <parameters>
           <parameter type="gchar**" name="package_ids" />
@@ -2033,13 +2033,13 @@
       </method>
     </class>
     <class name="Provides" cname="PkProvides_">
-      <method name="EnumFromText" cname="pk_provides_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_provides_enum_from_string" shared="true">
         <return-type type="PkProvidesEnum" />
         <parameters>
           <parameter type="const-gchar*" name="provides" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_provides_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_provides_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkProvidesEnum" name="provides" />
@@ -2047,13 +2047,13 @@
       </method>
     </class>
     <class name="Restart" cname="PkRestart_">
-      <method name="EnumFromText" cname="pk_restart_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_restart_enum_from_string" shared="true">
         <return-type type="PkRestartEnum" />
         <parameters>
           <parameter type="const-gchar*" name="restart" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_restart_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_restart_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkRestartEnum" name="restart" />
@@ -2061,25 +2061,25 @@
       </method>
     </class>
     <class name="Role" cname="PkRole_">
-      <method name="BitfieldFromText" cname="pk_role_bitfield_from_text" shared="true">
+      <method name="BitfieldFromText" cname="pk_role_bitfield_from_string" shared="true">
         <return-type type="PkBitfield" />
         <parameters>
           <parameter type="const-gchar*" name="roles" />
         </parameters>
       </method>
-      <method name="BitfieldToText" cname="pk_role_bitfield_to_text" shared="true">
+      <method name="BitfieldToText" cname="pk_role_bitfield_to_string" shared="true">
         <return-type type="gchar*" />
         <parameters>
           <parameter type="PkBitfield" name="roles" />
         </parameters>
       </method>
-      <method name="EnumFromText" cname="pk_role_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_role_enum_from_string" shared="true">
         <return-type type="PkRoleEnum" />
         <parameters>
           <parameter type="const-gchar*" name="role" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_role_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_role_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkRoleEnum" name="role" />
@@ -2087,13 +2087,13 @@
       </method>
     </class>
     <class name="Sig" cname="PkSig_">
-      <method name="TypeEnumFromText" cname="pk_sig_type_enum_from_text" shared="true">
+      <method name="TypeEnumFromText" cname="pk_sig_type_enum_from_string" shared="true">
         <return-type type="PkSigTypeEnum" />
         <parameters>
           <parameter type="const-gchar*" name="sig_type" />
         </parameters>
       </method>
-      <method name="TypeEnumToText" cname="pk_sig_type_enum_to_text" shared="true">
+      <method name="TypeEnumToText" cname="pk_sig_type_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkSigTypeEnum" name="sig_type" />
@@ -2101,13 +2101,13 @@
       </method>
     </class>
     <class name="Status" cname="PkStatus_">
-      <method name="EnumFromText" cname="pk_status_enum_from_text" shared="true">
+      <method name="EnumFromText" cname="pk_status_enum_from_string" shared="true">
         <return-type type="PkStatusEnum" />
         <parameters>
           <parameter type="const-gchar*" name="status" />
         </parameters>
       </method>
-      <method name="EnumToText" cname="pk_status_enum_to_text" shared="true">
+      <method name="EnumToText" cname="pk_status_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkStatusEnum" name="status" />
@@ -2115,13 +2115,13 @@
       </method>
     </class>
     <class name="Update" cname="PkUpdate_">
-      <method name="StateEnumFromText" cname="pk_update_state_enum_from_text" shared="true">
+      <method name="StateEnumFromText" cname="pk_update_state_enum_from_string" shared="true">
         <return-type type="PkUpdateStateEnum" />
         <parameters>
           <parameter type="const-gchar*" name="update_state" />
         </parameters>
       </method>
-      <method name="StateEnumToText" cname="pk_update_state_enum_to_text" shared="true">
+      <method name="StateEnumToText" cname="pk_update_state_enum_to_string" shared="true">
         <return-type type="const-gchar*" />
         <parameters>
           <parameter type="PkUpdateStateEnum" name="update_state" />

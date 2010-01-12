@@ -239,7 +239,7 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 
 	/* new value */
 	progress->priv->status = status;
-	egg_debug ("status now %s", pk_status_enum_to_text (status));
+	egg_debug ("status now %s", pk_status_enum_to_string (status));
 	g_object_notify (G_OBJECT(progress), "status");
 
 	return TRUE;
@@ -259,7 +259,7 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 
 	/* new value */
 	progress->priv->role = role;
-	egg_debug ("role now %s", pk_role_enum_to_text (role));
+	egg_debug ("role now %s", pk_role_enum_to_string (role));
 	g_object_notify (G_OBJECT(progress), "role");
 
 	return TRUE;

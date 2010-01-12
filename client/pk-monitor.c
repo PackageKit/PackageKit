@@ -80,7 +80,7 @@ pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpoi
 {
 	PkNetworkEnum state;
 	g_object_get (control, "network-status", &state, NULL);
-	g_print ("network status=%s\n", pk_network_enum_to_text (state));
+	g_print ("network status=%s\n", pk_network_enum_to_string (state));
 }
 
 /**
@@ -115,12 +115,12 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 		      NULL);
 
 	exit_enum = pk_results_get_exit_code (results);
-	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_text (exit_enum));
+	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_string (exit_enum));
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL)
-		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 out:
 	g_free (transaction_id);
 	if (error_code != NULL)
@@ -159,7 +159,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		goto out;
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
-		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_text (role));
+		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_string (role));
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
 		g_print ("%s\tpackage      %s\n", transaction_id, package_id);
 	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
@@ -167,7 +167,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
 		g_print ("%s\tallow_cancel %i\n", transaction_id, allow_cancel);
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_text (status));
+		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_string (status));
 	}
 out:
 	g_free (package_id);

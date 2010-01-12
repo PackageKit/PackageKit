@@ -36,8 +36,8 @@ typedef enum {
 } PkHintEnum;
 
 gboolean	 pk_directory_remove_contents		(const gchar	*directory);
-const gchar	*pk_hint_enum_to_text			(PkHintEnum	 hint);
-PkHintEnum	 pk_hint_enum_from_text			(const gchar	*hint);
+const gchar	*pk_hint_enum_to_string			(PkHintEnum	 hint);
+PkHintEnum	 pk_hint_enum_from_string			(const gchar	*hint);
 
 G_END_DECLS
 

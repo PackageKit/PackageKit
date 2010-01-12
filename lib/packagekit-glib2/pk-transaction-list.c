@@ -330,7 +330,7 @@ pk_transaction_list_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -386,7 +386,7 @@ pk_transaction_list_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "resolve package");
-	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
 	_refcount = 2;
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL, NULL, NULL,
 				 (GAsyncReadyCallback) pk_transaction_list_test_resolve_cb, test);

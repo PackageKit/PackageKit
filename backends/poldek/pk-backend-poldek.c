@@ -1552,7 +1552,7 @@ search_package_thread (PkBackend *backend)
 
 		search = pk_backend_get_string (backend, "search");
 
-		group = pk_group_enum_from_text (search);
+		group = pk_group_enum_from_string (search);
 		regex = pld_group_get_regex_from_enum (group);
 
 		search_cmd_installed = g_strdup_printf ("search -qg --perlre %s", regex);

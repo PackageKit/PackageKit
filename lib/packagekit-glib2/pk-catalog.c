@@ -123,10 +123,10 @@ pk_catalog_error_get_type (void)
 }
 
 /**
- * pk_catalog_mode_to_text:
+ * pk_catalog_mode_to_string:
  **/
 static const gchar *
-pk_catalog_mode_to_text (PkCatalogMode mode)
+pk_catalog_mode_to_string (PkCatalogMode mode)
 {
 	if (mode == PK_CATALOG_MODE_PACKAGES)
 		return "InstallPackages";
@@ -151,7 +151,7 @@ pk_catalog_process_type_part (PkCatalogState *state, PkCatalogMode mode, const g
 	GPtrArray *array = NULL;
 
 	/* make key */
-	type = pk_catalog_mode_to_text (mode);
+	type = pk_catalog_mode_to_string (mode);
 	if (distro_id_part == NULL)
 		key = g_strdup (type);
 	else
@@ -689,7 +689,7 @@ pk_catalog_test_progress_cb (PkProgress *progress, PkProgressType type, EggTest 
 		g_object_get (progress,
 			      "status", &status,
 			      NULL);
-		egg_debug ("now %s", pk_status_enum_to_text (status));
+		egg_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 

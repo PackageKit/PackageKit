@@ -398,7 +398,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 
 	/* role */
 	if (g_strcmp0 (key, "Role") == 0) {
-		ret = pk_progress_set_role (state->progress, pk_role_enum_from_text (g_value_get_string (value)));
+		ret = pk_progress_set_role (state->progress, pk_role_enum_from_string (g_value_get_string (value)));
 		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_ROLE, state->progress_user_data);
 		return;
@@ -406,7 +406,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 
 	/* status */
 	if (g_strcmp0 (key, "Status") == 0) {
-		ret = pk_progress_set_status (state->progress, pk_status_enum_from_text (g_value_get_string (value)));
+		ret = pk_progress_set_status (state->progress, pk_status_enum_from_string (g_value_get_string (value)));
 		if (ret && state->progress_callback != NULL)
 			state->progress_callback (state->progress, PK_PROGRESS_TYPE_STATUS, state->progress_user_data);
 		return;
@@ -860,7 +860,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	egg_debug ("exit_text=%s", exit_text);
 
 	/* yay */
-	exit_enum = pk_exit_enum_from_text (exit_text);
+	exit_enum = pk_exit_enum_from_string (exit_text);
 	pk_results_set_exit_code (state->results, exit_enum);
 
 	/* failed */
@@ -932,7 +932,7 @@ pk_client_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *pa
 	g_return_if_fail (PK_IS_CLIENT (state->client));
 
 	/* add to results */
-	info_enum = pk_info_enum_from_text (info_text);
+	info_enum = pk_info_enum_from_string (info_text);
 	if (info_enum != PK_INFO_ENUM_FINISHED) {
 		item = pk_package_new ();
 		g_object_set (item,
@@ -1036,7 +1036,7 @@ pk_client_details_cb (DBusGProxy *proxy, const gchar *package_id, const gchar *l
 {
 	PkGroupEnum group_enum;
 	PkDetails *item;
-	group_enum = pk_group_enum_from_text (group_text);
+	group_enum = pk_group_enum_from_string (group_text);
 
 	/* add to results */
 	item = pk_details_new ();
@@ -1068,8 +1068,8 @@ pk_client_update_detail_cb (DBusGProxy  *proxy, const gchar *package_id, const g
 	PkRestartEnum restart_enum;
 	PkUpdateDetail *item;
 
-	restart_enum = pk_restart_enum_from_text (restart_text);
-	state_enum = pk_update_state_enum_from_text (state_text);
+	restart_enum = pk_restart_enum_from_string (restart_text);
+	state_enum = pk_update_state_enum_from_string (state_text);
 
 	/* add to results */
 	item = pk_update_detail_new ();
@@ -1103,7 +1103,7 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *time
 {
 	PkRoleEnum role_enum;
 	PkTransactionPast *item;
-	role_enum = pk_role_enum_from_text (role_text);
+	role_enum = pk_role_enum_from_string (role_text);
 
 	/* add to results */
 	item = pk_transaction_past_new ();
@@ -1132,7 +1132,7 @@ pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gc
 {
 	PkUpdateStateEnum type_enum;
 	PkDistroUpgrade *item;
-	type_enum = pk_update_state_enum_from_text (type_text);
+	type_enum = pk_update_state_enum_from_string (type_text);
 
 	/* add to results */
 	item = pk_distro_upgrade_new ();
@@ -1155,7 +1155,7 @@ pk_client_require_restart_cb (DBusGProxy  *proxy, const gchar *restart_text, con
 {
 	PkRestartEnum restart_enum;
 	PkRequireRestart *item;
-	restart_enum = pk_restart_enum_from_text (restart_text);
+	restart_enum = pk_restart_enum_from_string (restart_text);
 
 	/* add to results */
 	item = pk_require_restart_new ();
@@ -1227,7 +1227,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	PkSigTypeEnum type_enum;
 	PkRepoSignatureRequired *item;
-	type_enum = pk_sig_type_enum_from_text (type_text);
+	type_enum = pk_sig_type_enum_from_string (type_text);
 
 	/* add to results */
 	item = pk_repo_signature_required_new ();
@@ -1279,7 +1279,7 @@ pk_client_media_change_required_cb (DBusGProxy *proxy, const gchar *media_type_t
 {
 	PkMediaTypeEnum media_type_enum;
 	PkMediaChangeRequired *item;
-	media_type_enum = pk_media_type_enum_from_text (media_type_text);
+	media_type_enum = pk_media_type_enum_from_string (media_type_text);
 
 	/* add to results */
 	item = pk_media_change_required_new ();
@@ -1324,7 +1324,7 @@ pk_client_error_code_cb (DBusGProxy *proxy, const gchar *code_text, const gchar 
 {
 	PkErrorEnum code_enum;
 	PkError *item;
-	code_enum = pk_error_enum_from_text (code_text);
+	code_enum = pk_error_enum_from_string (code_text);
 
 	/* add to results */
 	item = pk_error_new ();
@@ -1346,7 +1346,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar
 {
 	PkMessageEnum message_enum;
 	PkMessage *item;
-	message_enum = pk_message_enum_from_text (message_text);
+	message_enum = pk_message_enum_from_string (message_text);
 
 	/* add to results */
 	item = pk_message_new ();
@@ -1544,7 +1544,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 
 	/* do this async, although this should be pretty fast anyway */
 	if (state->role == PK_ROLE_ENUM_RESOLVE) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "Resolve",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1552,28 +1552,28 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchNames",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchDetails",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchGroups",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_STRV, state->search,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SearchFiles",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1603,7 +1603,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetUpdates",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1614,7 +1614,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_BOOLEAN, state->only_trusted,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetDepends",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1623,13 +1623,13 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRequires",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1638,8 +1638,8 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
-		enum_text = pk_provides_enum_to_text (state->provides);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
+		enum_text = pk_provides_enum_to_string (state->provides);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "WhatProvides",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1681,7 +1681,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
-		enum_text = pk_sig_type_enum_to_text (state->type);
+		enum_text = pk_sig_type_enum_to_string (state->type);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "InstallSignature",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, enum_text,
@@ -1713,7 +1713,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 						       G_TYPE_STRING, state->transaction_id,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		filters_text = pk_filter_bitfield_to_text (state->filters);
+		filters_text = pk_filter_bitfield_to_string (state->filters);
 		state->call = dbus_g_proxy_begin_call (state->proxy, "GetRepoList",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, filters_text,
@@ -1763,7 +1763,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 		egg_error ("failed to setup call, maybe OOM or no connection");
 
 	/* we've sent this async */
-	egg_debug ("new method '%s', started DBus call: %p (%p)", pk_role_enum_to_text (state->role), state, state->call);
+	egg_debug ("new method '%s', started DBus call: %p (%p)", pk_role_enum_to_string (state->role), state, state->call);
 
 out:
 	g_free (filters_text);
@@ -1771,10 +1771,10 @@ out:
 }
 
 /**
- * pk_client_bool_to_text:
+ * pk_client_bool_to_string:
  **/
 static const gchar *
-pk_client_bool_to_text (gboolean value)
+pk_client_bool_to_string (gboolean value)
 {
 	if (value)
 		return "true";
@@ -1829,11 +1829,11 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	}
 
 	/* background */
-	hint = g_strdup_printf ("background=%s", pk_client_bool_to_text (state->client->priv->background));
+	hint = g_strdup_printf ("background=%s", pk_client_bool_to_string (state->client->priv->background));
 	g_ptr_array_add (array, hint);
 
 	/* interactive */
-	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_text (state->client->priv->interactive));
+	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_string (state->client->priv->interactive));
 	g_ptr_array_add (array, hint);
 
 	/* set hints */
@@ -4085,7 +4085,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_string (exit_enum));
 
 	packages = pk_results_get_package_array (results);
 	if (packages == NULL)
@@ -4101,7 +4101,7 @@ pk_client_test_resolve_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -4127,7 +4127,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to get details: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to get details: %s", pk_exit_enum_to_string (exit_enum));
 
 	details = pk_results_get_details_array (results);
 	if (details == NULL)
@@ -4138,7 +4138,7 @@ pk_client_test_get_details_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	g_ptr_array_unref (details);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -4165,7 +4165,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to get updates: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to get updates: %s", pk_exit_enum_to_string (exit_enum));
 
 	sack = pk_results_get_package_sack (results);
 	if (sack == NULL)
@@ -4178,7 +4178,7 @@ pk_client_test_get_updates_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	g_object_unref (sack);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -4204,7 +4204,7 @@ pk_client_test_search_name_cb (GObject *object, GAsyncResult *res, EggTest *test
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_CANCELLED)
-		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to cancel search: %s", pk_exit_enum_to_string (exit_enum));
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
@@ -4280,7 +4280,7 @@ pk_client_test_download_cb (GObject *object, GAsyncResult *res, EggTest *test)
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to download: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to download: %s", pk_exit_enum_to_string (exit_enum));
 
 	/* check number */
 	array = pk_results_get_files_array (results);
@@ -4408,7 +4408,7 @@ pk_client_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "resolve package");
-	package_ids = pk_package_ids_from_text ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
 				 (PkProgressCallback) pk_client_test_progress_cb, test,
 				 (GAsyncReadyCallback) pk_client_test_resolve_cb, test);
@@ -4432,9 +4432,9 @@ pk_client_test (gpointer user_data)
 	if (g_strcmp0 (tid, _tid) != 0)
 		egg_test_failed (test, "incorrect transaction-id, got %s, expected %s", tid, _tid);
 	if (role != PK_ROLE_ENUM_RESOLVE)
-		egg_test_failed (test, "incorrect role, got %s", pk_role_enum_to_text (role));
+		egg_test_failed (test, "incorrect role, got %s", pk_role_enum_to_string (role));
 	if (status != PK_STATUS_ENUM_FINISHED)
-		egg_test_failed (test, "incorrect status, got %s", pk_status_enum_to_text (status));
+		egg_test_failed (test, "incorrect status, got %s", pk_status_enum_to_string (status));
 	egg_test_success (test, "got progress in %i", egg_test_elapsed (test));
 	g_object_unref (progress);
 	g_free (tid);

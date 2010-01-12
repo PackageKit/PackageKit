@@ -108,9 +108,9 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -122,7 +122,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -134,7 +134,7 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -147,9 +147,9 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	filters_text = pk_filter_bitfield_to_text (filters);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_text (recursive), NULL);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-requires", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -161,7 +161,7 @@ static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -182,8 +182,8 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "install-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -197,7 +197,7 @@ backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_p
 
 	/* send the complete list as stdin */
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "install-files", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "install-files", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -214,7 +214,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "refresh-cache", pk_backend_bool_to_text (force), NULL);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
 /**
@@ -226,8 +226,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "remove-packages", pk_backend_bool_to_text (allow_deps), pk_backend_bool_to_text (autoremove), package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string (autoremove), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -238,7 +238,7 @@ static void
 backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "search-details", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -250,7 +250,7 @@ static void
 backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "search-file", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -262,7 +262,7 @@ static void
 backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "search-group", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -274,7 +274,7 @@ static void
 backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
 }
@@ -295,8 +295,8 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids);
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-packages", pk_backend_bool_to_text (only_trusted), package_ids_temp, NULL);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -306,7 +306,7 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 static void
 backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
-	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-system", pk_backend_bool_to_text (only_trusted), NULL);
+	pk_backend_spawn_helper (spawn, "pisiBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 /**
@@ -317,8 +317,8 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
-	filters_text = pk_filter_bitfield_to_text (filters);
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "resolve", filters_text, package_ids_temp, NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
@@ -331,7 +331,7 @@ static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	pk_backend_spawn_helper (spawn, "pisiBackend.py", "get-repo-list", filters_text, NULL);
 	g_free (filters_text);
 }

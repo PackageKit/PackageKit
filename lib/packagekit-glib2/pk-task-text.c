@@ -267,7 +267,7 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 		g_print ("%s\n", _("Media change required"));
 
 		/* TRANSLATORS: the type, e.g. DVD, CD, etc */
-		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_text (media_type));
+		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_string (media_type));
 
 		/* TRANSLATORS: the media label, usually like 'disk-1of3' */
 		g_print (" %s: %s\n", _("Media label"), media_id);
@@ -292,10 +292,10 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 }
 
 /**
- * pk_task_text_simulate_question_type_to_text:
+ * pk_task_text_simulate_question_type_to_string:
  **/
 static const gchar *
-pk_task_text_simulate_question_type_to_text (PkInfoEnum info)
+pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 {
 	if (info == PK_INFO_ENUM_REMOVING) {
 		/* TRANSLATORS: When processing, we might have to remove other dependencies */
@@ -363,9 +363,9 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 			      NULL);
 		/* new header */
 		if (info != info_last) {
-			title = pk_task_text_simulate_question_type_to_text (info);
+			title = pk_task_text_simulate_question_type_to_string (info);
 			if (title == NULL) {
-				title = pk_info_enum_to_text (info);
+				title = pk_info_enum_to_string (info);
 				egg_warning ("cannot translate '%s', please report!", title);
 			}
 			g_print ("%s\n", title);
@@ -473,7 +473,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_text (exit_enum));
+		egg_test_failed (test, "failed to resolve success: %s", pk_exit_enum_to_string (exit_enum));
 
 	packages = pk_results_get_package_array (results);
 	if (packages == NULL)
@@ -484,7 +484,7 @@ pk_task_text_test_install_packages_cb (GObject *object, GAsyncResult *res, EggTe
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_text (exit_enum));
+	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 out:
 	if (results != NULL)
 		g_object_unref (results);
@@ -499,7 +499,7 @@ pk_task_text_test_progress_cb (PkProgress *progress, PkProgressType type, EggTes
 		g_object_get (progress,
 			      "status", &status,
 			      NULL);
-		egg_debug ("now %s", pk_status_enum_to_text (status));
+		egg_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 

@@ -248,7 +248,7 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 		ret = PK_NETWORK_ENUM_ONLINE;
 	}
 
-	egg_debug ("network state is %s", pk_network_enum_to_text (ret));
+	egg_debug ("network state is %s", pk_network_enum_to_string (ret));
 	return ret;
 }
 
@@ -270,7 +270,7 @@ pk_network_stack_nm_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
 	}
 
 	state = pk_network_stack_nm_get_state (PK_NETWORK_STACK (nstack_nm));
-	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (state));
+	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
 	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_nm), "state-changed", state);
 }
 

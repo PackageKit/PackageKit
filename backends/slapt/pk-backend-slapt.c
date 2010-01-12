@@ -963,7 +963,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 		state = PK_INFO_ENUM_AVAILABLE;
 	}
 
-	search_group = pk_group_enum_from_text(search);
+	search_group = pk_group_enum_from_string(search);
 
 	for (i = 0; i < pkglist->pkg_count; i++) {
 		pkg = pkglist->pkgs[i];

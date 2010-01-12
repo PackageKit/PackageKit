@@ -147,7 +147,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		info = pk_info_enum_from_text (sections[1]);
+		info = pk_info_enum_from_string (sections[1]);
 		if (info == PK_INFO_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Info enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -161,7 +161,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		group = pk_group_enum_from_text (sections[3]);
+		group = pk_group_enum_from_string (sections[3]);
 
 		/* ITS4: ignore, checked for overflow */
 		package_size = atol (sections[6]);
@@ -211,14 +211,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		restart = pk_restart_enum_from_text (sections[7]);
+		restart = pk_restart_enum_from_string (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
 			ret = FALSE;
 			goto out;
 		}
-		update_state_enum = pk_update_state_enum_from_text (sections[10]);
+		update_state_enum = pk_update_state_enum_from_string (sections[10]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (sections[8], ";", '\n');
 		g_strdelimit (sections[9], ";", '\n');
@@ -263,7 +263,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		error_enum = pk_error_enum_from_text (sections[1]);
+		error_enum = pk_error_enum_from_string (sections[1]);
 		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Error enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -287,7 +287,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		restart_enum = pk_restart_enum_from_text (sections[1]);
+		restart_enum = pk_restart_enum_from_string (sections[1]);
 		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -306,7 +306,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		message_enum = pk_message_enum_from_text (sections[1]);
+		message_enum = pk_message_enum_from_string (sections[1]);
 		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Message enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -331,7 +331,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		status_enum = pk_status_enum_from_text (sections[1]);
+		status_enum = pk_status_enum_from_string (sections[1]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Status enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -369,7 +369,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 
-		sig_type = pk_sig_type_enum_from_text (sections[8]);
+		sig_type = pk_sig_type_enum_from_string (sections[8]);
 		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
@@ -402,7 +402,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 
-		media_type_enum = pk_media_type_enum_from_text (sections[1]);
+		media_type_enum = pk_media_type_enum_from_string (sections[1]);
 		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "media type enum not recognised, and hence ignored: '%s'", sections[1]);
@@ -420,7 +420,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 
-		distro_upgrade_enum = pk_distro_upgrade_enum_from_text (sections[1]);
+		distro_upgrade_enum = pk_distro_upgrade_enum_from_string (sections[1]);
 		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
 			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 					    "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);

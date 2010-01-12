@@ -191,7 +191,7 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_text(state))
+        print >> sys.stdout, "repo-detail\t%s\t%s\t%s" % (repoid, name, _bool_to_string(state))
         sys.stdout.flush()
 
     def data(self, data):
@@ -737,7 +737,7 @@ def _text_to_bool(text):
         return True
     return False
 
-def _bool_to_text(value):
+def _bool_to_string(value):
     if value:
         return "true"
     return "false"

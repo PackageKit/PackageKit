@@ -1117,7 +1117,7 @@ pk_service_pack_test_progress_cb (PkProgress *progress, PkProgressType type, Egg
 		g_object_get (progress,
 			      "status", &status,
 			      NULL);
-		egg_debug ("now %s", pk_status_enum_to_text (status));
+		egg_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 

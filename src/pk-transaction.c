@@ -409,7 +409,7 @@ static void
 pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, guint time_ms)
 {
 	const gchar *exit_text;
-	exit_text = pk_exit_enum_to_text (exit_enum);
+	exit_text = pk_exit_enum_to_string (exit_enum);
 	egg_debug ("emitting finished '%s', %i", exit_text, time_ms);
 	g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0, exit_text, time_ms);
 }
@@ -421,7 +421,7 @@ static void
 pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorEnum error_enum, const gchar *details)
 {
 	const gchar *text;
-	text = pk_error_enum_to_text (error_enum);
+	text = pk_error_enum_to_string (error_enum);
 	egg_debug ("emitting error-code %s, '%s'", text, details);
 	g_signal_emit (transaction, signals[SIGNAL_ERROR_CODE], 0, text, details);
 }
@@ -491,7 +491,7 @@ pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *t
 		      NULL);
 
 	/* emit */
-	group_text = pk_group_enum_to_text (group);
+	group_text = pk_group_enum_to_string (group);
 	egg_debug ("emitting details");
 	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, package_id,
 		       license, group_text, description, url, size);
@@ -523,7 +523,7 @@ pk_transaction_error_code_cb (PkBackend *backend, PkError *item, PkTransaction *
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
 		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "%s emitted 'unknown error' rather than a specific error "
-				    "- this is a backend problem and should be fixed!", pk_role_enum_to_text (transaction->priv->role));
+				    "- this is a backend problem and should be fixed!", pk_role_enum_to_string (transaction->priv->role));
 	}
 
 	/* add to results */
@@ -641,7 +641,7 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgrade *item, PkT
 		      NULL);
 
 	/* emit */
-	type_text = pk_distro_upgrade_enum_to_text (state);
+	type_text = pk_distro_upgrade_enum_to_string (state);
 	egg_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
 	g_signal_emit (transaction, signals[SIGNAL_DISTRO_UPGRADE], 0, type_text, name, summary);
 
@@ -671,7 +671,7 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 			      "summary", &summary,
 			      NULL);
 		g_string_append_printf (string, "%s\t%s\t%s\n",
-					pk_info_enum_to_text (info),
+					pk_info_enum_to_string (info),
 					package_id, summary);
 		g_free (package_id);
 		g_free (summary);
@@ -900,8 +900,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 			    info == PK_INFO_ENUM_INSTALLING ||
 			    info == PK_INFO_ENUM_UPDATING) {
 				pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "in %s for %s package %s was %s for uid %i",
-					       transaction->priv->tid, pk_role_enum_to_text (transaction->priv->role),
-					       package_id, pk_info_enum_to_text (info), transaction->priv->uid);
+					       transaction->priv->tid, pk_role_enum_to_string (transaction->priv->role),
+					       package_id, pk_info_enum_to_string (info), transaction->priv->uid);
 			}
 			g_free (package_id);
 		}
@@ -931,11 +931,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* report to syslog */
 	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID)
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s from uid %i finished with %s after %ims",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid,
-			       transaction->priv->uid, pk_exit_enum_to_text (exit_enum), time_ms);
+			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid,
+			       transaction->priv->uid, pk_exit_enum_to_string (exit_enum), time_ms);
 	else
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "%s transaction %s finished with %s after %ims",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_text (exit_enum), time_ms);
+			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, pk_exit_enum_to_string (exit_enum), time_ms);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
@@ -974,7 +974,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
 	pk_results_add_message (transaction->priv->results, item);
 
 	/* emit */
-	message_text = pk_message_enum_to_text (type);
+	message_text = pk_message_enum_to_string (type);
 	egg_debug ("emitting message %s, '%s'", message_text, details);
 	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, details);
 
@@ -1003,7 +1003,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 	}
 
 	/* we need this in warnings */
-	role_text = pk_role_enum_to_text (transaction->priv->role);
+	role_text = pk_role_enum_to_string (transaction->priv->role);
 
 	/* get data */
 	g_object_get (item,
@@ -1049,7 +1049,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 	/* emit */
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (package_id);
-	info_text = pk_info_enum_to_text (info);
+	info_text = pk_info_enum_to_string (info);
 	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text, package_id, summary);
 	g_free (package_id);
@@ -1135,7 +1135,7 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRe
 		      NULL);
 
 	/* emit */
-	type_text = pk_sig_type_enum_to_text (type);
+	type_text = pk_sig_type_enum_to_string (type);
 	egg_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
 		   package_id, repository_name, key_url, key_userid, key_id,
 		   key_fingerprint, key_timestamp, type_text);
@@ -1220,7 +1220,7 @@ pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequir
 		      NULL);
 
 	/* emit */
-	media_type_text = pk_media_type_enum_to_text (media_type);
+	media_type_text = pk_media_type_enum_to_string (media_type);
 	egg_debug ("emitting media-change-required %s, %s, %s",
 		   media_type_text, media_id, media_text);
 	g_signal_emit (transaction, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0,
@@ -1274,7 +1274,7 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, P
 	g_ptr_array_unref (array);
 
 	/* ignore */
-	restart_text = pk_restart_enum_to_text (restart);
+	restart_text = pk_restart_enum_to_string (restart);
 	if (found) {
 		egg_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
 		return;
@@ -1301,7 +1301,7 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		egg_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_text (status));
+		egg_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_string (status));
 		return;
 	}
 
@@ -1343,7 +1343,7 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, Pk
 		      NULL);
 
 	/* emit */
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
 		   tid, timespec, succeeded, role_text,
 		   duration, data, uid, cmdline);
@@ -1402,8 +1402,8 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
 
 	/* emit */
 	egg_debug ("emitting update-detail");
-	restart_text = pk_restart_enum_to_text (restart);
-	state_text = pk_update_state_enum_to_text (state);
+	restart_text = pk_restart_enum_to_string (restart);
+	state_text = pk_update_state_enum_to_string (state);
 	g_signal_emit (transaction, signals[SIGNAL_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, vendor_url,
 		       bugzilla_url, cve_url, restart_text, update_text,
@@ -1450,7 +1450,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* check we have anything to process */
 	if (package_ids == NULL) {
-		egg_debug ("no package_ids for %s", pk_role_enum_to_text (transaction->priv->role));
+		egg_debug ("no package_ids for %s", pk_role_enum_to_string (transaction->priv->role));
 		goto out;
 	}
 
@@ -1626,7 +1626,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
-	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_text (priv->role));
+	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
 
 	/* set proxy */
 	ret = pk_transaction_set_proxy (transaction, &error);
@@ -1950,7 +1950,7 @@ pk_transaction_commit (PkTransaction *transaction)
 
 		/* report to syslog */
 		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
-			       pk_role_enum_to_text (transaction->priv->role), transaction->priv->tid, transaction->priv->uid);
+			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, transaction->priv->uid);
 	}
 	return TRUE;
 }
@@ -2128,7 +2128,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 					     "Single empty section of filter: %s", filter);
 			goto out;
 		}
-		if (pk_filter_enum_from_text (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
+		if (pk_filter_enum_from_string (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
 			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Unknown filter part: %s", sections[i]);
 			goto out;
@@ -2310,7 +2310,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	else
 		action_id = pk_transaction_role_to_action_allow_untrusted (role);
 	if (action_id == NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_text (role));
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
 		goto out;
 	}
 
@@ -2326,14 +2326,14 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_text (transaction->priv->role));
+	polkit_details_insert (details, "role", pk_role_enum_to_string (transaction->priv->role));
 	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
 
 	/* do we have package details? */
 	if (transaction->priv->cached_package_id != NULL)
 		package_ids = g_strdup (transaction->priv->cached_package_id);
 	else if (transaction->priv->cached_package_ids != NULL)
-		package_ids = pk_package_ids_to_text (transaction->priv->cached_package_ids);
+		package_ids = pk_package_ids_to_string (transaction->priv->cached_package_ids);
 
 	/* save optional stuff */
 	if (package_ids != NULL)
@@ -2552,7 +2552,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
 				     "Tried to cancel %s (%s) that is not safe to kill",
 				     transaction->priv->tid,
-				     pk_role_enum_to_text (transaction->priv->role));
+				     pk_role_enum_to_string (transaction->priv->role));
 		pk_transaction_dbus_return_error (context, error);
 		goto out;
 	}
@@ -2673,7 +2673,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2785,7 +2785,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
@@ -2828,7 +2828,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2838,7 +2838,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDS);
@@ -2872,7 +2872,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("GetDetails method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
@@ -2907,7 +2907,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -2999,7 +2999,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("GetFiles method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
@@ -3034,7 +3034,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -3101,7 +3101,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
 
 	/* try to commit this */
@@ -3176,7 +3176,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
 
 	/* try to commit this */
@@ -3209,7 +3209,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
@@ -3252,7 +3252,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -3262,7 +3262,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->cached_force = recursive;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REQUIRES);
@@ -3297,7 +3297,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("GetUpdateDetail method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
@@ -3332,7 +3332,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -3400,7 +3400,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
 	/* try and reuse cache */
@@ -3423,7 +3423,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 				      "package-id", &package_id,
 				      "summary", &summary,
 				      NULL);
-			info_text = pk_info_enum_to_text (info);
+			info_text = pk_info_enum_to_string (info);
 			egg_debug ("emitting package");
 			g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
 				       info_text, package_id, summary);
@@ -3533,7 +3533,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	full_paths_temp = pk_package_ids_to_text (full_paths);
+	full_paths_temp = pk_package_ids_to_string (full_paths);
 	egg_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
 	g_free (full_paths_temp);
 
@@ -3639,7 +3639,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("InstallPackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
@@ -3674,7 +3674,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -3837,7 +3837,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
 	g_free (package_ids_temp);
 
@@ -3872,7 +3872,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -4036,7 +4036,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	packages_temp = pk_package_ids_to_text (packages);
+	packages_temp = pk_package_ids_to_string (packages);
 	egg_debug ("Resolve method called: %s, %s", filter, packages_temp);
 	g_free (packages_temp);
 
@@ -4090,7 +4090,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (packages);
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
 
 	/* try to commit this */
@@ -4214,7 +4214,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
 
@@ -4293,7 +4293,7 @@ pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
 
@@ -4372,7 +4372,7 @@ pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
 
@@ -4439,7 +4439,7 @@ pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_values = g_strdupv (values);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
 
@@ -4524,7 +4524,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 
 	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
-		priv->background = pk_hint_enum_from_text (value);
+		priv->background = pk_hint_enum_from_string (value);
 		if (priv->background == PK_HINT_ENUM_INVALID) {
 			priv->background = PK_HINT_ENUM_UNSET;
 			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
@@ -4536,7 +4536,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 
 	/* interactive=true */
 	if (g_strcmp0 (key, "interactive") == 0) {
-		priv->interactive = pk_hint_enum_from_text (value);
+		priv->interactive = pk_hint_enum_from_string (value);
 		if (priv->interactive == PK_HINT_ENUM_INVALID) {
 			priv->interactive = PK_HINT_ENUM_UNSET;
 			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
@@ -4624,7 +4624,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	full_paths_temp = pk_package_ids_to_text (full_paths);
+	full_paths_temp = pk_package_ids_to_string (full_paths);
 	egg_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
 	g_free (full_paths_temp);
 
@@ -4762,7 +4762,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -4838,7 +4838,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -4914,7 +4914,7 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -4956,7 +4956,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	package_ids_temp = pk_package_ids_to_text (package_ids);
+	package_ids_temp = pk_package_ids_to_string (package_ids);
 	egg_debug ("UpdatePackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
@@ -4991,7 +4991,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
-		package_ids_temp = pk_package_ids_to_text (package_ids);
+		package_ids_temp = pk_package_ids_to_string (package_ids);
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
 				     "The package id's '%s' are not valid", package_ids_temp);
 		g_free (package_ids_temp);
@@ -5122,7 +5122,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	}
 
 	/* check provides */
-	provides = pk_provides_enum_from_text (type);
+	provides = pk_provides_enum_from_string (type);
 	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "provide type '%s' not found", type);
@@ -5132,7 +5132,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filters = pk_filter_bitfield_from_text (filter);
+	transaction->priv->cached_filters = pk_filter_bitfield_from_string (filter);
 	transaction->priv->cached_values = g_strdupv (values);
 	transaction->priv->cached_provides = provides;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
@@ -5163,10 +5163,10 @@ pk_transaction_get_property (GObject *object, guint prop_id, GValue *value, GPar
 
 	switch (prop_id) {
 	case PROP_ROLE:
-		g_value_set_string (value, pk_role_enum_to_text (transaction->priv->role));
+		g_value_set_string (value, pk_role_enum_to_string (transaction->priv->role));
 		break;
 	case PROP_STATUS:
-		g_value_set_string (value, pk_status_enum_to_text (transaction->priv->status));
+		g_value_set_string (value, pk_status_enum_to_string (transaction->priv->status));
 		break;
 	case PROP_LAST_PACKAGE:
 		g_value_set_string (value, transaction->priv->last_package_id);

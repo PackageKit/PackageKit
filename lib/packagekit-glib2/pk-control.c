@@ -875,7 +875,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 	}
 
 	/* call D-Bus get_time_since_action async */
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTimeSinceAction",
 					       (DBusGProxyCallNotify) pk_control_get_time_since_action_cb, state, NULL,
 					       G_TYPE_STRING, role_text,
@@ -983,7 +983,7 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 	}
 
 	/* save data */
-	state->authorize = pk_authorize_type_enum_from_text (authorize_state);
+	state->authorize = pk_authorize_type_enum_from_string (authorize_state);
 	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
 		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
 		pk_control_can_authorize_state_finish (state, error);
@@ -1344,15 +1344,15 @@ pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkCo
 	} else if (g_strcmp0 (key, "MimeTypes") == 0) {
 		pk_control_set_mime_types (control, g_value_get_string (value));
 	} else if (g_strcmp0 (key, "Roles") == 0) {
-		pk_control_set_roles (control, pk_role_bitfield_from_text (g_value_get_string (value)));
+		pk_control_set_roles (control, pk_role_bitfield_from_string (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "Groups") == 0) {
-		pk_control_set_groups (control, pk_group_bitfield_from_text (g_value_get_string (value)));
+		pk_control_set_groups (control, pk_group_bitfield_from_string (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "Filters") == 0) {
-		pk_control_set_filters (control, pk_filter_bitfield_from_text (g_value_get_string (value)));
+		pk_control_set_filters (control, pk_filter_bitfield_from_string (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "Locked") == 0) {
 		pk_control_set_locked (control, g_value_get_boolean (value));
 	} else if (g_strcmp0 (key, "NetworkState") == 0) {
-		pk_control_set_network_state (control, pk_network_enum_from_text (g_value_get_string (value)));
+		pk_control_set_network_state (control, pk_network_enum_from_string (g_value_get_string (value)));
 	} else if (g_strcmp0 (key, "DistroId") == 0) {
 		pk_control_set_distro_id (control, g_value_get_string (value));
 	} else {
@@ -2247,7 +2247,7 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 	g_free (text);
 
 	/* check roles */
-	text = pk_role_bitfield_to_text (roles);
+	text = pk_role_bitfield_to_string (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 			     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
@@ -2260,7 +2260,7 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 	g_free (text);
 
 	/* check filters */
-	text = pk_filter_bitfield_to_text (filters);
+	text = pk_filter_bitfield_to_string (filters);
 	if (g_strcmp0 (text, "installed;devel;gui") != 0) {
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
@@ -2268,7 +2268,7 @@ pk_control_test_get_properties_cb (GObject *object, GAsyncResult *res, EggTest *
 	g_free (text);
 
 	/* check groups */
-	text = pk_group_bitfield_to_text (groups);
+	text = pk_group_bitfield_to_string (groups);
 	if (g_strcmp0 (text, "accessibility;games;system") != 0) {
 		egg_test_failed (test, "data incorrect: %s", text);
 		return;
@@ -2422,7 +2422,7 @@ pk_control_test (gpointer user_data)
 		      NULL);
 
 	/* check data */
-	text = pk_role_bitfield_to_text (roles);
+	text = pk_role_bitfield_to_string (roles);
 	if (g_strcmp0 (text, "cancel;get-depends;get-details;get-files;get-packages;get-repo-list;"
 			     "get-requires;get-update-detail;get-updates;install-files;install-packages;install-signature;"
 			     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"

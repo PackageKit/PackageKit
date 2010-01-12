@@ -83,10 +83,10 @@ out:
 }
 
 /**
- * pk_hint_enum_to_text:
+ * pk_hint_enum_to_string:
  **/
 const gchar *
-pk_hint_enum_to_text (PkHintEnum hint)
+pk_hint_enum_to_string (PkHintEnum hint)
 {
 	if (hint == PK_HINT_ENUM_FALSE)
 		return "false";
@@ -98,10 +98,10 @@ pk_hint_enum_to_text (PkHintEnum hint)
 }
 
 /**
- * pk_hint_enum_from_text:
+ * pk_hint_enum_from_string:
  **/
 PkHintEnum
-pk_hint_enum_from_text (const gchar *hint)
+pk_hint_enum_from_string (const gchar *hint)
 {
 	if (g_strcmp0 (hint, "false") == 0)
 		return PK_HINT_ENUM_FALSE;

@@ -112,7 +112,7 @@ pk_network_stack_state_changed_cb (PkNetworkStack *nstack, PkNetworkEnum state, 
 {
 	g_return_if_fail (PK_IS_NETWORK (network));
 
-	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_text (state));
+	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
 	g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, state);
 }
 

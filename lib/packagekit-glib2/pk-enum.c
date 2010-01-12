@@ -622,7 +622,7 @@ pk_enum_find_string (const PkEnumMatch *table, guint value)
 }
 
 /**
- * pk_sig_type_enum_from_text:
+ * pk_sig_type_enum_from_string:
  * @sig_type: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -630,13 +630,13 @@ pk_enum_find_string (const PkEnumMatch *table, guint value)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkSigTypeEnum
-pk_sig_type_enum_from_text (const gchar *sig_type)
+pk_sig_type_enum_from_string (const gchar *sig_type)
 {
 	return pk_enum_find_value (enum_sig_type, sig_type);
 }
 
 /**
- * pk_sig_type_enum_to_text:
+ * pk_sig_type_enum_to_string:
  * @sig_type: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -644,13 +644,13 @@ pk_sig_type_enum_from_text (const gchar *sig_type)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
+pk_sig_type_enum_to_string (PkSigTypeEnum sig_type)
 {
 	return pk_enum_find_string (enum_sig_type, sig_type);
 }
 
 /**
- * pk_distro_upgrade_enum_from_text:
+ * pk_distro_upgrade_enum_from_string:
  * @upgrade: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -658,13 +658,13 @@ pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
  * Return value: the enumerated constant value, e.g. PK_DISTRO_UPGRADE_ENUM_STABLE
  */
 PkDistroUpgradeEnum
-pk_distro_upgrade_enum_from_text (const gchar *upgrade)
+pk_distro_upgrade_enum_from_string (const gchar *upgrade)
 {
 	return pk_enum_find_value (enum_upgrade, upgrade);
 }
 
 /**
- * pk_distro_upgrade_enum_to_text:
+ * pk_distro_upgrade_enum_to_string:
  * @upgrade: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -672,13 +672,13 @@ pk_distro_upgrade_enum_from_text (const gchar *upgrade)
  * Return value: the enumerated constant value, e.g. "stable"
  **/
 const gchar *
-pk_distro_upgrade_enum_to_text (PkDistroUpgradeEnum upgrade)
+pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade)
 {
 	return pk_enum_find_string (enum_upgrade, upgrade);
 }
 
 /**
- * pk_provides_enum_from_text:
+ * pk_provides_enum_from_string:
  * @provides: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -686,13 +686,13 @@ pk_distro_upgrade_enum_to_text (PkDistroUpgradeEnum upgrade)
  * Return value: the enumerated constant value, e.g. PK_PROVIDES_ENUM_MODALIAS
  */
 PkProvidesEnum
-pk_provides_enum_from_text (const gchar *provides)
+pk_provides_enum_from_string (const gchar *provides)
 {
 	return pk_enum_find_value (enum_provides, provides);
 }
 
 /**
- * pk_provides_enum_to_text:
+ * pk_provides_enum_to_string:
  * @provides: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -700,13 +700,13 @@ pk_provides_enum_from_text (const gchar *provides)
  * Return value: the enumerated constant value, e.g. "codec"
  **/
 const gchar *
-pk_provides_enum_to_text (PkProvidesEnum provides)
+pk_provides_enum_to_string (PkProvidesEnum provides)
 {
 	return pk_enum_find_string (enum_provides, provides);
 }
 
 /**
- * pk_info_enum_from_text:
+ * pk_info_enum_from_string:
  * @info: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -714,13 +714,13 @@ pk_provides_enum_to_text (PkProvidesEnum provides)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkInfoEnum
-pk_info_enum_from_text (const gchar *info)
+pk_info_enum_from_string (const gchar *info)
 {
 	return pk_enum_find_value (enum_info, info);
 }
 
 /**
- * pk_info_enum_to_text:
+ * pk_info_enum_to_string:
  * @info: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -728,13 +728,13 @@ pk_info_enum_from_text (const gchar *info)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_info_enum_to_text (PkInfoEnum info)
+pk_info_enum_to_string (PkInfoEnum info)
 {
 	return pk_enum_find_string (enum_info, info);
 }
 
 /**
- * pk_exit_enum_from_text:
+ * pk_exit_enum_from_string:
  * @exit: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -742,13 +742,13 @@ pk_info_enum_to_text (PkInfoEnum info)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkExitEnum
-pk_exit_enum_from_text (const gchar *exit_text)
+pk_exit_enum_from_string (const gchar *exit_text)
 {
 	return pk_enum_find_value (enum_exit, exit_text);
 }
 
 /**
- * pk_exit_enum_to_text:
+ * pk_exit_enum_to_string:
  * @exit: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -756,13 +756,13 @@ pk_exit_enum_from_text (const gchar *exit_text)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_exit_enum_to_text (PkExitEnum exit_enum)
+pk_exit_enum_to_string (PkExitEnum exit_enum)
 {
 	return pk_enum_find_string (enum_exit, exit_enum);
 }
 
 /**
- * pk_network_enum_from_text:
+ * pk_network_enum_from_string:
  * @network: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -770,13 +770,13 @@ pk_exit_enum_to_text (PkExitEnum exit_enum)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkNetworkEnum
-pk_network_enum_from_text (const gchar *network)
+pk_network_enum_from_string (const gchar *network)
 {
 	return pk_enum_find_value (enum_network, network);
 }
 
 /**
- * pk_network_enum_to_text:
+ * pk_network_enum_to_string:
  * @network: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -784,13 +784,13 @@ pk_network_enum_from_text (const gchar *network)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_network_enum_to_text (PkNetworkEnum network)
+pk_network_enum_to_string (PkNetworkEnum network)
 {
 	return pk_enum_find_string (enum_network, network);
 }
 
 /**
- * pk_status_enum_from_text:
+ * pk_status_enum_from_string:
  * @status: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -798,13 +798,13 @@ pk_network_enum_to_text (PkNetworkEnum network)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkStatusEnum
-pk_status_enum_from_text (const gchar *status)
+pk_status_enum_from_string (const gchar *status)
 {
 	return pk_enum_find_value (enum_status, status);
 }
 
 /**
- * pk_status_enum_to_text:
+ * pk_status_enum_to_string:
  * @status: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -812,13 +812,13 @@ pk_status_enum_from_text (const gchar *status)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_status_enum_to_text (PkStatusEnum status)
+pk_status_enum_to_string (PkStatusEnum status)
 {
 	return pk_enum_find_string (enum_status, status);
 }
 
 /**
- * pk_role_enum_from_text:
+ * pk_role_enum_from_string:
  * @role: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -826,13 +826,13 @@ pk_status_enum_to_text (PkStatusEnum status)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkRoleEnum
-pk_role_enum_from_text (const gchar *role)
+pk_role_enum_from_string (const gchar *role)
 {
 	return pk_enum_find_value (enum_role, role);
 }
 
 /**
- * pk_role_enum_to_text:
+ * pk_role_enum_to_string:
  * @role: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -840,13 +840,13 @@ pk_role_enum_from_text (const gchar *role)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_role_enum_to_text (PkRoleEnum role)
+pk_role_enum_to_string (PkRoleEnum role)
 {
 	return pk_enum_find_string (enum_role, role);
 }
 
 /**
- * pk_error_enum_from_text:
+ * pk_error_enum_from_string:
  * @code: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -854,13 +854,13 @@ pk_role_enum_to_text (PkRoleEnum role)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkErrorEnum
-pk_error_enum_from_text (const gchar *code)
+pk_error_enum_from_string (const gchar *code)
 {
 	return pk_enum_find_value (enum_error, code);
 }
 
 /**
- * pk_error_enum_to_text:
+ * pk_error_enum_to_string:
  * @code: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -868,13 +868,13 @@ pk_error_enum_from_text (const gchar *code)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_error_enum_to_text (PkErrorEnum code)
+pk_error_enum_to_string (PkErrorEnum code)
 {
 	return pk_enum_find_string (enum_error, code);
 }
 
 /**
- * pk_restart_enum_from_text:
+ * pk_restart_enum_from_string:
  * @restart: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -882,13 +882,13 @@ pk_error_enum_to_text (PkErrorEnum code)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkRestartEnum
-pk_restart_enum_from_text (const gchar *restart)
+pk_restart_enum_from_string (const gchar *restart)
 {
 	return pk_enum_find_value (enum_restart, restart);
 }
 
 /**
- * pk_restart_enum_to_text:
+ * pk_restart_enum_to_string:
  * @restart: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -896,13 +896,13 @@ pk_restart_enum_from_text (const gchar *restart)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_restart_enum_to_text (PkRestartEnum restart)
+pk_restart_enum_to_string (PkRestartEnum restart)
 {
 	return pk_enum_find_string (enum_restart, restart);
 }
 
 /**
- * pk_message_enum_from_text:
+ * pk_message_enum_from_string:
  * @message: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -910,13 +910,13 @@ pk_restart_enum_to_text (PkRestartEnum restart)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkMessageEnum
-pk_message_enum_from_text (const gchar *message)
+pk_message_enum_from_string (const gchar *message)
 {
 	return pk_enum_find_value (enum_message, message);
 }
 
 /**
- * pk_message_enum_to_text:
+ * pk_message_enum_to_string:
  * @message: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -924,13 +924,13 @@ pk_message_enum_from_text (const gchar *message)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_message_enum_to_text (PkMessageEnum message)
+pk_message_enum_to_string (PkMessageEnum message)
 {
 	return pk_enum_find_string (enum_message, message);
 }
 
 /**
- * pk_group_enum_from_text:
+ * pk_group_enum_from_string:
  * @group: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -938,13 +938,13 @@ pk_message_enum_to_text (PkMessageEnum message)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkGroupEnum
-pk_group_enum_from_text (const gchar *group)
+pk_group_enum_from_string (const gchar *group)
 {
 	return pk_enum_find_value (enum_group, group);
 }
 
 /**
- * pk_group_enum_to_text:
+ * pk_group_enum_to_string:
  * @group: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -952,13 +952,13 @@ pk_group_enum_from_text (const gchar *group)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_group_enum_to_text (PkGroupEnum group)
+pk_group_enum_to_string (PkGroupEnum group)
 {
 	return pk_enum_find_string (enum_group, group);
 }
 
 /**
- * pk_update_state_enum_from_text:
+ * pk_update_state_enum_from_string:
  * @update_state: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -966,13 +966,13 @@ pk_group_enum_to_text (PkGroupEnum group)
  * Return value: the enumerated constant value, e.g. %PK_UPDATE_STATE_ENUM_STABLE
  **/
 PkUpdateStateEnum
-pk_update_state_enum_from_text (const gchar *update_state)
+pk_update_state_enum_from_string (const gchar *update_state)
 {
 	return pk_enum_find_value (enum_update_state, update_state);
 }
 
 /**
- * pk_update_state_enum_to_text:
+ * pk_update_state_enum_to_string:
  * @update_state: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -980,13 +980,13 @@ pk_update_state_enum_from_text (const gchar *update_state)
  * Return value: the enumerated constant value, e.g. "testing"
  **/
 const gchar *
-pk_update_state_enum_to_text (PkUpdateStateEnum update_state)
+pk_update_state_enum_to_string (PkUpdateStateEnum update_state)
 {
 	return pk_enum_find_string (enum_update_state, update_state);
 }
 
 /**
- * pk_filter_enum_from_text:
+ * pk_filter_enum_from_string:
  * @filter: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -994,13 +994,13 @@ pk_update_state_enum_to_text (PkUpdateStateEnum update_state)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkFilterEnum
-pk_filter_enum_from_text (const gchar *filter)
+pk_filter_enum_from_string (const gchar *filter)
 {
 	return pk_enum_find_value (enum_filter, filter);
 }
 
 /**
- * pk_filter_enum_to_text:
+ * pk_filter_enum_to_string:
  * @filter: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -1008,13 +1008,13 @@ pk_filter_enum_from_text (const gchar *filter)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_filter_enum_to_text (PkFilterEnum filter)
+pk_filter_enum_to_string (PkFilterEnum filter)
 {
 	return pk_enum_find_string (enum_filter, filter);
 }
 
 /**
- * pk_license_enum_from_text:
+ * pk_license_enum_from_string:
  * @license: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -1022,13 +1022,13 @@ pk_filter_enum_to_text (PkFilterEnum filter)
  * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkLicenseEnum
-pk_license_enum_from_text (const gchar *license)
+pk_license_enum_from_string (const gchar *license)
 {
 	return pk_enum_find_value (enum_free_licenses, license);
 }
 
 /**
- * pk_license_enum_to_text:
+ * pk_license_enum_to_string:
  * @license: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -1036,13 +1036,13 @@ pk_license_enum_from_text (const gchar *license)
  * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
-pk_license_enum_to_text (PkLicenseEnum license)
+pk_license_enum_to_string (PkLicenseEnum license)
 {
 	return pk_enum_find_string (enum_free_licenses, license);
 }
 
 /**
- * pk_media_type_enum_from_text:
+ * pk_media_type_enum_from_string:
  * @code: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -1050,13 +1050,13 @@ pk_license_enum_to_text (PkLicenseEnum license)
  * Return value: the enumerated constant value, e.g. PK_MEDIA_TYPE_ENUM_CD
  **/
 PkMediaTypeEnum
-pk_media_type_enum_from_text (const gchar *media_type)
+pk_media_type_enum_from_string (const gchar *media_type)
 {
 	return pk_enum_find_value (enum_media_type, media_type);
 }
 
 /**
- * pk_media_type_enum_to_text:
+ * pk_media_type_enum_to_string:
  * @code: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -1064,13 +1064,13 @@ pk_media_type_enum_from_text (const gchar *media_type)
  * Return value: the enumerated constant value, e.g. "dvd"
  **/
 const gchar *
-pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
+pk_media_type_enum_to_string (PkMediaTypeEnum media_type)
 {
 	return pk_enum_find_string (enum_media_type, media_type);
 }
 
 /**
- * pk_authorize_type_enum_from_text:
+ * pk_authorize_type_enum_from_string:
  * @code: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
@@ -1078,13 +1078,13 @@ pk_media_type_enum_to_text (PkMediaTypeEnum media_type)
  * Return value: the enumerated constant value, e.g. PK_AUTHORIZE_ENUM_YES
  **/
 PkAuthorizeEnum
-pk_authorize_type_enum_from_text (const gchar *authorize_type)
+pk_authorize_type_enum_from_string (const gchar *authorize_type)
 {
 	return pk_enum_find_value (enum_authorize_type, authorize_type);
 }
 
 /**
- * pk_authorize_type_enum_to_text:
+ * pk_authorize_type_enum_to_string:
  * @code: The enumerated type value
  *
  * Converts a enumerated type to its text representation
@@ -1092,7 +1092,7 @@ pk_authorize_type_enum_from_text (const gchar *authorize_type)
  * Return value: the enumerated constant value, e.g. "yes"
  **/
 const gchar *
-pk_authorize_type_enum_to_text (PkAuthorizeEnum authorize_type)
+pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type)
 {
 	return pk_enum_find_string (enum_authorize_type, authorize_type);
 }
@@ -1132,7 +1132,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "find value");
-	role_value = pk_role_enum_from_text ("search-file");
+	role_value = pk_role_enum_from_string ("search-file");
 	if (role_value == PK_ROLE_ENUM_SEARCH_FILE)
 		egg_test_success (test, NULL);
 	else
@@ -1140,7 +1140,7 @@ pk_enum_test (gpointer user_data)
 
 	/************************************************************/
 	egg_test_title (test, "find string");
-	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
+	string = pk_role_enum_to_string (PK_ROLE_ENUM_SEARCH_FILE);
 	if (g_strcmp0 (string, "search-file") == 0)
 		egg_test_success (test, NULL);
 	else
@@ -1149,7 +1149,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the role bitfield");
 	for (i=1; i<PK_ROLE_ENUM_LAST; i++) {
-		string = pk_role_enum_to_text (i);
+		string = pk_role_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1160,7 +1160,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the status bitfield");
 	for (i=1; i<PK_STATUS_ENUM_LAST; i++) {
-		string = pk_status_enum_to_text (i);
+		string = pk_status_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1171,7 +1171,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the exit bitfield");
 	for (i=0; i<PK_EXIT_ENUM_LAST; i++) {
-		string = pk_exit_enum_to_text (i);
+		string = pk_exit_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1182,7 +1182,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the filter bitfield");
 	for (i=0; i<PK_FILTER_ENUM_LAST; i++) {
-		string = pk_filter_enum_to_text (i);
+		string = pk_filter_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1193,7 +1193,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the restart bitfield");
 	for (i=0; i<PK_RESTART_ENUM_LAST; i++) {
-		string = pk_restart_enum_to_text (i);
+		string = pk_restart_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1204,7 +1204,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the error_code bitfield");
 	for (i=0; i<PK_ERROR_ENUM_LAST; i++) {
-		string = pk_error_enum_to_text (i);
+		string = pk_error_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1215,7 +1215,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the group bitfield");
 	for (i=1; i<PK_GROUP_ENUM_LAST; i++) {
-		string = pk_group_enum_to_text (i);
+		string = pk_group_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1226,7 +1226,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the info bitfield");
 	for (i=1; i<PK_INFO_ENUM_LAST; i++) {
-		string = pk_info_enum_to_text (i);
+		string = pk_info_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1237,7 +1237,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the sig_type bitfield");
 	for (i=0; i<PK_SIGTYPE_ENUM_LAST; i++) {
-		string = pk_sig_type_enum_to_text (i);
+		string = pk_sig_type_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1248,7 +1248,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the upgrade bitfield");
 	for (i=0; i<PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
-		string = pk_distro_upgrade_enum_to_text (i);
+		string = pk_distro_upgrade_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1259,7 +1259,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the license bitfield");
 	for (i=0; i<PK_LICENSE_ENUM_LAST; i++) {
-		string = pk_license_enum_to_text (i);
+		string = pk_license_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;
@@ -1270,7 +1270,7 @@ pk_enum_test (gpointer user_data)
 	/************************************************************/
 	egg_test_title (test, "check we convert all the media type bitfield");
 	for (i=0; i<PK_MEDIA_TYPE_ENUM_LAST; i++) {
-		string = pk_media_type_enum_to_text (i);
+		string = pk_media_type_enum_to_string (i);
 		if (string == NULL) {
 			egg_test_failed (test, "failed to get %i", i);
 			break;

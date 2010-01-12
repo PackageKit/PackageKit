@@ -766,7 +766,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
-		egg_warning ("already set error, cannot process: status %s", pk_status_enum_to_text (status));
+		egg_warning ("already set error, cannot process: status %s", pk_status_enum_to_string (status));
 		return FALSE;
 	}
 
@@ -774,7 +774,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to WAIT, only the runner should set this value");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s shouldn't use STATUS_WAIT", pk_role_enum_to_text (backend->priv->role));
+				    "%s shouldn't use STATUS_WAIT", pk_role_enum_to_string (backend->priv->role));
 		return FALSE;
 	}
 
@@ -782,7 +782,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
 		egg_warning ("backend tried to SETUP, but should be in WAIT");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s to SETUP when not in WAIT", pk_role_enum_to_text (backend->priv->role));
+				    "%s to SETUP when not in WAIT", pk_role_enum_to_string (backend->priv->role));
 		return FALSE;
 	}
 
@@ -999,7 +999,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* we automatically set the transaction status for some PkInfoEnums if running
 	 * in non-simultaneous transaction mode */
 	if (!backend->priv->simultaneous) {
-		egg_debug ("auto-setting status based on info %s", pk_info_enum_to_text (info));
+		egg_debug ("auto-setting status based on info %s", pk_info_enum_to_string (info));
 		if (info == PK_INFO_ENUM_DOWNLOADING)
 			pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 		else if (info == PK_INFO_ENUM_UPDATING)
@@ -1148,7 +1148,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
-		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_text (restart));
+		egg_warning ("already set error, cannot process: require-restart %s", pk_restart_enum_to_string (restart));
 		goto out;
 	}
 
@@ -1194,7 +1194,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 
 	/* have we already set an error? */
 	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_BACKEND_ERROR) {
-		egg_warning ("already set error, cannot process: message %s", pk_message_enum_to_text (message));
+		egg_warning ("already set error, cannot process: message %s", pk_message_enum_to_string (message));
 		goto out;
 	}
 
@@ -1873,14 +1873,14 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 	/* Should only be called once... */
 	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
 		egg_warning ("cannot set role more than once, already %s",
-			    pk_role_enum_to_text (backend->priv->role));
+			    pk_role_enum_to_string (backend->priv->role));
 		return FALSE;
 	}
 
 	/* reset the timer */
 	pk_time_reset (backend->priv->time);
 
-	egg_debug ("setting role to %s", pk_role_enum_to_text (role));
+	egg_debug ("setting role to %s", pk_role_enum_to_string (role));
 	backend->priv->role = role;
 	backend->priv->status = PK_STATUS_ENUM_WAIT;
 	return TRUE;
@@ -1899,8 +1899,8 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 
 	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
 		egg_warning ("already set exit status: old=%s, new=%s",
-			    pk_exit_enum_to_text (backend->priv->exit),
-			    pk_exit_enum_to_text (exit_enum));
+			    pk_exit_enum_to_string (backend->priv->exit),
+			    pk_exit_enum_to_string (exit_enum));
 		egg_debug_backtrace ();
 		return FALSE;
 	}
@@ -1950,7 +1950,7 @@ pk_backend_finished (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* find out what we just did */
-	role_text = pk_role_enum_to_text (backend->priv->role);
+	role_text = pk_role_enum_to_string (backend->priv->role);
 	egg_debug ("finished role %s", role_text);
 
 	/* are we trying to finish in init? */
@@ -2018,10 +2018,10 @@ pk_backend_finished (PkBackend *backend)
 }
 
 /**
- * pk_backend_bool_to_text:
+ * pk_backend_bool_to_string:
  */
 const gchar *
-pk_backend_bool_to_text (gboolean value)
+pk_backend_bool_to_string (gboolean value)
 {
 	if (value)
 		return "yes";

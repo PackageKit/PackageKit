@@ -672,7 +672,7 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 			wrong++;
 		role = pk_transaction_priv_get_role (item->transaction);
 		g_string_append_printf (string, "%0i\t%s\t%s\trunning[%i] committed[%i] finished[%i] background[%i]\n", i,
-					pk_role_enum_to_text (role), item->tid, item->running,
+					pk_role_enum_to_string (role), item->tid, item->running,
 					item->committed, item->finished, item->background);
 	}
 

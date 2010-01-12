@@ -394,7 +394,7 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		text = _("Copying files");
 		break;
 	default:
-		egg_warning ("status unrecognised: %s", pk_status_enum_to_text (status));
+		egg_warning ("status unrecognised: %s", pk_status_enum_to_string (status));
 	}
 	return text;
 }
@@ -446,7 +446,7 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		text = _("Available");
 		break;
 	default:
-		egg_warning ("info unrecognised: %s", pk_info_enum_to_text (info));
+		egg_warning ("info unrecognised: %s", pk_info_enum_to_string (info));
 	}
 	return text;
 }
@@ -684,7 +684,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		text = _("Simulating update");
 		break;
 	default:
-		egg_warning ("role unrecognised: %s", pk_role_enum_to_text (role));
+		egg_warning ("role unrecognised: %s", pk_role_enum_to_string (role));
 	}
 	return text;
 }

@@ -136,7 +136,7 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	/* get role */
 	role_text = polkit_details_lookup (details, "role");
 	if (role_text != NULL)
-		role = pk_role_enum_from_text (role_text);
+		role = pk_role_enum_from_string (role_text);
 
 	/* get only-trusted */
 	only_trusted_text = polkit_details_lookup (details, "only-trusted");
@@ -158,7 +158,7 @@ pk_action_lookup_get_message (PolkitBackendActionLookup *lookup, const gchar *ac
 	/* find out the number of packages so we pluralize corectly */
 	str = polkit_details_lookup (details, "package_ids");
 	if (str != NULL) {
-		package_ids = pk_package_ids_from_text (str);
+		package_ids = pk_package_ids_from_string (str);
 		len = g_strv_length (package_ids);
 		g_strfreev (package_ids);
 	}
@@ -224,7 +224,7 @@ pk_action_lookup_get_icon_name (PolkitBackendActionLookup *lookup, const gchar *
 	/* get role */
 	role_text = polkit_details_lookup (details, "role");
 	if (role_text != NULL)
-		role = pk_role_enum_from_text (role_text);
+		role = pk_role_enum_from_string (role_text);
 
 	/* get only-trusted */
 	only_trusted_text = polkit_details_lookup (details, "only-trusted");
@@ -349,7 +349,7 @@ pk_action_lookup_get_details (PolkitBackendActionLookup *lookup, const gchar *ac
 	/* packages */
 	str = polkit_details_lookup (action_details, "package_ids");
 	if (str != NULL) {
-		package_ids = pk_package_ids_from_text (str);
+		package_ids = pk_package_ids_from_string (str);
 		text = pk_action_lookup_package_ids_to_string (package_ids);
 		len = g_strv_length (package_ids);
 

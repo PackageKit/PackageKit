@@ -87,7 +87,7 @@ backend_search_name_thread (PkBackend *backend)
 	filters = pk_backend_get_uint (backend, "filters");
 	search = pk_backend_get_string (backend, "search");
 
-	filters_text = pk_filter_bitfield_to_text (filters);
+	filters_text = pk_filter_bitfield_to_string (filters);
 	egg_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
 	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);

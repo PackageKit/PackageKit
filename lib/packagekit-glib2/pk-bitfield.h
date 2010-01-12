@@ -43,12 +43,12 @@ typedef guint64 PkBitfield;
 gint		 pk_bitfield_contain_priority		(PkBitfield	 values,
 							 gint		 value, ...);
 PkBitfield	 pk_bitfield_from_enums			(gint		 value, ...);
-PkBitfield	 pk_role_bitfield_from_text 		(const gchar	*roles);
-gchar		*pk_role_bitfield_to_text		(PkBitfield	 roles);
-PkBitfield	 pk_group_bitfield_from_text 		(const gchar	*groups);
-gchar		*pk_group_bitfield_to_text		(PkBitfield	 groups);
-PkBitfield	 pk_filter_bitfield_from_text 		(const gchar	*filters);
-gchar		*pk_filter_bitfield_to_text		(PkBitfield	 filters);
+PkBitfield	 pk_role_bitfield_from_string 		(const gchar	*roles);
+gchar		*pk_role_bitfield_to_string		(PkBitfield	 roles);
+PkBitfield	 pk_group_bitfield_from_string 		(const gchar	*groups);
+gchar		*pk_group_bitfield_to_string		(PkBitfield	 groups);
+PkBitfield	 pk_filter_bitfield_from_string 		(const gchar	*filters);
+gchar		*pk_filter_bitfield_to_string		(PkBitfield	 filters);
 void		 pk_bitfield_test			(gpointer	 user_data);
 
 G_END_DECLS

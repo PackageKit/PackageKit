@@ -100,7 +100,7 @@ pk_transaction_extra_package_cb (PkBackend *backend, PkPackage *package, PkTrans
 static void
 pk_transaction_extra_set_require_restart (PkTransactionExtra *extra, PkRestartEnum restart, const gchar *package_id)
 {
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_text (restart), package_id);
+	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_string (restart), package_id);
 	g_signal_emit (extra, signals [PK_POST_TRANS_REQUIRE_RESTART], 0, restart, package_id);
 }
 
@@ -110,7 +110,7 @@ pk_transaction_extra_set_require_restart (PkTransactionExtra *extra, PkRestartEn
 static void
 pk_transaction_extra_set_status_changed (PkTransactionExtra *extra, PkStatusEnum status)
 {
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_text (status));
+	egg_debug ("emiting status-changed %s", pk_status_enum_to_string (status));
 	g_signal_emit (extra, signals [PK_POST_TRANS_STATUS_CHANGED], 0, status);
 }
 
@@ -472,7 +472,7 @@ pk_transaction_extra_package_list_to_string (GPtrArray *array)
 			      "package-id", &package_id,
 			      "summary", &summary,
 			      NULL);
-		g_string_append_printf (string, "%s\t%s\t%s\n", pk_info_enum_to_text (info), package_id, summary);
+		g_string_append_printf (string, "%s\t%s\t%s\n", pk_info_enum_to_string (info), package_id, summary);
 		g_free (package_id);
 		g_free (summary);
 	}

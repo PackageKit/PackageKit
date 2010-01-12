@@ -521,7 +521,7 @@ backend_what_provides_thread (PkBackend *backend)
 
 		delete m_apt;
 	} else {
-		provides_text = pk_provides_enum_to_text (provides);
+		provides_text = pk_provides_enum_to_string (provides);
 		pk_backend_error_code (backend,
 				       PK_ERROR_ENUM_NOT_SUPPORTED,
 				       "Provides %s not supported",
@@ -900,7 +900,7 @@ backend_search_groups_thread (PkBackend *backend)
 			pk_backend_finished (backend);
 			return false;
 		} else {
-			groups.push_back(pk_group_enum_from_text(values[i]));
+			groups.push_back(pk_group_enum_from_string(values[i]));
 		}
 	}
 

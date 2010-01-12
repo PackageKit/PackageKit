@@ -109,7 +109,7 @@ pk_transaction_sqlite_transaction_cb (void *data, gint argc, gchar **argv, gchar
 				g_object_set (item, "succeeded", FALSE, NULL);
 		} else if (g_strcmp0 (col, "role") == 0) {
 			if (value != NULL)
-				g_object_set (item, "role", pk_role_enum_from_text (value), NULL);
+				g_object_set (item, "role", pk_role_enum_from_string (value), NULL);
 		} else if (g_strcmp0 (col, "transaction_id") == 0) {
 			if (value != NULL)
 				g_object_set (item, "tid", value, NULL);
@@ -237,7 +237,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
 	g_return_val_if_fail (tdb->priv->db != NULL, 0);
 
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 	egg_debug ("get_time_since_action=%s", role_text);
 
 	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'", role_text);
@@ -279,7 +279,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 
 	/* get the previous entry */
 	since = pk_transaction_db_action_time_since (tdb, role);
@@ -364,7 +364,7 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
-	role_text = pk_role_enum_to_text (role);
+	role_text = pk_role_enum_to_string (role);
 	statement = g_strdup_printf ("UPDATE transactions SET role = '%s' WHERE transaction_id = '%s'", role_text, tid);
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);

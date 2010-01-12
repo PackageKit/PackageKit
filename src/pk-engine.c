@@ -617,7 +617,7 @@ pk_engine_get_time_since_action	(PkEngine *engine, const gchar *role_text, guint
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	role = pk_role_enum_from_text (role_text);
+	role = pk_role_enum_from_string (role_text);
 	*seconds = pk_transaction_db_action_time_since (engine->priv->transaction_db, role);
 
 	/* reset the timer */
@@ -876,7 +876,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+	polkit_details_insert (details, "role", pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
 
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -996,7 +996,7 @@ pk_engine_can_authorize (PkEngine *engine, const gchar *action_id, DBusGMethodIn
 	}
 
 	/* all okay */
-	dbus_g_method_return (context, pk_authorize_type_enum_to_text (result_enum));
+	dbus_g_method_return (context, pk_authorize_type_enum_to_string (result_enum));
 }
 
 /**
@@ -1028,15 +1028,15 @@ pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 		g_value_set_string (value, engine->priv->backend_author);
 		break;
 	case PROP_ROLES:
-		tmp = pk_role_bitfield_to_text (engine->priv->roles);
+		tmp = pk_role_bitfield_to_string (engine->priv->roles);
 		g_value_set_string (value, tmp);
 		break;
 	case PROP_GROUPS:
-		tmp = pk_group_bitfield_to_text (engine->priv->groups);
+		tmp = pk_group_bitfield_to_string (engine->priv->groups);
 		g_value_set_string (value, tmp);
 		break;
 	case PROP_FILTERS:
-		tmp = pk_filter_bitfield_to_text (engine->priv->filters);
+		tmp = pk_filter_bitfield_to_string (engine->priv->filters);
 		g_value_set_string (value, tmp);
 		break;
 	case PROP_MIME_TYPES:
@@ -1046,7 +1046,7 @@ pk_engine_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 		g_value_set_boolean (value, engine->priv->locked);
 		break;
 	case PROP_NETWORK_STATE:
-		g_value_set_string (value, pk_network_enum_to_text (engine->priv->network_state));
+		g_value_set_string (value, pk_network_enum_to_string (engine->priv->network_state));
 		break;
 	case PROP_DISTRO_ID:
 		g_value_set_string (value, engine->priv->distro_id);
