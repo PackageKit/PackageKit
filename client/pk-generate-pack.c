@@ -87,7 +87,20 @@ static void
 pk_generate_pack_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
 	gint percentage;
+	PkRoleEnum role;
 	PkStatusEnum status;
+	const gchar *text;
+
+	/* role */
+	if (type == PK_PROGRESS_TYPE_ROLE) {
+		g_object_get (progress,
+			      "role", &role,
+			      NULL);
+
+		/* show new role on the bar */
+		text = pk_role_enum_to_localised_present (role);
+		pk_progress_bar_start (progressbar, text);
+	}
 
 	/* percentage */
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
@@ -104,8 +117,10 @@ pk_generate_pack_progress_cb (PkProgress *progress, PkProgressType type, gpointe
 			      NULL);
 		if (status == PK_STATUS_ENUM_FINISHED)
 			return;
-		/* TODO: translate */
-		pk_progress_bar_start (progressbar, pk_status_enum_to_text (status));
+
+		/* show status on the bar */
+		text = pk_status_enum_to_localised_text (status);
+		pk_progress_bar_start (progressbar, text);
 	}
 }
 
