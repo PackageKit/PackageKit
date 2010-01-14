@@ -64,6 +64,9 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 		      "distro-id", &distro_id,
 		      NULL);
 
+	/* delimit with nicer chars then ';' */
+	g_strdelimit (distro_id, ";", '-');
+
 	if (name != NULL) {
 		filename = g_strdup_printf ("%s/%s-%s.%s", directory, name, distro_id, PK_SERVICE_PACK_FILE_EXTENSION);
 	} else {
