@@ -37,6 +37,7 @@ __pkcon_commandlist="
     list-diff
     list-install
     install
+    install-local
     refresh
     remove
     repo-disable
