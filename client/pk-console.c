@@ -831,8 +831,19 @@ static gboolean
 pk_console_install_packages (gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
-	gchar **package_ids;
+	gchar **package_ids = NULL;
 	GError *error_local = NULL;
+	guint i;
+
+	/* test to see if we've been given files, not packages */
+	for (i=0; packages[i] != NULL; i++) {
+		ret = !g_file_test (packages[i], G_FILE_TEST_EXISTS);
+		if (!ret) {
+			/* TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm' */
+			*error = g_error_new (1, 0, _("Extected package name, actually got file. Try using 'pkcon install-local %s' instead."), packages[i]);
+			goto out;
+		}
+	}
 
 	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
