@@ -56,6 +56,7 @@ BuildRequires: cppunit-devel
 BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
+BuildRequires: gobject-introspection-devel
 #BuildRequires: gtk-sharp2-devel
 #BuildRequires: mono-core
 
@@ -114,6 +115,7 @@ Summary: GLib libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
 Requires: %{name} = %{version}-%{release}
+Requires: gobject-introspection
 Obsoletes: PackageKit-libs < %{version}-%{release}
 Provides: PackageKit-libs = %{version}-%{release}
 
@@ -240,6 +242,7 @@ user to restart the computer or remove and re-insert the device.
 	--enable-yum \
 %if 0%{?rhel} == 0
 	--enable-smart \
+	--enable-introspection \
 %endif
 	--with-default-backend=yum \
 	--disable-local \
@@ -371,6 +374,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-glib2.so.*
+%{_libdir}/girepositry-1.0/PackageKitGlib-1.0.typelib
+%{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 
 %files qt
 %defattr(-,root,root,-)
