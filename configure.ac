@@ -1,5 +1,5 @@
 # Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
-AC_PREREQ(2.52)
+AC_PREREQ(2.62)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
@@ -12,6 +12,8 @@ AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+GOBJECT_INTROSPECTION_CHECK([0.6.7])
 
 # enable nice build output on automake1.11
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])

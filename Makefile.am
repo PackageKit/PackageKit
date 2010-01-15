@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = 1.7
 
+ACLOCAL_AMFLAGS = -I m4
+
 NULL =
 
 SUBDIRS = 						\
@@ -75,6 +77,7 @@ EXTRA_DIST =						\
 
 DISTCHECK_CONFIGURE_FLAGS = 				\
 	--enable-gtk-doc				\
+	--enable-introspection				\
 	--with-security-framework=dummy			\
 	--disable-tests					\
 	$(NULL)
