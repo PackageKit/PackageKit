@@ -443,8 +443,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	/* already added? */
 	item = pk_transaction_list_get_from_tid (tlist, tid);
 	if (item != NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "already added %s to list", tid);
+		g_set_error (error, 1, 0, "already added %s to list", tid);
 		egg_warning ("already added %s to list", tid);
 		goto out;
 	}
@@ -476,16 +475,14 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	/* set the TID on the transaction */
 	ret = pk_transaction_set_tid (item->transaction, item->tid);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to set TID: %s", tid);
+		g_set_error (error, 1, 0, "failed to set TID: %s", tid);
 		goto out;
 	}
 
 	/* set the DBUS sender on the transaction */
 	ret = pk_transaction_set_sender (item->transaction, sender);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to set sender: %s", tid);
+		g_set_error (error, 1, 0, "failed to set sender: %s", tid);
 		goto out;
 	}
 
@@ -501,8 +498,7 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid, const gc
 	/* would this take us over the maximum number of requests allowed */
 	max_count = pk_conf_get_int (tlist->priv->conf, "SimultaneousTransactionsForUid");
 	if (count > max_count) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to allocate %s as uid %i already has %i transactions in progress", tid, item->uid, count);
+		g_set_error (error, 1, 0, "failed to allocate %s as uid %i already has %i transactions in progress", tid, item->uid, count);
 
 		/* free transaction, as it's never going to be added */
 		pk_transaction_list_item_free (item);

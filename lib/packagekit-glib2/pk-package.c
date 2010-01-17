@@ -163,8 +163,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	/* check valid UTF8 */
 	ret = g_utf8_validate (package_id, -1, NULL);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "invalid UTF8!");
+		g_set_error_literal (error, 1, 0, "invalid UTF8!");
 		goto out;
 	}
 
@@ -172,16 +171,14 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	sections = g_strsplit (package_id, ";", -1);
 	ret = (g_strv_length (sections) == 4);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "invalid number of sections");
+		g_set_error_literal (error, 1, 0, "invalid number of sections");
 		goto out;
 	}
 
 	/* name has to be valid */
 	ret = (sections[0][0] != '\0');
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "name invalid");
+		g_set_error_literal (error, 1, 0, "name invalid");
 		goto out;
 	}
 

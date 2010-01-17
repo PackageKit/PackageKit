@@ -117,8 +117,7 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GErr
 
 	/* no database */
 	if (desktop->priv->db == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "database is not open");
+		g_set_error_literal (error, 1, 0, "database is not open");
 		goto out;
 	}
 
@@ -159,8 +158,7 @@ pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GErr
 
 	/* no database */
 	if (desktop->priv->db == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "database is not open");
+		g_set_error_literal (error, 1, 0, "database is not open");
 		goto out;
 	}
 
@@ -200,8 +198,7 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GErr
 
 	/* no database */
 	if (desktop->priv->db == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "database is not open");
+		g_set_error_literal (error, 1, 0, "database is not open");
 		goto out;
 	}
 
@@ -216,8 +213,7 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GErr
 
 	/* no result */
 	if (package == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not find package for %s", filename);
+		g_set_error (error, 1, 0, "could not find package for %s", filename);
 		goto out;
 	}
 out:
@@ -245,8 +241,7 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 	/* if the database file was not installed (or was nuked) recreate it */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "database %s is not present", PK_DESKTOP_DEFAULT_DATABASE);
+		g_set_error (error, 1, 0, "database %s is not present", PK_DESKTOP_DEFAULT_DATABASE);
 		return FALSE;
 	}
 
@@ -254,8 +249,7 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &desktop->priv->db);
 	if (rc != 0) {
 		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (desktop->priv->db));
-		if (error != NULL)
-			*error = g_error_new (1, 0, "can't open database: %s", sqlite3_errmsg (desktop->priv->db));
+		g_set_error (error, 1, 0, "can't open database: %s", sqlite3_errmsg (desktop->priv->db));
 		sqlite3_close (desktop->priv->db);
 		desktop->priv->db = NULL;
 		return FALSE;

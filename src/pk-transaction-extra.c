@@ -1020,7 +1020,7 @@ pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar 
 	/* there is a file we can't COW */
 	if (extra->priv->files_list->len != 0) {
 		file = g_ptr_array_index (extra->priv->files_list, 0);
-		*error = g_error_new (1, 0, "failed to run as %s is running", file);
+		g_set_error (error, 1, 0, "failed to run as %s is running", file);
 		ret = FALSE;
 		goto out;
 	}

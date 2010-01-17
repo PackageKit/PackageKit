@@ -160,13 +160,13 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	/* get the packages returned */
 	array = pk_results_get_package_array (results);
 	if (array == NULL) {
-		*error = g_error_new (1, 0, "did not get package struct for %s", package_name);
+		g_set_error (error, 1, 0, "did not get package struct for %s", package_name);
 		goto out;
 	}
 
 	/* nothing found */
 	if (array->len == 0) {
-		*error = g_error_new (1, 0, "could not find %s", package_name);
+		g_set_error (error, 1, 0, "could not find %s", package_name);
 		goto out;
 	}
 

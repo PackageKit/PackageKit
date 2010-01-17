@@ -1552,21 +1552,21 @@ pk_transaction_set_proxy (PkTransaction *transaction, GError **error)
 	/* get session */
 	session = pk_dbus_get_session (transaction->priv->dbus, transaction->priv->sender);
 	if (session == NULL) {
-		*error = g_error_new (1, 0, "failed to get the session");
+		g_set_error_literal (error, 1, 0, "failed to get the session");
 		goto out;
 	}
 
 	/* get from database */
 	ret = pk_transaction_db_get_proxy (transaction->priv->transaction_db, transaction->priv->uid, session, &proxy_http, &proxy_ftp);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to get the proxy from the database");
+		g_set_error_literal (error, 1, 0, "failed to get the proxy from the database");
 		goto out;
 	}
 
 	/* try to set the new proxy */
 	ret = pk_backend_set_proxy (transaction->priv->backend, proxy_http, proxy_ftp);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to set the proxy");
+		g_set_error_literal (error, 1, 0, "failed to set the proxy");
 		goto out;
 	}
 	egg_debug ("using http_proxy=%s, ftp_proxy=%s for %i:%s", proxy_http, proxy_ftp, transaction->priv->uid, session);
@@ -2038,33 +2038,33 @@ pk_transaction_search_check_item (const gchar *values, GError **error)
 	size = egg_strlen (values, 1024);
 
 	if (values == NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Search is null. This isn't supposed to happen...");
 		return FALSE;
 	}
 	if (size == 0) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Search string zero length");
 		return FALSE;
 	}
 	if (strstr (values, "*") != NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '*'");
 		return FALSE;
 	}
 	if (strstr (values, "?") != NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "Invalid search containing '?'");
 		return FALSE;
 	}
 	if (size == 1024) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_SEARCH_INVALID,
 				     "The search string length is too large");
 		return FALSE;
 	}
 	ret = pk_transaction_strvalidate (values);
 	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "Invalid search term");
 		return FALSE;
 	}
@@ -2105,7 +2105,7 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 
 	/* is zero? */
 	if (egg_strzero (filter)) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "filter zero length");
 		return FALSE;
 	}
@@ -2113,8 +2113,8 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	/* check for invalid input */
 	ret = pk_transaction_strvalidate (filter);
 	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid filter term: %s", filter);
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid filter term: %s", filter);
 		return FALSE;
 	}
 
@@ -2124,12 +2124,12 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
 		if (egg_strzero (sections[i])) {
-			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Single empty section of filter: %s", filter);
 			goto out;
 		}
 		if (pk_filter_enum_from_string (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
-			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Unknown filter part: %s", sections[i]);
 			goto out;
 		}
@@ -2299,7 +2299,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* we should always have subject */
 	if (transaction->priv->subject == NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 				      "subject %s not found", transaction->priv->sender);
 		goto out;
 	}
@@ -2310,7 +2310,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	else
 		action_id = pk_transaction_role_to_action_allow_untrusted (role);
 	if (action_id == NULL) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "policykit type required for '%s'", pk_role_enum_to_string (role));
 		goto out;
 	}
 
@@ -2414,7 +2414,7 @@ pk_transaction_verify_sender (PkTransaction *transaction, DBusGMethodInvocation 
 	sender = dbus_g_method_get_sender (context);
 	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
 				      "sender does not match (%s vs %s)", sender, transaction->priv->sender);
 		goto out;
 	}
@@ -3472,7 +3472,7 @@ pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
 	file = g_file_new_for_path (filename);
 	info = g_file_query_info (file, "standard::content-type", G_FILE_QUERY_INFO_NONE, NULL, &error_local);
 	if (info == NULL) {
-		*error = g_error_new (1, 0, "failed to get file attributes for %s: %s", filename, error_local->message);
+		g_set_error (error, 1, 0, "failed to get file attributes for %s: %s", filename, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -4511,7 +4511,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 
 		/* already set */
 		if (priv->locale != NULL) {
-			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					      "Already set locale to %s", priv->locale);
 			ret = FALSE;
 			goto out;
@@ -4527,7 +4527,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 		priv->background = pk_hint_enum_from_string (value);
 		if (priv->background == PK_HINT_ENUM_INVALID) {
 			priv->background = PK_HINT_ENUM_UNSET;
-			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					      "background hint expects true or false, not %s", value);
 			ret = FALSE;
 		}
@@ -4539,7 +4539,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 		priv->interactive = pk_hint_enum_from_string (value);
 		if (priv->interactive == PK_HINT_ENUM_INVALID) {
 			priv->interactive = PK_HINT_ENUM_UNSET;
-			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 					      "interactive hint expects true or false, not %s", value);
 			ret = FALSE;
 		}

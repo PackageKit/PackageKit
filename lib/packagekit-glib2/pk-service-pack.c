@@ -151,7 +151,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	file = g_key_file_new ();
 	ret = g_key_file_load_from_file (file, full_path, G_KEY_FILE_NONE, &error_local);
 	if (!ret) {
-		*error = g_error_new (1, 0, "failed to load file: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to load file: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -159,7 +159,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	/* read the value */
 	distro_id = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "distro_id", &error_local);
 	if (distro_id == NULL) {
-		*error = g_error_new (1, 0, "failed to get value: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to get value: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -168,7 +168,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	/* read the value */
 	type = g_key_file_get_string (file, PK_SERVICE_PACK_GROUP_NAME, "type", &error_local);
 	if (type == NULL) {
-		*error = g_error_new (1, 0, "failed to get type: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to get type: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -176,7 +176,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 
 	/* check the types we support */
 	if (g_strcmp0 (type, "update") != 0 && g_strcmp0 (type, "install") != 0) {
-		*error = g_error_new (1, 0, "does not have correct type key: %s", type);
+		g_set_error (error, 1, 0, "does not have correct type key: %s", type);
 		ret = FALSE;
 		goto out;
 	}
@@ -198,7 +198,7 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	/* do we match? */
 	ret = (g_strcmp0 (distro_id_us, distro_id) == 0);
 	if (!ret)
-		*error = g_error_new (1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
+		g_set_error (error, 1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
 out:
 	if (control != NULL)
@@ -234,7 +234,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	/* save the PWD as we chdir to extract */
 	retcwd = getcwd (buf, PATH_MAX);
 	if (retcwd == NULL) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+		g_set_error_literal (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
 				      "failed to get cwd");
 		goto out;
 	}
@@ -246,7 +246,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	/* open the tar file */
 	r = archive_read_open_file (arch, filename, 10240);
 	if (r) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
 				      "cannot open: %s", archive_error_string (arch));
 		goto out;
 	}
@@ -254,7 +254,7 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 	/* switch to our destination directory */
 	retval = chdir (directory);
 	if (retval != 0) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
 				      "failed chdir to %s", directory);
 		goto out;
 	}
@@ -265,13 +265,13 @@ pk_service_pack_extract (const gchar *filename, const gchar *directory, GError *
 		if (r == ARCHIVE_EOF)
 			break;
 		if (r != ARCHIVE_OK) {
-			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+			g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
 					      "cannot read header: %s", archive_error_string (arch));
 			goto out;
 		}
 		r = archive_read_extract (arch, entry, 0);
 		if (r != ARCHIVE_OK) {
-			*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+			g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
 					      "cannot extract: %s", archive_error_string (arch));
 			goto out;
 		}
@@ -297,7 +297,7 @@ out:
 static gboolean
 pk_service_pack_extract (const gchar *filename, const gchar *directory, GError **error)
 {
-	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
+	g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_EXTRACTION,
 			      "The service pack %s cannot be extracted as PackageKit was not built with libarchive support", filename);
 	return FALSE;
 }
@@ -387,7 +387,7 @@ pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError 
 	directory = pk_service_pack_create_temporary_directory ("PackageKit-");
 	ret = pk_service_pack_extract (filename, directory, &error_local);
 	if (!ret) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, error_local->code,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, error_local->code,
 				      "failed to check %s: %s", filename, error_local->message);
 		g_error_free (error_local);
 		goto out;
@@ -396,7 +396,7 @@ pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError 
 	/* get the files */
 	dir = g_dir_open (directory, 0, NULL);
 	if (dir == NULL) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_SETUP,
 				      "failed to get directory for %s", directory);
 		ret = FALSE;
 		goto out;
@@ -408,7 +408,7 @@ pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError 
 		if (g_strcmp0 (filename_entry, "metadata.conf") == 0) {
 			ret = pk_service_pack_check_metadata_file (metafile, &error_local);
 			if (!ret) {
-				*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE,
+				g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_NOT_COMPATIBLE,
 						      "Service Pack %s not compatible with your distro: %s", filename, error_local->message);
 				g_error_free (error_local);
 				ret = FALSE;
@@ -539,7 +539,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	/* stat file */
 	retval = stat (filename, &st);
 	if (retval != 0) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "file not found %s", filename);
 		goto out;
 	}
@@ -558,7 +558,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	/* write header */
 	retval = archive_write_header (arch, entry);
 	if (retval != ARCHIVE_OK) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to write header: %s\n", archive_error_string (arch));
 		goto out;
 	}
@@ -566,7 +566,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	/* open file to copy */
 	fd = open (filename, O_RDONLY);
 	if (fd < 0) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to get fd for %s", filename);
 		goto out;
 	}
@@ -610,7 +610,7 @@ pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array
 	filename = g_build_filename (g_get_tmp_dir (), "metadata.conf", NULL);
 	ret = pk_service_pack_create_metadata_file (state, filename);
 	if (!ret) {
-		*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+		g_set_error (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 				      "failed to generate metadata file %s", filename);
 		goto out;
 	}
@@ -653,7 +653,7 @@ out:
 static gboolean
 pk_service_pack_create_from_files (PkServicePackState *state, gchar **file_array, GError **error)
 {
-	*error = g_error_new (PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
+	g_set_error_literal (error, PK_SERVICE_PACK_ERROR, PK_SERVICE_PACK_ERROR_FAILED_CREATE,
 			      "The service pack cannot be created as PackageKit was not built with libarchive support");
 	return FALSE;
 }
