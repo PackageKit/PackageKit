@@ -145,6 +145,8 @@ pk_category_class_init (PkCategoryClass *klass)
 
 	/**
 	 * PkCategory:parent-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("parent-id", NULL, NULL,
 				     NULL,
@@ -153,6 +155,8 @@ pk_category_class_init (PkCategoryClass *klass)
 
 	/**
 	 * PkCategory:cat-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("cat-id", NULL, NULL,
 				     NULL,
@@ -161,6 +165,8 @@ pk_category_class_init (PkCategoryClass *klass)
 
 	/**
 	 * PkCategory:name:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
@@ -169,6 +175,8 @@ pk_category_class_init (PkCategoryClass *klass)
 
 	/**
 	 * PkCategory:summary:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
@@ -177,6 +185,8 @@ pk_category_class_init (PkCategoryClass *klass)
 
 	/**
 	 * PkCategory:icon:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("icon", NULL, NULL,
 				     NULL,
@@ -217,6 +227,8 @@ pk_category_finalize (GObject *object)
  * pk_category_new:
  *
  * Return value: a new PkCategory object.
+ *
+ * Since: 0.5.4
  **/
 PkCategory *
 pk_category_new (void)

@@ -112,6 +112,8 @@ G_DEFINE_TYPE (PkPackage, pk_package, PK_TYPE_SOURCE)
  * Do the #PkPackage's have the same ID.
  *
  * Return value: %TRUE if the packages have the same package_id, info and summary.
+ *
+ * Since: 0.5.4
  **/
 gboolean
 pk_package_equal (PkPackage *package1, PkPackage *package2)
@@ -131,6 +133,8 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
  * Do the #PkPackage's have the same ID.
  *
  * Return value: %TRUE if the packages have the same package_id.
+ *
+ * Since: 0.5.4
  **/
 gboolean
 pk_package_equal_id (PkPackage *package1, PkPackage *package2)
@@ -149,6 +153,8 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
  * Sets the package object to have the given ID
  *
  * Return value: %TRUE if the package_id was set
+ *
+ * Since: 0.5.4
  **/
 gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
@@ -196,6 +202,8 @@ out:
  * Gets the package object ID
  *
  * Return value: the %PkInfoEnum
+ *
+ * Since: 0.5.4
  **/
 PkInfoEnum
 pk_package_get_info (PkPackage *package)
@@ -211,6 +219,8 @@ pk_package_get_info (PkPackage *package)
  * Gets the package object ID
  *
  * Return value: the ID, or %NULL if unset
+ *
+ * Since: 0.5.4
  **/
 const gchar *
 pk_package_get_id (PkPackage *package)
@@ -226,6 +236,8 @@ pk_package_get_id (PkPackage *package)
  * Gets the package object ID
  *
  * Return value: the summary, or %NULL if unset
+ *
+ * Since: 0.5.4
  **/
 const gchar *
 pk_package_get_summary (PkPackage *package)
@@ -239,6 +251,8 @@ pk_package_get_summary (PkPackage *package)
  * @package: a valid #PkPackage instance
  *
  * Prints details about the package to standard out.
+ *
+ * Since: 0.5.4
  **/
 void
 pk_package_print (PkPackage *package)
@@ -431,6 +445,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:info:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("info", NULL,
 				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
@@ -440,6 +456,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
@@ -449,6 +467,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:summary:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("summary", NULL,
 				     "The package summary",
@@ -458,6 +478,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:license:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("license", NULL,
 				     "The package license",
@@ -467,6 +489,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:group:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("group", NULL,
 				   "The package group",
@@ -476,6 +500,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:description:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("description", NULL,
 				     "The package description",
@@ -485,6 +511,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("url", NULL,
 				     "The package homepage URL",
@@ -494,6 +522,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:size:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint64 ("size", NULL,
 				     "The package size",
@@ -503,6 +533,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-updates:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-updates", NULL,
 				     "The update packages",
@@ -512,6 +544,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-obsoletes:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-obsoletes", NULL,
 				     "The update packages that are obsoleted",
@@ -521,6 +555,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-vendor-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-vendor-url", NULL,
 				     "The update vendor URL",
@@ -530,6 +566,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-bugzilla-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-bugzilla-url", NULL,
 				     "The update bugzilla URL",
@@ -539,6 +577,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-cve-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-cve-url", NULL,
 				     "The update CVE URL",
@@ -548,6 +588,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-restart:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("update-restart", NULL,
 				   "The update restart type",
@@ -557,6 +599,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-text:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-text", NULL,
 				     "The update description",
@@ -566,6 +610,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-changelog:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-changelog", NULL,
 				     "The update ChangeLog",
@@ -575,6 +621,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-state:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("update-state", NULL,
 				   "The update state",
@@ -584,6 +632,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-issued:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-issued", NULL,
 				     "When the update was issued",
@@ -593,6 +643,8 @@ pk_package_class_init (PkPackageClass *klass)
 
 	/**
 	 * PkPackage:update-updated:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-updated", NULL,
 				     "When the update was last updated",
@@ -658,6 +710,8 @@ pk_package_finalize (GObject *object)
  * pk_package_new:
  *
  * Return value: a new PkPackage object.
+ *
+ * Since: 0.5.4
  **/
 PkPackage *
 pk_package_new (void)

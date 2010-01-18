@@ -24,7 +24,7 @@
  * @short_description: TransactionPast object
  *
  * This GObject represents a transaction_past from a transaction_past.
- * These objects represent single items of data from the transaction_past, and are
+ * These objects represent single items of data from the transaction, and are
  * often present in lists (#PkResults) or just refcounted in client programs.
  */
 
@@ -171,6 +171,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:tid:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("tid", NULL, NULL,
 				     NULL,
@@ -179,6 +181,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:timespec:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("timespec", NULL, NULL,
 				     NULL,
@@ -187,6 +191,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:succeeded:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boolean ("succeeded", NULL, NULL,
 				      FALSE,
@@ -195,6 +201,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:role:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
 				   0, G_MAXUINT, PK_ROLE_ENUM_UNKNOWN,
@@ -203,6 +211,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:duration:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("duration", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -211,6 +221,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:data:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("data", NULL, NULL,
 				     NULL,
@@ -219,6 +231,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:uid:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
 				   0, G_MAXUINT, G_MAXUINT,
@@ -227,6 +241,8 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 
 	/**
 	 * PkTransactionPast:cmdline:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("cmdline", NULL, NULL,
 				     NULL,
@@ -266,6 +282,8 @@ pk_transaction_past_finalize (GObject *object)
  * pk_transaction_past_new:
  *
  * Return value: a new PkTransactionPast object.
+ *
+ * Since: 0.5.4
  **/
 PkTransactionPast *
 pk_transaction_past_new (void)

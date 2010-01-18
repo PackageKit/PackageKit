@@ -92,6 +92,8 @@ G_DEFINE_TYPE (PkCatalog, pk_catalog, G_TYPE_OBJECT)
  * pk_catalog_error_quark:
  *
  * Return value: Our personal error quark.
+ *
+ * Since: 0.5.3
  **/
 GQuark
 pk_catalog_error_quark (void)
@@ -471,6 +473,8 @@ pk_catalog_do_resolve (PkCatalogState *state)
  * @user_data: the data to pass to @callback
  *
  * Simulate the install of a catalog file.
+ *
+ * Since: 0.5.3
  **/
 void
 pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable *cancellable,
@@ -551,6 +555,8 @@ out:
  * Gets the result from the asynchronous function.
  *
  * Return value: the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
+ *
+ * Since: 0.5.3
  **/
 GPtrArray *
 pk_catalog_lookup_finish (PkCatalog *catalog, GAsyncResult *res, GError **error)
@@ -632,6 +638,8 @@ pk_catalog_init (PkCatalog *catalog)
  * pk_catalog_new:
  *
  * Return value: A new catalog class instance.
+ *
+ * Since: 0.5.3
  **/
 PkCatalog *
 pk_catalog_new (void)

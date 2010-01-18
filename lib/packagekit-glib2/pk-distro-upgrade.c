@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-distro_upgrade
+ * SECTION:pk-distro-upgrade
  * @short_description: DistroUpgrade object
  *
  * This GObject represents a distro_upgrade from a transaction.
@@ -129,6 +129,8 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 
 	/**
 	 * PkDistroUpgrade:state:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("state", NULL, NULL,
 				   0, G_MAXUINT, PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
@@ -137,6 +139,8 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 
 	/**
 	 * PkDistroUpgrade:name:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
@@ -145,6 +149,8 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 
 	/**
 	 * PkDistroUpgrade:summary:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
@@ -182,6 +188,8 @@ pk_distro_upgrade_finalize (GObject *object)
  * pk_distro_upgrade_new:
  *
  * Return value: a new PkDistroUpgrade object.
+ *
+ * Since: 0.5.4
  **/
 PkDistroUpgrade *
 pk_distro_upgrade_new (void)

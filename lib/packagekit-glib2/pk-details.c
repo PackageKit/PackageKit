@@ -155,6 +155,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -163,6 +165,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:license:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("license", NULL, NULL,
 				     NULL,
@@ -171,6 +175,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:group:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("group", NULL, NULL,
 				   0, G_MAXUINT, PK_GROUP_ENUM_UNKNOWN,
@@ -179,6 +185,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:description:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
@@ -187,6 +195,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("url", NULL, NULL,
 				     NULL,
@@ -195,6 +205,8 @@ pk_details_class_init (PkDetailsClass *klass)
 
 	/**
 	 * PkDetails:size:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint64 ("size", NULL, NULL,
 				     0, G_MAXUINT64, 0,
@@ -234,6 +246,8 @@ pk_details_finalize (GObject *object)
  * pk_details_new:
  *
  * Return value: a new PkDetails object.
+ *
+ * Since: 0.5.4
  **/
 PkDetails *
 pk_details_new (void)

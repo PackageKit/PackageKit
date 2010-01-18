@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-task-list
+ * SECTION:pk-transaction-list
  * @short_description: A nice way to keep a list of the jobs being processed
  *
  * These provide a good way to keep a list of the jobs being processed so we
@@ -190,6 +190,8 @@ pk_transaction_list_notify_connected_cb (PkControl *control, GParamSpec *pspec, 
  * Gets the string lists of transaction IDs recognised as pending, running or finished by the daemon.
  *
  * Return value: the array of strings, free with g_strfreev()
+ *
+ * Since: 0.5.3
  **/
 gchar **
 pk_transaction_list_get_ids (PkTransactionList *tlist)
@@ -290,6 +292,8 @@ pk_transaction_list_finalize (GObject *object)
 
 /**
  * pk_transaction_list_new:
+ *
+ * Since: 0.5.3
  **/
 PkTransactionList *
 pk_transaction_list_new (void)

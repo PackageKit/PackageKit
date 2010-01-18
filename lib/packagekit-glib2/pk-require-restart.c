@@ -120,6 +120,8 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 
 	/**
 	 * PkRequireRestart:restart:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("restart", NULL, NULL,
 				   0, G_MAXUINT, PK_RESTART_ENUM_UNKNOWN,
@@ -128,6 +130,8 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 
 	/**
 	 * PkRequireRestart:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -164,6 +168,8 @@ pk_require_restart_finalize (GObject *object)
  * pk_require_restart_new:
  *
  * Return value: a new PkRequireRestart object.
+ *
+ * Since: 0.5.4
  **/
 PkRequireRestart *
 pk_require_restart_new (void)

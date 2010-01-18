@@ -120,6 +120,8 @@ pk_message_class_init (PkMessageClass *klass)
 
 	/**
 	 * PkMessage:type:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("type", NULL, NULL,
 				   0, G_MAXUINT, PK_MESSAGE_ENUM_UNKNOWN,
@@ -128,6 +130,8 @@ pk_message_class_init (PkMessageClass *klass)
 
 	/**
 	 * PkMessage:details:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("details", NULL, NULL,
 				     NULL,
@@ -164,6 +168,8 @@ pk_message_finalize (GObject *object)
  * pk_message_new:
  *
  * Return value: a new PkMessage object.
+ *
+ * Since: 0.5.4
  **/
 PkMessage *
 pk_message_new (void)

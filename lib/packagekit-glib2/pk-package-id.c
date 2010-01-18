@@ -40,6 +40,8 @@
  * number of delimiters are present.
  *
  * Return value: a GStrv or %NULL if invalid, use g_strfreev() to free
+ *
+ * Since: 0.5.3
  **/
 gchar **
 pk_package_id_split (const gchar *package_id)
@@ -67,6 +69,8 @@ out:
  * @package_id: the PackageID to check
  *
  * Return value: %TRUE if the PackageID was well formed.
+ *
+ * Since: 0.5.0
  **/
 gboolean
 pk_package_id_check (const gchar *package_id)
@@ -103,6 +107,8 @@ pk_package_id_check (const gchar *package_id)
  * @data: the package extra data
  *
  * Return value: returns a string to form the PackageID.
+ *
+ * Since: 0.5.0
  **/
 gchar *
 pk_package_id_build (const gchar *name, const gchar *version,
@@ -151,6 +157,8 @@ pk_package_id_equal_fuzzy_arch_section (const gchar *arch1, const gchar *arch2)
  * match with i*86.
  *
  * Return value: %TRUE if the PackageIDs can be considered equal.
+ *
+ * Since: 0.5.0
  **/
 gboolean
 pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_id2)
@@ -178,6 +186,8 @@ pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_i
  * Formats the PackageID to be printable to the user.
  *
  * Return value: the name-version.arch formatted string, use g_free() to free.
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_package_id_to_printable (const gchar *package_id)

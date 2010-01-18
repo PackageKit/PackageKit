@@ -42,6 +42,8 @@
  * a single package_id
  *
  * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_package_ids_from_id (const gchar *package_id)
@@ -58,6 +60,8 @@ pk_package_ids_from_id (const gchar *package_id)
  * a delimited string
  *
  * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_package_ids_from_string (const gchar *package_id)
@@ -73,6 +77,8 @@ pk_package_ids_from_string (const gchar *package_id)
  * Check the string array of package_id's for validity
  *
  * Return value: %TRUE if the package_ids are all valid.
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_ids_check (gchar **package_ids)
@@ -103,6 +109,8 @@ out:
  * Cats the string array of package_id's into one delimited string
  *
  * Return value: a string representation of all the package_id's.
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_package_ids_to_string (gchar **package_ids)
@@ -121,6 +129,8 @@ pk_package_ids_to_string (gchar **package_ids)
  * Finds out if a package ID is present in the list.
  *
  * Return value: %TRUE if the package ID is present
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
@@ -146,6 +156,8 @@ pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
  * Adds a package_id to an existing list.
  *
  * Return value: the new list, free g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
@@ -175,6 +187,8 @@ pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
  * Adds a package_id to an existing list.
  *
  * Return value: the new list, free g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
@@ -207,6 +221,8 @@ pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
  * Removes a package ID from the the list.
  *
  * Return value: the new list, free g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_package_ids_remove_id (gchar **package_ids, const gchar *package_id)

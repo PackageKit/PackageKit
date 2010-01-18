@@ -129,6 +129,8 @@ static void pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
  * pk_client_error_quark:
  *
  * Return value: Our personal error quark.
+ *
+ * Since: 0.5.2
  **/
 GQuark
 pk_client_error_quark (void)
@@ -1864,6 +1866,8 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
  * Gets the result from the asynchronous function.
  *
  * Return value: the #PkResults, or %NULL. Free with g_object_unref()
+ *
+ * Since: 0.5.2
  **/
 PkResults *
 pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
@@ -1895,6 +1899,8 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
  * Resolve a package name into a %package_id. This can return installed and
  * available packages and allows you find out if a package is installed locally
  * or is available in a repository.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
@@ -1943,6 +1949,8 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
  *
  * Search all the locally installed files and remote repositories for a package
  * that matches a specific name.
+ *
+ * Since: 0.5.5
  **/
 void
 pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -1992,6 +2000,8 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
  * Search all detailed summary information to try and find a keyword.
  * Think of this as pk_client_search_names(), but trying much harder and
  * taking longer.
+ *
+ * Since: 0.5.5
  **/
 void
 pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -2039,6 +2049,8 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
  * @user_data: the data to pass to @callback_ready
  *
  * Return all packages in a specific group.
+ *
+ * Since: 0.5.5
  **/
 void
 pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -2086,6 +2098,8 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
  * @user_data: the data to pass to @callback_ready
  *
  * Search for packages that provide a specific file.
+ *
+ * Since: 0.5.5
  **/
 void
 pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -2133,6 +2147,8 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
  *
  * Get details of a package, so more information can be obtained for GUI
  * or command line tools.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2180,6 +2196,8 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
  *
  * Get details about the specific update, for instance any CVE urls and
  * severity information.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2227,6 +2245,8 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
  * @user_data: the data to pass to @callback_ready
  *
  * Downloads package files to a specified location.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_download_packages_async (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
@@ -2274,6 +2294,8 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
  * @user_data: the data to pass to @callback_ready
  *
  * Get a list of all the packages that can be updated for all repositories.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -2319,6 +2341,8 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
  * @user_data: the data to pass to @callback_ready
  *
  * Get the old transaction list, mainly used for the rollback viewer.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellable *cancellable,
@@ -2369,6 +2393,8 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
  * - pk_client_repo_disable()
  * - pk_client_update_system()
  * - pk_client_repo_enable()
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
@@ -2416,6 +2442,8 @@ pk_client_update_system_async (PkClient *client, gboolean only_trusted, GCancell
  * @user_data: the data to pass to @callback_ready
  *
  * Get the packages that depend this one, i.e. child->parent.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -2464,6 +2492,8 @@ pk_client_get_depends_async (PkClient *client, PkBitfield filters, gchar **packa
  * @user_data: the data to pass to @callback_ready
  *
  * Get the list of packages from the backend
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -2511,6 +2541,8 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
  * @user_data: the data to pass to @callback_ready
  *
  * Get the packages that require this one, i.e. parent->child.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -2563,6 +2595,8 @@ pk_client_get_requires_async (PkClient *client, PkBitfield filters, gchar **pack
  * This should return packages that provide the supplied attributes.
  * This method is useful for finding out what package(s) provide a modalias
  * or GStreamer codec string.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
@@ -2610,6 +2644,8 @@ pk_client_what_provides_async (PkClient *client, PkBitfield filters, PkProvidesE
  *
  * This method should return a list of distribution upgrades that are available.
  * It should not return updates, only major upgrades.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable,
@@ -2654,6 +2690,8 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
  * @user_data: the data to pass to @callback_ready
  *
  * Get the file list (i.e. a list of files installed) for the specified package.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -2699,6 +2737,8 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
  * @user_data: the data to pass to @callback_ready
  *
  * Get a list of all categories supported.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
@@ -2747,6 +2787,8 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
  * Remove a package (optionally with dependancies) from the system.
  * If %allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
@@ -2798,6 +2840,8 @@ pk_client_remove_packages_async (PkClient *client, gchar **package_ids, gboolean
  * package lists are up to date.
  * This action may take a few minutes and should be done when the session and
  * system are idle.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *cancellable,
@@ -2844,6 +2888,8 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
  * @user_data: the data to pass to @callback_ready
  *
  * Install a package of the newest and most correct version.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -2893,6 +2939,8 @@ pk_client_install_packages_async (PkClient *client, gboolean only_trusted, gchar
  * @user_data: the data to pass to @callback_ready
  *
  * Install a software source signature of the newest and most correct version.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
@@ -2941,6 +2989,8 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
  * @user_data: the data to pass to @callback_ready
  *
  * Update specific packages to the newest available versions.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_update_packages_async (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -3074,6 +3124,8 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
  *
  * Install a file locally, and get the deps from the repositories.
  * This is useful for double clicking on a .rpm or .deb file.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
@@ -3139,6 +3191,8 @@ out:
  * @user_data: the data to pass to @callback_ready
  *
  * We may want to agree to a EULA dialog if one is presented.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
@@ -3184,6 +3238,8 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
  * @user_data: the data to pass to @callback_ready
  *
  * We may want to agree to a EULA dialog if one is presented.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
@@ -3229,6 +3285,8 @@ pk_client_rollback_async (PkClient *client, const gchar *transaction_id, GCancel
  * @user_data: the data to pass to @callback_ready
  *
  * Get the list of repositories installed on the system.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -3275,6 +3333,8 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
  * @user_data: the data to pass to @callback_ready
  *
  * Enable or disable the repository.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
@@ -3324,6 +3384,8 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
  *
  * We may want to set a repository parameter.
  * NOTE: this is free text, and is left to the backend to define a format.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
@@ -3371,6 +3433,8 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
  * @user_data: the data to pass to @callback_ready
  *
  * Simulate an installation of files.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancellable *cancellable,
@@ -3436,6 +3500,8 @@ out:
  * @user_data: the data to pass to @callback_ready
  *
  * Simulate an installation of packages.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -3482,6 +3548,8 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
  * @user_data: the data to pass to @callback_ready
  *
  * Simulate a removal of packages.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -3528,6 +3596,8 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
  * @user_data: the data to pass to @callback_ready
  *
  * Simulate an update of packages.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_simulate_update_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -3622,6 +3692,8 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
  * @user_data: the data to pass to @callback_ready
  *
  * Adopt a transaction which allows the caller to monitor the state or cancel it.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
@@ -3701,6 +3773,8 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
  * Gets the result from the asynchronous function.
  *
  * Return value: the #PkProgress, or %NULL. Free with g_object_unref()
+ *
+ * Since: 0.5.2
  **/
 PkProgress *
 pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **error)
@@ -3799,6 +3873,8 @@ pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientStat
  * @user_data: the data to pass to @callback_ready
  *
  * Find the current state of a transaction.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
@@ -3897,6 +3973,8 @@ pk_client_class_init (PkClientClass *klass)
 
 	/**
 	 * PkClient:locale:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_string ("locale", NULL, NULL,
 				     NULL,
@@ -3905,6 +3983,8 @@ pk_client_class_init (PkClientClass *klass)
 
 	/**
 	 * PkClient:background:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
@@ -3913,6 +3993,8 @@ pk_client_class_init (PkClientClass *klass)
 
 	/**
 	 * PkClient:interactive:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boolean ("interactive", NULL, NULL,
 				      TRUE,
@@ -3921,6 +4003,8 @@ pk_client_class_init (PkClientClass *klass)
 
 	/**
 	 * PkClient:idle:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boolean ("idle", NULL, "if there are no transactions in progress on this client",
 				      TRUE,
@@ -4048,6 +4132,8 @@ pk_client_finalize (GObject *object)
  * frontends easy.
  *
  * Return value: A new %PkClient instance
+ *
+ * Since: 0.5.2
  **/
 PkClient *
 pk_client_new (void)

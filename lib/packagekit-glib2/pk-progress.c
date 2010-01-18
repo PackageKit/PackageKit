@@ -138,6 +138,8 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 /**
  * pk_progress_set_package_id:
  * @progress: a valid #PkProgress instance
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
@@ -166,6 +168,8 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 /**
  * pk_progress_set_transaction_id:
  * @progress: a valid #PkProgress instance
+ *
+ * Since: 0.5.3
  **/
 gboolean
 pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_id)
@@ -187,6 +191,8 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
 
 /**
  * pk_progress_set_percentage:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_percentage (PkProgress *progress, gint percentage)
@@ -207,6 +213,8 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
 
 /**
  * pk_progress_set_subpercentage:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_subpercentage (PkProgress *progress, gint subpercentage)
@@ -227,6 +235,8 @@ pk_progress_set_subpercentage (PkProgress *progress, gint subpercentage)
 
 /**
  * pk_progress_set_status:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
@@ -247,6 +257,8 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 
 /**
  * pk_progress_set_role:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
@@ -267,6 +279,8 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 
 /**
  * pk_progress_set_allow_cancel:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
@@ -287,6 +301,8 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 
 /**
  * pk_progress_set_caller_active:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
@@ -307,6 +323,8 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 
 /**
  * pk_progress_set_elapsed_time:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
@@ -327,6 +345,8 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
 
 /**
  * pk_progress_set_remaining_time:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
@@ -347,6 +367,8 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 
 /**
  * pk_progress_set_speed:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_speed (PkProgress *progress, guint speed)
@@ -367,6 +389,8 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 
 /**
  * pk_progress_set_uid:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_uid (PkProgress *progress, guint uid)
@@ -387,6 +411,8 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
 
 /**
  * pk_progress_set_package:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_progress_set_package (PkProgress *progress, PkPackage *package)
@@ -475,6 +501,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkPackage:package-id:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
@@ -484,6 +512,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkPackage:transaction-id:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("transaction-id", NULL,
 				     "The transaction_id, e.g. '/892_deabbbdb_data'",
@@ -493,6 +523,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:percentage:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_int ("percentage", NULL, NULL,
 				  -1, G_MAXINT, -1,
@@ -501,6 +533,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:subpercentage:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_int ("subpercentage", NULL, NULL,
 				  -1, G_MAXINT, -1,
@@ -509,6 +543,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkPackage:allow-cancel:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_boolean ("allow-cancel", NULL, NULL,
 				      FALSE,
@@ -517,6 +553,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:status:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("status", NULL, NULL,
 				   0, PK_STATUS_ENUM_LAST, PK_STATUS_ENUM_UNKNOWN,
@@ -525,6 +563,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:role:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
 				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
@@ -533,6 +573,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkPackage:caller-active:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_boolean ("caller-active", NULL, NULL,
 				      FALSE,
@@ -541,6 +583,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:elapsed-time:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("elapsed-time", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -549,6 +593,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:remaining-time:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("remaining-time", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -557,6 +603,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:speed:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("speed", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -565,6 +613,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:uid:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -573,6 +623,8 @@ pk_progress_class_init (PkProgressClass *klass)
 
 	/**
 	 * PkProgress:package:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_object ("package", NULL, NULL,
 				     PK_TYPE_PACKAGE,
@@ -612,6 +664,8 @@ pk_progress_finalize (GObject *object)
  * frontends easy.
  *
  * Return value: A new %PkProgress instance
+ *
+ * Since: 0.5.2
  **/
 PkProgress *
 pk_progress_new (void)

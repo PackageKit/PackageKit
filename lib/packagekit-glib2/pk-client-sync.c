@@ -72,6 +72,8 @@ pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelp
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCancellable *cancellable,
@@ -120,6 +122,8 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.5
  **/
 PkResults *
 pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -169,6 +173,8 @@ pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GC
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.5
  **/
 PkResults *
 pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -216,6 +222,8 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.5
  **/
 PkResults *
 pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -263,6 +271,8 @@ pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, G
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.5
  **/
 PkResults *
 pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GCancellable *cancellable,
@@ -310,6 +320,8 @@ pk_client_search_files (PkClient *client, PkBitfield filters, gchar **values, GC
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -357,6 +369,8 @@ pk_client_get_details (PkClient *client, gchar **package_ids, GCancellable *canc
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -404,6 +418,8 @@ pk_client_get_update_detail (PkClient *client, gchar **package_ids, GCancellable
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
@@ -450,6 +466,8 @@ pk_client_download_packages (PkClient *client, gchar **package_ids, const gchar 
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -496,6 +514,8 @@ pk_client_get_updates (PkClient *client, PkBitfield filters, GCancellable *cance
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *cancellable,
@@ -547,6 +567,8 @@ pk_client_get_old_transactions (PkClient *client, guint number, GCancellable *ca
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_update_system (PkClient *client, gboolean only_trusted, GCancellable *cancellable,
@@ -595,6 +617,8 @@ pk_client_update_system (PkClient *client, gboolean only_trusted, GCancellable *
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -641,6 +665,8 @@ pk_client_get_depends (PkClient *client, PkBitfield filters, gchar **package_ids
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -689,6 +715,8 @@ pk_client_get_packages (PkClient *client, PkBitfield filters, GCancellable *canc
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
@@ -739,6 +767,8 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum provides, gchar **values, GCancellable *cancellable,
@@ -785,6 +815,8 @@ pk_client_what_provides (PkClient *client, PkBitfield filters, PkProvidesEnum pr
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
@@ -831,6 +863,8 @@ pk_client_get_distro_upgrades (PkClient *client, GCancellable *cancellable,
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -876,6 +910,8 @@ pk_client_get_files (PkClient *client, gchar **package_ids, GCancellable *cancel
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_categories (PkClient *client, GCancellable *cancellable,
@@ -926,6 +962,8 @@ pk_client_get_categories (PkClient *client, GCancellable *cancellable,
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
@@ -975,6 +1013,8 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancellable,
@@ -1022,6 +1062,8 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GCancellable *cancell
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -1070,6 +1112,8 @@ pk_client_install_packages (PkClient *client, gboolean only_trusted, gchar **pac
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id, GCancellable *cancellable,
@@ -1117,6 +1161,8 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **package_ids, GCancellable *cancellable,
@@ -1165,6 +1211,8 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files, GCancellable *cancellable,
@@ -1211,6 +1259,8 @@ pk_client_install_files (PkClient *client, gboolean only_trusted, gchar **files,
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *cancellable,
@@ -1257,6 +1307,8 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GCancellable *can
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
@@ -1303,6 +1355,8 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GCancellable 
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *cancellable,
@@ -1350,6 +1404,8 @@ pk_client_get_repo_list (PkClient *client, PkBitfield filters, GCancellable *can
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
@@ -1399,6 +1455,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value, GCancellable *cancellable,
@@ -1445,6 +1503,8 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_simulate_install_files (PkClient *client, gchar **files, GCancellable *cancellable,
@@ -1492,6 +1552,8 @@ pk_client_simulate_install_files (PkClient *client, gchar **files, GCancellable 
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1538,6 +1600,8 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCan
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1584,6 +1648,8 @@ pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCanc
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
@@ -1630,6 +1696,8 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_client_adopt (PkClient *client, const gchar *transaction_id, GCancellable *cancellable,
@@ -1679,18 +1747,18 @@ pk_client_get_progress_finish_sync (PkClient *client, GAsyncResult *res, PkClien
 /**
  * pk_client_get_progress:
  * @client: a valid #PkClient instance
- * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @transaction_id: The transaction id
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Adopt a transaction.
+ * Get the progress of a transaction.
  *
  * Warning: this function is synchronous, and will block. Do not use it in GUI
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkProgress *
 pk_client_get_progress (PkClient *client, const gchar *transaction_id, GCancellable *cancellable, GError **error)

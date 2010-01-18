@@ -60,6 +60,8 @@ pk_package_sack_generic_cb (PkPackageSack *package_sack, GAsyncResult *res, PkPa
  * applications.
  *
  * Return value: %TRUE if the properties were set correctly
+ *
+ * Since: 0.6.0
  **/
 gboolean
 pk_package_sack_resolve (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
@@ -99,6 +101,8 @@ pk_package_sack_resolve (PkPackageSack *package_sack, GCancellable *cancellable,
  * applications.
  *
  * Return value: %TRUE if the properties were set correctly
+ *
+ * Since: 0.6.0
  **/
 gboolean
 pk_package_sack_get_details (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
@@ -138,6 +142,8 @@ pk_package_sack_get_details (PkPackageSack *package_sack, GCancellable *cancella
  * applications.
  *
  * Return value: %TRUE if the properties were set correctly
+ *
+ * Since: 0.6.0
  **/
 gboolean
 pk_package_sack_get_update_detail (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)

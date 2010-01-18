@@ -577,6 +577,8 @@ out:
 
 /**
  * pk_task_user_accepted:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_task_user_accepted (PkTask *task, guint request)
@@ -623,6 +625,8 @@ out:
 
 /**
  * pk_task_user_declined:
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_task_user_declined (PkTask *task, guint request)
@@ -757,6 +761,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Merges in details about packages using resolve.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
@@ -809,6 +815,8 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
  * @user_data: the data to pass to @callback_ready
  *
  * Update specific packages to the newest available versions.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
@@ -864,6 +872,8 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
  * Remove a package (optionally with dependancies) from the system.
  * If %allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
@@ -917,6 +927,8 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
  *
  * Install a file locally, and get the deps from the repositories.
  * This is useful for double clicking on a .rpm or .deb file.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancellable,
@@ -972,6 +984,8 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * - pk_task_repo_disable()
  * - pk_task_update_system()
  * - pk_task_repo_enable()
+ *
+ * Since: 0.5.2
  **/
 void
 pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
@@ -1016,6 +1030,8 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE for success
+ *
+ * Since: 0.5.2
  **/
 PkResults *
 pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
@@ -1087,6 +1103,8 @@ pk_task_class_init (PkTaskClass *klass)
 
 	/**
 	 * PkTask:simulate:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_boolean ("simulate", NULL, NULL,
 				      TRUE,
@@ -1122,6 +1140,8 @@ pk_task_finalize (GObject *object)
  * pk_task_new:
  *
  * Return value: a new PkTask object.
+ *
+ * Since: 0.5.2
  **/
 PkTask *
 pk_task_new (void)

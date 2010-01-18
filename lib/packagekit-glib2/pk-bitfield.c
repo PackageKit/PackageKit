@@ -42,6 +42,8 @@
  * Finds elements in a list, but with priority going to the preceeding entry
  *
  * Return value: The return enumerated type, or -1 if none are found
+ *
+ * Since: 0.5.2
  **/
 gint
 pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
@@ -78,6 +80,8 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
  * @value: the values we want to add to the bitfield
  *
  * Return value: The return bitfield, or 0 if invalid
+ *
+ * Since: 0.5.2
  **/
 PkBitfield
 pk_bitfield_from_enums (gint value, ...)
@@ -110,6 +114,8 @@ pk_bitfield_from_enums (gint value, ...)
  * Converts a enumerated type bitfield to its text representation
  *
  * Return value: the enumerated constant value, e.g. "install-file;update-system"
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_role_bitfield_to_string (PkBitfield roles)
@@ -141,6 +147,8 @@ pk_role_bitfield_to_string (PkBitfield roles)
  * Converts text representation to its enumerated type bitfield
  *
  * Return value: The enumerated type values, or 0 for invalid
+ *
+ * Since: 0.5.2
  **/
 PkBitfield
 pk_role_bitfield_from_string (const gchar *roles)
@@ -178,6 +186,8 @@ out:
  * Converts a enumerated type bitfield to its text representation
  *
  * Return value: the enumerated constant value, e.g. "gnome;kde"
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_group_bitfield_to_string (PkBitfield groups)
@@ -209,6 +219,8 @@ pk_group_bitfield_to_string (PkBitfield groups)
  * Converts text representation to its enumerated type bitfield
  *
  * Return value: The enumerated type values, or 0 for invalid
+ *
+ * Since: 0.5.2
  **/
 PkBitfield
 pk_group_bitfield_from_string (const gchar *groups)
@@ -246,6 +258,8 @@ out:
  * Converts a enumerated type bitfield to its text representation
  *
  * Return value: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_filter_bitfield_to_string (PkBitfield filters)
@@ -281,6 +295,8 @@ pk_filter_bitfield_to_string (PkBitfield filters)
  * Converts text representation to its enumerated type bitfield, or 0 for invalid
  *
  * Return value: The enumerated type values
+ *
+ * Since: 0.5.2
  **/
 PkBitfield
 pk_filter_bitfield_from_string (const gchar *filters)

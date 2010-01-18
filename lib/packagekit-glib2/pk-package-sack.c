@@ -70,6 +70,8 @@ G_DEFINE_TYPE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
  * Gets the number of packages in the sack
  *
  * Return value: the number of packages in the sack
+ *
+ * Since: 0.5.2
  **/
 guint
 pk_package_sack_get_size (PkPackageSack *sack)
@@ -84,6 +86,8 @@ pk_package_sack_get_size (PkPackageSack *sack)
  * @sack: a valid #PkPackageSack instance
  *
  * Empty all the packages from the sack
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_clear (PkPackageSack *sack)
@@ -99,6 +103,8 @@ pk_package_sack_clear (PkPackageSack *sack)
  * Returns all the Package IDs in the sack
  *
  * Return value: the number of packages in the sack, free with g_strfreev()
+ *
+ * Since: 0.5.3
  **/
 gchar **
 pk_package_sack_get_ids (PkPackageSack *sack)
@@ -127,6 +133,8 @@ pk_package_sack_get_ids (PkPackageSack *sack)
  * Gets a packages from the sack
  *
  * Return value: a %PkPackage instance
+ *
+ * Since: 0.5.2
  **/
 PkPackage *
 pk_package_sack_get_index (PkPackageSack *sack, guint i)
@@ -153,6 +161,8 @@ out:
  * Adds a package to the sack.
  *
  * Return value: %TRUE if the package was added to the sack
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
@@ -175,6 +185,8 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
  * Adds a package reference to the sack.
  *
  * Return value: %TRUE if the package was added to the sack
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_sack_add_package_by_id (PkPackageSack *sack, const gchar *package_id, GError **error)
@@ -207,6 +219,8 @@ out:
  * Removes a package reference from the sack. The pointers have to match exactly.
  *
  * Return value: %TRUE if the package was removed from the sack
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
@@ -231,6 +245,8 @@ pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
  * the search is stopped.
  *
  * Return value: %TRUE if the package was removed from the sack
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_id)
@@ -267,6 +283,8 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
  * the search is stopped.
  *
  * Return value: the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
+ *
+ * Since: 0.5.2
  **/
 PkPackage *
 pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
@@ -349,6 +367,8 @@ pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
  * @sack: a valid #PkPackageSack instance
  *
  * Sorts by Package ID
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_sort_package_id (PkPackageSack *sack)
@@ -362,6 +382,8 @@ pk_package_sack_sort_package_id (PkPackageSack *sack)
  * @sack: a valid #PkPackageSack instance
  *
  * Sorts by summary
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_sort_summary (PkPackageSack *sack)
@@ -375,6 +397,8 @@ pk_package_sack_sort_summary (PkPackageSack *sack)
  * @sack: a valid #PkPackageSack instance
  *
  * Sorts by PkInfoEnum
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_sort_info (PkPackageSack *sack)
@@ -390,6 +414,8 @@ pk_package_sack_sort_info (PkPackageSack *sack)
  * Gets the total size of the package sack in bytes.
  *
  * Return value: the size in bytes
+ *
+ * Since: 0.5.2
  **/
 guint64
 pk_package_sack_get_total_bytes (PkPackageSack *sack)
@@ -556,6 +582,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Merges in details about packages using resolve.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
@@ -598,6 +626,8 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE for success
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GError **error)
@@ -869,6 +899,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Merges in update details about packages.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *cancellable,
@@ -965,6 +997,8 @@ pk_package_sack_finalize (GObject *object)
  * pk_package_sack_new:
  *
  * Return value: a new PkPackageSack object.
+ *
+ * Since: 0.5.2
  **/
 PkPackageSack *
 pk_package_sack_new (void)

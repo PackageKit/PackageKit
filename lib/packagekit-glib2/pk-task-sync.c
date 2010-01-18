@@ -74,6 +74,8 @@ pk_task_generic_finish_sync (PkTask *task, GAsyncResult *res, PkTaskHelper *help
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_task_update_system_sync (PkTask *task, GCancellable *cancellable,
@@ -124,6 +126,8 @@ pk_task_update_system_sync (PkTask *task, GCancellable *cancellable,
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
@@ -170,6 +174,8 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *cancellable,
@@ -216,6 +222,8 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *cancellable,
@@ -263,6 +271,8 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
  * applications.
  *
  * Return value: a %PkResults object, or NULL for error
+ *
+ * Since: 0.5.3
  **/
 PkResults *
 pk_task_install_files_sync (PkTask *task, gchar **files, GCancellable *cancellable,

@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-media_change_required
+ * SECTION:pk-media-change-required
  * @short_description: MediaChangeRequired object
  *
  * This GObject represents a media_change_required from a transaction.
@@ -129,6 +129,8 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 
 	/**
 	 * PkMediaChangeRequired:media-type:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("media-type", NULL, NULL,
 				   0, G_MAXUINT, PK_MEDIA_TYPE_ENUM_UNKNOWN,
@@ -137,6 +139,8 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 
 	/**
 	 * PkMediaChangeRequired:media-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("media-id", NULL, NULL,
 				     NULL,
@@ -145,6 +149,8 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 
 	/**
 	 * PkMediaChangeRequired:media-text:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("media-text", NULL, NULL,
 				     NULL,
@@ -182,6 +188,8 @@ pk_media_change_required_finalize (GObject *object)
  * pk_media_change_required_new:
  *
  * Return value: a new PkMediaChangeRequired object.
+ *
+ * Since: 0.5.4
  **/
 PkMediaChangeRequired *
 pk_media_change_required_new (void)

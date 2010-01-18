@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-repo_signature_required
+ * SECTION:pk-repo-signature-required
  * @short_description: RepoSignatureRequired object
  *
  * This GObject represents a repo_signature_required from a transaction.
@@ -174,6 +174,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -182,6 +184,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:repository-name:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("repository-name", NULL, NULL,
 				     NULL,
@@ -190,6 +194,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:key-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("key-url", NULL, NULL,
 				     NULL,
@@ -198,6 +204,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:key-userid:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("key-userid", NULL, NULL,
 				     NULL,
@@ -206,6 +214,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:key-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("key-id", NULL, NULL,
 				     NULL,
@@ -214,6 +224,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:key-fingerprint:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("key-fingerprint", NULL, NULL,
 				     NULL,
@@ -222,6 +234,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:key-timestamp:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("key-timestamp", NULL, NULL,
 				     NULL,
@@ -230,6 +244,8 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 
 	/**
 	 * PkRepoSignatureRequired:type:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("type", NULL, NULL,
 				   0, G_MAXUINT, PK_SIGTYPE_ENUM_UNKNOWN,
@@ -272,6 +288,8 @@ pk_repo_signature_required_finalize (GObject *object)
  * pk_repo_signature_required_new:
  *
  * Return value: a new PkRepoSignatureRequired object.
+ *
+ * Since: 0.5.4
  **/
 PkRepoSignatureRequired *
 pk_repo_signature_required_new (void)

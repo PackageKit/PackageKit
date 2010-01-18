@@ -62,6 +62,8 @@ pk_control_get_properties_cb (PkControl *control, GAsyncResult *res, PkControlHe
  * applications.
  *
  * Return value: %TRUE if the properties were set correctly
+ *
+ * Since: 0.5.3
  **/
 gboolean
 pk_control_get_properties (PkControl *control, GCancellable *cancellable, GError **error)
@@ -112,6 +114,8 @@ pk_control_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkCon
  * applications.
  *
  * Return value: The list of transaction id's, or %NULL, free with g_strfreev()
+ *
+ * Since: 0.5.3
  **/
 gchar **
 pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, GError **error)

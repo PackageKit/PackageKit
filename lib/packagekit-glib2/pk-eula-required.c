@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-eula_required
+ * SECTION:pk-eula-required
  * @short_description: EulaRequired object
  *
  * This GObject represents a eula_required from a transaction.
@@ -138,6 +138,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 
 	/**
 	 * PkEulaRequired:eula-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("eula-id", NULL, NULL,
 				     NULL,
@@ -146,6 +148,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 
 	/**
 	 * PkEulaRequired:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -154,6 +158,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 
 	/**
 	 * PkEulaRequired:vendor-name:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("vendor-name", NULL, NULL,
 				     NULL,
@@ -162,6 +168,8 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 
 	/**
 	 * PkEulaRequired:license-agreement:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("license-agreement", NULL, NULL,
 				     NULL,
@@ -201,6 +209,8 @@ pk_eula_required_finalize (GObject *object)
  * pk_eula_required_new:
  *
  * Return value: a new PkEulaRequired object.
+ *
+ * Since: 0.5.4
  **/
 PkEulaRequired *
 pk_eula_required_new (void)

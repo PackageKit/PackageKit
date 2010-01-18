@@ -44,6 +44,8 @@
  * pk_iso8601_present:
  *
  * Return value: The current iso8601 date and time
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_iso8601_present (void)
@@ -63,6 +65,8 @@ pk_iso8601_present (void)
  * @date: a %GDate to convert
  *
  * Return value: If valid then a new ISO8601 date, else NULL
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_iso8601_from_date (const GDate *date)
@@ -83,6 +87,8 @@ pk_iso8601_from_date (const GDate *date)
  * @iso_date: The ISO8601 date to convert
  *
  * Return value: If valid then a new %GDate, else NULL
+ *
+ * Since: 0.5.2
  **/
 GDate *
 pk_iso8601_to_date (const gchar *iso_date)
@@ -136,6 +142,8 @@ out:
  * The data in the GPtrArray is copied.
  *
  * Return value: the string array, or %NULL if invalid
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_ptr_array_to_strv (GPtrArray *array)

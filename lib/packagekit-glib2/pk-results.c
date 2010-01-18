@@ -139,6 +139,8 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
  * Sets the results object to have the given exit code.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
@@ -159,6 +161,8 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
  * Adds a package to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.3
  **/
 gboolean
 pk_results_add_package (PkResults *results, PkPackage *item)
@@ -191,6 +195,8 @@ pk_results_add_package (PkResults *results, PkPackage *item)
  * Adds some package details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_details (PkResults *results, PkDetails *item)
@@ -212,6 +218,8 @@ pk_results_add_details (PkResults *results, PkDetails *item)
  * Adds some update details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
@@ -233,6 +241,8 @@ pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
  * Adds a category item to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_category (PkResults *results, PkCategory *item)
@@ -254,6 +264,8 @@ pk_results_add_category (PkResults *results, PkCategory *item)
  * Adds a distribution upgrade item to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
@@ -275,6 +287,8 @@ pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
  * Adds a require restart item to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_require_restart (PkResults *results, PkRequireRestart *item)
@@ -296,6 +310,8 @@ pk_results_add_require_restart (PkResults *results, PkRequireRestart *item)
  * Adds a transaction item to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_transaction (PkResults *results, PkTransactionPast *item)
@@ -317,6 +333,8 @@ pk_results_add_transaction (PkResults *results, PkTransactionPast *item)
  * Adds some files details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_files (PkResults *results, PkFiles *item)
@@ -338,6 +356,8 @@ pk_results_add_files (PkResults *results, PkFiles *item)
  * Adds some repository signature details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_repo_signature_required (PkResults *results, PkRepoSignatureRequired *item)
@@ -359,6 +379,8 @@ pk_results_add_repo_signature_required (PkResults *results, PkRepoSignatureRequi
  * Adds some EULA details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_eula_required (PkResults *results, PkEulaRequired *item)
@@ -380,6 +402,8 @@ pk_results_add_eula_required (PkResults *results, PkEulaRequired *item)
  * Adds some media change details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_media_change_required (PkResults *results, PkMediaChangeRequired *item)
@@ -401,6 +425,8 @@ pk_results_add_media_change_required (PkResults *results, PkMediaChangeRequired 
  * Adds some repository details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_repo_detail (PkResults *results, PkRepoDetail *item)
@@ -422,6 +448,8 @@ pk_results_add_repo_detail (PkResults *results, PkRepoDetail *item)
  * Adds some error details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_set_error_code (PkResults *results, PkError *item)
@@ -445,6 +473,8 @@ pk_results_set_error_code (PkResults *results, PkError *item)
  * Adds some message details to the results set.
  *
  * Return value: %TRUE if the value was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_results_add_message (PkResults *results, PkMessage *item)
@@ -466,6 +496,8 @@ pk_results_add_message (PkResults *results, PkMessage *item)
  * instead using the much more useful pk_results_get_error_code() function.
  *
  * Return value: The #PkExitEnum or %PK_EXIT_ENUM_UNKNOWN for error or if it was not set
+ *
+ * Since: 0.5.2
  **/
 PkExitEnum
 pk_results_get_exit_code (PkResults *results)
@@ -481,6 +513,8 @@ pk_results_get_exit_code (PkResults *results)
  * Gets the last error code from the transaction.
  *
  * Return value: A #PkError, or %NULL, free with g_object_unref()
+ *
+ * Since: 0.5.2
  **/
 PkError *
 pk_results_get_error_code (PkResults *results)
@@ -503,6 +537,8 @@ pk_results_get_error_code (PkResults *results)
  * Gets the packages from the transaction.
  *
  * Return value: A #GPtrArray array of #PkDetails's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
@@ -518,6 +554,8 @@ pk_results_get_package_array (PkResults *results)
  * Gets a package sack from the transaction.
  *
  * Return value: A #PkPackageSack of data.
+ *
+ * Since: 0.5.2
  **/
 PkPackageSack *
 pk_results_get_package_sack (PkResults *results)
@@ -550,6 +588,8 @@ pk_results_get_package_sack (PkResults *results)
  * Gets the package details from the transaction.
  *
  * Return value: A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_details_array (PkResults *results)
@@ -565,6 +605,8 @@ pk_results_get_details_array (PkResults *results)
  * Gets the update details from the transaction.
  *
  * Return value: A #GPtrArray array of #PkUpdateDetail's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_update_detail_array (PkResults *results)
@@ -580,6 +622,8 @@ pk_results_get_update_detail_array (PkResults *results)
  * Gets the categories from the transaction.
  *
  * Return value: A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_category_array (PkResults *results)
@@ -595,6 +639,8 @@ pk_results_get_category_array (PkResults *results)
  * Gets the distribution upgrades from the transaction.
  *
  * Return value: A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_distro_upgrade_array (PkResults *results)
@@ -610,6 +656,8 @@ pk_results_get_distro_upgrade_array (PkResults *results)
  * Gets the require restarts from the transaction.
  *
  * Return value: A #GPtrArray array of #PkRequireRestart's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_require_restart_array (PkResults *results)
@@ -631,6 +679,8 @@ pk_results_get_require_restart_array (PkResults *results)
  * system as a session restart is implied with a system restart.
  *
  * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ *
+ * Since: 0.5.2
  **/
 PkRestartEnum
 pk_results_get_require_restart_worst (PkResults *results)
@@ -663,6 +713,8 @@ pk_results_get_require_restart_worst (PkResults *results)
  * Gets the transactions from the transaction.
  *
  * Return value: A #GPtrArray array of #PkTransactionPast's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_transaction_array (PkResults *results)
@@ -678,6 +730,8 @@ pk_results_get_transaction_array (PkResults *results)
  * Gets the files from the transaction.
  *
  * Return value: A #GPtrArray array of #PkFiles's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_files_array (PkResults *results)
@@ -693,6 +747,8 @@ pk_results_get_files_array (PkResults *results)
  * Gets the repository signatures required from the transaction.
  *
  * Return value: A #GPtrArray array of #PkRepoSignatureRequired's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_repo_signature_required_array (PkResults *results)
@@ -708,6 +764,8 @@ pk_results_get_repo_signature_required_array (PkResults *results)
  * Gets the eulas required from the transaction.
  *
  * Return value: A #GPtrArray array of #PkEulaRequired's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_eula_required_array (PkResults *results)
@@ -723,6 +781,8 @@ pk_results_get_eula_required_array (PkResults *results)
  * Gets the media changes required from the transaction.
  *
  * Return value: A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_media_change_required_array (PkResults *results)
@@ -738,6 +798,8 @@ pk_results_get_media_change_required_array (PkResults *results)
  * Gets the repository details from the transaction.
  *
  * Return value: A #GPtrArray array of #PkRepoDetail's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_repo_detail_array (PkResults *results)
@@ -753,6 +815,8 @@ pk_results_get_repo_detail_array (PkResults *results)
  * Gets the messages from the transaction.
  *
  * Return value: A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
+ *
+ * Since: 0.5.2
  **/
 GPtrArray *
 pk_results_get_message_array (PkResults *results)
@@ -775,6 +839,8 @@ pk_results_class_init (PkResultsClass *klass)
 
 	/**
 	 * PkResults:role:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
 				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
@@ -783,6 +849,8 @@ pk_results_class_init (PkResultsClass *klass)
 
 	/**
 	 * PkResults:inputs:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_uint ("inputs", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -793,6 +861,8 @@ pk_results_class_init (PkResultsClass *klass)
 
 	/**
 	 * PkResults:progress:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_object ("progress", NULL,
 				     "The progress instance",
@@ -862,6 +932,8 @@ pk_results_finalize (GObject *object)
  * pk_results_new:
  *
  * Return value: a new PkResults object.
+ *
+ * Since: 0.5.2
  **/
 PkResults *
 pk_results_new (void)

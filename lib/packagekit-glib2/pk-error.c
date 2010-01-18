@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-error_code
+ * SECTION:pk-error
  * @short_description: ErrorCode object
  *
  * This GObject represents a error_code from a transaction.
@@ -108,6 +108,8 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 
 /**
  * pk_error_get_code:
+ *
+ * Since: 0.5.5
  **/
 PkErrorEnum
 pk_error_get_code (PkError *error_code)
@@ -118,6 +120,8 @@ pk_error_get_code (PkError *error_code)
 
 /**
  * pk_error_get_details:
+ *
+ * Since: 0.5.5
  **/
 const gchar *
 pk_error_get_details (PkError *error_code)
@@ -140,6 +144,8 @@ pk_error_class_init (PkErrorClass *klass)
 
 	/**
 	 * PkError:code:
+	 *
+	 * Since: 0.5.5
 	 */
 	pspec = g_param_spec_uint ("code", NULL, NULL,
 				   0, G_MAXUINT, PK_ERROR_ENUM_UNKNOWN,
@@ -148,6 +154,8 @@ pk_error_class_init (PkErrorClass *klass)
 
 	/**
 	 * PkError:details:
+	 *
+	 * Since: 0.5.5
 	 */
 	pspec = g_param_spec_string ("details", NULL, NULL,
 				     NULL,
@@ -184,6 +192,8 @@ pk_error_finalize (GObject *object)
  * pk_error_new:
  *
  * Return value: a new PkError object.
+ *
+ * Since: 0.5.5
  **/
 PkError *
 pk_error_new (void)

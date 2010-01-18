@@ -120,6 +120,8 @@ pk_files_class_init (PkFilesClass *klass)
 
 	/**
 	 * PkFiles:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -128,6 +130,8 @@ pk_files_class_init (PkFilesClass *klass)
 
 	/**
 	 * PkFiles:files:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boxed ("files", NULL, NULL,
 				    G_TYPE_STRV,
@@ -167,6 +171,8 @@ pk_files_finalize (GObject *object)
  * pk_files_new:
  *
  * Return value: a new PkFiles object.
+ *
+ * Since: 0.5.4
  **/
 PkFiles *
 pk_files_new (void)

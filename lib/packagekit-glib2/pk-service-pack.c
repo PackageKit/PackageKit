@@ -98,6 +98,8 @@ G_DEFINE_TYPE (PkServicePack, pk_service_pack, G_TYPE_OBJECT)
  * pk_service_pack_error_quark:
  *
  * Return value: Our personal error quark.
+ *
+ * Since: 0.5.2
  **/
 GQuark
 pk_service_pack_error_quark (void)
@@ -369,6 +371,8 @@ pk_service_pack_create_temporary_directory (const gchar *prefix)
  * Checks to see if a service pack file is valid, and usable with this system.
  *
  * Return value: %TRUE if the service pack is valid
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_service_pack_check_valid (PkServicePack *pack, const gchar *filename, GError **error)
@@ -433,6 +437,8 @@ out:
  * Sets the directory to use when decompressing the service pack
  *
  * Return value: %TRUE if the directory was set
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_service_pack_set_temp_directory (PkServicePack *pack, const gchar *directory)
@@ -868,6 +874,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Create a service pack for the specified Package IDs
+ *
+ * Since: 0.5.2
  **/
 void
 pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *filename, gchar **package_ids,
@@ -969,6 +977,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Create a service pack for the specified Package IDs
+ *
+ * Since: 0.5.2
  **/
 void
 pk_service_pack_create_for_updates_async (PkServicePack *pack, const gchar *filename,
@@ -1013,6 +1023,8 @@ pk_service_pack_create_for_updates_async (PkServicePack *pack, const gchar *file
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE for success
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_service_pack_generic_finish (PkServicePack *pack, GAsyncResult *res, GError **error)
@@ -1076,6 +1088,8 @@ pk_service_pack_init (PkServicePack *pack)
  * pk_service_pack_new:
  *
  * Return value: A new service_pack class instance.
+ *
+ * Since: 0.5.2
  **/
 PkServicePack *
 pk_service_pack_new (void)

@@ -132,6 +132,8 @@ typedef struct {
  * We are a GObject that sets errors
  *
  * Return value: Our personal error quark.
+ *
+ * Since: 0.5.2
  **/
 GQuark
 pk_control_error_quark (void)
@@ -264,6 +266,8 @@ pk_control_call_destroy_cb (PkControlState *state)
  * @user_data: the data to pass to @callback
  *
  * Gets a transacton ID from the daemon.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -308,6 +312,8 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
  * Gets the result from the asynchronous function.
  *
  * Return value: the ID, or %NULL if unset, free with g_free()
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -409,6 +415,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Gets the debugging state from the daemon.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -453,6 +461,8 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
  * Gets the result from the asynchronous function.
  *
  * Return value: the ID, or %NULL if unset, free with g_free()
+ *
+ * Since: 0.5.2
  **/
 gchar *
 pk_control_get_daemon_state_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -552,6 +562,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Set a proxy on the PK daemon
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GCancellable *cancellable,
@@ -599,6 +611,8 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE if we set the proxy successfully
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -700,6 +714,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Gets the transactions currently running in the daemon.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -744,6 +760,8 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
  * Gets the result from the asynchronous function.
  *
  * Return value: A GStrv list of transaction ID's, free with g_strfreev()
+ *
+ * Since: 0.5.2
  **/
 gchar **
 pk_control_get_transaction_list_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -852,6 +870,8 @@ out:
  *
  * We may want to know how long it has been since we refreshed the cache or
  * retrieved the update list.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -899,6 +919,8 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE if the daemon serviced the request
+ *
+ * Since: 0.5.2
  **/
 guint
 pk_control_get_time_since_action_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1008,6 +1030,8 @@ out:
  *
  * We may want to know before we run a method if we are going to be denied,
  * accepted or challenged for authentication.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
@@ -1054,6 +1078,8 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
  * Gets the result from the asynchronous function.
  *
  * Return value: the %PkAuthorizeEnum or %PK_AUTHORIZE_ENUM_UNKNOWN if the method failed
+ *
+ * Since: 0.5.2
  **/
 PkAuthorizeEnum
 pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1409,6 +1435,8 @@ out:
  * @user_data: the data to pass to @callback
  *
  * Gets global properties from the daemon.
+ *
+ * Since: 0.5.2
  **/
 void
 pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
@@ -1455,6 +1483,8 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
  * Gets the result from the asynchronous function.
  *
  * Return value: %TRUE if we set the proxy successfully
+ *
+ * Since: 0.5.2
  **/
 gboolean
 pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError **error)
@@ -1853,6 +1883,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:version-major:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("version-major", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -1861,6 +1893,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:version-minor:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -1869,6 +1903,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:version-micro:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
 				   0, G_MAXUINT, 0,
@@ -1877,6 +1913,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:backend-name:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("backend-name", NULL, NULL,
 				     NULL,
@@ -1885,6 +1923,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:backend-description:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("backend-description", NULL, NULL,
 				     NULL,
@@ -1893,6 +1933,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:backend-author:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("backend-author", NULL, NULL,
 				     NULL,
@@ -1901,6 +1943,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:roles:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint64 ("roles", NULL, NULL,
 				     0, G_MAXUINT64, 0,
@@ -1909,6 +1953,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:groups:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint64 ("groups", NULL, NULL,
 				     0, G_MAXUINT64, 0,
@@ -1917,6 +1963,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:filters:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_uint64 ("filters", NULL, NULL,
 				     0, G_MAXUINT64, 0,
@@ -1925,6 +1973,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:mime-types:
+	 *
+	 * Since: 0.5.2
 	 */
 	pspec = g_param_spec_string ("mime-types", NULL, NULL,
 				     NULL,
@@ -1933,6 +1983,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:locked:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_boolean ("locked", NULL, NULL,
 				      FALSE,
@@ -1941,6 +1993,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:network-state:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_uint ("network-state", NULL, NULL,
 				   0, G_MAXUINT, PK_NETWORK_ENUM_LAST,
@@ -1949,6 +2003,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:distro-id:
+	 *
+	 * Since: 0.5.5
 	 */
 	pspec = g_param_spec_string ("distro-id", NULL, NULL,
 				     NULL,
@@ -1957,6 +2013,8 @@ pk_control_class_init (PkControlClass *klass)
 
 	/**
 	 * PkControl:connected:
+	 *
+	 * Since: 0.5.3
 	 */
 	pspec = g_param_spec_boolean ("connected", NULL, NULL,
 				      FALSE,
@@ -2169,6 +2227,8 @@ pk_control_finalize (GObject *object)
  * pk_control_new:
  *
  * Return value: a new PkControl object.
+ *
+ * Since: 0.5.2
  **/
 PkControl *
 pk_control_new (void)

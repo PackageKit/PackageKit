@@ -119,6 +119,8 @@ pk_source_class_init (PkSourceClass *klass)
 
 	/**
 	 * PkSource:role:
+	 *
+	 * Since: 0.6.0
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
 				   0, G_MAXUINT, PK_ROLE_ENUM_UNKNOWN,
@@ -127,6 +129,8 @@ pk_source_class_init (PkSourceClass *klass)
 
 	/**
 	 * PkSource:transaction-id:
+	 *
+	 * Since: 0.6.0
 	 */
 	pspec = g_param_spec_string ("transaction-id", NULL, NULL,
 				     NULL,
@@ -163,6 +167,8 @@ pk_source_finalize (GObject *object)
  * pk_source_new:
  *
  * Return value: a new PkSource object.
+ *
+ * Since: 0.6.0
  **/
 PkSource *
 pk_source_new (void)

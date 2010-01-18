@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-repo_detail
+ * SECTION:pk-repo-detail
  * @short_description: RepoDetail object
  *
  * This GObject represents a repo_detail from a transaction.
@@ -128,6 +128,8 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 
 	/**
 	 * PkRepoDetail:repo-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("repo-id", NULL, NULL,
 				     NULL,
@@ -136,6 +138,8 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 
 	/**
 	 * PkRepoDetail:description:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
@@ -144,6 +148,8 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 
 	/**
 	 * PkRepoDetail:enabled:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boolean ("enabled", NULL, NULL,
 				      FALSE,
@@ -181,6 +187,8 @@ pk_repo_detail_finalize (GObject *object)
  * pk_repo_detail_new:
  *
  * Return value: a new PkRepoDetail object.
+ *
+ * Since: 0.5.4
  **/
 PkRepoDetail *
 pk_repo_detail_new (void)

@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:pk-update_detail
+ * SECTION:pk-update-detail
  * @short_description: UpdateDetail object
  *
  * This GObject represents a update_detail from a transaction.
@@ -209,6 +209,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:package-id:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
@@ -217,6 +219,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:updates:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("updates", NULL, NULL,
 				     NULL,
@@ -225,6 +229,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:obsoletes:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("obsoletes", NULL, NULL,
 				     NULL,
@@ -233,6 +239,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:vendor-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("vendor-url", NULL, NULL,
 				     NULL,
@@ -241,6 +249,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:bugzilla-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("bugzilla-url", NULL, NULL,
 				     NULL,
@@ -249,6 +259,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:cve-url:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("cve-url", NULL, NULL,
 				     NULL,
@@ -257,6 +269,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:restart:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("restart", NULL, NULL,
 				   0, G_MAXUINT, PK_RESTART_ENUM_UNKNOWN,
@@ -265,6 +279,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:update-text:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("update-text", NULL, NULL,
 				     NULL,
@@ -273,6 +289,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:changelog:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("changelog", NULL, NULL,
 				     NULL,
@@ -281,6 +299,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:state:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_uint ("state", NULL, NULL,
 				   0, G_MAXUINT, PK_UPDATE_STATE_ENUM_UNKNOWN,
@@ -289,6 +309,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:issued:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("issued", NULL, NULL,
 				     NULL,
@@ -297,6 +319,8 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 
 	/**
 	 * PkUpdateDetail:updated:
+	 *
+	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_string ("updated", NULL, NULL,
 				     NULL,
@@ -342,6 +366,8 @@ pk_update_detail_finalize (GObject *object)
  * pk_update_detail_new:
  *
  * Return value: a new PkUpdateDetail object.
+ *
+ * Since: 0.5.4
  **/
 PkUpdateDetail *
 pk_update_detail_new (void)

@@ -103,6 +103,8 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
  * in the main menu or not.
  *
  * Return value: string array of results, free with g_ptr_array_unref()
+ *
+ * Since: 0.5.3
  **/
 GPtrArray *
 pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GError **error)
@@ -144,6 +146,8 @@ out:
  * i.e are an application
  *
  * Return value: string array of results, free with g_ptr_array_unref()
+ *
+ * Since: 0.5.3
  **/
 GPtrArray *
 pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GError **error)
@@ -184,6 +188,8 @@ out:
  * Returns the package name that owns the desktop file. Fast.
  *
  * Return value: package name, or %NULL
+ *
+ * Since: 0.5.3
  **/
 gchar *
 pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GError **error)
@@ -225,6 +231,8 @@ out:
  * @desktop: a valid #PkDesktop instance
  *
  * Return value: %TRUE if opened correctly
+ *
+ * Since: 0.5.3
  **/
 gboolean
 pk_desktop_open_database (PkDesktop *desktop, GError **error)
@@ -300,6 +308,8 @@ pk_desktop_finalize (GObject *object)
 
 /**
  * pk_desktop_new:
+ *
+ * Since: 0.5.3
  **/
 PkDesktop *
 pk_desktop_new (void)
