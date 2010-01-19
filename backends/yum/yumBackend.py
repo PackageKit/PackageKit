@@ -2171,6 +2171,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
+        if autoremove:
+            self.message(MESSAGE_PARAMETER_INVALID, "the yum backend does not support autoremove")
+
         txmbrs = []
         for package_id in package_ids:
             grp = self._is_meta_package(package_id)
