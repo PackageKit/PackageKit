@@ -2447,12 +2447,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
                 # Get info about package in updates info
-                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-                if notice:
-                    status = self._get_status(notice)
-                    pkgfilter.add_custom(pkg, status)
-                else:
-                    pkgfilter.add_custom(pkg, INFO_NORMAL)
+                notices = md.get_applicable_notices(pkg.pkgtup)
+                status = INFO_NORMAL
+                if notices:
+                    for notice in notices:
+                        status = self._get_status(notice)
+                        if status == INFO_SECURITY:
+                            break
+                pkgfilter.add_custom(pkg, status)
 
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
