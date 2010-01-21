@@ -1,13 +1,13 @@
 # translation of packagekit.master.po to Dutch
 # R.E. van der Luit <nippur@fedoraproject.org>, 2009.
 # Geert Warrink <geert.warrink@onsnet.nu>, 2009.
-# Richard van der Luit <nippur@fedoraproject.org>, 2009.
+# Richard van der Luit <nippur@fedoraproject.org>, 2009, 2010.
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-07 14:32+0000\n"
-"PO-Revision-Date: 2009-12-07 18:30+0100\n"
+"POT-Creation-Date: 2010-01-21 09:59+0000\n"
+"PO-Revision-Date: 2010-01-21 15:50+0100\n"
 "Last-Translator: Richard van der Luit <nippur@fedoraproject.org>\n"
 "Language-Team: Dutch <nl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -315,20 +315,30 @@ msgid ""
 "have been installed."
 msgstr "Log a.u.b. uit en weer in om de verniewing af te maken."
 
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
+#: ../client/pk-console.c:843
+#, c-format
+msgid ""
+"Extected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"Verwachtte pakketnaam, maar kreeg een bestand. Probeer in plaats daarvan "
+"'pkcon install-local %s' te gebruiken."
+
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:840
+#: ../client/pk-console.c:851
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Dit programma kon geen enkel beschikbaar pakket %s vinden."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:868
+#: ../client/pk-console.c:879
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Dit programma kon het geïinstallerde pakket %s niet vinden."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:896 ../client/pk-console.c:924
+#: ../client/pk-console.c:907 ../client/pk-console.c:935
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Dit programma kon het pakket %s niet vinden."
@@ -337,64 +347,64 @@ msgstr "Dit programma kon het pakket %s niet vinden."
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:952 ../client/pk-console.c:980
-#: ../client/pk-console.c:1008 ../client/pk-console.c:1036
-#: ../client/pk-console.c:1064
+#: ../client/pk-console.c:963 ../client/pk-console.c:991
+#: ../client/pk-console.c:1019 ../client/pk-console.c:1047
+#: ../client/pk-console.c:1075
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Dit programma kon niet alle pakketten vinden: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1093
+#: ../client/pk-console.c:1104
 msgid "The daemon crashed mid-transaction!"
 msgstr "De service is midden in de transactie gecrashed!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1127
+#: ../client/pk-console.c:1138
 msgid "PackageKit Console Interface"
 msgstr "PackageKit console-interface"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1129
+#: ../client/pk-console.c:1140
 msgid "Subcommands:"
 msgstr "Subopdrachten:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:1208
+#: ../client/pk-console.c:1219
 msgid "Failed to get the time since this action was last completed"
 msgstr ""
 "Verkrijgen van de tijd tussen laatste actie en deze actie is niet gelukt"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1244 ../client/pk-monitor.c:280
+#: ../client/pk-console.c:1255 ../client/pk-monitor.c:280
 msgid "Show the program version and exit"
 msgstr "Programmaversie tonen en sluiten"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1247
+#: ../client/pk-console.c:1258
 msgid "Set the filter, e.g. installed"
 msgstr "Filter instellen, bijvoorbeeld geïnstalleerd"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1250
+#: ../client/pk-console.c:1261
 msgid "Exit without waiting for actions to complete"
 msgstr "Afsluiten zonder te wachten tot de transacties zijn afgerond"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1253
+#: ../client/pk-console.c:1264
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "Installeer het pakket zonder goedkeuring te vragen"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1256
+#: ../client/pk-console.c:1267
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr ""
 "Voer het commando uit met gebruik van onbenutte netwerk bandbreedte en ook "
 "om minder vermogen te gebruiken"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1259
+#: ../client/pk-console.c:1270
 msgid ""
 "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
@@ -402,128 +412,128 @@ msgstr ""
 "widgets te gebruiken"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1281
+#: ../client/pk-console.c:1292
 msgid "Failed to contact PackageKit"
 msgstr "Contact met PackageKit krijgen mislukte."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1339
+#: ../client/pk-console.c:1350
 msgid "The filter specified was invalid"
 msgstr "De opgegeven filter was ongeldig"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1358
+#: ../client/pk-console.c:1369
 msgid "A search type is required, e.g. name"
 msgstr "Een zoektype is verplicht, b.v. naam"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1365 ../client/pk-console.c:1377
-#: ../client/pk-console.c:1389 ../client/pk-console.c:1401
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1388
+#: ../client/pk-console.c:1400 ../client/pk-console.c:1412
 msgid "A search term is required"
 msgstr "Een zoekterm is vereist"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1411
+#: ../client/pk-console.c:1422
 msgid "Invalid search type"
 msgstr "Ongeldig zoektype"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1417
+#: ../client/pk-console.c:1428
 msgid "A package name to install is required"
 msgstr "Een pakketnaam om te installeren is vereist"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1426
+#: ../client/pk-console.c:1437
 msgid "A filename to install is required"
 msgstr "Een bestandsnaam om te installeren is vereist"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1438
+#: ../client/pk-console.c:1449
 msgid "A type, key_id and package_id are required"
 msgstr "Er moet een type worden opgegeven, key_id of package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1460
 msgid "A package name to remove is required"
 msgstr "Een te verwijderen pakketnaam is vereist"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1458
+#: ../client/pk-console.c:1469
 msgid "A destination directory and the package names to download are required"
 msgstr "Een doelmap en dan de namen van te downloaden pakketten zijn vereist"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1465
+#: ../client/pk-console.c:1476
 msgid "Directory not found"
 msgstr "Map niet gevonden"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1474
+#: ../client/pk-console.c:1485
 msgid "A licence identifier (eula-id) is required"
 msgstr "Een licentie indentificatie (eula-id) is vereis"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1485
+#: ../client/pk-console.c:1496
 msgid "A transaction identifier (tid) is required"
 msgstr "Een transactie indentificatie (tid) is vereist"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1506
+#: ../client/pk-console.c:1517
 msgid "A package name to resolve is required"
 msgstr "Een pakketnaam om te gebruiken is vereist"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1517 ../client/pk-console.c:1528
+#: ../client/pk-console.c:1528 ../client/pk-console.c:1539
 msgid "A repository name is required"
 msgstr "Een naam van een repository is vereist"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1539
+#: ../client/pk-console.c:1550
 msgid "A repo name, parameter and value are required"
 msgstr "Een repo naam, parameter en waarde zijn vereist"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1567
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Een actie, b.v. 'update-system' is vereist"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1563
+#: ../client/pk-console.c:1574
 msgid "A correct role is required"
 msgstr "Een correcte rol is vereist"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1573 ../client/pk-console.c:1588
-#: ../client/pk-console.c:1597 ../client/pk-console.c:1617
-#: ../client/pk-console.c:1626 ../client/pk-generate-pack.c:298
+#: ../client/pk-console.c:1584 ../client/pk-console.c:1599
+#: ../client/pk-console.c:1608 ../client/pk-console.c:1628
+#: ../client/pk-console.c:1637 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "Een pakketnaam is vereist"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1617
 msgid "A package provide string is required"
 msgstr "Een pakket geleverde string is vereist"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1686
+#: ../client/pk-console.c:1697
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Optie '%s' wordt niet ondersteund"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1696
+#: ../client/pk-console.c:1707
 msgid "Command failed"
 msgstr "Opdracht mislukt"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:237
+#: ../client/pk-generate-pack.c:255
 msgid "Set the file name of dependencies to be excluded"
 msgstr ""
 "Zet de bestandsnamen van afhankelijkheden die moeten worden uitgesloten"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:240
+#: ../client/pk-generate-pack.c:258
 msgid ""
 "The output file or directory (the current directory is used if ommitted)"
 msgstr ""
@@ -531,43 +541,43 @@ msgstr ""
 "opgegeven)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:243
+#: ../client/pk-generate-pack.c:261
 msgid "The package to be put into the service pack"
 msgstr "Het pakket dat in het servicepack zal worden opgenomen"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:246
+#: ../client/pk-generate-pack.c:264
 msgid "Put all updates available in the service pack"
 msgstr "Doe alle beschikbare updates in het servicepack"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:282
+#: ../client/pk-generate-pack.c:300
 msgid "Neither --package or --updates option selected."
 msgstr "Noch --package noch --updates als optie geselecteerd."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:290
+#: ../client/pk-generate-pack.c:308
 msgid "Both options selected."
 msgstr "Beide opties geselecteerd."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:306
+#: ../client/pk-generate-pack.c:324
 msgid "A output directory or file name is required"
 msgstr "Een doelmap of bestandsnaam is vereist"
 
 #. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
-#: ../client/pk-generate-pack.c:324
+#: ../client/pk-generate-pack.c:342
 msgid "The dameon failed to startup"
 msgstr "De daemon faalde op te starten"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:335 ../client/pk-generate-pack.c:341
+#: ../client/pk-generate-pack.c:353 ../client/pk-generate-pack.c:359
 msgid "The package manager cannot perform this type of operation."
 msgstr "De package manager kan dit type operatie niet uitvoeren."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:348
+#: ../client/pk-generate-pack.c:366
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
@@ -576,55 +586,55 @@ msgstr ""
 "ondersteuning is gebouwd."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:359
+#: ../client/pk-generate-pack.c:377
 msgid "If specifying a file, the service pack name must end with"
 msgstr ""
 "Bij het specificeren van een bestand moet de servicepacknaam eindigen met"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:375
+#: ../client/pk-generate-pack.c:393
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Een pack met dezelfde naam bestaat reeds, wilt u deze overschrijven?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:378
+#: ../client/pk-generate-pack.c:396
 msgid "The pack was not overwritten."
 msgstr "Het pack werd niet overschreven."
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:391
+#: ../client/pk-generate-pack.c:409
 msgid "Failed to create directory:"
 msgstr "Aanmaken map mislukt:"
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:403
+#: ../client/pk-generate-pack.c:421
 msgid "Failed to open package list."
 msgstr "Pakketlijst openen is niet gelukt."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:412
+#: ../client/pk-generate-pack.c:430
 msgid "Finding package name."
 msgstr "Pakketnaam wordt opgezocht."
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:416
+#: ../client/pk-generate-pack.c:434
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Pakket '%s' niet gevonden: %s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:424
+#: ../client/pk-generate-pack.c:442
 msgid "Creating service pack..."
 msgstr "Servicepack wordt aangemaakt...."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:439
+#: ../client/pk-generate-pack.c:457
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "Servicepack aangemaakt '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:444
+#: ../client/pk-generate-pack.c:462
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "'%s' aanmaken niet gelukt: %s"
@@ -760,29 +770,29 @@ msgid "Please choose a command to run"
 msgstr "Kies alstublieft een commando om te starten"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:766
+#: ../contrib/command-not-found/pk-command-not-found.c:764
 msgid "The package providing this file is:"
 msgstr "Het pakket dat dit bestand levert is:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:771
+#: ../contrib/command-not-found/pk-command-not-found.c:769
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Pakket '%s' installeren om commando '%s' te verkrijgen?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:795
+#: ../contrib/command-not-found/pk-command-not-found.c:793
 msgid "Packages providing this file are:"
 msgstr "Pakketten die dit bestand leveren zijn:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:805
+#: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "Suitable packages are:"
 msgstr "Geschikte pakketten zijn:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:814
+#: ../contrib/command-not-found/pk-command-not-found.c:812
 msgid "Please choose a package to install"
 msgstr "Kies alstublieft een pakket om te installeren"
 
@@ -983,92 +993,92 @@ msgid "Disabled %i debugging sources."
 msgstr "%i debug bronnen uitgezet."
 
 #. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:61
+#: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
 msgstr "Bestand openen niet gelukt"
 
 #. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:70
+#: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
 msgstr "Naar bestand schrijven niet gelukt"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:110
-#: ../contrib/device-rebind/pk-device-rebind.c:147
+#: ../contrib/device-rebind/pk-device-rebind.c:111
+#: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
 msgstr "Naar schijf schrijven niet gelukt"
 
 #. TRANSLATORS: the device could not be found in sysfs
-#: ../contrib/device-rebind/pk-device-rebind.c:175
+#: ../contrib/device-rebind/pk-device-rebind.c:176
 msgid "Device could not be found"
 msgstr "Schijf kon niet gevonden worden"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:202
+#: ../contrib/device-rebind/pk-device-rebind.c:203
 msgid "Failed to unregister driver"
 msgstr "Driver uitschrijven mislukte"
 
 #. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:211
+#: ../contrib/device-rebind/pk-device-rebind.c:212
 msgid "Failed to register driver"
 msgstr "Driver inschrijven mislukte"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:260
+#: ../contrib/device-rebind/pk-device-rebind.c:261
 msgid "Device path not found"
 msgstr "Device pad niet gevonden"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:268
+#: ../contrib/device-rebind/pk-device-rebind.c:269
 msgid "Incorrect device path specified"
 msgstr "Onjuist device pad opgegeven"
 
-#: ../contrib/device-rebind/pk-device-rebind.c:293
+#: ../contrib/device-rebind/pk-device-rebind.c:294
 msgid "Show extra debugging information"
 msgstr "Extra debuginformatie tonen"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/device-rebind/pk-device-rebind.c:296
+#: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
 msgstr "Ik raak de hardware niet aan, ik simuleer alleen wat er zou gebeuren"
 
 #. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:299
+#: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
 msgstr "Device paden"
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:314
+#: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
 msgstr "PackageKit device herlader"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:322
+#: ../contrib/device-rebind/pk-device-rebind.c:323
 msgid "You need to specify at least one valid device path"
 msgstr "Je moet tenminste een geldig device pad opgeven"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:332
+#: ../contrib/device-rebind/pk-device-rebind.c:333
 msgid "This script can only be used by the root user"
 msgstr "Dit script kan alleen door de root gebruiker gebruikt worden"
 
 #. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:341
+#: ../contrib/device-rebind/pk-device-rebind.c:342
 msgid "Verifying device path"
 msgstr "Verifiëren van device pad"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:346
+#: ../contrib/device-rebind/pk-device-rebind.c:347
 msgid "Failed to verify device path"
 msgstr "Device pad verifiëren mislukte"
 
 #. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:360
+#: ../contrib/device-rebind/pk-device-rebind.c:361
 msgid "Attempting to rebind device"
 msgstr "Probeer opnieuw te berbinden met device"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:365
+#: ../contrib/device-rebind/pk-device-rebind.c:366
 msgid "Failed to rebind device"
 msgstr "Opnieuw verbinden met device mislukte"
 
