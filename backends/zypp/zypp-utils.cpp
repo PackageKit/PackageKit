@@ -53,7 +53,8 @@
 #include <zypp/base/Logger.h>
 
 #include <pk-backend.h>
-#include <packagekit-glib/packagekit.h>
+#define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
+#include <packagekit-glib2/packagekit.h>
 
 #include "zypp-utils.h"
 
@@ -393,15 +394,14 @@ zypp_get_packages_by_file (const gchar *search_file)
 zypp::sat::Solvable
 zypp_get_package_by_id (const gchar *package_id)
 {
-	PkPackageId *pi;
-	pi = pk_package_id_new_from_string (package_id);
-	if (pi == NULL) {
+	if (!pk_package_id_check(package_id)) {
 		// TODO: Do we need to do something more for this error?
 		return zypp::sat::Solvable::noSolvable;
 	}
 
-	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, zypp::ResKind::package, TRUE);
-	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (pi->name, zypp::ResKind::patch, TRUE);
+	gchar **id_parts = pk_package_id_split(package_id);
+	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
+	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
 
 	v->insert (v->end (), v2->begin (), v2->end ());
 	
@@ -414,7 +414,7 @@ zypp_get_package_by_id (const gchar *package_id)
 			it != v->end (); it++) {
 		gchar *version = g_strdup (it->edition ().c_str ());
 		gchar *arch = g_strdup (it->arch ().c_str ());
-		if (strcmp (pi->version, version) == 0 && strcmp (pi->arch, arch) == 0) {
+		if (strcmp (id_parts[PK_PACKAGE_ID_VERSION], version) == 0 && strcmp (id_parts[PK_PACKAGE_ID_ARCH], arch) == 0) {
 			package = *it;
 			break;
 		}
@@ -424,6 +424,7 @@ zypp_get_package_by_id (const gchar *package_id)
 
 	delete (v);
 	delete (v2);
+	g_strfreev (id_parts);
 	return package;
 }
 
@@ -948,36 +949,19 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 			manager.refreshMetadata (repo, force == TRUE ?
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
-		} catch (const zypp::Exception &ex) {
-			if (repo_messages == NULL) {
-				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
-			}else{
-				repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
-			}
-			repo_messages = pk_strsafe (repo_messages);
-			if (repo_messages == NULL)
-				repo_messages = g_strdup ("A repository could not be refreshed");
-			continue;
-		}
-
-		try {
-			// Building cache
 			manager.buildCache (repo, force == TRUE ?
 				zypp::RepoManager::BuildForced :
 				zypp::RepoManager::BuildIfNeeded);
-		//} catch (const zypp::repo::RepoNoUrlException &ex) {
-		//} catch (const zypp::repo::RepoNoAliasException &ex) {
-		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
-		//} catch (const zypp::repo::RepoException &ex) {
 		} catch (const zypp::Exception &ex) {
 			if (repo_messages == NULL) {
 				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
 			}else{
 				repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
 			}
-			repo_messages = pk_strsafe (repo_messages);
-			if (repo_messages == NULL)
+			if (repo_messages == NULL || !g_utf8_validate (repo_messages, -1, NULL))
 				repo_messages = g_strdup ("A repository could not be refreshed");
+			g_strdelimit (repo_messages, "\\\f\r\t", ' ');
+			continue;
 		}
 
 		// Update the percentage completed
