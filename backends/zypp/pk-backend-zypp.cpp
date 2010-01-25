@@ -1279,12 +1279,14 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
+	gchar **values;
 	const gchar *search;
 	PkBitfield filters;
 	guint mode;
 	//GList *list = NULL;
 
-	search = pk_backend_get_string (backend, "search");
+	values = pk_backend_get_strv (backend, "search");
+	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 
@@ -1321,7 +1323,7 @@ backend_find_packages_thread (PkBackend *backend)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1331,7 +1333,7 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1340,10 +1342,12 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 static gboolean
 backend_search_group_thread (PkBackend *backend)
 {
+	gchar **values;
 	const gchar *group;
 	PkBitfield filters;
 
-	group = pk_backend_get_string (backend, "search");
+	values = pk_backend_get_strv (backend, "search");
+	group = values[0];  //Fixme - add support for possible multiple values.
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
@@ -1384,7 +1388,7 @@ backend_search_group_thread (PkBackend *backend)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGroup)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
@@ -1393,7 +1397,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *pkGro
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1737,8 +1741,8 @@ static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	const gchar *search;
-	search = pk_backend_get_string (backend, "search");
+	gchar **values = pk_backend_get_strv (backend, "search");
+	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	gchar *filters = pk_filter_bitfield_to_string(filters_field);
@@ -1818,7 +1822,7 @@ backend_what_provides_thread (PkBackend *backend)
   * backend_what_provides
   */
 static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
@@ -1862,9 +1866,9 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	backend_search_files,			/* search_files */
+	backend_search_groups,			/* search_groups */
+	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides,			/* what_provides */
