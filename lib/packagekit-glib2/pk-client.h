@@ -70,7 +70,7 @@ typedef enum
 	PK_CLIENT_ERROR_NOT_SUPPORTED
 } PkClientError;
 
-typedef struct _PkClientPrivate	PkClientPrivate;
+typedef struct _PkClientPrivate		PkClientPrivate;
 typedef struct _PkClient		PkClient;
 typedef struct _PkClientClass		PkClientClass;
 

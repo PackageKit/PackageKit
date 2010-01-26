@@ -79,7 +79,6 @@ CPPFLAGS="$CPPFLAGS -DGSEAL_ENABLE"
 dnl ---------------------------------------------------------------------------
 dnl - Use strict options (default enabled for devs, disabled in releases)
 dnl ---------------------------------------------------------------------------
-
 dnl if .git directory is present, considering we are working in the repository
 if test -d ".git"; then
 	default_strict=yes
@@ -882,7 +881,7 @@ echo "
         pm-utils scripts:          ${build_pm_utils}
         RUCK client:               ${build_ruck}
         QT library:                ${build_qt}
-	Managed bindings:          ${build_managed}
+        Managed bindings:          ${build_managed}
 
         Backends:
         ALPM backend:              ${enable_alpm}
@@ -913,7 +912,6 @@ if test ! -x "$CONSOLEKIT_DAEMON"; then
 	echo "**********************************************************************"
 	echo ""
 fi
-
 
 # warn that dummy is basically broken
 if test x$with_security_framework = xdummy; then
