@@ -1,5 +1,5 @@
 # Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
-AC_PREREQ(2.62)
+AC_PREREQ(2.65)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
@@ -7,10 +7,10 @@ m4_define([pk_micro_version], [1])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
-AC_INIT(PackageKit, [pk_version], [richard@hughsie.com], [PackageKit])
+AC_INIT([PackageKit],[pk_version],[richard@hughsie.com],[PackageKit])
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 GOBJECT_INTROSPECTION_CHECK([0.6.7])
@@ -46,9 +46,9 @@ AC_SUBST(LT_AGE)
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 AC_HEADER_STDC
-AC_PROG_LIBTOOL
+LT_INIT
 AM_PROG_CC_C_O
 
 # Internationalisation
@@ -86,8 +86,7 @@ else
 	default_strict=no
 fi
 
-AC_ARG_ENABLE(strict, AC_HELP_STRING([--enable-strict],
-							[Enable strict compilation options]), enable_strict=$enableval,
+AC_ARG_ENABLE(strict, AS_HELP_STRING([--enable-strict],[Enable strict compilation options]), enable_strict=$enableval,
 							enable_strict=$default_strict)
 if test x$enable_strict != xno; then
 	if test "$GCC" = "yes"; then
@@ -223,7 +222,7 @@ AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Build packageKit-sharp
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(managed, AC_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
+AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
 	      enable_managed=$enableval,enable_managed=false)
 if test x$enable_managed = xyes; then
 	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
@@ -251,8 +250,7 @@ AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(service-packs, AC_HELP_STRING([--disable-service-packs],
-		[Disable Service Packs support]), enable_servicepacks=$enableval)
+AC_ARG_ENABLE(service-packs, AS_HELP_STRING([--disable-service-packs],[Disable Service Packs support]), enable_servicepacks=$enableval)
 if test x$enable_servicepacks != xno; then
 	AC_CHECK_HEADERS(archive.h,
 			 HAVE_ARCHIVE_H="yes",
@@ -285,8 +283,7 @@ networking_apis="unix"
 dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(networkmanager, AC_HELP_STRING([--disable-networkmanager],
-		[Disable NetworkManager support]),
+AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),
 		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
 	PKG_CHECK_MODULES(LIBNM, libnm-glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
@@ -313,8 +310,7 @@ AC_SUBST(LIBNM_LIBS)
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(connman, AC_HELP_STRING([--disable-connman],
-		[Disable ConnMan support]), enable_connman=$enableval)
+AC_ARG_ENABLE(connman, AS_HELP_STRING([--disable-connman],[Disable ConnMan support]), enable_connman=$enableval)
 if test x$enable_connman != xno; then
 	PKG_CHECK_MODULES(CONNMAN, connman, PK_BUILD_CONNMAN="yes", PK_BUILD_CONNMAN="no")
 	if test "x$PK_BUILD_CONNMAN" = "xyes"; then
@@ -341,8 +337,7 @@ AC_PATH_PROG(CONSOLEKIT_DAEMON, console-kit-daemon, [], [/usr/sbin$PATH_SEPARATO
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(man_pages, AC_HELP_STRING([--disable-man-pages],
-		[Disable man pages generation]), enable_man_pages=$enableval)
+AC_ARG_ENABLE(man_pages, AS_HELP_STRING([--disable-man-pages],[Disable man pages generation]), enable_man_pages=$enableval)
 if test x$enable_man_pages != xno; then
 	AC_PATH_PROG(XSLTPROC, xsltproc, no)
 	if test x$enable_man_pages = xyes; then
@@ -437,7 +432,7 @@ if test x$enable_browser_plugin = xyes; then
 		LDFLAGS="$packagekit_save_LDFLAGS"
 
 		# Are we specifying a different mozilla plugin directory?
-		AC_ARG_WITH(mozilla-plugin-dir, [AC_HELP_STRING([--with-mozilla-plugin-dir=<dir>], [where to put the mozilla plugin])])
+		AC_ARG_WITH(mozilla-plugin-dir, [AS_HELP_STRING([--with-mozilla-plugin-dir=<dir>],[where to put the mozilla plugin])])
 		if ! test -z "$with_mozilla_plugin_dir" ; then
 			MOZILLA_PLUGIN_DIR="$with_mozilla_plugin_dir"
 		else
@@ -581,11 +576,9 @@ dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH(dbus-sys,
-	      [AC_HELP_STRING([--with-dbus-sys=<dir>],
-	      [where D-BUS system.d directory is])])
+	      [AS_HELP_STRING([--with-dbus-sys=<dir>],[where D-BUS system.d directory is])])
 AC_ARG_WITH(dbus-services,
-	      [AC_HELP_STRING([--with-dbus-services=<dir>],
-	      [where D-BUS system-services directory is])])
+	      [AS_HELP_STRING([--with-dbus-services=<dir>],[where D-BUS system-services directory is])])
 if ! test -z "$with_dbus_sys" ; then
 	DBUS_SYS_DIR="$with_dbus_sys"
 else
@@ -787,7 +780,7 @@ AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 etc/Makefile
 docs/Makefile
@@ -856,6 +849,7 @@ client/Makefile
 tools/Makefile
 po/Makefile.in
 ])
+AC_OUTPUT
 
 dnl ==========================================================================
 echo "
