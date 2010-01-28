@@ -86,9 +86,6 @@ void		 pk_package_sack_test			(gpointer		 user_data);
 #define pk_package_sack_sort_package_id(a)		(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID))
 
 /* managing the array */
-guint		 pk_package_sack_get_size		(PkPackageSack		*sack);
-PkPackage	*pk_package_sack_get_index		(PkPackageSack		*sack,
-							 guint			 i);
 void		 pk_package_sack_clear			(PkPackageSack		*sack);
 gchar		**pk_package_sack_get_ids		(PkPackageSack		*sack);
 GPtrArray	*pk_package_sack_get_array		(PkPackageSack		*sack);

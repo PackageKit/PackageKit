@@ -114,7 +114,7 @@ static void
 pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *results)
 {
 	guint i;
-	guint len;
+	GPtrArray *array;
 	const gchar *package_id;
 	gchar *printable;
 	gchar *summary;
@@ -130,9 +130,9 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 	sack = pk_results_get_package_sack (results);
 
 	/* print data */
-	len = pk_package_sack_get_size (sack);
-	for (i=0; i<len; i++) {
-		package = pk_package_sack_get_index (sack, i);
+	array = pk_package_sack_get_array (sack);
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
 		g_object_get (package,
 			      "info", &info,
 			      "summary", &summary,
@@ -143,13 +143,13 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 
 		g_free (summary);
 		g_free (printable);
-		g_object_unref (package);
 	}
 
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
 
 	g_object_unref (sack);
+	g_ptr_array_unref (array);
 }
 
 /**

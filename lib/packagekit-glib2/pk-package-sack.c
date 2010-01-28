@@ -65,24 +65,6 @@ enum {
 G_DEFINE_TYPE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
 
 /**
- * pk_package_sack_get_size:
- * @sack: a valid #PkPackageSack instance
- *
- * Gets the number of packages in the sack
- *
- * Return value: the number of packages in the sack
- *
- * Since: 0.5.2
- **/
-guint
-pk_package_sack_get_size (PkPackageSack *sack)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), 0);
-
-	return sack->priv->array->len;
-}
-
-/**
  * pk_package_sack_clear:
  * @sack: a valid #PkPackageSack instance
  *
@@ -124,34 +106,6 @@ pk_package_sack_get_ids (PkPackageSack *sack)
 		package_ids[i] = g_strdup (pk_package_get_id (package));
 	}
 	return package_ids;
-}
-
-/**
- * pk_package_sack_get_index:
- * @sack: a valid #PkPackageSack instance
- * @i: the instance to get
- *
- * Gets a packages from the sack
- *
- * Return value: a %PkPackage instance
- *
- * Since: 0.5.2
- **/
-PkPackage *
-pk_package_sack_get_index (PkPackageSack *sack, guint i)
-{
-	PkPackage *package = NULL;
-
-	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
-
-	/* index invalid */
-	if (i >= sack->priv->array->len)
-		goto out;
-
-	/* get object */
-	package = g_object_ref (g_ptr_array_index (sack->priv->array, i));
-out:
-	return package;
 }
 
 /**
