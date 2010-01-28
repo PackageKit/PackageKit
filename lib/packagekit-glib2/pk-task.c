@@ -302,7 +302,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	}
 
 	/* sort the list, as clients will mostly want this */
-	pk_package_sack_sort_info (sack);
+	pk_package_sack_sort (sack, PK_PACKAGE_SACK_SORT_TYPE_INFO);
 
 	/* run the callback */
 	klass->simulate_question (state->task, state->request, state->results);

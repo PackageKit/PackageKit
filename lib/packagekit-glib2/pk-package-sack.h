@@ -80,11 +80,6 @@ GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
 void		 pk_package_sack_test			(gpointer		 user_data);
 
-/* for compatibility */
-#define pk_package_sack_sort_info(a)			(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_INFO))
-#define pk_package_sack_sort_summary(a)			(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_SUMMARY))
-#define pk_package_sack_sort_package_id(a)		(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID))
-
 /* managing the array */
 void		 pk_package_sack_clear			(PkPackageSack		*sack);
 gchar		**pk_package_sack_get_ids		(PkPackageSack		*sack);

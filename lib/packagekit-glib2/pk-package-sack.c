@@ -371,11 +371,11 @@ pk_package_sack_sort (PkPackageSack *sack, PkPackageSackSortType type)
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	if (type == PK_PACKAGE_SACK_SORT_TYPE_NAME)
 		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_name_func);
-	if (type == PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID)
+	else if (type == PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID)
 		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
-	if (type == PK_PACKAGE_SACK_SORT_TYPE_SUMMARY)
+	else if (type == PK_PACKAGE_SACK_SORT_TYPE_SUMMARY)
 		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
-	if (type == PK_PACKAGE_SACK_SORT_TYPE_INFO)
+	else if (type == PK_PACKAGE_SACK_SORT_TYPE_INFO)
 		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
 }
 
