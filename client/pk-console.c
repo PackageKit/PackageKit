@@ -667,6 +667,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	PkResults *results;
 	GError *error = NULL;
 	GPtrArray *array;
+	PkPackageSack *sack;
 	PkRestartEnum restart;
 	PkRoleEnum role;
 
@@ -702,8 +703,12 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* get the role */
 	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
+	/* get the sack */
+	sack = pk_results_get_package_sack (results);
+	pk_package_sack_sort (sack, PK_PACKAGE_SACK_SORT_TYPE_NAME);
+	array = pk_package_sack_get_array (sack);
+
 	/* package */
-	array = pk_results_get_package_array (results);
 	if (!is_console ||
 	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
 	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
@@ -723,6 +728,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	}
 
 	g_ptr_array_unref (array);
+	g_object_unref (sack);
 
 	/* transaction */
 	array = pk_results_get_transaction_array (results);

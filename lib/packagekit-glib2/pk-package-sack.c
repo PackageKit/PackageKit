@@ -38,6 +38,7 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-package-id.h>
 
 #include "egg-debug.h"
 
@@ -151,6 +152,23 @@ pk_package_sack_get_index (PkPackageSack *sack, guint i)
 	package = g_object_ref (g_ptr_array_index (sack->priv->array, i));
 out:
 	return package;
+}
+
+/**
+ * pk_package_sack_get_array:
+ * @sack: a valid #PkPackageSack instance
+ *
+ * Gets the package array from the sack
+ *
+ * Return value: a #GPtrArray, free with g_ptr_array_unref()
+ *
+ * Since: 0.6.1
+ **/
+GPtrArray *
+pk_package_sack_get_array (PkPackageSack *sack)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+	return g_ptr_array_ref (sack->priv->array);
 }
 
 /**
@@ -312,6 +330,28 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 }
 
 /**
+ * pk_package_sack_sort_compare_name_func:
+ **/
+static gint
+pk_package_sack_sort_compare_name_func (PkPackage **a, PkPackage **b)
+{
+	const gchar *package_id1;
+	const gchar *package_id2;
+	gchar **split1;
+	gchar **split2;
+	gint retval;
+
+	package_id1 = pk_package_get_id (*a);
+	package_id2 = pk_package_get_id (*b);
+	split1 = pk_package_id_split (package_id1);
+	split2 = pk_package_id_split (package_id2);
+	retval = g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
+	g_strfreev (split1);
+	g_strfreev (split2);
+	return retval;
+}
+
+/**
  * pk_package_sack_sort_compare_package_id_func:
  **/
 static gint
@@ -365,46 +405,24 @@ pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
 /**
  * pk_package_sack_sort_package_id:
  * @sack: a valid #PkPackageSack instance
+ * @type: the type of sorting, e.g. #PK_PACKAGE_SACK_SORT_TYPE_NAME
  *
- * Sorts by Package ID
+ * Sorts the package sack
  *
- * Since: 0.5.2
+ * Since: 0.6.1
  **/
 void
-pk_package_sack_sort_package_id (PkPackageSack *sack)
+pk_package_sack_sort (PkPackageSack *sack, PkPackageSackSortType type)
 {
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
-	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
-}
-
-/**
- * pk_package_sack_sort_summary:
- * @sack: a valid #PkPackageSack instance
- *
- * Sorts by summary
- *
- * Since: 0.5.2
- **/
-void
-pk_package_sack_sort_summary (PkPackageSack *sack)
-{
-	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
-	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
-}
-
-/**
- * pk_package_sack_sort_info:
- * @sack: a valid #PkPackageSack instance
- *
- * Sorts by PkInfoEnum
- *
- * Since: 0.5.2
- **/
-void
-pk_package_sack_sort_info (PkPackageSack *sack)
-{
-	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
-	g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
+	if (type == PK_PACKAGE_SACK_SORT_TYPE_NAME)
+		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_name_func);
+	if (type == PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID)
+		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_package_id_func);
+	if (type == PK_PACKAGE_SACK_SORT_TYPE_SUMMARY)
+		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_summary_func);
+	if (type == PK_PACKAGE_SACK_SORT_TYPE_INFO)
+		g_ptr_array_sort (sack->priv->array, (GCompareFunc) pk_package_sack_sort_compare_info_func);
 }
 
 /**

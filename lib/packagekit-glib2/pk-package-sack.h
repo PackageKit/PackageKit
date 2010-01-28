@@ -67,10 +67,23 @@ struct _PkPackageSackClass
 	void (*_pk_reserved5) (void);
 };
 
+typedef enum {
+	PK_PACKAGE_SACK_SORT_TYPE_NAME,
+	PK_PACKAGE_SACK_SORT_TYPE_INFO,
+	PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID,
+	PK_PACKAGE_SACK_SORT_TYPE_SUMMARY,
+	PK_PACKAGE_SACK_SORT_TYPE_LAST
+} PkPackageSackSortType;
+
 GQuark		 pk_package_sack_error_quark		(void);
 GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
 void		 pk_package_sack_test			(gpointer		 user_data);
+
+/* for compatibility */
+#define pk_package_sack_sort_info(a)			(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_INFO))
+#define pk_package_sack_sort_summary(a)			(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_SUMMARY))
+#define pk_package_sack_sort_package_id(a)		(pk_package_sack_sort(a,PK_PACKAGE_SACK_SORT_TYPE_PACKAGE_ID))
 
 /* managing the array */
 guint		 pk_package_sack_get_size		(PkPackageSack		*sack);
@@ -78,9 +91,9 @@ PkPackage	*pk_package_sack_get_index		(PkPackageSack		*sack,
 							 guint			 i);
 void		 pk_package_sack_clear			(PkPackageSack		*sack);
 gchar		**pk_package_sack_get_ids		(PkPackageSack		*sack);
-void		 pk_package_sack_sort_package_id	(PkPackageSack		*sack);
-void		 pk_package_sack_sort_info		(PkPackageSack		*sack);
-void		 pk_package_sack_sort_summary		(PkPackageSack		*sack);
+GPtrArray	*pk_package_sack_get_array		(PkPackageSack		*sack);
+void		 pk_package_sack_sort			(PkPackageSack		*sack,
+							 PkPackageSackSortType	 type);
 gboolean	 pk_package_sack_add_package		(PkPackageSack		*sack,
 							 PkPackage		*package);
 gboolean	 pk_package_sack_add_package_by_id	(PkPackageSack		*sack,
