@@ -80,5 +80,5 @@ For Example:
 	0002-My-second-commit.patch
 
 Send these patches in an introductory email as attachments to
-packagekit-list@lists.freedesktop.org
+packagekit@lists.freedesktop.org
 
