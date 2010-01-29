@@ -1670,6 +1670,27 @@ backend_repo_set_data_thread (PkBackend *backend)
 			}
 
 			manager.modifyRepository (repo_id, repo);
+		}else if (g_ascii_strcasecmp (parameter, "keep") == 0) {
+			repo = manager.getRepositoryInfo (repo_id);
+
+			if (g_ascii_strcasecmp (value, "true") == 0) {
+				repo.setKeepPackages (TRUE);
+			}else if (g_ascii_strcasecmp (value, "false") == 0) {
+				repo.setKeepPackages (FALSE);
+			}else {
+				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Keep downloaded packages: Enter true or false");
+				bReturn = FALSE;
+			}
+
+			manager.modifyRepository (repo_id, repo);
+		}else if (g_ascii_strcasecmp (parameter, "url") == 0) {
+			repo = manager.getRepositoryInfo (repo_id);
+			repo.setBaseUrl (zypp::Url(value));
+			manager.modifyRepository (repo_id, repo);
+		}else if (g_ascii_strcasecmp (parameter, "name") == 0) {
+			repo = manager.getRepositoryInfo (repo_id);
+			repo.setName(value);
+			manager.modifyRepository (repo_id, repo);
 		}else if (g_ascii_strcasecmp (parameter, "prio") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			gint prio = 0;
@@ -1703,7 +1724,7 @@ backend_repo_set_data_thread (PkBackend *backend)
 			}
 
 		} else {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "Valid parameters for set_repo_data are remove/add/refresh/prio");
+			pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "Valid parameters for set_repo_data are remove/add/refresh/prio/keep/url/name");
 			bReturn = FALSE;
 		}
 
