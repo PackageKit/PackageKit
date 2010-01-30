@@ -384,7 +384,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 static void
 backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
-	pk_backend_spawn_helper (spawn, "foo", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
 PK_BACKEND_OPTIONS (
