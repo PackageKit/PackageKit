@@ -24,6 +24,10 @@ if BACKEND_TYPE_DUMMY
 SUBDIRS += dummy
 endif
 
+if BACKEND_TYPE_ENTROPY
+SUBDIRS += entropy
+endif
+
 if BACKEND_TYPE_OPKG
 SUBDIRS += opkg
 endif
