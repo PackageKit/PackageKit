@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+# -*- coding: utf-8 -*-
 #
 #
 # Copyright (C) 2009 Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
@@ -33,12 +34,15 @@ from entropy.const import etpConst
 import entropy.tools
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
+from entropy.misc import LogFile
 
 # TODO:
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
 
 class PackageKitEntropyBackend(PackageKitBaseBackend):
+
+    _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
 
     def __sigquit(self, signum, frame):
         if hasattr(self, '_entropy'):
@@ -47,15 +51,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, self.__sigquit)
-        self.__dev_null = open("/dev/null", "w")
         self._entropy = Client()
         self._settings = SystemSettings()
+        self._entropy_log = LogFile(
+            level = self._settings['system']['log_level'],
+            filename = self._log_fname, header = "[packagekit]")
 
         PackageKitBaseBackend.__init__(self, args)
-
-        # TODO: should be removed when using non-verbose function API
-        self.orig_out = None
-        self.orig_err = None
 
     def _is_repository_enabled(self, repo_name):
         repo_data = self._settings['repositories']
@@ -94,17 +96,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         }
         return pk_group_map[generic_group_name]
 
-    # TODO: should be removed when using non-verbose function API
-    def block_output(self):
-        self.orig_out = sys.stdout
-        self.orig_err = sys.stderr
-        sys.stdout = self.__dev_null
-        sys.stderr = self.__dev_null
+    def _log_message(self, source, message):
+        """
+        Write log message to Entropy PackageKit log file.
+        """
+        self._entropy_log.write("%s: %s" % (source, message,))
 
-    # TODO: should be removed when using non-verbose function API
-    def unblock_output(self):
-        sys.stdout = self.orig_out
-        sys.stderr = self.orig_err
+    def _get_percentage(self, count, max_count):
+        """
+        Prepare percentage value used to feed self.percentage()
+        """
+        return int((float(count)/max_count)*100)
 
     def is_cpv_valid(self, cpv):
         if self.is_installed(cpv):
@@ -1414,18 +1416,50 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
     def search_name(self, filters, keys):
 
-        c_repo = self._entropy.installed_repository()
-
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        search_keys = keys.split()
-        #print "filters", filters, "keys", keys
-        for key in search_keys:
-            pkg_ids = c_repo.searchPackages(key, just_id = True)
-            for pkg_id in pkg_ids:
-                self._package((pkg_id, c_repo))
+        self._log_message(__name__, "search_name: got %s and %s" % (
+            filters, keys,))
+
+        repo_ids = self._entropy.repositories() + ["__system__"]
+        repos = []
+        for repo in repo_ids:
+            if repo == "__system__":
+                repo_db = self._entropy.installed_repository()
+            else:
+                repo_db = self._entropy.open_repository(repo)
+            repos.append((repo_db, repo,))
+
+        search_keys = keys.split("&")
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = self._get_percentage(count, max_count)
+
+            self._log_message(__name__, "search_name: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            for key in search_keys:
+                pkg_ids = repo_db.searchPackages(key, just_id = True)
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+        # now filter
+        fltlist = filters.split(';')
+        for flt in fltlist:
+            if flt == FILTER_NONE:
+                continue
+            elif flt == FILTER_INSTALLED:
+                pkgs = set([x for x in pkgs if x[0] == "__system__"])
+
+        lambda_sort = lambda x: x[2].retrieveAtom(x[1])
+
+        for repo, pkg_id, c_repo in sorted(pkgs, key = lambda_sort):
+            self._package((pkg_id, c_repo))
 
         self.percentage(100)
 
