@@ -273,52 +273,60 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
-
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-details", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
- * backend_search_file:
+ * backend_search_files:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
-
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-file", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
- * pk_backend_search_group:
+ * pk_backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 { 
 	gchar *filters_text;
-
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-group", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
-
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "search-name", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
@@ -417,9 +425,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	backend_search_files,			/* search_file */
+	backend_search_groups,			/* search_group */
+	backend_search_names,			/* search_name */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */
