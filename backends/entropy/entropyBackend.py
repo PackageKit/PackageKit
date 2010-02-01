@@ -202,16 +202,15 @@ class PackageKitEntropyMixin:
         """
         inst_pkgs_repo_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
         fltlist = filters.split(';')
-        for flt in fltlist:
-            if flt == FILTER_NONE:
-                continue
-            elif flt == FILTER_INSTALLED:
-                pkgs = set([x for x in pkgs if x[0] == inst_pkgs_repo_id])
-            elif flt == FILTER_NOT_INSTALLED:
-                pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
-            elif flt == FILTER_FREE:
-                free_pkgs = set([x for x in pkgs if \
-                    self._entropy.is_entropy_package_free(x[1], x[0])])
+
+        if FILTER_INSTALLED in fltlist:
+            pkgs = set([x for x in pkgs if x[0] == inst_pkgs_repo_id])
+        elif FILTER_NOT_INSTALLED in fltlist:
+            pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
+        if FILTER_FREE in fltlist:
+            free_pkgs = set([x for x in pkgs if \
+                self._entropy.is_entropy_package_free(x[1], x[0])])
+
         return pkgs
 
     def _pk_add_pkg_type(self, pkgs, important_check = False):
@@ -598,7 +597,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             pkgs,))
 
         # now filter
-        # FIXME: check if filters are properly applied
         pkgs = self._pk_filter_pkgs(pkgs, filters)
         pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
@@ -679,21 +677,35 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def get_packages(self, filters):
+
+        self._log_message(__name__, "get_packages: got %s" % (
+            filters,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self.get_all_cp(fltlist)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+        repos = self._get_all_repos()
 
-        for cp in self.get_all_cp(fltlist):
-            for cpv in self.get_all_cpv(cp, fltlist):
-                self._package(cpv)
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "resolve: done %s/100" % (percent,))
+
+            self.percentage(percent)
+            pkg_ids = repo_db.listAllIdpackages()
+            pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
 
@@ -1084,12 +1096,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def resolve(self, filters, search_keys):
 
+        self._log_message(__name__, "resolve: got %s and %s" % (
+            filters, search_keys,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
-
-        self._log_message(__name__, "resolve: got %s and %s" % (
-            filters, search_keys,))
 
         repos = self._get_all_repos()
 
