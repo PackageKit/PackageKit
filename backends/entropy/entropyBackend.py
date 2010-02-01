@@ -47,6 +47,8 @@ PK_DEBUG = True
 
 class PackageKitEntropyMixin:
 
+    INST_PKGS_REPO_ID = "installed"
+
     """
     Entropy relaxed code can be found in this Mixin class.
     The aim is to separate PackageKit code and reimplemented methods from
@@ -73,6 +75,74 @@ class PackageKitEntropyMixin:
         """
         repo_data = self._settings['repositories']
         return repo_name in repo_data['available']
+
+    def _etp_to_id(self, pkg_match):
+        """
+        Transform an Entropy package match (pkg_id, EntropyRepository) into
+        PackageKit id.
+        @param pkg_match: tuple composed by package identifier and its parent
+            EntropyRepository instance
+        @type pkg_match: tuple
+        @return: PackageKit package id
+        @rtype: string
+        """
+        pkg_id, c_repo = pkg_match
+
+        pkg_key, pkg_slot, pkg_ver, pkg_tag, pkg_rev, atom = \
+            c_repo.getStrictData(pkg_id)
+
+        pkg_ver += "%s%s" % (etpConst['entropyslotprefix'], pkg_slot,)
+        if pkg_tag:
+            pkg_ver += "%s%s" % (etpConst['entropytagprefix'], pkg_tag)
+
+        cur_arch = etpConst['currentarch']
+        repo_name = c_repo.get_plugins_metadata().get("repo_name")
+        if repo_name is None:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                "Invalid metadata passed")
+
+        # if installed, repo should be 'installed', packagekit rule
+        if repo_name == etpConst['clientdbid']:
+            repo_name = "installed"
+
+        # openoffice-clipart;2.6.22;ppc64;fedora
+        return get_package_id(pkg_key, pkg_ver, cur_arch, repo_name)
+
+    def _id_to_etp(self, pkit_id):
+        """
+        Transform a PackageKit package id into Entropy package match.
+
+        @param pkit_id: PackageKit package id
+        @type pkit_id: string
+        @return: tuple composed by package identifier and its parent
+            EntropyRepository instance
+        @rtype: tuple
+        """
+        split_data = split_package_id(pkit_id)
+        if len(split_data) < 4:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                "The package id %s does not contain 4 fields" % pkit_id)
+            return
+        pkg_key, pkg_ver, cur_arch, repo_name = split_data
+
+        self._log_message(__name__, "_id_to_etp: extracted: %s | %s | %s | %s" % (
+            pkg_key, pkg_ver, cur_arch, repo_name,))
+        pkg_ver, pkg_slot = pkg_ver.rsplit(":", 1)
+
+        if repo_name == "installed":
+            c_repo = self._entropy.installed_repository()
+        else:
+            c_repo = self._entropy.open_repository(repo_name)
+
+        atom = pkg_key + "-" + pkg_ver + etpConst['entropyslotprefix'] + \
+            pkg_slot
+        pkg_id, pkg_rc = c_repo.atomMatch(atom)
+        if pkg_rc != 0:
+            self.error(ERROR_PACKAGE_ID_INVALID,
+                "Package not found in repository")
+            return
+
+        return pkg_id, c_repo
 
     def _get_pk_group(self, dep):
         """
@@ -104,7 +174,7 @@ class PackageKitEntropyMixin:
         repository identifier for every available repository, including
         installed packages one.
         """
-        inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
+        inst_pkgs_repo_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
         repo_ids = self._entropy.repositories() + [inst_pkgs_repo_id]
         repos = []
         for repo in repo_ids:
@@ -130,7 +200,7 @@ class PackageKitEntropyMixin:
         """
         Filter pkgs list given PackageKit filters.
         """
-        inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
+        inst_pkgs_repo_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
         fltlist = filters.split(';')
         for flt in fltlist:
             if flt == FILTER_NONE:
@@ -265,8 +335,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         'xfce': GROUP_DESKTOP_XFCE,
         'unknown': GROUP_UNKNOWN,
     }
-
-    INST_PKGS_REPO_ID = "__system__"
 
     def __sigquit(self, signum, frame):
         if hasattr(self, '_entropy'):
@@ -413,86 +481,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         return cpv_list
 
-    def _etp_to_id(self, pkg_match):
-        """
-        Transform an Entropy package match (pkg_id, EntropyRepository) into
-        PackageKit id.
-        @param pkg_match: tuple composed by package identifier and its parent
-            EntropyRepository instance
-        @type pkg_match: tuple
-        @return: PackageKit package id
-        @rtype: string
-        """
-        pkg_id, c_repo = pkg_match
-
-        pkg_key, pkg_slot, pkg_ver, pkg_tag, pkg_rev, atom = \
-            c_repo.getStrictData(pkg_id)
-
-        if pkg_tag:
-            pkg_ver += "%s%s" % (etpConst['entropytagprefix'], pkg_tag)
-            pkg_ver += "%s%s" % (etpConst['entropyslotprefix'], pkg_slot,)
-        cur_arch = etpConst['currentarch']
-        repo_name = c_repo.get_plugins_metadata().get("repo_name")
-        if repo_name is None:
-            self.error(ERROR_PACKAGE_ID_INVALID,
-                "Invalid metadata passed")
-
-        # if installed, repo should be 'installed', packagekit rule
-        if repo_name == etpConst['clientdbid']:
-            repo_name = "installed"
-
-        # openoffice-clipart;2.6.22;ppc64;fedora
-        return get_package_id(pkg_key, pkg_ver, cur_arch, repo_name)
-
-    def _id_to_etp(self, pkit_id):
-        """
-        Transform a PackageKit package id into Entropy package match.
-
-        @param pkit_id: PackageKit package id
-        @type pkit_id: string
-        @return: tuple composed by package identifier and its parent
-            EntropyRepository instance
-        @rtype: tuple
-        """
-        split_data = split_package_id(pkgid)
-        if len(ret) < 4:
-            self.error(ERROR_PACKAGE_ID_INVALID,
-                "The package id %s does not contain 4 fields" % pkgid)
-        pkg_key, pkg_ver, cur_arch, repo_name = split_data
-        pkg_ver, pkg_slot = pkg_ver.rsplit(":", 1)
-
-        if repo_name == "installed":
-            c_repo = self._entropy.installed_repository()
-        else:
-            c_repo = self._entropy.open_repository(repo_name)
-
-        atom = pkg_key + "-" + pkg_ver + etpConst['entropyslotprefix'] + \
-            pkg_slot
-        pkg_id, pkg_rc = c_repo.atomMatch(atom)
-        if pkg_rc != 0:
-            self.error(ERROR_PACKAGE_ID_INVALID,
-                "Package not found in repository")
-
-        return pkg_id, c_repo
-
-    def id_to_cpv(self, pkgid):
-        '''
-        Transform the package id (packagekit) to a cpv (portage)
-        '''
-        ret = split_package_id(pkgid)
-
-        if len(ret) < 4:
-            self.error(ERROR_PACKAGE_ID_INVALID,
-                    "The package id %s does not contain 4 fields" % pkgid)
-        if '/' not in ret[0]:
-            self.error(ERROR_PACKAGE_ID_INVALID,
-                    "The first field of the package id must contain a category")
-
-        # remove slot info from version field
-        version = ret[1].split(':')[0]
-
-        return ret[0] + "-" + version
-
     def get_packages_required(self, cpv_input, recursive):
         '''
         Get a list of cpv and recursive parameter.
@@ -558,99 +546,65 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 info = INFO_AVAILABLE
         return self.package(self._etp_to_id(pkg_match), info, desc)
 
-    def get_depends(self, filters, pkgs, recursive):
-        # TODO: use only myparams ?
-        # TODO: improve error management / info
+    def get_depends(self, filters, pk_pkgs, recursive):
 
-        # FILTERS:
-        # - installed: ok
-        # - free: ok
-        # - newest: ignored because only one version of a package is installed
+        self._log_message(__name__, "get_depends: got %s and %s and %s" % (
+            filters, pk_pkgs, recursive,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
-        fltlist = filters.split(';')
+        pkgs = set()
+        for pk_pkg in pk_pkgs:
 
-        cpv_input = []
-        cpv_list = []
-
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-            if not self.is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None: # wtf!
+                self._log_message(__name__, "get_depends: cannot match %s" % (
+                    pk_pkg,))
                 continue
-            cpv_input.append('=' + cpv)
 
-        myopts = {}
-        myopts["--selective"] = True
-        myopts["--deep"] = True
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "")
+            self._log_message(__name__, "get_depends: translated %s => %s" % (
+                pk_pkg, pkg,))
 
-        depgraph = _emerge.depgraph.depgraph(
-                self.pvar.settings, self.pvar.trees, myopts, myparams, None)
-        retval, fav = depgraph.select_files(cpv_input)
+            pkg_id, repo_db = pkg
+            repo = repo_db.get_plugins_metadata().get("repo_name")
+            pkgs.add((repo, pkg_id, repo_db,))
 
-        if not retval:
+        matches = [(y, x) for x, y, z in pkgs]
+
+        # FIXME: use relaxed_deps that way?
+        empty = False
+        deep = False
+        install, removal, deps_not_f = self._entropy.get_install_queue(matches,
+            empty, deep, relaxed_deps = not recursive)
+
+        if deps_not_f == -2:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Wasn't able to get dependency graph")
+                "Dependencies not found: %s" % (sorted(install),))
             return
 
-        def _add_children_to_list(cpv_list, node):
-            for n in depgraph._dynamic_config.digraph.child_nodes(node):
-                if n not in cpv_list:
-                    cpv_list.append(n)
-                    _add_children_to_list(cpv_list, n)
+        # transform install into (repo, pkg_id, c_repo) list
+        install = [(y, x, self._entropy.open_repository(y),) for x, y in \
+            install]
+        # transform remove the same way
+        inst_pkg_r_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
+        removal = [(inst_pkg_r_id, x, self._entropy.installed_repository()) \
+            for x in removal]
 
-        for cpv in cpv_input:
-            for r in depgraph._dynamic_config.digraph.root_nodes():
-                # TODO: remove things with @ as first char
-                # TODO: or refuse SetArgs
-                if not isinstance(r, _emerge.AtomArg.AtomArg):
-                    continue
-                if r.atom == cpv:
-                    if recursive:
-                        _add_children_to_list(cpv_list, r)
-                    else:
-                        for n in \
-                                depgraph._dynamic_config.digraph.child_nodes(r):
-                            for c in \
-                                depgraph._dynamic_config.digraph.child_nodes(n):
-                                cpv_list.append(c)
+        pkgs = set(install + removal)
 
-        def _filter_uninstall(cpv):
-            return cpv[3] != 'uninstall'
-        def _filter_installed(cpv):
-            return cpv[0] == 'installed'
-        def _filter_not_installed(cpv):
-            return cpv[0] != 'installed'
+        self._log_message(__name__, "get_depends: matches %s" % (
+            pkgs,))
 
-        # removing packages going to be uninstalled
-        cpv_list = filter(_filter_uninstall, cpv_list)
+        # now filter
+        # FIXME: check if filters are properly applied
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
-        # install filter
-        if FILTER_INSTALLED in fltlist:
-            cpv_list = filter(_filter_installed, cpv_list)
-        if FILTER_NOT_INSTALLED in fltlist:
-            cpv_list = filter(_filter_not_installed, cpv_list)
-
-        # now we can change cpv_list to a real cpv list
-        tmp_list = cpv_list[:]
-        cpv_list = []
-        for x in tmp_list:
-            cpv_list.append(x[2])
-        del tmp_list
-
-        # free filter
-        cpv_list = self.filter_free(cpv_list, fltlist)
-
-        for cpv in cpv_list:
-            # prevent showing input packages
-            if '=' + cpv not in cpv_input:
-                self._package(cpv)
+        self.percentage(100)
 
     def get_details(self, pkgs):
         self.status(STATUS_INFO)
@@ -734,6 +688,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def get_repo_list(self, filters):
+
+        self._log_message(__name__, "get_repo_list: got %s and %s" % (
+            filters,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
@@ -1130,6 +1087,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         count = 0
         max_count = len(repos)
         for repo_db, repo in repos:
+
             count += 1
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
