@@ -1,3 +1,54 @@
+Version 0.6.1
+~~~~~~~~~~~~~
+Released: 2010-02-01
+
+Translations:
+ - Updated translation for Chinese (Simplified) (gml520)
+ - Updated translation for Dutch (warrink)
+ - Updated translation for Polish (raven)
+ - Updated translation for Spanish (elsupergomez)
+
+Libraries:
+
+Backends:
+ - alpm: Added autoremove and HoldPkg functionality (PirateJonno)
+ - alpm: Changed search functions to allow multiple search values (Valeriy Lyasotskiy)
+ - alpm: Handle ILoveCandy config option (PirateJonno)
+ - alpm: More formatting (PirateJonno)
+ - alpm: Understand more config options (PirateJonno)
+ - aptcc: Impoved search file (Daniel Nicoletti)
+ - portage: Fix compilation and port code to new API (Fabio Erculiani)
+ - ports: Convert search params to array values (Anders F Bjorklund)
+ - urpmi: Fix backend api (Aurelien Lefebvre)
+ - yum: Emit a warning when a developer tries to use autoremove (Richard Hughes)
+ - yum: Ensure we look in all update notices for a security update. Fixes rh#526279 (Richard Hughes)
+ - yum: Include PackageKit in the list of essential packages (Richard Hughes)
+ - yum: Show a message to the user if the repo could not be reached. Fixes rh#531838 (Richard Hughes)
+ - yum: Use repo-for-developers-only when enabling rawhide (Richard Hughes)
+ - zypp: Add more features to repo_set_data (Ladislav Slezak)
+ - zypp: Partial support of multiple values for search params (Scott Reeves)
+ - zypp: Work with packagekit-glib2 (Scott Reeves)
+
+New Features:
+ - Add Kubuntu support for upgrade (Daniel Nicoletti)
+ - Add support for the 'interactive' hint in the daemon, and also sent it to the backend (Richard Hughes)
+ - Add a new message enum 'repo-for-developers-only' for repos that should not be used by users (Richard Hughes)
+ - Add sync versions of the PkPackageSack functions (Richard Hughes)
+ - Enable initial introspection support in PackageKit-glib2 (Richard Hughes)
+ - Sort the packages by name in all pkcon results (Richard Hughes)
+
+Bugfixes:
+ - Ensure we enter SETUP before we run the pre-transaction checks (Richard Hughes)
+ - Add a parent object to all the source objects to track the source role and transacton id (Richard Hughes)
+ - Ensure we set an error when the transaction is cancelled (Richard Hughes)
+ - Ensure PkProgress sends ::notify signals when properties change (Richard Hughes)
+ - When adopting a transaction ensure we set the role on the PkResults object (Richard Hughes)
+ - Show the translated role and status when using pkgenpack (Richard Hughes)
+ - Ensure that pkgenpack generates filenames without ';' embedded in them (Richard Hughes)
+ - If the user uses 'pkcon install dave.rpm' then give a useful error message (Richard Hughes)
+ - Fixed packagekit.client.install_packages() in Python bindings (Tim Waugh)
+ - Cache autoremove too in transaction_remove_packages (Valeriy Lyasotskiy)
+
 Version 0.6.0
 ~~~~~~~~~~~~~
 Released: 2010-01-2010
