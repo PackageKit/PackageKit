@@ -32,10 +32,12 @@ from packagekit.package import PackagekitPackage
 sys.path.insert(0, '/usr/lib/entropy/libraries')
 
 from entropy.const import etpConst
-import entropy.tools
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
+from entropy.exceptions import SystemDatabaseError
+
+import entropy.tools
 
 # TODO:
 # remove percentage(None) if percentage is used
@@ -118,13 +120,12 @@ class PackageKitEntropyMixin:
         """
         lambda_sort = lambda x: x[2].retrieveAtom(x[1])
 
-        for repo, pkg_id, c_repo in sorted(pkgs, key = lambda_sort):
-            self._package((pkg_id, c_repo))
+        for repo, pkg_id, c_repo, pkg_type in sorted(pkgs, key = lambda_sort):
+            self._package((pkg_id, c_repo), info = pkg_type)
 
     def _pk_filter_pkgs(self, pkgs, filters):
         """
         Filter pkgs list given PackageKit filters.
-        TODO: add support for FILTER_NEWEST
         """
         inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
         fltlist = filters.split(';')
@@ -139,6 +140,37 @@ class PackageKitEntropyMixin:
                 free_pkgs = set([x for x in pkgs if \
                     self._entropy.is_entropy_package_free(x[1], x[0])])
         return pkgs
+
+    def _pk_add_pkg_type(self, pkgs, important_check = False):
+        """
+        Expand list of pkg tuples by adding PackageKit package type to it.
+        """
+        # we have INFO_IMPORTANT, INFO_SECURITY, INFO_NORMAL
+        new_pkgs = set()
+        sys_pkg_map = {}
+
+        for repo, pkg_id, c_repo in pkgs:
+
+            pkg_type = None
+            if important_check:
+                repo_sys_pkgs = sys_pkg_map.get(repo,
+                    c_repo.getSystemPackages())
+
+                if pkg_id in repo_sys_pkgs:
+                    pkg_type = INFO_IMPORTANT
+                else:
+                    pkg_type = INFO_NORMAL
+
+            if pkg_type is None:
+                if c_repo is self._entropy.installed_repository():
+                    info = INFO_INSTALLED
+                else:
+                    info = INFO_AVAILABLE
+
+            new_pkgs.add((repo, pkg_id, c_repo, pkg_type))
+
+        return new_pkgs
+
 
 class PackageKitEntropyClient(Client):
     """ PackageKit Entropy Client subclass """
@@ -763,126 +795,41 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     UPDATE_STATE_STABLE, None, None)
 
     def get_updates(self, filters):
-        # NOTES:
-        # because of a lot of things related to Gentoo,
-        # only world and system packages are can be listed as updates
-        # _except_ for security updates
-
-        # UPDATE TYPES:
-        # - blocked: wait for feedbacks
-        # - low: TODO: --newuse
-        # - normal: default
-        # - important: none atm
-        # - security: from @security
-
-        # FILTERS:
-        # - installed: try to update non-installed packages and call me ;)
-        # - free: ok
-        # - newest: ok
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
 
-        fltlist = filters.split(';')
+        # this is the part that takes time
+        self.percentage(0)
+        try:
+            update, remove, fine, spm_fine = self._entropy.calculate_updates()
+        except SystemDatabaseError as err:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                "System Repository error: %s" % (err,))
+            return
+        self.percentage(100)
 
-        update_candidates = []
-        cpv_updates = {}
-        cpv_downgra = {}
+        pkgs = set()
+        count = 0
+        max_count = len(update)
+        for pkg_id, repo_id in update:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-        # get system and world packages
-        for s in ["system", "world"]:
-            set = portage.sets.base.InternalPackageSet(
-                    initial_atoms=self.pvar.root_config.setconfig.getSetAtoms(s))
-            for atom in set:
-                update_candidates.append(atom.cp)
+            self._log_message(__name__, "get_updates: done %s/100" % (
+                percent,))
 
-        # check if a candidate can be updated
-        for cp in update_candidates:
-            cpv_list_inst = self.pvar.vardb.match(cp)
-            cpv_list_avai = self.pvar.portdb.match(cp)
+            self.percentage(percent)
+            repo_db = self._entropy.open_repository(repo_id)
+            pkgs.add((repo_id, pkg_id, repo_db))
 
-            cpv_dict_inst = self.get_cpv_slotted(cpv_list_inst)
-            cpv_dict_avai = self.get_cpv_slotted(cpv_list_avai)
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs, important_check = True)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
-            dict_upda = {}
-            dict_down = {}
-
-            # candidate slots are installed slots
-            slots = cpv_dict_inst.keys()
-            slots.reverse()
-
-            for s in slots:
-                cpv_list_updates = []
-                cpv_inst = cpv_dict_inst[s][0] # only one install per slot
-
-                # the slot can be outdated (not in the tree)
-                if s not in cpv_dict_avai:
-                    break
-
-                tmp_list_avai = cpv_dict_avai[s]
-                tmp_list_avai.reverse()
-
-                for cpv in tmp_list_avai:
-                    if self.cmp_cpv(cpv_inst, cpv) == -1:
-                        cpv_list_updates.append(cpv)
-                    else: # because the list is sorted
-                        break
-
-                # no update for this slot
-                if len(cpv_list_updates) == 0:
-                    if [cpv_inst] == self.pvar.portdb.visible([cpv_inst]):
-                        break # really no update
-                    else:
-                        # that's actually a downgrade or even worst
-                        if len(tmp_list_avai) == 0:
-                            break # this package is not known in the tree...
-                        else:
-                            dict_down[s] = [tmp_list_avai.pop()]
-
-                cpv_list_updates = self.filter_free(cpv_list_updates, fltlist)
-
-                if len(cpv_list_updates) == 0:
-                    break
-
-                if FILTER_NEWEST in fltlist:
-                    best_cpv = portage.best(cpv_list_updates)
-                    cpv_list_updates = [best_cpv]
-
-                dict_upda[s] = cpv_list_updates
-
-            if len(dict_upda) != 0:
-                cpv_updates[cp] = dict_upda
-            if len(dict_down) != 0:
-                cpv_downgra[cp] = dict_down
-
-        # get security updates
-        for atom in portage.sets.base.InternalPackageSet(
-                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("security")):
-            # send update message and remove atom from cpv_updates
-            if atom.cp in cpv_updates:
-                slot = self.get_metadata(atom.cpv, ["SLOT"])[0]
-                if slot in cpv_updates[atom.cp]:
-                    tmp_cpv_list = cpv_updates[atom.cp][slot][:]
-                    for cpv in tmp_cpv_list:
-                        if self.cmp_cpv(cpv, atom.cpv) >= 0:
-                            # cpv is a security update and removed from list
-                            cpv_updates[atom.cp][slot].remove(cpv)
-                            self._package(cpv, INFO_SECURITY)
-            else: # update also non-world and non-system packages if security
-                self._package(atom.cpv, INFO_SECURITY)
-
-        # downgrades
-        for cp in cpv_downgra:
-            for slot in cpv_downgra[cp]:
-                for cpv in cpv_downgra[cp][slot]:
-                    self._package(cpv, INFO_IMPORTANT)
-
-        # normal updates
-        for cp in cpv_updates:
-            for slot in cpv_updates[cp]:
-                for cpv in cpv_updates[cp][slot]:
-                    self._package(cpv, INFO_NORMAL)
+        self.percentage(100)
 
     def install_packages(self, only_trusted, pkgs):
         # NOTES:
@@ -1207,6 +1154,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
@@ -1265,6 +1213,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
@@ -1323,6 +1272,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
@@ -1355,6 +1305,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
