@@ -1028,7 +1028,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-	# multiple entries
+    # multiple entries
         if len(pkgs) > 1:
             raise PkError(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
 
@@ -1501,22 +1501,24 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             if txmbr:
                 # check all the packages in the transaction if only-trusted
-                if only_trusted:
-                    for t in txmbr:
-                        # ignore transactions that do not have to be checked, e.g. obsoleted
-                        if t.output_state not in self.transaction_sig_check_map:
-                            continue
-                        pkg = t.po
-                        try:
-                            signed = self._is_package_repo_signed(pkg)
-                        except PkError, e:
-                            self.error(e.code, e.details, exit=False)
-                            return
-                        if not signed:
-                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
-                            return
+                for t in txmbr:
+                    # ignore transactions that do not have to be checked, e.g. obsoleted
+                    if t.output_state not in self.transaction_sig_check_map:
+                        continue
+                    pkg = t.po
+                    try:
+                        signed = self._is_package_repo_signed(pkg)
+                    except PkError, e:
+                        self.error(e.code, e.details, exit=False)
+                        return
+                    if signed:
+                        continue
+                    if only_trusted:
+                        self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                        return
+                    self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
                 try:
-                    self._runYumTransaction(allow_skip_broken=True)
+                    self._runYumTransaction(allow_skip_broken=True, only_simulate=False)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -1634,10 +1636,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
-    def install_packages(self, only_trusted, package_ids):
+    def install_packages(self, only_trusted, inst_files):
+        self._install_packages(only_trusted, inst_files)
+
+    def simulate_install_packages(self, inst_files):
+        self._install_packages(False, inst_files, True)
+
+    def _install_packages(self, only_trusted, package_ids, simulate=False):
         '''
         Implement the install-packages functionality
-        This will only work with yum 3.2.4 or higher
         '''
         try:
             self._check_init()
@@ -1686,22 +1693,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % pkg.name, exit=False)
                     return
         if txmbrs:
-            if only_trusted:
-                for t in txmbrs:
-                    pkg = t.po
-                    # ignore transactions that do not have to be checked, e.g. obsoleted
-                    if t.output_state not in self.transaction_sig_check_map:
-                        continue
-                    try:
-                        signed = self._is_package_repo_signed(pkg)
-                    except PkError, e:
-                        self.error(e.code, e.details, exit=False)
-                        return
-                    if not signed:
-                        self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
-                        return
+            for t in txmbrs:
+                pkg = t.po
+                # ignore transactions that do not have to be checked, e.g. obsoleted
+                if t.output_state not in self.transaction_sig_check_map:
+                    continue
+                try:
+                    signed = self._is_package_repo_signed(pkg)
+                except PkError, e:
+                    self.error(e.code, e.details, exit=False)
+                    return
+                if signed:
+                    continue
+                if only_trusted:
+                    self.error(ERROR_CANNOT_INSTALL_REPO_UNSIGNED, "The package %s will not be installed from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                    return
+                self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
+
             try:
-                self._runYumTransaction()
+                self._runYumTransaction(only_simulate=simulate)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
@@ -1723,6 +1733,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.message(MESSAGE_NEWER_PACKAGE_EXISTS, "A newer version of %s is available online." % po.name)
 
     def install_files(self, only_trusted, inst_files):
+        self._install_files(only_trusted, inst_files)
+
+    def simulate_install_files(self, inst_files):
+        self._install_files(False, inst_files, True)
+
+    def _install_files(self, only_trusted, inst_files, simulate=False):
         '''
         Implement the install-files functionality
         Install the package containing the inst_file file
@@ -1875,8 +1891,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if len(self.yumbase.tsInfo) == 0:
                 self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % " or ".join(inst_files), exit=False)
                 return
+
             try:
-                self._runYumTransaction()
+                self._runYumTransaction(only_simulate=simulate)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
                 return
@@ -1902,7 +1919,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             if not self.yumbase.tsInfo.pkgSack:
                                 self.yumbase.tsInfo.pkgSack = MetaSack()
                             try:
-                                self._runYumTransaction()
+                                self._runYumTransaction(only_simulate=simulate)
                             except PkError, e:
                                 self.error(e.code, e.details, exit=False)
                                 return
@@ -1950,6 +1967,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         return True
 
     def update_packages(self, only_trusted, package_ids):
+        self._update_packages(only_trusted, package_ids)
+
+    def simulate_update_packages(self, package_ids):
+        self._update_packages(False, package_ids, True)
+
+    def _update_packages(self, only_trusted, package_ids, simulate=False):
         '''
         Implement the install functionality
         This will only work with yum 3.2.4 or higher
@@ -1997,22 +2020,25 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             if txmbrs:
-                if only_trusted:
-                    for t in txmbrs:
-                        # ignore transactions that do not have to be checked, e.g. obsoleted
-                        if t.output_state not in self.transaction_sig_check_map:
-                            continue
-                        pkg = t.po
-                        try:
-                            signed = self._is_package_repo_signed(pkg)
-                        except PkError, e:
-                            self.error(e.code, e.details, exit=False)
-                            return
-                        if not signed:
-                            self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
-                            return
+                for t in txmbrs:
+                    # ignore transactions that do not have to be checked, e.g. obsoleted
+                    if t.output_state not in self.transaction_sig_check_map:
+                        continue
+                    pkg = t.po
+                    try:
+                        signed = self._is_package_repo_signed(pkg)
+                    except PkError, e:
+                        self.error(e.code, e.details, exit=False)
+                        return
+                    if signed:
+                        continue
+                    if only_trusted:
+                        self.error(ERROR_CANNOT_UPDATE_REPO_UNSIGNED, "The package %s will not be updated from unsigned repo %s" % (pkg.name, pkg.repoid), exit=False)
+                        return
+                    self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s from repo %s is untrusted" % (pkg.name, pkg.repoid))
+
                 try:
-                    self._runYumTransaction(allow_skip_broken=True)
+                    self._runYumTransaction(allow_skip_broken=True, only_simulate=simulate)
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
             else:
@@ -2029,7 +2055,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested'])):
                 self.require_restart(RESTART_SYSTEM, self._pkg_to_id(pkg))
 
-    def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False):
+    def _runYumTransaction(self, allow_remove_deps=None, allow_skip_broken=False, only_simulate=False):
         '''
         Run the yum Transaction
         This will only work with yum 3.2.4 or higher
@@ -2057,60 +2083,79 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # test did succeed
+        self._check_for_reboot()
+        if allow_remove_deps == False:
+            if len(self.yumbase.tsInfo) > 1:
+                retmsg = 'package could not be removed, as other packages depend on it'
+                raise PkError(ERROR_DEP_RESOLUTION_FAILED, retmsg)
+
+        # abort now we have the package list
+        if only_simulate:
+            package_list = []
+            for txmbr in self.yumbase.tsInfo:
+                if txmbr.output_state in TransactionsInfoMap.keys():
+                    info = TransactionsInfoMap[txmbr.output_state]
+                    package_list.append((txmbr.po, info))
+
+            self.percentage(90)
+            self._show_package_list(package_list)
+            self.percentage(100)
+            return
+
         # we did not succeed
         if rc != 2:
             if message.find ("is needed by") != -1:
                 raise PkError(ERROR_DEP_RESOLUTION_FAILED, message)
             if message.find ("empty transaction") != -1:
                 raise PkError(ERROR_NO_PACKAGES_TO_UPDATE, message)
+            raise PkError(ERROR_TRANSACTION_ERROR, message)
+
+        try:
+            rpmDisplay = PackageKitCallback(self)
+            callback = ProcessTransPackageKitCallback(self)
+            self.yumbase.processTransaction(callback=callback,
+                                  rpmDisplay=rpmDisplay)
+        except yum.Errors.YumDownloadError, ye:
+            raise PkError(ERROR_PACKAGE_DOWNLOAD_FAILED, _format_msgs(ye.value))
+        except yum.Errors.YumGPGCheckError, ye:
+            raise PkError(ERROR_BAD_GPG_SIGNATURE, _format_msgs(ye.value))
+        except GPGKeyNotImported, e:
+            keyData = self.yumbase.missingGPGKey
+            if not keyData:
+                raise PkError(ERROR_BAD_GPG_SIGNATURE, "GPG key not imported, and no GPG information was found.")
+            package_id = self._pkg_to_id(keyData['po'])
+            fingerprint = keyData['fingerprint']()
+            hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
+            # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
+
+            self.repo_signature_required(package_id,
+                                         keyData['po'].repoid,
+                                         keyData['keyurl'].replace("file://", ""),
+                                         keyData['userid'],
+                                         keyData['hexkeyid'],
+                                         hex_fingerprint,
+                                         time.ctime(keyData['timestamp']),
+                                         'gpg')
+            raise PkError(ERROR_GPG_FAILURE, "GPG key %s required" % keyData['hexkeyid'])
+        except yum.Errors.YumBaseError, ye:
+            message = _format_msgs(ye.value)
+            if message.find ("conflicts with file") != -1:
+                raise PkError(ERROR_FILE_CONFLICTS, message)
+            if message.find ("rpm_check_debug vs depsolve") != -1:
+                raise PkError(ERROR_PACKAGE_CONFLICTS, message)
             else:
                 raise PkError(ERROR_TRANSACTION_ERROR, message)
-        else:
-            self._check_for_reboot()
-            if allow_remove_deps == False:
-                if len(self.yumbase.tsInfo) > 1:
-                    retmsg = 'package could not be removed, as other packages depend on it'
-                    raise PkError(ERROR_DEP_RESOLUTION_FAILED, retmsg)
-
-            try:
-                rpmDisplay = PackageKitCallback(self)
-                callback = ProcessTransPackageKitCallback(self)
-                self.yumbase.processTransaction(callback=callback,
-                                      rpmDisplay=rpmDisplay)
-            except yum.Errors.YumDownloadError, ye:
-                raise PkError(ERROR_PACKAGE_DOWNLOAD_FAILED, _format_msgs(ye.value))
-            except yum.Errors.YumGPGCheckError, ye:
-                raise PkError(ERROR_BAD_GPG_SIGNATURE, _format_msgs(ye.value))
-            except GPGKeyNotImported, e:
-                keyData = self.yumbase.missingGPGKey
-                if not keyData:
-                    raise PkError(ERROR_BAD_GPG_SIGNATURE, "GPG key not imported, and no GPG information was found.")
-                package_id = self._pkg_to_id(keyData['po'])
-                fingerprint = keyData['fingerprint']()
-                hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
-                # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
-
-                self.repo_signature_required(package_id,
-                                             keyData['po'].repoid,
-                                             keyData['keyurl'].replace("file://", ""),
-                                             keyData['userid'],
-                                             keyData['hexkeyid'],
-                                             hex_fingerprint,
-                                             time.ctime(keyData['timestamp']),
-                                             'gpg')
-                raise PkError(ERROR_GPG_FAILURE, "GPG key %s required" % keyData['hexkeyid'])
-            except yum.Errors.YumBaseError, ye:
-                message = _format_msgs(ye.value)
-                if message.find ("conflicts with file") != -1:
-                    raise PkError(ERROR_FILE_CONFLICTS, message)
-                if message.find ("rpm_check_debug vs depsolve") != -1:
-                    raise PkError(ERROR_PACKAGE_CONFLICTS, message)
-                else:
-                    raise PkError(ERROR_TRANSACTION_ERROR, message)
-            except Exception, e:
-                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     def remove_packages(self, allowdep, autoremove, package_ids):
+        self._remove_packages(allowdep, autoremove, package_ids)
+
+    def simulate_remove_packages(self, package_ids):
+        self._remove_packages(True, False, package_ids, True)
+
+    def _remove_packages(self, allowdep, autoremove, package_ids, simulate=False):
         '''
         Implement the remove functionality
         Needed to be implemented in a sub class
@@ -2164,15 +2209,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 for txmbr in self.yumbase.tsInfo:
                     pkg = txmbr.po
-                    system_packages = ['yum','rpm','glibc','PackageKit']
+                    system_packages = ['yum', 'rpm', 'glibc', 'PackageKit']
                     if pkg.name in system_packages:
                         self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
                         return
             try:
                 if not allowdep:
-                    self._runYumTransaction(allow_remove_deps=False)
+                    self._runYumTransaction(allow_remove_deps=False, only_simulate=simulate)
                 else:
-                    self._runYumTransaction(allow_remove_deps=True)
+                    self._runYumTransaction(allow_remove_deps=True, only_simulate=simulate)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
         else:
@@ -2657,65 +2702,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.error(ERROR_CANNOT_WRITE_REPO_CONFIG, _to_unicode(e))
-
-    def simulate_install_files(self, inst_files):
-        '''
-        Install the package containing the inst_file file
-        '''
-        try:
-            self._check_init()
-        except PkError, e:
-            self.error(e.code, e.details, exit=False)
-            return
-        self.yumbase.conf.cache = 0 # Allow new files
-        self.allow_cancel(True)
-        self.percentage(0)
-        self.status(STATUS_RUNNING)
-
-        for inst_file in inst_files:
-            if inst_file.endswith('.src.rpm'):
-                self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE, 'Backend will not install a src rpm file', exit=False)
-                return
-
-        # common checks copied from yum
-        for inst_file in inst_files:
-            if not self._check_local_file(inst_file):
-                return
-
-        package_list = []
-        txmbrs = []
-        for inst_file in inst_files:
-            try:
-                txmbr = self.yumbase.installLocal(inst_file)
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            if txmbr:
-                txmbrs.extend(txmbr)
-            else:
-                self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s as no transaction" % _to_unicode(inst_file))
-        if len(self.yumbase.tsInfo) == 0:
-            self.error(ERROR_LOCAL_INSTALL_FAILED, "Can't install %s" % " or ".join(inst_files), exit=False)
-            return
-
-        # do the depsolve to pull in deps
-        try:
-            rc, msgs =  self.yumbase.buildTransaction()
-        except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        if rc != 2:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, _format_msgs(msgs))
-
-        # add each package
-        for txmbr in self.yumbase.tsInfo:
-            if txmbr.output_state in TransactionsInfoMap.keys():
-                info = TransactionsInfoMap[txmbr.output_state]
-                package_list.append((txmbr.po, info))
-
-        self.percentage(90)
-        self._show_package_list(package_list)
-        self.percentage(100)
 
     def install_signature(self, sigtype, key_id, package_id):
         try:
