@@ -211,9 +211,12 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	guint idx = 0;
 	guint i;
 	GPtrArray *array = NULL;
+	GPtrArray *array_messages = NULL;
 	PkPackage *item;
 	gboolean ret;
 	PkInfoEnum info;
+	PkMessage *message;
+	PkMessageEnum message_type;
 	const gchar *package_id;
 
 	/* old results no longer valid */
@@ -251,6 +254,23 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 		g_error_free (error);
 		g_object_unref (error_code);
 		goto out;
+	}
+
+	/* if we did a simulate and we got a message that a package was untrusted,
+	 * there's no point trying to do the action with only-trusted */
+	if (state->simulate && state->only_trusted) {
+		array_messages = pk_results_get_message_array (state->results);
+		for (i = 0; i < array_messages->len; i++) {
+			message = g_ptr_array_index (array_messages, i);
+			g_object_get (message,
+				      "type", &message_type,
+				      NULL);
+			if (message_type == PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE) {
+				egg_debug ("we got an untrusted message, so skipping only-trusted");
+				state->only_trusted = FALSE;
+				break;
+			}
+		}
 	}
 
 	/* get data */
@@ -309,6 +329,8 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
+	if (array_messages != NULL)
+		g_ptr_array_unref (array_messages);
 	if (results != NULL)
 		g_object_unref (results);
 	if (sack != NULL)
