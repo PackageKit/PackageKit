@@ -174,6 +174,50 @@ class PackageKitEntropyMixin:
 
         return new_pkgs
 
+    def _repo_enable(self, repoid):
+        excluded_repos = self._settings['repositories']['excluded']
+        available_repos = self._settings['repositories']['available']
+
+        if repoid in available_repos:
+            # just ignore
+            return
+        if repoid not in excluded_repos:
+            self.error(ERROR_REPO_NOT_FOUND,
+                    "Repository %s was not found" % (repoid,))
+            return
+
+        try:
+            self._entropy.enable_repository(repoid)
+        except Exception as err:
+            self.error(ERROR_INTERNAL_ERROR,
+                "Failed to enable repository %s: %s" % (repoid, err,))
+            return
+
+    def _repo_disable(self, repoid):
+        excluded_repos = self._settings['repositories']['excluded']
+        available_repos = self._settings['repositories']['available']
+        default_repo = self._settings['repositories']['default_repository']
+
+        if repoid in excluded_repos:
+            # just ignore
+            return
+        if repoid not in available_repos:
+            self.error(ERROR_REPO_NOT_FOUND,
+                    "Repository %s was not found" % (repoid,))
+            return
+
+        if repoid == default_repo:
+            self.error(ERROR_CANNOT_DISABLE_REPOSITORY,
+                "%s repository can't be disabled" % (repoid,))
+            return
+
+        try:
+            self._entropy.disable_repository(repoid)
+        except Exception as err:
+            self.error(ERROR_INTERNAL_ERROR,
+                "Failed to enable repository %s: %s" % (repoid, err,))
+            return
+
 
 class PackageKitEntropyClient(Client):
     """ PackageKit Entropy Client subclass """
@@ -1050,52 +1094,20 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._elog_messages = []
 
     def repo_enable(self, repoid, enable):
-        # NOTES: use layman API >= 1.2.3
+
+        self._log_message(__name__, "repo_enable: got %s and %s" % (
+            repoid, enable,))
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
-        # special case: trying to work with gentoo repo
-        if repoid == 'gentoo':
-            if not enable:
-                self.error(ERROR_CANNOT_DISABLE_REPOSITORY,
-                        "gentoo repository can't be disabled")
-            return
+        if enable:
+            self._repo_enable(repoid)
+        else:
+            self._repo_disable(repoid)
 
-        # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
-        available_layman_db = layman.db.RemoteDB(layman.config.Config())
-
-        # check now for repoid so we don't have to do it after
-        if not repoid in available_layman_db.overlays.keys():
-            self.error(ERROR_REPO_NOT_FOUND,
-                    "Repository %s was not found" % repoid)
-            return
-
-        # disabling (removing) a db
-        # if repository already disabled, ignoring
-        if not enable and self._is_repository_enabled(repoid):
-            try:
-                installed_layman_db.delete(installed_layman_db.select(repoid))
-            except Exception, e:
-                self.error(ERROR_INTERNAL_ERROR,
-                        "Failed to disable repository "+repoid+" : "+str(e))
-                return
-
-        # enabling (adding) a db
-        # if repository already enabled, ignoring
-        if enable and not self._is_repository_enabled(repoid):
-            try:
-                # TODO: clean the trick to prevent outputs from layman
-                self.block_output()
-                installed_layman_db.add(available_layman_db.select(repoid),
-                        quiet=True)
-                self.unblock_output()
-            except Exception, e:
-                self.unblock_output()
-                self.error(ERROR_INTERNAL_ERROR,
-                        "Failed to enable repository "+repoid+" : "+str(e))
-                return
+        self._log_message(__name__, "repo_enable: done")
 
     def resolve(self, filters, search_keys):
 
