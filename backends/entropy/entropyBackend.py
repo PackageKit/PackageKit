@@ -39,6 +39,8 @@ from entropy.exceptions import SystemDatabaseError
 
 import entropy.tools
 
+PK_DEBUG = True
+
 # TODO:
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
@@ -62,7 +64,8 @@ class PackageKitEntropyMixin:
         """
         Write log message to Entropy PackageKit log file.
         """
-        self._entropy_log.write("%s: %s" % (source, message,))
+        if PK_DEBUG:
+            self._entropy_log.write("%s: %s" % (source, message,))
 
     def _is_repository_enabled(self, repo_name):
         """
@@ -1094,31 +1097,37 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                         "Failed to enable repository "+repoid+" : "+str(e))
                 return
 
-    def resolve(self, filters, pkgs):
+    def resolve(self, filters, search_keys):
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self.get_all_cp(fltlist)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
+        self._log_message(__name__, "resolve: got %s and %s" % (
+            filters, search_keys,))
 
-        reg_expr = []
-        for pkg in pkgs:
-            reg_expr.append("^" + re.escape(pkg) + "$")
-        reg_expr = "|".join(reg_expr)
+        repos = self._get_all_repos()
 
-        # specifications says "be case sensitive"
-        s = re.compile(reg_expr)
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-        for cp in cp_list:
-            if s.match(cp):
-                for cpv in self.get_all_cpv(cp, fltlist):
-                    self._package(cpv)
+            self._log_message(__name__, "resolve: done %s/100" % (
+                percent,))
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+            self.percentage(percent)
+            for key in search_keys:
+                pkg_ids, pkg_rc = repo_db.atomMatch(key, multiMatch = True)
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
 
