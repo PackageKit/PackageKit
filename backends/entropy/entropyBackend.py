@@ -44,6 +44,25 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
     _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
 
+    # Entropy <-> PackageKit groups map
+    _GROUP_MAP = {
+        'accessibility': GROUP_ACCESSIBILITY,
+        'development': GROUP_PROGRAMMING,
+        'games': GROUP_GAMES,
+        'gnome': GROUP_DESKTOP_GNOME,
+        'kde': GROUP_DESKTOP_KDE,
+        'lxde': GROUP_DESKTOP_OTHER,
+        'multimedia': GROUP_MULTIMEDIA,
+        'networking': GROUP_NETWORK,
+        'office': GROUP_OFFICE,
+        'science': GROUP_SCIENCE,
+        'system': GROUP_SYSTEM,
+        'security': GROUP_SECURITY,
+        'x11': GROUP_OTHER,
+        'xfce': GROUP_DESKTOP_XFCE,
+        'unknown': GROUP_UNKNOWN,
+    }
+
     def __sigquit(self, signum, frame):
         if hasattr(self, '_entropy'):
             self._entropy.destroy()
@@ -59,43 +78,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
         PackageKitBaseBackend.__init__(self, args)
 
-    def _is_repository_enabled(self, repo_name):
-        repo_data = self._settings['repositories']
-        return repo_name in repo_data['available']
-
-    def _get_group(self, dep):
-        """
-        Return PackageKit group belonging to given dependency.
-        """
-        category = entropy.tools.dep_getcat(dep)
-        entropy_groups = self._entropy.get_package_groups()
-
-        generic_group_name = None
-        for group_key, group_data in entropy_groups.items():
-            if category in group_data['categories']:
-                generic_group_name = group_key
-                break
-
-        if generic_group_name is None:
-            return GROUP_UNKNOWN
-
-        pk_group_map = {
-            'accessibility': GROUP_ACCESSIBILITY,
-            'development': GROUP_PROGRAMMING,
-            'games': GROUP_GAMES,
-            'gnome': GROUP_DESKTOP_GNOME,
-            'kde': GROUP_DESKTOP_KDE,
-            'lxde': GROUP_DESKTOP_OTHER,
-            'multimedia': GROUP_MULTIMEDIA,
-            'networking': GROUP_NETWORK,
-            'office': GROUP_OFFICE,
-            'science': GROUP_SCIENCE,
-            'system': GROUP_SYSTEM,
-            'x11': GROUP_OTHER,
-            'xfce': GROUP_DESKTOP_XFCE,
-        }
-        return pk_group_map[generic_group_name]
-
     def _log_message(self, source, message):
         """
         Write log message to Entropy PackageKit log file.
@@ -107,6 +89,65 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         Prepare percentage value used to feed self.percentage()
         """
         return int((float(count)/max_count)*100)
+
+    def _is_repository_enabled(self, repo_name):
+        """
+        Return whether given repository identifier is available and enabled.
+        """
+        repo_data = self._settings['repositories']
+        return repo_name in repo_data['available']
+
+    def _get_pk_group(self, dep):
+        """
+        Return PackageKit group belonging to given dependency.
+        """
+        category = entropy.tools.dep_getcat(dep)
+
+        group_data = [key for key, data in self._entropy.get_package_groups() \
+            if category in data['categories']]
+        try:
+            generic_group_name = group_data.pop(0)
+        except IndexError:
+            return GROUP_UNKNOWN
+
+        return PackageKitEntropyBackend._GROUP_MAP[generic_group_name]
+
+    def _get_entropy_group(self, pk_group):
+        """
+        Given a PackageKit group identifier, return Entropy packages group.
+        """
+        group_map = PackageKitEntropyBackend._GROUP_MAP
+        # reverse dict
+        group_map_reverse = dict((y, x) for x, y in group_map.items())
+        return group_map_reverse.get(pk_group, 'unknown')
+
+    def _get_all_repos(self):
+        """
+        Return a list of tuples containing EntropyRepository instance and
+        repository identifier for every available repository, including
+        installed packages one.
+        """
+        repo_ids = self._entropy.repositories() + ["__system__"]
+        repos = []
+        for repo in repo_ids:
+            if repo == "__system__":
+                repo_db = self._entropy.installed_repository()
+            else:
+                repo_db = self._entropy.open_repository(repo)
+            repos.append((repo_db, repo,))
+        return repos
+
+    def _pk_feed_sorted_pkgs(self, pkgs):
+        """
+        Given an unsorted list of tuples composed by repository identifier and
+        EntropyRepository instance, feed PackageKit output by calling
+        self._package()
+        """
+        lambda_sort = lambda x: x[2].retrieveAtom(x[1])
+
+        for repo, pkg_id, c_repo in sorted(pkgs, key = lambda_sort):
+            self._package((pkg_id, c_repo))
+
 
     def is_cpv_valid(self, cpv):
         if self.is_installed(cpv):
@@ -1394,25 +1435,58 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def search_group(self, filters, group):
-        # TODO: filter unknown groups before searching ? (optimization)
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
+        self._log_message(__name__, "search_group: got %s and %s" % (
+            filters, group,))
+
+        repos = self._get_all_repos()
         fltlist = filters.split(';')
-        cp_list = self.get_all_cp(fltlist)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
 
-        for cp in cp_list:
-            if self._get_group(cp) == group:
-                for cpv in self.get_all_cpv(cp, fltlist):
-                    self._package(cpv)
+        entropy_groups = self._entropy.get_package_groups()
+        all_matched_categories = set()
+        for e_data in entropy_groups.values():
+            all_matched_categories.update(e_data['categories'])
+        all_matched_categories = sorted(all_matched_categories)
 
-            cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+        entropy_group = self._get_entropy_group(group)
+        # group_data is None when there's no matching group
+        group_data = entropy_groups.get(entropy_group)
+        selected_categories = set()
+        if group_data is not None:
+            selected_categories.update(group_data['categories'])
 
-        self.percentage(100)
+        # if selected_categories is empty, then pull in pkgs with non matching
+        # category in all_matched_categories
+
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = self._get_percentage(count, max_count)
+
+            self._log_message(__name__, "search_group: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            repo_all_cats = repo_db.listAllCategories()
+            if selected_categories:
+                etp_cat_ids = set([cat_id for cat_id, cat_name in \
+                    repo_all_cats if cat_name in selected_categories])
+            else:
+                # get all etp category ids excluding all_matched_categories
+                etp_cat_ids = set([cat_id for cat_id, cat_name in \
+                     repo_all_cats if cat_name not in all_matched_categories])
+
+            for cat_id in etp_cat_ids:
+                pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+        self._pk_feed_sorted_pkgs(pkgs)
 
     def search_name(self, filters, keys):
 
@@ -1423,14 +1497,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         self._log_message(__name__, "search_name: got %s and %s" % (
             filters, keys,))
 
-        repo_ids = self._entropy.repositories() + ["__system__"]
-        repos = []
-        for repo in repo_ids:
-            if repo == "__system__":
-                repo_db = self._entropy.installed_repository()
-            else:
-                repo_db = self._entropy.open_repository(repo)
-            repos.append((repo_db, repo,))
+        repos = self._get_all_repos()
 
         search_keys = keys.split("&")
         pkgs = set()
@@ -1455,11 +1522,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 continue
             elif flt == FILTER_INSTALLED:
                 pkgs = set([x for x in pkgs if x[0] == "__system__"])
+            elif flt == FILTER_NOT_INSTALLED:
+                pkgs = set([x for x in pkgs if x[0] != "__system__"])
 
-        lambda_sort = lambda x: x[2].retrieveAtom(x[1])
-
-        for repo, pkg_id, c_repo in sorted(pkgs, key = lambda_sort):
-            self._package((pkg_id, c_repo))
+        self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
 
