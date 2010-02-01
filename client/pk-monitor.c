@@ -84,6 +84,25 @@ pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpoi
 }
 
 /**
+ * pk_monitor_message_cb:
+ **/
+static void
+pk_monitor_message_cb (PkMessage *item, const gchar *transaction_id)
+{
+	gchar *details;
+	PkMessageEnum type;
+
+	/* get data */
+	g_object_get (item,
+		      "details", &details,
+		      "type", &type,
+		      NULL);
+
+	g_print ("%s\tmessage: %s, %s\n", transaction_id, pk_message_enum_to_string (type), details);
+	g_free (details);
+}
+
+/**
  * pk_monitor_adopt_cb:
  **/
 static void
@@ -95,6 +114,7 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	PkExitEnum exit_enum;
 	gchar *transaction_id = NULL;
 	PkError *error_code = NULL;
+	GPtrArray *array = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -117,12 +137,18 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	exit_enum = pk_results_get_exit_code (results);
 	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_text (exit_enum));
 
+	/* message */
+	array = pk_results_get_message_array (results);
+	g_ptr_array_foreach (array, (GFunc) pk_monitor_message_cb, transaction_id);
+
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL)
 		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_text (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 out:
 	g_free (transaction_id);
+	if (array != NULL)
+		g_ptr_array_unref (array);
 	if (error_code != NULL)
 		g_object_unref (error_code);
 	if (progress != NULL)
