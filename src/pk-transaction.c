@@ -1783,6 +1783,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
 			pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
+			egg_warning ("falling back to get depends as simulate install packages isn't implemented");
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_INSTALLING, priv->cached_package_ids[i], "");
@@ -1794,6 +1795,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids);
 		} else {
+			egg_warning ("falling back to get requires as simulate remove packages isn't implemented");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			pk_backend_get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
@@ -1802,6 +1804,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
 			pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
+			egg_warning ("falling back to get depends as simulate update packages isn't implemented");
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_UPDATING, priv->cached_package_ids[i], "");
