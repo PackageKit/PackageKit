@@ -636,35 +636,45 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def get_files(self, pkgs):
+    def get_files(self, pk_pkgs):
+
+        self._log_message(__name__, "get_files: got %s" % (pk_pkgs,))
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        pkgs = []
+        for pk_pkg in pk_pkgs:
 
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-
-            if not self.is_cpv_valid(cpv):
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None: # wtf!
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+                        "Package %s was not found" % (pk_pkg,))
+                self._log_message(__name__, "get_files: cannot match %s" % (
+                    pk_pkg,))
                 continue
 
-            if not self.is_installed(cpv):
-                self.error(ERROR_CANNOT_GET_FILELIST,
-                        "get-files is only available for installed packages")
-                continue
+            self._log_message(__name__, "get_files: translated %s => %s" % (
+                pk_pkg, pkg,))
 
-            files = self.get_file_list(cpv)
-            files = sorted(files)
+            pkg_id, repo_db = pkg
+            repo = repo_db.get_plugins_metadata().get("repo_name")
+            pkgs.append((repo, pkg_id, repo_db, pk_pkg))
+
+        count = 0
+        max_count = len(pkgs)
+        for repo, pkg_id, repo_db, pk_pkg in pkgs:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "get_files: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            files = repo_db.retrieveContent(pkg_id, order_by = 'file')
             files = ";".join(files)
-
-            self.files(pkg, files)
-
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed/nb_pkg))
+            self.files(pk_pkg, files)
 
         self.percentage(100)
 
