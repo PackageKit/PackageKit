@@ -63,6 +63,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         'unknown': GROUP_UNKNOWN,
     }
 
+    INST_PKGS_REPO_ID = "__system__"
+
     def __sigquit(self, signum, frame):
         if hasattr(self, '_entropy'):
             self._entropy.destroy()
@@ -127,10 +129,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         repository identifier for every available repository, including
         installed packages one.
         """
-        repo_ids = self._entropy.repositories() + ["__system__"]
+        inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
+        repo_ids = self._entropy.repositories() + [inst_pkgs_repo_id]
         repos = []
         for repo in repo_ids:
-            if repo == "__system__":
+            if repo == inst_pkgs_repo_id:
                 repo_db = self._entropy.installed_repository()
             else:
                 repo_db = self._entropy.open_repository(repo)
@@ -148,6 +151,20 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         for repo, pkg_id, c_repo in sorted(pkgs, key = lambda_sort):
             self._package((pkg_id, c_repo))
 
+    def _pk_filter_pkgs(self, pkgs, filters):
+        """
+        Filter pkgs list given PackageKit filters.
+        """
+        inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
+        fltlist = filters.split(';')
+        for flt in fltlist:
+            if flt == FILTER_NONE:
+                continue
+            elif flt == FILTER_INSTALLED:
+                pkgs = set([x for x in pkgs if x[0] == inst_pkgs_repo_id])
+            elif flt == FILTER_NOT_INSTALLED:
+                pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
+        return pkgs
 
     def is_cpv_valid(self, cpv):
         if self.is_installed(cpv):
@@ -1432,6 +1449,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
             cpv_processed += 100.0
             self.percentage(int(cpv_processed/nb_cpv))
 
+
+
         self.percentage(100)
 
     def search_group(self, filters, group):
@@ -1444,7 +1463,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
             filters, group,))
 
         repos = self._get_all_repos()
-        fltlist = filters.split(';')
 
         entropy_groups = self._entropy.get_package_groups()
         all_matched_categories = set()
@@ -1486,6 +1504,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
     def search_name(self, filters, keys):
@@ -1516,15 +1537,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
-        fltlist = filters.split(';')
-        for flt in fltlist:
-            if flt == FILTER_NONE:
-                continue
-            elif flt == FILTER_INSTALLED:
-                pkgs = set([x for x in pkgs if x[0] == "__system__"])
-            elif flt == FILTER_NOT_INSTALLED:
-                pkgs = set([x for x in pkgs if x[0] != "__system__"])
-
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
