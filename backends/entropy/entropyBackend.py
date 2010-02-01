@@ -695,7 +695,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             count += 1
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-            self._log_message(__name__, "resolve: done %s/100" % (percent,))
+            self._log_message(__name__, "get_packages: done %s/100" % (percent,))
 
             self.percentage(percent)
             pkg_ids = repo_db.listAllIdpackages()
