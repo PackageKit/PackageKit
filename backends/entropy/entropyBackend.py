@@ -734,29 +734,35 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def get_repo_list(self, filters):
-        # NOTES:
-        # use layman API
-        # returns only official and supported repositories
-        # and creates a dummy repo for portage tree
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
+        excluded_repos = self._settings['repositories']['excluded']
+        available_repos = self._settings['repositories']['available']
+        default_repo = self._settings['repositories']['default_repository']
+
+        all_repos = sorted(excluded_repos.keys() + available_repos.keys())
+        metadata = []
+        for repo_id in all_repos:
+
+            repo_data = available_repos.get(repo_id,
+                excluded_repos.get(repo_id))
+            if repo_data is None: # wtf?
+                continue
+
+            enabled = self._is_repository_enabled(repo_id)
+            desc = repo_data['description']
+            devel = repo_id != default_repo
+            metadata.append((repo_id, desc, enabled, devel))
+
         fltlist = filters.split(';')
+        if FILTER_NOT_DEVELOPMENT in fltlist:
+            metadata = [x for x in metadata if not x[3]]
 
-        # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
-        available_layman_db = layman.db.RemoteDB(layman.config.Config())
-
-        # 'gentoo' is a dummy repo
-        self.repo_detail('gentoo', 'Gentoo Portage tree', True)
-
-        if FILTER_NOT_DEVELOPMENT not in fltlist:
-            for o in available_layman_db.overlays.keys():
-                if available_layman_db.overlays[o].is_official() \
-                        and available_layman_db.overlays[o].is_supported():
-                    self.repo_detail(o, o,
-                            self._is_repository_enabled(o))
+        for repo_id, desc, enabled, devel in metadata:
+            self.repo_detail(repo_id, desc, enabled)
 
     def get_requires(self, filters, pkgs, recursive):
         # TODO: manage non-installed package
