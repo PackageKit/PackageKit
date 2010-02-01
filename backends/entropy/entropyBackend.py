@@ -171,26 +171,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                     self._entropy.is_entropy_package_free(x[1], x[0])])
         return pkgs
 
-    def is_cpv_valid(self, cpv):
-        if self.is_installed(cpv):
-            # actually if is_installed return True that means cpv is in db
-            return True
-        elif self.pvar.portdb.cpv_exists(cpv):
-            return True
-
-        return False
-
-    def get_real_license_str(self, cpv, metadata):
-        # use conditionals info (w/ USE) in LICENSE and remove ||
-        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
-        license = set(portage.flatten(portage.dep.use_reduce(
-            portage.dep.paren_reduce(metadata["LICENSE"]),
-            uselist=ebuild_settings.get("USE", "").split())))
-        license.discard('||')
-        license = ' '.join(license)
-
-        return license
-
     def send_configuration_file_message(self):
         result = list(portage.util.find_updated_config_files(
             self.pvar.settings['ROOT'],
@@ -229,17 +209,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
             return missing_files
 
         return None
-
-    def check_fetch_restrict(self, packages_list):
-        for p in packages_list:
-            if 'fetch' in p.metadata['RESTRICT']:
-                files = self.get_restricted_fetch_files(p.cpv, p.metadata)
-                if files:
-                    message = "Package %s can't download some files." % p.cpv
-                    message += ";Please, download manually the followonig file(s):"
-                    for x in files:
-                        message += ";- %s then copy it to %s" % (' '.join(x[1]), x[0])
-                    self.error(ERROR_RESTRICTED_DOWNLOAD, message)
 
     def elog_listener(self, settings, key, logentries, fulltext):
         '''
@@ -298,110 +267,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
         self.error(error_type, self._error_message)
 
-    def get_file_list(self, cpv):
-        cat, pv = portage.catsplit(cpv)
-        db = portage.dblink(cat, pv, self.pvar.settings['ROOT'],
-                self.pvar.settings, treetype="vartree",
-                vartree=self.pvar.vardb)
-
-        contents = db.getcontents()
-        if not contents:
-            return []
-
-        return db.getcontents().keys()
-
-    def cmp_cpv(self, cpv1, cpv2):
-        '''
-        returns 1 if cpv1 > cpv2
-        returns 0 if cpv1 = cpv2
-        returns -1 if cpv1 < cpv2
-        '''
-        return portage.pkgcmp(portage.pkgsplit(cpv1), portage.pkgsplit(cpv2))
-
-    def get_newest_cpv(self, cpv_list, installed):
-        newer = ""
-
-        # get the first cpv following the installed rule
-        for cpv in cpv_list:
-            if self.is_installed(cpv) == installed:
-                newer = cpv
-                break
-
-        if newer == "":
-            return ""
-
-        for cpv in cpv_list:
-            if self.is_installed(cpv) == installed:
-                if self.cmp_cpv(cpv, newer) == 1:
-                    newer = cpv
-
-        return newer
-
-    def get_metadata(self, cpv, keys, in_dict = False, add_cache_keys = False):
-        '''
-        This function returns required metadata.
-        If in_dict is True, metadata is returned in a dict object.
-        If add_cache_keys is True, cached keys are added to keys in parameter.
-        '''
-        if self.is_installed(cpv):
-            aux_get = self.pvar.vardb.aux_get
-            if add_cache_keys:
-                keys.extend(list(self.pvar.vardb._aux_cache_keys))
-        else:
-            aux_get = self.pvar.portdb.aux_get
-            if add_cache_keys:
-                keys.extend(list(self.pvar.portdb._aux_cache_keys))
-
-        if in_dict:
-            return dict(keys, aux_get(cpv, keys))
-        else:
-            return aux_get(cpv, keys)
-
-    def get_size(self, cpv):
-        '''
-        Returns the installed size if the package is installed.
-        Otherwise, the size of files needed to be downloaded.
-        If some required files have been downloaded,
-        only the remaining size will be considered.
-        '''
-        size = 0
-        if self.is_installed(cpv):
-            size = self.get_metadata(cpv, ["SIZE"])[0]
-            if size == '':
-                size = 0
-            else:
-                size = int(size)
-        else:
-            self
-            metadata = self.get_metadata(cpv, ["IUSE", "SLOT"], in_dict=True)
-
-            package = _emerge.Package.Package(
-                    type_name="ebuild",
-                    built=False,
-                    installed=False,
-                    root_config=self.pvar.root_config,
-                    cpv=cpv,
-                    metadata=metadata)
-
-            fetch_file = self.pvar.portdb.getfetchsizes(package[2],
-                    package.use.enabled)
-            for f in fetch_file:
-                size += fetch_file[f]
-
-        return size
-
-    def get_cpv_slotted(self, cpv_list):
-        cpv_dict = {}
-
-        for cpv in cpv_list:
-            slot = self.get_metadata(cpv, ["SLOT"])[0]
-            if slot not in cpv_dict:
-                cpv_dict[slot] = [cpv]
-            else:
-                cpv_dict[slot].append(cpv)
-
-        return cpv_dict
-
     def filter_newest(self, cpv_list, fltlist):
         if len(cpv_list) == 0:
             return cpv_list
@@ -431,62 +296,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
             newest_available = self.get_newest_cpv(cpv_dict[k], False)
             if newest_available != "":
                 cpv_list.append(newest_available)
-
-        return cpv_list
-
-    def get_all_cp(self, fltlist):
-        # NOTES:
-        # returns a list of cp
-        #
-        # FILTERS:
-        # - installed: ok
-        # - free: ok (should be done with cpv)
-        # - newest: ok (should be finished with cpv)
-        cp_list = []
-
-        if FILTER_INSTALLED in fltlist:
-            cp_list = self.pvar.vardb.cp_all()
-        elif FILTER_NOT_INSTALLED in fltlist:
-            cp_list = self.pvar.portdb.cp_all()
-        else:
-            # need installed packages first
-            cp_list = self.pvar.vardb.cp_all()
-            for cp in self.pvar.portdb.cp_all():
-                if cp not in cp_list:
-                    cp_list.append(cp)
-
-        return cp_list
-
-    def get_all_cpv(self, cp, fltlist, filter_newest=True):
-        # NOTES:
-        # returns a list of cpv
-        #
-        # FILTERS:
-        # - installed: ok
-        # - free: ok
-        # - newest: ok
-
-        cpv_list = []
-
-        # populate cpv_list taking care of installed filter
-        if FILTER_INSTALLED in fltlist:
-            cpv_list = self.pvar.vardb.match(cp)
-        elif FILTER_NOT_INSTALLED in fltlist:
-            for cpv in self.pvar.portdb.match(cp):
-                if not self.is_installed(cpv):
-                    cpv_list.append(cpv)
-        else:
-            cpv_list = self.pvar.vardb.match(cp)
-            for cpv in self.pvar.portdb.match(cp):
-                if cpv not in cpv_list:
-                    cpv_list.append(cpv)
-
-        # free filter
-        cpv_list = self.filter_free(cpv_list, fltlist)
-
-        # newest filter
-        if filter_newest:
-            cpv_list = self.filter_newest(cpv_list, fltlist)
 
         return cpv_list
 
@@ -1334,53 +1143,39 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def search_details(self, filters, keys):
-        # NOTES: very bad performance
+
+        self._log_message(__name__, "search_details: got %s and %s" % (
+            filters, keys,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self.get_all_cp(fltlist)
-        nb_cp = float(len(cp_list))
-        cp_processed = 0.0
-        search_list = get_search_list(keys)
+        repos = self._get_all_repos()
 
-        for cp in cp_list:
-            # unfortunatelly, everything is related to cpv, not cp
-            # can't filter cp
-            cpv_list = []
+        search_keys = keys.split("&")
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = self._get_percentage(count, max_count)
 
-            # newest filter can't be executed now
-            # because some cpv are going to be filtered by search conditions
-            # and newest filter could be alterated
-            for cpv in self.get_all_cpv(cp, fltlist, filter_newest=False):
-                match = True
-                metadata =  self.get_metadata(cpv,
-                        ["DESCRIPTION", "HOMEPAGE", "IUSE",
-                            "LICENSE", "repository", "SLOT"],
-                        in_dict=True)
-                # update LICENSE to correspond to system settings
-                metadata["LICENSE"] = self.get_real_license_str(cpv, metadata)
-                for s in search_list:
-                    found = False
-                    for x in metadata:
-                        if s.search(metadata[x]):
-                            found = True
-                            break
-                    if not found:
-                        match = False
-                        break
-                if match:
-                    cpv_list.append(cpv)
+            self._log_message(__name__, "search_details: done %s/100" % (
+                percent,))
 
-            # newest filter
-            cpv_list = self.filter_newest(cpv_list, fltlist)
+            self.percentage(percent)
+            for key in search_keys:
+                pkg_ids = repo_db.searchDescription(key,
+                    just_id = True)
+                pkg_ids |= repo_db.searchHomepage(key, just_id = True)
+                pkg_ids |= repo_db.searchLicense(key, just_id = True)
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
-            for cpv in cpv_list:
-                self._package(cpv)
-
-            cp_processed += 100.0
-            self.percentage(int(cp_processed/nb_cp))
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
 
