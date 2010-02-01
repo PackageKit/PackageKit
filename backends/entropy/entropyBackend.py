@@ -49,17 +49,18 @@ class PackageKitEntropyMixin:
     Entropy-only protected methods.
     """
 
+    @staticmethod
+    def get_percentage(count, max_count):
+        """
+        Prepare percentage value used to feed self.percentage()
+        """
+        return int((float(count)/max_count)*100)
+
     def _log_message(self, source, message):
         """
         Write log message to Entropy PackageKit log file.
         """
         self._entropy_log.write("%s: %s" % (source, message,))
-
-    def _get_percentage(self, count, max_count):
-        """
-        Prepare percentage value used to feed self.percentage()
-        """
-        return int((float(count)/max_count)*100)
 
     def _is_repository_enabled(self, repo_name):
         """
@@ -139,6 +140,30 @@ class PackageKitEntropyMixin:
                     self._entropy.is_entropy_package_free(x[1], x[0])])
         return pkgs
 
+class PackageKitEntropyClient(Client):
+    """ PackageKit Entropy Client subclass """
+
+    _pk_progress = None
+
+    def output(self, text, header = "", footer = "", back = False,
+        importance = 0, type = "info", count = None, percent = False):
+        """
+        Reimplemented from entropy.output.TextInterface.
+        """
+        # just write progress, if possible
+        progress = PackageKitEntropyClient._pk_progress
+        if progress is None:
+            return
+        if count is None:
+            return
+
+        cur, tot = count[0], count[1]
+        progress(PackageKitEntropyMixin.get_percentage(cur, tot))
+
+# in this way, any singleton class that tries to directly load Client
+# gets PackageKitEntropyClient in change
+Client.__singleton_class__ = PackageKitEntropyClient
+
 class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
@@ -171,7 +196,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, self.__sigquit)
-        self._entropy = Client()
+        self._entropy = PackageKitEntropyClient()
+        PackageKitEntropyClient._pk_progress = self.percentage
+
         self._settings = SystemSettings()
         self._entropy_log = LogFile(
             level = self._settings['system']['log_level'],
@@ -941,7 +968,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.status(STATUS_REFRESH_CACHE)
         self.allow_cancel(False)
-        self.percentage(None)
+        self.percentage(0)
 
         repo_intf = None
         repo_identifiers = sorted(self._settings['repositories']['available'])
@@ -962,6 +989,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 # inform UGC that we are syncing this repo
                 if self._entropy.UGC is not None:
                     self._entropy.UGC.add_download_stats(repo_id, [repo_id])
+
+        self.percentage(100)
 
     def remove_packages(self, allowdep, autoremove, pkgs):
         self.status(STATUS_RUNNING)
@@ -1163,7 +1192,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         max_count = len(repos)
         for repo_db, repo in repos:
             count += 1
-            percent = self._get_percentage(count, max_count)
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
             self._log_message(__name__, "search_details: done %s/100" % (
                 percent,))
@@ -1201,7 +1230,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         max_count = len(repos)
         for repo_db, repo in repos:
             count += 1
-            percent = self._get_percentage(count, max_count)
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
             self._log_message(__name__, "search_file: done %s/100" % (
                 percent,))
@@ -1273,7 +1302,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         max_count = len(repos)
         for repo_db, repo in repos:
             count += 1
-            percent = self._get_percentage(count, max_count)
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
             self._log_message(__name__, "search_group: done %s/100" % (
                 percent,))
@@ -1314,7 +1343,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         max_count = len(repos)
         for repo_db, repo in repos:
             count += 1
-            percent = self._get_percentage(count, max_count)
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
             self._log_message(__name__, "search_name: done %s/100" % (
                 percent,))
