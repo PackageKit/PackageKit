@@ -21,6 +21,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+import os
 import sys
 import signal
 
@@ -154,6 +155,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
     def _pk_filter_pkgs(self, pkgs, filters):
         """
         Filter pkgs list given PackageKit filters.
+        TODO: add support for FILTER_NEWEST
         """
         inst_pkgs_repo_id = PackageKitEntropyBackend.INST_PKGS_REPO_ID
         fltlist = filters.split(';')
@@ -164,6 +166,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 pkgs = set([x for x in pkgs if x[0] == inst_pkgs_repo_id])
             elif flt == FILTER_NOT_INSTALLED:
                 pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
+            elif flt == FILTER_FREE:
+                free_pkgs = set([x for x in pkgs if \
+                    self._entropy.is_entropy_package_free(x[1], x[0])])
         return pkgs
 
     def is_cpv_valid(self, cpv):
@@ -396,36 +401,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 cpv_dict[slot].append(cpv)
 
         return cpv_dict
-
-    def filter_free(self, cpv_list, fltlist):
-        if len(cpv_list) == 0:
-            return cpv_list
-
-        def _has_validLicense(cpv):
-            metadata = self.get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
-            return not self.pvar.settings._getMissingLicenses(cpv, metadata)
-
-        if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
-            free_licenses = "@FSF-APPROVED"
-            if FILTER_FREE in fltlist:
-                licenses = "-* " + free_licenses
-            elif FILTER_NOT_FREE in fltlist:
-                licenses = "* -" + free_licenses
-            backup_license = self.pvar.settings["ACCEPT_LICENSE"]
-
-            self.pvar.settings.unlock()
-            self.pvar.settings["ACCEPT_LICENSE"] = licenses
-            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
-            self.pvar.settings.regenerate()
-
-            cpv_list = filter(_has_validLicense, cpv_list)
-
-            self.pvar.settings["ACCEPT_LICENSE"] = backup_license
-            self.pvar.settings.backup_changes("ACCEPT_LICENSE")
-            self.pvar.settings.regenerate()
-            self.pvar.settings.lock()
-
-        return cpv_list
 
     def filter_newest(self, cpv_list, fltlist):
         if len(cpv_list) == 0:
@@ -1409,47 +1384,61 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
 
         self.percentage(100)
 
-    def search_file(self, filters, key):
-        # FILTERS:
-        # - ~installed is not accepted (error)
-        # - free: ok
-        # - newest: as only installed, by himself
+    def search_file(self, filters, keys):
+
+        self._log_message(__name__, "search_file: got %s and %s" % (
+            filters, keys,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
+        reverse_symlink_map = self._settings['system_rev_symlinks']
+        repos = self._get_all_repos()
 
-        if FILTER_NOT_INSTALLED in fltlist:
-            self.error(ERROR_CANNOT_GET_FILELIST,
-                    "search-file isn't available with ~installed filter")
-            return
+        search_keys = keys.split("&")
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = self._get_percentage(count, max_count)
 
-        cpv_list = self.pvar.vardb.cpv_all()
-        nb_cpv = 0.0
-        cpv_processed = 0.0
-        is_full_path = True
+            self._log_message(__name__, "search_file: done %s/100" % (
+                percent,))
 
-        if key[0] != "/":
-            is_full_path = False
-            key = re.escape(key)
-            searchre = re.compile("/" + key + "$", re.IGNORECASE)
+            self.percentage(percent)
 
-        # free filter
-        cpv_list = self.filter_free(cpv_list, fltlist)
-        nb_cpv = float(len(cpv_list))
+            for key in search_keys:
 
-        for cpv in cpv_list:
-            for f in self.get_file_list(cpv):
-                if (is_full_path and key == f) \
-                or (not is_full_path and searchre.search(f)):
-                    self._package(cpv)
-                    break
+                like = False
+                # wildcard support
+                if key.find("*") != -1:
+                    key.replace("*", "%")
+                    like = True
 
-            cpv_processed += 100.0
-            self.percentage(int(cpv_processed/nb_cpv))
+                pkg_ids = repo_db.searchBelongs(key, like = like)
+                if not pkg_ids:
+                    # try real path if possible
+                    pkg_ids = repo_db.searchBelongs(os.path.realpath(key),
+                        like = like)
+                if not pkg_ids:
+                    # try using reverse symlink mapping
+                    for sym_dir in reverse_symlink_map:
+                        if key.startswith(sym_dir):
+                            for sym_child in reverse_symlink_map[sym_dir]:
+                                my_file = sym_child+key[len(sym_dir):]
+                                pkg_ids = repo_db.searchBelongs(my_file,
+                                    like = like)
+                                if pkg_ids:
+                                    break
 
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
 
