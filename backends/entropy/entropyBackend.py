@@ -41,45 +41,13 @@ from entropy.misc import LogFile
 # remove percentage(None) if percentage is used
 # protection against signal when installing/removing
 
-class PackageKitEntropyBackend(PackageKitBaseBackend):
+class PackageKitEntropyMixin:
 
-    _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
-
-    # Entropy <-> PackageKit groups map
-    _GROUP_MAP = {
-        'accessibility': GROUP_ACCESSIBILITY,
-        'development': GROUP_PROGRAMMING,
-        'games': GROUP_GAMES,
-        'gnome': GROUP_DESKTOP_GNOME,
-        'kde': GROUP_DESKTOP_KDE,
-        'lxde': GROUP_DESKTOP_OTHER,
-        'multimedia': GROUP_MULTIMEDIA,
-        'networking': GROUP_NETWORK,
-        'office': GROUP_OFFICE,
-        'science': GROUP_SCIENCE,
-        'system': GROUP_SYSTEM,
-        'security': GROUP_SECURITY,
-        'x11': GROUP_OTHER,
-        'xfce': GROUP_DESKTOP_XFCE,
-        'unknown': GROUP_UNKNOWN,
-    }
-
-    INST_PKGS_REPO_ID = "__system__"
-
-    def __sigquit(self, signum, frame):
-        if hasattr(self, '_entropy'):
-            self._entropy.destroy()
-        raise SystemExit(1)
-
-    def __init__(self, args):
-        signal.signal(signal.SIGQUIT, self.__sigquit)
-        self._entropy = Client()
-        self._settings = SystemSettings()
-        self._entropy_log = LogFile(
-            level = self._settings['system']['log_level'],
-            filename = self._log_fname, header = "[packagekit]")
-
-        PackageKitBaseBackend.__init__(self, args)
+    """
+    Entropy relaxed code can be found in this Mixin class.
+    The aim is to separate PackageKit code and reimplemented methods from
+    Entropy-only protected methods.
+    """
 
     def _log_message(self, source, message):
         """
@@ -170,6 +138,46 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
                 free_pkgs = set([x for x in pkgs if \
                     self._entropy.is_entropy_package_free(x[1], x[0])])
         return pkgs
+
+class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
+
+    _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
+
+    # Entropy <-> PackageKit groups map
+    _GROUP_MAP = {
+        'accessibility': GROUP_ACCESSIBILITY,
+        'development': GROUP_PROGRAMMING,
+        'games': GROUP_GAMES,
+        'gnome': GROUP_DESKTOP_GNOME,
+        'kde': GROUP_DESKTOP_KDE,
+        'lxde': GROUP_DESKTOP_OTHER,
+        'multimedia': GROUP_MULTIMEDIA,
+        'networking': GROUP_NETWORK,
+        'office': GROUP_OFFICE,
+        'science': GROUP_SCIENCE,
+        'system': GROUP_SYSTEM,
+        'security': GROUP_SECURITY,
+        'x11': GROUP_OTHER,
+        'xfce': GROUP_DESKTOP_XFCE,
+        'unknown': GROUP_UNKNOWN,
+    }
+
+    INST_PKGS_REPO_ID = "__system__"
+
+    def __sigquit(self, signum, frame):
+        if hasattr(self, '_entropy'):
+            self._entropy.destroy()
+        raise SystemExit(1)
+
+    def __init__(self, args):
+        signal.signal(signal.SIGQUIT, self.__sigquit)
+        self._entropy = Client()
+        self._settings = SystemSettings()
+        self._entropy_log = LogFile(
+            level = self._settings['system']['log_level'],
+            filename = self._log_fname, header = "[packagekit]")
+
+        PackageKitBaseBackend.__init__(self, args)
 
     def send_configuration_file_message(self):
         result = list(portage.util.find_updated_config_files(
@@ -930,34 +938,30 @@ class PackageKitEntropyBackend(PackageKitBaseBackend):
         self.send_configuration_file_message()
 
     def refresh_cache(self, force):
-        # NOTES: can't manage progress even if it could be better
-        # TODO: do not wait for exception, check timestamp
-        # TODO: message if overlay repo has changed (layman)
+
         self.status(STATUS_REFRESH_CACHE)
         self.allow_cancel(False)
         self.percentage(None)
 
-        myopts = {'--quiet': True}
-
-        # get installed and available dbs
-        installed_layman_db = layman.db.DB(layman.config.Config())
-
-        if force:
-            timestamp_path = os.path.join(
-                    self.pvar.settings["PORTDIR"], "metadata", "timestamp.chk")
-            if os.access(timestamp_path, os.F_OK):
-                os.remove(timestamp_path)
-
+        repo_intf = None
+        repo_identifiers = sorted(self._settings['repositories']['available'])
         try:
-            self.block_output()
-            for o in installed_layman_db.overlays.keys():
-                installed_layman_db.sync(o, quiet=True)
-            _emerge.actions.action_sync(self.pvar.settings, self.pvar.trees,
-                    self.pvar.mtimedb, myopts, "")
-        except:
+            repo_intf = self._entropy.Repositories(repo_identifiers,
+                force = force)
+        except AttributeError:
+            self.error(ERROR_REPO_CONFIGURATION_ERROR, traceback.format_exc())
+        except Exception as err:
             self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
-        finally:
-            self.unblock_output()
+
+        if repo_intf is None:
+            return
+
+        ex_rc = repo_intf.sync()
+        if not ex_rc:
+            for repo_id in repo_identifiers:
+                # inform UGC that we are syncing this repo
+                if self._entropy.UGC is not None:
+                    self._entropy.UGC.add_download_stats(repo_id, [repo_id])
 
     def remove_packages(self, allowdep, autoremove, pkgs):
         self.status(STATUS_RUNNING)
