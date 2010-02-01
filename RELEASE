@@ -27,7 +27,8 @@ Bugfixes:
 4. Commit changes in PackageKit git:
 
 git commit -a -m "Release version 0.6.1"
-git tag -a -f -m "Release 0.6.1" PACKAGEKIT_0_6_1
+git tag -s -f -m "Release 0.6.1" PACKAGEKIT_0_6_1
+<gpg password>
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
