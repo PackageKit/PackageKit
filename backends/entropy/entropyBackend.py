@@ -144,14 +144,13 @@ class PackageKitEntropyMixin:
 
         return pkg_id, c_repo
 
-    def _get_pk_group(self, dep):
+    def _get_pk_group(self, category):
         """
-        Return PackageKit group belonging to given dependency.
+        Return PackageKit group belonging to given Entropy package category.
         """
-        category = entropy.tools.dep_getcat(dep)
-
-        group_data = [key for key, data in self._entropy.get_package_groups() \
-            if category in data['categories']]
+        group_data = [key for key, data in \
+            self._entropy.get_package_groups().items() \
+                if category in data['categories']]
         try:
             generic_group_name = group_data.pop(0)
         except IndexError:
@@ -184,6 +183,18 @@ class PackageKitEntropyMixin:
                 repo_db = self._entropy.open_repository(repo)
             repos.append((repo_db, repo,))
         return repos
+
+    def _get_pkg_size(self, pkg_match):
+        """
+        Return package size for both installed and available packages.
+        For available packages, the download size is returned, for installed
+        packages, the on-disk size is returned instead.
+        """
+        pkg_id, c_repo = pkg_match
+        if c_repo is self._entropy.installed_repository():
+            return c_repo.retrieveOnDiskSize(pkg_id)
+        else:
+            return c_repo.retrieveSize(pkg_id)
 
     def _pk_feed_sorted_pkgs(self, pkgs):
         """
@@ -604,33 +615,44 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def get_details(self, pkgs):
+    def get_details(self, pk_pkgs):
+
+        self._log_message(__name__, "get_details: got %s" % (pk_pkgs,))
+
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
-        nb_pkg = float(len(pkgs))
-        pkg_processed = 0.0
+        count = 0
+        max_count = len(pk_pkgs)
+        for pk_pkg in pk_pkgs:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
+            self._log_message(__name__, "get_packages: done %s/100" % (
+                percent,))
 
-            if not self.is_cpv_valid(cpv):
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+                    "Package %s was not found" % (pk_pkg,))
+                continue
+            pkg_id, c_repo = pkg
+
+            base_data = c_repo.getBaseData(pkg_id)
+            if base_data is None:
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                    "Package %s was not found in repository" % (pk_pkg,))
                 continue
 
-            metadata = self.get_metadata(cpv,
-                    ["DESCRIPTION", "HOMEPAGE", "IUSE", "LICENSE", "SLOT"],
-                    in_dict=True)
-            license = self.get_real_license_str(cpv, metadata)
-
-            self.details(self._etp_to_id(cpv), license, self._get_group(cpv),
-                    metadata["DESCRIPTION"], metadata["HOMEPAGE"],
-                    self.get_size(cpv))
-
-            pkg_processed += 100.0
-            self.percentage(int(pkg_processed/nb_pkg))
+            atom, name, version, versiontag, \
+            description, category, chost, \
+            cflags, cxxflags, homepage, \
+            license, branch, download, \
+            digest, slot, etpapi, \
+            datecreation, size, revision = base_data
+            self.details(pk_pkg, license, self._get_pk_group(category),
+                description, homepage, self._get_pkg_size(pkg))
 
         self.percentage(100)
 
