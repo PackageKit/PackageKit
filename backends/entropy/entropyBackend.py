@@ -38,6 +38,7 @@ from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.exceptions import SystemDatabaseError
+from entropy.fetchers import UrlFetcher
 
 import entropy.tools
 
@@ -562,6 +563,42 @@ class PackageKitEntropyClient(Client):
 # gets PackageKitEntropyClient in change
 Client.__singleton_class__ = PackageKitEntropyClient
 
+
+class PkUrlFetcher(UrlFetcher):
+
+    _last_avg = 0
+    _pk_progress = None
+
+    def __init__(self, *args, **kwargs):
+        self.__average = 0
+        self.__downloadedsize = 0
+        self.__remotesize = 0
+        self.__datatransfer = 0
+        UrlFetcher.__init__(self, *args, **kwargs)
+
+    def handle_statistics(self, th_id, downloaded_size, total_size,
+            average, old_average, update_step, show_speed, data_transfer,
+            time_remaining, time_remaining_secs):
+        self.__average = average
+        self.__downloadedsize = downloaded_size
+        self.__remotesize = total_size
+        self.__datatransfer = data_transfer
+
+    def output(self):
+
+        if PkUrlFetcher._pk_progress is None:
+            return
+
+        myavg = abs(int(round(float(self.__average), 1)))
+        if abs((myavg - PkUrlFetcher._last_avg)) < 1:
+            return
+
+        if (myavg > PkUrlFetcher._last_avg) or (myavg < 2) or (myavg > 97):
+            cur_prog = int(float(self.__average)/100)
+            PkUrlFetcher._pk_progress(cur_prog)
+            PkUrlFetcher._last_avg = myavg
+
+
 class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
@@ -593,6 +630,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, self.__sigquit)
         self._entropy = PackageKitEntropyClient()
+        PkUrlFetcher._pk_progress = self.sub_percentage
+        self._entropy.urlFetcher = PkUrlFetcher
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
         PackageKitEntropyClient._pk_message = self._generic_message
@@ -1017,7 +1056,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             only_trusted, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(False)
+        self.allow_cancel(True) # correct?
 
         pkgs = []
         for pk_pkg in pk_pkgs:
@@ -1067,7 +1106,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             allowdep, autoremove, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(False)
+        self.allow_cancel(True)
 
         pkgs = []
         for pk_pkg in pk_pkgs:
@@ -1326,7 +1365,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             only_trusted, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(False)
+        self.allow_cancel(True)
 
         pkgs = []
         for pk_pkg in pk_pkgs:
