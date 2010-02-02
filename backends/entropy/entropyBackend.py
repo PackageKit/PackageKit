@@ -24,6 +24,7 @@
 import os
 import sys
 import signal
+import time
 
 from packagekit.backend import *
 from packagekit.progress import *
@@ -31,6 +32,7 @@ from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
 
+from entropy.i18n import _
 from entropy.const import etpConst
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
@@ -362,6 +364,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             filename = self._log_fname, header = "[packagekit]")
 
         PackageKitBaseBackend.__init__(self, args)
+
+    def _convert_date_to_iso8601(self, unix_time_str):
+        unix_time = float(unix_time_str)
+        t = time.localtime(unix_time)
+        formatted = time.strftime('%Y-%m-%dT%H:%M:%S', t)
+        return formatted
 
     def send_configuration_file_message(self):
         result = list(portage.util.find_updated_config_files(
@@ -817,36 +825,77 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             if '=' + cpv not in cpv_input:
                 self._package(cpv)
 
-    def get_update_detail(self, pkgs):
-        # TODO: a lot of informations are missing
+    def get_update_detail(self, pk_pkgs):
+
+        self._log_message(__name__, "get_update_detail: got %s" % (
+            pk_pkgs,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
-        for pkg in pkgs:
+        count = 0
+        max_count = len(pk_pkgs)
+        default_repo = self._settings['repositories']['default_repository']
+        i_repo = self._entropy.installed_repository()
+        for pk_pkg in pk_pkgs:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "get_update_detail: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
+                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,
+                    "could not find %s" % (pk_pkg,))
+                continue
+            pkg_id, c_repo = pkg
+            repo_name = c_repo.get_plugins_metadata().get("repo_name")
+
             updates = []
+            keyslot = c_repo.retrieveKeySlotAggregated(pkg_id)
+            matches, m_rc = self._entropy.atom_match(keyslot, multiMatch = True,
+                multiRepo = True)
+            for m_pkg_id, m_repo_id in matches:
+                if (m_pkg_id, m_repo_id) == (pkg_id, repo_name):
+                    continue # fliter myself
+                m_c_repo = self._entropy.open_repository(m_repo_id)
+                updates.append(self._etp_to_id((m_pkg_id, m_c_repo)))
+
             obsoletes = ""
-            vendor_url = ""
-            bugzilla_url = ""
+            bugzilla_url = "http://bugs.sabayon.org"
             cve_url = ""
-
-            cpv = self._id_to_etp(pkg)
-
-            if not self.pvar.portdb.cpv_exists(cpv):
-                self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "could not find %s" % pkg)
-
-            for cpv in self.pvar.vardb.match(portage.pkgsplit(cpv)[0]):
-                updates.append(cpv)
+            vendor_url = c_repo.retrieveHomepage(pkg_id)
+            changelog = c_repo.retrieveChangelog(pkg_id)
             updates = "&".join(updates)
 
-            # temporarily set vendor_url = homepage
-            homepage = self.get_metadata(cpv, ["HOMEPAGE"])[0]
-            vendor_url = homepage
+            # when package has been issued
+            issued = self._convert_date_to_iso8601(
+                c_repo.retrieveCreationDate(pkg_id))
 
-            self.update_detail(pkg, updates, obsoletes, vendor_url, bugzilla_url,
-                    cve_url, "none", "No update text", "No ChangeLog",
-                    UPDATE_STATE_STABLE, None, None)
+            # when package has been updated on system
+            # search inside installed pkgs db
+            updated = ''
+            c_id, c_rc = i_repo.atomMatch(keyslot)
+            if c_rc == 0:
+                updated = self._convert_date_to_iso8601(
+                    i_repo.retrieveCreationDate(c_id))
+
+            update_message = _("Update")
+            state = UPDATE_STATE_STABLE
+            if repo_name != default_repo:
+                state = UPDATE_STATE_TESTING
+
+            self._log_message(__name__, "get_update_detail: issuing %s" % (
+                (pk_pkg, updates, obsoletes, vendor_url, bugzilla_url),))
+
+            self.update_detail(pk_pkg, updates, obsoletes, vendor_url,
+                bugzilla_url, cve_url, "none", update_message, changelog,
+                state, issued, updated)
+
+        self.percentage(100)
 
     def get_updates(self, filters):
 
