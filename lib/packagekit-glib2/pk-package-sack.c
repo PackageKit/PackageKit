@@ -144,6 +144,43 @@ pk_package_sack_get_array (PkPackageSack *sack)
 }
 
 /**
+ * pk_package_sack_filter_by_info:
+ * @sack: a valid #PkPackageSack instance
+ * @info: a %PkInfoEnum value to match
+ *
+ * Returns a new package sack which only matches packages that match the
+ * specified info enum value.
+ *
+ * Return value: a new #PkPackageSack, free with g_object_unref()
+ *
+ * Since: 0.6.2
+ **/
+PkPackageSack *
+pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
+{
+	PkPackageSack *results;
+	PkPackage *package;
+	PkInfoEnum info_tmp;
+	guint i;
+	PkPackageSackPrivate *priv = sack->priv;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+
+	/* create new sack */
+	results = pk_package_sack_new ();
+
+	/* add each that matches the info enum */
+	for (i = 0; i < priv->array->len; i++) {
+		package = g_ptr_array_index (priv->array, i);
+		info_tmp = pk_package_get_info (package);
+		if (info_tmp == info)
+			pk_package_sack_add_package (results, package);
+	}
+
+	return results;
+}
+
+/**
  * pk_package_sack_add_package:
  * @sack: a valid #PkPackageSack instance
  * @package: a valid #PkPackage instance
