@@ -64,12 +64,14 @@ class PackageKitEntropyMixin:
         """
         return int((float(count)/max_count)*100)
 
-    def _log_message(self, source, message):
+    def _log_message(self, source, *args):
         """
         Write log message to Entropy PackageKit log file.
         """
         if PK_DEBUG:
-            self._entropy_log.write("%s: %s" % (source, message,))
+            self._entropy_log.write("%s: %s" % (source,
+                ' '.join([str(x) for x in args]),)
+            )
 
     def _is_repository_enabled(self, repo_name):
         """
@@ -98,7 +100,7 @@ class PackageKitEntropyMixin:
             pkg_ver += "%s%s" % (etpConst['entropytagprefix'], pkg_tag)
 
         cur_arch = etpConst['currentarch']
-        repo_name = c_repo.get_plugins_metadata().get("repo_name")
+        repo_name = self._get_repo_name(c_repo)
         if repo_name is None:
             self.error(ERROR_PACKAGE_ID_INVALID,
                 "Invalid metadata passed")
@@ -300,6 +302,17 @@ class PackageKitEntropyMixin:
                 "Failed to enable repository %s: %s" % (repoid, err,))
             return
 
+    def _get_repo_name(self, repo_db):
+        """
+        Return repository name (identifier) given an EntropyRepository
+        instance.
+        """
+        repo_name = self._repo_name_cache.get(repo_db)
+        if repo_name is None:
+            repo_name = repo_db.get_plugins_metadata().get("repo_name")
+            self._repo_name_cache[repo_db] = repo_name
+        return repo_name
+
 
 class PackageKitEntropyClient(Client):
     """ PackageKit Entropy Client subclass """
@@ -356,6 +369,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def __init__(self, args):
         signal.signal(signal.SIGQUIT, self.__sigquit)
         self._entropy = PackageKitEntropyClient()
+        self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
 
         self._settings = SystemSettings()
@@ -586,16 +600,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pk_pkg, pkg,))
 
             pkg_id, repo_db = pkg
-            repo = repo_db.get_plugins_metadata().get("repo_name")
+            repo = self._get_repo_name(repo_db)
             pkgs.add((repo, pkg_id, repo_db,))
 
         matches = [(y, x) for x, y, z in pkgs]
+        self._log_message(__name__, "get_depends: raw matches => %s" % (
+            matches,))
 
-        # FIXME: use relaxed_deps that way?
         empty = False
         deep = False
         install, removal, deps_not_f = self._entropy.get_install_queue(matches,
-            empty, deep, relaxed_deps = not recursive)
+            empty, deep, recursive = recursive)
 
         if deps_not_f == -2:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
@@ -687,7 +702,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 pk_pkg, pkg,))
 
             pkg_id, repo_db = pkg
-            repo = repo_db.get_plugins_metadata().get("repo_name")
+            repo = self._get_repo_name(repo_db)
             pkgs.append((repo, pkg_id, repo_db, pk_pkg))
 
         count = 0
@@ -773,57 +788,57 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for repo_id, desc, enabled, devel in metadata:
             self.repo_detail(repo_id, desc, enabled)
 
-    def get_requires(self, filters, pkgs, recursive):
-        # TODO: manage non-installed package
+    def get_requires(self, filters, pk_pkgs, recursive):
 
-        # FILTERS:
-        # - installed: error atm, see previous TODO
-        # - free: ok
-        # - newest: ignored because only one version of a package is installed
+        self._log_message(__name__, "get_requires: got %s and %s and %s" % (
+            filters, pk_pkgs, recursive))
 
-        self.status(STATUS_RUNNING)
+        self.status(STATUS_INFO)
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
 
-        fltlist = filters.split(';')
+        pkgs = set()
+        for pk_pkg in pk_pkgs:
 
-        cpv_input = []
-        cpv_list = []
-
-        if FILTER_NOT_INSTALLED in fltlist:
-            self.error(ERROR_CANNOT_GET_REQUIRES,
-                    "get-requires returns only installed packages at the moment")
-            return
-
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-
-            if not self.is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
-                continue
-            if not self.is_installed(cpv):
-                self.error(ERROR_CANNOT_GET_REQUIRES,
-                        "get-requires is only available for installed packages at the moment")
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None: # wtf!
+                self._log_message(__name__, "get_requires: cannot match %s" % (
+                    pk_pkg,))
                 continue
 
-            cpv_input.append(cpv)
+            self._log_message(__name__, "get_requires: translated %s => %s" % (
+                pk_pkg, pkg,))
 
-        packages_list = self.get_packages_required(cpv_input, recursive)
+            pkg_id, repo_db = pkg
+            repo = self._get_repo_name(repo_db)
+            pkgs.add((repo, pkg_id, repo_db,))
 
-        # now we can populate cpv_list
-        cpv_list = []
-        for p in packages_list:
-            cpv_list.append(p.cpv)
-        del packages_list
+        matches = [(y, x) for x, y, z in pkgs]
 
-        # free filter
-        cpv_list = self.filter_free(cpv_list, fltlist)
+        self._log_message(__name__, "get_requires: cooked => %s" % (
+            matches,))
 
-        for cpv in cpv_list:
-            # prevent showing input packages
-            if '=' + cpv not in cpv_input:
-                self._package(cpv)
+        empty = False
+        deep = False
+        reverse_deps = self._entropy.get_reverse_dependencies(matches,
+            deep = deep, recursive = recursive)
+
+        self._log_message(__name__, "get_requires: reverse_deps => %s" % (
+            reverse_deps,))
+
+        pkgs = set([(y, x, self._entropy.open_repository(y),) for x, y in \
+            reverse_deps])
+
+        self._log_message(__name__, "get_requires: matches %s" % (
+            pkgs,))
+
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
+
+        self.percentage(100)
 
     def get_update_detail(self, pk_pkgs):
 
@@ -852,7 +867,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                     "could not find %s" % (pk_pkg,))
                 continue
             pkg_id, c_repo = pkg
-            repo_name = c_repo.get_plugins_metadata().get("repo_name")
+            repo_name = self._get_repo_name(c_repo)
 
             updates = []
             keyslot = c_repo.retrieveKeySlotAggregated(pkg_id)
