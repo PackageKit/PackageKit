@@ -62,7 +62,10 @@ class PackageKitEntropyMixin:
         """
         Prepare percentage value used to feed self.percentage()
         """
-        return int((float(count)/max_count)*100)
+        percent = int((float(count)/max_count)*100)
+        if percent > 100:
+            return 100
+        return percent
 
     def _log_message(self, source, *args):
         """
@@ -313,18 +316,153 @@ class PackageKitEntropyMixin:
             self._repo_name_cache[repo_db] = repo_name
         return repo_name
 
+    def _etp_spawn_ugc(self, pkg_data):
+        """
+        Inform repository maintainers that user fetched packages, if user
+        enabled this feature.
+        """
+        if self._entropy.UGC is None:
+            return
+        for repo_id in pkg_data:
+            repo_pkg_keys = sorted(pkg_data[repo_id])
+            try:
+                self._entropy.UGC.add_download_stats(repo_id, repo_pkg_keys)
+            except:
+                pass
+
+    def _execute_etp_pkgs_install(self, pkgs, only_trusted):
+        """
+        Execute effective install (including dep calculation).
+
+        @param pkgs: list of package tuples composed by
+            (etp_package_id, EntropyRepository, pk_pkg_id)
+        @type pkgs: list
+        @param only_trusted: only accept trusted pkgs?
+        @type only_trusted: bool
+        """
+        self.percentage(0)
+        self.status(STATUS_DEP_RESOLVE)
+
+        if only_trusted:
+            # check if we have trusted pkgs
+            for pkg_id, c_repo, pk_pkg in pkgs:
+                sha1, sha256, sha512, gpg = c_repo.retrieveSignatures(pkg_id)
+                if gpg is None:
+                    self.error(ERROR_MISSING_GPG_SIGNATURE,
+                        "Package %s is not GPG signed" % (pk_pkg,))
+                    return
+
+        match_map = dict((
+            (pkg_id, self._get_repo_name(c_repo)), (pkg_id, c_repo, pk_pkg)) \
+                for pkg_id, c_repo, pk_pkg in pkgs)
+        matches = [(pkg_id, self._get_repo_name(c_repo),) for \
+            pkg_id, c_repo, pk_pkg in pkgs]
+
+        # calculate deps
+        empty_deps, deep_deps = False, False
+        run_queue, removal_queue, status = self._entropy.get_install_queue(
+            matches, empty_deps, deep_deps)
+        if status == -2:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                "Cannot find the following dependencies: %s" % (
+                    ', '.join(run_queue),))
+            return
+
+        self.percentage(0)
+        self.status(STATUS_DOWNLOAD)
+
+        # FIXME: where is license dialog? can't be interactive, fook!
+
+        # fetch pkgs
+        max_count = len(run_queue)*2
+        count = 0
+        down_data = {}
+        for match in run_queue:
+            count += 1
+
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "get_packages: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            metaopts = {
+                'dochecksum': True,
+            }
+            package = self._entropy.Package()
+            package.prepare(match, "fetch", metaopts)
+            myrepo = package.pkgmeta['repository']
+            obj = down_data.setdefault(myrepo, set())
+            obj.add(entropy.tools.dep_getkey(package.pkgmeta['atom']))
+
+            rc = package.run()
+            if rc != 0:
+                pk_pkg = match_map.get(match, (None, None, None))[2]
+                self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
+                    "Cannot download package: %s" % (pk_pkg,))
+                return
+            package.kill()
+            del package
+
+        # spawn UGC
+        self._etp_spawn_ugc(down_data)
+
+        # install
+        self.status(STATUS_INSTALL)
+
+        
+        for match in run_queue:
+            count += 1
+
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "get_packages: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+
+            metaopts = {
+                'removeconfig': False,
+            }
+            # setup install source
+            if match in matches:
+                metaopts['install_source'] = etpConst['install_sources']['user']
+            else:
+                metaopts['install_source'] = \
+                    etpConst['install_sources']['automatic_dependency']
+
+            package = self._entropy.Package()
+            package.prepare(match, "install", metaopts)
+
+            rc = package.run()
+            if rc != 0:
+                pk_pkg = match_map.get(match, (None, None, None))[2]
+                self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
+                    "Cannot install package: %s" % (pk_pkg,))
+                return
+
+            package.kill()
+            del package
+
+        self._config_files_message()
+        self.finished()
+
 
 class PackageKitEntropyClient(Client):
     """ PackageKit Entropy Client subclass """
 
     _pk_progress = None
+    _pk_message = None
 
     def output(self, text, header = "", footer = "", back = False,
         importance = 0, type = "info", count = None, percent = False):
         """
         Reimplemented from entropy.output.TextInterface.
         """
-        # just write progress, if possible
+        message_func = PackageKitEntropyClient._pk_message
+        if message_func is not None:
+            message_func(text)
+
         progress = PackageKitEntropyClient._pk_progress
         if progress is None:
             return
@@ -371,6 +509,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._entropy = PackageKitEntropyClient()
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
+        PackageKitEntropyClient._pk_message = self._generic_message
 
         self._settings = SystemSettings()
         self._entropy_log = LogFile(
@@ -385,14 +524,19 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         formatted = time.strftime('%Y-%m-%dT%H:%M:%S', t)
         return formatted
 
-    def send_configuration_file_message(self):
-        result = list(portage.util.find_updated_config_files(
-            self.pvar.settings['ROOT'],
-            self.pvar.settings.get('CONFIG_PROTECT', '').split()))
+    def _generic_message(self, message):
+        # FIXME: this doesn't work, it seems there's no way to
+        # print something to user while pkcon runs.
+        self.message(MESSAGE_UNKNOWN, message)
 
-        if result:
+    def _config_files_message(self):
+        scandata = self._entropy.FileUpdates.scanfs(dcache = True,
+            quiet = True)
+        if scandata is None:
+            return
+        if len(scandata) > 0:
             message = "Some configuration files need updating."
-            message += ";You should use Gentoo's tools to update them (dispatch-conf)"
+            message += ";You should use 'equo conf update' to update them"
             message += ";If you can't do that, ask your system administrator."
             self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
 
@@ -423,147 +567,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             return missing_files
 
         return None
-
-    def elog_listener(self, settings, key, logentries, fulltext):
-        '''
-        This is a listener for elog.
-        It's called each time elog is emitting log messages (at end of process).
-        We are not using settings and fulltext but they are used by other
-        listeners so we have to keep them as arguments.
-        '''
-        message = "Messages for package %s:;" % str(key)
-        error_message = ""
-
-        # building the message
-        for phase in logentries:
-            for entries in logentries[phase]:
-                type = entries[0]
-                messages = entries[1]
-
-                # TODO: portage.elog.filtering is using upper() should we ?
-                if type == 'LOG':
-                    message += ";Information messages:"
-                elif type == 'WARN':
-                    message += ";Warning messages:"
-                elif type == 'QA':
-                    message += ";QA messages:"
-                elif type == 'ERROR':
-                    message += ";Error messages:"
-                    self._error_phase = phase
-                else:
-                    continue
-
-                for msg in messages:
-                    msg = msg.replace('\n', '')
-                    if type == 'ERROR':
-                        error_message += msg + ";"
-                    message += "; " + msg
-
-        # add the message to the stack
-        self._elog_messages.append(message)
-        self._error_message = message
-
-    def send_merge_error(self, default):
-        # EAPI-2 compliant (at least)
-        # 'other' phase is ignored except this one, every phase should be there
-        if self._error_phase in ("setup", "unpack", "prepare", "configure",
-            "nofetch", "config", "info"):
-            error_type = ERROR_PACKAGE_FAILED_TO_CONFIGURE
-        elif self._error_phase in ("compile", "test"):
-            error_type = ERROR_PACKAGE_FAILED_TO_BUILD
-        elif self._error_phase in ("install", "preinst", "postinst",
-            "package"):
-            error_type = ERROR_PACKAGE_FAILED_TO_INSTALL
-        elif self._error_phase in ("prerm", "postrm"):
-            error_type = ERROR_PACKAGE_FAILED_TO_REMOVE
-        else:
-            error_type = default
-
-        self.error(error_type, self._error_message)
-
-    def filter_newest(self, cpv_list, fltlist):
-        if len(cpv_list) == 0:
-            return cpv_list
-
-        if FILTER_NEWEST not in fltlist:
-            return cpv_list
-
-        if FILTER_INSTALLED in fltlist:
-            # we have one package per slot, so it's the newest
-            return cpv_list
-
-        cpv_dict = self.get_cpv_slotted(cpv_list)
-
-        # slots are sorted (dict), revert them to have newest slots first
-        slots = cpv_dict.keys()
-        slots.reverse()
-
-        # empty cpv_list, cpv are now in cpv_dict and cpv_list gonna be repop
-        cpv_list = []
-
-        for k in slots:
-            # if not_intalled on, no need to check for newest installed
-            if FILTER_NOT_INSTALLED not in fltlist:
-                newest_installed = self.get_newest_cpv(cpv_dict[k], True)
-                if newest_installed != "":
-                    cpv_list.append(newest_installed)
-            newest_available = self.get_newest_cpv(cpv_dict[k], False)
-            if newest_available != "":
-                cpv_list.append(newest_available)
-
-        return cpv_list
-
-    def get_packages_required(self, cpv_input, recursive):
-        '''
-        Get a list of cpv and recursive parameter.
-        Returns the list of packages required for cpv list.
-        '''
-        packages_list = []
-
-        myopts = {}
-        myopts["--selective"] = True
-        myopts["--deep"] = True
-
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "remove")
-        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
-                self.pvar.trees, myopts, myparams, None)
-
-        # TODO: atm, using FILTER_INSTALLED because it's quicker
-        # and we don't want to manage non-installed packages
-        for cp in self.get_all_cp([FILTER_INSTALLED]):
-            for cpv in self.get_all_cpv(cp, [FILTER_INSTALLED]):
-                depgraph._dynamic_config._dep_stack.append(
-                        _emerge.Dependency.Dependency(
-                            atom=portage.dep.Atom('=' + cpv),
-                            root=self.pvar.settings["ROOT"], parent=None))
-
-        if not depgraph._complete_graph():
-            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
-            return
-
-        def _add_children_to_list(packages_list, node):
-            for n in depgraph._dynamic_config.digraph.parent_nodes(node):
-                if n not in packages_list \
-                        and not isinstance(n, _emerge.SetArg.SetArg):
-                    packages_list.append(n)
-                    _add_children_to_list(packages_list, n)
-
-        for node in depgraph._dynamic_config.digraph.__iter__():
-            if isinstance(node, _emerge.SetArg.SetArg):
-                continue
-            if node.cpv in cpv_input:
-                if recursive:
-                    _add_children_to_list(packages_list, node)
-                else:
-                    for n in \
-                            depgraph._dynamic_config.digraph.parent_nodes(node):
-                        if not isinstance(n, _emerge.SetArg.SetArg):
-                            packages_list.append(n)
-
-        # remove cpv_input that may be added to the list
-        def filter_cpv_input(x): return x.cpv not in cpv_input
-        return filter(filter_cpv_input, packages_list)
 
     def _package(self, pkg_match, info=None):
 
@@ -655,6 +658,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             self._log_message(__name__, "get_packages: done %s/100" % (
                 percent,))
 
+            self.percentage(percent)
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -949,85 +953,24 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def install_packages(self, only_trusted, pkgs):
-        # NOTES:
-        # can't install an already installed packages
-        # even if it happens to be needed in Gentoo but probably not this API
+    def install_packages(self, only_trusted, pk_pkgs):
+
+        self._log_message(__name__, "install_packages: got %s and %s" % (
+            only_trusted, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
-        self.percentage(None)
 
-        cpv_list = []
-
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-
-            if not self.is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+        pkgs = []
+        for pk_pkg in pk_pkgs:
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                    "Package %s was not found" % (pk_pkg,))
                 continue
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-            if self.is_installed(cpv):
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                        "Package %s is already installed" % pkg)
-                continue
-
-            cpv_list.append('=' + cpv)
-
-        # only_trusted isn't supported
-        # but better to show it after important errors
-        if only_trusted:
-            self.error(ERROR_MISSING_GPG_SIGNATURE,
-                    "Portage backend does not support GPG signature")
-            return
-
-        # creating installation depgraph
-        myopts = {}
-        favorites = []
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "")
-
-        self.status(STATUS_DEP_RESOLVE)
-
-        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
-                self.pvar.trees, myopts, myparams, None)
-        retval, favorites = depgraph.select_files(cpv_list)
-        if not retval:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Wasn't able to get dependency graph")
-            return
-
-        # check fetch restrict, can stop the function via error signal
-        self.check_fetch_restrict(depgraph.altlist())
-
-        self.status(STATUS_INSTALL)
-
-        # get elog messages
-        portage.elog.add_listener(self.elog_listener)
-
-        try:
-            self.block_output()
-            # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
-                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
-                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
-            rval = mergetask.merge()
-        finally:
-            self.unblock_output()
-
-        # when an error is found print error messages
-        if rval != os.EX_OK:
-            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
-
-        # show elog messages and clean
-        portage.elog.remove_listener(self.elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
-        self._elog_messages = []
-
-        self.send_configuration_file_message()
+        self._execute_etp_pkgs_install(pkgs, only_trusted)
 
     def refresh_cache(self, force):
 
@@ -1054,6 +997,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 # inform UGC that we are syncing this repo
                 if self._entropy.UGC is not None:
                     self._entropy.UGC.add_download_stats(repo_id, [repo_id])
+        else:
+            self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
+                "Cannot update repositories!")
 
         self.percentage(100)
 
@@ -1314,12 +1260,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def search_group(self, filters, group):
 
+        self._log_message(__name__, "search_group: got %s and %s" % (
+            filters, group,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
-
-        self._log_message(__name__, "search_group: got %s and %s" % (
-            filters, group,))
 
         repos = self._get_all_repos()
 
@@ -1371,12 +1317,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def search_name(self, filters, keys):
 
+        self._log_message(__name__, "search_name: got %s and %s" % (
+            filters, keys,))
+
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
-
-        self._log_message(__name__, "search_name: got %s and %s" % (
-            filters, keys,))
 
         repos = self._get_all_repos()
 
@@ -1404,79 +1350,24 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def update_packages(self, only_trusted, pkgs):
-        # TODO: manage errors
-        # TODO: manage config file updates
+    def update_packages(self, only_trusted, pk_pkgs):
+
+        self._log_message(__name__, "update_packages: got %s and %s" % (
+            only_trusted, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
-        self.percentage(None)
 
-        cpv_list = []
-
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-
-            if not self.is_cpv_valid(cpv):
+        pkgs = []
+        for pk_pkg in pk_pkgs:
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
                 self.error(ERROR_UPDATE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+                    "Package %s was not found" % (pk_pkg,))
                 continue
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-            cpv_list.append('=' + cpv)
-
-        # only_trusted isn't supported
-        # but better to show it after important errors
-        if only_trusted:
-            self.error(ERROR_MISSING_GPG_SIGNATURE,
-                    "Portage backend does not support GPG signature")
-            return
-
-        # creating update depgraph
-        myopts = {}
-        favorites = []
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "")
-
-        self.status(STATUS_DEP_RESOLVE)
-
-        depgraph = _emerge.depgraph.depgraph(self.pvar.settings,
-                self.pvar.trees, myopts, myparams, None)
-        retval, favorites = depgraph.select_files(cpv_list)
-        if not retval:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Wasn't able to get dependency graph")
-            return
-
-        # check fetch restrict, can stop the function via error signal
-        self.check_fetch_restrict(depgraph.altlist())
-
-        self.status(STATUS_INSTALL)
-
-        # get elog messages
-        portage.elog.add_listener(self.elog_listener)
-
-        try:
-            self.block_output()
-            # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
-                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
-                    depgraph.altlist(), favorites, depgraph.schedulerGraph())
-            rval = mergetask.merge()
-        finally:
-            self.unblock_output()
-
-        # when an error is found print error messages
-        if rval != os.EX_OK:
-            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
-
-        # show elog messages and clean
-        portage.elog.remove_listener(self.elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
-        self._elog_messages = []
-
-        self.send_configuration_file_message()
+        self._execute_etp_pkgs_install(pkgs, only_trusted)
 
     def update_system(self, only_trusted):
         self.status(STATUS_RUNNING)
