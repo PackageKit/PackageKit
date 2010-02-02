@@ -193,12 +193,12 @@ libpackagekit_action_lookup_la_CFLAGS =				\
 libpackagekit_action_lookup_la_LDFLAGS =			\
 	-export_dynamic -avoid-version -module -no-undefined	\
 	-export-symbols-regex '^g_io_module_(load|unload)'	\
-	$(POLKIT_BACKEND_1_LIBS)				\
 	$(NULL)
 
 libpackagekit_action_lookup_la_LIBADD =				\
 	$(GLIB_LIBS)						\
 	$(PK_GLIB2_LIBS)					\
+	$(POLKIT_BACKEND_1_LIBS)				\
 	$(NULL)
 endif
 
