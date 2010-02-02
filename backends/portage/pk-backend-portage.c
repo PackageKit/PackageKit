@@ -339,7 +339,7 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-packages", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
