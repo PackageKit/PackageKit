@@ -54,6 +54,7 @@ G_BEGIN_DECLS
  * @PK_CLIENT_ERROR_INVALID_INPUT: the package_id is invalid
  * @PK_CLIENT_ERROR_INVALID_FILE: the file is invalid
  * @PK_CLIENT_ERROR_NOT_SUPPORTED: the action is not supported
+ * @PK_CLIENT_ERROR_DECLINED_SIMULATION: the simulation was declined by the user
  *
  * Errors that can be thrown
  */
@@ -67,7 +68,8 @@ typedef enum
 	PK_CLIENT_ERROR_CANNOT_START_DAEMON,
 	PK_CLIENT_ERROR_INVALID_INPUT,
 	PK_CLIENT_ERROR_INVALID_FILE,
-	PK_CLIENT_ERROR_NOT_SUPPORTED
+	PK_CLIENT_ERROR_NOT_SUPPORTED,
+	PK_CLIENT_ERROR_DECLINED_SIMULATION
 } PkClientError;
 
 typedef struct _PkClientPrivate		PkClientPrivate;
