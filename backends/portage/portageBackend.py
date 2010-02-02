@@ -1078,10 +1078,12 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             # temporarily set vendor_url = homepage
             homepage = self.get_metadata(cpv, ["HOMEPAGE"])[0]
             vendor_url = homepage
+            issued = ""
+            updated = ""
 
             self.update_detail(pkg, updates, obsoletes, vendor_url, bugzilla_url,
                     cve_url, "none", "No update text", "No ChangeLog",
-                    UPDATE_STATE_STABLE, None, None)
+                    UPDATE_STATE_STABLE, issued, updated)
 
     def get_updates(self, filters):
         # NOTES:
