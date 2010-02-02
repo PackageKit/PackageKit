@@ -98,6 +98,8 @@ gboolean	 pk_package_sack_remove_package_by_id	(PkPackageSack		*sack,
 							 const gchar		*package_id);
 PkPackage	*pk_package_sack_find_by_id		(PkPackageSack		*sack,
 							 const gchar		*package_id);
+PkPackageSack	*pk_package_sack_filter_by_info		(PkPackageSack		*sack,
+							 PkInfoEnum		 info);
 guint64		 pk_package_sack_get_total_bytes	(PkPackageSack		*sack);
 
 gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,
