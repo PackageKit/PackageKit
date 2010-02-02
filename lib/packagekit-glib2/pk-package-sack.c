@@ -80,6 +80,24 @@ pk_package_sack_clear (PkPackageSack *sack)
 }
 
 /**
+ * pk_package_sack_get_size:
+ * @sack: a valid #PkPackageSack instance
+ *
+ * Gets the number of packages in the sack
+ *
+ * Return value: the number of packages in the sack
+ *
+ * Since: 0.5.2
+ **/
+guint
+pk_package_sack_get_size (PkPackageSack *sack)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), 0);
+
+	return sack->priv->array->len;
+}
+
+/**
  * pk_package_sack_get_ids:
  * @sack: a valid #PkPackageSack instance
  *
