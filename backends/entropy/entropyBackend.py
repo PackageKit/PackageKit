@@ -330,6 +330,93 @@ class PackageKitEntropyMixin:
             except:
                 pass
 
+    def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove):
+        """
+        Execute effective removal (including dep calculation).
+
+        @param pkgs: list of package tuples composed by
+            (etp_package_id, EntropyRepository, pk_pkg_id)
+        @type pkgs: list
+        @param allowdep: Either true or false. If true allow other packages
+            to be removed with the package, but false should cause the script
+            to abort if other packages are dependant on the package.
+        @type allowdep: bool
+        @param autoremove: Either true or false. This option is only really
+            interesting on embedded devices with a limited amount of flash
+            storage. It suggests to the packagekit backend that
+            dependencies installed at the same time as the package
+            should also be removed if they are not required by
+            anything else. For instance, if you install OpenOffice,
+            it might download libneon as a dependency. When auto_remove
+            is set to true, and you remove OpenOffice then libneon
+            will also get removed automatically.
+        @type autoremove: bool
+        """
+
+        # backend do not implement autoremove
+        if autoremove:
+            self.message(MESSAGE_AUTOREMOVE_IGNORED,
+                "Entropy backend devs refused to implement this feature")
+
+        self.percentage(0)
+        self.status(STATUS_DEP_RESOLVE)
+
+        # check if we have installed pkgs only
+        for pkg_id, c_repo, pk_pkg in pkgs:
+            if c_repo is not self._entropy.installed_repository():
+                self.error(ERROR_DEP_RESOLUTION_FAILED,
+                    "Cannot remove a package coming fro a repository: %s" % (
+                        pk_pkg,))
+                return
+
+        match_map = dict((
+            (pkg_id, (pkg_id, c_repo, pk_pkg)) \
+                for pkg_id, c_repo, pk_pkg in pkgs))
+        matches = [pkg_id for pkg_id, c_repo, pk_pkg in pkgs]
+
+        # calculate deps
+        run_queue = self._entropy.get_removal_queue(matches)
+        added_pkgs = [x for x in run_queue if x not in matches]
+
+        # if there are required packages, allowdep must be on
+        if added_pkgs and not allowdep:
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                "Could not perform remove operation, some packages are needed by other packages")
+            return
+
+        self.percentage(0)
+        self.status(STATUS_REMOVE)
+
+        # remove
+        max_count = len(run_queue)
+        count = 0
+        for pkg_id in run_queue:
+            count += 1
+
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "get_packages: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+
+            metaopts = {}
+            metaopts['removeconfig'] = False
+            package = self._entropy.Package()
+            package.prepare((pkg_id,), "remove", metaopts)
+            if 'remove_installed_vanished' not in package.pkgmeta:
+                rc = package.run()
+                if rc != 0:
+                    pk_pkg = match_map.get(pkg_id, (None, None, None))[2]
+                    self.error(ERROR_PACKAGE_FAILED_TO_REMOVE,
+                        "Cannot remove package: %s" % (pk_pkg,))
+                    return
+
+            package.kill()
+            del package
+
+        self.finished()
+
     def _execute_etp_pkgs_install(self, pkgs, only_trusted):
         """
         Execute effective install (including dep calculation).
@@ -410,7 +497,6 @@ class PackageKitEntropyMixin:
         # install
         self.status(STATUS_INSTALL)
 
-        
         for match in run_queue:
             count += 1
 
@@ -539,34 +625,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             message += ";You should use 'equo conf update' to update them"
             message += ";If you can't do that, ask your system administrator."
             self.message(MESSAGE_CONFIG_FILES_CHANGED, message)
-
-    def get_restricted_fetch_files(self, cpv, metadata):
-        '''
-        This function checks files in SRC_URI and look if they are in DESTDIR.
-        Missing files are returned. If there is no issue, None is returned.
-        We don't care about digest but only about existance of files.
-
-        NOTES:
-        - we are assuming the package has RESTRICT='fetch'
-          be sure to call this function only in this case.
-        - we are not using fetch_check because it's not returning missing files
-          so this function is a simplist fetch_check
-        '''
-        missing_files = []
-        ebuild_settings = self.get_ebuild_settings(cpv, metadata)
-
-        files = self.pvar.portdb.getFetchMap(cpv,
-                ebuild_settings['USE'].split())
-
-        for f in files:
-            file_path = os.path.join(ebuild_settings["DISTDIR"], f)
-            if not os.access(file_path, os.F_OK):
-                missing_files.append([file_path, files[f]])
-
-        if len(missing_files) > 0:
-            return missing_files
-
-        return None
 
     def _package(self, pkg_match, info=None):
 
@@ -1003,112 +1061,24 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def remove_packages(self, allowdep, autoremove, pkgs):
+    def remove_packages(self, allowdep, autoremove, pk_pkgs):
+
+        self._log_message(__name__, "remove_packages: got %s and %s and %s" % (
+            allowdep, autoremove, pk_pkgs,))
+
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
-        self.percentage(None)
 
-        cpv_list = []
-        packages = []
-        required_packages = []
-        system_packages = []
-
-        # get system packages
-        set = portage.sets.base.InternalPackageSet(
-                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
-        for atom in set:
-            system_packages.append(atom.cp)
-
-        # create cpv_list
-        for pkg in pkgs:
-            cpv = self._id_to_etp(pkg)
-
-            if not self.is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND,
-                        "Package %s was not found" % pkg)
+        pkgs = []
+        for pk_pkg in pk_pkgs:
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
+                self.error(ERROR_UPDATE_NOT_FOUND,
+                    "Package %s was not found" % (pk_pkg,))
                 continue
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-            if not self.is_installed(cpv):
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,
-                        "Package %s is not installed" % pkg)
-                continue
-
-            # stop removal if a package is in the system set
-            if portage.pkgsplit(cpv)[0] in system_packages:
-                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
-                        "Package %s is a system package. If you really want to remove it, please use portage" % pkg)
-                continue
-
-            cpv_list.append(cpv)
-
-        # backend do not implement autoremove
-        if autoremove:
-            self.message(MESSAGE_AUTOREMOVE_IGNORED,
-                    "Portage backend do not implement autoremove option")
-
-        # get packages needing candidates for removal
-        required_packages = self.get_packages_required(cpv_list, recursive=True)
-
-        # if there are required packages, allowdep must be on
-        if required_packages and not allowdep:
-            self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Could not perform remove operation has packages are needed by other packages")
-            return
-
-        # first, we add required packages
-        for p in required_packages:
-            package = _emerge.Package.Package(
-                    type_name=p.type_name,
-                    built=p.built,
-                    installed=p.installed,
-                    root_config=p.root_config,
-                    cpv=p.cpv,
-                    metadata=p.metadata,
-                    operation='uninstall')
-            packages.append(package)
-
-        # and now, packages we want really to remove
-        for cpv in cpv_list:
-            metadata = self.get_metadata(cpv, [],
-                    in_dict=True, add_cache_keys=True)
-            package = _emerge.Package.Package(
-                    type_name="ebuild",
-                    built=True,
-                    installed=True,
-                    root_config=self.pvar.root_config,
-                    cpv=cpv,
-                    metadata=metadata,
-                    operation="uninstall")
-            packages.append(package)
-
-        # need to define favorites to remove packages from world set
-        favorites = []
-        for p in packages:
-            favorites.append('=' + p.cpv)
-
-        # get elog messages
-        portage.elog.add_listener(self.elog_listener)
-
-        # now, we can remove
-        try:
-            self.block_output()
-            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
-                    self.pvar.trees, self.pvar.mtimedb, mergelist=packages,
-                    myopts={}, spinner=None, favorites=favorites, digraph=None)
-            rval = mergetask.merge()
-        finally:
-            self.unblock_output()
-
-        # when an error is found print error messages
-        if rval != os.EX_OK:
-            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_REMOVE)
-
-        # show elog messages and clean
-        portage.elog.remove_listener(self.elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
-        self._elog_messages = []
+        self._execute_etp_pkgs_remove(pkgs, allowdep, autoremove)
 
     def repo_enable(self, repoid, enable):
 
