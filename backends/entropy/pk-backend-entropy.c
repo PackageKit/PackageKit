@@ -117,6 +117,49 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_roles:
+ */
+static PkBitfield
+backend_get_roles (PkBackend *backend)
+{
+	PkBitfield roles;
+	roles = pk_bitfield_from_enums (
+		PK_ROLE_ENUM_CANCEL,
+		PK_ROLE_ENUM_GET_DEPENDS,
+		PK_ROLE_ENUM_GET_DETAILS,
+		PK_ROLE_ENUM_GET_FILES,
+		PK_ROLE_ENUM_GET_REQUIRES,
+		PK_ROLE_ENUM_GET_PACKAGES,
+		//PK_ROLE_ENUM_WHAT_PROVIDES,
+		PK_ROLE_ENUM_GET_UPDATES,
+		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+		PK_ROLE_ENUM_INSTALL_PACKAGES,
+		//PK_ROLE_ENUM_INSTALL_FILES,
+		//PK_ROLE_ENUM_INSTALL_SIGNATURE,
+		PK_ROLE_ENUM_REFRESH_CACHE,
+		PK_ROLE_ENUM_REMOVE_PACKAGES,
+		PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+		PK_ROLE_ENUM_RESOLVE,
+		PK_ROLE_ENUM_SEARCH_DETAILS,
+		PK_ROLE_ENUM_SEARCH_FILE,
+		PK_ROLE_ENUM_SEARCH_GROUP,
+		PK_ROLE_ENUM_SEARCH_NAME,
+		PK_ROLE_ENUM_UPDATE_PACKAGES,
+		PK_ROLE_ENUM_UPDATE_SYSTEM,
+		PK_ROLE_ENUM_GET_REPO_LIST,
+		PK_ROLE_ENUM_REPO_ENABLE,
+		//PK_ROLE_ENUM_REPO_SET_DATA,
+		PK_ROLE_ENUM_GET_CATEGORIES,
+		//PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
+		//PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
+		//PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+		//PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+		-1);
+
+	return roles;
+}
+
+/**
  * backend_cancel:
  */
 static void
@@ -417,7 +460,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
+	backend_get_roles,					/* get_roles */
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
 	backend_download_packages,					/* download_packages */
