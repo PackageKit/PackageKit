@@ -2,8 +2,7 @@ Entropy PackageKit backend developers' TODO:
 
     - add support for FILTER_NOT_VISIBLE, FILTER_NOT_DEVELOPMENT,
         FILTER_DEVELOPMENT, FILTER_VISIBLE
-    - add get_mime_types, update_system, install_files, simulate_* support,
-        repo_set_data
+    - add get_mime_types, install_files, simulate_* support, repo_set_data
     - sys-apps/entropy is a syspkg
     - messages? how push output to stdout?
     - license dialog??
@@ -18,7 +17,7 @@ What is currently implemented:
     Y install [packages]
     Y remove [package]
     Y update <package>
-    N update-system ???? not shown
+    Y update-system
     Y refresh
     Y resolve [package]
     Y get-updates
