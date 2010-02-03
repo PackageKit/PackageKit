@@ -1,0 +1,34 @@
+Entropy PackageKit backend developers' TODO:
+
+    - add support for FILTER_NOT_VISIBLE, FILTER_NOT_DEVELOPMENT,
+        FILTER_DEVELOPMENT, FILTER_VISIBLE
+    - add get_mime_types, install_files, simulate_* support, repo_set_data
+    - bind get_distro_upgrades to branch hop?
+    - sys-apps/entropy is a syspkg
+    - messages? how push output to stdout?
+    - license dialog??
+
+What is currently implemented:
+    Y get-actions
+    Y get-groups
+    Y get-filters
+    Y get-transactions
+    Y get-time
+    Y search [name|details|group|file] [data]
+    Y install [packages]
+    Y remove [package]
+    Y update <package>
+    Y update-system
+    Y refresh
+    Y resolve [package]
+    Y get-updates
+    Y get-depends [package]
+    Y get-requires [package]
+    Y get-details [package]
+    Y get-files [package]
+    Y get-update-detail [package]
+    Y get-packages
+    Y repo-list
+    Y repo-enable [repo_id]
+    Y repo-disable [repo_id]
+
