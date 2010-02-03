@@ -1110,6 +1110,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    def get_distro_upgrades(self):
+        """
+        FIXME: should this return only system updates? (pkgs marked as syspkgs)
+        Not implemented atm
+        """
+        PackageKitBaseBackend.get_distro_upgrades(self)
+
     def get_updates(self, filters):
 
         self.status(STATUS_INFO)
