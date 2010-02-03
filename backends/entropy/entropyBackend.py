@@ -32,8 +32,9 @@ from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
 
-from entropy.i18n import _
-from entropy.const import etpConst
+from entropy.i18n import _, _LOCALE
+from entropy.const import etpConst, const_convert_to_rawstring, \
+    const_convert_to_unicode
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
@@ -74,7 +75,7 @@ class PackageKitEntropyMixin:
         """
         if PK_DEBUG:
             self._entropy_log.write("%s: %s" % (source,
-                ' '.join([str(x) for x in args]),)
+                ' '.join([const_convert_to_unicode(x) for x in args]),)
             )
 
     def _is_repository_enabled(self, repo_name):
@@ -133,8 +134,9 @@ class PackageKitEntropyMixin:
             return
         pkg_key, pkg_ver, cur_arch, repo_name = split_data
 
-        self._log_message(__name__, "_id_to_etp: extracted: %s | %s | %s | %s" % (
-            pkg_key, pkg_ver, cur_arch, repo_name,))
+        self._log_message(__name__,
+            "_id_to_etp: extracted: %s | %s | %s | %s" % (
+                pkg_key, pkg_ver, cur_arch, repo_name,))
         pkg_ver, pkg_slot = pkg_ver.rsplit(":", 1)
 
         if repo_name == "installed":
@@ -330,6 +332,18 @@ class PackageKitEntropyMixin:
                 self._entropy.UGC.add_download_stats(repo_id, repo_pkg_keys)
             except:
                 pass
+
+    def _etp_get_category_description(self, category):
+        """
+        Return translated Entropy packages category description.
+        """
+        cat_desc = _("No description")
+        cat_desc_data = self._entropy.get_category_description(category)
+        if _LOCALE in cat_desc_data:
+            cat_desc = cat_desc_data[_LOCALE]
+        elif 'en' in cat_desc_data:
+            cat_desc = cat_desc_data['en']
+        return cat_desc
 
     def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove):
         """
@@ -779,6 +793,38 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 description, homepage, self._get_pkg_size(pkg))
 
         self.percentage(100)
+
+    def get_categories(self):
+
+        self._log_message(__name__, "get_categories: called")
+
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+
+        categories = self._entropy.get_package_categories()
+        if not categories:
+            self.error(ERROR_GROUP_LIST_INVALID, "no package categires")
+            return
+
+        for name in categories:
+            name = const_convert_to_rawstring(name)
+
+            summary = self._etp_get_category_description(name)
+            summary = const_convert_to_rawstring(summary, "utf-8")
+
+            fn = "/usr/share/pixmaps/entropy/%s.png" % (name,)
+            if os.path.isfile(fn) and os.access(fn, os.R_OK):
+                icon = name
+            else:
+                icon = const_convert_to_rawstring("image-missing")
+
+            nothing = const_convert_to_rawstring("")
+            cat_id = name # same thing
+
+            self._log_message(__name__, "get_categories: pushing",
+                nothing, cat_id, name, summary, icon)
+
+            self.category(nothing, cat_id, name, summary, icon)
 
     def get_files(self, pk_pkgs):
 

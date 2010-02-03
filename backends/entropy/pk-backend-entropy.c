@@ -127,6 +127,29 @@ backend_cancel (PkBackend *backend)
 }
 
 /**
+ * backend_download_packages:
+ */
+static void
+backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "download-packages", directory, package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * pk_backend_get_categories:
+ */
+static void
+backend_get_categories (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-categories", NULL);
+}
+
+/**
  * backend_get_depends:
  */
 static void
@@ -397,8 +420,8 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_roles */
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
+	backend_download_packages,					/* download_packages */
+	backend_get_categories,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
