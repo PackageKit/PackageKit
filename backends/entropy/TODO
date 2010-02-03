@@ -3,7 +3,7 @@ Entropy PackageKit backend developers' TODO:
     - add support for FILTER_NOT_VISIBLE, FILTER_NOT_DEVELOPMENT,
         FILTER_DEVELOPMENT, FILTER_VISIBLE
     - remove support for FILTER_NEWEST (useless)
-    - add download_packages, get_mime_types, update_system support
+    - add get_mime_types, update_system support
     - sys-apps/entropy is a syspkg
     - improve performance of _log_message
     - messages? how push output to stdout?
