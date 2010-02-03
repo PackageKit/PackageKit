@@ -64,7 +64,7 @@ from entropy.fetchers import UrlFetcher
 
 import entropy.tools
 
-PK_DEBUG = True
+PK_DEBUG = False
 
 class PackageKitEntropyMixin(object):
 
