@@ -25,9 +25,30 @@ import os
 import sys
 import signal
 import time
+import traceback
 
-from packagekit.backend import *
-from packagekit.progress import *
+from packagekit.backend import PackageKitBaseBackend, \
+    ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, ERROR_INTERNAL_ERROR, \
+    ERROR_CANNOT_DISABLE_REPOSITORY, ERROR_PACKAGE_FAILED_TO_INSTALL, \
+    ERROR_DEP_RESOLUTION_FAILED, ERROR_PACKAGE_FAILED_TO_CONFIGURE, \
+    ERROR_PACKAGE_FAILED_TO_REMOVE, ERROR_GROUP_LIST_INVALID, \
+    ERROR_UPDATE_NOT_FOUND, ERROR_REPO_CONFIGURATION_ERROR, \
+    ERROR_PACKAGE_NOT_FOUND, ERROR_MISSING_GPG_SIGNATURE, FILTER_INSTALLED, \
+    FILTER_NOT_INSTALLED, ERROR_GROUP_LIST_INVALID, FILTER_NOT_DEVELOPMENT, \
+    FILTER_FREE, GROUP_ACCESSIBILITY, GROUP_PROGRAMMING, GROUP_GAMES, \
+    GROUP_DESKTOP_GNOME, GROUP_DESKTOP_KDE, GROUP_DESKTOP_OTHER, \
+    GROUP_MULTIMEDIA, GROUP_NETWORK, GROUP_OFFICE, GROUP_SCIENCE, \
+    GROUP_SYSTEM, GROUP_SECURITY, GROUP_OTHER, GROUP_DESKTOP_XFCE, \
+    GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
+    INFO_INSTALLED, \
+    INFO_AVAILABLE, get_package_id, split_package_id, MESSAGE_UNKNOWN, \
+    MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
+    MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
+    STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
+    STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
+    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE
+
+#from packagekit.progress import *
 from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
@@ -45,11 +66,7 @@ import entropy.tools
 
 PK_DEBUG = True
 
-# TODO:
-# remove percentage(None) if percentage is used
-# protection against signal when installing/removing
-
-class PackageKitEntropyMixin:
+class PackageKitEntropyMixin(object):
 
     INST_PKGS_REPO_ID = "installed"
 
@@ -166,13 +183,13 @@ class PackageKitEntropyMixin:
         except IndexError:
             return GROUP_UNKNOWN
 
-        return PackageKitEntropyBackend._GROUP_MAP[generic_group_name]
+        return PackageKitEntropyBackend.GROUP_MAP[generic_group_name]
 
     def _get_entropy_group(self, pk_group):
         """
         Given a PackageKit group identifier, return Entropy packages group.
         """
-        group_map = PackageKitEntropyBackend._GROUP_MAP
+        group_map = PackageKitEntropyBackend.GROUP_MAP
         # reverse dict
         group_map_reverse = dict((y, x) for x, y in group_map.items())
         return group_map_reverse.get(pk_group, 'unknown')
@@ -229,7 +246,7 @@ class PackageKitEntropyMixin:
         elif FILTER_NOT_INSTALLED in fltlist:
             pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
         if FILTER_FREE in fltlist:
-            free_pkgs = set([x for x in pkgs if \
+            pkgs = set([x for x in pkgs if \
                 self._entropy.is_entropy_package_free(x[1], x[0])])
 
         return pkgs
@@ -420,8 +437,8 @@ class PackageKitEntropyMixin:
             package = self._entropy.Package()
             package.prepare((pkg_id,), "remove", metaopts)
             if 'remove_installed_vanished' not in package.pkgmeta:
-                rc = package.run()
-                if rc != 0:
+                x_rc = package.run()
+                if x_rc != 0:
                     pk_pkg = match_map.get(pkg_id, (None, None, None))[2]
                     self.error(ERROR_PACKAGE_FAILED_TO_REMOVE,
                         "Cannot remove package: %s" % (pk_pkg,))
@@ -432,7 +449,15 @@ class PackageKitEntropyMixin:
 
         self.finished()
 
-    def _execute_etp_pkgs_install(self, pkgs, only_trusted):
+    def _execute_etp_pkgs_fetch(self, pkgs, directory):
+        """
+        Execute effective packages download.
+        """
+        self._execute_etp_pkgs_install(pkgs, False, only_fetch = True,
+            fetch_path = directory, calculate_deps = False)
+
+    def _execute_etp_pkgs_install(self, pkgs, only_trusted, only_fetch = False,
+        fetch_path = None, calculate_deps = True):
         """
         Execute effective install (including dep calculation).
 
@@ -443,7 +468,7 @@ class PackageKitEntropyMixin:
         @type only_trusted: bool
         """
         self.percentage(0)
-        self.status(STATUS_DEP_RESOLVE)
+        self.status(STATUS_RUNNING)
 
         if only_trusted:
             # check if we have trusted pkgs
@@ -454,16 +479,20 @@ class PackageKitEntropyMixin:
                         "Package %s is not GPG signed" % (pk_pkg,))
                     return
 
-        match_map = dict((
-            (pkg_id, self._get_repo_name(c_repo)), (pkg_id, c_repo, pk_pkg)) \
-                for pkg_id, c_repo, pk_pkg in pkgs)
         matches = [(pkg_id, self._get_repo_name(c_repo),) for \
             pkg_id, c_repo, pk_pkg in pkgs]
 
         # calculate deps
-        empty_deps, deep_deps = False, False
-        run_queue, removal_queue, status = self._entropy.get_install_queue(
-            matches, empty_deps, deep_deps)
+        if calculate_deps:
+            self.status(STATUS_DEP_RESOLVE)
+            empty_deps, deep_deps = False, False
+            run_queue, removal_queue, status = self._entropy.get_install_queue(
+                matches, empty_deps, deep_deps)
+        else:
+            run_queue = matches
+            removal_queue = []
+            status = 0
+
         if status == -2:
             self.error(ERROR_DEP_RESOLUTION_FAILED,
                 "Cannot find the following dependencies: %s" % (
@@ -475,8 +504,17 @@ class PackageKitEntropyMixin:
 
         # FIXME: where is license dialog? can't be interactive, fook!
 
+        # used in case of errors
+        match_map = {}
+        for pkg_id, repo_id in run_queue:
+            pkg_c_repo = self._entropy.open_repository(repo_id)
+            match_map[(pkg_id, repo_id,)] = (pkg_id, pkg_c_repo,
+                self._etp_to_id((pkg_id, pkg_c_repo)),)
+
         # fetch pkgs
-        max_count = len(run_queue)*2
+        max_count = len(run_queue)
+        if not only_fetch:
+            max_count *= 2
         count = 0
         down_data = {}
         for match in run_queue:
@@ -491,23 +529,40 @@ class PackageKitEntropyMixin:
             metaopts = {
                 'dochecksum': True,
             }
+            if fetch_path is not None:
+                metaopts['fetch_path'] = fetch_path
+
             package = self._entropy.Package()
             package.prepare(match, "fetch", metaopts)
             myrepo = package.pkgmeta['repository']
             obj = down_data.setdefault(myrepo, set())
             obj.add(entropy.tools.dep_getkey(package.pkgmeta['atom']))
 
-            rc = package.run()
-            if rc != 0:
+            pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
+            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
+            # show pkg
+            self.package(pk_pkg, INFO_DOWNLOADING, pkg_desc)
+
+            x_rc = package.run()
+            if x_rc != 0:
                 pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
                     "Cannot download package: %s" % (pk_pkg,))
                 return
+
+            # emit the file we downloaded
+            self.files(pk_pkg, package.pkgmeta['pkgpath'])
+
             package.kill()
             del package
 
         # spawn UGC
         self._etp_spawn_ugc(down_data)
+
+        self.percentage(100)
+        if only_fetch:
+            self.finished()
+            return
 
         # install
         self.status(STATUS_INSTALL)
@@ -535,8 +590,8 @@ class PackageKitEntropyMixin:
             package = self._entropy.Package()
             package.prepare(match, "install", metaopts)
 
-            rc = package.run()
-            if rc != 0:
+            x_rc = package.run()
+            if x_rc != 0:
                 pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
                     "Cannot install package: %s" % (pk_pkg,))
@@ -580,8 +635,8 @@ Client.__singleton_class__ = PackageKitEntropyClient
 
 class PkUrlFetcher(UrlFetcher):
 
-    _last_avg = 0
     _pk_progress = None
+    _last_t = time.time()
 
     def __init__(self, *args, **kwargs):
         self.__average = 0
@@ -603,14 +658,12 @@ class PkUrlFetcher(UrlFetcher):
         if PkUrlFetcher._pk_progress is None:
             return
 
-        myavg = abs(int(round(float(self.__average), 1)))
-        if abs((myavg - PkUrlFetcher._last_avg)) < 1:
-            return
-
-        if (myavg > PkUrlFetcher._last_avg) or (myavg < 2) or (myavg > 97):
+        last_t = PkUrlFetcher._last_t
+        if (time.time() - last_t) > 1:
+            myavg = abs(int(round(float(self.__average), 1)))
             cur_prog = int(float(self.__average)/100)
             PkUrlFetcher._pk_progress(cur_prog)
-            PkUrlFetcher._last_avg = myavg
+            PkUrlFetcher._last_t = time.time()
 
 
 class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
@@ -618,7 +671,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     _log_fname = os.path.join(etpConst['syslogdir'], "packagekit.log")
 
     # Entropy <-> PackageKit groups map
-    _GROUP_MAP = {
+    GROUP_MAP = {
         'accessibility': GROUP_ACCESSIBILITY,
         'development': GROUP_PROGRAMMING,
         'games': GROUP_GAMES,
@@ -642,6 +695,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         raise SystemExit(1)
 
     def __init__(self, args):
+        PackageKitEntropyMixin.__init__(self)
+
         signal.signal(signal.SIGQUIT, self.__sigquit)
         self._entropy = PackageKitEntropyClient()
         PkUrlFetcher._pk_progress = self.sub_percentage
@@ -659,8 +714,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def _convert_date_to_iso8601(self, unix_time_str):
         unix_time = float(unix_time_str)
-        t = time.localtime(unix_time)
-        formatted = time.strftime('%Y-%m-%dT%H:%M:%S', t)
+        ux_t = time.localtime(unix_time)
+        formatted = time.strftime('%Y-%m-%dT%H:%M:%S', ux_t)
         return formatted
 
     def _generic_message(self, message):
@@ -777,19 +832,16 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkg_id, c_repo = pkg
 
-            base_data = c_repo.getBaseData(pkg_id)
-            if base_data is None:
+            category = c_repo.retrieveCategory(pkg_id)
+            lic = c_repo.retrieveLicense(pkg_id)
+            homepage = c_repo.retrieveHomepage(pkg_id)
+            description = c_repo.retrieveDescription(pkg_id)
+            if (category is None) or (description is None):
                 self.error(ERROR_PACKAGE_NOT_FOUND,
                     "Package %s was not found in repository" % (pk_pkg,))
                 continue
 
-            atom, name, version, versiontag, \
-            description, category, chost, \
-            cflags, cxxflags, homepage, \
-            license, branch, download, \
-            digest, slot, etpapi, \
-            datecreation, size, revision = base_data
-            self.details(pk_pkg, license, self._get_pk_group(category),
+            self.details(pk_pkg, lic, self._get_pk_group(category),
                 description, homepage, self._get_pkg_size(pkg))
 
         self.percentage(100)
@@ -812,8 +864,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             summary = self._etp_get_category_description(name)
             summary = const_convert_to_rawstring(summary, "utf-8")
 
-            fn = "/usr/share/pixmaps/entropy/%s.png" % (name,)
-            if os.path.isfile(fn) and os.access(fn, os.R_OK):
+            f_name = "/usr/share/pixmaps/entropy/%s.png" % (name,)
+            if os.path.isfile(f_name) and os.access(f_name, os.R_OK):
                 icon = name
             else:
                 icon = const_convert_to_rawstring("image-missing")
@@ -903,8 +955,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def get_repo_list(self, filters):
 
-        self._log_message(__name__, "get_repo_list: got %s and %s" % (
-            filters,))
+        self._log_message(__name__, "get_repo_list: got %s" % (filters,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
@@ -1102,18 +1153,37 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             only_trusted, pk_pkgs,))
 
         self.status(STATUS_RUNNING)
-        self.allow_cancel(True) # correct?
+        self.allow_cancel(True)
 
         pkgs = []
         for pk_pkg in pk_pkgs:
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None:
-                self.error(ERROR_UPDATE_NOT_FOUND,
+                self.error(ERROR_PACKAGE_NOT_FOUND,
                     "Package %s was not found" % (pk_pkg,))
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
         self._execute_etp_pkgs_install(pkgs, only_trusted)
+
+    def download_packages(self, directory, pk_pkgs):
+
+        self._log_message(__name__, "download_packages: got %s and %s" % (
+            directory, pk_pkgs,))
+
+        self.status(STATUS_RUNNING)
+        self.allow_cancel(True)
+
+        pkgs = []
+        for pk_pkg in pk_pkgs:
+            pkg = self._id_to_etp(pk_pkg)
+            if pkg is None:
+                self.error(ERROR_PACKAGE_NOT_FOUND,
+                    "Package %s was not found" % (pk_pkg,))
+                continue
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
+
+        self._execute_etp_pkgs_fetch(pkgs, directory)
 
     def refresh_cache(self, force):
 
@@ -1425,65 +1495,15 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._execute_etp_pkgs_install(pkgs, only_trusted)
 
     def update_system(self, only_trusted):
+
+        self._log_message(__name__, "update_system: got %s" % (
+            only_trusted,))
+
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
-
-        if only_trusted:
-            self.error(ERROR_MISSING_GPG_SIGNATURE,
-                    "Portage backend does not support GPG signature")
-            return
-
-        myopts = {}
-        myopts["--deep"] = True
-        myopts["--newuse"] = True
-        myopts["--update"] = True
-
-        myparams = _emerge.create_depgraph_params.create_depgraph_params(
-                myopts, "")
-
-        self.status(STATUS_DEP_RESOLVE)
-
-        # creating list of ebuilds needed for the system update
-        # using backtrack_depgraph to prevent errors
-        retval, depgraph, _ = _emerge.depgraph.backtrack_depgraph(
-                self.pvar.settings, self.pvar.trees, myopts, myparams, "",
-                ["@system", "@world"], None)
-        if not retval:
-            self.error(ERROR_INTERNAL_ERROR,
-                    "Wasn't able to get dependency graph")
-            return
-
-        # check fetch restrict, can stop the function via error signal
-        self.check_fetch_restrict(depgraph.altlist())
-
-        self.status(STATUS_INSTALL)
-
-        # get elog messages
-        portage.elog.add_listener(self.elog_listener)
-
-        try:
-            self.block_output()
-            # compiling/installing
-            mergetask = _emerge.Scheduler.Scheduler(self.pvar.settings,
-                    self.pvar.trees, self.pvar.mtimedb, myopts, None,
-                    depgraph.altlist(), None, depgraph.schedulerGraph())
-            rval = mergetask.merge()
-        finally:
-            self.unblock_output()
-
-        # when an error is found print error messages
-        if rval != os.EX_OK:
-            self.send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
-
-        # show elog messages and clean
-        portage.elog.remove_listener(self.elog_listener)
-        for msg in self._elog_messages:
-            # TODO: use specific message ?
-            self.message(MESSAGE_UNKNOWN, msg)
-        self._elog_messages = []
-
-        self.send_configuration_file_message()
+        # FIXME: not yet implemented
+        return
 
 def main():
     backend = PackageKitEntropyBackend("")
