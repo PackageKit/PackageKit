@@ -500,7 +500,24 @@ class PackageKitEntropyMixin(object):
         self.percentage(0)
         self.status(STATUS_DOWNLOAD)
 
-        # FIXME: where is license dialog? can't be interactive, fook!
+        # Before even starting the fetch
+        # make sure that the user accepts their licenses
+        # send license signal afterwards
+        licenses = self._entropy.get_licenses_to_accept(run_queue)
+
+        for eula_id, eula_pkgs in licenses.items():
+            for pkg_id, repo_id in eula_pkgs:
+                pkg_c_repo = self._entropy.open_repository(repo_id)
+                vendor_name = pkg_c_repo.retrieveHomepage(pkg_id)
+                pk_pkg = self._etp_to_id((pkg_id, pkg_c_repo))
+                license_agreement = pkg_c_repo.retrieveLicenseText(eula_id)
+                self.eula_required(eula_id, pk_pkg, vendor_name,
+                    license_agreement)
+                # FIXME remove here self._entropy.installed_repository().acceptLicense(eula_id)
+
+        if licenses:
+            # bye bye, user will have to accept it and get here again
+            return
 
         # used in case of errors
         match_map = {}
