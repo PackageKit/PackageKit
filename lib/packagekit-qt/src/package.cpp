@@ -93,12 +93,13 @@ public:
 	QString arch;
 	QString data;
 	QString summary;
-	Package::State state;
+	Enum::Info info;
 	Package::Details* details;
 	QString iconPath;
 };
 
-Package::Package(const QString& packageId, const QString& state, const QString& summary) : QObject(NULL), d(new Private)
+Package::Package(const QString& packageId, const QString& info, const QString& summary)
+ : d(new Private)
 {
 	d->id = packageId;
 
@@ -111,7 +112,7 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 		d->data = tokens.at(3);
 	}
 
-	d->state = (State)Util::enumFromString<Package>(state, "State", "State");
+	d->info = (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info");
 	d->summary = summary;
 	d->details = NULL;
 	d->iconPath = QString ();
@@ -119,8 +120,9 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 
 Package::~Package()
 {
-	if(hasDetails())
+	if (hasDetails())
 		delete d->details;
+	delete d;
 }
 
 QString Package::id() const
@@ -153,9 +155,9 @@ QString Package::summary() const
 	return d->summary;
 }
 
-Package::State Package::state() const
+Enum::Info Package::info() const
 {
-	return d->state;
+	return d->info;
 }
 
 bool Package::hasDetails() const
@@ -171,6 +173,12 @@ Package::Details* Package::details() const
 void Package::setDetails(Package::Details* det)
 {
 	d->details = det;
+}
+
+void Package::setInfoSummary(const QString& info, const QString& summary)
+{
+	d->info = (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info");
+	d->summary = summary;
 }
 
 QString Package::iconPath ()

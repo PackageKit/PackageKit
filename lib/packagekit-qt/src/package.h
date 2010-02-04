@@ -23,6 +23,7 @@
 
 #include <QtCore>
 #include "client.h"
+#include "enum.h"
 
 namespace PackageKit {
 
@@ -39,8 +40,6 @@ namespace PackageKit {
 class Package : public QObject
 {
 	Q_OBJECT
-	Q_ENUMS(State)
-	Q_ENUMS(License)
 
 public:
 	/**
@@ -81,169 +80,9 @@ public:
 	QString summary() const;
 
 	/**
-	 * Describes the state of a package
+	 * Returns the package's info
 	 */
-	typedef enum {
-		UnknownState,
-		StateInstalled,
-		StateAvailable,
-		StateLow,
-		StateEnhancement,
-		StateNormal,
-		StateBugfix,
-		StateImportant,
-		StateSecurity,
-		StateBlocked,
-		StateDownloading,
-		StateUpdating,
-		StateInstalling,
-		StateRemoving,
-		StateCleanup,
-		StateObsoleting,
-		StateCollectionInstalled,
-		StateCollectionAvailable,
-		StateFinished,
-		StateReinstalling,
-		StateDowngrading,
-		StatePreparing,
-		StateDecompressing
-	} State;
-	/**
-	 * Returns the package's state
-	 */
-	State state() const;
-
-	/**
-	 * Describes a package's license
-	 */
-	typedef enum {
-		UnknownLicense,
-		LicenseGlide,
-		LicenseAfl,
-		LicenseAmpasBsd,
-		LicenseAmazonDsl,
-		LicenseAdobe,
-		LicenseAgplv1,
-		LicenseAgplv3,
-		LicenseAsl1Dot0,
-		LicenseAsl1Dot1,
-		LicenseAsl2Dot0,
-		LicenseApsl2Dot0,
-		LicenseArtisticClarified,
-		LicenseArtistic2Dot0,
-		LicenseArl,
-		LicenseBittorrent,
-		LicenseBoost,
-		LicenseBsdWithAdvertising,
-		LicenseBsd,
-		LicenseCecill,
-		LicenseCddl,
-		LicenseCpl,
-		LicenseCondor,
-		LicenseCopyrightOnly,
-		LicenseCryptix,
-		LicenseCrystalStacker,
-		LicenseDoc,
-		LicenseWtfpl,
-		LicenseEpl,
-		LicenseEcos,
-		LicenseEfl2Dot0,
-		LicenseEu_datagrid,
-		LicenseLgplv2WithExceptions,
-		LicenseFtl,
-		LicenseGiftware,
-		LicenseGplv2,
-		LicenseGplv2WithExceptions,
-		LicenseGplv2PlusWithExceptions,
-		LicenseGplv3,
-		LicenseGplv3WithExceptions,
-		LicenseGplv3PlusWithExceptions,
-		LicenseLgplv2,
-		LicenseLgplv3,
-		LicenseGnuplot,
-		LicenseIbm,
-		LicenseImatix,
-		LicenseImagemagick,
-		LicenseImlib2,
-		LicenseIjg,
-		LicenseIntel_acpi,
-		LicenseInterbase,
-		LicenseIsc,
-		LicenseJabber,
-		LicenseJasper,
-		LicenseLppl,
-		LicenseLibtiff,
-		LicenseLpl,
-		LicenseMecabIpadic,
-		LicenseMit,
-		LicenseMitWithAdvertising,
-		LicenseMplv1Dot0,
-		LicenseMplv1Dot1,
-		LicenseNcsa,
-		LicenseNgpl,
-		LicenseNosl,
-		LicenseNetcdf,
-		LicenseNetscape,
-		LicenseNokia,
-		LicenseOpenldap,
-		LicenseOpenpbs,
-		LicenseOsl1Dot0,
-		LicenseOsl1Dot1,
-		LicenseOsl2Dot0,
-		LicenseOsl3Dot0,
-		LicenseOpenssl,
-		LicenseOreilly,
-		LicensePhorum,
-		LicensePhp,
-		LicensePublicDomain,
-		LicensePython,
-		LicenseQpl,
-		LicenseRpsl,
-		LicenseRuby,
-		LicenseSendmail,
-		LicenseSleepycat,
-		LicenseSlib,
-		LicenseSissl,
-		LicenseSpl,
-		LicenseTcl,
-		LicenseUcd,
-		LicenseVim,
-		LicenseVnlsl,
-		LicenseVsl,
-		LicenseW3c,
-		LicenseWxwidgets,
-		LicenseXinetd,
-		LicenseZend,
-		LicenseZplv1Dot0,
-		LicenseZplv2Dot0,
-		LicenseZplv2Dot1,
-		LicenseZlib,
-		LicenseZlibWithAck,
-		LicenseCdl,
-		LicenseFbsddl,
-		LicenseGfdl,
-		LicenseIeee,
-		LicenseOfsfdl,
-		LicenseOpenPublication,
-		LicenseCcBy,
-		LicenseCcBySa,
-		LicenseCcByNd,
-		LicenseDsl,
-		LicenseFreeArt,
-		LicenseOfl,
-		LicenseUtopia,
-		LicenseArphic,
-		LicenseBaekmuk,
-		LicenseBitstreamVera,
-		LicenseLucida,
-		LicenseMplus,
-		LicenseStix,
-		LicenseXano,
-		LicenseVostrom,
-		LicenseXerox,
-		LicenseRicebsd,
-		LicenseQhull
-	} License;
+	Enum::Info info() const;
 
 	/**
 	 * Holds additional details about a package
@@ -325,8 +164,9 @@ private:
 	friend class TransactionPrivate;
 	friend class Details;
 	friend class Client;
-	Package(const QString& packageId, const QString& state = QString(), const QString& summary = QString());
+	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString());
 	void setDetails(Details* det);
+	void setInfoSummary(const QString& info, const QString& summary);
 	class Private;
 	Private* d;
 };

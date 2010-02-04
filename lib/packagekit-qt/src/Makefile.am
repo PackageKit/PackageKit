@@ -22,17 +22,18 @@ libpackagekit_qt_include_HEADERS =				\
 	client.h						\
 	transaction.h						\
 	package.h						\
-	bitfield.h                      \
+	bitfield.h						\
+	enum.h							\
 	$(NULL)
 
 $(libpackagekit_qt_la_OBJECTS) :				\
 	client.moc						\
 	clientprivate.moc					\
 	daemonproxy.moc						\
-	package.moc						\
 	transaction.moc						\
 	transactionprivate.moc					\
 	transactionproxy.moc					\
+	enum.moc						\
 	$(NULL)
 
 libpackagekit_qt_la_SOURCES =					\
@@ -54,8 +55,10 @@ libpackagekit_qt_la_SOURCES =					\
 	package.cpp						\
 	util.h							\
 	util.cpp						\
-	bitfield.h                      \
-	bitfield.cpp                    \
+	bitfield.h						\
+	bitfield.cpp						\
+	enum.h							\
+	enum.cpp						\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
