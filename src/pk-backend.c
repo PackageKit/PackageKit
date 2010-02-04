@@ -702,6 +702,33 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 }
 
 /**
+ * pk_backend_set_speed:
+ **/
+gboolean
+pk_backend_set_speed (PkBackend *backend, guint speed)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		egg_warning ("already set error, cannot process: speed %i", speed);
+		return FALSE;
+	}
+
+	/* set the same twice? */
+	if (backend->priv->speed == speed) {
+		egg_debug ("duplicate set of %i", speed);
+		return FALSE;
+	}
+
+	/* set new value */
+	backend->priv->speed = speed;
+	g_object_notify (G_OBJECT (backend), "speed");
+	return TRUE;
+}
+
+/**
  * pk_backend_get_runtime:
  *
  * Returns time running in ms
