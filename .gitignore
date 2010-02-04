@@ -61,4 +61,6 @@ packagekit.types
 *.cache
 *.anjuta
 ChangeLog
+.deps
+.acb
 

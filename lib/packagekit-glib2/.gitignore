@@ -11,4 +11,6 @@ pk-self-test
 *.db
 *.sh
 pk-version.h
+*.gir
+*.typelib
 
