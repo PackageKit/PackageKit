@@ -517,6 +517,9 @@ class PackageKitEntropyMixin(object):
 
         if licenses:
             # bye bye, user will have to accept it and get here again
+            self.error(EXIT_EULA_REQUIRED,
+                "Following EULAs are not accepted: %s" % (
+                    ' '.join(licenses.keys()),))
             return
 
         # used in case of errors
