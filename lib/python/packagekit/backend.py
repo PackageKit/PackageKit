@@ -299,6 +299,19 @@ class PackageKitBaseBackend:
             )
         sys.stdout.flush()
 
+    def eula_required(self, eula_id, package_id, vendor_name, license_agreement):
+        '''
+        send 'eula-required' signal:
+        @param eula_id:         Id of the EULA
+        @param package_id:      Id of the package needing a signature
+        @param vendor_name:     Name of the vendor that wrote the EULA
+        @param license_agreement: The license text
+        '''
+        print "eula-required\t%s\t%s\t%s\t%s" % (
+            eula_id, package_id, vendor_name, license_agreement
+            )
+        sys.stdout.flush()
+
 #
 # Backend Action Methods
 #

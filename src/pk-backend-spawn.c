@@ -394,6 +394,39 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 							  sections[2], sections[3], sections[4],
 							  sections[5], sections[6], sections[7], sig_type);
 		goto out;
+
+	} else if (g_strcmp0 (command, "eula-required") == 0) {
+
+		if (size != 5) {
+			egg_warning ("invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+
+		if (egg_strzero (sections[1])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "eula_id blank, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+
+		if (egg_strzero (sections[2])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "package_id blank, and hence ignored: '%s'", sections[2]);
+			ret = FALSE;
+			goto out;
+		}
+
+		if (egg_strzero (sections[4])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
+					    "agreement name blank, and hence ignored: '%s'", sections[4]);
+			ret = FALSE;
+			goto out;
+		}
+
+		ret = pk_backend_eula_required (backend_spawn->priv->backend, sections[1], sections[2], sections[3], sections[4]);
+		goto out;
+
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
 
 		if (size != 4) {
