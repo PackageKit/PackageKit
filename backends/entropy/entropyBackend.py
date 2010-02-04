@@ -48,11 +48,9 @@ from packagekit.backend import PackageKitBaseBackend, \
     STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
     UPDATE_STATE_TESTING, UPDATE_STATE_STABLE
 
-#from packagekit.progress import *
 from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
-
 from entropy.i18n import _, _LOCALE
 from entropy.const import etpConst, const_convert_to_rawstring, \
     const_convert_to_unicode
@@ -64,7 +62,7 @@ from entropy.fetchers import UrlFetcher
 
 import entropy.tools
 
-PK_DEBUG = True
+PK_DEBUG = False
 
 class PackageKitEntropyMixin(object):
 
