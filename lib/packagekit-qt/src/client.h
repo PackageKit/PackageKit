@@ -117,7 +117,9 @@ public:
 		ActionSimulateInstallFiles,
 		ActionSimulateInstallPackages,
 		ActionSimulateRemovePackages,
-		ActionSimulateUpdatePackages
+		ActionSimulateUpdatePackages,
+		/* this always has to be at the end of the list */
+		LastAction
 	} Action;
 	typedef Bitfield Actions;
 
@@ -218,7 +220,9 @@ public:
 		GroupElectronics,
 		GroupCollections,
 		GroupVendor,
-		GroupNewest
+		GroupNewest,
+		/* this always has to be at the end of the list */
+		LastGroup
 	} Group;
 	typedef QSet<Group> Groups;
 
@@ -246,7 +250,9 @@ public:
 		NetworkOnline,
 		NetworkWired,
 		NetworkWifi,
-		NetworkMobile
+		NetworkMobile,
+		/* this always has to be at the end of the list */
+		LastNetworkState
 	} NetworkState;
 
 	/**
@@ -315,7 +321,9 @@ public:
 	 */
 	typedef enum {
 		UnknownSignatureType,
-		SignatureGpg
+		SignatureGpg,
+		/* this always has to be at the end of the list */
+		LastSignatureType
 	} SignatureType;
 
 	/**
@@ -348,7 +356,9 @@ public:
 		ProvidesMimetype,
 		ProvidesFont,
 		ProvidesHardwareDriver,
-		ProvidesPostscriptDriver
+		ProvidesPostscriptDriver,
+		/* this always has to be at the end of the list */
+		LastProvidesType
 	} ProvidesType;
 
 	/**
@@ -414,7 +424,9 @@ public:
 		ErrorPackageFailedToConfigure,
 		ErrorPackageFailedToBuild,
 		ErrorPackageFailedToInstall,
-		ErrorPackageFailedToRemove
+		ErrorPackageFailedToRemove,
+		/* this always has to be at the end of the list */
+		LastErrorType
 	} ErrorType;
 
 	/**
@@ -436,6 +448,8 @@ public:
 		MessagePackageAlreadyInstalled,
 		MessageAutoremoveIgnored,
 		MessageRepoMetadataDownloadFailed,
+		/* this always has to be at the end of the list */
+		LastMessageType
 	} MessageType;
 
 	/**
@@ -463,6 +477,8 @@ public:
 		RestartSystem,
 		RestartSecuritySession,
 		RestartSecuritySystem,
+		/* this always has to be at the end of the list */
+		LastRestartType
 	} RestartType;
 
 	/**
@@ -472,7 +488,9 @@ public:
 		UnknownUpdateState,
 		UpdateStable,
 		UpdateUnstable,
-		UpdateTesting
+		UpdateTesting,
+		/* this always has to be at the end of the list */
+		LastUpdateState
 	} UpdateState;
 
 	/**
@@ -481,7 +499,9 @@ public:
 	typedef enum {
 		UnknownDistroUpgrade,
 		DistroUpgradeStable,
-		DistroUpgradeUnstable
+		DistroUpgradeUnstable,
+		/* this always has to be at the end of the list */
+		LastDistroUpgradeType
 	} DistroUpgradeType;
 
 	/**
@@ -502,7 +522,9 @@ public:
 		ErrorInvalidInput,
 		ErrorInvalidFile,
 		ErrorFunctionNotSupported,
-		ErrorDaemonUnreachable
+		ErrorDaemonUnreachable,
+		/* this always has to be at the end of the list */
+		LastDaemonError
 	} DaemonError;
 
 	/**
