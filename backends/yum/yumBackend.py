@@ -2041,6 +2041,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             message = _format_msgs(msgs)
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except yum.Errors.PackageSackError, e:
+            raise PkError(ERROR_PACKAGE_DATABASE_CHANGED, _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
