@@ -22,6 +22,7 @@
 #include "common.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
+#include "package.h"
 #include "util.h"
 
 using namespace PackageKit;
@@ -67,7 +68,7 @@ Transaction::Transaction(const QString& tid, const QString& timespec, bool succe
 	d->tid = tid;
 	d->timespec = QDateTime::fromString(timespec, Qt::ISODate);
 	d->succeeded = succeeded;
-	d->role = (Client::Action)Util::enumFromString<Client>(role, "Action", "Action");
+	d->role = (Enum::Role)Util::enumFromString<Enum>(role, "Role", "Role");
 	d->duration = duration;
 	d->data = data;
 	d->uid = uid;
@@ -150,13 +151,13 @@ uint Transaction::speed() const
 	return d->p->speed ();
 }
 
-Client::Action Transaction::role() const
+Enum::Role Transaction::role() const
 {
 	Q_D(const Transaction);
 	if(d->oldtrans)
 		return d->role;
 
-	return (Client::Action) Util::enumFromString<Client>(d->p->role (), "Action", "Action");
+	return (Enum::Role) Util::enumFromString<Enum>(d->p->role (), "Role", "Role");
 }
 
 void Transaction::setHints(const QStringList& hints)
@@ -170,10 +171,10 @@ void Transaction::setHints(const QString& hints)
 	setHints(QStringList() << hints);
 }
 
-Transaction::Status Transaction::status() const
+Enum::Status Transaction::status() const
 {
 	Q_D(const Transaction);
-	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->status (), "Status", "Status");
+	return (Enum::Status) Util::enumFromString<Enum>(d->p->status (), "Status", "Status");
 }
 
 QDateTime Transaction::timespec() const

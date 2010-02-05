@@ -22,7 +22,7 @@
 #define TRANSACTION_H
 
 #include <QtCore>
-#include "package.h"
+#include "enum.h"
 #include "client.h"
 
 namespace PackageKit {
@@ -49,10 +49,6 @@ class TransactionPrivate;
 class Transaction : public QObject
 {
 	Q_OBJECT
-	Q_ENUMS(TransactionError)
-	Q_ENUMS(Status)
-	Q_ENUMS(ExitStatus)
-	Q_ENUMS(MediaType)
 
 public:
 	/**
@@ -136,9 +132,9 @@ public:
 
 	/**
 	 * Returns information describing the transaction
-	 * \return the current action of the transaction
+	 * \return the current role of the transaction
 	 */
-	Client::Action role() const;
+	Enum::Role role() const;
 
 	/**
 	 * \brief Tells the underlying package manager to use the given \p hints
@@ -162,52 +158,10 @@ public:
 	void setHints(const QStringList& hints);
 
 	/**
-	 * Describes the current state of the transaction
-	 */
-	typedef enum {
-		UnknownStatus,
-		StatusWait,
-		StatusSetup,
-		StatusRunning,
-		StatusQuery,
-		StatusInfo,
-		StatusRemove,
-		StatusRefreshCache,
-		StatusDownload,
-		StatusInstall,
-		StatusUpdate,
-		StatusCleanup,
-		StatusObsolete,
-		StatusDepResolve,
-		StatusSigCheck,
-		StatusRollback,
-		StatusTestCommit,
-		StatusCommit,
-		StatusRequest,
-		StatusFinished,
-		StatusCancel,
-		StatusDownloadRepository,
-		StatusDownloadPackagelist,
-		StatusDownloadFilelist,
-		StatusDownloadChangelog,
-		StatusDownloadGroup,
-		StatusDownloadUpdateinfo,
-		StatusRepackaging,
-		StatusLoadingCache,
-		StatusScanApplications,
-		StatusGeneratePackageList,
-		StatusWaitingForLock,
-		StatusWaitingForAuth,
-		StatusScanProcessList,
-		StatusCheckExecutableFiles,
-		StatusCheckLibraries,
-		StatusCopyFiles
-	} Status;
-	/**
 	 * Returns the current state of the transaction
 	 * \return a Transaction::Status value describing the status of the transaction
 	 */
-	Status status() const;
+	Enum::Status status() const;
 
 	/**
 	 * Returns the date at which the transaction was created
@@ -251,32 +205,6 @@ public:
 	 */
 	QString cmdline() const;
 
-	/**
-	 * Describes how the transaction finished
-	 * \sa finished()
-	 */
-	typedef enum {
-		UnknownExitStatus,
-		ExitSuccess,
-		ExitFailed,
-		ExitCancelled,
-		ExitKeyRequired,
-		ExitEulaRequired,
-		ExitKilled, /* when we forced the cancel, but had to sigkill */
-		ExitMediaChangeRequired,
-		ExitNeedUntrusted
-	} ExitStatus;
-
-	/**
-	 * Describes what kind of media is required
-	 */
-	typedef enum {
-		UnknownMediaType,
-		MediaCd,
-		MediaDvd,
-		MediaDisc
-	} MediaType;
-
 public Q_SLOTS:
 	/**
 	 * Cancels the transaction
@@ -317,12 +245,12 @@ Q_SIGNALS:
 	 * Emitted when a distribution upgrade is available
 	 * \sa Client::getDistroUpgrades
 	 */
-	void distroUpgrade(PackageKit::Client::DistroUpgradeType type, const QString& name, const QString& description);
+	void distroUpgrade(PackageKit::Enum::DistroUpgrade type, const QString& name, const QString& description);
 
 	/**
 	 * Emitted when an error occurs
 	 */
-	void errorCode(PackageKit::Client::ErrorType error, const QString& details);
+	void errorCode(PackageKit::Enum::Error error, const QString& details);
 
 	/**
 	 * Emitted when an EULA agreement prevents the transaction from running
@@ -337,7 +265,7 @@ Q_SIGNALS:
 	 * \note You will need to relaunch the transaction after changing the media
 	 * \sa Transaction::MediaType
 	 */
-	void mediaChangeRequired(PackageKit::Transaction::MediaType type, const QString& id, const QString& text);
+	void mediaChangeRequired(PackageKit::Enum::MediaType type, const QString& id, const QString& text);
 
 	/**
 	 * Sends the \p filenames contained in package \p p
@@ -350,14 +278,14 @@ Q_SIGNALS:
 	 *
 	 * \p status describes the exit status, \p runtime is the number of seconds it took to complete the transaction
 	 */
-	void finished(PackageKit::Transaction::ExitStatus status, uint runtime);
+	void finished(PackageKit::Enum::Exit status, uint runtime);
 
 	/**
 	 * Conveys a message sent from the backend
 	 *
 	 * \p type is the type of the \p message
 	 */
-	void message(PackageKit::Client::MessageType type, const QString& message);
+	void message(PackageKit::Enum::Message type, const QString& message);
 
 	/**
 	 * Emitted when the transaction sends a new package
@@ -379,7 +307,7 @@ Q_SIGNALS:
 	 * Indicates that a restart is required
 	 * \p package is the package who triggered the restart signal
 	 */
-	void requireRestart(PackageKit::Client::RestartType type, Package* p);
+	void requireRestart(PackageKit::Enum::Restart type, Package* p);
 
 	/**
 	 * Sends an old transaction

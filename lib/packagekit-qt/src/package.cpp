@@ -31,7 +31,7 @@ class Package::DetailsPrivate
 public:
 	Package* package;
 	QString license;
-	Client::Group group;
+	Enum::Group group;
 	QString description;
 	QString url;
 	uint size;
@@ -42,7 +42,7 @@ Package::Details::Details(Package* p, const QString& license, const QString& gro
 	Q_D(Details);
 	d->package = p;
 	d->license = license;
-	d->group = (Client::Group)Util::enumFromString<Client>(group, "Group", "Group");
+	d->group = (Enum::Group)Util::enumFromString<Enum>(group, "Group", "Group");
 	d->description = detail;
 	d->url = url;
 	d->size = size;
@@ -65,7 +65,7 @@ QString Package::Details::license() const
 	return d->license;
 }
 
-Client::Group Package::Details::group() const
+Enum::Group Package::Details::group() const
 {
 	Q_D(const Details);
 	return d->group;

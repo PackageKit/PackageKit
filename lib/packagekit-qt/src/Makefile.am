@@ -48,7 +48,6 @@ libpackagekit_qt_la_SOURCES =					\
 	bitfield.h						\
 	bitfield.cpp						\
 	enum.h							\
-	enum.cpp						\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\

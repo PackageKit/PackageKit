@@ -22,6 +22,7 @@
 #define TRANSACTIONPRIVATE_H
 
 #include <QtCore>
+#include "enum.h"
 #include "client.h"
 
 namespace PackageKit {
@@ -44,7 +45,7 @@ public:
 	// Only used for old transactions
 	bool oldtrans;
 	QDateTime timespec;
-	Client::Action role;
+	Enum::Role role;
 	bool succeeded;
 	uint duration;
 	QString data;

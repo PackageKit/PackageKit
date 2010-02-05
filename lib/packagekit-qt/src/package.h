@@ -109,7 +109,7 @@ public:
 			/**
 			 * Returns the package's group (for example Multimedia, Editors...)
 			 */
-			Client::Group group() const;
+			Enum::Group group() const;
 
 			/**
 			 * Returns the package's long description

@@ -32,12 +32,12 @@ QStringList Util::packageListToPids(const QList<Package*>& packages)
 	return pids;
 }
 
-QString Util::filtersToString(const QFlags<PackageKit::Client::Filter>& flags)
+QString Util::filtersToString(const QFlags<PackageKit::Enum::Filter>& flags)
 {
 	QStringList flagStrings;
-	for (int i = Client::UnknownFilter; i < Client::FilterLast; i *= 2) {
-		if ((Client::Filter) i & flags) {
-			flagStrings.append(Util::enumToString<Client>((Client::Filter) i, "Filter", "Filter"));
+	for (int i = Enum::UnknownFilter; i < Enum::FilterLast; i *= 2) {
+		if ((Enum::Filter) i & flags) {
+			flagStrings.append(Util::enumToString<Client>((Enum::Filter) i, "Filter", "Filter"));
 		}
 	}
 

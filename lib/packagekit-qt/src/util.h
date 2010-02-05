@@ -127,7 +127,7 @@ public:
 
 	static QStringList packageListToPids(const QList<Package*>& packages);
 
-	static QString filtersToString(const QFlags<PackageKit::Client::Filter>& flags);
+	static QString filtersToString(const QFlags<PackageKit::Enum::Filter>& flags);
 
 	/*
 	 * Describes the different errors that might happen on the bus

@@ -85,7 +85,7 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
 	c->error(error);
 
 	foreach(Transaction *t, runningTransactions) {
-		t->finished (Transaction::ExitFailed, 0);
+		t->finished (Enum::ExitFailed, 0);
 		t->d_ptr->destroy ();
 	}
 }
