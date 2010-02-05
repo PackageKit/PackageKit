@@ -192,6 +192,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "package-failed-to-install"},
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE, "package-failed-to-remove"},
 	{PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS, "failed-due-to-running-process"},
+	{PK_ERROR_ENUM_PACKAGE_DATABASE_CHANGED, "package-database-changed"},
 	{0, NULL}
 };
 
