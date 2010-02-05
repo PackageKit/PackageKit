@@ -19,6 +19,7 @@
  */
 
 #include "transactionprivate.h"
+#include "transaction.h"
 #include "util.h"
 
 using namespace PackageKit;

@@ -39,8 +39,6 @@ namespace PackageKit {
  */
 class Package : public QObject
 {
-	Q_OBJECT
-
 public:
 	/**
 	 * Destructor
@@ -88,6 +86,7 @@ public:
 	 * Holds additional details about a package
 	 * \sa Client::getDetails
 	 */
+	class DetailsPrivate;
 	class Details
 	{
 		public:
@@ -126,12 +125,15 @@ public:
 			 * Returns the package's size
 			 */
 			qulonglong size() const;
+
+		protected:
+			DetailsPrivate * const d_ptr;
+
 		private:
+			Q_DECLARE_PRIVATE(Details);
 			friend class Package;
 			friend class TransactionPrivate;
 			Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size);
-			class Private;
-			Private* d;
 	};
 
 	/**
@@ -164,11 +166,11 @@ private:
 	friend class TransactionPrivate;
 	friend class Details;
 	friend class Client;
-	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString());
+	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString(), QObject *parent = 0);
 	void setDetails(Details* det);
 	void setInfoSummary(const QString& info, const QString& summary);
 	class Private;
-	Private* d;
+	Private * const d;
 };
 
 } // End namespace PackageKit

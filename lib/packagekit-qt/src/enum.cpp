@@ -26,5 +26,3 @@ using namespace PackageKit;
 Enum::Enum() : QObject(NULL)
 {
 }
-
-#include "enum.moc"

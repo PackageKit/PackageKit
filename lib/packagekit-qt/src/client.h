@@ -26,7 +26,6 @@
 
 namespace PackageKit {
 
-class ClientPrivate;
 class Package;
 class Transaction;
 
@@ -46,6 +45,7 @@ class Transaction;
  * \note This class is a singleton, its constructor is private. Call Client::instance() to get
  * an instance of the Client object
  */
+class ClientPrivate;
 class Client : public QObject
 {
 
@@ -731,6 +731,7 @@ public:
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
+	Transaction* searchDetails(const QStringList& search, Filters filters = NoFilter);
 	Transaction* searchDetails(const QString& search, Filters filters = NoFilter);
 
 	/**
@@ -851,12 +852,15 @@ Q_SIGNALS:
 	 */
 	void updatesChanged();
 
+protected:
+	ClientPrivate * const d_ptr;
+
 private:
+	Q_DECLARE_PRIVATE(Client);
 	Client(QObject* parent = 0);
 	static Client* m_instance;
-	friend class ClientPrivate;
 	friend class TransactionPrivate;
-	ClientPrivate* d;
+
 
 	void setLastError (DaemonError e);
 	void setTransactionError (Transaction* t, DaemonError e);

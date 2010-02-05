@@ -29,7 +29,6 @@ namespace PackageKit {
 
 class ClientPrivate;
 class Package;
-class TransactionPrivate;
 
 /**
  * \class Transaction transaction.h Transaction
@@ -46,6 +45,7 @@ class TransactionPrivate;
  *
  * \sa Client
  */
+class TransactionPrivate;
 class Transaction : public QObject
 {
 	Q_OBJECT
@@ -393,15 +393,15 @@ Q_SIGNALS:
 	 */
 	void updateDetail(PackageKit::Client::UpdateInfo info);
 
+protected:
+	TransactionPrivate * const d_ptr;
+
 private:
+	Q_DECLARE_PRIVATE(Transaction);
 	friend class Client;
 	friend class ClientPrivate;
 	Transaction(const QString& tid, Client* parent);
 	Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent);
-
-	friend class TransactionPrivate;
-	TransactionPrivate* d;
-
 };
 
 } // End namespace PackageKit

@@ -44,8 +44,9 @@
 		}                                                          \
 
 #define RUN_TRANSACTION(blurb) \
+		Q_D(Client);   \
 		CREATE_NEW_TRANSACTION \
-		QDBusReply<void> r = t->d->p->blurb;        \
+		QDBusReply<void> r = t->d_ptr->p->blurb;        \
 		CHECK_TRANSACTION      \
 		return t;              \
 
@@ -67,10 +68,9 @@ Client* Client::instance()
 	return m_instance;
 }
 
-Client::Client(QObject* parent) : QObject(parent)
+Client::Client(QObject* parent) : QObject(parent), d_ptr(new ClientPrivate(this))
 {
-	d = new ClientPrivate(this);
-
+	Q_D(Client);
 	d->daemon = new DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
 
 	d->error = NoError;
@@ -95,11 +95,11 @@ Client::Client(QObject* parent) : QObject(parent)
 
 Client::~Client()
 {
-	delete d;
 }
 
 Client::Actions Client::actions() const
 {
+	Q_D(const Client);
 	QStringList actions = d->daemon->roles().split(";");
 
 	Actions flags;
@@ -111,21 +111,25 @@ Client::Actions Client::actions() const
 
 QString Client::backendName() const
 {
+	Q_D(const Client);
 	return d->daemon->backendName();
 }
 
 QString Client::backendDescription() const
 {
+	Q_D(const Client);
 	return d->daemon->backendDescription();
 }
 
 QString Client::backendAuthor() const
 {
+	Q_D(const Client);
 	return d->daemon->backendAuthor();
 }
 
 Client::Filters Client::filters() const
 {
+	Q_D(const Client);
 	QStringList filters = d->daemon->filters().split(";");
 
 	// Adapt a slight difference in the enum
@@ -142,6 +146,7 @@ Client::Filters Client::filters() const
 
 Client::Groups Client::groups() const
 {
+	Q_D(const Client);
 	QStringList groups = d->daemon->groups().split(";");
 
 	Groups flags;
@@ -153,33 +158,39 @@ Client::Groups Client::groups() const
 
 bool Client::locked() const
 {
+	Q_D(const Client);
 	return d->daemon->locked();
 }
 
 QStringList Client::mimeTypes() const
 {
+	Q_D(const Client);
 	return d->daemon->mimeTypes().split(";");
 }
 
 Client::NetworkState Client::networkState() const
 {
+	Q_D(const Client);
 	QString state = d->daemon->networkState();
 	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
 }
 
 QString Client::distroId() const
 {
+	Q_D(const Client);
 	return d->daemon->distroId();
 }
 
 uint Client::getTimeSinceAction(Action action) const
 {
+	Q_D(const Client);
 	QString pkName = Util::enumToString<Client>(action, "Action", "Action");
 	return d->daemon->GetTimeSinceAction(pkName);
 }
 
 QList<Transaction*> Client::getTransactions()
 {
+	Q_D(Client);
 	QStringList tids = d->daemon->GetTransactionList();
 
 	return d->transactions(tids);
@@ -187,16 +198,19 @@ QList<Transaction*> Client::getTransactions()
 
 void Client::setHints(const QStringList& hints)
 {
+	Q_D(Client);
 	d->hints = hints;
 }
 
 void Client::setHints(const QString& hints)
 {
+	Q_D(Client);
 	d->hints = QStringList() << hints;
 }
 
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
+	Q_D(Client);
 	QDBusReply<void> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
 	if (!r.isValid ()) {
 		setLastError (daemonErrorFromDBusReply (r));
@@ -208,31 +222,37 @@ bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 
 void Client::stateHasChanged(const QString& reason)
 {
+	Q_D(Client);
 	d->daemon->StateHasChanged(reason);
 }
 
 void Client::suggestDaemonQuit()
 {
+	Q_D(Client);
 	d->daemon->SuggestDaemonQuit();
 }
 
 Client::DaemonError Client::getLastError() const
 {
+	Q_D(const Client);
 	return d->error;
 }
 
 uint Client::versionMajor() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMajor();
 }
 
 uint Client::versionMinor() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMinor();
 }
 
 uint Client::versionMicro() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMicro();
 }
 
@@ -265,13 +285,14 @@ Transaction* Client::getDepends(Package* package, Filters filters, bool recursiv
 
 Transaction* Client::getDetails(const QList<Package*>& packages)
 {
+	Q_D(Client);
 	CREATE_NEW_TRANSACTION
 
 	foreach(Package* p, packages) {
-		t->d->packageMap.insert(p->id(), p);
+		t->d_ptr->packageMap.insert(p->id(), p);
 	}
 
-	QDBusReply<void> r = t->d->p->GetDetails(Util::packageListToPids(packages));
+	QDBusReply<void> r = t->d_ptr->p->GetDetails(Util::packageListToPids(packages));
 
 	CHECK_TRANSACTION
 
@@ -413,15 +434,20 @@ Transaction* Client::searchFiles(const QString& search, Filters filters)
 	return searchFiles(QStringList() << search, filters);
 }
 
-Transaction* Client::searchDetails(const QString& search, Filters filters)
+Transaction* Client::searchDetails(const QStringList& search, Filters filters)
 {
 	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))
+}
+
+Transaction* Client::searchDetails(const QString& search, Filters filters)
+{
+	return searchDetails(QStringList() << search, filters);
 }
 
 Transaction* Client::searchGroups(Client::Groups groups, Filters filters)
 {
 	QStringList groupsSL;
-	foreach (Client::Group group, groups) {
+	foreach (const Client::Group group, groups) {
 		groupsSL << Util::enumToString<Client>(group, "Group", "Group");
 	}
 
@@ -520,29 +546,31 @@ Transaction* Client::updateSystem(bool only_trusted)
 	RUN_TRANSACTION(UpdateSystem(only_trusted))
 }
 
-Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filters filters)
+Transaction* Client::whatProvides(ProvidesType type, const QStringList& search, Filters filters)
 {
 	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search))
 }
 
-Transaction* Client::whatProvides(ProvidesType type, const QStringList& search, Filters filters)
+Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filters filters)
 {
-	return whatProvides(type, search.join("&"), filters);
+	return whatProvides(type, QStringList() << search, filters);
 }
 
 void Client::setLastError (DaemonError e)
 {
+	Q_D(Client);
 	d->error = e;
 	emit error (e);
 }
 
 void Client::setTransactionError (Transaction* t, DaemonError e)
 {
-	t->d->error = e;
+	t->d_ptr->error = e;
 }
 
 void Client::destroyTransaction(const QString &tid)
 {
+	Q_D(Client);
 	d->removeTransactionFromPool(tid);
 }
 

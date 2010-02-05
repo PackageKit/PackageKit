@@ -22,7 +22,7 @@
 #define TRANSACTIONPRIVATE_H
 
 #include <QtCore>
-#include "transaction.h"
+#include "client.h"
 
 namespace PackageKit {
 

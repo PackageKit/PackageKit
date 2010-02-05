@@ -26,16 +26,6 @@ libpackagekit_qt_include_HEADERS =				\
 	enum.h							\
 	$(NULL)
 
-$(libpackagekit_qt_la_OBJECTS) :				\
-	client.moc						\
-	clientprivate.moc					\
-	daemonproxy.moc						\
-	transaction.moc						\
-	transactionprivate.moc					\
-	transactionproxy.moc					\
-	enum.moc						\
-	$(NULL)
-
 libpackagekit_qt_la_SOURCES =					\
 	QPackageKit						\
 	common.h						\
