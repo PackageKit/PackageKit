@@ -199,7 +199,7 @@ public:
 		FilterNotApplication	 = 0x2000000,
 		FilterLast		 = 0x4000000
 	} Filter;
-	Q_DECLARE_FLAGS(Filters, Filter);
+	Q_DECLARE_FLAGS(Filters, Filter)
 
 	/**
 	 * Returns the filters supported by the current backend
