@@ -53,7 +53,7 @@ from packagekit.package import PackagekitPackage
 sys.path.insert(0, '/usr/lib/entropy/libraries')
 from entropy.i18n import _, _LOCALE
 from entropy.const import etpConst, const_convert_to_rawstring, \
-    const_convert_to_unicode
+    const_convert_to_unicode, const_get_stringtype
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
@@ -89,8 +89,15 @@ class PackageKitEntropyMixin(object):
         Write log message to Entropy PackageKit log file.
         """
         if PK_DEBUG:
+            my_args = []
+            for arg in args:
+                if not isinstance(arg, const_get_stringtype()):
+                    my_args.append(repr(arg))
+                else:
+                    my_args.append(arg)
+
             self._entropy_log.write("%s: %s" % (source,
-                ' '.join([const_convert_to_unicode(x) for x in args]),)
+                ' '.join([const_convert_to_unicode(x) for x in my_args]),)
             )
 
     def _is_repository_enabled(self, repo_name):
@@ -1176,6 +1183,52 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._pk_feed_sorted_pkgs(pkgs)
 
         self.percentage(100)
+
+    def install_files(self, only_trusted, inst_files):
+
+        self._log_message(__name__, "install_files: got", only_trusted, "and",
+            inst_files)
+
+        self.allow_cancel(True)
+        self.status(STATUS_RUNNING)
+
+        for etp_file in inst_files:
+            if not os.path.exists(etp_file):
+                self.error(ERROR_FILE_NOT_FOUND,
+                    "%s could not be found" % (etp_file,))
+                return
+
+            if not entropy.tools.is_entropy_package_file(etp_file):
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Only Entropy files are supported")
+                return
+
+        pkg_ids = []
+        for etp_file in inst_files:
+            repo_id = os.path.basename(etp_file)
+            status, atomsfound = self._entropy.add_package_to_repos(etp_file)
+            if status != 0:
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Error while trying to add %s repository" % (repo_id,))
+                return
+            for idpackage, atom in atomsfound:
+                pkg_ids.append((idpackage, repo_id))
+
+        self._log_message(__name__, "install_files: generated", pkg_ids)
+
+        pkgs = []
+        for pkg_id, repo_id in pkg_ids:
+            if pkg_id == -1: # wtf!?
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Repo was added but package %s is not found" % (
+                        (pkg_id, repo_id),))
+                return
+            repo_db = self._entropy.open_repository(repo_id)
+            pkg = (pkg_id, repo_db)
+            pk_pkg = self._etp_to_id(pkg)
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
+
+        self._execute_etp_pkgs_install(pkgs, only_trusted)
 
     def install_packages(self, only_trusted, pk_pkgs):
 

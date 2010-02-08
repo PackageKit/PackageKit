@@ -134,7 +134,7 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
-		//PK_ROLE_ENUM_INSTALL_FILES,
+		PK_ROLE_ENUM_INSTALL_FILES,
 		//PK_ROLE_ENUM_INSTALL_SIGNATURE,
 		PK_ROLE_ENUM_REFRESH_CACHE,
 		PK_ROLE_ENUM_REMOVE_PACKAGES,
@@ -290,6 +290,20 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_files:
+ */
+static void
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-files", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+    g_free (package_ids_temp);
 }
 
 /**
@@ -492,7 +506,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,				/* get_requires */
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
-	NULL,								/* install_files */
+	backend_install_files,				/* install_files */
 	backend_install_packages,			/* install_packages */
 	NULL,								/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
