@@ -73,5 +73,13 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
+	client.moc						\
+	clientprivate.moc					\
+	daemonproxy.moc						\
+	enum.moc						\
+	package.moc						\
+	transaction.moc						\
+	transactionprivate.moc					\
+	transactionproxy.moc					\
 	$(NULL)
 
