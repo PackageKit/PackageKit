@@ -25,10 +25,11 @@
 #include "enum.h"
 #include "client.h"
 
+class TransactionProxy;
+
 namespace PackageKit {
 
 class Transaction;
-class TransactionProxy;
 class Client;
 
 class TransactionPrivate : public QObject
@@ -39,7 +40,7 @@ public:
 	~TransactionPrivate();
 	QString tid;
 	Client* client;
-	TransactionProxy* p;
+	::TransactionProxy* p;
 	Transaction* t;
 
 	// Only used for old transactions

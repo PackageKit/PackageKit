@@ -48,6 +48,7 @@ libpackagekit_qt_la_SOURCES =					\
 	bitfield.h						\
 	bitfield.cpp						\
 	enum.h							\
+	enum.cpp							\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
@@ -81,5 +82,19 @@ EXTRA_DIST =							\
 	transaction.moc						\
 	transactionprivate.moc					\
 	transactionproxy.moc					\
+	dbus_proxies.stamp                  \
 	$(NULL)
 
+MAINTAINERCLEANFILES =						\
+	dbus_proxies.stamp						\
+	transactionproxy.h						\
+	transactionproxy.cpp					\
+	daemonproxy.h							\
+	daemonproxy.cpp							\
+	$(NULL)
+
+BUILT_SOURCES=dbus_proxies.stamp
+
+dbus_proxies.stamp: ${top_srcdir}/src/org.freedesktop.PackageKit.xml ${top_srcdir}/src/org.freedesktop.PackageKit.Transaction.xml
+	qdbusxml2cpp -c DaemonProxy -p daemonproxy -m -N ${top_srcdir}/src/org.freedesktop.PackageKit.xml
+	qdbusxml2cpp -c TransactionProxy -p transactionproxy -m -N ${top_srcdir}/src/org.freedesktop.PackageKit.Transaction.xml

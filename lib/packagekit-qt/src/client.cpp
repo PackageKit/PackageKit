@@ -72,7 +72,7 @@ Client* Client::instance()
 Client::Client(QObject* parent) : QObject(parent), d_ptr(new ClientPrivate(this))
 {
 	Q_D(Client);
-	d->daemon = new DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
+	d->daemon = new ::DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
 
 	d->error = NoError;
 
