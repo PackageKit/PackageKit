@@ -160,6 +160,15 @@ backend_get_roles (PkBackend *backend)
 }
 
 /**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+    return g_strdup ("application/x-bzip-compressed-tar;application/x-tbz;application/x-tbz2");
+}
+
+/**
  * backend_cancel:
  */
 static void
@@ -470,7 +479,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,					/* get_groups */
 	backend_get_filters,				/* get_filters */
 	backend_get_roles,					/* get_roles */
-	NULL,								/* get_mime_types */
+	backend_get_mime_types,				/* get_mime_types */
 	backend_cancel,						/* cancel */
 	backend_download_packages,			/* download_packages */
 	backend_get_categories,				/* get_categories */
