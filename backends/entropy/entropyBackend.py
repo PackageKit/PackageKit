@@ -500,6 +500,9 @@ class PackageKitEntropyMixin(object):
         self.percentage(0)
         self.status(STATUS_DOWNLOAD)
 
+        """
+        # FIXME: need to have fixed backend API first
+
         # Before even starting the fetch
         # make sure that the user accepts their licenses
         # send license signal afterwards
@@ -513,7 +516,8 @@ class PackageKitEntropyMixin(object):
                 license_agreement = pkg_c_repo.retrieveLicenseText(eula_id)
                 self.eula_required(eula_id, pk_pkg, vendor_name,
                     license_agreement)
-                # FIXME remove here self._entropy.installed_repository().acceptLicense(eula_id)
+                # TODO remove here
+                # self._entropy.installed_repository().acceptLicense(eula_id)
 
         if licenses:
             # bye bye, user will have to accept it and get here again
@@ -521,6 +525,7 @@ class PackageKitEntropyMixin(object):
                 "Following EULAs are not accepted: %s" % (
                     ' '.join(licenses.keys()),))
             return
+        """
 
         # used in case of errors
         match_map = {}
