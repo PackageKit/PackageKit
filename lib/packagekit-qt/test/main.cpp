@@ -9,8 +9,8 @@
 int main(int argc, char **argv)
 {
 	// Check that we are using the dummy backend for testing (I'm sometimes absent minded)
-	PackageKit::Client::BackendDetail d = PackageKit::Client::instance()->getBackendDetail();
-	if(d.name != "dummy") {
+	QString backendName = PackageKit::Client::instance()->backendName();
+	if(backendName != "dummy") {
 		qFatal("Please use the dummy backend for testing");
 	}
 
