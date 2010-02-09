@@ -1607,6 +1607,23 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted)
 
+    def what_provides(self, filters, provides_type, values):
+
+        # FIXME: implement this
+        """
+        PROVIDES_ANY = "any"
+        PROVIDES_CODEC = "codec"
+        PROVIDES_FONT = "font"
+        PROVIDES_HARDWARE_DRIVER = "driver"
+        PROVIDES_MIMETYPE = "mimetype"
+        PROVIDES_MODALIAS = "modalias"
+        PROVIDES_POSTSCRIPT_DRIVER = "postscript-driver"
+        PROVIDES_UNKNOWN = "unknown"
+        """
+
+        self._log_message(__name__, "what_provides: got", filters,
+            "and", provides_type, "and", values)
+
 def main():
     backend = PackageKitEntropyBackend("")
     backend.dispatcher(sys.argv[1:])
