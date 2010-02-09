@@ -117,6 +117,49 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_roles:
+ */
+static PkBitfield
+backend_get_roles (PkBackend *backend)
+{
+    PkBitfield roles;
+    roles = pk_bitfield_from_enums (
+        PK_ROLE_ENUM_CANCEL,
+        PK_ROLE_ENUM_GET_DEPENDS,
+        PK_ROLE_ENUM_GET_DETAILS,
+        PK_ROLE_ENUM_GET_FILES,
+        PK_ROLE_ENUM_GET_REQUIRES,
+        PK_ROLE_ENUM_GET_PACKAGES,
+        //PK_ROLE_ENUM_WHAT_PROVIDES,
+        PK_ROLE_ENUM_GET_UPDATES,
+        PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+        PK_ROLE_ENUM_INSTALL_PACKAGES,
+        //PK_ROLE_ENUM_INSTALL_FILES,
+        //PK_ROLE_ENUM_INSTALL_SIGNATURE,
+        PK_ROLE_ENUM_REFRESH_CACHE,
+        PK_ROLE_ENUM_REMOVE_PACKAGES,
+        //PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+        PK_ROLE_ENUM_RESOLVE,
+        PK_ROLE_ENUM_SEARCH_DETAILS,
+        PK_ROLE_ENUM_SEARCH_FILE,
+        PK_ROLE_ENUM_SEARCH_GROUP,
+        PK_ROLE_ENUM_SEARCH_NAME,
+        PK_ROLE_ENUM_UPDATE_PACKAGES,
+        PK_ROLE_ENUM_UPDATE_SYSTEM,
+        PK_ROLE_ENUM_GET_REPO_LIST,
+        PK_ROLE_ENUM_REPO_ENABLE,
+        //PK_ROLE_ENUM_REPO_SET_DATA,
+        //PK_ROLE_ENUM_GET_CATEGORIES,
+        //PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
+        PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
+        PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+        PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+        -1);
+
+    return roles;
+}
+
+/**
  * backend_cancel:
  */
 static void
@@ -394,6 +437,48 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-remove-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_update_packages:
+ */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-update-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-install-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
 PK_BACKEND_OPTIONS (
 	"Portage",				/* description */
 	"Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>",	/* author */
@@ -401,7 +486,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
+	backend_get_roles,					/* get_roles */
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
@@ -432,8 +517,8 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */
 	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL					/* simulate_update_packages */
+    backend_simulate_install_packages,  /* simulate_install_packages */
+    backend_simulate_remove_packages,   /* simulate_remove_packages */
+    backend_simulate_update_packages    /* simulate_update_packages */
 );
 

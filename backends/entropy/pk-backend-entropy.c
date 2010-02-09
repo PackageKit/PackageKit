@@ -134,7 +134,7 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
-		//PK_ROLE_ENUM_INSTALL_FILES,
+		PK_ROLE_ENUM_INSTALL_FILES,
 		//PK_ROLE_ENUM_INSTALL_SIGNATURE,
 		PK_ROLE_ENUM_REFRESH_CACHE,
 		PK_ROLE_ENUM_REMOVE_PACKAGES,
@@ -150,13 +150,22 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_REPO_ENABLE,
 		//PK_ROLE_ENUM_REPO_SET_DATA,
 		PK_ROLE_ENUM_GET_CATEGORIES,
-		//PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-		//PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-		//PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-		//PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
+		PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		-1);
 
 	return roles;
+}
+
+/**
+ * backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+    return g_strdup ("application/x-bzip-compressed-tar;application/x-tbz;application/x-tbz2");
 }
 
 /**
@@ -182,6 +191,23 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "download-packages", directory, package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
+
+/**
+ * backend_what_provides:
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+{
+    gchar *filters_text;
+    gchar *search;
+    const gchar *provides_text;
+    provides_text = pk_provides_enum_to_string (provides);
+    filters_text = pk_filter_bitfield_to_string (filters);
+    search = g_strjoinv ("&", values);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "what-provides", filters_text, provides_text, search, NULL);
+    g_free (filters_text);
+    g_free (search);
+}
+ */
 
 /**
  * pk_backend_get_categories:
@@ -281,6 +307,20 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
+}
+
+/**
+ * backend_install_files:
+ */
+static void
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "install-files", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
+    g_free (package_ids_temp);
 }
 
 /**
@@ -462,6 +502,62 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-remove-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_update_packages:
+ */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-update-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-install-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_install_files:
+ */
+static void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-install-files", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
 PK_BACKEND_OPTIONS (
 	"Entropy",				/* description */
 	"Fabio Erculiani (lxnay) <lxnay@sabayon.org>",	/* author */
@@ -470,7 +566,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,					/* get_groups */
 	backend_get_filters,				/* get_filters */
 	backend_get_roles,					/* get_roles */
-	NULL,								/* get_mime_types */
+	backend_get_mime_types,				/* get_mime_types */
 	backend_cancel,						/* cancel */
 	backend_download_packages,			/* download_packages */
 	backend_get_categories,				/* get_categories */
@@ -483,7 +579,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,				/* get_requires */
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
-	NULL,								/* install_files */
+	backend_install_files,				/* install_files */
 	backend_install_packages,			/* install_packages */
 	NULL,								/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
@@ -499,9 +595,9 @@ PK_BACKEND_OPTIONS (
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
 	NULL,								/* what_provides */
-	NULL,								/* simulate_install_files */
-	NULL,								/* simulate_install_packages */
-	NULL,								/* simulate_remove_packages */
-	NULL								/* simulate_update_packages */
+	backend_simulate_install_files,	    /* simulate_install_files */
+	backend_simulate_install_packages,  /* simulate_install_packages */
+	backend_simulate_remove_packages,   /* simulate_remove_packages */
+	backend_simulate_update_packages    /* simulate_update_packages */
 );
 

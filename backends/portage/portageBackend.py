@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # vim:set shiftwidth=4 tabstop=4 expandtab:
 #
 # Copyright (C) 2009 Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
@@ -1207,10 +1208,18 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                 for cpv in cpv_updates[cp][slot]:
                     self.package(cpv, INFO_NORMAL)
 
+    def simulate_install_packages(self, pkgs):
+        return self._install_packages(False, pkgs, simulate=True)
+
     def install_packages(self, only_trusted, pkgs):
+        return self._install_packages(False, pkgs)
+
+    def _install_packages(self, only_trusted, pkgs, simulate=False):
         # NOTES:
         # can't install an already installed packages
         # even if it happens to be needed in Gentoo but probably not this API
+        # TODO: every merged pkg should emit self.package()
+        #       see around _emerge.Scheduler.Scheduler
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
@@ -1260,6 +1269,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.check_fetch_restrict(depgraph.altlist())
 
         self.status(STATUS_INSTALL)
+
+        if simulate:
+            return
 
         # get elog messages
         portage.elog.add_listener(self.elog_listener)
@@ -1318,6 +1330,14 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
             self.unblock_output()
 
     def remove_packages(self, allowdep, autoremove, pkgs):
+        return self._remove_packages(allowdep, autoremove, pkgs)
+
+    def simulate_remove_packages(self, pkgs):
+        return self._remove_packages(True, False, pkgs, simulate=True)
+
+    def _remove_packages(self, allowdep, autoremove, pkgs, simulate=False):
+        # TODO: every to-be-removed pkg should emit self.package()
+        #       see around _emerge.Scheduler.Scheduler
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
@@ -1394,6 +1414,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
                     metadata=metadata,
                     operation="uninstall")
             packages.append(package)
+
+        if simulate:
+            return
 
         # need to define favorites to remove packages from world set
         favorites = []
@@ -1674,8 +1697,16 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.percentage(100)
 
     def update_packages(self, only_trusted, pkgs):
+        return self._update_packages(only_trusted, pkgs)
+
+    def simulate_update_packages(self, pkgs):
+        return self._update_packages(False, pkgs, simulate=True)
+
+    def _update_packages(self, only_trusted, pkgs, simulate=False):
         # TODO: manage errors
         # TODO: manage config file updates
+        # TODO: every updated pkg should emit self.package()
+        #       see around _emerge.Scheduler.Scheduler
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(False)
@@ -1720,6 +1751,9 @@ class PackageKitPortageBackend(PackageKitBaseBackend):
         self.check_fetch_restrict(depgraph.altlist())
 
         self.status(STATUS_INSTALL)
+
+        if simulate:
+            return
 
         # get elog messages
         portage.elog.add_listener(self.elog_listener)

@@ -2217,6 +2217,37 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 }
 
 /**
+ * pk_backend_is_eula_valid:
+ */
+gchar *
+pk_backend_get_accepted_eula_string (PkBackend *backend)
+{
+	GString *string;
+	gchar *result = NULL;
+	GList *keys = NULL;
+	GList *l;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* optimise for the common case */
+	if (g_hash_table_size (backend->priv->eulas) == 0)
+		goto out;
+
+	/* create a string of the accepted EULAs */
+	string = g_string_new ("");
+	keys = g_hash_table_get_keys (backend->priv->eulas);
+	for (l=keys; l != NULL; l=l->next)
+		g_string_append_printf (string, "%s;", (const gchar *) l->data);
+
+	/* remove the trailing ';' */
+	g_string_set_size (string, string->len -1);
+	result = g_string_free (string, FALSE);
+out:
+	g_list_free (keys);
+	return result;
+}
+
+/**
  * pk_backend_watch_file:
  */
 gboolean

@@ -40,7 +40,7 @@ from packagekit.backend import PackageKitBaseBackend, \
     GROUP_MULTIMEDIA, GROUP_NETWORK, GROUP_OFFICE, GROUP_SCIENCE, \
     GROUP_SYSTEM, GROUP_SECURITY, GROUP_OTHER, GROUP_DESKTOP_XFCE, \
     GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
-    INFO_INSTALLED, \
+    INFO_INSTALLED, INFO_REMOVING, INFO_INSTALLING, \
     INFO_AVAILABLE, get_package_id, split_package_id, MESSAGE_UNKNOWN, \
     MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
     MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
@@ -48,14 +48,13 @@ from packagekit.backend import PackageKitBaseBackend, \
     STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
     UPDATE_STATE_TESTING, UPDATE_STATE_STABLE
 
-#from packagekit.progress import *
 from packagekit.package import PackagekitPackage
 
 sys.path.insert(0, '/usr/lib/entropy/libraries')
-
+from entropy.output import decolorize
 from entropy.i18n import _, _LOCALE
 from entropy.const import etpConst, const_convert_to_rawstring, \
-    const_convert_to_unicode
+    const_convert_to_unicode, const_get_stringtype
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
@@ -91,8 +90,15 @@ class PackageKitEntropyMixin(object):
         Write log message to Entropy PackageKit log file.
         """
         if PK_DEBUG:
+            my_args = []
+            for arg in args:
+                if not isinstance(arg, const_get_stringtype()):
+                    my_args.append(repr(arg))
+                else:
+                    my_args.append(arg)
+
             self._entropy_log.write("%s: %s" % (source,
-                ' '.join([const_convert_to_unicode(x) for x in args]),)
+                ' '.join([const_convert_to_unicode(x) for x in my_args]),)
             )
 
     def _is_repository_enabled(self, repo_name):
@@ -362,7 +368,8 @@ class PackageKitEntropyMixin(object):
             cat_desc = cat_desc_data['en']
         return cat_desc
 
-    def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove):
+    def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove,
+        simulate = False):
         """
         Execute effective removal (including dep calculation).
 
@@ -382,6 +389,8 @@ class PackageKitEntropyMixin(object):
             it might download libneon as a dependency. When auto_remove
             is set to true, and you remove OpenOffice then libneon
             will also get removed automatically.
+        @keyword simulate: simulate removal if True
+        @type simulate: bool
         @type autoremove: bool
         """
 
@@ -431,6 +440,12 @@ class PackageKitEntropyMixin(object):
                 percent,))
 
             self.percentage(percent)
+            pkg_id, pkg_c_repo, pk_pkg = match_map.get(pkg_id)
+            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
+            self.package(pk_pkg, INFO_REMOVING, pkg_desc)
+
+            if simulate:
+                continue
 
             metaopts = {}
             metaopts['removeconfig'] = False
@@ -457,7 +472,7 @@ class PackageKitEntropyMixin(object):
             fetch_path = directory, calculate_deps = False)
 
     def _execute_etp_pkgs_install(self, pkgs, only_trusted, only_fetch = False,
-        fetch_path = None, calculate_deps = True):
+        fetch_path = None, calculate_deps = True, simulate = False):
         """
         Execute effective install (including dep calculation).
 
@@ -466,6 +481,15 @@ class PackageKitEntropyMixin(object):
         @type pkgs: list
         @param only_trusted: only accept trusted pkgs?
         @type only_trusted: bool
+        @keyword only_fetch: just fetch packages if True
+        @type only_fetch: bool
+        @keyword fetch_path: path where to store downloaded packages
+        @type fetch_path: string
+        @keyword calculate_deps: calculate package dependencies if true and
+            add them to queue
+        @type calculate_deps: bool
+        @keyword simulate: simulate actions if True
+        @type simulate: bool
         """
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -502,7 +526,33 @@ class PackageKitEntropyMixin(object):
         self.percentage(0)
         self.status(STATUS_DOWNLOAD)
 
-        # FIXME: where is license dialog? can't be interactive, fook!
+        # Before even starting the fetch
+        # make sure that the user accepts their licenses
+        # send license signal afterwards
+        licenses = self._entropy.get_licenses_to_accept(run_queue)
+        if licenses:
+            # as per PackageKit specs
+            accepted_eulas = os.getenv("accepted_eulas", "").split(";")
+            for eula_id in accepted_eulas:
+                if eula_id in licenses:
+                    licenses.pop(eula_id)
+                    self._entropy.installed_repository().acceptLicense(eula_id)
+
+        for eula_id, eula_pkgs in licenses.items():
+            for pkg_id, repo_id in eula_pkgs:
+                pkg_c_repo = self._entropy.open_repository(repo_id)
+                vendor_name = pkg_c_repo.retrieveHomepage(pkg_id)
+                pk_pkg = self._etp_to_id((pkg_id, pkg_c_repo))
+                license_agreement = pkg_c_repo.retrieveLicenseText(eula_id)
+                self.eula_required(eula_id, pk_pkg, vendor_name,
+                    license_agreement)
+
+        if licenses:
+            # bye bye, user will have to accept it and get here again
+            self.error(EXIT_EULA_REQUIRED,
+                "Following EULAs are not accepted: %s" % (
+                    ' '.join(licenses.keys()),))
+            return
 
         # used in case of errors
         match_map = {}
@@ -526,6 +576,14 @@ class PackageKitEntropyMixin(object):
                 percent,))
 
             self.percentage(percent)
+
+            pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
+            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
+            self.package(pk_pkg, INFO_DOWNLOADING, pkg_desc)
+
+            if simulate:
+                continue
+
             metaopts = {
                 'dochecksum': True,
             }
@@ -538,14 +596,8 @@ class PackageKitEntropyMixin(object):
             obj = down_data.setdefault(myrepo, set())
             obj.add(entropy.tools.dep_getkey(package.pkgmeta['atom']))
 
-            pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
-            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
-            # show pkg
-            self.package(pk_pkg, INFO_DOWNLOADING, pkg_desc)
-
             x_rc = package.run()
             if x_rc != 0:
-                pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
                     "Cannot download package: %s" % (pk_pkg,))
                 return
@@ -557,7 +609,8 @@ class PackageKitEntropyMixin(object):
             del package
 
         # spawn UGC
-        self._etp_spawn_ugc(down_data)
+        if not simulate:
+            self._etp_spawn_ugc(down_data)
 
         self.percentage(100)
         if only_fetch:
@@ -577,6 +630,13 @@ class PackageKitEntropyMixin(object):
 
             self.percentage(percent)
 
+            pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
+            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
+            self.package(pk_pkg, INFO_INSTALLING, pkg_desc)
+
+            if simulate:
+                continue
+
             metaopts = {
                 'removeconfig': False,
             }
@@ -592,7 +652,6 @@ class PackageKitEntropyMixin(object):
 
             x_rc = package.run()
             if x_rc != 0:
-                pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
                     "Cannot install package: %s" % (pk_pkg,))
                 return
@@ -721,7 +780,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     def _generic_message(self, message):
         # FIXME: this doesn't work, it seems there's no way to
         # print something to user while pkcon runs.
-        self.message(MESSAGE_UNKNOWN, message)
+        # self.message(MESSAGE_UNKNOWN, message)
+        self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
         scandata = self._entropy.FileUpdates.scanfs(dcache = True,
@@ -1154,10 +1214,62 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def install_packages(self, only_trusted, pk_pkgs):
+    def install_files(self, only_trusted, inst_files):
+        return self._install_files(only_trusted, inst_files)
 
-        self._log_message(__name__, "install_packages: got %s and %s" % (
-            only_trusted, pk_pkgs,))
+    def simulate_install_files(self, inst_files):
+        return self._install_files(False, inst_files, simulate = True)
+
+    def _install_files(self, only_trusted, inst_files, simulate = False):
+
+        self._log_message(__name__, "install_files: got", only_trusted,
+            "and", inst_files, "and", simulate)
+
+        self.allow_cancel(True)
+        self.status(STATUS_RUNNING)
+
+        for etp_file in inst_files:
+            if not os.path.exists(etp_file):
+                self.error(ERROR_FILE_NOT_FOUND,
+                    "%s could not be found" % (etp_file,))
+                return
+
+            if not entropy.tools.is_entropy_package_file(etp_file):
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Only Entropy files are supported")
+                return
+
+        pkg_ids = []
+        for etp_file in inst_files:
+            repo_id = os.path.basename(etp_file)
+            status, atomsfound = self._entropy.add_package_to_repos(etp_file)
+            if status != 0:
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Error while trying to add %s repository" % (repo_id,))
+                return
+            for idpackage, atom in atomsfound:
+                pkg_ids.append((idpackage, repo_id))
+
+        self._log_message(__name__, "install_files: generated", pkg_ids)
+
+        pkgs = []
+        for pkg_id, repo_id in pkg_ids:
+            if pkg_id == -1: # wtf!?
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                    "Repo was added but package %s is not found" % (
+                        (pkg_id, repo_id),))
+                return
+            repo_db = self._entropy.open_repository(repo_id)
+            pkg = (pkg_id, repo_db)
+            pk_pkg = self._etp_to_id(pkg)
+            pkgs.append((pkg[0], pkg[1], pk_pkg,))
+
+        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
+
+    def _install_packages(self, only_trusted, pk_pkgs, simulate = False):
+
+        self._log_message(__name__, "install_packages: got", only_trusted,
+            "and", pk_pkgs, "and", simulate)
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1171,7 +1283,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_install(pkgs, only_trusted)
+        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
+
+    def install_packages(self, only_trusted, pk_pkgs):
+        return self._install_packages(only_trusted, pk_pkgs)
+
+    def simulate_install_packages(self, pk_pkgs):
+        return self._install_packages(False, pk_pkgs, simulate = True)
 
     def download_packages(self, directory, pk_pkgs):
 
@@ -1224,6 +1342,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def remove_packages(self, allowdep, autoremove, pk_pkgs):
+        return self._remove_packages(allowdep, autoremove, pk_pkgs)
+
+    def simulate_remove_packages(self, pk_pkgs):
+        return self._remove_packages(True, False, pk_pkgs, simulate = True)
+
+    def _remove_packages(self, allowdep, autoremove, pk_pkgs, simulate = False):
 
         self._log_message(__name__, "remove_packages: got %s and %s and %s" % (
             allowdep, autoremove, pk_pkgs,))
@@ -1240,7 +1364,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_remove(pkgs, allowdep, autoremove)
+        self._execute_etp_pkgs_remove(pkgs, allowdep, autoremove,
+            simulate = simulate)
 
     def repo_enable(self, repoid, enable):
 
@@ -1483,9 +1608,15 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def update_packages(self, only_trusted, pk_pkgs):
+        return self._update_packages(only_trusted, pk_pkgs)
 
-        self._log_message(__name__, "update_packages: got %s and %s" % (
-            only_trusted, pk_pkgs,))
+    def simulate_update_packages(self, pk_pkgs):
+        return self._update_packages(False, pk_pkgs, simulate = True)
+
+    def _update_packages(self, only_trusted, pk_pkgs, simulate = False):
+
+        self._log_message(__name__, "update_packages: got", only_trusted,
+            "and", pk_pkgs, "and", simulate)
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
@@ -1499,7 +1630,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
-        self._execute_etp_pkgs_install(pkgs, only_trusted)
+        self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
 
     def update_system(self, only_trusted):
 
@@ -1527,6 +1658,23 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             pkgs.append((pkg[0], pkg[1], pk_pkg,))
 
         self._execute_etp_pkgs_install(pkgs, only_trusted)
+
+    def what_provides(self, filters, provides_type, values):
+
+        # FIXME: implement this
+        """
+        PROVIDES_ANY = "any"
+        PROVIDES_CODEC = "codec"
+        PROVIDES_FONT = "font"
+        PROVIDES_HARDWARE_DRIVER = "driver"
+        PROVIDES_MIMETYPE = "mimetype"
+        PROVIDES_MODALIAS = "modalias"
+        PROVIDES_POSTSCRIPT_DRIVER = "postscript-driver"
+        PROVIDES_UNKNOWN = "unknown"
+        """
+
+        self._log_message(__name__, "what_provides: got", filters,
+            "and", provides_type, "and", values)
 
 def main():
     backend = PackageKitEntropyBackend("")
