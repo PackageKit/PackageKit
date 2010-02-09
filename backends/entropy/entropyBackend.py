@@ -63,7 +63,7 @@ from entropy.fetchers import UrlFetcher
 
 import entropy.tools
 
-PK_DEBUG = True
+PK_DEBUG = False
 
 class PackageKitEntropyMixin(object):
 
@@ -526,13 +526,17 @@ class PackageKitEntropyMixin(object):
         self.percentage(0)
         self.status(STATUS_DOWNLOAD)
 
-        """
-        # FIXME: need to have fixed backend API first
-
         # Before even starting the fetch
         # make sure that the user accepts their licenses
         # send license signal afterwards
         licenses = self._entropy.get_licenses_to_accept(run_queue)
+        if licenses:
+            # as per PackageKit specs
+            accepted_eulas = os.getenv("accepted_eulas", "").split(";")
+            for eula_id in accepted_eulas:
+                if eula_id in licenses:
+                    licenses.pop(eula_id)
+                    self._entropy.installed_repository().acceptLicense(eula_id)
 
         for eula_id, eula_pkgs in licenses.items():
             for pkg_id, repo_id in eula_pkgs:
@@ -542,8 +546,6 @@ class PackageKitEntropyMixin(object):
                 license_agreement = pkg_c_repo.retrieveLicenseText(eula_id)
                 self.eula_required(eula_id, pk_pkg, vendor_name,
                     license_agreement)
-                # TODO remove here
-                # self._entropy.installed_repository().acceptLicense(eula_id)
 
         if licenses:
             # bye bye, user will have to accept it and get here again
@@ -551,7 +553,6 @@ class PackageKitEntropyMixin(object):
                 "Following EULAs are not accepted: %s" % (
                     ' '.join(licenses.keys()),))
             return
-        """
 
         # used in case of errors
         match_map = {}
