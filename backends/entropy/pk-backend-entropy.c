@@ -194,7 +194,6 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 
 /**
  * backend_what_provides:
- */
 static void
 backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
@@ -208,6 +207,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
     g_free (filters_text);
     g_free (search);
 }
+ */
 
 /**
  * pk_backend_get_categories:
