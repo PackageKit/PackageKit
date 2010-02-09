@@ -611,6 +611,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *locale;
 	gchar *line;
 	gchar *uri;
+	gchar *eulas;
 	gchar *transaction_id;
 	guint i;
 	GPtrArray *array;
@@ -626,6 +627,13 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		      NULL);
 	line = g_strdup_printf ("%s=%s", "transaction_id", transaction_id);
 	g_ptr_array_add (array, line);
+
+	/* accepted eulas */
+	eulas = pk_backend_get_accepted_eula_string (priv->backend);
+	if (eulas != NULL){
+		line = g_strdup_printf ("%s=%s", "accepted_eulas", eulas);
+		g_ptr_array_add (array, line);
+	}
 
 	/* http_proxy */
 	proxy_http = pk_backend_get_proxy_http (priv->backend);
@@ -682,6 +690,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	g_free (proxy_http);
 	g_free (proxy_ftp);
 	g_free (locale);
+	g_free (eulas);
 	g_free (transaction_id);
 	return envp;
 }
