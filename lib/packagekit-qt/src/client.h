@@ -22,11 +22,10 @@
 #define CLIENT_H
 
 #include <QtCore>
-#include <bitfield.h>
+#include "enum.h"
 
 namespace PackageKit {
 
-class ClientPrivate;
 class Package;
 class Transaction;
 
@@ -46,21 +45,11 @@ class Transaction;
  * \note This class is a singleton, its constructor is private. Call Client::instance() to get
  * an instance of the Client object
  */
+class ClientPrivate;
 class Client : public QObject
 {
 
 	Q_OBJECT
-	Q_ENUMS(Action)
-	Q_ENUMS(Filter)
-	Q_ENUMS(Group)
-	Q_ENUMS(NetworkState)
-	Q_ENUMS(SignatureType)
-	Q_ENUMS(ProvidesType)
-	Q_ENUMS(ErrorType)
-	Q_ENUMS(MessageType)
-	Q_ENUMS(RestartType)
-	Q_ENUMS(UpdateState)
-	Q_ENUMS(DistroUpgradeType)
 
 public:
 	/**
@@ -79,52 +68,9 @@ public:
 	// Daemon functions
 
 	/**
-	 * Lists all the available actions
-	 * \sa getActions
-	 */
-	typedef enum {
-		UnknownAction,
-		ActionCancel,
-		ActionGetDepends,
-		ActionGetDetails,
-		ActionGetFiles,
-		ActionGetPackages,
-		ActionGetRepoList,
-		ActionGetRequires,
-		ActionGetUpdateDetail,
-		ActionGetUpdates,
-		ActionInstallFiles,
-		ActionInstallPackages,
-		ActionInstallSignature,
-		ActionRefreshCache,
-		ActionRemovePackages,
-		ActionRepoEnable,
-		ActionRepoSetData,
-		ActionResolve,
-		ActionRollback,
-		ActionSearchDetails,
-		ActionSearchFile,
-		ActionSearchGroup,
-		ActionSearchName,
-		ActionUpdatePackages,
-		ActionUpdateSystem,
-		ActionWhatProvides,
-		ActionAcceptEula,
-		ActionDownloadPackages,
-		ActionGetDistroUpgrades,
-		ActionGetCategories,
-		ActionGetOldTransactions,
-		ActionSimulateInstallFiles,
-		ActionSimulateInstallPackages,
-		ActionSimulateRemovePackages,
-		ActionSimulateUpdatePackages
-	} Action;
-	typedef Bitfield Actions;
-
-	/**
 	 * Returns all the actions supported by the current backend
 	 */
-	Actions actions() const;
+	Enum::Roles actions() const;
 
 	/**
 	 * The backend name, e.g. "yum".
@@ -142,90 +88,14 @@ public:
 	QString backendAuthor() const;
 
 	/**
-	 * Describes the different filters
-	 */
-	typedef enum {
-		UnknownFilter		 = 0x0000001,
-		NoFilter		 = 0x0000002,
-		FilterInstalled		 = 0x0000004,
-		FilterNotInstalled	 = 0x0000008,
-		FilterDevelopment	 = 0x0000010,
-		FilterNotDevelopment	 = 0x0000020,
-		FilterGui		 = 0x0000040,
-		FilterNotGui		 = 0x0000080,
-		FilterFree		 = 0x0000100,
-		FilterNotFree		 = 0x0000200,
-		FilterVisible		 = 0x0000400,
-		FilterNotVisible	 = 0x0000800,
-		FilterSupported		 = 0x0001000,
-		FilterNotSupported	 = 0x0002000,
-		FilterBasename		 = 0x0004000,
-		FilterNotBasename	 = 0x0008000,
-		FilterNewest		 = 0x0010000,
-		FilterNotNewest		 = 0x0020000,
-		FilterArch		 = 0x0040000,
-		FilterNotArch		 = 0x0080000,
-		FilterSource		 = 0x0100000,
-		FilterNotSource		 = 0x0200000,
-		FilterCollections	 = 0x0400000,
-		FilterNotCollections	 = 0x0800000,
-		FilterApplication	 = 0x1000000,
-		FilterNotApplication	 = 0x2000000,
-		FilterLast		 = 0x4000000
-	} Filter;
-	Q_DECLARE_FLAGS(Filters, Filter);
-
-	/**
 	 * Returns the filters supported by the current backend
 	 */
-	Filters filters() const;
-
-	/**
-	 * Describes the different groups
-	 */
-	typedef enum {
-		UnknownGroup,
-		GroupAccessibility,
-		GroupAccessories,
-		GroupAdminTools,
-		GroupCommunication,
-		GroupDesktopGnome,
-		GroupDesktopKde,
-		GroupDesktopOther,
-		GroupDesktopXfce,
-		GroupEducation,
-		GroupFonts,
-		GroupGames,
-		GroupGraphics,
-		GroupInternet,
-		GroupLegacy,
-		GroupLocalization,
-		GroupMaps,
-		GroupMultimedia,
-		GroupNetwork,
-		GroupOffice,
-		GroupOther,
-		GroupPowerManagement,
-		GroupProgramming,
-		GroupPublishing,
-		GroupRepos,
-		GroupSecurity,
-		GroupServers,
-		GroupSystem,
-		GroupVirtualization,
-		GroupScience,
-		GroupDocumentation,
-		GroupElectronics,
-		GroupCollections,
-		GroupVendor,
-		GroupNewest
-	} Group;
-	typedef QSet<Group> Groups;
+	Enum::Filters filters() const;
 
 	/**
 	 * Returns the groups supported by the current backend
 	 */
-	Groups groups() const;
+	Enum::Groups groups() const;
 
 	/**
 	 * Set when the backend is locked and native tools would fail.
@@ -238,21 +108,9 @@ public:
 	QStringList mimeTypes() const;
 
 	/**
-	 * Describes the current network state
-	 */
-	typedef enum {
-		UnknownNetworkState,
-		NetworkOffline,
-		NetworkOnline,
-		NetworkWired,
-		NetworkWifi,
-		NetworkMobile
-	} NetworkState;
-
-	/**
 	 * Returns the current network state
 	 */
-	NetworkState networkState() const;
+	Enum::Network networkState() const;
 
 	/**
 	 * The distribution identifier in the
@@ -262,9 +120,17 @@ public:
 	QString distroId() const;
 
 	/**
+	 * Allows a client to find out if it would be allowed to authorize an action.
+	 * The action ID, e.g. org.freedesktop.packagekit.system-network-proxy-configure
+	 * specified in \p actionId
+	 * Returm might be either yes, no or interactive.
+	 */
+	Enum::Authorize canAuthorize(const QString &actionId) const;
+
+	/**
 	 * Returns the time (in seconds) since the specified \p action
 	 */
-	uint getTimeSinceAction(Action action) const;
+	uint getTimeSinceAction(Enum::Role action) const;
 
 	/**
 	 * Returns the list of current transactions
@@ -309,15 +175,6 @@ public:
 	 */
 	void suggestDaemonQuit();
 
-	// Other enums
-	/**
-	 * Describes a signature type
-	 */
-	typedef enum {
-		UnknownSignatureType,
-		SignatureGpg
-	} SignatureType;
-
 	/**
 	 * Describes a package signature
 	 * \li \c package is a pointer to the signed package
@@ -333,110 +190,8 @@ public:
 		QString keyId;
 		QString keyFingerprint;
 		QString keyTimestamp;
-		SignatureType type;
+		Enum::SigType type;
 	} SignatureInfo;
-
-	/**
-	 * Enum used to describe a "provides" request
-	 * \sa whatProvides
-	 */
-	typedef enum {
-		UnknownProvidesType,
-		ProvidesAny,
-		ProvidesModalias,
-		ProvidesCodec,
-		ProvidesMimetype,
-		ProvidesFont,
-		ProvidesHardwareDriver,
-		ProvidesPostscriptDriver
-	} ProvidesType;
-
-	/**
-	 * Lists the different types of error
-	 */
-	typedef enum {
-		UnknownErrorType,
-		ErrorOom,
-		ErrorNoNetwork,
-		ErrorNotSupported,
-		ErrorInternalError,
-		ErrorGpgFailure,
-		ErrorPackageIdInvalid,
-		ErrorPackageNotInstalled,
-		ErrorPackageNotFound,
-		ErrorPackageAlreadyInstalled,
-		ErrorPackageDownloadFailed,
-		ErrorGroupNotFound,
-		ErrorGroupListInvalid,
-		ErrorDepResolutionFailed,
-		ErrorFilterInvalid,
-		ErrorCreateThreadFailed,
-		ErrorTransactionError,
-		ErrorTransactionCancelled,
-		ErrorNoCache,
-		ErrorRepoNotFound,
-		ErrorCannotRemoveSystemPackage,
-		ErrorProcessKill,
-		ErrorFailedInitialization,
-		ErrorFailedFinalise,
-		ErrorFailedConfigParsing,
-		ErrorCannotCancel,
-		ErrorCannotGetLock,
-		ErrorNoPackagesToUpdate,
-		ErrorCannotWriteRepoConfig,
-		ErrorLocalInstallFailed,
-		ErrorBadGpgSignature,
-		ErrorMissingGpgSignature,
-		ErrorCannotInstallSourcePackage,
-		ErrorRepoConfigurationError,
-		ErrorNoLicenseAgreement,
-		ErrorFileConflicts,
-		ErrorPackageConflicts,
-		ErrorRepoNotAvailable,
-		ErrorInvalidPackageFile,
-		ErrorPackageInstallBlocked,
-		ErrorPackageCorrupt,
-		ErrorAllPackagesAlreadyInstalled,
-		ErrorFileNotFound,
-		ErrorNoMoreMirrorsToTry,
-		ErrorNoDistroUpgradeData,
-		ErrorIncompatibleArchitecture,
-		ErrorNoSpaceOnDevice,
-		ErrorMediaChangeRequired,
-		ErrorNotAuthorized,
-		ErrorUpdateNotFound,
-		ErrorCannotInstallRepoUnsigned,
-		ErrorCannotUpdateRepoUnsigned,
-		ErrorCannotGetFilelist,
-		ErrorCannotGetRequires,
-		ErrorCannotDisableRepository,
-		ErrorRestrictedDownload,
-		ErrorPackageFailedToConfigure,
-		ErrorPackageFailedToBuild,
-		ErrorPackageFailedToInstall,
-		ErrorPackageFailedToRemove
-	} ErrorType;
-
-	/**
-	 * Describes a message's type
-	 */
-	typedef enum {
-		UnknownMessageType,
-		MessageBrokenMirror,
-		MessageConnectionRefused,
-		MessageParameterInvalid,
-		MessagePriorityInvalid,
-		MessageBackendError,
-		MessageDaemonError,
-		MessageCacheBeingRebuilt,
-		MessageUntrustedPackage,
-		MessageNewerPackageExists,
-		MessageCouldNotFindPackage,
-		MessageConfigFilesChanged,
-		MessagePackageAlreadyInstalled,
-		MessageAutoremoveIgnored,
-		MessageRepoMetadataDownloadFailed,
-	} MessageType;
 
 	/**
 	 * Describes an EULA
@@ -451,38 +206,6 @@ public:
 		QString vendorName;
 		QString licenseAgreement;
 	} EulaInfo;
-
-	/**
-	 * Describes a restart type
-	 */
-	typedef enum {
-		UnknownRestartType,
-		RestartNone,
-		RestartApplication,
-		RestartSession,
-		RestartSystem,
-		RestartSecuritySession,
-		RestartSecuritySystem,
-	} RestartType;
-
-	/**
-	 * Describes an update's state
-	 */
-	typedef enum {
-		UnknownUpdateState,
-		UpdateStable,
-		UpdateUnstable,
-		UpdateTesting
-	} UpdateState;
-
-	/**
-	 * Describes an distro upgrade state
-	 */
-	typedef enum {
-		UnknownDistroUpgrade,
-		DistroUpgradeStable,
-		DistroUpgradeUnstable
-	} DistroUpgradeType;
 
 	/**
 	 * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
@@ -502,7 +225,9 @@ public:
 		ErrorInvalidInput,
 		ErrorInvalidFile,
 		ErrorFunctionNotSupported,
-		ErrorDaemonUnreachable
+		ErrorDaemonUnreachable,
+		/* this always has to be at the end of the list */
+		LastDaemonError
 	} DaemonError;
 
 	/**
@@ -529,10 +254,10 @@ public:
 		QString vendorUrl;
 		QString bugzillaUrl;
 		QString cveUrl;
-		RestartType restart;
+		Enum::Restart restart;
 		QString updateText;
 		QString changelog;
-		UpdateState state;
+		Enum::UpdateState state;
 		QDateTime issued;
 		QDateTime updated;
 	} UpdateInfo;
@@ -592,8 +317,8 @@ public:
 	 * \sa Transaction::package
 	 *
 	 */
-	Transaction* getDepends(const QList<Package*>& packages, Filters filters, bool recursive);
-	Transaction* getDepends(Package* package, Filters filters , bool recursive);
+	Transaction* getDepends(const QList<Package*>& packages, Enum::Filters filters, bool recursive);
+	Transaction* getDepends(Package* package, Enum::Filters filters , bool recursive);
 
 	/**
 	 * Gets more details about the given \p packages
@@ -623,12 +348,12 @@ public:
 	 *
 	 * \sa Transaction::package
 	 */
-	Transaction* getPackages(Filters filters = NoFilter);
+	Transaction* getPackages(Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * Gets the list of software repositories matching the given \p filters
 	 */
-	Transaction* getRepoList(Filters filter = NoFilter);
+	Transaction* getRepoList(Enum::Filters filter = Enum::NoFilter);
 
 	/**
 	 * \brief Searches for the packages requiring the given \p packages
@@ -636,8 +361,8 @@ public:
 	 * The search can be limited using the \p filters parameter. The recursive flag is used to tell
 	 * if the package manager should also search for the package requiring the resulting packages.
 	 */
-	Transaction* getRequires(const QList<Package*>& packages, Filters filters, bool recursive);
-	Transaction* getRequires(Package* package, Filters filters, bool recursive);
+	Transaction* getRequires(const QList<Package*>& packages, Enum::Filters filters, bool recursive);
+	Transaction* getRequires(Package* package, Enum::Filters filters, bool recursive);
 
 	/**
 	 * Retrieves more details about the update for the given \p packages
@@ -650,7 +375,7 @@ public:
 	 *
 	 * The \p filters parameters can be used to restrict the updates returned
 	 */
-	Transaction* getUpdates(Filters filters = NoFilter);
+	Transaction* getUpdates(Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * Retrieves the available distribution upgrades
@@ -678,7 +403,7 @@ public:
 	 *
 	 * \p type, \p key_id and \p p generally come from the Transaction::repoSignatureRequired
 	 */
-	Transaction* installSignature(SignatureType type, const QString& key_id, Package* p);
+	Transaction* installSignature(Enum::SigType type, const QString& key_id, Package* p);
 
 	/**
 	 * Refreshes the package manager's cache
@@ -710,8 +435,8 @@ public:
 	 *
 	 * The \p filters can be used to restrict the search
 	 */
-	Transaction* resolve(const QStringList& packageNames, Filters filters = NoFilter);
-	Transaction* resolve(const QString& packageName, Filters filters = NoFilter);
+	Transaction* resolve(const QStringList& packageNames, Enum::Filters filters = Enum::NoFilter);
+	Transaction* resolve(const QString& packageName, Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * Rolls back the given \p transactions
@@ -723,31 +448,32 @@ public:
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchFiles(const QStringList& search, Filters filters = NoFilter);
-	Transaction* searchFiles(const QString& search, Filters filters = NoFilter);
+	Transaction* searchFiles(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* searchFiles(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * \brief Search in the packages details
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchDetails(const QString& search, Filters filters = NoFilter);
+	Transaction* searchDetails(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* searchDetails(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * \brief Lists all the packages in the given \p group
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchGroups(Client::Groups group, Filters filters = NoFilter);
-	Transaction* searchGroups(Client::Group group, Filters filters = NoFilter);
+	Transaction* searchGroups(Enum::Groups group, Enum::Filters filters = Enum::NoFilter);
+	Transaction* searchGroups(Enum::Group group, Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * \brief Search in the packages names
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchNames(const QStringList& search, Filters filters = NoFilter);
-	Transaction* searchNames(const QString& search, Filters filters = NoFilter);
+	Transaction* searchNames(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* searchNames(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
 	 * \brief Tries to find a package name from a desktop file
@@ -815,8 +541,8 @@ public:
 	/**
 	 * Searchs for a package providing a file/a mimetype
 	 */
-	Transaction* whatProvides(ProvidesType type, const QStringList& search, Filters filters = NoFilter);
-	Transaction* whatProvides(ProvidesType type, const QString& search, Filters filters = NoFilter);
+	Transaction* whatProvides(Enum::Provides type, const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* whatProvides(Enum::Provides type, const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 Q_SIGNALS:
 	/**
@@ -851,19 +577,21 @@ Q_SIGNALS:
 	 */
 	void updatesChanged();
 
+protected:
+	ClientPrivate * const d_ptr;
+
 private:
+	Q_DECLARE_PRIVATE(Client);
 	Client(QObject* parent = 0);
 	static Client* m_instance;
-	friend class ClientPrivate;
 	friend class TransactionPrivate;
-	ClientPrivate* d;
+
 
 	void setLastError (DaemonError e);
 	void setTransactionError (Transaction* t, DaemonError e);
 
 	void destroyTransaction(const QString &tid);
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(Client::Filters)
 
 } // End namespace PackageKit
 

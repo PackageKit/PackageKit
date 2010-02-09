@@ -19,6 +19,8 @@
  */
 
 #include "transactionprivate.h"
+#include "transaction.h"
+#include "package.h"
 #include "util.h"
 
 using namespace PackageKit;
@@ -49,12 +51,12 @@ void TransactionPrivate::details(const QString& pid, const QString& license, con
 
 void TransactionPrivate::distroUpgrade(const QString& type, const QString& name, const QString& description)
 {
-	t->distroUpgrade((Client::DistroUpgradeType)Util::enumFromString<Client>(type, "DistroUpgradeType", "DistroUpgrade"), name, description);
+	t->distroUpgrade((Enum::DistroUpgrade)Util::enumFromString<Enum>(type, "DistroUpgrade", "DistroUpgrade"), name, description);
 }
 
 void TransactionPrivate::errorCode(const QString& error, const QString& details)
 {
-	t->errorCode((Client::ErrorType)Util::enumFromString<Client>(error, "ErrorType", "Error"), details);
+	t->errorCode((Enum::Error)Util::enumFromString<Enum>(error, "Error", "Error"), details);
 }
 
 void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid, const QString& vendor, const QString& licenseAgreement)
@@ -69,7 +71,7 @@ void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid,
 
 void TransactionPrivate::mediaChangeRequired(const QString& mediaType, const QString& mediaId, const QString& mediaText)
 {
-	t->mediaChangeRequired((Transaction::MediaType)Util::enumFromString<Transaction>(mediaType, "MediaType", "Media"), mediaId, mediaText);
+	t->mediaChangeRequired((Enum::MediaType)Util::enumFromString<Enum>(mediaType, "MediaType", "Media"), mediaId, mediaText);
 }
 
 void TransactionPrivate::files(const QString& pid, const QString& filenames)
@@ -79,8 +81,8 @@ void TransactionPrivate::files(const QString& pid, const QString& filenames)
 
 void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 {
-	int exitValue = Util::enumFromString<Transaction>(exitCode, "ExitStatus", "Exit");
-	t->finished((Transaction::ExitStatus)exitValue, runtime);
+	int exitValue = Util::enumFromString<Enum>(exitCode, "Exit", "Exit");
+	t->finished((Enum::Exit)exitValue, runtime);
 }
 
 void TransactionPrivate::destroy()
@@ -91,7 +93,7 @@ void TransactionPrivate::destroy()
 
 void TransactionPrivate::message(const QString& type, const QString& message)
 {
-	t->message((Client::MessageType)Util::enumFromString<Client>(type, "MessageType", "Message"), message);
+	t->message((Enum::Message)Util::enumFromString<Enum>(type, "Message", "Message"), message);
 }
 
 void TransactionPrivate::package(const QString& info, const QString& pid, const QString& summary)
@@ -109,14 +111,14 @@ void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString
 	i.keyId = keyId;
 	i.keyFingerprint = keyFingerprint;
 	i.keyTimestamp = keyTimestamp;
-	i.type = (Client::SignatureType)Util::enumFromString<Client>(type, "SignatureType", "Signature");
+	i.type = (Enum::SigType)Util::enumFromString<Enum>(type, "SigType", "Signature");
 
 	t->repoSignatureRequired(i);
 }
 
 void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
 {
-	t->requireRestart((Client::RestartType)Util::enumFromString<Client>(type, "RestartType", "Restart"), new Package(pid));
+	t->requireRestart((Enum::Restart)Util::enumFromString<Enum>(type, "Restart", "Restart"), new Package(pid));
 }
 
 void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)
@@ -141,10 +143,10 @@ void TransactionPrivate::updateDetail(const QString& pid, const QString& updates
 	i.vendorUrl = vendorUrl;
 	i.bugzillaUrl = bugzillaUrl;
 	i.cveUrl = cveUrl;
-	i.restart = (Client::RestartType)Util::enumFromString<Client>(restart, "RestartType", "Restart");
+	i.restart = (Enum::Restart)Util::enumFromString<Enum>(restart, "Restart", "Restart");
 	i.updateText = updateText;
 	i.changelog = changelog;
-	i.state = (Client::UpdateState)Util::enumFromString<Client>(state, "UpdateState", "Update");
+	i.state = (Enum::UpdateState)Util::enumFromString<Enum>(state, "UpdateState", "Update");
 	i.issued = QDateTime::fromString(issued, Qt::ISODate);
 	i.updated = QDateTime::fromString(updated, Qt::ISODate);
 

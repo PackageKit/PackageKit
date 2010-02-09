@@ -26,22 +26,23 @@
 using namespace PackageKit;
 
 ////// Details class
-class Package::Details::Private
+class Package::DetailsPrivate
 {
 public:
 	Package* package;
 	QString license;
-	Client::Group group;
+	Enum::Group group;
 	QString description;
 	QString url;
 	uint size;
 };
 
-Package::Details::Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d(new Private)
+Package::Details::Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d_ptr(new DetailsPrivate)
 {
+	Q_D(Details);
 	d->package = p;
 	d->license = license;
-	d->group = (Client::Group)Util::enumFromString<Client>(group, "Group", "Group");
+	d->group = (Enum::Group)Util::enumFromString<Enum>(group, "Group", "Group");
 	d->description = detail;
 	d->url = url;
 	d->size = size;
@@ -49,36 +50,42 @@ Package::Details::Details(Package* p, const QString& license, const QString& gro
 
 Package::Details::~Details()
 {
-	delete d;
+	delete d_ptr;
 }
 
 Package* Package::Details::package() const
 {
+	Q_D(const Details);
 	return d->package;
 }
 
 QString Package::Details::license() const
 {
+	Q_D(const Details);
 	return d->license;
 }
 
-Client::Group Package::Details::group() const
+Enum::Group Package::Details::group() const
 {
+	Q_D(const Details);
 	return d->group;
 }
 
 QString Package::Details::description() const
 {
+	Q_D(const Details);
 	return d->description;
 }
 
 QString Package::Details::url() const
 {
+	Q_D(const Details);
 	return d->url;
 }
 
 qulonglong Package::Details::size() const
 {
+	Q_D(const Details);
 	return d->size;
 }
 
@@ -93,12 +100,13 @@ public:
 	QString arch;
 	QString data;
 	QString summary;
-	Package::State state;
+	Enum::Info info;
 	Package::Details* details;
 	QString iconPath;
 };
 
-Package::Package(const QString& packageId, const QString& state, const QString& summary) : QObject(NULL), d(new Private)
+Package::Package(const QString& packageId, const QString& info, const QString& summary, QObject *parent)
+    : QObject(parent), d(new Private)
 {
 	d->id = packageId;
 
@@ -111,7 +119,7 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 		d->data = tokens.at(3);
 	}
 
-	d->state = (State)Util::enumFromString<Package>(state, "State", "State");
+	d->info = (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info");
 	d->summary = summary;
 	d->details = NULL;
 	d->iconPath = QString ();
@@ -119,8 +127,9 @@ Package::Package(const QString& packageId, const QString& state, const QString& 
 
 Package::~Package()
 {
-	if(hasDetails())
+	if (hasDetails())
 		delete d->details;
+	delete d;
 }
 
 QString Package::id() const
@@ -153,9 +162,9 @@ QString Package::summary() const
 	return d->summary;
 }
 
-Package::State Package::state() const
+Enum::Info Package::info() const
 {
-	return d->state;
+	return d->info;
 }
 
 bool Package::hasDetails() const
@@ -171,6 +180,12 @@ Package::Details* Package::details() const
 void Package::setDetails(Package::Details* det)
 {
 	d->details = det;
+}
+
+void Package::setInfoSummary(const QString& info, const QString& summary)
+{
+	d->info = (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info");
+	d->summary = summary;
 }
 
 QString Package::iconPath ()
@@ -214,5 +229,3 @@ bool Package::operator==(const Package *package) const
 {
 	return d->id == package->id();
 }
-
-#include "package.moc"

@@ -702,6 +702,33 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 }
 
 /**
+ * pk_backend_set_speed:
+ **/
+gboolean
+pk_backend_set_speed (PkBackend *backend, guint speed)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		egg_warning ("already set error, cannot process: speed %i", speed);
+		return FALSE;
+	}
+
+	/* set the same twice? */
+	if (backend->priv->speed == speed) {
+		egg_debug ("duplicate set of %i", speed);
+		return FALSE;
+	}
+
+	/* set new value */
+	backend->priv->speed = speed;
+	g_object_notify (G_OBJECT (backend), "speed");
+	return TRUE;
+}
+
+/**
  * pk_backend_get_runtime:
  *
  * Returns time running in ms
@@ -2187,6 +2214,37 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	if (present != NULL)
 		return TRUE;
 	return FALSE;
+}
+
+/**
+ * pk_backend_is_eula_valid:
+ */
+gchar *
+pk_backend_get_accepted_eula_string (PkBackend *backend)
+{
+	GString *string;
+	gchar *result = NULL;
+	GList *keys = NULL;
+	GList *l;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* optimise for the common case */
+	if (g_hash_table_size (backend->priv->eulas) == 0)
+		goto out;
+
+	/* create a string of the accepted EULAs */
+	string = g_string_new ("");
+	keys = g_hash_table_get_keys (backend->priv->eulas);
+	for (l=keys; l != NULL; l=l->next)
+		g_string_append_printf (string, "%s;", (const gchar *) l->data);
+
+	/* remove the trailing ';' */
+	g_string_set_size (string, string->len -1);
+	result = g_string_free (string, FALSE);
+out:
+	g_list_free (keys);
+	return result;
 }
 
 /**

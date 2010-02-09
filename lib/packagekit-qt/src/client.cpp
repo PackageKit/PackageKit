@@ -28,6 +28,7 @@
 #include "transaction.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
+#include "package.h"
 #include "util.h"
 
 #define CREATE_NEW_TRANSACTION                      \
@@ -44,8 +45,9 @@
 		}                                                          \
 
 #define RUN_TRANSACTION(blurb) \
+		Q_D(Client);   \
 		CREATE_NEW_TRANSACTION \
-		QDBusReply<void> r = t->d->p->blurb;        \
+		QDBusReply<void> r = t->d_ptr->p->blurb;        \
 		CHECK_TRANSACTION      \
 		return t;              \
 
@@ -67,11 +69,10 @@ Client* Client::instance()
 	return m_instance;
 }
 
-Client::Client(QObject* parent) : QObject(parent)
+Client::Client(QObject* parent) : QObject(parent), d_ptr(new ClientPrivate(this))
 {
-	d = new ClientPrivate(this);
-
-	d->daemon = new DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
+	Q_D(Client);
+	d->daemon = new ::DaemonProxy(PK_NAME, PK_PATH, QDBusConnection::systemBus(), this);
 
 	d->error = NoError;
 
@@ -95,37 +96,41 @@ Client::Client(QObject* parent) : QObject(parent)
 
 Client::~Client()
 {
-	delete d;
 }
 
-Client::Actions Client::actions() const
+Enum::Roles Client::actions() const
 {
-	QStringList actions = d->daemon->roles().split(";");
+	Q_D(const Client);
+	QStringList roles = d->daemon->roles().split(";");
 
-	Actions flags;
-	foreach(const QString& action, actions) {
-		flags |= (Action) Util::enumFromString<Client>(action, "Action", "Action");
+	Enum::Roles flags;
+	foreach(const QString& role, roles) {
+		flags |= (Enum::Role) Util::enumFromString<Enum>(role, "Role", "Role");
 	}
 	return flags;
 }
 
 QString Client::backendName() const
 {
+	Q_D(const Client);
 	return d->daemon->backendName();
 }
 
 QString Client::backendDescription() const
 {
+	Q_D(const Client);
 	return d->daemon->backendDescription();
 }
 
 QString Client::backendAuthor() const
 {
+	Q_D(const Client);
 	return d->daemon->backendAuthor();
 }
 
-Client::Filters Client::filters() const
+Enum::Filters Client::filters() const
 {
+	Q_D(const Client);
 	QStringList filters = d->daemon->filters().split(";");
 
 	// Adapt a slight difference in the enum
@@ -133,53 +138,67 @@ Client::Filters Client::filters() const
 		filters[filters.indexOf("none")] = "no-filter";
 	}
 
-	Filters flags;
+	Enum::Filters flags;
 	foreach(const QString& filter, filters) {
-		flags |= (Filter) Util::enumFromString<Client>(filter, "Filter", "Filter");
+		flags |= (Enum::Filter) Util::enumFromString<Enum>(filter, "Filter", "Filter");
 	}
 	return flags;
 }
 
-Client::Groups Client::groups() const
+Enum::Groups Client::groups() const
 {
+	Q_D(const Client);
 	QStringList groups = d->daemon->groups().split(";");
 
-	Groups flags;
+	Enum::Groups flags;
 	foreach(const QString& group, groups) {
-		flags.insert((Group) Util::enumFromString<Client>(group, "Group", "Group"));
+		flags.insert((Enum::Group) Util::enumFromString<Enum>(group, "Group", "Group"));
 	}
 	return flags;
 }
 
 bool Client::locked() const
 {
+	Q_D(const Client);
 	return d->daemon->locked();
 }
 
 QStringList Client::mimeTypes() const
 {
+	Q_D(const Client);
 	return d->daemon->mimeTypes().split(";");
 }
 
-Client::NetworkState Client::networkState() const
+Enum::Network Client::networkState() const
 {
+	Q_D(const Client);
 	QString state = d->daemon->networkState();
-	return (NetworkState) Util::enumFromString<Client>(state, "NetworkState", "Network");
+	return (Enum::Network) Util::enumFromString<Enum>(state, "Network", "Network");
 }
 
 QString Client::distroId() const
 {
+	Q_D(const Client);
 	return d->daemon->distroId();
 }
 
-uint Client::getTimeSinceAction(Action action) const
+Enum::Authorize Client::canAuthorize(const QString &actionId) const
 {
-	QString pkName = Util::enumToString<Client>(action, "Action", "Action");
-	return d->daemon->GetTimeSinceAction(pkName);
+	Q_D(const Client);
+	QString result = d->daemon->CanAuthorize(actionId);
+	return (Enum::Authorize) Util::enumFromString<Enum>(result, "Authorize", "Authorize");;
+}
+
+uint Client::getTimeSinceAction(Enum::Role role) const
+{
+	Q_D(const Client);
+	QString roleName = Util::enumToString<Enum>(role, "Role", "Role");
+	return d->daemon->GetTimeSinceAction(roleName);
 }
 
 QList<Transaction*> Client::getTransactions()
 {
+	Q_D(Client);
 	QStringList tids = d->daemon->GetTransactionList();
 
 	return d->transactions(tids);
@@ -187,16 +206,19 @@ QList<Transaction*> Client::getTransactions()
 
 void Client::setHints(const QStringList& hints)
 {
+	Q_D(Client);
 	d->hints = hints;
 }
 
 void Client::setHints(const QString& hints)
 {
+	Q_D(Client);
 	d->hints = QStringList() << hints;
 }
 
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
+	Q_D(Client);
 	QDBusReply<void> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
 	if (!r.isValid ()) {
 		setLastError (daemonErrorFromDBusReply (r));
@@ -208,31 +230,37 @@ bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 
 void Client::stateHasChanged(const QString& reason)
 {
+	Q_D(Client);
 	d->daemon->StateHasChanged(reason);
 }
 
 void Client::suggestDaemonQuit()
 {
+	Q_D(Client);
 	d->daemon->SuggestDaemonQuit();
 }
 
 Client::DaemonError Client::getLastError() const
 {
+	Q_D(const Client);
 	return d->error;
 }
 
 uint Client::versionMajor() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMajor();
 }
 
 uint Client::versionMinor() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMinor();
 }
 
 uint Client::versionMicro() const
 {
+	Q_D(const Client);
 	return d->daemon->versionMicro();
 }
 
@@ -253,25 +281,26 @@ Transaction* Client::downloadPackages(Package* package)
 	return downloadPackages(QList<Package*>() << package);
 }
 
-Transaction* Client::getDepends(const QList<Package*>& packages, Filters filters, bool recursive)
+Transaction* Client::getDepends(const QList<Package*>& packages, Enum::Filters filters, bool recursive)
 {
 	RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
-Transaction* Client::getDepends(Package* package, Filters filters, bool recursive)
+Transaction* Client::getDepends(Package* package, Enum::Filters filters, bool recursive)
 {
 	return getDepends(QList<Package*>() << package, filters, recursive);
 }
 
 Transaction* Client::getDetails(const QList<Package*>& packages)
 {
+	Q_D(Client);
 	CREATE_NEW_TRANSACTION
 
 	foreach(Package* p, packages) {
-		t->d->packageMap.insert(p->id(), p);
+		t->d_ptr->packageMap.insert(p->id(), p);
 	}
 
-	QDBusReply<void> r = t->d->p->GetDetails(Util::packageListToPids(packages));
+	QDBusReply<void> r = t->d_ptr->p->GetDetails(Util::packageListToPids(packages));
 
 	CHECK_TRANSACTION
 
@@ -298,22 +327,22 @@ Transaction* Client::getOldTransactions(uint number)
 	RUN_TRANSACTION(GetOldTransactions(number))
 }
 
-Transaction* Client::getPackages(Filters filters)
+Transaction* Client::getPackages(Enum::Filters filters)
 {
 	RUN_TRANSACTION(GetPackages(Util::filtersToString(filters)))
 }
 
-Transaction* Client::getRepoList(Filters filters)
+Transaction* Client::getRepoList(Enum::Filters filters)
 {
 	RUN_TRANSACTION(GetRepoList(Util::filtersToString(filters)))
 }
 
-Transaction* Client::getRequires(const QList<Package*>& packages, Filters filters, bool recursive)
+Transaction* Client::getRequires(const QList<Package*>& packages, Enum::Filters filters, bool recursive)
 {
 	RUN_TRANSACTION(GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
-Transaction* Client::getRequires(Package* package, Filters filters, bool recursive)
+Transaction* Client::getRequires(Package* package, Enum::Filters filters, bool recursive)
 {
 	return getRequires(QList<Package*>() << package, filters, recursive);
 }
@@ -328,7 +357,7 @@ Transaction* Client::getUpdateDetail(Package* package)
 	return getUpdateDetail(QList<Package*>() << package);
 }
 
-Transaction* Client::getUpdates(Filters filters)
+Transaction* Client::getUpdates(Enum::Filters filters)
 {
 	RUN_TRANSACTION(GetUpdates(Util::filtersToString(filters)))
 }
@@ -358,9 +387,9 @@ Transaction* Client::installPackages(bool only_trusted, Package* p)
 	return installPackages(only_trusted, QList<Package*>() << p);
 }
 
-Transaction* Client::installSignature(SignatureType type, const QString& key_id, Package* p)
+Transaction* Client::installSignature(Enum::SigType type, const QString& key_id, Package* p)
 {
-	RUN_TRANSACTION(InstallSignature(Util::enumToString<Client>(type, "SignatureType", "Signature"), key_id, p->id()))
+	RUN_TRANSACTION(InstallSignature(Util::enumToString<Enum>(type, "SigType", "Signature"), key_id, p->id()))
 }
 
 Transaction* Client::refreshCache(bool force)
@@ -388,12 +417,12 @@ Transaction* Client::repoSetData(const QString& repo_id, const QString& paramete
 	RUN_TRANSACTION(RepoSetData(repo_id, parameter, value))
 }
 
-Transaction* Client::resolve(const QStringList& packageNames, Filters filters)
+Transaction* Client::resolve(const QStringList& packageNames, Enum::Filters filters)
 {
 	RUN_TRANSACTION(Resolve(Util::filtersToString(filters), packageNames))
 }
 
-Transaction* Client::resolve(const QString& packageName, Filters filters)
+Transaction* Client::resolve(const QString& packageName, Enum::Filters filters)
 {
 	return resolve(QStringList() << packageName, filters);
 }
@@ -403,42 +432,47 @@ Transaction* Client::rollback(Transaction* oldtrans)
 	RUN_TRANSACTION(Rollback(oldtrans->tid()))
 }
 
-Transaction* Client::searchFiles(const QStringList& search, Filters filters)
+Transaction* Client::searchFiles(const QStringList& search, Enum::Filters filters)
 {
 	RUN_TRANSACTION(SearchFiles(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchFiles(const QString& search, Filters filters)
+Transaction* Client::searchFiles(const QString& search, Enum::Filters filters)
 {
 	return searchFiles(QStringList() << search, filters);
 }
 
-Transaction* Client::searchDetails(const QString& search, Filters filters)
+Transaction* Client::searchDetails(const QStringList& search, Enum::Filters filters)
 {
 	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchGroups(Client::Groups groups, Filters filters)
+Transaction* Client::searchDetails(const QString& search, Enum::Filters filters)
+{
+	return searchDetails(QStringList() << search, filters);
+}
+
+Transaction* Client::searchGroups(Enum::Groups groups, Enum::Filters filters)
 {
 	QStringList groupsSL;
-	foreach (Client::Group group, groups) {
-		groupsSL << Util::enumToString<Client>(group, "Group", "Group");
+	foreach (const Enum::Group group, groups) {
+		groupsSL << Util::enumToString<Enum>(group, "Group", "Group");
 	}
 
 	RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groupsSL))
 }
 
-Transaction* Client::searchGroups(Client::Group group, Filters filters)
+Transaction* Client::searchGroups(Enum::Group group, Enum::Filters filters)
 {
-	return searchGroups(Groups() << group, filters);
+	return searchGroups(Enum::Groups() << group, filters);
 }
 
-Transaction* Client::searchNames(const QStringList& search, Filters filters)
+Transaction* Client::searchNames(const QStringList& search, Enum::Filters filters)
 {
 	RUN_TRANSACTION(SearchNames(Util::filtersToString(filters), search))
 }
 
-Transaction* Client::searchNames(const QString& search, Filters filters)
+Transaction* Client::searchNames(const QString& search, Enum::Filters filters)
 {
 	return searchNames(QStringList() << search, filters);
 }
@@ -520,29 +554,31 @@ Transaction* Client::updateSystem(bool only_trusted)
 	RUN_TRANSACTION(UpdateSystem(only_trusted))
 }
 
-Transaction* Client::whatProvides(ProvidesType type, const QString& search, Filters filters)
+Transaction* Client::whatProvides(Enum::Provides type, const QStringList& search, Enum::Filters filters)
 {
-	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Client>(type, "ProvidesType", "Provides"), search))
+	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Enum>(type, "Provides", "Provides"), search))
 }
 
-Transaction* Client::whatProvides(ProvidesType type, const QStringList& search, Filters filters)
+Transaction* Client::whatProvides(Enum::Provides type, const QString& search, Enum::Filters filters)
 {
-	return whatProvides(type, search.join("&"), filters);
+	return whatProvides(type, QStringList() << search, filters);
 }
 
 void Client::setLastError (DaemonError e)
 {
+	Q_D(Client);
 	d->error = e;
 	emit error (e);
 }
 
 void Client::setTransactionError (Transaction* t, DaemonError e)
 {
-	t->d->error = e;
+	t->d_ptr->error = e;
 }
 
 void Client::destroyTransaction(const QString &tid)
 {
+	Q_D(Client);
 	d->removeTransactionFromPool(tid);
 }
 

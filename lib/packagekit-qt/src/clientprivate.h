@@ -24,9 +24,10 @@
 #include <QtCore>
 #include "client.h"
 
+class DaemonProxy;
+
 namespace PackageKit {
 
-class DaemonProxy;
 class Transaction;
 
 class ClientPrivate : public QObject
@@ -36,7 +37,7 @@ class ClientPrivate : public QObject
 public:
 	~ClientPrivate();
 
-	DaemonProxy* daemon;
+	::DaemonProxy* daemon;
 	Client* c;
 
 	QStringList hints;

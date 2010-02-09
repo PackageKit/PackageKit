@@ -10,31 +10,31 @@ DaemonTest::~DaemonTest()
 
 void DaemonTest::getActions()
 {
-	PackageKit::Client::Actions act = PackageKit::Client::instance()->getActions();
-	CPPUNIT_ASSERT(act & PackageKit::Client::ActionInstallPackages); // Not really a test, but if *that* fails, then things are going badly :)
+	PackageKit::Enum::Roles act = PackageKit::Client::instance()->actions();
+	CPPUNIT_ASSERT(act & PackageKit::Enum::RoleInstallPackages); // Not really a test, but if *that* fails, then things are going badly :)
 }
 
 void DaemonTest::getBackendDetail()
 {
-	PackageKit::Client::BackendDetail d = PackageKit::Client::instance()->getBackendDetail();
-	CPPUNIT_ASSERT(!d.name.isNull());
+	QString backendName = PackageKit::Client::instance()->backendName();
+	CPPUNIT_ASSERT(!backendName.isNull());
 }
 
 void DaemonTest::getFilters()
 {
-	PackageKit::Client::Filters f = PackageKit::Client::instance()->getFilters();
-	CPPUNIT_ASSERT(f & PackageKit::Client::FilterInstalled); // Not really a test, but if *that* fails, then things are going badly :)
+	PackageKit::Enum::Filters f = PackageKit::Client::instance()->filters();
+	CPPUNIT_ASSERT(f & PackageKit::Enum::FilterInstalled); // Not really a test, but if *that* fails, then things are going badly :)
 }
 
 void DaemonTest::getGroups()
 {
-	PackageKit::Client::Groups g = PackageKit::Client::instance()->getGroups();
+	PackageKit::Enum::Groups g = PackageKit::Client::instance()->groups();
 	CPPUNIT_ASSERT(g.size() != 1);
 }
 
 void DaemonTest::getTimeSinceAction()
 {
-	PackageKit::Client::instance()->getTimeSinceAction(PackageKit::Client::ActionInstallPackages);
+	PackageKit::Client::instance()->getTimeSinceAction(PackageKit::Enum::RoleInstallPackages);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DaemonTest);

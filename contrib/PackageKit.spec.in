@@ -374,7 +374,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-glib2.so.*
-%{_libdir}/girepositry-1.0/PackageKitGlib-1.0.typelib
+%{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 
 %files qt
@@ -452,4 +452,3 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
 - Update from git
-

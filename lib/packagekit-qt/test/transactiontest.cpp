@@ -15,7 +15,7 @@ TransactionTest::~TransactionTest()
 void TransactionTest::searchName()
 {
 	success = FALSE;
-	Transaction* t = PackageKit::Client::instance()->searchName("vim");
+	Transaction* t = PackageKit::Client::instance()->searchNames("vim");
 	qDebug() << "searchName";
 	QEventLoop el;
 	connect(t, SIGNAL(package(PackageKit::Package*)), this, SLOT(searchName_cb(PackageKit::Package*)));
@@ -44,13 +44,13 @@ void TransactionTest::resolveAndInstallAndRemove()
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("resolve", success);
 
-	t = c->installPackage(FALSE, currentPackage);
+	t = c->installPackages(FALSE, currentPackage);
 	CPPUNIT_ASSERT_MESSAGE("installPackages", t != NULL);
 	qDebug() << "Installing";
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
 	el.exec();
 
-	t = c->removePackage(currentPackage, FALSE, FALSE);
+	t = c->removePackages(currentPackage, FALSE, FALSE);
 	CPPUNIT_ASSERT_MESSAGE("removePackages", t != NULL);
 	qDebug() << "Removing";
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
@@ -97,7 +97,7 @@ void TransactionTest::getRepos()
 	CPPUNIT_ASSERT_MESSAGE("getRepoList", success);
 
 	success = FALSE;
-	t = PackageKit::Client::instance()->getRepoList(PackageKit::Client::FilterNotDevelopment);
+	t = PackageKit::Client::instance()->getRepoList(PackageKit::Enum::FilterNotDevelopment);
 	CPPUNIT_ASSERT_MESSAGE("getRepoList (filtered)", t != NULL);
 	qDebug() << "Getting repos (filtered)";
 	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));

@@ -76,6 +76,7 @@ PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
 gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
 							 PkRoleEnum	 role);
+gchar		*pk_backend_get_accepted_eula_string	(PkBackend	*backend);
 void		pk_backend_cancel			(PkBackend	*backend);
 void		pk_backend_download_packages		(PkBackend	*backend,
 							 gchar		**package_ids,

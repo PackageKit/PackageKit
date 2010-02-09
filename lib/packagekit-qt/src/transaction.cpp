@@ -19,19 +19,18 @@
  */
 
 #include "transaction.h"
-#include "client.h"
 #include "common.h"
-#include "package.h"
 #include "transactionprivate.h"
 #include "transactionproxy.h"
+#include "package.h"
 #include "util.h"
 
 using namespace PackageKit;
 
-Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
+Transaction::Transaction(const QString& tid, Client* parent)
+	: QObject(parent), d_ptr(new TransactionPrivate(this))
 {
-	d = new TransactionPrivate(this);
-
+	Q_D(Transaction);
 	d->oldtrans = FALSE;
 	d->tid = tid;
 	d->client = parent;
@@ -61,15 +60,15 @@ Transaction::Transaction(const QString& tid, Client* parent) : QObject(parent)
 
 }
 
-Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent) : QObject(parent)
+Transaction::Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent)
+	: QObject(parent), d_ptr(new TransactionPrivate(this))
 {
-	d = new TransactionPrivate(this);
-
+	Q_D(Transaction);
 	d->oldtrans = TRUE;
 	d->tid = tid;
 	d->timespec = QDateTime::fromString(timespec, Qt::ISODate);
 	d->succeeded = succeeded;
-	d->role = (Client::Action)Util::enumFromString<Client>(role, "Action", "Action");
+	d->role = (Enum::Role)Util::enumFromString<Enum>(role, "Role", "Role");
 	d->duration = duration;
 	d->data = data;
 	d->uid = uid;
@@ -85,26 +84,31 @@ Transaction::~Transaction()
 
 QString Transaction::tid() const
 {
+	Q_D(const Transaction);
 	return d->tid;
 }
 
 Client::DaemonError Transaction::error () const
 {
+	Q_D(const Transaction);
 	return d->error;
 }
 
 bool Transaction::allowCancel() const
 {
+	Q_D(const Transaction);
 	return d->p->allowCancel ();
 }
 
 bool Transaction::callerActive() const
 {
+	Q_D(const Transaction);
 	return d->p->callerActive ();
 }
 
 void Transaction::cancel()
 {
+	Q_D(Transaction);
 	QDBusReply<void> r = d->p->Cancel ();
 	if (!r.isValid ()) {
 		d->error = Util::errorFromString (r.error ().message ());
@@ -113,44 +117,52 @@ void Transaction::cancel()
 
 Package* Transaction::lastPackage() const
 {
+	Q_D(const Transaction);
 	return new Package(d->p->lastPackage ());
 }
 
 uint Transaction::percentage() const
 {
+	Q_D(const Transaction);
 	return d->p->percentage ();
 }
 
 uint Transaction::subpercentage() const
 {
+	Q_D(const Transaction);
 	return d->p->subpercentage ();
 }
 
 uint Transaction::elapsedTime() const
 {
+	Q_D(const Transaction);
 	return d->p->elapsedTime ();
 }
 
 uint Transaction::remainingTime() const
 {
+	Q_D(const Transaction);
 	return d->p->remainingTime ();
 }
 
 uint Transaction::speed() const
 {
+	Q_D(const Transaction);
 	return d->p->speed ();
 }
 
-Client::Action Transaction::role() const
+Enum::Role Transaction::role() const
 {
+	Q_D(const Transaction);
 	if(d->oldtrans)
 		return d->role;
 
-	return (Client::Action) Util::enumFromString<Client>(d->p->role (), "Action", "Action");
+	return (Enum::Role) Util::enumFromString<Enum>(d->p->role (), "Role", "Role");
 }
 
 void Transaction::setHints(const QStringList& hints)
 {
+	Q_D(Transaction);
 	d->p->SetHints(hints);
 }
 
@@ -159,33 +171,39 @@ void Transaction::setHints(const QString& hints)
 	setHints(QStringList() << hints);
 }
 
-Transaction::Status Transaction::status() const
+Enum::Status Transaction::status() const
 {
-	return (Transaction::Status) Util::enumFromString<Transaction>(d->p->status (), "Status", "Status");
+	Q_D(const Transaction);
+	return (Enum::Status) Util::enumFromString<Enum>(d->p->status (), "Status", "Status");
 }
 
 QDateTime Transaction::timespec() const
 {
+	Q_D(const Transaction);
 	return d->timespec;
 }
 
 bool Transaction::succeeded() const
 {
+	Q_D(const Transaction);
 	return d->succeeded;
 }
 
 uint Transaction::duration() const
 {
+	Q_D(const Transaction);
 	return d->duration;
 }
 
 QString Transaction::data() const
 {
+	Q_D(const Transaction);
 	return d->data;
 }
 
 uint Transaction::uid() const
 {
+	Q_D(const Transaction);
 	if(d->p) {
 		return d->p->uid();
 	}
@@ -194,6 +212,7 @@ uint Transaction::uid() const
 
 QString Transaction::cmdline() const
 {
+	Q_D(const Transaction);
 	return d->cmdline;
 }
 
