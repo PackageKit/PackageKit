@@ -612,6 +612,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *line;
 	gchar *uri;
 	gchar *transaction_id;
+	guint i;
 	GPtrArray *array;
 	gboolean ret;
 	PkHintEnum interactive;
@@ -631,7 +632,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	if (!egg_strzero (proxy_http)) {
 		uri = pk_backend_spawn_convert_uri (proxy_http);
 		line = g_strdup_printf ("%s=%s", "http_proxy", uri);
-		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
 		g_free (uri);
 	}
@@ -641,7 +641,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	if (!egg_strzero (proxy_ftp)) {
 		uri = pk_backend_spawn_convert_uri (proxy_ftp);
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
-		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
 		g_free (uri);
 	}
@@ -650,20 +649,17 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	locale = pk_backend_get_locale (priv->backend);
 	if (!egg_strzero (locale)) {
 		line = g_strdup_printf ("%s=%s", "LANG", locale);
-		egg_debug ("setting evp '%s'", line);
 		g_ptr_array_add (array, line);
 	}
 
 	/* NETWORK */
 	ret = pk_backend_is_online (priv->backend);
 	line = g_strdup_printf ("%s=%s", "NETWORK", ret ? "TRUE" : "FALSE");
-	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
 
 	/* BACKGROUND */
 	ret = pk_backend_use_background (priv->backend);
 	line = g_strdup_printf ("%s=%s", "BACKGROUND", ret ? "TRUE" : "FALSE");
-	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
 
 	/* INTERACTIVE */
@@ -671,8 +667,14 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		      "interactive", &interactive,
 		      NULL);
 	line = g_strdup_printf ("%s=%s", "INTERACTIVE", interactive ? "TRUE" : "FALSE");
-	egg_debug ("setting evp '%s'", line);
 	g_ptr_array_add (array, line);
+
+	/* ensure the malicious user can't inject anthing from the session */
+	for (i=0; i<array->len; i++) {
+		line = g_ptr_array_index (array, i);
+		g_strdelimit (line, "\\;{}[]()*?%\n\r\t", '_');
+		egg_debug ("setting evp '%s'", line);
+	}
 
 	envp = pk_ptr_array_to_strv (array);
 	g_ptr_array_unref (array);
