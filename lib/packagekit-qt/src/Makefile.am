@@ -11,6 +11,16 @@ INCLUDES = \
 
 METASOURCES = AUTO
 
+MOCFILES =								\
+	client.moc							\
+	clientprivate.moc					\
+	daemonproxy.moc						\
+	transactionproxy.moc				\
+	transaction.moc						\
+	transactionprivate.moc				\
+	enum.moc							\
+	$(NULL)
+
 lib_LTLIBRARIES =						\
 	libpackagekit-qt.la					\
 	$(NULL)
@@ -75,14 +85,7 @@ clean-local:
 	rm -f $(CLEANFILES)
 
 EXTRA_DIST =							\
-	client.moc						\
-	clientprivate.moc					\
-	daemonproxy.moc						\
-	enum.moc						\
-	package.moc						\
-	transaction.moc						\
-	transactionprivate.moc					\
-	transactionproxy.moc					\
+	$(MOCFILES)							\
 	dbus_proxies.stamp                  \
 	daemonproxy.h						\
 	daemonproxy.cpp						\
@@ -98,7 +101,10 @@ MAINTAINERCLEANFILES =						\
 	daemonproxy.cpp							\
 	$(NULL)
 
-BUILT_SOURCES=dbus_proxies.stamp
+BUILT_SOURCES=								\
+	dbus_proxies.stamp						\
+	$(MOCFILES)								\
+	$(NULL)
 
 dbus_proxies.stamp: ${top_srcdir}/src/org.freedesktop.PackageKit.xml ${top_srcdir}/src/org.freedesktop.PackageKit.Transaction.xml
 	qdbusxml2cpp -c DaemonProxy -p daemonproxy -m -N ${top_srcdir}/src/org.freedesktop.PackageKit.xml
