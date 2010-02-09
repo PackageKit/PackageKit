@@ -575,7 +575,6 @@ class PackageKitEntropyMixin(object):
 
             x_rc = package.run()
             if x_rc != 0:
-                pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_CONFIGURE,
                     "Cannot download package: %s" % (pk_pkg,))
                 return
@@ -617,12 +616,16 @@ class PackageKitEntropyMixin(object):
                 metaopts['install_source'] = \
                     etpConst['install_sources']['automatic_dependency']
 
+            pkg_id, pkg_c_repo, pk_pkg = match_map.get(match)
+            pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
+            # show pkg
+            self.package(pk_pkg, INFO_INSTALLING, pkg_desc)
+
             package = self._entropy.Package()
             package.prepare(match, "install", metaopts)
 
             x_rc = package.run()
             if x_rc != 0:
-                pk_pkg = match_map.get(match, (None, None, None))[2]
                 self.error(ERROR_PACKAGE_FAILED_TO_INSTALL,
                     "Cannot install package: %s" % (pk_pkg,))
                 return
