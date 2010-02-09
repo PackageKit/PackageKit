@@ -61,6 +61,23 @@ struct _PkCategoryClass
 GType		 pk_category_get_type		  	(void);
 PkCategory	*pk_category_new			(void);
 
+/* accessors */
+const gchar	*pk_category_get_parent_id		(PkCategory	*category);
+void		 pk_category_set_parent_id		(PkCategory	*category,
+							 const gchar	*parent_id);
+const gchar	*pk_category_get_id			(PkCategory	*category);
+void		 pk_category_set_id			(PkCategory	*category,
+							 const gchar	*cat_id);
+const gchar	*pk_category_get_name			(PkCategory	*category);
+void		 pk_category_set_name			(PkCategory	*category,
+							 const gchar	*name);
+const gchar	*pk_category_get_summary		(PkCategory	*category);
+void		 pk_category_set_summary		(PkCategory	*category,
+							 const gchar	*summary);
+const gchar	*pk_category_get_icon			(PkCategory	*category);
+void		 pk_category_set_icon			(PkCategory	*category,
+							 const gchar	*icon);
+
 G_END_DECLS
 
 #endif /* __PK_CATEGORY_H */

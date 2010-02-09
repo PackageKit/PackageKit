@@ -65,6 +65,176 @@ enum {
 G_DEFINE_TYPE (PkCategory, pk_category, G_TYPE_OBJECT)
 
 /**
+ * pk_category_get_parent_id:
+ * @category: The %PkCategory
+ *
+ * Gets the parent category id.
+ *
+ * Return value: the string value, or %NULL for unset.
+ *
+ * Since: 0.6.2
+ **/
+const gchar *
+pk_category_get_parent_id (PkCategory *category)
+{
+	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
+	return category->priv->parent_id;
+}
+
+/**
+ * pk_category_set_parent_id:
+ * @category: The %PkCategory
+ * @parent_id: the new value
+ *
+ * Sets the parent category id.
+ *
+ * Since: 0.6.2
+ **/
+void
+pk_category_set_parent_id (PkCategory *category, const gchar *parent_id)
+{
+	g_return_if_fail (PK_IS_CATEGORY (category));
+	g_free (category->priv->parent_id);
+	category->priv->parent_id = g_strdup (parent_id);
+}
+
+/**
+ * pk_category_get_id:
+ * @category: The %PkCategory
+ *
+ * Gets the id specific to this category.
+ *
+ * Return value: the string value, or %NULL for unset.
+ *
+ * Since: 0.6.2
+ **/
+const gchar *
+pk_category_get_id (PkCategory *category)
+{
+	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
+	return category->priv->cat_id;
+}
+
+/**
+ * pk_category_set_id:
+ * @category: The %PkCategory
+ * @cat_id: the new value
+ *
+ * Sets the id specific to this category.
+ *
+ * Since: 0.6.2
+ **/
+void
+pk_category_set_id (PkCategory *category, const gchar *cat_id)
+{
+	g_return_if_fail (PK_IS_CATEGORY (category));
+	g_free (category->priv->cat_id);
+	category->priv->cat_id = g_strdup (cat_id);
+}
+
+/**
+ * pk_category_get_name:
+ * @category: The %PkCategory
+ *
+ * Gets the name.
+ *
+ * Return value: the string value, or %NULL for unset.
+ *
+ * Since: 0.6.2
+ **/
+const gchar *
+pk_category_get_name (PkCategory *category)
+{
+	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
+	return category->priv->name;
+}
+
+/**
+ * pk_category_set_name:
+ * @category: The %PkCategory
+ * @name: the new value
+ *
+ * Sets the name.
+ *
+ * Since: 0.6.2
+ **/
+void
+pk_category_set_name (PkCategory *category, const gchar *name)
+{
+	g_return_if_fail (PK_IS_CATEGORY (category));
+	g_free (category->priv->name);
+	category->priv->name = g_strdup (name);
+}
+
+/**
+ * pk_category_get_summary:
+ * @category: The %PkCategory
+ *
+ * Gets the summary.
+ *
+ * Return value: the string value, or %NULL for unset.
+ *
+ * Since: 0.6.2
+ **/
+const gchar *
+pk_category_get_summary (PkCategory *category)
+{
+	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
+	return category->priv->summary;
+}
+
+/**
+ * pk_category_set_summary:
+ * @category: The %PkCategory
+ * @summary: the new value
+ *
+ * Sets the summary.
+ *
+ * Since: 0.6.2
+ **/
+void
+pk_category_set_summary (PkCategory *category, const gchar *summary)
+{
+	g_return_if_fail (PK_IS_CATEGORY (category));
+	g_free (category->priv->summary);
+	category->priv->summary = g_strdup (summary);
+}
+
+/**
+ * pk_category_get_icon:
+ * @category: The %PkCategory
+ *
+ * Gets the icon filename.
+ *
+ * Return value: the string value, or %NULL for unset.
+ *
+ * Since: 0.6.2
+ **/
+const gchar *
+pk_category_get_icon (PkCategory *category)
+{
+	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
+	return category->priv->icon;
+}
+
+/**
+ * pk_category_set_icon:
+ * @category: The %PkCategory
+ * @icon: the new value
+ *
+ * Sets the icon filename.
+ *
+ * Since: 0.6.2
+ **/
+void
+pk_category_set_icon (PkCategory *category, const gchar *icon)
+{
+	g_return_if_fail (PK_IS_CATEGORY (category));
+	g_free (category->priv->icon);
+	category->priv->icon = g_strdup (icon);
+}
+
+/**
  * pk_category_get_property:
  **/
 static void
