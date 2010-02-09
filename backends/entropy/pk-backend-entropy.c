@@ -150,10 +150,10 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_REPO_ENABLE,
 		//PK_ROLE_ENUM_REPO_SET_DATA,
 		PK_ROLE_ENUM_GET_CATEGORIES,
-		//PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
-		//PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-		//PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
-		//PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
+		PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+		PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		-1);
 
 	return roles;
@@ -502,6 +502,62 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-remove-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_update_packages:
+ */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-update-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-install-packages", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_install_files:
+ */
+static void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+    gchar *package_ids_temp;
+
+    /* send the complete list as stdin */
+    package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "simulate-install-files", package_ids_temp, NULL);
+    g_free (package_ids_temp);
+}
+
 PK_BACKEND_OPTIONS (
 	"Entropy",				/* description */
 	"Fabio Erculiani (lxnay) <lxnay@sabayon.org>",	/* author */
@@ -539,9 +595,9 @@ PK_BACKEND_OPTIONS (
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
 	NULL,								/* what_provides */
-	NULL,								/* simulate_install_files */
-	NULL,								/* simulate_install_packages */
-	NULL,								/* simulate_remove_packages */
-	NULL								/* simulate_update_packages */
+	backend_simulate_install_files,	    /* simulate_install_files */
+	backend_simulate_install_packages,  /* simulate_install_packages */
+	backend_simulate_remove_packages,   /* simulate_remove_packages */
+	backend_simulate_update_packages    /* simulate_update_packages */
 );
 
