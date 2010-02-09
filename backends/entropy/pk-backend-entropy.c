@@ -193,6 +193,23 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 }
 
 /**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+{
+    gchar *filters_text;
+    gchar *search;
+    const gchar *provides_text;
+    provides_text = pk_provides_enum_to_string (provides);
+    filters_text = pk_filter_bitfield_to_string (filters);
+    search = g_strjoinv ("&", values);
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "what-provides", filters_text, provides_text, search, NULL);
+    g_free (filters_text);
+    g_free (search);
+}
+
+/**
  * pk_backend_get_categories:
  */
 static void
