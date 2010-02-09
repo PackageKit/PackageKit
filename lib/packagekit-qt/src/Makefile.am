@@ -48,7 +48,6 @@ libpackagekit_qt_la_SOURCES =					\
 	bitfield.h						\
 	bitfield.cpp						\
 	enum.h							\
-	enum.cpp							\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
@@ -77,7 +76,6 @@ EXTRA_DIST =							\
 	client.moc						\
 	clientprivate.moc					\
 	daemonproxy.moc						\
-	enum.moc						\
 	package.moc						\
 	transaction.moc						\
 	transactionprivate.moc					\
