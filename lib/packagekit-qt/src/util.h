@@ -93,9 +93,14 @@ public:
 	{
 		int id = T::staticMetaObject.indexOfEnumerator(enumName);
 		QMetaEnum e = T::staticMetaObject.enumerator(id);
+		if (!e.isValid ()) {
+			qDebug () << "Invalid enum " << enumName;
+			return QString ();
+		}
 		QString enumString = e.valueToKey(value);
 		if(enumString.isNull()) {
 			qDebug() << "Enum key not found while searching for value" << value << "in enum" << enumName;
+			return QString ();
 		}
 
 		// Remove the prefix
