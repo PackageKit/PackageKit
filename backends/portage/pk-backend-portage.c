@@ -149,7 +149,7 @@ backend_get_roles (PkBackend *backend)
         PK_ROLE_ENUM_GET_REPO_LIST,
         PK_ROLE_ENUM_REPO_ENABLE,
         //PK_ROLE_ENUM_REPO_SET_DATA,
-        //PK_ROLE_ENUM_GET_CATEGORIES,
+        PK_ROLE_ENUM_GET_CATEGORIES,
         //PK_ROLE_ENUM_SIMULATE_INSTALL_FILES,
         PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
         PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
@@ -167,6 +167,15 @@ backend_cancel (PkBackend *backend)
 {
 	/* this feels bad... */
 	pk_backend_spawn_kill (spawn);
+}
+
+/**
+ * pk_backend_get_categories:
+ */
+static void
+backend_get_categories (PkBackend *backend)
+{
+    pk_backend_spawn_helper (spawn, BACKEND_FILE, "get-categories", NULL);
 }
 
 /**
@@ -490,7 +499,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_mime_types */
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
-	NULL,					/* get_categories */
+	backend_get_categories,			/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */

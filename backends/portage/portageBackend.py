@@ -245,6 +245,23 @@ class PackageKitPortageMixin(object):
         """
         return self.pvar.settings.categories
 
+    def _get_portage_category_description(self, category):
+
+        from xml.dom import minidom
+        data = {}
+        portdir = self.pvar.settings['PORTDIR']
+        myfile = os.path.join(portdir, category, "metadata.xml")
+        if os.access(myfile, os.R_OK) and os.path.isfile(myfile):
+            doc = minidom.parse(myfile)
+            longdescs = doc.getElementsByTagName("longdescription")
+            for longdesc in longdescs:
+                data[longdesc.getAttribute("lang").strip()] = \
+                    ' '.join([x.strip() for x in \
+                        longdesc.firstChild.data.strip().split("\n")])
+
+        # Only return in plain English since Portage doesn't support i18n/l10n
+        return data.get('en', "No description")
+
     def _get_portage_groups(self):
         """
         Return an expanded version of PortagePackageGroups
@@ -799,6 +816,29 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             else:
                 info = INFO_AVAILABLE
         self.package(self._cpv_to_id(cpv), info, desc)
+
+    def get_categories(self):
+
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+
+        categories = self._get_portage_categories()
+        if not categories:
+            self.error(ERROR_GROUP_LIST_INVALID, "no package categories")
+            return
+
+        for name in categories:
+
+            summary = self._get_portage_category_description(name)
+
+            f_name = "/usr/share/pixmaps/portage/%s.png" % (name,)
+            if os.path.isfile(f_name) and os.access(f_name, os.R_OK):
+                icon = name
+            else:
+                icon = "image-missing"
+
+            cat_id = name # same thing
+            self.category("", cat_id, name, summary, icon)
 
     def get_depends(self, filters, pkgs, recursive):
         # TODO: use only myparams ?
