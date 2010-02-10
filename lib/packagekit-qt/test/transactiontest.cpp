@@ -19,7 +19,7 @@ void TransactionTest::searchName()
 	qDebug() << "searchName";
 	QEventLoop el;
 	connect(t, SIGNAL(package(PackageKit::Package*)), this, SLOT(searchName_cb(PackageKit::Package*)));
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("searchName", success);
 }
@@ -40,20 +40,20 @@ void TransactionTest::resolveAndInstallAndRemove()
 	qDebug() << "Resolving";
 	QEventLoop el;
 	connect(t, SIGNAL(package(PackageKit::Package*)), this, SLOT(resolveAndInstallAndRemove_cb(PackageKit::Package*)));
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("resolve", success);
 
 	t = c->installPackages(FALSE, currentPackage);
 	CPPUNIT_ASSERT_MESSAGE("installPackages", t != NULL);
 	qDebug() << "Installing";
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 
 	t = c->removePackages(currentPackage, FALSE, FALSE);
 	CPPUNIT_ASSERT_MESSAGE("removePackages", t != NULL);
 	qDebug() << "Removing";
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 
 	delete(currentPackage);
@@ -65,7 +65,7 @@ void TransactionTest::refreshCache()
 	qDebug() << "Refreshing cache";
 	CPPUNIT_ASSERT_MESSAGE("refreshCache", t != NULL);
 	QEventLoop el;
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 }
 
@@ -76,7 +76,7 @@ void TransactionTest::getDistroUpgrades()
 	qDebug() << "Getting distro upgrades";
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades", t != NULL);
 	QEventLoop el;
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	connect(t, SIGNAL(distroUpgrade(PackageKit::Client::DistroUpgradeType, const QString&, const QString&)), this, SLOT(getDistroUpgrades_cb()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades (not fatal, only means there are no distro upgrades)", success);
@@ -91,7 +91,7 @@ void TransactionTest::getRepos()
 	CPPUNIT_ASSERT_MESSAGE("getRepoList", t != NULL);
 	qDebug() << "Getting repos (non filtered)";
 	QEventLoop el;
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	connect(t, SIGNAL(repoDetail(const QString&, const QString&, bool)), this, SLOT(getRepos_cb(const QString&, const QString&, bool)));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("getRepoList", success);
@@ -100,7 +100,7 @@ void TransactionTest::getRepos()
 	t = PackageKit::Client::instance()->getRepoList(PackageKit::Enum::FilterNotDevelopment);
 	CPPUNIT_ASSERT_MESSAGE("getRepoList (filtered)", t != NULL);
 	qDebug() << "Getting repos (filtered)";
-	connect(t, SIGNAL(finished(PackageKit::Transaction::ExitStatus, uint)), &el, SLOT(quit()));
+	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	connect(t, SIGNAL(repoDetail(const QString&, const QString&, bool)), this, SLOT(getRepos_cb(const QString&, const QString&, bool)));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("getRepoList (filtered)", success);
