@@ -915,7 +915,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         categories = self._entropy.get_package_categories()
         if not categories:
-            self.error(ERROR_GROUP_LIST_INVALID, "no package categires")
+            self.error(ERROR_GROUP_LIST_INVALID, "no package categories")
             return
 
         for name in categories:
