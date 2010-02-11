@@ -204,6 +204,16 @@ pk_backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_role:
+ **/
+PkRoleEnum
+pk_backend_get_role (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	return backend->priv->role;
+}
+
+/**
  * pk_backend_get_roles:
  **/
 PkBitfield
