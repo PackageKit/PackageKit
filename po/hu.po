@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: packagekit master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-02-08 15:53+0000\n"
-"PO-Revision-Date: 2010-02-08 21:03+0100\n"
+"PO-Revision-Date: 2010-02-12 17:17+0100\n"
 "Last-Translator: Nikolas Slivka <snicore@gmail.com>\n"
-"Language-Team: Hungarian <gnome at fsf dot hu>\n"
+"Language-Team: Hungarian <fedora-trans-hu@redhat.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -407,7 +407,7 @@ msgstr "Parancsot használva kihasználatlan hálózati sávszélességet és ke
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1276
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
+msgstr "Gép által ovasható kimenetre írás, mint hogy az animált widgetek használata"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1298
@@ -1964,12 +1964,12 @@ msgstr "Hibakeresési információk megjelenítése az összes fájlhoz"
 #. TRANSLATORS: a list of modules to debug
 #: ../src/egg-debug.c:459
 msgid "Debug these specific modules"
-msgstr ""
+msgstr "Ezek a specifikus modulok hibakeresése"
 
 #. TRANSLATORS: a list of functions to debug
 #: ../src/egg-debug.c:462
 msgid "Debug these specific functions"
-msgstr ""
+msgstr "Ezek a specifikus funkciók hibakeresése"
 
 #. TRANSLATORS: save to a log
 #: ../src/egg-debug.c:465
@@ -1986,4 +1986,3 @@ msgstr "Hibakeresési lehetőségek megjelenítése"
 
 #~ msgid "Malicious software can damage your computer or cause other harm."
 #~ msgstr "Rosszindulatú szoftver problémát vagy meghibásodást okozhat."
-
