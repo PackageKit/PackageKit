@@ -373,24 +373,27 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if pkg_dict is None:
             return None
         log.info("doing a resolve")
-
         filter = ConaryFilter(filters)
         trove = None
     
         trove_installed = self.conary.query( pkg_dict.get("name") )
+        log.info("end of conary query")
         if trove_installed:
             pkg = self._convert_package( trove_installed[0], pkg_dict )
             log.info( pkg)
             filter.add_installed( [ pkg ] )
-            
+        log.info("filter installed end.. doing a rq")    
         trove_available = self.conary.request_query( pkg_dict.get("name") )
+        log.info("end of conary rquery")
         if trove_available:
             pkg = self._convert_package( trove_available[0], pkg_dict )
             filter.add_available(  [ pkg ] )
 
+        log.info("filter available end")    
         package_list = filter.post_process()
         log.info("package_list %s" % package_list)
         self._show_package_list(package_list)
+	log.info("end resolve ...................")
 
     def _show_package_list(self, lst):
         """ 
