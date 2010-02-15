@@ -621,12 +621,15 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 
 	array = g_ptr_array_new_with_free_func (g_free);
 
-	/* transaction_id */
-	g_object_get (priv->backend,
-		      "transaction-id", &transaction_id,
-		      NULL);
-	line = g_strdup_printf ("%s=%s", "transaction_id", transaction_id);
-	g_ptr_array_add (array, line);
+	/* don't do this for all backends as it's a performance penalty */
+	if (FALSE) {
+		/* transaction_id */
+		g_object_get (priv->backend,
+			      "transaction-id", &transaction_id,
+			      NULL);
+		line = g_strdup_printf ("%s=%s", "transaction_id", transaction_id);
+		g_ptr_array_add (array, line);
+	}
 
 	/* accepted eulas */
 	eulas = pk_backend_get_accepted_eula_string (priv->backend);
