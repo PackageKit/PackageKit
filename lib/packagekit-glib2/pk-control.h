@@ -99,6 +99,13 @@ void		 pk_control_get_tid_async		(PkControl		*control,
 gchar		*pk_control_get_tid_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);
+void		 pk_control_suggest_daemon_quit_async	(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+gboolean	 pk_control_suggest_daemon_quit_finish	(PkControl		*control,
+							 GAsyncResult		*res,
+							 GError			**error);
 void		 pk_control_get_daemon_state_async	(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
