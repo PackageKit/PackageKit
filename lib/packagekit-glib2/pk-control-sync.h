@@ -31,6 +31,9 @@ gboolean	 pk_control_get_properties		(PkControl		*control,
 gchar		**pk_control_get_transaction_list	(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gboolean	 pk_control_suggest_daemon_quit		(PkControl		*control,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
 #endif /* __PK_CONTROL_SYNC_H */
 

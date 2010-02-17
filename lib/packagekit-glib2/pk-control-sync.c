@@ -140,3 +140,55 @@ pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, 
 	return transaction_list;
 }
 
+/**
+ * pk_control_suggest_daemon_quit_cb:
+ **/
+static void
+pk_control_suggest_daemon_quit_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
+{
+	/* get the result */
+	helper->ret = pk_control_suggest_daemon_quit_finish (control, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_control_suggest_daemon_quit:
+ * @control: a valid #PkControl instance
+ * @cancellable: a #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Suggests to the daemon that it should quit as soon as possible.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: %TRUE if the suggestion was sent
+ *
+ * Since: 0.6.2
+ **/
+gboolean
+pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, GError **error)
+{
+	gboolean ret;
+	PkControlHelper *helper;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkControlHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_control_suggest_daemon_quit_async (control, cancellable, (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	ret = helper->ret;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return ret;
+}
+
