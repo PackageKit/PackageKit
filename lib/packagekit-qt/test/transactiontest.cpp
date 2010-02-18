@@ -77,7 +77,7 @@ void TransactionTest::getDistroUpgrades()
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades", t != NULL);
 	QEventLoop el;
 	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
-	connect(t, SIGNAL(distroUpgrade(PackageKit::Client::DistroUpgradeType, const QString&, const QString&)), this, SLOT(getDistroUpgrades_cb()));
+	connect(t, SIGNAL(distroUpgrade(PackageKit::Enum::DistroUpgrade, const QString&, const QString&)), this, SLOT(getDistroUpgrades_cb()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("getDistroUpgrades (not fatal, only means there are no distro upgrades)", success);
 
