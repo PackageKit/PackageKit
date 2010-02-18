@@ -37,7 +37,7 @@ QString Util::filtersToString(const QFlags<PackageKit::Enum::Filter>& flags)
 	QStringList flagStrings;
 	for (int i = Enum::UnknownFilter; i < Enum::FilterLast; i *= 2) {
 		if ((Enum::Filter) i & flags) {
-			flagStrings.append(Util::enumToString<Client>((Enum::Filter) i, "Filter", "Filter"));
+			flagStrings.append(Util::enumToString<Enum>((Enum::Filter) i, "Filter", "Filter"));
 		}
 	}
 
