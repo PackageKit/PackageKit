@@ -154,10 +154,10 @@ private:
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);
 	void emitTransactionPackage(string name, PkInfoEnum state);
-	time_t last_term_action;
-	bool _startCounting;
+	time_t m_lastTermAction;
+	bool m_startCounting;
 	// when the internal terminal timesout after no activity
-	int _terminalTimeout;
+	int m_terminalTimeout;
 	pid_t m_child_pid;
 };
 
