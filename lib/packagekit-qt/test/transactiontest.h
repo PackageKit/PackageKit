@@ -32,8 +32,8 @@ public:
 	void getRepos();
 
 public slots:
-	void searchName_cb(PackageKit::Package* p);
-	void resolveAndInstallAndRemove_cb(PackageKit::Package* p);
+	void searchName_cb(QSharedPointer<PackageKit::Package> p);
+	void resolveAndInstallAndRemove_cb(QSharedPointer<PackageKit::Package> p);
 	void getDistroUpgrades_cb();
 	void getRepos_cb(const QString& repoName, const QString& repoDetail, bool enabled);
 
@@ -41,7 +41,7 @@ public slots:
 
 private:
 	bool success;
-	PackageKit::Package* currentPackage;
+	QSharedPointer<PackageKit::Package> currentPackage;
 
 };
 

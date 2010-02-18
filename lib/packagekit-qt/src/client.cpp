@@ -273,32 +273,32 @@ Transaction* Client::acceptEula(EulaInfo info)
 	RUN_TRANSACTION(AcceptEula(info.id))
 }
 
-Transaction* Client::downloadPackages(const QList<Package*>& packages)
+Transaction* Client::downloadPackages(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(DownloadPackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::downloadPackages(Package* package)
+Transaction* Client::downloadPackages(QSharedPointer<Package> package)
 {
-	return downloadPackages(QList<Package*>() << package);
+	return downloadPackages(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::getDepends(const QList<Package*>& packages, Enum::Filters filters, bool recursive)
+Transaction* Client::getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive)
 {
 	RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
-Transaction* Client::getDepends(Package* package, Enum::Filters filters, bool recursive)
+Transaction* Client::getDepends(QSharedPointer<Package> package, Enum::Filters filters, bool recursive)
 {
-	return getDepends(QList<Package*>() << package, filters, recursive);
+	return getDepends(QList<QSharedPointer<Package> >() << package, filters, recursive);
 }
 
-Transaction* Client::getDetails(const QList<Package*>& packages)
+Transaction* Client::getDetails(const QList<QSharedPointer<Package> >& packages)
 {
 	Q_D(Client);
 	CREATE_NEW_TRANSACTION
 
-	foreach(Package* p, packages) {
+	foreach(QSharedPointer<Package> p, packages) {
 		t->d_ptr->packageMap.insert(p->id(), p);
 	}
 
@@ -310,19 +310,19 @@ Transaction* Client::getDetails(const QList<Package*>& packages)
 	return t;
 }
 
-Transaction* Client::getDetails(Package* package)
+Transaction* Client::getDetails(QSharedPointer<Package> package)
 {
-	return getDetails(QList<Package*>() << package);
+	return getDetails(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::getFiles(const QList<Package*>& packages)
+Transaction* Client::getFiles(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(GetFiles(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::getFiles(Package* package)
+Transaction* Client::getFiles(QSharedPointer<Package> package)
 {
-	return getFiles(QList<Package*>() << package);
+	return getFiles(QList<QSharedPointer<Package> >() << package);
 }
 
 Transaction* Client::getOldTransactions(uint number)
@@ -340,24 +340,24 @@ Transaction* Client::getRepoList(Enum::Filters filters)
 	RUN_TRANSACTION(GetRepoList(Util::filtersToString(filters)))
 }
 
-Transaction* Client::getRequires(const QList<Package*>& packages, Enum::Filters filters, bool recursive)
+Transaction* Client::getRequires(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive)
 {
 	RUN_TRANSACTION(GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
 }
 
-Transaction* Client::getRequires(Package* package, Enum::Filters filters, bool recursive)
+Transaction* Client::getRequires(QSharedPointer<Package> package, Enum::Filters filters, bool recursive)
 {
-	return getRequires(QList<Package*>() << package, filters, recursive);
+	return getRequires(QList<QSharedPointer<Package> >() << package, filters, recursive);
 }
 
-Transaction* Client::getUpdateDetail(const QList<Package*>& packages)
+Transaction* Client::getUpdateDetail(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(GetUpdateDetail(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::getUpdateDetail(Package* package)
+Transaction* Client::getUpdateDetail(QSharedPointer<Package> package)
 {
-	return getUpdateDetail(QList<Package*>() << package);
+	return getUpdateDetail(QList<QSharedPointer<Package> >() << package);
 }
 
 Transaction* Client::getUpdates(Enum::Filters filters)
@@ -380,17 +380,17 @@ Transaction* Client::installFiles(const QString& file, bool only_trusted)
 	return installFiles(QStringList() << file, only_trusted);
 }
 
-Transaction* Client::installPackages(bool only_trusted, const QList<Package*>& packages)
+Transaction* Client::installPackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(InstallPackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::installPackages(bool only_trusted, Package* p)
+Transaction* Client::installPackages(bool only_trusted, QSharedPointer<Package> p)
 {
-	return installPackages(only_trusted, QList<Package*>() << p);
+	return installPackages(only_trusted, QList<QSharedPointer<Package> >() << p);
 }
 
-Transaction* Client::installSignature(Enum::SigType type, const QString& key_id, Package* p)
+Transaction* Client::installSignature(Enum::SigType type, const QString& key_id, QSharedPointer<Package> p)
 {
 	RUN_TRANSACTION(InstallSignature(Util::enumToString<Enum>(type, "SigType", "Signature"), key_id, p->id()))
 }
@@ -400,14 +400,14 @@ Transaction* Client::refreshCache(bool force)
 	RUN_TRANSACTION(RefreshCache(force))
 }
 
-Transaction* Client::removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove)
+Transaction* Client::removePackages(const QList<QSharedPointer<Package> >& packages, bool allow_deps, bool autoremove)
 {
 	RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove))
 }
 
-Transaction* Client::removePackages(Package* p, bool allow_deps, bool autoremove)
+Transaction* Client::removePackages(QSharedPointer<Package> p, bool allow_deps, bool autoremove)
 {
-	return removePackages(QList<Package*>() << p, allow_deps, autoremove);
+	return removePackages(QList<QSharedPointer<Package> >() << p, allow_deps, autoremove);
 }
 
 Transaction* Client::repoEnable(const QString& repo_id, bool enable)
@@ -480,12 +480,12 @@ Transaction* Client::searchNames(const QString& search, Enum::Filters filters)
 	return searchNames(QStringList() << search, filters);
 }
 
-Package* Client::searchFromDesktopFile(const QString& path)
+QSharedPointer<Package> Client::searchFromDesktopFile(const QString& path)
 {
 	QSqlDatabase db = QSqlDatabase::database();
 	if (!db.isOpen()) {
 		qDebug() << "Desktop files database is not open";
-		return NULL;
+		return QSharedPointer<Package> (NULL);
 	}
 
 	QSqlQuery q(db);
@@ -493,12 +493,12 @@ Package* Client::searchFromDesktopFile(const QString& path)
 	q.bindValue(":path", path);
 	if(!q.exec()) {
 		qDebug() << "Error while running query " << q.executedQuery();
-		return NULL;
+		return QSharedPointer<Package> (NULL);
 	}
 
-	if (!q.next()) return NULL; // Return NULL if no results
+	if (!q.next()) return QSharedPointer<Package> (NULL); // Return NULL if no results
 
-	return new Package(q.value(0).toString());
+	return QSharedPointer<Package> (new Package(q.value(0).toString()));
 
 }
 
@@ -512,44 +512,44 @@ Transaction* Client::simulateInstallFiles(const QString& file)
 	return simulateInstallFiles(QStringList() << file);
 }
 
-Transaction* Client::simulateInstallPackages(const QList<Package*>& packages)
+Transaction* Client::simulateInstallPackages(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateInstallPackages(Package* package)
+Transaction* Client::simulateInstallPackages(QSharedPointer<Package> package)
 {
-	return simulateInstallPackages(QList<Package*>() << package);
+	return simulateInstallPackages(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::simulateRemovePackages(const QList<Package*>& packages)
+Transaction* Client::simulateRemovePackages(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateRemovePackages(Package* package)
+Transaction* Client::simulateRemovePackages(QSharedPointer<Package> package)
 {
-	return simulateRemovePackages(QList<Package*>() << package);
+	return simulateRemovePackages(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::simulateUpdatePackages(const QList<Package*>& packages)
+Transaction* Client::simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
 }
 
-Transaction* Client::simulateUpdatePackages(Package* package)
+Transaction* Client::simulateUpdatePackages(QSharedPointer<Package> package)
 {
-	return simulateUpdatePackages(QList<Package*>() << package);
+	return simulateUpdatePackages(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::updatePackages(bool only_trusted, const QList<Package*>& packages)
+Transaction* Client::updatePackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages)
 {
 	RUN_TRANSACTION(UpdatePackages(only_trusted, Util::packageListToPids(packages)))
 }
 
-Transaction* Client::updatePackages(bool only_trusted, Package* package)
+Transaction* Client::updatePackages(bool only_trusted, QSharedPointer<Package> package)
 {
-	return updatePackages(only_trusted, QList<Package*>() << package);
+	return updatePackages(only_trusted, QList<QSharedPointer<Package> >() << package);
 }
 
 Transaction* Client::updateSystem(bool only_trusted)

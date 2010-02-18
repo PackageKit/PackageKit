@@ -37,11 +37,11 @@ TransactionPrivate::~TransactionPrivate()
 
 void TransactionPrivate::details(const QString& pid, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size)
 {
-	Package* p = packageMap.value(pid, NULL);
+	QSharedPointer<Package> p = packageMap.value(pid, QSharedPointer<Package> (NULL));
 	if(p) {
 		packageMap.remove(pid);
 	} else {
-		p = new Package(pid);
+		p = QSharedPointer<Package> (new Package(pid));
 	}
 
 	Package::Details* d = new Package::Details(p, license, group, detail, url, size);
@@ -63,7 +63,7 @@ void TransactionPrivate::eulaRequired(const QString& eulaId, const QString& pid,
 {
 	Client::EulaInfo i;
 	i.id = eulaId;
-	i.package = new Package(pid);
+	i.package = QSharedPointer<Package> (new Package(pid));
 	i.vendorName = vendor;
 	i.licenseAgreement = licenseAgreement;
 	t->eulaRequired(i);
@@ -76,7 +76,7 @@ void TransactionPrivate::mediaChangeRequired(const QString& mediaType, const QSt
 
 void TransactionPrivate::files(const QString& pid, const QString& filenames)
 {
-	t->files(new Package(pid), filenames.split(";"));
+	t->files(QSharedPointer<Package> (new Package(pid)), filenames.split(";"));
 }
 
 void TransactionPrivate::finished(const QString& exitCode, uint runtime)
@@ -98,13 +98,13 @@ void TransactionPrivate::message(const QString& type, const QString& message)
 
 void TransactionPrivate::package(const QString& info, const QString& pid, const QString& summary)
 {
-	t->package(new Package(pid, info, summary));
+	t->package(QSharedPointer<Package> (new Package(pid, info, summary)));
 }
 
 void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type)
 {
 	Client::SignatureInfo i;
-	i.package = new Package(pid);
+	i.package = QSharedPointer<Package> (new Package(pid));
 	i.repoId = repoName;
 	i.keyUrl = keyUrl;
 	i.keyUserid = keyUserid;
@@ -118,7 +118,7 @@ void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString
 
 void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
 {
-	t->requireRestart((Enum::Restart)Util::enumFromString<Enum>(type, "Restart", "Restart"), new Package(pid));
+	t->requireRestart((Enum::Restart)Util::enumFromString<Enum>(type, "Restart", "Restart"), QSharedPointer<Package> (new Package(pid)));
 }
 
 void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)
@@ -129,15 +129,15 @@ void TransactionPrivate::transaction(const QString& oldTid, const QString& times
 void TransactionPrivate::updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated)
 {
 	Client::UpdateInfo i;
-	i.package = new Package(pid);
+	i.package = QSharedPointer<Package> (new Package(pid));
 	if( !updates.isEmpty() ) {
 		foreach(const QString p, updates.split("&")) {
-			i.updates.append(new Package(p));
+			i.updates.append(QSharedPointer<Package> (new Package(p)));
 		}
 	}
 	if( !obsoletes.isEmpty() ) {
 		foreach(const QString p, obsoletes.split("&")) {
-			i.obsoletes.append(new Package(p));
+			i.obsoletes.append(QSharedPointer<Package> (new Package(p)));
 		}
 	}
 	i.vendorUrl = vendorUrl;

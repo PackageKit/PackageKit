@@ -98,7 +98,7 @@ public:
 	 * \sa transactionListChanged
 	 * \sa getTransactionList
 	 */
-	Package* lastPackage() const;
+	QSharedPointer<Package> lastPackage() const;
 
 	/**
 	 * The percentage complete of the whole transaction.
@@ -232,7 +232,7 @@ Q_SIGNALS:
 	 * Sends additional details about the \p package
 	 * \sa Client::getDetails
 	 */
-	void details(PackageKit::Package* package);
+	void details(QSharedPointer<PackageKit::Package> package);
 
 	/**
 	 * Sent when the transaction has been destroyed and is
@@ -271,7 +271,7 @@ Q_SIGNALS:
 	 * Sends the \p filenames contained in package \p p
 	 * \sa Client::getFiles
 	 */
-	void files(PackageKit::Package* p, const QStringList& filenames);
+	void files(QSharedPointer<PackageKit::Package> p, const QStringList& filenames);
 
 	/**
 	 * Emitted when the transaction finishes
@@ -290,7 +290,7 @@ Q_SIGNALS:
 	/**
 	 * Emitted when the transaction sends a new package
 	 */
-	void package(PackageKit::Package* p);
+	void package(QSharedPointer<PackageKit::Package> p);
 
 	/**
 	 * Sends some additional details about a software repository
@@ -307,7 +307,7 @@ Q_SIGNALS:
 	 * Indicates that a restart is required
 	 * \p package is the package who triggered the restart signal
 	 */
-	void requireRestart(PackageKit::Enum::Restart type, Package* p);
+	void requireRestart(PackageKit::Enum::Restart type, QSharedPointer<PackageKit::Package> p);
 
 	/**
 	 * Sends an old transaction

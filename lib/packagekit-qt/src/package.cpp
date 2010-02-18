@@ -29,7 +29,7 @@ using namespace PackageKit;
 class Package::DetailsPrivate
 {
 public:
-	Package* package;
+	QSharedPointer<Package> package;
 	QString license;
 	Enum::Group group;
 	QString description;
@@ -37,7 +37,7 @@ public:
 	uint size;
 };
 
-Package::Details::Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d_ptr(new DetailsPrivate)
+Package::Details::Details(QSharedPointer<Package> p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size) : d_ptr(new DetailsPrivate)
 {
 	Q_D(Details);
 	d->package = p;
@@ -53,7 +53,7 @@ Package::Details::~Details()
 	delete d_ptr;
 }
 
-Package* Package::Details::package() const
+QSharedPointer<Package> Package::Details::package() const
 {
 	Q_D(const Details);
 	return d->package;
@@ -105,8 +105,8 @@ public:
 	QString iconPath;
 };
 
-Package::Package(const QString& packageId, const QString& info, const QString& summary, QObject *parent)
-    : QObject(parent), d(new Private)
+Package::Package(const QString& packageId, const QString& info, const QString& summary)
+    : d(new Private)
 {
 	d->id = packageId;
 
