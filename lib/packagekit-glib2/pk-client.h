@@ -69,7 +69,9 @@ typedef enum
 	PK_CLIENT_ERROR_INVALID_INPUT,
 	PK_CLIENT_ERROR_INVALID_FILE,
 	PK_CLIENT_ERROR_NOT_SUPPORTED,
-	PK_CLIENT_ERROR_DECLINED_SIMULATION
+	PK_CLIENT_ERROR_DECLINED_SIMULATION,
+	/* we define this so we can punt the PkErrorEnums here */
+	PK_CLIENT_ERROR_LAST
 } PkClientError;
 
 typedef struct _PkClientPrivate		PkClientPrivate;
