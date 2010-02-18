@@ -56,7 +56,8 @@ aptcc::aptcc(PkBackend *backend, bool &cancel)
 	Map(0),
 	Policy(0),
 	m_backend(backend),
-	_cancel(cancel)
+	_cancel(cancel),
+	m_terminalTimeout(120)
 {
 	_cancel = false;
 }
@@ -1111,7 +1112,7 @@ void aptcc::updateInterface(int fd, int writeFd)
 		}
 
 		// update the time we last saw some action
-		last_term_action = time(NULL);
+		m_lastTermAction = time(NULL);
 
 		if( buf[0] == '\n') {
 			if (_cancel) {
@@ -1202,8 +1203,9 @@ void aptcc::updateInterface(int fd, int writeFd)
 				} else {
 					cout << ">>>Unmaped value<<< :" << line << endl;
 				}
+				m_startCounting = true;
 			} else {
-				_startCounting = true;
+				m_startCounting = true;
 			}
 
 			int val = atoi(percent);
@@ -1222,22 +1224,20 @@ void aptcc::updateInterface(int fd, int writeFd)
 
 	time_t now = time(NULL);
 
-	if(!_startCounting) {
+	if(!m_startCounting) {
 		usleep(100000);
-//		gtk_progress_bar_pulse (GTK_PROGRESS_BAR(_pbarTotal));
 		// wait until we get the first message from apt
-		last_term_action = now;
+		m_lastTermAction = now;
 	}
 
-	if ((now - last_term_action) > _terminalTimeout) {
+	if ((now - m_lastTermAction) > m_terminalTimeout) {
 		// get some debug info
-		gchar *s;
 		g_warning("no statusfd changes/content updates in terminal for %i"
-			  " seconds",_terminalTimeout);
-		g_warning("TerminalTimeout in step: %s", s);
-		last_term_action = time(NULL);
+			  " seconds",m_terminalTimeout);
+		m_lastTermAction = time(NULL);
 	}
 
+	// sleep for a while to don't obcess over it
 	usleep(5000);
 }
 
@@ -1348,12 +1348,15 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		/* If we are in the Broken fixing mode we do not attempt to fix the
 		    problems. This is if the user invoked install without -f and gave
 		    packages */
-		if (BrokenFix == true && Cache->BrokenCount() != 0)
-		{
-			_error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
-			show_broken(m_backend, this);
-			return false;
-		}
+		// TODO this code seems to be a bit useless,
+		// if we go to the Fix.Resolve() it can fix things
+		// and if not the last if will then fail.
+// 		if (BrokenFix == true && Cache->BrokenCount() != 0)
+// 		{
+// 			_error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
+// 			show_broken(m_backend, this);
+// 			return false;
+// 		}
 
 		// Call the scored problem resolver
 		Fix.InstallProtect();
@@ -1364,6 +1367,8 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// Now we check the state of the packages,
 		if (Cache->BrokenCount() != 0)
 		{
+		    // if the problem resolver could not fix all broken things
+		    // show what is broken
 		    show_broken(m_backend, this);
 		    return false;
 		}
@@ -1669,6 +1674,10 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	// make it nonblocking, verry important otherwise
 	// when the child finish we stay stuck.
 	fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
+
+	// init the timer
+	m_lastTermAction = time(NULL);
+	m_startCounting = false;
 
 	// Check if the child died
 	int ret;
