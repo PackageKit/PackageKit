@@ -148,7 +148,7 @@ static char *debParser(string descr)
 			// it's not a line to be verbatim displayed
 			// So it's a paragraph let's replace '\n' with a ' '
 			// replace new line with " "
-			descr.replace(nlpos, 1, ' ');
+			descr.replace(nlpos, 1, " ");
 		}
 
 		removedFullStop = false;
