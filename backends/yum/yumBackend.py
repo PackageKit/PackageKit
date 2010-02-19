@@ -422,9 +422,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
-        # until the API is changed, allow '&' to delimit multiple fields
-        values = values.split('&')
-
         searchlist = ['name']
         self.status(STATUS_QUERY)
         try:
@@ -452,9 +449,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.conf.cache = 0 # Allow new files
         self.allow_cancel(True)
         self.percentage(None)
-
-        # until the API is changed, allow '&' to delimit multiple fields
-        values = values.split('&')
 
         searchlist = ['name', 'summary', 'description', 'group']
         self.status(STATUS_QUERY)
@@ -583,9 +577,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
-        # until the API is changed, allow '&' to delimit multiple fields
-        values = values.split('&')
-
         # handle collections
         if GROUP_COLLECTIONS in values:
             try:
@@ -698,9 +689,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
 
-        # until the API is changed, allow '&' to delimit multiple fields
-        values = values.split('&')
-
         # Check installed for file
         if not FILTER_NOT_INSTALLED in fltlist:
             for value in values:
@@ -772,9 +760,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         fltlist = filters.split(';')
         pkgfilter = YumFilter(fltlist)
-
-        # until the API is changed, allow '&' to delimit multiple fields
-        values = values.split('&')
 
         try:
             for value in values:
