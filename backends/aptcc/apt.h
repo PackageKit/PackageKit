@@ -104,6 +104,9 @@ public:
 			   PkBitfield filters = PK_FILTER_ENUM_NONE,
 			   PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
 
+	void emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 PkBitfield filters = PK_FILTER_ENUM_NONE);
+
 	/**
 	 *  Emits details
 	 */

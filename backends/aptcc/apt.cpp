@@ -256,9 +256,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
-		if(!ver.end() && ver != pkg.CurrentVer()) {
-			state = PK_INFO_ENUM_AVAILABLE;
-		} else if (pkg->CurrentState == pkgCache::State::Installed) {
+		if (pkg->CurrentState == pkgCache::State::Installed) {
 			state = PK_INFO_ENUM_INSTALLED;
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
@@ -375,6 +373,52 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 		emit_package(i->first, i->second, filters, state);
 	}
 }
+
+
+
+void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 PkBitfield filters)
+{
+	// the default update info
+	PkInfoEnum state = PK_INFO_ENUM_NORMAL;
+	// Sort so we can remove the duplicated entries
+	sort(output.begin(), output.end(), compare());
+	// Remove the duplicated entries
+	output.erase(unique(output.begin(),
+			    output.end(),
+			    result_equality()),
+		     output.end());
+
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		if (_cancel) {
+			break;
+		}
+
+		// let find what kind of upgrade this is
+		pkgCache::VerFileIterator vf = i->second.FileList();
+		std::string origin  = vf.File().Origin();
+		std::string archive = vf.File().Archive();
+		std::string label   = vf.File().Label();
+		if (origin.compare("Debian") == 0 ||
+		    origin.compare("Ubuntu") == 0) {
+			if (ends_with(archive, "-security") ||
+			    label.compare("Debian-Security") == 0) {
+				state = PK_INFO_ENUM_SECURITY;
+			} else if (ends_with(archive, "-backports")) {
+				state = PK_INFO_ENUM_ENHANCEMENT;
+			} else if (ends_with(archive, "-updates")) {
+				state = PK_INFO_ENUM_BUGFIX;
+			}
+		} else if (origin.compare("Backports.org archive") == 0) {
+			state = PK_INFO_ENUM_ENHANCEMENT;
+		}
+
+		emit_package(i->first, i->second, filters, state);
+	}
+}
+
 
 void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			 gchar **values)
