@@ -1069,11 +1069,11 @@ pk_spawn_test (EggTest *test)
 	egg_test_loop_wait (test, 100);
 
 	/************************************************************/
-	egg_test_title (test, "we got another package (+finished)?");
-	if (stdout_count == 4)
+	egg_test_title (test, "we got another package (not finished after bugfix)?");
+	if (stdout_count == 3)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "did not get a package");
+		egg_test_failed (test, "did not get a package: count was %i", stdout_count);
 
 	/* see if pk_spawn_exit blocks (required) */
 	g_idle_add (idle_cb, test);
