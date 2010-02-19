@@ -650,22 +650,22 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'search-details':
             options = args[0]
-            values = _to_unicode(args[1])
+            values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
             self.search_details(options, values)
             self.finished()
         elif cmd == 'search-file':
             options = args[0]
-            values = args[1]
+            values = args[1].split(PACKAGE_IDS_DELIM)
             self.search_file(options, values)
             self.finished()
         elif cmd == 'search-group':
             options = args[0]
-            values = args[1]
+            values = args[1].split(PACKAGE_IDS_DELIM)
             self.search_group(options, values)
             self.finished()
         elif cmd == 'search-name':
             options = args[0]
-            values = _to_unicode(args[1])
+            values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
             self.search_name(options, values)
             self.finished()
         elif cmd == 'signature-install':
@@ -684,7 +684,7 @@ class PackageKitBaseBackend:
         elif cmd == 'what-provides':
             filters = args[0]
             provides_type = args[1]
-            values = _to_unicode(args[2])
+            values = _to_unicode(args[2]).split(PACKAGE_IDS_DELIM)
             self.what_provides(filters, provides_type, values)
             self.finished()
         elif cmd == 'set-locale':
