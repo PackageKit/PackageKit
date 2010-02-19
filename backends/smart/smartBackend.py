@@ -461,22 +461,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self._show_package_list()
 
     @needs_cache
-    def search_name(self, filters, packagename):
-        globbed = "*%s*" % packagename
-        self.status(STATUS_QUERY)
-        self.allow_cancel(True)
-        ratio, results, suggestions = self.ctrl.search(globbed)
+    def search_name(self, filters, packagenames):
+        for packagename in packagenames:
+            globbed = "*%s*" % packagename
+            self.status(STATUS_QUERY)
+            self.allow_cancel(True)
+            ratio, results, suggestions = self.ctrl.search(globbed)
 
-        packages = self._process_search_results(results)
+            packages = self._process_search_results(results)
 
-        for package in packages:
-            if self._package_passes_filters(package, filters):
-                self._add_package(package)
+            for package in packages:
+                if self._package_passes_filters(package, filters):
+                    self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
     @needs_cache
-    def search_file(self, filters, searchstring):
+    def search_file(self, filters, searchstrings):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
@@ -490,36 +491,43 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     paths = info.getPathList()
                     if len(paths) > 0:
                         break
-                if searchstring in paths:
-                    self._add_package(package)
+                for searchstring in searchstrings:
+                    if searchstring in paths:
+                        self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
     @needs_cache
-    def search_group(self, filters, searchstring):
+    def search_group(self, filters, searchstrings):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
-        filter_desktops = searchstring.find("desktop") != -1
+        filter_desktops = False
+        for searchstring in searchstrings:
+            if searchstring.find("desktop") != -1:
+                filter_desktops = True
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
                 group = self._get_group(info, filter_desktops)
-                if searchstring in group:
-                    self._add_package(package)
+                for searchstring in searchstrings:
+                    if searchstring in group:
+                        self._add_package(package)
         self._post_process_package_list(filters)
         self._show_package_list()
 
     @needs_cache
-    def search_details(self, filters, searchstring):
+    def search_details(self, filters, searchstrings):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
             if self._package_passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                if searchstring in info.getDescription():
-                    self._add_package(package)
+                desc = info.getDescription()
+                for searchstring in searchstrings:
+                    if searchstring in desc:
+                        self._add_package(package)
 
     @needs_cache
     def get_packages(self, filters):
