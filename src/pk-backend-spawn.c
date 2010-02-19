@@ -62,7 +62,6 @@ struct PkBackendSpawnPrivate
 	PkBackend		*backend;
 	gchar			*name;
 	guint			 kill_id;
-	guint			 backend_finished_id;
 	PkConf			*conf;
 	gboolean		 finished;
 	gboolean		 allow_sigkill;
@@ -92,6 +91,52 @@ pk_backend_spawn_set_filter_stderr (PkBackendSpawn *backend_spawn, PkBackendSpaw
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	backend_spawn->priv->stderr_func = func;
 	return TRUE;
+}
+
+/**
+ * pk_backend_spawn_exit_timeout_cb:
+ **/
+static gboolean
+pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* only try to close if running */
+	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
+	if (ret) {
+		egg_debug ("closing dispatcher as running and is idle");
+		pk_spawn_exit (backend_spawn->priv->spawn);
+	}
+	return FALSE;
+}
+
+/**
+ * pk_backend_spawn_start_kill_timer:
+ **/
+static void
+pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
+{
+	gint timeout;
+	PkBackendSpawnPrivate *priv = backend_spawn->priv;
+
+	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
+	priv->finished = TRUE;
+	egg_debug ("backend marked as finished, so starting kill timer");
+
+	if (priv->kill_id > 0)
+		g_source_remove (priv->kill_id);
+
+	/* get policy timeout */
+	timeout = pk_conf_get_int (priv->conf, "BackendShutdownTimeout");
+	if (timeout == PK_CONF_VALUE_INT_MISSING) {
+		egg_warning ("using built in default value");
+		timeout = 5;
+	}
+
+	/* close down the dispatcher if it is still open after this much time */
+	priv->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
 }
 
 /**
@@ -181,7 +226,12 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
+
 		pk_backend_finished (backend_spawn->priv->backend);
+
+		/* from this point on, we can start the kill timer */
+		pk_backend_spawn_start_kill_timer (backend_spawn);
+
 	} else if (g_strcmp0 (command, "files") == 0) {
 		if (size != 3) {
 			egg_warning ("invalid command'%s', size %i", command, size);
@@ -487,7 +537,8 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 	}
 
 	/* only emit if not finished */
-	if (!backend_spawn->priv->finished) {
+	if (!backend_spawn->priv->finished &&
+	    exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
 		egg_warning ("script exited without doing finished");
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
@@ -772,52 +823,6 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 }
 
 /**
- * pk_backend_spawn_exit_timeout_cb:
- **/
-static gboolean
-pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* only try to close if running */
-	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
-	if (ret) {
-		egg_debug ("closing dispatcher as running and is idle");
-		pk_spawn_exit (backend_spawn->priv->spawn);
-	}
-	return FALSE;
-}
-
-/**
- * pk_backend_spawn_finished_cb:
- **/
-static void
-pk_backend_spawn_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkBackendSpawn *backend_spawn)
-{
-	gint timeout;
-
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-
-	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
-	backend_spawn->priv->finished = TRUE;
-
-	if (backend_spawn->priv->kill_id > 0)
-		g_source_remove (backend_spawn->priv->kill_id);
-
-	/* get policy timeout */
-	timeout = pk_conf_get_int (backend_spawn->priv->conf, "BackendShutdownTimeout");
-	if (timeout == PK_CONF_VALUE_INT_MISSING) {
-		egg_warning ("using built in default value");
-		timeout = 5;
-	}
-
-	/* close down the dispatcher if it is still open after this much time */
-	backend_spawn->priv->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
-}
-
-/**
  * pk_backend_spawn_helper:
  **/
 gboolean
@@ -884,7 +889,6 @@ pk_backend_spawn_finalize (GObject *object)
 	if (backend_spawn->priv->kill_id > 0)
 		g_source_remove (backend_spawn->priv->kill_id);
 
-	g_signal_handler_disconnect (backend_spawn->priv->backend, backend_spawn->priv->backend_finished_id);
 	g_free (backend_spawn->priv->name);
 	g_object_unref (backend_spawn->priv->conf);
 	g_object_unref (backend_spawn->priv->spawn);
@@ -918,9 +922,6 @@ pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv->finished = FALSE;
 	backend_spawn->priv->conf = pk_conf_new ();
 	backend_spawn->priv->backend = pk_backend_new ();
-	backend_spawn->priv->backend_finished_id =
-		g_signal_connect (backend_spawn->priv->backend, "finished",
-			  G_CALLBACK (pk_backend_spawn_finished_cb), backend_spawn);
 	backend_spawn->priv->spawn = pk_spawn_new ();
 	g_signal_connect (backend_spawn->priv->spawn, "exit",
 			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
