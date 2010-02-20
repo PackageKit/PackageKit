@@ -224,12 +224,11 @@ class PackageKitPortageMixin(object):
             return True
         return False
 
-    def _get_search_list(self, keys):
+    def _get_search_list(self, keys_list):
         '''
         Get a string composed of keys (separated with spaces).
         Returns a list of compiled regular expressions.
         '''
-        keys_list = keys.split()
         search_list = []
 
         for k in keys_list:
@@ -1656,7 +1655,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         self.percentage(100)
 
-    def search_group(self, filters, group):
+    def search_group(self, filters, groups):
         # TODO: filter unknown groups before searching ? (optimization)
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1668,16 +1667,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cp_processed = 0.0
 
         for cp in cp_list:
-            if self._get_pk_group(cp) == group:
-                for cpv in self._get_all_cpv(cp, fltlist):
-                    self._package(cpv)
+            for group in groups:
+                if self._get_pk_group(cp) == group:
+                    for cpv in self._get_all_cpv(cp, fltlist):
+                        self._package(cpv)
 
             cp_processed += 100.0
             self.percentage(int(cp_processed/nb_cp))
 
         self.percentage(100)
 
-    def search_name(self, filters, keys):
+    def search_name(self, filters, keys_list):
         # searching for all keys in package name
         # also filtering by categories if categery is specified in a key
         # keys contain more than one category name, no results can be found
@@ -1686,7 +1686,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.percentage(0)
 
         categories = []
-        keys_list = keys.split(' ')
         for k in keys_list[:]:
             if "/" in k:
                 cat, cp = portage.versions.catsplit(k)
