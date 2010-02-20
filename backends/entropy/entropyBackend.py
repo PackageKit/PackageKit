@@ -41,12 +41,13 @@ from packagekit.backend import PackageKitBaseBackend, \
     GROUP_SYSTEM, GROUP_SECURITY, GROUP_OTHER, GROUP_DESKTOP_XFCE, \
     GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
     INFO_INSTALLED, INFO_REMOVING, INFO_INSTALLING, \
+    ERROR_INVALID_PACKAGE_FILE, ERROR_FILE_NOT_FOUND, \
     INFO_AVAILABLE, get_package_id, split_package_id, MESSAGE_UNKNOWN, \
     MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
     MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
     STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
     STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
-    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE
+    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED
 
 from packagekit.package import PackagekitPackage
 
@@ -1418,10 +1419,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_details(self, filters, keys):
+    def search_details(self, filters, search_keys):
 
         self._log_message(__name__, "search_details: got %s and %s" % (
-            filters, keys,))
+            filters, search_keys,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1429,7 +1430,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         repos = self._get_all_repos()
 
-        search_keys = keys.split("&")
         pkgs = set()
         count = 0
         max_count = len(repos)
@@ -1456,10 +1456,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_file(self, filters, keys):
+    def search_file(self, filters, search_keys):
 
         self._log_message(__name__, "search_file: got %s and %s" % (
-            filters, keys,))
+            filters, search_keys,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1468,7 +1468,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         reverse_symlink_map = self._settings['system_rev_symlinks']
         repos = self._get_all_repos()
 
-        search_keys = keys.split("&")
         pkgs = set()
         count = 0
         max_count = len(repos)
@@ -1515,10 +1514,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_group(self, filters, group):
+    def search_group(self, filters, groups):
 
         self._log_message(__name__, "search_group: got %s and %s" % (
-            filters, group,))
+            filters, groups,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1532,12 +1531,13 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             all_matched_categories.update(e_data['categories'])
         all_matched_categories = sorted(all_matched_categories)
 
-        entropy_group = self._get_entropy_group(group)
-        # group_data is None when there's no matching group
-        group_data = entropy_groups.get(entropy_group)
         selected_categories = set()
-        if group_data is not None:
-            selected_categories.update(group_data['categories'])
+        for group in groups:
+            entropy_group = self._get_entropy_group(group)
+            # group_data is None when there's no matching group
+            group_data = entropy_groups.get(entropy_group)
+            if group_data is not None:
+                selected_categories.update(group_data['categories'])
 
         # if selected_categories is empty, then pull in pkgs with non matching
         # category in all_matched_categories
@@ -1572,10 +1572,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
-    def search_name(self, filters, keys):
+    def search_name(self, filters, search_keys):
 
         self._log_message(__name__, "search_name: got %s and %s" % (
-            filters, keys,))
+            filters, search_keys,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1583,7 +1583,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         repos = self._get_all_repos()
 
-        search_keys = keys.split("&")
         pkgs = set()
         count = 0
         max_count = len(repos)
