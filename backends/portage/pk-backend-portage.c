@@ -490,7 +490,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 
 PK_BACKEND_OPTIONS (
 	"Portage",				/* description */
-	"Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>",	/* author */
+	"Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, Fabio Erculiani <lxnay@sabayon.org>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
