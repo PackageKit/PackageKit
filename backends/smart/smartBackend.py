@@ -907,7 +907,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             name = channel.get("name", alias)
             parsed = smart.channel.parseChannelData(channel)
             enabled = True
-            if channel.has_key('disabled') and channel['disabled'] == 'yes':
+            if channel.has_key('disabled') and (channel['disabled'] == 'yes'
+                                            or channel['disabled'] == True):
                 enabled = False
             channel['alias'] = alias
             if self._channel_passes_filters(channel, filters):
