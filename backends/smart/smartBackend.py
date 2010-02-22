@@ -28,6 +28,8 @@ from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
 import sys
+import codecs
+import locale
 
 # TODO: move Groups to a separate class (including the lookup table)
 # TODO: move Filter to a separate class (and use "PackagekitFilter")
@@ -35,6 +37,11 @@ import sys
 # Global vars
 pkprogress = PackagekitProgress()
 pkpackage = PackagekitPackage()
+
+try:
+    ENCODING = locale.getpreferredencoding()
+except locale.Error:
+    ENCODING = "ascii"
 
 def needs_cache(func):
     """ Load smart's channels, and save the cache when done. """
@@ -147,6 +154,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
         self._cacheloaded = False
+
+        writer = codecs.getwriter(ENCODING)
+        sys.stdout = writer(sys.stdout, errors="replace")
 
         self.ctrl = smart.init()
         smart.iface.object = PackageKitSmartInterface(self.ctrl, self)
