@@ -4,7 +4,7 @@ using namespace PackageKit;
 
 TransactionTest::TransactionTest(QObject* parent) : QObject(parent) 
 {
-	currentPackage = NULL;
+	currentPackage = QSharedPointer<Package> (NULL);
 	connect (PackageKit::Client::instance(), SIGNAL(error(PackageKit::Client::DaemonError)), this, SLOT(error(PackageKit::Client::DaemonError)));
 }
 
@@ -18,7 +18,7 @@ void TransactionTest::searchName()
 	Transaction* t = PackageKit::Client::instance()->searchNames("vim");
 	qDebug() << "searchName";
 	QEventLoop el;
-	connect(t, SIGNAL(package(PackageKit::Package*)), this, SLOT(searchName_cb(PackageKit::Package*)));
+	connect(t, SIGNAL(package(QSharedPointer<PackageKit::Package>)), this, SLOT(searchName_cb(QSharedPointer<PackageKit::Package>)));
 	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("searchName", success);
@@ -27,7 +27,7 @@ void TransactionTest::searchName()
 void TransactionTest::searchDesktop()
 {
 	success = FALSE;
-	Package* p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/gnome-terminal.desktop");
+	QSharedPointer<Package> p = PackageKit::Client::instance()->searchFromDesktopFile("/usr/share/applications/gnome-terminal.desktop");
 	qDebug() << "searchDesktop";
 	CPPUNIT_ASSERT_MESSAGE("searchDesktop", p);
 }
@@ -39,7 +39,7 @@ void TransactionTest::resolveAndInstallAndRemove()
 	Transaction* t = c->resolve("glib2");
 	qDebug() << "Resolving";
 	QEventLoop el;
-	connect(t, SIGNAL(package(PackageKit::Package*)), this, SLOT(resolveAndInstallAndRemove_cb(PackageKit::Package*)));
+	connect(t, SIGNAL(package(QSharedPointer<PackageKit::Package>)), this, SLOT(resolveAndInstallAndRemove_cb(QSharedPointer<PackageKit::Package>)));
 	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
 	CPPUNIT_ASSERT_MESSAGE("resolve", success);
@@ -55,8 +55,6 @@ void TransactionTest::resolveAndInstallAndRemove()
 	qDebug() << "Removing";
 	connect(t, SIGNAL(finished(PackageKit::Enum::Exit, uint)), &el, SLOT(quit()));
 	el.exec();
-
-	delete(currentPackage);
 }
 
 void TransactionTest::refreshCache()
@@ -106,14 +104,15 @@ void TransactionTest::getRepos()
 	CPPUNIT_ASSERT_MESSAGE("getRepoList (filtered)", success);
 }
 
-void TransactionTest::searchName_cb(Package* p)
+void TransactionTest::searchName_cb(QSharedPointer<Package> p)
 {
-	delete(p);
+	qDebug() << "Emitted package: " << p->name ();
 	success = TRUE;
 }
 
-void TransactionTest::resolveAndInstallAndRemove_cb(Package* p)
+void TransactionTest::resolveAndInstallAndRemove_cb(QSharedPointer<Package> p)
 {
+	qDebug () << "Emitted package: " << p->name ();
 	currentPackage = p;
 	success = TRUE;
 }

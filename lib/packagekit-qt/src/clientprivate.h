@@ -49,7 +49,7 @@ public:
 
 	Client::DaemonError error;
 
-	Package* packageFromCache(const QString& pid);
+	QSharedPointer<Package> packageFromCache(const QString& pid);
 	void removeTransactionFromPool(const QString &tid);
 
 public Q_SLOTS:
@@ -65,7 +65,7 @@ private:
 	friend class Client;
 	ClientPrivate(Client* parent);
 
-	QHash<QString, Package*> retrievedPackages;
+	QHash<QString, QSharedPointer<Package> > retrievedPackages;
 };
 
 } // End namespace PackageKit

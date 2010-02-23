@@ -115,10 +115,10 @@ void Transaction::cancel()
 	}
 }
 
-Package* Transaction::lastPackage() const
+QSharedPointer<Package> Transaction::lastPackage() const
 {
 	Q_D(const Transaction);
-	return new Package(d->p->lastPackage ());
+	return QSharedPointer<Package> (new Package(d->p->lastPackage ()));
 }
 
 uint Transaction::percentage() const

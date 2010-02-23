@@ -23,10 +23,10 @@
 
 using namespace PackageKit;
 
-QStringList Util::packageListToPids(const QList<Package*>& packages)
+QStringList Util::packageListToPids(const QList<QSharedPointer<Package> >& packages)
 {
 	QStringList pids;
-	foreach(Package* p, packages)
+	foreach(QSharedPointer<Package> p, packages)
 		pids.append(p->id());
 
 	return pids;

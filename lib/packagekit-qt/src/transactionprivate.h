@@ -54,7 +54,7 @@ public:
 	QString cmdline;
 
 	// Used for getDetails
-	QHash<QString, Package*> packageMap;
+	QHash<QString, QSharedPointer<Package> > packageMap;
 
 	Client::DaemonError error;
 

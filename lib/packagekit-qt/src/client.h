@@ -183,7 +183,7 @@ public:
 	 * \li \c type is the signature type
 	 */
 	typedef struct {
-		Package* package;
+		QSharedPointer<Package> package;
 		QString repoId;
 		QString keyUrl;
 		QString keyUserid;
@@ -202,7 +202,7 @@ public:
 	 */
 	typedef struct {
 		QString id;
-		Package* package;
+		QSharedPointer<Package> package;
 		QString vendorName;
 		QString licenseAgreement;
 	} EulaInfo;
@@ -248,9 +248,9 @@ public:
 	 * \li \c issued and \c updated indicate the dates at which the update was issued and updated
 	 */
 	typedef struct {
-		Package* package;
-		QList<Package*> updates;
-		QList<Package*> obsoletes;
+		QSharedPointer<Package> package;
+		QList<QSharedPointer<Package> > updates;
+		QList<QSharedPointer<Package> > obsoletes;
 		QString vendorUrl;
 		QString bugzillaUrl;
 		QString cveUrl;
@@ -293,12 +293,12 @@ public:
 	/**
 	 * Download the given \p packages to a temp dir
 	 */
-	Transaction* downloadPackages(const QList<Package*>& packages);
+	Transaction* downloadPackages(const QList<QSharedPointer<Package> >& packages);
 
 	/**
 	 * This is a convenience function
 	 */
-	Transaction* downloadPackages(Package* package);
+	Transaction* downloadPackages(QSharedPointer<Package> package);
 
 	/**
 	 * Returns the collection categories
@@ -317,24 +317,24 @@ public:
 	 * \sa Transaction::package
 	 *
 	 */
-	Transaction* getDepends(const QList<Package*>& packages, Enum::Filters filters, bool recursive);
-	Transaction* getDepends(Package* package, Enum::Filters filters , bool recursive);
+	Transaction* getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
+	Transaction* getDepends(QSharedPointer<Package> package, Enum::Filters filters , bool recursive);
 
 	/**
 	 * Gets more details about the given \p packages
 	 *
 	 * \sa Transaction::details
 	 */
-	Transaction* getDetails(const QList<Package*>& packages);
-	Transaction* getDetails(Package* package);
+	Transaction* getDetails(const QList<QSharedPointer<Package> >& packages);
+	Transaction* getDetails(QSharedPointer<Package> package);
 
 	/**
 	 * Gets the files contained in the given \p packages
 	 *
 	 * \sa Transaction::files
 	 */
-	Transaction* getFiles(const QList<Package*>& packages);
-	Transaction* getFiles(Package* packages);
+	Transaction* getFiles(const QList<QSharedPointer<Package> >& packages);
+	Transaction* getFiles(QSharedPointer<Package> packages);
 
 	/**
 	 * \brief Gets the last \p number finished transactions
@@ -361,14 +361,14 @@ public:
 	 * The search can be limited using the \p filters parameter. The recursive flag is used to tell
 	 * if the package manager should also search for the package requiring the resulting packages.
 	 */
-	Transaction* getRequires(const QList<Package*>& packages, Enum::Filters filters, bool recursive);
-	Transaction* getRequires(Package* package, Enum::Filters filters, bool recursive);
+	Transaction* getRequires(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
+	Transaction* getRequires(QSharedPointer<Package> package, Enum::Filters filters, bool recursive);
 
 	/**
 	 * Retrieves more details about the update for the given \p packages
 	 */
-	Transaction* getUpdateDetail(const QList<Package*>& packages);
-	Transaction* getUpdateDetail(Package* package);
+	Transaction* getUpdateDetail(const QList<QSharedPointer<Package> >& packages);
+	Transaction* getUpdateDetail(QSharedPointer<Package> package);
 
 	/**
 	 * \p Gets the available updates
@@ -395,15 +395,15 @@ public:
 	 *
 	 * \p only_trusted indicates if we should allow installation of untrusted packages (requires a different authorization)
 	 */
-	Transaction* installPackages(bool only_trusted, const QList<Package*>& packages);
-	Transaction* installPackages(bool only_trusted, Package* p);
+	Transaction* installPackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
+	Transaction* installPackages(bool only_trusted, QSharedPointer<Package> p);
 
 	/**
 	 * \brief Installs a signature
 	 *
 	 * \p type, \p key_id and \p p generally come from the Transaction::repoSignatureRequired
 	 */
-	Transaction* installSignature(Enum::SigType type, const QString& key_id, Package* p);
+	Transaction* installSignature(Enum::SigType type, const QString& key_id, QSharedPointer<Package> p);
 
 	/**
 	 * Refreshes the package manager's cache
@@ -417,8 +417,8 @@ public:
 	 * packages to be removed. \p autoremove tells the package manager to remove all the package which
 	 * won't be needed anymore after the packages are uninstalled.
 	 */
-	Transaction* removePackages(const QList<Package*>& packages, bool allow_deps, bool autoremove);
-	Transaction* removePackages(Package* p, bool allow_deps, bool autoremove);
+	Transaction* removePackages(const QList<QSharedPointer<Package> >& packages, bool allow_deps, bool autoremove);
+	Transaction* removePackages(QSharedPointer<Package> p, bool allow_deps, bool autoremove);
 
 	/**
 	 * Activates or disables a repository
@@ -483,7 +483,7 @@ public:
 	 * \p path the path to the desktop file (as shipped by the package)
 	 * \return The associated package, or NULL if there's no result
 	 */
-	Package* searchFromDesktopFile(const QString& path);
+	QSharedPointer<Package> searchFromDesktopFile(const QString& path);
 
 	/**
 	 * \brief Simulates an installation of \p files.
@@ -502,8 +502,8 @@ public:
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateInstallPackages(const QList<Package*>& packages);
-	Transaction* simulateInstallPackages(Package* package);
+	Transaction* simulateInstallPackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* simulateInstallPackages(QSharedPointer<Package> package);
 
 	/**
 	 * \brief Simulates a removal of \p packages.
@@ -512,8 +512,8 @@ public:
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateRemovePackages(const QList<Package*>& packages);
-	Transaction* simulateRemovePackages(Package* package);
+	Transaction* simulateRemovePackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* simulateRemovePackages(QSharedPointer<Package> package);
 
 	/**
 	 * \brief Simulates an update of \p packages.
@@ -522,14 +522,14 @@ public:
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateUpdatePackages(const QList<Package*>& packages);
-	Transaction* simulateUpdatePackages(Package* package);
+	Transaction* simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* simulateUpdatePackages(QSharedPointer<Package> package);
 
 	/**
 	 * Update the given \p packages
 	 */
-	Transaction* updatePackages(bool only_trusted, const QList<Package*>& packages);
-	Transaction* updatePackages(bool only_trusted, Package* package);
+	Transaction* updatePackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
+	Transaction* updatePackages(bool only_trusted, QSharedPointer<Package> package);
 
 	/**
 	 * Updates the whole system

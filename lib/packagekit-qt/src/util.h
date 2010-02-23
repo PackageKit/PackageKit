@@ -130,7 +130,7 @@ public:
 		return pkName.toLower();
 	};
 
-	static QStringList packageListToPids(const QList<Package*>& packages);
+	static QStringList packageListToPids(const QList<QSharedPointer<Package> >& packages);
 
 	static QString filtersToString(const QFlags<PackageKit::Enum::Filter>& flags);
 

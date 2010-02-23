@@ -37,7 +37,7 @@ namespace PackageKit {
  *
  * \note All Package objects should be deleted by the user.
  */
-class Package : public QObject
+class Package
 {
 public:
 	/**
@@ -99,7 +99,7 @@ public:
 			 * Returns the package these details are linked to
 			 * \return the Package object to which these details are related
 			 */
-			Package* package() const;
+			QSharedPointer<Package> package() const;
 
 			/**
 			 * Returns the package's license
@@ -133,7 +133,7 @@ public:
 			Q_DECLARE_PRIVATE(Details);
 			friend class Package;
 			friend class TransactionPrivate;
-			Details(Package* p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size);
+			Details(QSharedPointer<Package> p, const QString& license, const QString& group, const QString& detail, const QString& url, qulonglong size);
 	};
 
 	/**
@@ -166,7 +166,7 @@ private:
 	friend class TransactionPrivate;
 	friend class Details;
 	friend class Client;
-	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString(), QObject *parent = 0);
+	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString());
 	void setDetails(Details* det);
 	void setInfoSummary(const QString& info, const QString& summary);
 	class Private;
