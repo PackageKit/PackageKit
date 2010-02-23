@@ -39,13 +39,14 @@
 		}                                           \
 
 #define CHECK_TRANSACTION                                          \
-		if (!r.isValid ()) {                                       \
+		if (r.isError ()) {                                       \
 			setTransactionError (t, daemonErrorFromDBusReply (r)); \
 		}                                                          \
 
 #define RUN_TRANSACTION(blurb) \
 		CREATE_NEW_TRANSACTION \
-		QDBusReply<void> r = t->d->p->blurb;        \
+		QDBusPendingReply<> r = t->d->p->blurb;        \
+		r.waitForFinished (); \
 		CHECK_TRANSACTION      \
 		return t;              \
 
@@ -55,7 +56,7 @@ using namespace PackageKit;
 
 Client* Client::m_instance = 0;
 
-template<class T> Client::DaemonError daemonErrorFromDBusReply (QDBusReply<T> e) {
+template<class T> Client::DaemonError daemonErrorFromDBusReply (QDBusPendingReply<T> e) {
 	return Util::errorFromString (e.error ().name ());
 }
 
@@ -242,8 +243,9 @@ void Client::setHints(const QString& hints)
 
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
-	QDBusReply<void> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
-	if (!r.isValid ()) {
+	QDBusPendingReply<> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
+	r.waitForFinished ();
+	if (r.isError ()) {
 		setLastError (daemonErrorFromDBusReply (r));
 		return false;
 	} else {
@@ -316,7 +318,8 @@ Transaction* Client::getDetails(const QList<Package*>& packages)
 		t->d->packageMap.insert(p->id(), p);
 	}
 
-	QDBusReply<void> r = t->d->p->GetDetails(Util::packageListToPids(packages));
+	QDBusPendingReply<> r = t->d->p->GetDetails(Util::packageListToPids(packages));
+	r.waitForFinished ();
 
 	CHECK_TRANSACTION
 
