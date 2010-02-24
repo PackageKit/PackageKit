@@ -2486,7 +2486,7 @@ void
 pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2657,7 +2657,7 @@ void
 pk_transaction_download_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	gchar *directory = NULL;
 	gint retval;
@@ -2763,7 +2763,7 @@ void
 pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2819,7 +2819,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 			    gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -2906,7 +2906,7 @@ void
 pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -2983,7 +2983,7 @@ void
 pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3033,7 +3033,7 @@ void
 pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -3110,7 +3110,7 @@ void
 pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3225,7 +3225,7 @@ void
 pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3283,7 +3283,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 			     gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -3412,7 +3412,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 				  DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -3489,7 +3489,7 @@ void
 pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	GPtrArray *updates_cache;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3646,7 +3646,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 {
 	gchar *full_paths_temp;
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
 	gchar *content_type = NULL;
@@ -3754,7 +3754,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 				 gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -3832,7 +3832,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 				  DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3915,7 +3915,7 @@ void
 pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3967,7 +3967,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 				DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -4045,7 +4045,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 			    DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4105,7 +4105,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 			      DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4165,7 +4165,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 			gchar **packages, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *packages_temp;
 	guint i;
 	guint length;
@@ -4253,7 +4253,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 			 DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4311,7 +4311,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 			       const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4378,7 +4378,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 			    const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4454,7 +4454,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 			     const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4530,7 +4530,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 			    const gchar *values, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -4595,7 +4595,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 void
 pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGMethodInvocation *context)
 {
-	GError *error;
+	GError *error = NULL;
 	gboolean ret;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -4686,7 +4686,7 @@ out:
 void
 pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethodInvocation *context)
 {
-	GError *error;
+	GError *error = NULL;
 	gboolean ret;
 	guint i;
 	gchar **sections;
@@ -4742,7 +4742,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 {
 	gchar *full_paths_temp;
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	GError *error_local = NULL;
 	PkServicePack *service_pack;
 	gchar *content_type;
@@ -4848,7 +4848,7 @@ void
 pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -4924,7 +4924,7 @@ void
 pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -5000,7 +5000,7 @@ void
 pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -5076,7 +5076,7 @@ void
 pk_transaction_update_packages (PkTransaction *transaction, gboolean only_trusted, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *package_ids_temp;
 	guint length;
 	guint max_length;
@@ -5152,7 +5152,7 @@ void
 pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -5209,7 +5209,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 {
 	gboolean ret;
 	PkProvidesEnum provides;
-	GError *error;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
