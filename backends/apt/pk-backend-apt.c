@@ -237,7 +237,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
  * backend_simulate_remove_packages:
  */
 static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 

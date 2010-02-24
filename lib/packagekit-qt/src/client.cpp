@@ -522,14 +522,14 @@ Transaction* Client::simulateInstallPackages(QSharedPointer<Package> package)
 	return simulateInstallPackages(QList<QSharedPointer<Package> >() << package);
 }
 
-Transaction* Client::simulateRemovePackages(const QList<QSharedPointer<Package> >& packages)
+Transaction* Client::simulateRemovePackages(const QList<QSharedPointer<Package> >& packages, bool autoremove)
 {
-	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages), autoremove))
 }
 
-Transaction* Client::simulateRemovePackages(QSharedPointer<Package> package)
+Transaction* Client::simulateRemovePackages(QSharedPointer<Package> package, bool autoremove)
 {
-	return simulateRemovePackages(QList<QSharedPointer<Package> >() << package);
+	return simulateRemovePackages(QList<QSharedPointer<Package> >() << package, autoremove);
 }
 
 Transaction* Client::simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages)

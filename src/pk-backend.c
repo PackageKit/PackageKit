@@ -2950,11 +2950,12 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
  * pk_backend_simulate_remove_packages:
  */
 void
-pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean	 autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
-	backend->priv->desc->simulate_remove_packages (backend, package_ids);
+	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
+	backend->priv->desc->simulate_remove_packages (backend, package_ids, autoremove);
 }
 
 /**

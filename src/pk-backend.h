@@ -301,7 +301,8 @@ typedef struct {
 	void		(*simulate_install_packages)	(PkBackend	*backend,
 							 gchar		**package_ids);
 	void		(*simulate_remove_packages)	(PkBackend	*backend,
-							 gchar		**package_ids);
+							 gchar		**package_ids,
+							 gboolean	 autoremove);
 	void		(*simulate_update_packages)	(PkBackend	*backend,
 							 gchar		**package_ids);
 	gpointer	padding[10];

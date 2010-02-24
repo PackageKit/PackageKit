@@ -2,8 +2,6 @@ Make the transaction history have per-file hints, so we can fix stuff like
 http://bugs.freedesktop.org/show_bug.cgi?id=23904 and display deps differently
 to explicit files.
 
-SimulateRemovePackages should have autoremove
-
 installpkgs, update packages should have remove_required
 
 add properties to Transaction interface:

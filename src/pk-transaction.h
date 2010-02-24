@@ -205,6 +205,7 @@ void		 pk_transaction_simulate_install_packages	(PkTransaction  *transaction,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_simulate_remove_packages	(PkTransaction  *transaction,
 								 gchar		**package_ids,
+								 gboolean	 autoremove,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_simulate_update_packages	(PkTransaction  *transaction,
 								 gchar		**package_ids,

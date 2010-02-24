@@ -1796,7 +1796,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	} else if (priv->role == PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) {
 		/* fallback to a method we do have */
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
-			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids);
+			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_autoremove);
 		} else {
 			egg_warning ("falling back to get requires as simulate remove packages isn't implemented");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
@@ -4761,7 +4761,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
  * pk_transaction_simulate_remove_packages:
  **/
 void
-pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **package_ids, gboolean autoremove, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -4817,6 +4817,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 
 	/* save so we can run later */
 	transaction->priv->cached_package_ids = g_strdupv (package_ids);
+	transaction->priv->cached_autoremove = autoremove;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
 
 	/* try to commit this */

@@ -3257,7 +3257,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
  * backend_simulate_remove_packages:
  **/
 static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();

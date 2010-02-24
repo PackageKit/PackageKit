@@ -157,7 +157,8 @@ void		pk_backend_simulate_install_files	(PkBackend	*backend,
 void		pk_backend_simulate_install_packages	(PkBackend	*backend,
 							 gchar		**package_ids);
 void		pk_backend_simulate_remove_packages	(PkBackend	*backend,
-							 gchar		**package_ids);
+							 gchar		**package_ids,
+							 gboolean	 autoremove);
 void		pk_backend_simulate_update_packages	(PkBackend	*backend,
 							 gchar		**package_ids);
 

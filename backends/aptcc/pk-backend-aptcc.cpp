@@ -1242,7 +1242,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_simulate_remove_packages:
  */
 static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **packages)
+backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
 	pk_backend_set_bool(backend, "simulate", true);
 	pk_backend_set_bool(backend, "remove", true);

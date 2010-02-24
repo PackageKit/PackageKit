@@ -512,8 +512,8 @@ public:
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateRemovePackages(const QList<QSharedPointer<Package> >& packages);
-	Transaction* simulateRemovePackages(QSharedPointer<Package> package);
+	Transaction* simulateRemovePackages(const QList<QSharedPointer<Package> >& packages, bool autoremove);
+	Transaction* simulateRemovePackages(QSharedPointer<Package> package, bool autoremove);
 
 	/**
 	 * \brief Simulates an update of \p packages.

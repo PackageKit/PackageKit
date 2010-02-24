@@ -1305,6 +1305,22 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <arg type="b" name="autoremove" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
+              This option is only really interesting on embedded devices with a limited amount of
+              flash storage.
+              It suggests to the packagekit backend that dependencies installed at the same time as
+              the package should also be removed if they are not required by anything else.
+              For instance, if you install OpenOffice, it might download libneon as a dependency.
+              When <doc:tt>auto_remove</doc:tt> is set to true, and you remove OpenOffice then
+              libneon will also get removed automatically.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
     </method>
 
     <!--*****************************************************************************************-->
