@@ -1749,6 +1749,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateRemovePackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRV, state->package_ids,
+						       G_TYPE_BOOLEAN, state->autoremove,
 						       G_TYPE_INVALID);
 	} else if (state->role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "SimulateUpdatePackages",
@@ -3541,6 +3542,7 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
  * pk_client_simulate_remove_packages_async:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -3552,7 +3554,7 @@ pk_client_simulate_install_packages_async (PkClient *client, gchar **package_ids
  * Since: 0.5.2
  **/
 void
-pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids, gboolean		 autoremove, GCancellable *cancellable,
 					  PkProgressCallback progress_callback, gpointer progress_user_data,
 					  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -3575,6 +3577,7 @@ pk_client_simulate_remove_packages_async (PkClient *client, gchar **package_ids,
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->package_ids = g_strdupv (package_ids);
+	state->autoremove = autoremove;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();

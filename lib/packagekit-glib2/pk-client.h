@@ -378,6 +378,7 @@ void		 pk_client_simulate_install_packages_async (PkClient		*client,
 
 void		 pk_client_simulate_remove_packages_async (PkClient		*client,
 							 gchar			**package_ids,
+							 gboolean		 autoremove,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,

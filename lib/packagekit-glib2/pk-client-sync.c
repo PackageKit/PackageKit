@@ -1589,6 +1589,7 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCan
  * pk_client_simulate_remove_packages:
  * @client: a valid #PkClient instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1604,7 +1605,7 @@ pk_client_simulate_install_packages (PkClient *client, gchar **package_ids, GCan
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCancellable *cancellable,
+pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, gboolean autoremove, GCancellable *cancellable,
 				    PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -1619,7 +1620,7 @@ pk_client_simulate_remove_packages (PkClient *client, gchar **package_ids, GCanc
 	helper->error = error;
 
 	/* run async method */
-	pk_client_simulate_remove_packages_async (client, package_ids, cancellable, progress_callback, progress_user_data,
+	pk_client_simulate_remove_packages_async (client, package_ids, autoremove, cancellable, progress_callback, progress_user_data,
 						  (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);

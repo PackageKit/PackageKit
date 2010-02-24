@@ -363,7 +363,7 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		/* simulate remove async */
 		egg_debug ("doing remove");
-		pk_client_simulate_remove_packages_async (PK_CLIENT(state->task), state->package_ids,
+		pk_client_simulate_remove_packages_async (PK_CLIENT(state->task), state->package_ids, state->autoremove,
 							  state->cancellable, state->progress_callback, state->progress_user_data,
 							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
