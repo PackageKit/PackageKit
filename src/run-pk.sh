@@ -14,11 +14,11 @@ fi
 
 # check some important things are installed systemwide
 if [ ! -e "/etc/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
-    echo "You need to install the DBus policy. Use sudo ../data/org.freedesktop.PackageKit.conf /etc/dbus-1/system.d"
+    echo "You need to install the DBus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /etc/dbus-1/system.d"
     exit 1
 fi
 if [ ! -e "/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy" ]; then
-    echo "You need to install the PolicyKit rules. Use sudo ../policy/org.freedesktop.packagekit.policy /usr/share/polkit-1/actions"
+    echo "You need to install the PolicyKit rules. Use sudo cp ../policy/org.freedesktop.packagekit.policy /usr/share/polkit-1/actions"
     exit 1
 fi
 
