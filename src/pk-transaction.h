@@ -194,9 +194,6 @@ void		 pk_transaction_search_names			(PkTransaction	*transaction,
 								 const gchar	*filter,
 								 gchar		**values,
 								 DBusGMethodInvocation *context);
-void		 pk_transaction_set_locale			(PkTransaction	*transaction,
-								 const gchar	*code,
-								 DBusGMethodInvocation *context);
 void		 pk_transaction_set_hints			(PkTransaction	*transaction,
 								 gchar		**hints,
 								 DBusGMethodInvocation *context);

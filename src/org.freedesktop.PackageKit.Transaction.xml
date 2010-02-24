@@ -123,33 +123,6 @@
     </property>
 
     <!--*****************************************************************************************-->
-    <method name="SetLocale">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows the calling session to set a system locale for
-            the package manager so that summaries and descriptions can be
-            correctly localised.
-          </doc:para>
-          <doc:para>
-            THIS FUNCTION IS DEPRECATED. It will be removed in a future release.
-            Use <doc:tt>SetHints("locale=$code")</doc:tt> instead.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="code" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The locale code, for example <doc:tt>en_GB</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </method>
-
-    <!--*****************************************************************************************-->
     <method name="SetHints">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>

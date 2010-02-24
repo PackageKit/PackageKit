@@ -4464,44 +4464,6 @@ pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
 }
 
 /**
- * pk_transaction_set_locale:
- */
-void
-pk_transaction_set_locale (PkTransaction *transaction, const gchar *code, DBusGMethodInvocation *context)
-{
-	GError *error = NULL;
-	gboolean ret;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->priv->tid != NULL);
-
-	egg_debug ("SetLocale method called: %s", code);
-
-	/* check if the sender is the same */
-	ret = pk_transaction_verify_sender (transaction, context, &error);
-	if (!ret) {
-		/* don't release tid */
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* already set? */
-	if (transaction->priv->locale != NULL) {
-		egg_warning ("Already set locale");
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Already set locale to %s", transaction->priv->locale);
-		pk_transaction_dbus_return_error (context, error);
-		return;
-	}
-
-	/* save so we can pass to the backend */
-	transaction->priv->locale = g_strdup (code);
-
-	/* return from async with success */
-	pk_transaction_dbus_return (context);
-}
-
-/**
  * pk_transaction_set_hint:
  *
  * Only return FALSE on error, not invalid parameter name
