@@ -358,7 +358,7 @@ backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -372,7 +372,7 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "simulate-update-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -386,7 +386,7 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
+	package_ids_temp = pk_package_ids_to_text (package_ids);
 	pk_backend_spawn_helper (spawn, "yumBackend.py", "simulate-install-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }

@@ -98,7 +98,7 @@ pk_monitor_message_cb (PkMessage *item, const gchar *transaction_id)
 		      "type", &type,
 		      NULL);
 
-	g_print ("%s\tmessage: %s, %s\n", transaction_id, pk_message_enum_to_string (type), details);
+	g_print ("%s\tmessage: %s, %s\n", transaction_id, pk_message_enum_to_text (type), details);
 	g_free (details);
 }
 
