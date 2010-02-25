@@ -413,8 +413,8 @@ backend_get_or_update_system_thread (PkBackend *backend)
 			}
 		}
 
-		m_apt->emit_packages(update, filters, PK_INFO_ENUM_NORMAL);
-		m_apt->emit_packages(kept,   filters, PK_INFO_ENUM_BLOCKED);
+		m_apt->emitUpdates(update, filters);
+		m_apt->emit_packages(kept, filters, PK_INFO_ENUM_BLOCKED);
 	} else {
 		res = m_apt->installPackages(*m_apt->packageDepCache, true);
 	}

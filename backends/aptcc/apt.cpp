@@ -56,7 +56,8 @@ aptcc::aptcc(PkBackend *backend, bool &cancel)
 	Map(0),
 	Policy(0),
 	m_backend(backend),
-	_cancel(cancel)
+	_cancel(cancel),
+	m_terminalTimeout(120)
 {
 	_cancel = false;
 }
@@ -256,9 +257,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 {
 	// check the state enum to see if it was not set.
 	if (state == PK_INFO_ENUM_UNKNOWN) {
-		if(!ver.end() && ver != pkg.CurrentVer()) {
-			state = PK_INFO_ENUM_AVAILABLE;
-		} else if (pkg->CurrentState == pkgCache::State::Installed) {
+		if (pkg->CurrentState == pkgCache::State::Installed) {
 			state = PK_INFO_ENUM_INSTALLED;
 		} else {
 			state = PK_INFO_ENUM_AVAILABLE;
@@ -375,6 +374,52 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 		emit_package(i->first, i->second, filters, state);
 	}
 }
+
+
+
+void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
+			 PkBitfield filters)
+{
+	// the default update info
+	PkInfoEnum state = PK_INFO_ENUM_NORMAL;
+	// Sort so we can remove the duplicated entries
+	sort(output.begin(), output.end(), compare());
+	// Remove the duplicated entries
+	output.erase(unique(output.begin(),
+			    output.end(),
+			    result_equality()),
+		     output.end());
+
+	for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator i=output.begin();
+	    i != output.end(); ++i)
+	{
+		if (_cancel) {
+			break;
+		}
+
+		// let find what kind of upgrade this is
+		pkgCache::VerFileIterator vf = i->second.FileList();
+		std::string origin  = vf.File().Origin();
+		std::string archive = vf.File().Archive();
+		std::string label   = vf.File().Label();
+		if (origin.compare("Debian") == 0 ||
+		    origin.compare("Ubuntu") == 0) {
+			if (ends_with(archive, "-security") ||
+			    label.compare("Debian-Security") == 0) {
+				state = PK_INFO_ENUM_SECURITY;
+			} else if (ends_with(archive, "-backports")) {
+				state = PK_INFO_ENUM_ENHANCEMENT;
+			} else if (ends_with(archive, "-updates")) {
+				state = PK_INFO_ENUM_BUGFIX;
+			}
+		} else if (origin.compare("Backports.org archive") == 0) {
+			state = PK_INFO_ENUM_ENHANCEMENT;
+		}
+
+		emit_package(i->first, i->second, filters, state);
+	}
+}
+
 
 void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			 gchar **values)
@@ -1067,7 +1112,7 @@ void aptcc::updateInterface(int fd, int writeFd)
 		}
 
 		// update the time we last saw some action
-		last_term_action = time(NULL);
+		m_lastTermAction = time(NULL);
 
 		if( buf[0] == '\n') {
 			if (_cancel) {
@@ -1158,8 +1203,9 @@ void aptcc::updateInterface(int fd, int writeFd)
 				} else {
 					cout << ">>>Unmaped value<<< :" << line << endl;
 				}
+				m_startCounting = true;
 			} else {
-				_startCounting = true;
+				m_startCounting = true;
 			}
 
 			int val = atoi(percent);
@@ -1178,22 +1224,20 @@ void aptcc::updateInterface(int fd, int writeFd)
 
 	time_t now = time(NULL);
 
-	if(!_startCounting) {
+	if(!m_startCounting) {
 		usleep(100000);
-//		gtk_progress_bar_pulse (GTK_PROGRESS_BAR(_pbarTotal));
 		// wait until we get the first message from apt
-		last_term_action = now;
+		m_lastTermAction = now;
 	}
 
-	if ((now - last_term_action) > _terminalTimeout) {
+	if ((now - m_lastTermAction) > m_terminalTimeout) {
 		// get some debug info
-		gchar *s;
 		g_warning("no statusfd changes/content updates in terminal for %i"
-			  " seconds",_terminalTimeout);
-		g_warning("TerminalTimeout in step: %s", s);
-		last_term_action = time(NULL);
+			  " seconds",m_terminalTimeout);
+		m_lastTermAction = time(NULL);
 	}
 
+	// sleep for a while to don't obcess over it
 	usleep(5000);
 }
 
@@ -1304,12 +1348,15 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		/* If we are in the Broken fixing mode we do not attempt to fix the
 		    problems. This is if the user invoked install without -f and gave
 		    packages */
-		if (BrokenFix == true && Cache->BrokenCount() != 0)
-		{
-			_error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
-			show_broken(m_backend, this);
-			return false;
-		}
+		// TODO this code seems to be a bit useless,
+		// if we go to the Fix.Resolve() it can fix things
+		// and if not the last if will then fail.
+// 		if (BrokenFix == true && Cache->BrokenCount() != 0)
+// 		{
+// 			_error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
+// 			show_broken(m_backend, this);
+// 			return false;
+// 		}
 
 		// Call the scored problem resolver
 		Fix.InstallProtect();
@@ -1320,6 +1367,8 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// Now we check the state of the packages,
 		if (Cache->BrokenCount() != 0)
 		{
+		    // if the problem resolver could not fix all broken things
+		    // show what is broken
 		    show_broken(m_backend, this);
 		    return false;
 		}
@@ -1625,6 +1674,10 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	// make it nonblocking, verry important otherwise
 	// when the child finish we stay stuck.
 	fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
+
+	// init the timer
+	m_lastTermAction = time(NULL);
+	m_startCounting = false;
 
 	// Check if the child died
 	int ret;

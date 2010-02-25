@@ -25,7 +25,13 @@ if [ -e /etc/fedora-release ]; then
 	fi
 elif [ "$DISTRO" = "Ubuntu" ]; then
 	if [ -e /usr/bin/do-release-upgrade ]; then
-		gksu "/usr/bin/do-release-upgrade -m desktop -f gtk -p"
+		if [ "$DESKTOP" = "kde" ]; then
+			PATH=`kde4-config --path exe` kdesu -- "/usr/bin/do-release-upgrade -d -m desktop -f kde -p"
+		else
+			gksu "/usr/bin/do-release-upgrade -m desktop -f gtk -p"
+		fi
+	elif [ "$DESKTOP" = "kde" ]; then
+		xdg-open http://www.kubuntu.org/getkubuntu
 	else
 		xdg-open http://www.ubuntu.com/getubuntu
 	fi
@@ -34,12 +40,13 @@ elif [ -e /etc/SuSE-release ] && [ -x /usr/sbin/wagon ]; then
 else
 	TITLE="System is not recognised"
 	TEXT="Your distribution was not recognised by the upgrade script.\nPlease file a but in your distribution bug tracker under the component PackageKit."
+	if [ "$DESKTOP" = "kde" ]; then
+		PATH=`kde4-config --path exe` kdialog --title "$TITLE" --sorry "$TEXT"
 	# do not dep on zenity in build scripts
-	which zenity 2> /dev/null > /dev/null
-	if [ "$?" -eq 0 ]; then
-	    zenity --warning --title $TITLE --text $TEXT
+	elif [ "`which zenity 2> /dev/null > /dev/null; echo $?`" -eq 0 ]; then
+		zenity --warning --title $TITLE --text $TEXT
 	else
-	    xmessage $TEXT
+		xmessage $TEXT
 	fi
 fi
 

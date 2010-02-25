@@ -28,8 +28,8 @@ AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &c
 	m_apt(apt),
 	m_backend(backend),
 	_cancelled(cancelled),
-	last_percent(0),
-	last_sub_percent(0)
+	last_percent(PK_BACKEND_PERCENTAGE_INVALID),
+	last_sub_percent(PK_BACKEND_PERCENTAGE_INVALID)
 {
 }
 									/*}}}*/

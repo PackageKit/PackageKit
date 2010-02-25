@@ -109,9 +109,10 @@ string get_default_long_description(const pkgCache::VerIterator &ver,
 	}
 }
 
-// TODO try to find out how aptitude makes continuos lines keep that way
 static char *debParser(string descr)
 {
+	// Policy page on package descriptions
+	// http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Description
 	unsigned int i;
 	string::size_type nlpos=0;
 
@@ -121,37 +122,36 @@ static char *debParser(string descr)
 		descr.erase(0, nlpos + 2);        // del "\n " too
 	}
 
+	// avoid replacing '\n' for a ' ' after a '.\n' is found
+	bool removedFullStop = false;
 	while (nlpos < descr.length()) {
-		// new line position
+		// find the new line position
 		nlpos = descr.find('\n', nlpos);
 		if (nlpos == string::npos) {
+			// if it could not find the new line
+			// get out of the loop
 			break;
 		}
 
 		i = nlpos;
-		// del char after '\n' (always " ")
-		i++;
-		descr.erase(i, 1);
-		
+		// erase the char after '\n' which is always " "
+		descr.erase(++i, 1);
 
-		// replace lines likes this: " .", making it a \n
+		// remove lines likes this: " .", making it a \n
 		if (descr[i] == '.') {
-			descr.replace(i, 1, "\n");
-			nlpos = ++i;
+			descr.erase(i, 1);
+			nlpos = i;
+			// don't permit the next round to replace a '\n' to a ' '
+			removedFullStop = true;
 			continue;
-		}
-
-		// skip ws
-		while (descr[++i] == ' ');
-
-		// not a list, replace nl with " "
-		if(!(descr[i] == '*' || descr[i] == '-' || descr[i] == 'o')) {
+		} else if (descr[i] != ' ' && removedFullStop == false) {
+			// it's not a line to be verbatim displayed
+			// So it's a paragraph let's replace '\n' with a ' '
+			// replace new line with " "
 			descr.replace(nlpos, 1, " ");
-		} else {
-			// since 'o' is not a markdown list let it all be just "-"
-			descr.replace(i, 1, "-");
 		}
 
+		removedFullStop = false;
 		nlpos++;
 	}
 	strcpy(descrBuffer, descr.c_str());
