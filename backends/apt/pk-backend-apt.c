@@ -215,7 +215,7 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 
 	/* send the complete list as stdin */
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-	pk_backend_spawn_helper (spawn, "aptBackend.py", "install-files", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn, "aptBackend.py", "simulate-install-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
