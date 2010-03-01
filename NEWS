@@ -1,3 +1,103 @@
+Version 0.6.2
+~~~~~~~~~~~~~
+Released: 2010-03-01
+
+Notes:
+ - We broke PackageKit-Qt API in a big way this release. You'll need a new KPackageKit if you're using KDE.
+ - There is a _tiny_ API break in PackageKit-glib2 which means most apps just need a recomple.
+ - A new backend called entropy has been merged by Fabio Erculiani.
+
+Translations:
+ - Updated translation for Bulgarian
+ - Updated translation for Indonesian (dichi)
+ - Updated translation for Brazilian Portuguese (igor)
+ - Updated translation for German (kenda)
+ - Updated translation for Danish (kristho)
+ - Updated translation for Portuguese (ruigo)
+ - Updated translation for Hungarian (snicore)
+
+Libraries:
+ - PackageKit-glib2: Add pk_control_suggest_daemon_quit() (Vincent Untz)
+ - PackageKit-Qt: Add a Last[enum-type] entry to each type (Richard Hughes)
+ - PackageKit-Qt: Added more constness to the lib (Daniel Nicoletti)
+ - PackageKit-Qt: Drop QObject for Package (Adrien Bustany)
+ - PackageKit-Qt: Fix filtersToString and make enumToString more robust (Adrien Bustany)
+ - PackageKit-Qt: Fix up a typo that prevents compiling programs that use -pedantic-errors (Slawomir Czarko)
+ - PackageKit-Qt: Fully automatize the proxy generation (Adrien Bustany)
+ - PackageKit-Qt: Moved the package enums to Enum class (Daniel Nicoletti)
+ - PackageKit-Qt: Port tests to current API (Adrien Bustany)
+ - PackageKit-Qt: Port the tests to the new Enum class (Adrien Bustany)
+ - PackageKit-Qt: Switch from QDbusReply to QDBusPendingReply (Adrien Bustany)
+
+New Features:
+ - Add a new library function: pk_package_sack_filter_by_info() (Richard Hughes)
+ - Add a pk_backend_set_speed() helper function (Richard Hughes)
+ - Added autoremove to simulateRemovePackage (Daniel Nicoletti)
+ - Add the eula-required python method helper (Richard Hughes)
+ - Change the python helpers to get sent an array of values, not a delimited string (Richard Hughes)
+ - Define a new error code for when the user declines the simulation (Richard Hughes)
+ - Removed deprecated SetLocale (Daniel Nicoletti)
+ - Show messages in the pkmon output when the task has completed (Richard Hughes)
+
+Bugfixes:
+ - Add the environment variable accecpted_eulas to the spawned processes (Richard Hughes)
+ - Add the polkit backend library in LIBADD, not LDFLAGS. Fixes fd#26373 (Richard Hughes)
+ - Do not run the transaction with only_trusted if the simulation inferred that any packages were unsigned (Richard Hughes)
+ - Ensure that a malicious user can't make the backend exit by injecting a bogus EULA call into the transaction (Richard Hughes)
+ - Fix a logic problem where the PkSpawn and PkBackend instances would race and sometimes issue a pk_backend_finished() when the dispatcher instance was being changed (Richard Hughes)
+ - Initialize relevant GError's in the daemon to NULL (Jonathan Conder)
+ - Install the introspection data to the correct location (Richard Hughes)
+ - Update the list of free licences from the Fedora wiki (Richard Hughes)
+
+Backends:
+ - apt: call the correct command for simualte-install-files (Sebastian Heinlein)
+ - aptcc: fix once package descriptions FDO bug #26357 (Daniel Nicoletti)
+ - aptcc: fix unknown progress when download takes too much time to go to 1% (Daniel Nicoletti)
+ - aptcc: improved kind of updates detection (Daniel Nicoletti)
+ - entropy: add eula-required signal emission (Fabio Erculiani)
+ - entropy: add get_mime_types support in backend (Fabio Erculiani)
+ - entropy: add simulate_* support (Fabio Erculiani)
+ - entropy: basic functionality of PackageKitEntropyBackend.refresh_cache() (Fabio Erculiani)
+ - entropy: complete PackageKitEntropyBackend.get_updates() (Fabio Erculiani)
+ - entropy: complete PackageKitEntropyBackend.search_file() (Fabio Erculiani)
+ - entropy: complete PackageKitEntropyBackend.search_group() (Fabio Erculiani)
+ - entropy: complete PackageKitEntropyBackend.search_name() (Fabio Erculiani)
+ - entropy: complete PackageKitEntropyBackend.search_details() (Fabio Erculiani)
+ - entropy: disable EntropyPackageKitBackend.get_distro_upgrades for now (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.download_packages() support (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.get_categories() (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.get_requires() (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.install_packages() and update_packages() (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.remove_packages() (Fabio Erculiani)
+ - entropy: implement EntropyPackageKitBackend.update_system() (Fabio Erculiani)
+ - entropy: implement EULA handling on pkgs install (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_depends() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_details() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_files() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_packages() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_repo_list() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.get_update_detail() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.install_files() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.repo_enable() (Fabio Erculiani)
+ - entropy: implement PackageKitEntropyBackend.resolve() (Fabio Erculiani)
+ - entropy: initial commit, add build system support and basic (non-working) backend (Fabio Erculiani)
+ - entropy: spawn error on missing accepted EULAs (Fabio Erculiani)
+ - entropy: subclass entropy.client.interfaces.Client, get transparent progress update support (Fabio Erculiani)
+ - entropy: subclass UrlFetcher to redirect output to PK, make possible to cancel pkg install/removal (Fabio Erculiani)
+ - portage: factor out portage code from PackageKit overridden methods, several bug fixes (Fabio Erculiani)
+ - portage: implement PackageKitPortageBackend.get_categories() (Fabio Erculiani)
+ - portage: port portage backend to PackageKit HEAD (Fabio Erculiani)
+ - smart: change encoding to preferred, replace errors on stdout (Anders F Bjorklund)
+ - smart: convert search term string to array (Anders F Bjorklund)
+ - smart: make repo-list work with channelsync too (Anders F Bjorklund)
+ - yum: add simulate-install-packages, simulate-update-packages and simulate-remove-packages (Richard Hughes)
+ - yum: add simulate-install-packages, simulate-update-packages and simulate-remove-packages (Richard Hughes)
+ - yum: blacklist auto-update-debuginfo when using PK tools to prevent madness. Fixes rh#566578 (Richard Hughes)
+ - yum: don't show an internal error if the database was changed by rpm when we are building a transaction (Richard Hughes)
+ - yum: remove the '&' multiple parameter hacks (Richard Hughes)
+ - zypp: add more features to repo_set_data (Ladislav Slezak)
+ - zypp: change policy to download first (Scott Reeves)
+
 Version 0.6.1
 ~~~~~~~~~~~~~
 Released: 2010-02-01
