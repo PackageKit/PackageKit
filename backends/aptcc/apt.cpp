@@ -1013,6 +1013,67 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 	return true;
 }
 
+// checks if there are Essential packages being removed
+bool aptcc::removingEssentialPackages(pkgCacheFile &Cache)
+{
+	string List;
+	bool *Added = new bool[Cache->Head().PackageCount];
+	for (unsigned int I = 0; I != Cache->Head().PackageCount; I++){
+		Added[I] = false;
+	}
+
+	for (pkgCache::PkgIterator I = Cache->PkgBegin(); ! I.end(); ++I) {
+		if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential &&
+		    (I->Flags & pkgCache::Flag::Important) != pkgCache::Flag::Important) {
+			continue;
+		}
+
+		if (Cache[I].Delete() == true) {
+			if (Added[I->ID] == false) {
+				Added[I->ID] = true;
+				List += string(I.Name()) + " ";
+			}
+		}
+
+		if (I->CurrentVer == 0) {
+			continue;
+		}
+
+		// Print out any essential package depenendents that are to be removed
+		for (pkgCache::DepIterator D = I.CurrentVer().DependsList(); D.end() == false; D++) {
+			// Skip everything but depends
+			if (D->Type != pkgCache::Dep::PreDepends &&
+			    D->Type != pkgCache::Dep::Depends){
+				continue;
+			}
+
+			pkgCache::PkgIterator P = D.SmartTargetPkg();
+			if (Cache[P].Delete() == true)
+			{
+				if (Added[P->ID] == true){
+				    continue;
+				}
+				Added[P->ID] = true;
+
+				char S[300];
+				snprintf(S, sizeof(S), "%s (due to %s) ", P.Name(), I.Name());
+				List += S;
+			}
+		}
+	}
+
+	if (!List.empty()) {
+		pk_backend_error_code(m_backend,
+				      PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
+				      g_strdup_printf("WARNING: You are trying to remove the "
+						      "following essential packages: %s",
+						      List.c_str()));
+		return true;
+	}
+	
+	return false;
+}
+
 // emitChangedPackages - Show packages to newly install				/*{{{*/
 // ---------------------------------------------------------------------
 /* */
@@ -1369,7 +1430,10 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		return false;
 	}
 
-	// TODO check for essential packages!!!
+	// check for essential packages!!!
+	if (removingEssentialPackages(Cache)) {
+		return false;
+	}
 
 	if (simulate) {
 		// Print out a list of packages that are going to be installed extra
@@ -1379,7 +1443,7 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// Store the packages that are going to change
 		// so we can emit them as we process it.
 		populateInternalPackages(Cache);
-	        return installPackages(Cache, false);
+	        return installPackages(Cache);
 	}
 }
 
@@ -1389,8 +1453,7 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
-bool aptcc::installPackages(pkgCacheFile &Cache,
-			    bool Safety)
+bool aptcc::installPackages(pkgCacheFile &Cache)
 {
 	//cout << "installPackages() called" << endl;
 	if (_config->FindB("APT::Get::Purge",false) == true)
@@ -1404,20 +1467,10 @@ bool aptcc::installPackages(pkgCacheFile &Cache,
 		}
 	}
 
-//	bool Fail = false;
-	bool Essential = false;
-
-// we don't show things here
-	// Show all the various warning indicators
-// 	Fail |= !ShowHold(c1out,Cache);
-// 	if (_config->FindB("APT::Get::Show-Upgraded",true) == true)
-// 	    ShowUpgraded(c1out,Cache);
-// 	Fail |= !ShowDowngraded(c1out,Cache);
-// 	if (_config->FindB("APT::Get::Download-Only",false) == false)
-// 	    cout << "--------------fo" << endl;
-// 		Essential = !ShowEssential(c1out,Cache);
-// 	Fail |= Essential;
-// 	Stats(c1out,Cache);
+	// check for essential packages!!!
+	if (removingEssentialPackages(Cache)) {
+		return false;
+	}
 
 	// Sanity check
 	if (Cache->BrokenCount() != 0)
@@ -1434,7 +1487,7 @@ bool aptcc::installPackages(pkgCacheFile &Cache,
 	}
 
 	// No remove flag
-	if (Cache->DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
+	if (Cache->DelCount() != 0 && _config->FindB("APT::Get::Remove", true) == false) {
 		pk_backend_error_code(m_backend,
 				      PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
 				      "Packages need to be removed but remove is disabled.");
@@ -1449,7 +1502,7 @@ bool aptcc::installPackages(pkgCacheFile &Cache,
 
 	// Lock the archive directory
 	FileFd Lock;
-	if (_config->FindB("Debug::NoLocking",false) == false)
+	if (_config->FindB("Debug::NoLocking", false) == false)
 	{
 		Lock.Fd(GetLock(_config->FindDir("Dir::Cache::Archives") + "lock"));
 		if (_error->PendingError() == true) {
@@ -1545,27 +1598,6 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 			return _error->Error("You don't have enough free space in %s.",
 					    OutputDir.c_str());
 		}
-	}
-
-	// Fail safe check
-// 	if (_config->FindI("quiet",0) >= 2 ||
-// 	    _config->FindB("APT::Get::Assume-Yes",false) == true)
-// 	{
-// 	    if (Fail == true && _config->FindB("APT::Get::Force-Yes",false) == false)
-// 		return _error->Error("There are problems and -y was used without --force-yes");
-// 	}
-
-	if (Essential == true && Safety == true)
-	{
-		if (_config->FindB("APT::Get::Trivial-Only",false) == true) {
-			return _error->Error("Trivial Only specified but this is not a trivial operation.");
-		}
-
-		pk_backend_error_code(m_backend,
-				      PK_ERROR_ENUM_TRANSACTION_ERROR,
-				      "You was about to do something potentially harmful.\n"
-				      "Please use aptitude or synaptic to have more information.");
-		return false;
 	}
 
 	if (!checkTrusted(fetcher, m_backend)) {
