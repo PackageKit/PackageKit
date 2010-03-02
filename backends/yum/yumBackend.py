@@ -1514,6 +1514,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the refresh_cache functionality
         '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
@@ -2421,6 +2426,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+        # some packages should be updated before the others
+        infra_pkgs = []
+        for pkg in pkgs:
+            infra_packages = ['PackageKit', 'yum', 'rpm']
+            if pkg.name in infra_packages or pkg.name.partition('-')[0] in infra_packages:
+                infra_pkgs.append(pkg)
+        if len(infra_pkgs) > 0:
+            msg = []
+            for pkg in infra_pkgs:
+                msg.append(pkg.name)
+            self.message(MESSAGE_BACKEND_ERROR, "The packages '%s' will be updated before other packages" % msg)
+            pkgs = infra_pkgs
+
         md = self.updateMetadata
         for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):

@@ -120,8 +120,7 @@ public:
 	/**
 	 *  seems to install packages
 	 */
-	bool installPackages(pkgDepCache &Cache,
-			     bool Safety = true);
+	bool installPackages(pkgCacheFile &Cache);
 
 	/**
 	 *  check if the package provides the codec
@@ -153,6 +152,7 @@ private:
 	void updateInterface(int readFd, int writeFd);
 	bool DoAutomaticRemove(pkgCacheFile &Cache);
 	void emitChangedPackages(pkgCacheFile &Cache);
+	bool removingEssentialPackages(pkgCacheFile &Cache);
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);
