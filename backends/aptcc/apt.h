@@ -120,7 +120,7 @@ public:
 	/**
 	 *  seems to install packages
 	 */
-	bool installPackages(pkgDepCache &Cache,
+	bool installPackages(pkgCacheFile &Cache,
 			     bool Safety = true);
 
 	/**

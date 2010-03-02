@@ -963,6 +963,12 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 	if (State.CandidateVer == 0 && Remove == false)
 	{
 		_error->Error("Package %s is virtual and has no installation candidate", Pkg.Name());
+
+		pk_backend_error_code(m_backend,
+				      PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+				      g_strdup_printf("Package %s is virtual and has no "
+						      "installation candidate",
+						      Pkg.Name()));
 		return false;
 	}
 
@@ -971,7 +977,7 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 	if (Remove == true)
 	{
 		Fix.Remove(Pkg);
-		Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge",false));
+		Cache.MarkDelete(Pkg,_config->FindB("APT::Get::Purge", false));
 		return true;
 	}
 
@@ -996,7 +1002,7 @@ bool aptcc::TryToInstall(pkgCache::PkgIterator Pkg,
 		ExpectedInst++;
 	}
 
-	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
+// 	cout << "trytoinstall ExpectedInst " << ExpectedInst << endl;
 	// Install it with autoinstalling enabled (if we not respect the minial
 	// required deps or the policy)
 	if ((State.InstBroken() == true || State.InstPolicyBroken() == true) &&
@@ -1338,25 +1344,9 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 					 remove,
 					 BrokenFix,
 					 ExpectedInst) == false) {
-				pk_backend_error_code(m_backend,
-						      PK_ERROR_ENUM_INTERNAL_ERROR,
-						      "Could not open package cache.");
 				return false;
 			}
 		}
-
-		/* If we are in the Broken fixing mode we do not attempt to fix the
-		    problems. This is if the user invoked install without -f and gave
-		    packages */
-		// TODO this code seems to be a bit useless,
-		// if we go to the Fix.Resolve() it can fix things
-		// and if not the last if will then fail.
-// 		if (BrokenFix == true && Cache->BrokenCount() != 0)
-// 		{
-// 			_error->Error("Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).");
-// 			show_broken(m_backend, this);
-// 			return false;
-// 		}
 
 		// Call the scored problem resolver
 		Fix.InstallProtect();
@@ -1367,10 +1357,10 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// Now we check the state of the packages,
 		if (Cache->BrokenCount() != 0)
 		{
-		    // if the problem resolver could not fix all broken things
-		    // show what is broken
-		    show_broken(m_backend, this);
-		    return false;
+			// if the problem resolver could not fix all broken things
+			// show what is broken
+			show_broken(m_backend, Cache, false);
+			return false;
 		}
 	}
 	// Try to auto-remove packages
@@ -1378,6 +1368,8 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// TODO
 		return false;
 	}
+
+	// TODO check for essential packages!!!
 
 	if (simulate) {
 		// Print out a list of packages that are going to be installed extra
@@ -1397,17 +1389,17 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 // ---------------------------------------------------------------------
 /* This displays the informative messages describing what is going to
    happen and then calls the download routines */
-bool aptcc::installPackages(pkgDepCache &Cache,
+bool aptcc::installPackages(pkgCacheFile &Cache,
 			    bool Safety)
 {
 	//cout << "installPackages() called" << endl;
 	if (_config->FindB("APT::Get::Purge",false) == true)
 	{
-		pkgCache::PkgIterator I = Cache.PkgBegin();
+		pkgCache::PkgIterator I = Cache->PkgBegin();
 		for (; I.end() == false; I++)
 		{
 			if (I.Purge() == false && Cache[I].Mode == pkgDepCache::ModeDelete) {
-				Cache.MarkDelete(I,true);
+				Cache->MarkDelete(I,true);
 			}
 		}
 	}
@@ -1422,26 +1414,27 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 // 	    ShowUpgraded(c1out,Cache);
 // 	Fail |= !ShowDowngraded(c1out,Cache);
 // 	if (_config->FindB("APT::Get::Download-Only",false) == false)
+// 	    cout << "--------------fo" << endl;
 // 		Essential = !ShowEssential(c1out,Cache);
 // 	Fail |= Essential;
 // 	Stats(c1out,Cache);
 
 	// Sanity check
-	if (Cache.BrokenCount() != 0)
+	if (Cache->BrokenCount() != 0)
 	{
 		// TODO
-		show_broken(m_backend, this);
+		show_broken(m_backend, Cache, false);
 		_error->Error("Internal error, InstallPackages was called with broken packages!");
 		return false;
 	}
 
-	if (Cache.DelCount() == 0 && Cache.InstCount() == 0 &&
-	    Cache.BadCount() == 0) {
+	if (Cache->DelCount() == 0 && Cache->InstCount() == 0 &&
+	    Cache->BadCount() == 0) {
 		return true;
 	}
 
 	// No remove flag
-	if (Cache.DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
+	if (Cache->DelCount() != 0 && _config->FindB("APT::Get::Remove",true) == false) {
 		pk_backend_error_code(m_backend,
 				      PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
 				      "Packages need to be removed but remove is disabled.");
@@ -1471,14 +1464,14 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	pkgAcquire fetcher(&Stat);
 
 	// Create the package manager and prepare to download
-	SPtr<pkgPackageManager> PM= _system->CreatePM(&Cache);
+	SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);
 	if (PM->GetArchives(&fetcher, packageSourceList, &Recs) == false ||
 	    _error->PendingError() == true) {
 		return false;
 	}
 
 	// Generate the list of affected packages and sort it
-	for (pkgCache::PkgIterator I = Cache.PkgBegin(); I.end() == false; I++)
+	for (pkgCache::PkgIterator I = Cache->PkgBegin(); I.end() == false; I++)
 	{
 		// Ignore no-version packages
 		if (I->VersionList == 0) {
@@ -1504,9 +1497,9 @@ bool aptcc::installPackages(pkgDepCache &Cache,
 	double FetchBytes = fetcher.FetchNeeded();
 	double FetchPBytes = fetcher.PartialPresent();
 	double DebBytes = fetcher.TotalNeeded();
-	if (DebBytes != Cache.DebSize())
+	if (DebBytes != Cache->DebSize())
 	{
- 	    cout << DebBytes << ',' << Cache.DebSize() << endl;
+ 	    cout << DebBytes << ',' << Cache->DebSize() << endl;
 cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
 	}
@@ -1520,12 +1513,12 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 // 		    SizeToStr(DebBytes).c_str());
 
 	// Size delta
-// 	if (Cache.UsrSize() >= 0)
+// 	if (Cache->UsrSize() >= 0)
 // 	    ioprintf(c1out, "After this operation, %sB of additional disk space will be used.\n",
-// 		    SizeToStr(Cache.UsrSize()).c_str());
+// 		    SizeToStr(Cache->UsrSize()).c_str());
 // 	else
 // 	    ioprintf(c1out, "After this operation, %sB disk space will be freed.\n",
-// 		    SizeToStr(-1*Cache.UsrSize()).c_str());
+// 		    SizeToStr(-1*Cache->UsrSize()).c_str());
 
 	if (_error->PendingError() == true) {
 	    cout << "PendingError " << endl;
