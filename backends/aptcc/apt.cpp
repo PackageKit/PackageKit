@@ -1070,6 +1070,7 @@ bool aptcc::removingEssentialPackages(pkgCacheFile &Cache)
 		}
 	}
 
+	delete [] Added;
 	if (!List.empty()) {
 		pk_backend_error_code(m_backend,
 				      PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
