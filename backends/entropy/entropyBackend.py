@@ -808,17 +808,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 info = INFO_AVAILABLE
         return self.package(self._etp_to_id(pkg_match), info, desc)
 
-    def get_depends(self, filters, pk_pkgs, recursive):
+    def get_depends(self, filters, package_ids, recursive):
 
         self._log_message(__name__, "get_depends: got %s and %s and %s" % (
-            filters, pk_pkgs, recursive,))
+            filters, package_ids, recursive,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
         pkgs = set()
-        for pk_pkg in pk_pkgs:
+        for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None: # wtf!
@@ -868,17 +868,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def get_details(self, pk_pkgs):
+    def get_details(self, package_ids):
 
-        self._log_message(__name__, "get_details: got %s" % (pk_pkgs,))
+        self._log_message(__name__, "get_details: got %s" % (package_ids,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
         count = 0
-        max_count = len(pk_pkgs)
-        for pk_pkg in pk_pkgs:
+        max_count = len(package_ids)
+        for pk_pkg in package_ids:
             count += 1
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
@@ -939,16 +939,16 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.category(nothing, cat_id, name, summary, icon)
 
-    def get_files(self, pk_pkgs):
+    def get_files(self, package_ids):
 
-        self._log_message(__name__, "get_files: got %s" % (pk_pkgs,))
+        self._log_message(__name__, "get_files: got %s" % (package_ids,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
         pkgs = []
-        for pk_pkg in pk_pkgs:
+        for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None: # wtf!
@@ -1047,17 +1047,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         for repo_id, desc, enabled, devel in metadata:
             self.repo_detail(repo_id, desc, enabled)
 
-    def get_requires(self, filters, pk_pkgs, recursive):
+    def get_requires(self, filters, package_ids, recursive):
 
         self._log_message(__name__, "get_requires: got %s and %s and %s" % (
-            filters, pk_pkgs, recursive))
+            filters, package_ids, recursive))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
         pkgs = set()
-        for pk_pkg in pk_pkgs:
+        for pk_pkg in package_ids:
 
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None: # wtf!
@@ -1099,20 +1099,20 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def get_update_detail(self, pk_pkgs):
+    def get_update_detail(self, package_ids):
 
         self._log_message(__name__, "get_update_detail: got %s" % (
-            pk_pkgs,))
+            package_ids,))
 
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(0)
 
         count = 0
-        max_count = len(pk_pkgs)
+        max_count = len(package_ids)
         default_repo = self._settings['repositories']['default_repository']
         i_repo = self._entropy.installed_repository()
-        for pk_pkg in pk_pkgs:
+        for pk_pkg in package_ids:
             count += 1
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
@@ -1286,22 +1286,22 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted, simulate = simulate)
 
-    def install_packages(self, only_trusted, pk_pkgs):
-        return self._install_packages(only_trusted, pk_pkgs)
+    def install_packages(self, only_trusted, package_ids):
+        return self._install_packages(only_trusted, package_ids)
 
-    def simulate_install_packages(self, pk_pkgs):
-        return self._install_packages(False, pk_pkgs, simulate = True)
+    def simulate_install_packages(self, package_ids):
+        return self._install_packages(False, package_ids, simulate = True)
 
-    def download_packages(self, directory, pk_pkgs):
+    def download_packages(self, directory, package_ids):
 
         self._log_message(__name__, "download_packages: got %s and %s" % (
-            directory, pk_pkgs,))
+            directory, package_ids,))
 
         self.status(STATUS_RUNNING)
         self.allow_cancel(True)
 
         pkgs = []
-        for pk_pkg in pk_pkgs:
+        for pk_pkg in package_ids:
             pkg = self._id_to_etp(pk_pkg)
             if pkg is None:
                 self.error(ERROR_PACKAGE_NOT_FOUND,
@@ -1342,11 +1342,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def remove_packages(self, allowdep, autoremove, pk_pkgs):
-        return self._remove_packages(allowdep, autoremove, pk_pkgs)
+    def remove_packages(self, allowdep, autoremove, package_ids):
+        return self._remove_packages(allowdep, autoremove, package_ids)
 
-    def simulate_remove_packages(self, pk_pkgs):
-        return self._remove_packages(True, False, pk_pkgs, simulate = True)
+    def simulate_remove_packages(self, package_ids):
+        return self._remove_packages(True, False, package_ids, simulate = True)
 
     def _remove_packages(self, allowdep, autoremove, pk_pkgs, simulate = False):
 
@@ -1384,10 +1384,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._log_message(__name__, "repo_enable: done")
 
-    def resolve(self, filters, search_keys):
+    def resolve(self, filters, values):
 
         self._log_message(__name__, "resolve: got %s and %s" % (
-            filters, search_keys,))
+            filters, values,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1407,7 +1407,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 percent,))
 
             self.percentage(percent)
-            for key in search_keys:
+            for key in values:
                 pkg_ids, pkg_rc = repo_db.atomMatch(key, multiMatch = True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
@@ -1419,10 +1419,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_details(self, filters, search_keys):
+    def search_details(self, filters, values):
 
         self._log_message(__name__, "search_details: got %s and %s" % (
-            filters, search_keys,))
+            filters, values,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1441,7 +1441,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 percent,))
 
             self.percentage(percent)
-            for key in search_keys:
+            for key in values:
                 pkg_ids = repo_db.searchDescription(key,
                     just_id = True)
                 pkg_ids |= repo_db.searchHomepage(key, just_id = True)
@@ -1456,10 +1456,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_file(self, filters, search_keys):
+    def search_file(self, filters, values):
 
         self._log_message(__name__, "search_file: got %s and %s" % (
-            filters, search_keys,))
+            filters, values,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1480,7 +1480,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.percentage(percent)
 
-            for key in search_keys:
+            for key in values:
 
                 like = False
                 # wildcard support
@@ -1514,10 +1514,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def search_group(self, filters, groups):
+    def search_group(self, filters, values):
 
         self._log_message(__name__, "search_group: got %s and %s" % (
-            filters, groups,))
+            filters, values,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1532,7 +1532,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         all_matched_categories = sorted(all_matched_categories)
 
         selected_categories = set()
-        for group in groups:
+        for group in values:
             entropy_group = self._get_entropy_group(group)
             # group_data is None when there's no matching group
             group_data = entropy_groups.get(entropy_group)
@@ -1572,10 +1572,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
 
-    def search_name(self, filters, search_keys):
+    def search_name(self, filters, values):
 
         self._log_message(__name__, "search_name: got %s and %s" % (
-            filters, search_keys,))
+            filters, values,))
 
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
@@ -1594,7 +1594,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 percent,))
 
             self.percentage(percent)
-            for key in search_keys:
+            for key in values:
                 pkg_ids = repo_db.searchPackages(key, just_id = True)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
@@ -1606,11 +1606,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
-    def update_packages(self, only_trusted, pk_pkgs):
-        return self._update_packages(only_trusted, pk_pkgs)
+    def update_packages(self, only_trusted, package_ids):
+        return self._update_packages(only_trusted, package_ids)
 
-    def simulate_update_packages(self, pk_pkgs):
-        return self._update_packages(False, pk_pkgs, simulate = True)
+    def simulate_update_packages(self, package_ids):
+        return self._update_packages(False, package_ids, simulate = True)
 
     def _update_packages(self, only_trusted, pk_pkgs, simulate = False):
 

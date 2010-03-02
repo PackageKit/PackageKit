@@ -344,7 +344,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def get_update_detail(self, package_ids_ids):
+    def get_update_detail(self, package_ids):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
@@ -400,14 +400,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_signature(self, sigtype, key_id, package):
+    def install_signature(self, sigtype, key_id, package_id):
         '''
         Implement the {backend}-install-signature functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def install_files (self, only_trusted, inst_files):
+    def install_files(self, only_trusted, inst_files):
         '''
         Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
@@ -415,7 +415,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def resolve(self, filters, name):
+    def resolve(self, filters, values):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
@@ -443,7 +443,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def get_files(self, package):
+    def get_files(self, package_ids):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
@@ -485,7 +485,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
-    def repo_signature_install(self, package):
+    def repo_signature_install(self, package_id):
         '''
         Implement the {backend}-repo-signature-install functionality
         Needed to be implemented in a sub class

@@ -22,4 +22,7 @@ Transaction::Details
    not installed)
  * Add popularity from 0 to 10 where 11 is unknown
  * Add a stars filter >1stars >2stars >3stars >4 stars
- 
+
+Python backends:
+ * Pre-split filters in backend.py, not in each backend.
+

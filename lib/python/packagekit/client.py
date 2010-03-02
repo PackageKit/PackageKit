@@ -255,7 +255,7 @@ class PackageKitClient:
 
     def search_file(self, search, filters=FILTER_NONE, exit_handler=None):
         '''Search for packages by their files'''
-        return self._run_transaction("SearchFile", [filters, search],
+        return self._run_transaction("SearchFiles", [filters, search],
                                      exit_handler)
 
     def install_packages(self, packages, only_trusted=True, exit_handler=None):
