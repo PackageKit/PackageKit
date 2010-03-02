@@ -73,6 +73,10 @@ else:
         pklog.debug("Use XAPIAN for the search")
         XAPIAN_SUPPORT = True
 
+STDOUT_ENCODING = sys.stdout.encoding or sys.getfilesystemencoding()
+FS_ENCODING = sys.getfilesystemencoding()
+DEFAULT_ENCODING = locale.getpreferredencoding()
+
 # SoftwareProperties is required to proivde information about repositories
 try:
     import softwareproperties.SoftwareProperties
@@ -614,11 +618,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_all_visible_pkg_versions(filters,
                                                     self._cache[pkg_name])
 
-    def search_details(self, filters, search):
+    def search_details(self, filters, values):
         """
         Implement the apt2-search-details functionality
         """
-        pklog.info("Searching for package name: %s" % search)
+        pklog.info("Searching for package details: %s" % values)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
@@ -633,8 +637,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pklog.debug("Performing xapian db based search")
             db = xapian.Database(XAPIAN_DB)
             parser = xapian.QueryParser()
-            query = parser.parse_query(unicode(search),
-                                       search_flags)
+            parser.set_default_op(xapian.Query.OP_AND)
+            query = parser.parse_query(u" ".join(values), search_flags)
             enquire = xapian.Enquire(db)
             enquire.set_query(query)
             matches = enquire.get_mset(0, 1000)
@@ -643,13 +647,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 if pkg_name in self._cache:
                     self._emit_visible_package(filters, self._cache[pkg_name])
         else:
+            def matches(searches, text):
+                for search in searches:
+                    if not search in text:
+                        return False
+                return True
             pklog.debug("Performing apt cache based search")
-            needle = search.strip().lower()
+            values = [val.lower() for val in values]
             for pkg in self._cache:
-                if not pkg.candidate:
-                    continue
-                haystack = pkg.rawDescription.lower()
-                if needle in pkg.name or needle in haystack:
+                txt = pkg.name
+                try:
+                    txt += pkg.candidate.raw_description.lower()
+                    txt += pkg.candidate._translated_records.long_desc.lower()
+                except AttributeError:
+                    pass
+                if matches(values, unicode(txt, DEFAULT_ENCODING, "replace")):
                     self._emit_visible_package(filters, pkg)
 
     def get_distro_upgrades(self):
