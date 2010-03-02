@@ -369,7 +369,9 @@ static gboolean
 backend_get_or_update_system_thread (PkBackend *backend)
 {
 	PkBitfield filters;
+	bool getUpdates;
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	getUpdates = pk_backend_get_bool(backend, "getUpdates");
 	pk_backend_set_allow_cancel (backend, true);
 
 	aptcc *m_apt = new aptcc(backend, _cancel);
@@ -383,9 +385,29 @@ backend_get_or_update_system_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (pkgDistUpgrade(*m_apt->packageDepCache) == false)
+	pkgCacheFile Cache;
+	OpTextProgress Prog(*_config);
+	int timeout = 10;
+	// TODO test this
+	while (Cache.Open(Prog, !getUpdates) == false) {
+		// failed to open cache, try checkDeps then..
+		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
+		if (getUpdates == true || (timeout <= 0)) {
+			pk_backend_error_code(backend,
+					      PK_ERROR_ENUM_NO_CACHE,
+					      "Could not open package cache.");
+			return false;
+		} else {
+			pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+			sleep(1);
+			timeout--;
+		}
+	}
+	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
+
+	if (pkgDistUpgrade(*Cache) == false)
 	{
-		show_broken(backend, m_apt);
+		show_broken(backend, Cache, false);
 		egg_debug ("Internal error, DistUpgrade broke stuff");
 		delete m_apt;
 		pk_backend_finished (backend);
@@ -393,7 +415,7 @@ backend_get_or_update_system_thread (PkBackend *backend)
 	}
 
 	bool res = true;
-	if (pk_backend_get_bool(backend, "getUpdates")) {
+	if (getUpdates) {
 		vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > update,
 									    kept;
 
@@ -401,13 +423,13 @@ backend_get_or_update_system_thread (PkBackend *backend)
 		    !pkg.end();
 		    ++pkg)
 		{
-			if((*m_apt->packageDepCache)[pkg].Upgrade()    == true &&
-			(*m_apt->packageDepCache)[pkg].NewInstall() == false) {
+			if((*Cache)[pkg].Upgrade()    == true &&
+			(*Cache)[pkg].NewInstall() == false) {
 				update.push_back(
 					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
-			} else if ((*m_apt->packageDepCache)[pkg].Upgradable() == true &&
+			} else if ((*Cache)[pkg].Upgradable() == true &&
 				pkg->CurrentVer != 0 &&
-				(*m_apt->packageDepCache)[pkg].Delete() == false) {
+				(*Cache)[pkg].Delete() == false) {
 				kept.push_back(
 					pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, m_apt->find_candidate_ver(pkg)));
 			}
@@ -416,7 +438,7 @@ backend_get_or_update_system_thread (PkBackend *backend)
 		m_apt->emitUpdates(update, filters);
 		m_apt->emit_packages(kept, filters, PK_INFO_ENUM_BLOCKED);
 	} else {
-		res = m_apt->installPackages(*m_apt->packageDepCache, true);
+		res = m_apt->installPackages(Cache, true);
 	}
 
 	delete m_apt;
