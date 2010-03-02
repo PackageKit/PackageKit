@@ -1529,6 +1529,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the refresh_cache functionality
         '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
