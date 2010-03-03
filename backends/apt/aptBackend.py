@@ -618,16 +618,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_all_visible_pkg_versions(filters,
                                                     self._cache[pkg_name])
 
-    def search_details(self, filters, values):
+    def search_details(self, filters, values_string):
         """
         Implement the apt2-search-details functionality
         """
-        pklog.info("Searching for package details: %s" % values)
+        pklog.info("Searching for package details: %s" % values_string)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
         results = []
+        values = values_string.split(PACKAGE_IDS_DELIM)
 
         if XAPIAN_SUPPORT == True:
             search_flags = (xapian.QueryParser.FLAG_BOOLEAN |
