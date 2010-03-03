@@ -1176,8 +1176,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         return packages
 
-    def _channel_passes_filters(self, channel, filters):
-        filterlist = filters.split(';')
+    def _channel_passes_filters(self, channel, filterlist):
         if FILTER_NOT_DEVELOPMENT in filterlist:
             if channel['type'] == 'rpm-md':
                 repo = channel['alias']
@@ -1222,8 +1221,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         else:
             return None
 
-    def _package_passes_filters(self, package, filters):
-        filterlist = filters.split(';')
+    def _package_passes_filters(self, package, filterlist):
         if FILTER_NOT_INSTALLED in filterlist and package.installed:
             return False
         elif FILTER_INSTALLED in filterlist and not package.installed:
@@ -1322,8 +1320,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             newest[key] = (package, status)
         return newest.values()
 
-    def _post_process_package_list(self, filters):
-        filterlist = filters.split(';')
+    def _post_process_package_list(self, filterlist):
         if FILTER_BASENAME in filterlist:
             self._package_list = self._do_basename_filtering(self._package_list)
         if FILTER_NEWEST in filterlist:
