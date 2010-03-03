@@ -2,7 +2,7 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_5_6.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_5_7.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 2. Add download date to docs/html/pk-download.html, save file.
 
@@ -10,8 +10,8 @@ git shortlog PACKAGEKIT_0_5_6.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.5.7"
-git tag -a -f -m "Release 0.5.7" PACKAGEKIT_0_5_7
+git commit -a -m "Release version 0.5.8"
+git tag -a -f -m "Release 0.5.8" PACKAGEKIT_0_5_8
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
@@ -35,9 +35,9 @@ git push
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit 0.5.7 released!
+Subject: PackageKit 0.5.8 released!
 
-Today I released PackageKit 0.5.7.
+Today I released PackageKit 0.5.8.
 
 Tarballs available here: http://www.packagekit.org/releases/
 
