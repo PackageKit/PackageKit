@@ -51,6 +51,13 @@ PkBitfield	 pk_filter_bitfield_from_text 		(const gchar	*filters);
 gchar		*pk_filter_bitfield_to_text		(PkBitfield	 filters);
 void		 pk_bitfield_test			(gpointer	 user_data);
 
+#define pk_role_bitfield_from_string	pk_role_bitfield_from_text
+#define pk_role_bitfield_to_string	pk_role_bitfield_to_text
+#define pk_group_bitfield_from_string	pk_group_bitfield_from_text
+#define pk_group_bitfield_to_string	pk_group_bitfield_to_text
+#define pk_filter_bitfield_from_string	pk_filter_bitfield_from_text
+#define pk_filter_bitfield_to_string	pk_filter_bitfield_to_text
+
 G_END_DECLS
 
 #endif /* __PK_BITFIELD_H */

@@ -57,6 +57,10 @@ gchar		**pk_package_ids_add_ids		(gchar		**package_ids,
 gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
 							 const gchar	*package_id);
 
+/* compat defines for git master */
+#define pk_package_ids_from_string	pk_package_ids_from_text
+#define pk_package_ids_to_string		pk_package_ids_to_text
+
 G_END_DECLS
 
 #endif /* __PK_PACKAGE_IDS_H */

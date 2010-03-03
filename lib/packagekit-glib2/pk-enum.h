@@ -30,6 +30,42 @@
 
 G_BEGIN_DECLS
 
+/* These are compatibility enums so we can use the new names in client tools in the future */
+#define pk_sig_type_enum_from_string		pk_sig_type_enum_from_text
+#define pk_sig_type_enum_to_string		pk_sig_type_enum_to_text
+#define pk_distro_upgrade_enum_from_string	pk_distro_upgrade_enum_from_text
+#define pk_distro_upgrade_enum_to_string	pk_distro_upgrade_enum_to_text
+#define pk_provides_enum_from_string		pk_provides_enum_from_text
+#define pk_provides_enum_to_string		pk_provides_enum_to_text
+#define pk_info_enum_from_string		pk_info_enum_from_text
+#define pk_info_enum_to_string			pk_info_enum_to_text
+#define pk_exit_enum_from_string		pk_exit_enum_from_text
+#define pk_exit_enum_to_string			pk_exit_enum_to_text
+#define pk_network_enum_from_string		pk_network_enum_from_text
+#define pk_network_enum_to_string		pk_network_enum_to_text
+#define pk_status_enum_from_string		pk_status_enum_from_text
+#define pk_status_enum_to_string		pk_status_enum_to_text
+#define pk_role_enum_from_string		pk_role_enum_from_text
+#define pk_role_enum_to_string			pk_role_enum_to_text
+#define pk_error_enum_from_string		pk_error_enum_from_text
+#define pk_error_enum_to_string			pk_error_enum_to_text
+#define pk_restart_enum_from_string		pk_restart_enum_from_text
+#define pk_restart_enum_to_string		pk_restart_enum_to_text
+#define pk_message_enum_from_string		pk_message_enum_from_text
+#define pk_message_enum_to_string		pk_message_enum_to_text
+#define pk_group_enum_from_string		pk_group_enum_from_text
+#define pk_group_enum_to_string			pk_group_enum_to_text
+#define pk_update_state_enum_from_string	pk_update_state_enum_from_text
+#define pk_update_state_enum_to_string		pk_update_state_enum_to_text
+#define pk_filter_enum_from_string		pk_filter_enum_from_text
+#define pk_filter_enum_to_string		pk_filter_enum_to_text
+#define pk_license_enum_from_string		pk_license_enum_from_text
+#define pk_license_enum_to_string		pk_license_enum_to_text
+#define pk_media_type_enum_from_string		pk_media_type_enum_from_text
+#define pk_media_type_enum_to_string		pk_media_type_enum_to_text
+#define pk_authorize_type_enum_from_string	pk_authorize_type_enum_from_text
+#define pk_authorize_type_enum_to_string	pk_authorize_type_enum_to_text
+
 /**
  * PkEnumMatch:
  *
