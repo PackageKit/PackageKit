@@ -246,13 +246,12 @@ class PackageKitEntropyMixin(object):
         Filter pkgs list given PackageKit filters.
         """
         inst_pkgs_repo_id = PackageKitEntropyMixin.INST_PKGS_REPO_ID
-        fltlist = filters.split(';')
 
-        if FILTER_INSTALLED in fltlist:
+        if FILTER_INSTALLED in filters:
             pkgs = set([x for x in pkgs if x[0] == inst_pkgs_repo_id])
-        elif FILTER_NOT_INSTALLED in fltlist:
+        elif FILTER_NOT_INSTALLED in filters:
             pkgs = set([x for x in pkgs if x[0] != inst_pkgs_repo_id])
-        if FILTER_FREE in fltlist:
+        if FILTER_FREE in filters:
             pkgs = set([x for x in pkgs if \
                 self._entropy.is_entropy_package_free(x[1], x[0])])
 
@@ -1040,8 +1039,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             devel = repo_id != default_repo
             metadata.append((repo_id, desc, enabled, devel))
 
-        fltlist = filters.split(';')
-        if FILTER_NOT_DEVELOPMENT in fltlist:
+        if FILTER_NOT_DEVELOPMENT in filters:
             metadata = [x for x in metadata if not x[3]]
 
         for repo_id, desc, enabled, devel in metadata:
