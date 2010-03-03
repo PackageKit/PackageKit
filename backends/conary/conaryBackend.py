@@ -17,7 +17,8 @@
 #
 # Copyright (C) 2007 Ken VanDine <ken@vandine.org>
 # Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2008 Andres Vargas <zodman@foresightlinux.org>
+# Copyright (C) 2009-2010 Andres Vargas <zodman@foresightlinux.org>
+#                         Scott Parkerson <scott.parkerson@gmail.com>
 # }}}
 #{{{ LIBS
 import sys
@@ -271,7 +272,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
 
-    def _do_update(self, applyList):
+    def _do_update(self, applyList, simulate=False):
         log.info("========= _do_update ========")
         jobPath = Cache().checkCachedUpdateJob(applyList)
         log.info(jobPath)
@@ -285,7 +286,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             updJob,suggMap = self._get_update(applyList, cache=False)
         self.allow_cancel(False)
         try:
-            restartDir = self.client.applyUpdateJob(updJob)
+            restartDir = self.client.applyUpdateJob(updJob, test=simulate)
         except errors.InternalConaryError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
         except trove.TroveIntegrityError: 
@@ -299,12 +300,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             applyList = [(name, (None, None), (version, flavor), True)]
         return self._get_update(applyList)
 
-    def _do_package_update(self, name, version, flavor):
+    def _do_package_update(self, name, version, flavor, simulate):
         if name.startswith('-'):
             applyList = [(name, (version, flavor), (None, None), False)]
         else:
             applyList = [(name, (None, None), (version, flavor), True)]
-        return self._do_update(applyList)
+        return self._do_update(applyList, simulate)
 
     def _resolve_list(self, filters):
 
@@ -574,17 +575,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache = Cache()
         cache.refresh()
 
-    def install_packages(self, only_trusted, package_ids):
+    def install_packages(self, only_trusted, package_ids, simulate=False):
         """
             alias of update_packages
         """
 
         # FIXME: use only_trusted
 
-        self.update_packages(only_trusted, package_ids)
+        self.update_packages(only_trusted, package_ids, simulate)
 
     @ExceptionHandler
-    def update_packages(self, only_trusted, package_ids):
+    def update_packages(self, only_trusted, package_ids, simulate=False):
         '''
         Implement the {backend}-{install, update}-packages functionality
         '''
@@ -609,11 +610,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 log.info(">>> Prepare Update")
                 self._get_package_update(name, version, flavor)
                 log.info(">>> end Prepare Update")
-                self._do_package_update(name, version, flavor)
+                self._do_package_update(name, version, flavor, simulate)
 
         
     @ExceptionHandler
-    def remove_packages(self, allowDeps, autoremove, package_ids):
+    def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
         '''
         Implement the {backend}-remove-packages functionality
         '''
@@ -639,7 +640,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if callback.error:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
                         
-                self._do_package_update(name, version, flavor)
+                self._do_package_update(name, version, flavor, simulate)
         self.client.setUpdateCallback(self.callback)
 
     def _get_metadata(self, package_id, field):
@@ -949,6 +950,24 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-enable functionality
         '''
         pass
+
+    def simulate_install_packages(self, package_ids):
+	'''
+	Simulate an install of one or more packages.
+        '''
+	return self.install_packages(package_ids, False, simulate=True)
+
+    def simulate_update_packages(self, package_ids):
+	'''
+	Simulate an update of one or more packages.
+        '''
+	return self.update_packages(package_ids, False, simulate=True)
+
+    def simulate_remove_packages(self, package_ids):
+	'''
+	Simulate an update of one or more packages.
+        '''
+	return self.remove_packages(package_ids, False, simulate=True)
 
 from pkConaryLog import pdb
 

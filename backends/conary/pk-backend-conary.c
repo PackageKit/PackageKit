@@ -2,6 +2,8 @@
  *
  * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2007 Ken VanDine <ken@vandine.org>
+ * Copyright (C) 2009-2010 Andres Vargas <zodman@foresightlinux.org>
+ *                         Scott Parkerson <scott.parkerson@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -363,6 +365,61 @@ static void backend_get_repo_list (PkBackend *backend, PkBitfield filters)
     g_free (filters_text);
 }
 
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-install-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_remove_packages:
+ */
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+/**
+ * backend_simulate_update_packages:
+ */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
+		pk_backend_finished (backend);
+		return;
+	}
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_string (package_ids);
+	egg_debug("Updates Packages");
+	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-update-packages", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
 
 PK_BACKEND_OPTIONS (
 	"Conary with XMLCache",				/* description */
@@ -402,8 +459,8 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */
 	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL				/* simulate_update_packages */
+	backend_simulate_install_packages,	/* simulate_install_packages */
+	backend_simulate_remove_packages,	/* simulate_remove_packages */
+	backend_simulate_update_packages	/* simulate_update_packages */
 );
 
