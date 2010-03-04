@@ -328,22 +328,35 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
     def __init__(self, backend, prange=(0,100), status=STATUS_DOWNLOAD):
         self._backend = backend
         apt.progress.FetchProgress.__init__(self)
-        self.pstart = prange[0]
-        self.pend = prange[1]
-        self.pprev = None
+        self.start_progress = prange[0]
+        self.end_progress = prange[1]
+        self.last_progress = None
+        self.last_sub_progress = None
         self.status = status
         self.package_states = {}
 
-    def pulse(self):
+    def pulse_items(self, items):
         apt.progress.FetchProgress.pulse(self)
-        progress = int(self.pstart + self.percent/100 * \
-                       (self.pend - self.pstart))
+        progress = int(self.start_progress + self.percent/100 * \
+                       (self.end_progress - self.start_progress))
         # A backwards running progress is reported as a not available progress
-        if self.pprev > progress:
+        if self.last_progress > progress:
             self._backend.percentage()
         else:
             self._backend.percentage(progress)
-            self.pprev = progress
+            self.last_progress = progress
+        for item in items:
+            uri, desc, shortdesc, file_size, partial_size = item
+            try:
+                pkg = self._backend._cache[shortdesc]
+            except KeyError:
+                pass
+            else:
+                self._backend._emit_package(pkg, INFO_DOWNLOADING, True)
+                sub_progress = partial_size * 100 / file_size
+                if sub_progress > self.last_sub_progress:
+                    self._last_sub_progress = sub_progress
+                    self._backend.sub_percentage(sub_progress)
         return True
 
     def updateStatus(self, uri, descr, pkg_name, status):
@@ -368,7 +381,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.allow_cancel(True)
 
     def stop(self):
-        self._backend.percentage(self.pend)
+        self._backend.percentage(self.end_progress)
         self._backend.allow_cancel(False)
 
     def mediaChange(self, medium, drive):
