@@ -5441,8 +5441,6 @@ pk_transaction_init (PkTransaction *transaction)
 			  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
 	g_signal_connect (transaction->priv->transaction_extra, "progress-changed",
 			  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
-	g_signal_connect (transaction->priv->transaction_extra, "require-restart",
-			  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (transaction->priv->transaction_db, "transaction",

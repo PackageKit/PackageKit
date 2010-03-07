@@ -353,12 +353,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def _do_meta_package_search(self, fltlist, values):
+    def _do_meta_package_search(self, filters, values):
         grps = self.comps.get_meta_packages()
         for grpid in grps:
             for value in values:
                 if value in grpid:
-                    self._show_meta_package(grpid, fltlist)
+                    self._show_meta_package(grpid, filters)
 
     def set_locale(self, code):
         '''
@@ -374,16 +374,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         @param filters: package types to search (all, installed, available)
         @param values: key to seach for
         '''
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
         package_list = []
 
         # get collection objects
-        if FILTER_NOT_COLLECTIONS not in fltlist:
-            self._do_meta_package_search(fltlist, values)
+        if FILTER_NOT_COLLECTIONS not in filters:
+            self._do_meta_package_search(filters, values)
 
         # return, as we only want collection objects
-        if FILTER_COLLECTIONS not in fltlist:
+        if FILTER_COLLECTIONS not in filters:
             installed = []
             available = []
             try:
@@ -478,12 +477,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
-    def _handle_newest(self, fltlist):
+    def _handle_newest(self, filters):
         """
         Handle the special newest group
         """
         self.percentage(None)
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
         pkgs = []
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='recent')
@@ -514,7 +513,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._show_package_list(package_list)
             self.percentage(100)
 
-    def _handle_collections(self, fltlist):
+    def _handle_collections(self, filters):
         """
         Handle the special collection group
         """
@@ -528,16 +527,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         old_pct = -1
         step = (100.0 - pct) / len(collections)
         for col in collections:
-            self._show_meta_package(col, fltlist)
+            self._show_meta_package(col, filters)
             pct += step
             if int(pct) != int(old_pct):
                 self.percentage(pct)
                 old_pct = pct
         self.percentage(100)
 
-    def _show_meta_package(self, grpid, fltlist):
-        show_avail = FILTER_INSTALLED not in fltlist
-        show_inst = FILTER_NOT_INSTALLED not in fltlist
+    def _show_meta_package(self, grpid, filters):
+        show_avail = FILTER_INSTALLED not in filters
+        show_inst = FILTER_NOT_INSTALLED not in filters
         package_id = "%s;;;meta" % grpid
         try:
             grp = self.yumbase.comps.return_group(grpid)
@@ -574,13 +573,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
         package_list = [] #we can't do emitting as found if we are post-processing
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
 
         # handle collections
         if GROUP_COLLECTIONS in values:
             try:
-                self._handle_collections(fltlist)
+                self._handle_collections(filters)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
             return
@@ -588,7 +586,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # handle newest packages
         if GROUP_NEWEST in values:
             try:
-                self._handle_newest(fltlist)
+                self._handle_newest(filters)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
             return
@@ -608,14 +606,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if not all_packages:
                 continue
 
-            if FILTER_NOT_INSTALLED not in fltlist:
+            if FILTER_NOT_INSTALLED not in filters:
                 try:
                     pkgfilter.add_installed(self._get_installed_from_names(all_packages))
                 except PkError, e:
                     self.error(e.code, e.details, exit=False)
                     return
 
-            if FILTER_INSTALLED not in fltlist:
+            if FILTER_INSTALLED not in filters:
                 try:
                     pkgfilter.add_available(self._get_available_from_names(all_packages))
                 except PkError, e:
@@ -645,8 +643,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
 
         package_list = [] #we can't do emitting as found if we are post-processing
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
 
         # Now show installed packages.
         try:
@@ -656,7 +653,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         pkgfilter.add_installed(pkgs)
 
         # Now show available packages.
-        if FILTER_INSTALLED not in fltlist:
+        if FILTER_INSTALLED not in filters:
             try:
                 pkgs = self.yumbase.pkgSack
             except yum.Errors.RepoError, e:
@@ -686,11 +683,10 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
 
         #self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
 
         # Check installed for file
-        if not FILTER_NOT_INSTALLED in fltlist:
+        if not FILTER_NOT_INSTALLED in filters:
             for value in values:
                 try:
                     pkgs = self.yumbase.rpmdb.searchFiles(value)
@@ -699,7 +695,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgfilter.add_installed(pkgs)
 
         # Check available for file
-        if not FILTER_INSTALLED in fltlist:
+        if not FILTER_INSTALLED in filters:
             for value in values:
                 try:
                     # we don't need the filelists as we're not globbing
@@ -758,8 +754,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
         values_provides = []
 
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
 
         try:
             for value in values:
@@ -779,7 +774,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 else:
                     pkgfilter.add_installed(pkgs)
 
-                    if not FILTER_INSTALLED in fltlist:
+                    if not FILTER_INSTALLED in filters:
                         # Check available packages for provide
                         try:
                             pkgs = self.yumbase.pkgSack.searchProvides(provide)
@@ -1281,7 +1276,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
-    def _get_depends_not_installed(self, fltlist, package_ids, recursive):
+    def _get_depends_not_installed(self, filters, package_ids, recursive):
         '''
         Gets the deps that are not installed, optimisation of get_depends
         using a yum transaction
@@ -1374,14 +1369,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
 
         # before we do an install we do ~installed + recursive true,
         # which we can emulate quicker by doing a transaction, but not
         # executing it
-        if FILTER_NOT_INSTALLED in fltlist and recursive:
-            pkgs = self._get_depends_not_installed (fltlist, package_ids, recursive)
+        if FILTER_NOT_INSTALLED in filters and recursive:
+            pkgs = self._get_depends_not_installed (filters, package_ids, recursive)
             pkgfilter.add_available(pkgs)
             package_list = pkgfilter.post_process()
             self._show_package_list(package_list)
@@ -1592,14 +1586,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
         self.status(STATUS_QUERY)
 
-        fltlist = filters.split(';')
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
         package_list = []
 
         # OR search
         for package in packages:
             # Get installed packages
-            if FILTER_NOT_INSTALLED not in fltlist:
+            if FILTER_NOT_INSTALLED not in filters:
                 try:
                     pkgs = self.yumbase.rpmdb.searchNevra(name=package)
                 except Exception, e:
@@ -1608,7 +1601,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     pkgfilter.add_installed(pkgs)
 
             # Get available packages
-            if FILTER_INSTALLED not in fltlist:
+            if FILTER_INSTALLED not in filters:
                 try:
                     pkgs = self.yumbase.pkgSack.returnNewestByName(name=package)
                 except yum.Errors.PackageSackError, e:
@@ -2411,9 +2404,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # clear the package sack so we can get new updates
         self.yumbase.pkgSack = None
 
-        fltlist = filters.split(';')
         package_list = []
-        pkgfilter = YumFilter(fltlist)
+        pkgfilter = YumFilter(filters)
         pkgs = []
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')

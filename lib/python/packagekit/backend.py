@@ -568,7 +568,7 @@ class PackageKitBaseBackend:
             self.download_packages(directory, package_ids)
             self.finished()
         elif cmd == 'get-depends':
-            filters = args[0]
+            filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])
             self.get_depends(filters, package_ids, recursive)
@@ -582,15 +582,15 @@ class PackageKitBaseBackend:
             self.get_files(package_ids)
             self.finished()
         elif cmd == 'get-packages':
-            filters = args[0]
+            filters = args[0].split(';')
             self.get_packages(filters)
             self.finished()
         elif cmd == 'get-repo-list':
-            filters = args[0]
+            filters = args[0].split(';')
             self.get_repo_list(filters)
             self.finished()
         elif cmd == 'get-requires':
-            filters = args[0]
+            filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             recursive = _text_to_bool(args[2])
             self.get_requires(filters, package_ids, recursive)
@@ -603,7 +603,7 @@ class PackageKitBaseBackend:
             self.get_distro_upgrades()
             self.finished()
         elif cmd == 'get-updates':
-            filters = args[0]
+            filters = args[0].split(';')
             self.get_updates(filters)
             self.finished()
         elif cmd == 'install-files':
@@ -644,7 +644,7 @@ class PackageKitBaseBackend:
             self.repo_set_data(repoid, para, value)
             self.finished()
         elif cmd == 'resolve':
-            filters = args[0]
+            filters = args[0].split(';')
             package_ids = args[1].split(PACKAGE_IDS_DELIM)
             self.resolve(filters, package_ids)
             self.finished()
@@ -682,7 +682,7 @@ class PackageKitBaseBackend:
             self.update_system(only_trusted)
             self.finished()
         elif cmd == 'what-provides':
-            filters = args[0]
+            filters = args[0].split(';')
             provides_type = args[1]
             values = _to_unicode(args[2]).split(PACKAGE_IDS_DELIM)
             self.what_provides(filters, provides_type, values)

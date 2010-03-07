@@ -68,7 +68,6 @@ struct PkTransactionExtraPrivate
 enum {
 	PK_POST_TRANS_STATUS_CHANGED,
 	PK_POST_TRANS_PROGRESS_CHANGED,
-	PK_POST_TRANS_REQUIRE_RESTART,
 	PK_POST_TRANS_LAST_SIGNAL
 };
 
@@ -92,16 +91,6 @@ static void
 pk_transaction_extra_package_cb (PkBackend *backend, PkPackage *package, PkTransactionExtra *extra)
 {
 	g_ptr_array_add (extra->priv->list, g_object_ref (package));
-}
-
-/**
- * pk_transaction_extra_set_require_restart:
- **/
-static void
-pk_transaction_extra_set_require_restart (PkTransactionExtra *extra, PkRestartEnum restart, const gchar *package_id)
-{
-	egg_debug ("emit require-restart %s, %s", pk_restart_enum_to_string (restart), package_id);
-	g_signal_emit (extra, signals [PK_POST_TRANS_REQUIRE_RESTART], 0, restart, package_id);
 }
 
 /**
@@ -871,7 +860,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 			egg_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SESSION, pk_package_get_id (package));
+		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SECURITY_SESSION, pk_package_get_id (package));
 	}
 
 	/* process all system restarts */
@@ -883,7 +872,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 			egg_debug ("failed to find package for %s", filename);
 			continue;
 		}
-		pk_transaction_extra_set_require_restart (extra, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
+		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
 	}
 
 out:
@@ -1174,11 +1163,6 @@ pk_transaction_extra_class_init (PkTransactionExtraClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
-	signals [PK_POST_TRANS_REQUIRE_RESTART] =
-		g_signal_new ("require-restart",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	g_type_class_add_private (klass, sizeof (PkTransactionExtraPrivate));
 }
 
