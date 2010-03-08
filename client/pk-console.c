@@ -745,8 +745,10 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_ptr_array_foreach (array, (GFunc) pk_console_distro_upgrade_cb, NULL);
 
 	/* special case */
-	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+		g_print ("%s\n", _("There are no upgrades available at this time."));
 		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+	}
 
 	g_ptr_array_unref (array);
 
