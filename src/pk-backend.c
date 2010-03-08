@@ -1427,7 +1427,7 @@ out:
  * pk_backend_distro_upgrade:
  **/
 gboolean
-pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const gchar *name, const gchar *summary)
+pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum state, const gchar *name, const gchar *summary)
 {
 	gboolean ret = FALSE;
 	gchar *name_safe = NULL;
@@ -1435,7 +1435,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 	PkDistroUpgrade *item = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (type != PK_DISTRO_UPGRADE_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (state != PK_DISTRO_UPGRADE_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 	g_return_val_if_fail (summary != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1453,7 +1453,7 @@ pk_backend_distro_upgrade (PkBackend *backend, PkDistroUpgradeEnum type, const g
 	/* form PkDistroUpgrade struct */
 	item = pk_distro_upgrade_new ();
 	g_object_set (item,
-		      "type", type,
+		      "state", state,
 		      "name", name_safe,
 		      "summary", summary_safe,
 		      NULL);
