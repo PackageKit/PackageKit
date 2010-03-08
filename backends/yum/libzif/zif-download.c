@@ -228,10 +228,10 @@ zif_download_set_proxy (ZifDownload *download, const gchar *http_proxy, GError *
 		connection_timeout = 5;
 
 	/* setup the session */
-	download->priv->session = soup_session_async_new_with_options (SOUP_SESSION_PROXY_URI, proxy,
-								       SOUP_SESSION_USER_AGENT, "zif",
-								       SOUP_SESSION_TIMEOUT, connection_timeout,
-								       NULL);
+	download->priv->session = soup_session_sync_new_with_options (SOUP_SESSION_PROXY_URI, proxy,
+								      SOUP_SESSION_USER_AGENT, "zif",
+								      SOUP_SESSION_TIMEOUT, connection_timeout,
+								      NULL);
 	if (download->priv->session == NULL) {
 		if (error != NULL)
 			*error = g_error_new (1, 0, "could not setup session");

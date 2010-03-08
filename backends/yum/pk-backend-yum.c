@@ -303,10 +303,10 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_distro_upgrades:
- */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+  * backend_get_distro_upgrades_thread:
+  */
+static gboolean
+backend_get_distro_upgrades_thread (PkBackend *backend)
 {
 	gboolean ret;
 	gchar *distro_id = NULL;
@@ -339,7 +339,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 	/* download new file */
 	filename = g_build_filename ("/var/cache/PackageKit", "releases.txt", NULL);
 	child = zif_completion_get_child (priv->completion);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO);
 	ret = zif_download_file (priv->download, "http://mirrors.fedoraproject.org/releases.txt", filename, NULL, child, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "failed to download %s: %s", filename, error->message);
@@ -405,6 +405,16 @@ out:
 		g_key_file_free (file);
 	g_strfreev (groups);
 	g_strfreev (split);
+	return TRUE;
+}
+
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
 }
 
 /**
