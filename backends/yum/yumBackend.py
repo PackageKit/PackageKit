@@ -2319,56 +2319,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_id = self._pkg_to_id(pkg)
         self.package(package_id, status, pkg.summary)
 
-    def get_distro_upgrades(self):
-        '''
-        Implement the get-distro-upgrades functionality
-        '''
-        try:
-            self._check_init()
-        except PkError, e:
-            self.error(e.code, e.details, exit=False)
-            return
-        self.yumbase.conf.cache = 0 # Allow new files
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_QUERY)
-
-        # if we're RHEL, then we don't have preupgrade
-        if not os.path.exists('/usr/share/preupgrade/releases.list'):
-            return
-
-        # parse the releases file
-        config = ConfigParser.ConfigParser()
-        config.read('/usr/share/preupgrade/releases.list')
-
-        # find the newest release
-        newest = None
-        last_version = 0
-        for section in config.sections():
-            # we only care about stable versions
-            if config.has_option(section, 'stable') and config.getboolean(section, 'stable'):
-                version = config.getfloat(section, 'version')
-                if (version > last_version):
-                    newest = section
-                    last_version = version
-
-        # got no valid data
-        if not newest:
-            self.error(ERROR_FAILED_CONFIG_PARSING, "could not get latest distro data")
-
-        # are we already on the latest version
-        try:
-            present_version = float(self.yumbase.conf.yumvar['releasever'])
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-        if (present_version >= last_version):
-            return
-
-        # if we have an upgrade candidate then pass back data to daemon
-        tok = newest.split(" ")
-        name = "%s-%s" % (tok[0].lower(), tok[1])
-        self.distro_upgrade(DISTRO_UPGRADE_STABLE, name, newest)
-
     def _get_status(self, notice):
         ut = notice['type']
         if ut == 'security':

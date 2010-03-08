@@ -675,6 +675,59 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
+if test x$enable_yum = xyes; then
+	PKG_CHECK_MODULES(SQLITE, sqlite3)
+	AC_SUBST(SQLITE_CFLAGS)
+	AC_SUBST(SQLITE_LIBS)
+
+	PKG_CHECK_MODULES(RPM, rpm)
+	AC_SUBST(RPM_CFLAGS)
+	AC_SUBST(RPM_LIBS)
+
+	PKG_CHECK_MODULES(SOUP, libsoup-2.4)
+	AC_SUBST(SOUP_CFLAGS)
+	AC_SUBST(SOUP_LIBS)
+
+	dnl ---------------------------------------------------------------------------
+	dnl - libarchive
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(archive.h,
+			 HAVE_ARCHIVE_H="yes",
+			 HAVE_ARCHIVE_H="no")
+	if test "x$HAVE_ARCHIVE_H" = "xyes"; then
+		ARCHIVE_LIBS=-larchive
+		AC_SUBST(ARCHIVE_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find archive.h])
+	fi
+
+	dnl ---------------------------------------------------------------------------
+	dnl - libbzip2
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(bzlib.h,
+			 HAVE_BZLIB_H="yes",
+			 HAVE_BZLIB_H="no")
+	if test "x$HAVE_BZLIB_H" = "xyes"; then
+		BZLIB_LIBS=-lbz2
+		AC_SUBST(BZLIB_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find bzlib.h])
+	fi
+
+	dnl ---------------------------------------------------------------------------
+	dnl - zlib
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(zlib.h,
+			 HAVE_ZLIB_H="yes",
+			 HAVE_ZLIB_H="no")
+	if test "x$HAVE_BZLIB_H" = "xyes"; then
+		ZLIB_LIBS=-lz
+		AC_SUBST(ZLIB_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find zlib.h])
+	fi
+fi
+
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 	PY_CHECK_MOD([UpdateManager.Core.MetaRelease],,
