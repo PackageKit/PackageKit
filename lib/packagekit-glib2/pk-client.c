@@ -1126,17 +1126,17 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *time
  * pk_client_distro_upgrade_cb:
  */
 static void
-pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gchar *name,
+pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *state_text, const gchar *name,
 			     const gchar *summary, PkClientState *state)
 {
-	PkUpdateStateEnum type_enum;
+	PkUpdateStateEnum state_enum;
 	PkDistroUpgrade *item;
-	type_enum = pk_update_state_enum_from_text (type_text);
+	state_enum = pk_update_state_enum_from_text (state_text);
 
 	/* add to results */
 	item = pk_distro_upgrade_new ();
 	g_object_set (item,
-		      "type", type_enum,
+		      "state", state_enum,
 		      "name", name,
 		      "summary", summary,
 		      NULL);
