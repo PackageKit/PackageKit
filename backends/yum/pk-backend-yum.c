@@ -29,11 +29,16 @@
 #define YUM_REPOS_DIRECTORY	"/etc/yum.repos.d"
 
 typedef struct {
-	PkBackendSpawn *spawn;
-	GFileMonitor *monitor;
-	ZifDownload *download;
-	ZifConfig *config;
-	ZifCompletion *completion;
+	PkBackendSpawn	*spawn;
+	GFileMonitor	*monitor;
+	GCancellable	*cancellable;
+	ZifDownload	*download;
+	ZifConfig	*config;
+	ZifStoreLocal	*store_local;
+	ZifRepos	*repos;
+	ZifGroups	*groups;
+	ZifCompletion	*completion;
+	ZifLock		*lock;
 } PkBackendYumPrivate;
 
 static PkBackendYumPrivate *priv;
@@ -78,6 +83,12 @@ backend_completion_percentage_changed_cb (ZifCompletion *completion, guint perce
 	pk_backend_set_percentage (backend, percentage);
 }
 
+static void
+backend_completion_subpercentage_changed_cb (ZifCompletion *completion, guint subpercentage, PkBackend *backend)
+{
+	pk_backend_set_sub_percentage (backend, subpercentage);
+}
+
 /**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
@@ -112,16 +123,55 @@ backend_initialize (PkBackend *backend)
 	/* init rpm */
 	zif_init ();
 
-	/* get zif objects */
+	/* TODO: hook up errors */
+	priv->cancellable = g_cancellable_new ();
+
+	/* ZifCompletion */
+	priv->completion = zif_completion_new ();
+	g_signal_connect (priv->completion, "percentage-changed", G_CALLBACK (backend_completion_percentage_changed_cb), backend);
+	g_signal_connect (priv->completion, "subpercentage-changed", G_CALLBACK (backend_completion_subpercentage_changed_cb), backend);
+
+	/* ZifConfig */
 	priv->config = zif_config_new ();
 	ret = zif_config_set_filename (priv->config, "/etc/yum.conf", &error);
 	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "load yum.conf: %s", error->message);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING, "failed to set config: %s", error->message);
+		g_error_free (error);
 		goto out;
 	}
+
+	/* ZifDownload */
 	priv->download = zif_download_new ();
-	priv->completion = zif_completion_new ();
-	g_signal_connect (priv->completion, "percentage-changed", G_CALLBACK (backend_completion_percentage_changed_cb), backend);
+
+	/* ZifLock */
+	priv->lock = zif_lock_new ();
+
+	/* ZifStoreLocal */
+	priv->store_local = zif_store_local_new ();
+	ret = zif_store_local_set_prefix (priv->store_local, "/", &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* ZifRepos */
+	priv->repos = zif_repos_new ();
+	ret = zif_repos_set_repos_dir (priv->repos, "/etc/yum.repos.d", &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "failed to set repos dir: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* ZifGroups */
+	priv->groups = zif_groups_new ();
+	ret = zif_groups_set_mapping_file (priv->groups, "/usr/share/PackageKit/helpers/yum/yum-comps-groups.conf", &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_LIST_INVALID, "failed to set mapping file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 out:
 	g_object_unref (file);
 }
@@ -143,6 +193,14 @@ backend_destroy (PkBackend *backend)
 		g_object_unref (priv->download);
 	if (priv->completion != NULL)
 		g_object_unref (priv->completion);
+	if (priv->repos != NULL)
+		g_object_unref (priv->repos);
+	if (priv->groups != NULL)
+		g_object_unref (priv->groups);
+	if (priv->store_local != NULL)
+		g_object_unref (priv->store_local);
+	if (priv->lock != NULL)
+		g_object_unref (priv->lock);
 	g_free (priv);
 }
 
