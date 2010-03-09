@@ -721,8 +721,8 @@ zif_sack_get_categories (ZifSack *sack, GCancellable *cancellable, ZifCompletion
 				g_object_unref (obj_tmp);
 				g_ptr_array_remove_index (array, j);
 			}
-			g_free (parent_id);
-			g_free (cat_id);
+			g_free (parent_id_tmp);
+			g_free (cat_id_tmp);
 		}
 		g_free (parent_id);
 		g_free (cat_id);

@@ -1879,13 +1879,7 @@ zif_store_remote_get_categories (ZifStore *store, GCancellable *cancellable, Zif
 			/* second, add the groups belonging to this parent */
 			for (j=0; j<array_groups->len; j++) {
 				group = g_ptr_array_index (array_groups, j);
-				category_tmp = pk_category_new ();
-				g_object_set (category_tmp,
-					      "parent-id", pk_category_get_id (category),
-					      "cat-id", pk_category_get_id (group),
-					      "name", pk_category_get_name (group),
-					      "summary", pk_category_get_summary (group),
-					      NULL);
+				category_tmp = g_object_ref (group);
 				g_ptr_array_add (array, category_tmp);
 			}
 		}

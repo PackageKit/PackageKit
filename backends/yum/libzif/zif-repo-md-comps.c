@@ -480,6 +480,37 @@ out:
 }
 
 /**
+ * zif_repo_md_comps_category_set_icon:
+ *
+ * Check the icon exists, otherwise fallback to the parent ID, and then
+ * something sane.
+ **/
+static void
+zif_repo_md_comps_category_set_icon (PkCategory *category)
+{
+	const gchar *icon;
+	GString *filename = g_string_new ("");
+
+	/* try the proper group icon */
+	icon = pk_category_get_id (category);
+	g_string_printf (filename, "/usr/share/pixmaps/comps/%s.png", icon);
+	if (g_file_test (filename->str, G_FILE_TEST_EXISTS))
+		goto out;
+
+	/* fall back to parent icon */
+	icon = pk_category_get_parent_id (category);
+	g_string_printf (filename, "/usr/share/pixmaps/comps/%s.png", icon);
+	if (g_file_test (filename->str, G_FILE_TEST_EXISTS))
+		goto out;
+
+	/* fall back to the missing icon */
+	icon = "image-missing";
+out:
+	pk_category_set_icon (category, icon);
+	g_string_free (filename, TRUE);
+}
+
+/**
  * zif_repo_md_comps_get_categories:
  * @md: the #ZifRepoMdComps object
  * @cancellable: the %GCancellable, or %NULL
@@ -488,7 +519,7 @@ out:
  *
  * Gets the available list of categories.
  *
- * Return value: %PkCategory array of categories
+ * Return value: %PkCategory array of categories, with parent_id set to %NULL
  **/
 GPtrArray *
 zif_repo_md_comps_get_categories (ZifRepoMdComps *md, GCancellable *cancellable,
@@ -524,6 +555,7 @@ zif_repo_md_comps_get_categories (ZifRepoMdComps *md, GCancellable *cancellable,
 		pk_category_set_id (category, data->id);
 		pk_category_set_name (category, data->name);
 		pk_category_set_summary (category, data->description);
+		zif_repo_md_comps_category_set_icon (category);
 		g_ptr_array_add (array, category);
 	}
 out:
@@ -608,8 +640,13 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 				id = g_ptr_array_index (data->grouplist, j);
 				/* find group matching group_id */
 				category = zif_repo_md_comps_get_category_for_group (md, id);
-				if (category != NULL)
-					g_ptr_array_add (array, category);
+				if (category == NULL)
+					continue;
+
+				/* add */
+				pk_category_set_parent_id (category, category_id);
+				zif_repo_md_comps_category_set_icon (category);
+				g_ptr_array_add (array, category);
 			}
 			break;
 		}
