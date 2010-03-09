@@ -450,8 +450,7 @@ zif_repo_md_comps_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion 
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get filename for comps");
+		g_set_error_literal (error, 1, 0, "failed to get filename for comps");
 		goto out;
 	}
 
@@ -539,8 +538,7 @@ zif_repo_md_comps_get_categories (ZifRepoMdComps *md, GCancellable *cancellable,
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -621,8 +619,7 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -654,8 +651,7 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 
 	/* nothing found */
 	if (array == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not find category: %s", category_id);
+		g_set_error (error, 1, 0, "could not find category: %s", category_id);
 	}
 out:
 	return array;
@@ -693,8 +689,7 @@ zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -718,8 +713,7 @@ zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group
 
 	/* nothing found */
 	if (array == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not find group: %s", group_id);
+		g_set_error (error, 1, 0, "could not find group: %s", group_id);
 	}
 out:
 	return array;

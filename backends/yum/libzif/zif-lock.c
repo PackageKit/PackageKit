@@ -175,8 +175,7 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 	/* already locked */
 	ret = zif_lock_is_locked (lock, &pid_tmp);
 	if (ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "already locked by %i", pid_tmp);
+		g_set_error (error, 1, 0, "already locked by %i", pid_tmp);
 		if (pid != NULL)
 			*pid = pid_tmp;
 		ret = FALSE;
@@ -185,8 +184,7 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 
 	/* no lock file set */
 	if (lock->priv->filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "lock file not set");
+		g_set_error_literal (error, 1, 0, "lock file not set");
 		ret = FALSE;
 		goto out;
 	}
@@ -196,8 +194,7 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 	pid_text = g_strdup_printf ("%i", pid_tmp);
 	ret = g_file_set_contents (lock->priv->filename, pid_text, -1, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to write: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to write: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -241,16 +238,14 @@ zif_lock_set_unlocked (ZifLock *lock, GError **error)
 	/* are we already locked */
 	ret = zif_lock_is_locked (lock, &pid);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
 	/* is it locked by somethine that isn't us? */
 	pid_tmp = getpid ();
 	if (pid != pid_tmp) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "locked by %i, cannot unlock", pid_tmp);
+		g_set_error (error, 1, 0, "locked by %i, cannot unlock", pid_tmp);
 		ret = FALSE;
 		goto out;
 	}
@@ -260,8 +255,7 @@ skip_checks:
 	/* remove file */
 	retval = g_unlink (lock->priv->filename);
 	if (retval != 0) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "cannot remove %s, cannot unlock", lock->priv->filename);
+		g_set_error (error, 1, 0, "cannot remove %s, cannot unlock", lock->priv->filename);
 		ret = FALSE;
 		goto out;
 	}

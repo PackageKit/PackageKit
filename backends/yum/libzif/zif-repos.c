@@ -82,16 +82,14 @@ zif_repos_set_repos_dir (ZifRepos *repos, const gchar *repos_dir, GError **error
 	/* check directory exists */
 	ret = g_file_test (repos_dir, G_FILE_TEST_IS_DIR);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "repo directory %s does not exist", repos_dir);
+		g_set_error (error, 1, 0, "repo directory %s does not exist", repos_dir);
 		goto out;
 	}
 
 	/* setup watch */
 	ret = zif_monitor_add_watch (repos->priv->monitor, repos_dir, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to setup watch: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to setup watch: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -121,8 +119,7 @@ zif_repos_get_for_filename (ZifRepos *repos, const gchar *filename, GCancellable
 	path = g_build_filename (repos->priv->repos_dir, filename, NULL);
 	ret = g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to load %s: %s", path, error_local->message);
+		g_set_error (error, 1, 0, "failed to load %s: %s", path, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -139,8 +136,7 @@ zif_repos_get_for_filename (ZifRepos *repos, const gchar *filename, GCancellable
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_remote_set_from_file (store, path, repos_groups[i], cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to set from %s: %s", path, error_local->message);
+			g_set_error (error, 1, 0, "failed to set from %s: %s", path, error_local->message);
 			g_error_free (error_local);
 			break;
 		}
@@ -189,8 +185,7 @@ zif_repos_load (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *compl
 	/* search repos dir */
 	dir = g_dir_open (repos->priv->repos_dir, 0, &error_local);
 	if (dir == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to list directory: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to list directory: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -216,8 +211,7 @@ zif_repos_load (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *compl
 		filename = g_ptr_array_index (repofiles, i);
 		ret = zif_monitor_add_watch (repos->priv->monitor, filename, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to setup watch: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to setup watch: %s", error_local->message);
 			g_error_free (error_local);
 			break;
 		}
@@ -226,8 +220,7 @@ zif_repos_load (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *compl
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_repos_get_for_filename (repos, filename, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get filename %s: %s", filename, error_local->message);
+			g_set_error (error, 1, 0, "failed to get filename %s: %s", filename, error_local->message);
 			g_error_free (error_local);
 			g_ptr_array_set_size (repos->priv->list, 0);
 			ret = FALSE;
@@ -250,8 +243,7 @@ zif_repos_load (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *compl
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_remote_get_enabled (store, cancellable, completion_local, &error_local);
 		if (error_local != NULL) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get repo state for %s: %s", zif_store_get_id (ZIF_STORE (store)), error_local->message);
+			g_set_error (error, 1, 0, "failed to get repo state for %s: %s", zif_store_get_id (ZIF_STORE (store)), error_local->message);
 			g_ptr_array_set_size (repos->priv->enabled, 0);
 			ret = FALSE;
 			goto out;
@@ -299,8 +291,7 @@ zif_repos_get_stores (ZifRepos *repos, GCancellable *cancellable, ZifCompletion 
 	if (!repos->priv->loaded) {
 		ret = zif_repos_load (repos, cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load repos: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load repos: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -338,8 +329,7 @@ zif_repos_get_stores_enabled (ZifRepos *repos, GCancellable *cancellable, ZifCom
 	if (!repos->priv->loaded) {
 		ret = zif_repos_load (repos, cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load enabled repos: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load enabled repos: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -384,8 +374,7 @@ zif_repos_get_store (ZifRepos *repos, const gchar *id, GCancellable *cancellable
 	if (!repos->priv->loaded) {
 		ret = zif_repos_load (repos, cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load repos: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load repos: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -398,8 +387,7 @@ zif_repos_get_store (ZifRepos *repos, const gchar *id, GCancellable *cancellable
 		/* get the id */
 		id_tmp = zif_store_get_id (ZIF_STORE (store_tmp));
 		if (id_tmp == NULL) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get id");
+			g_set_error_literal (error, 1, 0, "failed to get id");
 			goto out;
 		}
 

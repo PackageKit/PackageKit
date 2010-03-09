@@ -93,8 +93,7 @@ zif_repo_md_primary_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletio
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get filename for primary");
+		g_set_error_literal (error, 1, 0, "failed to get filename for primary");
 		goto out;
 	}
 
@@ -103,8 +102,7 @@ zif_repo_md_primary_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletio
 	rc = sqlite3_open (filename, &primary->priv->db);
 	if (rc != 0) {
 		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (primary->priv->db));
-		if (error != NULL)
-			*error = g_error_new (1, 0, "can't open database: %s", sqlite3_errmsg (primary->priv->db));
+		g_set_error (error, 1, 0, "can't open database: %s", sqlite3_errmsg (primary->priv->db));
 		goto out;
 	}
 
@@ -149,8 +147,7 @@ zif_repo_md_primary_search (ZifRepoMdPrimary *md, const gchar *pred, GCancellabl
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load repo_md_primary file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load repo_md_primary file: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -166,8 +163,7 @@ zif_repo_md_primary_search (ZifRepoMdPrimary *md, const gchar *pred, GCancellabl
 				     "rpm_license, rpm_group, size_package, location_href FROM packages %s", pred);
 	rc = sqlite3_exec (md->priv->db, statement, zif_repo_md_primary_sqlite_create_package_cb, data, &error_msg);
 	if (rc != SQLITE_OK) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "SQL error: %s\n", error_msg);
+		g_set_error (error, 1, 0, "SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		g_ptr_array_unref (data->packages);
 		goto out;

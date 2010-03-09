@@ -105,26 +105,22 @@ zif_download_file_finished_cb (SoupMessage *msg, ZifDownload *download)
 }
 
 /**
- * zif_download_cancel:
+ * zif_download_cancelled_cb:
  **/
-gboolean
-zif_download_cancel (ZifDownload *download, GError **error)
+static void
+zif_download_cancelled_cb (GCancellable *cancellable, ZifDownload *download)
 {
-	gboolean ret = FALSE;
+	g_return_if_fail (ZIF_IS_DOWNLOAD (download));
 
-	g_return_val_if_fail (ZIF_IS_DOWNLOAD (download), FALSE);
-
+	/* check we have a download */
 	if (download->priv->msg == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no download in progress");
-		goto out;
+		egg_debug ("nothing to cancel");
+		return;
 	}
 
 	/* cancel */
+	egg_warning ("cancelling download");
 	soup_session_cancel_message (download->priv->session, download->priv->msg, SOUP_STATUS_CANCELLED);
-	ret = TRUE;
-out:
-	return ret;
 }
 
 /**
@@ -147,6 +143,7 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 	SoupURI *base_uri;
 	SoupMessage *msg = NULL;
 	GError *error_local = NULL;
+	gulong cancellable_id = 0;
 
 	g_return_val_if_fail (ZIF_IS_DOWNLOAD (download), FALSE);
 	g_return_val_if_fail (uri != NULL, FALSE);
@@ -157,18 +154,22 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 	/* save an instance of the completion object */
 	download->priv->completion = g_object_ref (completion);
 
+	/* set up cancel */
+	if (cancellable != NULL) {
+		g_cancellable_reset (cancellable);
+		cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (zif_download_cancelled_cb), download, NULL);
+	}
+
 	base_uri = soup_uri_new (uri);
 	if (base_uri == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not parse uri: %s", uri);
+		g_set_error (error, 1, 0, "could not parse uri: %s", uri);
 		goto out;
 	}
 
 	/* GET package */
 	msg = soup_message_new_from_uri (SOUP_METHOD_GET, base_uri);
 	if (msg == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not setup message");
+		g_set_error_literal (error, 1, 0, "could not setup message");
 		goto out;
 	}
 
@@ -187,20 +188,20 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 
 	/* find length */
 	if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get valid response for %s: %s", uri, soup_status_get_phrase (msg->status_code));
+		g_set_error (error, 1, 0, "failed to get valid response for %s: %s", uri, soup_status_get_phrase (msg->status_code));
 		goto out;
 	}
 
 	/* write file */
 	ret = g_file_set_contents (filename, msg->response_body->data, msg->response_body->length, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to write file: %s",  error_local->message);
+		g_set_error (error, 1, 0, "failed to write file: %s",  error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
 out:
+	if (cancellable_id != 0)
+		g_cancellable_disconnect (cancellable, cancellable_id);
 	g_object_unref (download->priv->completion);
 	download->priv->completion = NULL;
 	if (base_uri != NULL)
@@ -233,8 +234,7 @@ zif_download_set_proxy (ZifDownload *download, const gchar *http_proxy, GError *
 								      SOUP_SESSION_TIMEOUT, connection_timeout,
 								      NULL);
 	if (download->priv->session == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "could not setup session");
+		g_set_error_literal (error, 1, 0, "could not setup session");
 		goto out;
 	}
 	ret = TRUE;
@@ -322,13 +322,10 @@ zif_download_progress_changed (ZifDownload *download, guint value, gpointer data
 }
 
 static gboolean
-zif_download_cancel_cb (ZifDownload *download)
+zif_download_cancel_cb (GCancellable *cancellable)
 {
-	gboolean ret;
-	GError *error = NULL;
-	ret = zif_download_cancel (download, &error);
-	if (!ret)
-		egg_error ("failed to cancel '%s'", error->message);
+	egg_debug ("sending cancel");
+	g_cancellable_cancel (cancellable);
 	return FALSE;
 }
 
@@ -337,6 +334,7 @@ zif_download_test (EggTest *test)
 {
 	ZifDownload *download;
 	ZifCompletion *completion;
+	GCancellable *cancellable;
 	gboolean ret;
 	GError *error = NULL;
 
@@ -346,6 +344,7 @@ zif_download_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get download");
 	download = zif_download_new ();
+	cancellable = g_cancellable_new ();
 	egg_test_assert (test, download != NULL);
 
 	completion = zif_completion_new ();
@@ -358,12 +357,12 @@ zif_download_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "cancel not yet started download");
-	ret = zif_download_cancel (download, NULL);
-	egg_test_assert (test, !ret);
+	g_cancellable_cancel (cancellable);
+	egg_test_assert (test, TRUE);
 
 	/************************************************************/
 	egg_test_title (test, "download file");
-	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", NULL, completion, &error);
+	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", cancellable, completion, &error);
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -377,19 +376,20 @@ zif_download_test (EggTest *test)
 		egg_test_failed (test, "got %i updates", _updates);
 
 	/* setup cancel */
-	g_timeout_add (50, (GSourceFunc) zif_download_cancel_cb, download);
+	g_timeout_add (50, (GSourceFunc) zif_download_cancel_cb, cancellable);
 
 	/************************************************************/
 	egg_test_title (test, "download second file (should be cancelled)");
 	zif_completion_reset (completion);
-	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", NULL, completion, &error);
+	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", cancellable, completion, &error);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "failed to load '%s'", error->message);
+		egg_test_failed (test, "failed to be cancelled");
 
 	g_object_unref (download);
 	g_object_unref (completion);
+	g_object_unref (cancellable);
 
 	egg_test_end (test);
 }

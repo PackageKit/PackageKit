@@ -92,8 +92,7 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 	/* check file exists */
 	ret = g_file_test (prefix, G_FILE_TEST_IS_DIR);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "prefix %s does not exist", prefix);
+		g_set_error (error, 1, 0, "prefix %s does not exist", prefix);
 		goto out;
 	}
 
@@ -101,8 +100,7 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 	filename = g_build_filename (prefix, "var", "lib", "rpm", "Packages", NULL);
 	ret = zif_monitor_add_watch (store->priv->monitor, filename, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to setup watch: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to setup watch: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -136,8 +134,7 @@ zif_store_local_load (ZifStore *store, GCancellable *cancellable, ZifCompletion 
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -150,8 +147,7 @@ zif_store_local_load (ZifStore *store, GCancellable *cancellable, ZifCompletion 
 
 	retval = rpmdbOpen (local->priv->prefix, &db, O_RDONLY, 0777);
 	if (retval != 0) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to open rpmdb");
+		g_set_error_literal (error, 1, 0, "failed to open rpmdb");
 		ret = FALSE;
 		goto out;
 	}
@@ -170,8 +166,7 @@ zif_store_local_load (ZifStore *store, GCancellable *cancellable, ZifCompletion 
 		package = zif_package_local_new ();
 		ret = zif_package_local_set_from_header (package, header, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to set from header: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to set from header: %s", error_local->message);
 			g_error_free (error_local);
 			g_object_unref (package);
 			break;
@@ -214,8 +209,7 @@ zif_store_local_search_name (ZifStore *store, const gchar *search, GCancellable 
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -230,8 +224,7 @@ zif_store_local_search_name (ZifStore *store, const gchar *search, GCancellable 
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -243,8 +236,7 @@ zif_store_local_search_name (ZifStore *store, const gchar *search, GCancellable 
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -295,8 +287,7 @@ zif_store_local_search_category (ZifStore *store, const gchar *search, GCancella
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -311,8 +302,7 @@ zif_store_local_search_category (ZifStore *store, const gchar *search, GCancella
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -324,8 +314,7 @@ zif_store_local_search_category (ZifStore *store, const gchar *search, GCancella
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -377,8 +366,7 @@ zif_store_local_search_details (ZifStore *store, const gchar *search, GCancellab
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -393,8 +381,7 @@ zif_store_local_search_details (ZifStore *store, const gchar *search, GCancellab
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -406,8 +393,7 @@ zif_store_local_search_details (ZifStore *store, const gchar *search, GCancellab
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -462,8 +448,7 @@ zif_store_local_search_group (ZifStore *store, const gchar *search, GCancellable
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -478,8 +463,7 @@ zif_store_local_search_group (ZifStore *store, const gchar *search, GCancellable
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -491,8 +475,7 @@ zif_store_local_search_group (ZifStore *store, const gchar *search, GCancellable
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -542,8 +525,7 @@ zif_store_local_search_file (ZifStore *store, const gchar *search, GCancellable 
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -558,8 +540,7 @@ zif_store_local_search_file (ZifStore *store, const gchar *search, GCancellable 
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -571,8 +552,7 @@ zif_store_local_search_file (ZifStore *store, const gchar *search, GCancellable 
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -586,8 +566,7 @@ zif_store_local_search_file (ZifStore *store, const gchar *search, GCancellable 
 		package = g_ptr_array_index (local->priv->packages, i);
 		files = zif_package_get_files (package, &error_local);
 		if (files == NULL) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get file lists: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to get file lists: %s", error_local->message);
 			g_error_free (error_local);
 			g_ptr_array_unref (array);
 			array = NULL;
@@ -631,8 +610,7 @@ zif_store_local_resolve (ZifStore *store, const gchar *search, GCancellable *can
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -647,8 +625,7 @@ zif_store_local_resolve (ZifStore *store, const gchar *search, GCancellable *can
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -660,8 +637,7 @@ zif_store_local_resolve (ZifStore *store, const gchar *search, GCancellable *can
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -714,8 +690,7 @@ zif_store_local_what_provides (ZifStore *store, const gchar *search, GCancellabl
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -730,8 +705,7 @@ zif_store_local_what_provides (ZifStore *store, const gchar *search, GCancellabl
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -743,8 +717,7 @@ zif_store_local_what_provides (ZifStore *store, const gchar *search, GCancellabl
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -796,8 +769,7 @@ zif_store_local_get_packages (ZifStore *store, GCancellable *cancellable, ZifCom
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -812,8 +784,7 @@ zif_store_local_get_packages (ZifStore *store, GCancellable *cancellable, ZifCom
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -825,8 +796,7 @@ zif_store_local_get_packages (ZifStore *store, GCancellable *cancellable, ZifCom
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -873,8 +843,7 @@ zif_store_local_find_package (ZifStore *store, const gchar *package_id, GCancell
 	ret = zif_lock_is_locked (local->priv->lock, NULL);
 	if (!ret) {
 		egg_warning ("not locked");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "not locked");
+		g_set_error_literal (error, 1, 0, "not locked");
 		goto out;
 	}
 
@@ -889,8 +858,7 @@ zif_store_local_find_package (ZifStore *store, const gchar *package_id, GCancell
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_local_load (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load package store: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load package store: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -902,8 +870,7 @@ zif_store_local_find_package (ZifStore *store, const gchar *package_id, GCancell
 	/* check we have packages */
 	if (local->priv->packages->len == 0) {
 		egg_warning ("no packages in sack, so nothing to do!");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "no packages in local sack");
+		g_set_error_literal (error, 1, 0, "no packages in local sack");
 		goto out;
 	}
 
@@ -925,15 +892,13 @@ zif_store_local_find_package (ZifStore *store, const gchar *package_id, GCancell
 
 	/* nothing */
 	if (array->len == 0) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to find package");
+		g_set_error_literal (error, 1, 0, "failed to find package");
 		goto out;
 	}
 
 	/* more than one match */
 	if (array->len > 1) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "more than one match");
+		g_set_error_literal (error, 1, 0, "more than one match");
 		goto out;
 	}
 

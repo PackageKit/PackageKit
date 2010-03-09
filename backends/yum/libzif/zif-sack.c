@@ -155,8 +155,7 @@ zif_sack_add_remote (ZifSack *sack, GCancellable *cancellable, ZifCompletion *co
 	repos = zif_repos_new ();
 	array = zif_repos_get_stores (repos, cancellable, completion, &error_local);
 	if (array == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get enabled stores: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to get enabled stores: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -197,8 +196,7 @@ zif_sack_add_remote_enabled (ZifSack *sack, GCancellable *cancellable, ZifComple
 	repos = zif_repos_new ();
 	array = zif_repos_get_stores_enabled (repos, cancellable, completion, &error_local);
 	if (array == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get enabled stores: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to get enabled stores: %s", error_local->message);
 		g_error_free (error_local);
 		ret = FALSE;
 		goto out;
@@ -235,8 +233,7 @@ zif_sack_repos_search (ZifSack *sack, PkRoleEnum role, const gchar *search, GCan
 	/* nothing to do */
 	if (stores->len == 0) {
 		egg_warning ("nothing to do");
-		if (error != NULL)
-			*error = g_error_new (1, 0, "nothing to do as no stores in sack");
+		g_set_error (error, 1, 0, "nothing to do as no stores in sack");
 		goto out;
 	}
 
@@ -275,8 +272,7 @@ zif_sack_repos_search (ZifSack *sack, PkRoleEnum role, const gchar *search, GCan
 		else
 			egg_error ("internal error: %s", pk_role_enum_to_text (role));
 		if (part == NULL) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to %s in %s: %s", pk_role_enum_to_text (role), zif_store_get_id (store), error_local->message);
+			g_set_error (error, 1, 0, "failed to %s in %s: %s", pk_role_enum_to_text (role), zif_store_get_id (store), error_local->message);
 			g_error_free (error_local);
 			g_ptr_array_unref (array);
 			array = NULL;
@@ -390,8 +386,7 @@ zif_sack_clean (ZifSack *sack, GCancellable *cancellable, ZifCompletion *complet
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_clean (store, cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to clean %s: %s", zif_store_get_id (store), error_local->message);
+			g_set_error (error, 1, 0, "failed to clean %s: %s", zif_store_get_id (store), error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -449,10 +444,6 @@ zif_sack_refresh (ZifSack *sack, gboolean force, GCancellable *cancellable, ZifC
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_refresh (store, force, cancellable, completion_local, &error_local);
 		if (!ret) {
-			//if (error != NULL)
-			//	*error = g_error_new (1, 0, "failed to refresh %s: %s", zif_store_get_id (store), error_local->message);
-			//g_error_free (error_local);
-			//goto out;
 			/* non-fatal */
 			g_print ("failed to refresh %s: %s\n", zif_store_get_id (store), error_local->message);
 			g_clear_error (&error_local);

@@ -83,16 +83,14 @@ zif_groups_set_mapping_file (ZifGroups *groups, const gchar *mapping_file, GErro
 	/* check file exists */
 	ret = g_file_test (mapping_file, G_FILE_TEST_IS_REGULAR);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "mapping file %s does not exist", mapping_file);
+		g_set_error (error, 1, 0, "mapping file %s does not exist", mapping_file);
 		goto out;
 	}
 
 	/* setup watch */
 	ret = zif_monitor_add_watch (groups->priv->monitor, mapping_file, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to setup watch: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to setup watch: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -139,8 +137,7 @@ zif_groups_load (ZifGroups *groups, GError **error)
 	/* get data */
 	ret = g_file_get_contents (groups->priv->mapping_file, &data, NULL, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get groups data: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to get groups data: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -196,8 +193,7 @@ zif_groups_get_groups (ZifGroups *groups, GError **error)
 	if (!groups->priv->loaded) {
 		ret = zif_groups_load (groups, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load config file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load config file: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -229,8 +225,7 @@ zif_groups_get_categories (ZifGroups *groups, GError **error)
 	if (!groups->priv->loaded) {
 		ret = zif_groups_load (groups, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load config file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load config file: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -268,8 +263,7 @@ zif_groups_get_group_for_cat (ZifGroups *groups, const gchar *cat, GError **erro
 	if (!groups->priv->loaded) {
 		ret = zif_groups_load (groups, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to load config file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to load config file: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}

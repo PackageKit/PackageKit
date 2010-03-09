@@ -517,13 +517,11 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* open the file for reading */
 	fd = Fopen(filename, "r.fdio"); 
 	if (fd == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to open %s", filename);
+		g_set_error (error, 1, 0, "failed to open %s", filename);
 		goto out;
 	}
 	if (Ferror(fd)) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to open %s: %s", filename, Fstrerror(fd));
+		g_set_error (error, 1, 0, "failed to open %s: %s", filename, Fstrerror(fd));
 		goto out;
 	}
 
@@ -536,8 +534,7 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* read in the file */
 	rc = rpmReadPackageFile (ts, fd, filename, &hdr);
 	if (rc != RPMRC_OK) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to read %s: %s", filename, zif_package_local_rpmrc_to_string (rc));
+		g_set_error (error, 1, 0, "failed to read %s: %s", filename, zif_package_local_rpmrc_to_string (rc));
 		goto out;
 	}
 
@@ -547,8 +544,7 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* set from header */
 	ret = zif_package_local_set_from_header (pkg, hdr, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to set from header: %s", error_local->message);
+		g_set_error (error, 1, 0, "failed to set from header: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -556,8 +552,7 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* close the database used by the transaction */
 	rc = rpmtsCloseDB (ts);
 	if (rc != RPMRC_OK) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to close: %s", zif_package_local_rpmrc_to_string (rc));
+		g_set_error (error, 1, 0, "failed to close: %s", zif_package_local_rpmrc_to_string (rc));
 		ret = FALSE;
 		goto out;
 	}

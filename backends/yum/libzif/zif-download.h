@@ -64,8 +64,6 @@ gboolean	 zif_download_file			(ZifDownload		*download,
 							 GCancellable		*cancellable,
 							 ZifCompletion		*completion,
 							 GError			**error);
-gboolean	 zif_download_cancel			(ZifDownload		*download,
-							 GError			**error);
 
 G_END_DECLS
 

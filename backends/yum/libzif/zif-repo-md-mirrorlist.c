@@ -89,8 +89,7 @@ zif_repo_md_mirrorlist_load (ZifRepoMd *md, GCancellable *cancellable, ZifComple
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get filename for mirrorlist");
+		g_set_error_literal (error, 1, 0, "failed to get filename for mirrorlist");
 		goto out;
 	}
 
@@ -148,8 +147,7 @@ zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancella
 	if (!mirrorlist->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to get uris from mirrorlist: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to get uris from mirrorlist: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -162,8 +160,7 @@ zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancella
 		data = g_ptr_array_index (mirrorlist->priv->array, i);
 		uri = zif_config_expand_substitutions (md->priv->config, data, &error_local);
 		if (uri == NULL) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to expand substitutions: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to expand substitutions: %s", error_local->message);
 			g_error_free (error_local);
 			/* rip apart what we've done already */
 			g_ptr_array_unref (array);

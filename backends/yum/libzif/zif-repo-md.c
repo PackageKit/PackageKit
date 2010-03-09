@@ -429,8 +429,7 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 
 	/* no support */
 	if (klass->load == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "operation cannot be performed on this md");
+		g_set_error_literal (error, 1, 0, "operation cannot be performed on this md");
 		return FALSE;
 	}
 
@@ -462,8 +461,7 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 		/* if not online, then this is fatal */
 		ret = zif_config_get_boolean (md->priv->config, "network", NULL);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to check %s checksum for %s and offline",
+			g_set_error (error, 1, 0, "failed to check %s checksum for %s and offline",
 						      zif_repo_md_type_to_text (md->priv->type), md->priv->id);
 			goto out;
 		}
@@ -471,16 +469,14 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 		/* TODO: download file */
 		//ret = download (&error_local)
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to download missing compressed file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to download missing compressed file: %s", error_local->message);
 			goto out;
 		}
 
 		/* check newly downloaded compressed file */
 		ret = zif_repo_md_file_check (md, FALSE, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed checksum on downloaded file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed checksum on downloaded file: %s", error_local->message);
 			goto out;
 		}
 	}
@@ -500,16 +496,14 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 		ret = zif_file_decompress (md->priv->filename, md->priv->filename_uncompressed,
 					   cancellable, completion_local, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to decompress: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed to decompress: %s", error_local->message);
 			goto out;
 		}
 
 		/* check newly uncompressed file */
 		ret = zif_repo_md_file_check (md, TRUE, &error_local);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed checksum on decompressed file: %s", error_local->message);
+			g_set_error (error, 1, 0, "failed checksum on decompressed file: %s", error_local->message);
 			goto out;
 		}
 	}
@@ -549,8 +543,7 @@ zif_repo_md_unload (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *com
 
 	/* no support */
 	if (klass->unload == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "operation cannot be performed on this md");
+		g_set_error_literal (error, 1, 0, "operation cannot be performed on this md");
 		return FALSE;
 	}
 
@@ -580,8 +573,7 @@ zif_repo_md_clean (ZifRepoMd *md, GError **error)
 	/* get filename */
 	filename = zif_repo_md_get_filename (md);
 	if (filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get filename for %s", zif_repo_md_type_to_text (md->priv->type));
+		g_set_error (error, 1, 0, "failed to get filename for %s", zif_repo_md_type_to_text (md->priv->type));
 		ret = FALSE;
 		goto out;
 	}
@@ -593,8 +585,7 @@ zif_repo_md_clean (ZifRepoMd *md, GError **error)
 		ret = g_file_delete (file, NULL, &error_local);
 		g_object_unref (file);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to delete metadata file %s: %s", filename, error_local->message);
+			g_set_error (error, 1, 0, "failed to delete metadata file %s: %s", filename, error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -603,8 +594,7 @@ zif_repo_md_clean (ZifRepoMd *md, GError **error)
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get uncompressed filename for %s", zif_repo_md_type_to_text (md->priv->type));
+		g_set_error (error, 1, 0, "failed to get uncompressed filename for %s", zif_repo_md_type_to_text (md->priv->type));
 		ret = FALSE;
 		goto out;
 	}
@@ -616,8 +606,7 @@ zif_repo_md_clean (ZifRepoMd *md, GError **error)
 		ret = g_file_delete (file, NULL, &error_local);
 		g_object_unref (file);
 		if (!ret) {
-			if (error != NULL)
-				*error = g_error_new (1, 0, "failed to delete metadata file %s: %s", filename, error_local->message);
+			g_set_error (error, 1, 0, "failed to delete metadata file %s: %s", filename, error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -703,8 +692,7 @@ zif_repo_md_file_check (ZifRepoMd *md, gboolean use_uncompressed, GError **error
 	/* get contents */
 	ret = g_file_get_contents (filename, &data, &length, &error_local);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "failed to get contents of %s: %s", filename, error_local->message);
+		g_set_error (error, 1, 0, "failed to get contents of %s: %s", filename, error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -717,8 +705,7 @@ zif_repo_md_file_check (ZifRepoMd *md, gboolean use_uncompressed, GError **error
 
 	/* no checksum set */
 	if (checksum_wanted == NULL) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "checksum not set for %s", filename);
+		g_set_error (error, 1, 0, "checksum not set for %s", filename);
 		ret = FALSE;
 		goto out;
 	}
@@ -729,8 +716,7 @@ zif_repo_md_file_check (ZifRepoMd *md, gboolean use_uncompressed, GError **error
 	/* matches? */
 	ret = (g_strcmp0 (checksum, checksum_wanted) == 0);
 	if (!ret) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "checksum incorrect, wanted %s, got %s for %s", checksum_wanted, checksum, filename);
+		g_set_error (error, 1, 0, "checksum incorrect, wanted %s, got %s for %s", checksum_wanted, checksum, filename);
 		goto out;
 	}
 	egg_debug ("%s checksum correct (%s)", filename, checksum_wanted);
