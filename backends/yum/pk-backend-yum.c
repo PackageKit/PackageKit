@@ -362,6 +362,9 @@ backend_get_mime_types (PkBackend *backend)
 static void
 backend_cancel (PkBackend *backend)
 {
+	/* try to cancel the thread first */
+	g_cancellable_cancel (priv->cancellable);
+
 	/* this feels bad... */
 	pk_backend_spawn_kill (priv->spawn);
 }
