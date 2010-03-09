@@ -888,25 +888,81 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ * backend_repo_enable_thread:
+ */
+static gboolean
+backend_repo_enable_thread (PkBackend *backend)
+{
+	ZifStoreRemote *repo = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	gchar *warning = NULL;
+	gboolean enabled = pk_backend_get_bool (backend, "enabled");
+	const gchar *repo_id = pk_backend_get_string (backend, "repo_id");
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	/* find the right repo */
+	repo = zif_repos_get_store (priv->repos, repo_id, priv->cancellable, priv->completion, &error);
+	if (repo == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "failed to find repo: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set the state */
+	ret = zif_store_remote_set_enabled (repo, enabled, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY, "failed to set enable: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* warn if rawhide */
+	if (g_strstr_len (repo_id, -1, "rawhide") != NULL) {
+		warning = g_strdup_printf ("These packages are untested and still under development."
+					   "This repository is used for development of new releases.\n\n"
+					   "This repository can see significant daily turnover and major "
+					   "functionality changes which cause unexpected problems with "
+					   "other development packages.\n"
+					   "Please use these packages if you want to work with the "
+					   "Fedora developers by testing these new development packages.\n\n"
+					   "If this is not correct, please disable the %s software source.", repo_id);
+		pk_backend_message (backend, PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY, warning);
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	g_free (warning);
+	if (repo != NULL)
+		g_object_unref (repo);
+	return TRUE;
+}
+
+/**
  * pk_backend_repo_enable:
  */
 static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 {
-	if (enabled == TRUE) {
-		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", rid, "true", NULL);
-	} else {
-		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", rid, "false", NULL);
-	}
+	pk_backend_thread_create (backend, backend_repo_enable_thread);
 }
 
 /**
  * pk_backend_repo_set_data:
  */
 static void
-backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-set-data", rid, parameter, value, NULL);
+	/* no operation */
+	pk_backend_finished (backend);
 }
 
 /**

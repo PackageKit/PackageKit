@@ -2408,40 +2408,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
 
-    def repo_enable(self, repoid, enable):
-        '''
-        Implement the repo-enable functionality
-        '''
-        try:
-            self._check_init()
-        except PkError, e:
-            self.error(e.code, e.details, exit=False)
-            return
-        self.yumbase.conf.cache = 0 # Allow new files
-        self.status(STATUS_INFO)
-        try:
-            repo = self.yumbase.repos.getRepo(repoid)
-            if not enable:
-                if repo.isEnabled():
-                    repo.disablePersistent()
-            else:
-                if not repo.isEnabled():
-                    repo.enablePersistent()
-                    if repoid.find ("rawhide") != -1:
-                        warning = "These packages are untested and still under development." \
-                                  "This repository is used for development of new releases.\n\n" \
-                                  "This repository can see significant daily turnover and major " \
-                                  "functionality changes which cause unexpected problems with " \
-                                  "other development packages.\n" \
-                                  "Please use these packages if you want to work with the " \
-                                  "Fedora developers by testing these new development packages.\n\n" \
-                                  "If this is not correct, please disable the %s software source." % repoid
-                        self.message(MESSAGE_REPO_FOR_DEVELOPERS_ONLY, warning.replace("\n", ";"))
-        except yum.Errors.RepoError, e:
-            self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-
     def _get_obsoleted(self, name):
         try:
             # make sure yum doesn't explode in some internal fit of rage
