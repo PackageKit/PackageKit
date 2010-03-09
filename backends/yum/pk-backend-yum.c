@@ -210,30 +210,22 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_COLLECTIONS,
-		PK_GROUP_ENUM_NEWEST,
-		PK_GROUP_ENUM_ADMIN_TOOLS,
-		PK_GROUP_ENUM_DESKTOP_GNOME,
-		PK_GROUP_ENUM_DESKTOP_KDE,
-		PK_GROUP_ENUM_DESKTOP_XFCE,
-		PK_GROUP_ENUM_DESKTOP_OTHER,
-		PK_GROUP_ENUM_EDUCATION,
-		PK_GROUP_ENUM_FONTS,
-		PK_GROUP_ENUM_GAMES,
-		PK_GROUP_ENUM_GRAPHICS,
-		PK_GROUP_ENUM_INTERNET,
-		PK_GROUP_ENUM_LEGACY,
-		PK_GROUP_ENUM_LOCALIZATION,
-		PK_GROUP_ENUM_MULTIMEDIA,
-		PK_GROUP_ENUM_OFFICE,
-		PK_GROUP_ENUM_OTHER,
-		PK_GROUP_ENUM_PROGRAMMING,
-		PK_GROUP_ENUM_PUBLISHING,
-		PK_GROUP_ENUM_SERVERS,
-		PK_GROUP_ENUM_SYSTEM,
-		PK_GROUP_ENUM_VIRTUALIZATION,
-		-1);
+	GError *error = NULL;
+	PkBitfield groups;
+
+	/* get the dynamic group list */
+	groups = zif_groups_get_groups (priv->groups, &error);
+	if (groups == 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_LIST_INVALID, "failed to get the list of groups: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* add the virtual groups */
+	pk_bitfield_add (groups, PK_GROUP_ENUM_COLLECTIONS);
+	pk_bitfield_add (groups, PK_GROUP_ENUM_NEWEST);
+out:
+	return groups;
 }
 
 /**
