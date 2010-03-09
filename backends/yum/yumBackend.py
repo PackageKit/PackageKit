@@ -2442,24 +2442,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def get_repo_list(self, filters):
-        '''
-        Implement the get-repo-list functionality
-        '''
-        self._check_init()
-        self.yumbase.conf.cache = 0 # Allow new files
-        self.status(STATUS_INFO)
-
-        try:
-            repos = self.yumbase.repos.repos.values()
-        except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-            return
-        for repo in repos:
-            if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
-                enabled = repo.isEnabled()
-                self.repo_detail(repo.id, repo.name, enabled)
-
     def _get_obsoleted(self, name):
         try:
             # make sure yum doesn't explode in some internal fit of rage

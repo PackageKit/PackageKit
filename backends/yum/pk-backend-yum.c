@@ -25,8 +25,10 @@
 #include <string.h>
 #include <zif.h>
 
-#define PREUPGRADE_BINARY	"/usr/bin/preupgrade"
-#define YUM_REPOS_DIRECTORY	"/etc/yum.repos.d"
+#define PREUPGRADE_BINARY			"/usr/bin/preupgrade"
+#define YUM_REPOS_DIRECTORY			"/etc/yum.repos.d"
+#define YUM_BACKEND_LOCKING_RETRIES		10
+#define YUM_BACKEND_LOCKING_DELAY		2 /* seconds */
 
 typedef struct {
 	PkBackendSpawn	*spawn;
@@ -87,6 +89,59 @@ static void
 backend_completion_subpercentage_changed_cb (ZifCompletion *completion, guint subpercentage, PkBackend *backend)
 {
 	pk_backend_set_sub_percentage (backend, subpercentage);
+}
+
+/**
+ * backend_get_lock:
+ */
+static gboolean
+backend_get_lock (PkBackend *backend)
+{
+	guint i;
+	guint pid;
+	gboolean ret = FALSE;
+	GError *error = NULL;
+
+	for (i=0; i<YUM_BACKEND_LOCKING_RETRIES; i++) {
+
+		/* try to lock */
+		ret = zif_lock_set_locked (priv->lock, &pid, &error);
+		if (ret)
+			break;
+
+		/* we're now waiting */
+		pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+
+		/* now wait */
+		egg_debug ("Failed to lock on try %i of %i, already locked by PID %i (sleeping for %i seconds): %s\n",
+			   i+1, YUM_BACKEND_LOCKING_RETRIES, pid, YUM_BACKEND_LOCKING_DELAY, error->message);
+		g_clear_error (&error);
+		g_usleep (YUM_BACKEND_LOCKING_DELAY * G_USEC_PER_SEC);
+	}
+
+	/* we failed */
+	if (!ret)
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "failed to get lock, held by PID: %i", pid);
+
+	return ret;
+}
+
+/**
+ * backend_unlock:
+ */
+static gboolean
+backend_unlock (PkBackend *backend)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	/* try to unlock */
+	ret = zif_lock_set_unlocked (priv->lock, &error);
+	if (!ret) {
+		egg_warning ("failed to unlock: %s", error->message);
+		g_error_free (error);
+	}
+	return ret;
 }
 
 /**
@@ -742,15 +797,94 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 }
 
 /**
+ * backend_get_repo_list_thread:
+ */
+static gboolean
+backend_get_repo_list_thread (PkBackend *backend)
+{
+	gboolean ret;
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	guint i;
+	GPtrArray *array = NULL;
+	ZifStoreRemote *store;
+	ZifCompletion *completion_local;
+	const gchar *repo_id;
+	const gchar *name;
+	gboolean enabled;
+	gboolean devel;
+	GError *error = NULL;
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, 2);
+
+	completion_local = zif_completion_get_child (priv->completion);
+	array = zif_repos_get_stores (priv->repos, priv->cancellable, completion_local, &error);
+	if (array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "failed to find repos: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* none? */
+	if (array->len == 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "failed to find any repos");
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* setup completion */
+	completion_local = zif_completion_get_child (priv->completion);
+	zif_completion_set_number_steps (completion_local, array->len);
+
+	/* looks at each store */
+	for (i=0; i<array->len; i++) {
+		store = g_ptr_array_index (array, i);
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+			/* TODO: completion */
+			devel = zif_store_remote_is_devel (store, priv->cancellable, NULL, NULL);
+			if (devel)
+				continue;
+		}
+		repo_id = zif_store_get_id (ZIF_STORE (store));
+		/* TODO: completion */
+		name = zif_store_remote_get_name (store, priv->cancellable, NULL, NULL);
+		/* TODO: completion */
+		enabled = zif_store_remote_get_enabled (store, priv->cancellable, NULL, NULL);
+		pk_backend_repo_detail (backend, repo_id, name, enabled);
+
+		/* this section done */
+		zif_completion_done (completion_local);
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return TRUE;
+}
+
+/**
  * pk_backend_get_repo_list:
  */
 static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
-	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-repo-list", filters_text, NULL);
-	g_free (filters_text);
+	pk_backend_thread_create (backend, backend_get_repo_list_thread);
 }
 
 /**

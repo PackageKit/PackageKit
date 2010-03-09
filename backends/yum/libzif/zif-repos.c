@@ -291,9 +291,7 @@ zif_repos_get_stores (ZifRepos *repos, GCancellable *cancellable, ZifCompletion 
 {
 	GPtrArray *array = NULL;
 	GError *error_local;
-	ZifStoreRemote *store;
 	gboolean ret;
-	guint i;
 
 	g_return_val_if_fail (ZIF_IS_REPOS (repos), FALSE);
 
@@ -309,11 +307,7 @@ zif_repos_get_stores (ZifRepos *repos, GCancellable *cancellable, ZifCompletion 
 	}
 
 	/* make a copy */
-	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	for (i=0; i<repos->priv->list->len; i++) {
-		store = g_ptr_array_index (repos->priv->list, i);
-		g_ptr_array_add (array, g_object_ref (store));
-	}
+	array = g_ptr_array_ref (repos->priv->list);
 out:
 	return array;
 }
@@ -427,6 +421,7 @@ zif_repos_file_monitor_cb (ZifMonitor *monitor, ZifRepos *repos)
 {
 	g_ptr_array_set_size (repos->priv->list, 0);
 	g_ptr_array_set_size (repos->priv->enabled, 0);
+	repos->priv->loaded = FALSE;
 	egg_debug ("repo file changed");
 }
 
