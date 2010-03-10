@@ -704,7 +704,7 @@ zif_package_get_category (ZifPackage *package, GError **error)
 
 	/* not exists */
 	if (package->priv->category == NULL) {
-		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_GROUP, error);
+		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_CATEGORY, error);
 		if (!ret)
 			return NULL;
 	}
@@ -729,7 +729,7 @@ zif_package_get_group (ZifPackage *package, GError **error)
 
 	/* not exists */
 	if (package->priv->group == PK_GROUP_ENUM_UNKNOWN) {
-		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_FILES, error);
+		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_GROUP, error);
 		if (!ret)
 			return PK_GROUP_ENUM_UNKNOWN;
 	}

@@ -171,6 +171,25 @@ backend_get_lock (PkBackend *backend)
 }
 
 /**
+ * backend_is_all_installed:
+ */
+static gboolean
+backend_is_all_installed (gchar **package_ids)
+{
+	guint i;
+	gboolean ret = TRUE;
+
+	/* check if we can use zif */
+	for (i=0; package_ids[i] != NULL; i++) {
+		if (!g_str_has_suffix (package_ids[i], ";installed")) {
+			ret = FALSE;
+			break;
+		}
+	}
+	return ret;
+}
+
+/**
  * backend_unlock:
  */
 static gboolean
@@ -462,6 +481,102 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	g_free (package_ids_temp);
 }
 
+
+/**
+ * backend_get_details_thread:
+ */
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	gboolean ret;
+	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	GPtrArray *store_array = NULL;
+	ZifPackage *package;
+	ZifCompletion *completion_local;
+	const gchar *id;
+	guint i;
+	guint len;
+	GError *error = NULL;
+	ZifString *license;
+	ZifString *description;
+	ZifString *url;
+	PkGroupEnum group;
+	guint64 size;
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	len = g_strv_length (package_ids);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, len + 1);
+
+	/* find all the packages */
+	completion_local = zif_completion_get_child (priv->completion);
+//	store_array = backend_get_default_store_array_for_filter (backend, PK_FILTER_ENUM_UNKNOWN, completion_local);
+{
+	ZifStore *store;
+	store = ZIF_STORE (zif_store_local_new ());
+	store_array = zif_store_array_new ();
+	zif_store_array_add_store (store_array, store);
+	g_object_unref (store);
+}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = package_ids[i];
+		completion_local = zif_completion_get_child (priv->completion);
+		package = zif_store_array_find_package (store_array, id, priv->cancellable, completion_local, &error);
+		if (package == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "failed to find %s: %s", package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* get data */
+		license = zif_package_get_license (package, NULL);
+		group = zif_package_get_group (package, NULL);
+		description = zif_package_get_description (package, NULL);
+		url = zif_package_get_url (package, NULL);
+		size = zif_package_get_size (package, NULL);
+
+		/* emit */
+		pk_backend_details (backend,
+				    package_ids[i],
+				    zif_string_get_value (license),
+				    group,
+				    zif_string_get_value (description),
+				    zif_string_get_value (url),
+				    (gulong) size);
+
+		/* this section done */
+		zif_completion_done (priv->completion);
+
+		/* free */
+		zif_string_unref (license);
+		zif_string_unref (description);
+		zif_string_unref (url);
+		g_object_unref (package);
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+	return TRUE;
+}
+
 /**
  * backend_get_details:
  */
@@ -469,6 +584,15 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	gboolean ret;
+
+	/* check if we can use zif */
+	ret = backend_is_all_installed (package_ids);
+	if (ret) {
+		pk_backend_thread_create (backend, backend_get_details_thread);
+		return;
+	}
+
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
 	g_free (package_ids_temp);
@@ -693,25 +817,6 @@ out:
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
 	return TRUE;
-}
-
-/**
- * backend_is_all_installed:
- */
-static gboolean
-backend_is_all_installed (gchar **package_ids)
-{
-	guint i;
-	gboolean ret = TRUE;
-
-	/* check if we can use zif */
-	for (i=0; package_ids[i] != NULL; i++) {
-		if (!g_str_has_suffix (package_ids[i], ";installed")) {
-			ret = FALSE;
-			break;
-		}
-	}
-	return ret;
 }
 
 /**

@@ -359,10 +359,17 @@ zif_package_local_ensure_data (ZifPackage *pkg, ZifPackageEnsureType type, GErro
 		if (size != 0)
 			zif_package_set_size (pkg, size);
 
-	} else if (type == ZIF_PACKAGE_ENSURE_TYPE_GROUP) {
-		/* category && group */
+	} else if (type == ZIF_PACKAGE_ENSURE_TYPE_CATEGORY) {
+		/* category */
 		tmp = zif_get_header_string (header, RPMTAG_GROUP);
 		zif_package_set_category (pkg, tmp);
+		zif_string_unref (tmp);
+
+	} else if (type == ZIF_PACKAGE_ENSURE_TYPE_GROUP) {
+		/* group */
+		tmp = zif_package_get_category (pkg, error);
+		if (tmp == NULL)
+			goto out;
 		group = zif_groups_get_group_for_cat (ZIF_PACKAGE_LOCAL (pkg)->priv->groups, zif_string_get_value (tmp), NULL);
 		if (group != PK_GROUP_ENUM_UNKNOWN)
 			zif_package_set_group (pkg, group);
