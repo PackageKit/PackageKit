@@ -37,7 +37,7 @@ BuildRequires: pam-devel
 BuildRequires: libX11-devel
 BuildRequires: xmlto
 BuildRequires: sqlite-devel
-BuildRequires: NetworkManager-glib-devel >= %{libnm_glib_version}
+BuildRequires: NetworkManager-devel >= %{libnm_glib_version}
 BuildRequires: polkit-devel >= %{polkit_version}
 BuildRequires: libtool
 BuildRequires: docbook-utils

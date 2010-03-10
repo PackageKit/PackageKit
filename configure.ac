@@ -148,7 +148,7 @@ GLIB_REQUIRED=2.22.0
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
-LIBNM_GLIB_REQUIRED=0.6.4
+NETWORK_MANAGER_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.92
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
@@ -286,11 +286,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),
 		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
-	PKG_CHECK_MODULES(LIBNM, libnm-glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-	# look for the old name for the library too
-	if test "x$PK_BUILD_NETWORKMANAGER" = "xno"; then
-		PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-	fi
+	PKG_CHECK_MODULES(NETWORK_MANAGER, NetworkManager >= $NETWORK_MANAGER_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
 		networking_apis="${networking_apis},NetworkManager"
 		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
@@ -304,8 +300,8 @@ else
 fi
 
 AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
-AC_SUBST(LIBNM_CFLAGS)
-AC_SUBST(LIBNM_LIBS)
+AC_SUBST(NETWORK_MANAGER_CFLAGS)
+AC_SUBST(NETWORK_MANAGER_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
