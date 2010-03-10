@@ -30,6 +30,8 @@
 #define YUM_BACKEND_LOCKING_RETRIES		10
 #define YUM_BACKEND_LOCKING_DELAY		2 /* seconds */
 
+static gboolean use_zif = TRUE;
+
 typedef struct {
 	PkBackendSpawn	*spawn;
 	GFileMonitor	*monitor;
@@ -238,6 +240,10 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 	}
 
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif)
+		goto out;
+
 	/* use a timer for profiling */
 	priv->timer = g_timer_new ();
 
@@ -350,6 +356,35 @@ backend_get_groups (PkBackend *backend)
 {
 	GError *error = NULL;
 	PkBitfield groups;
+
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		groups = pk_bitfield_from_enums (
+			PK_GROUP_ENUM_COLLECTIONS,
+			PK_GROUP_ENUM_NEWEST,
+			PK_GROUP_ENUM_ADMIN_TOOLS,
+			PK_GROUP_ENUM_DESKTOP_GNOME,
+			PK_GROUP_ENUM_DESKTOP_KDE,
+			PK_GROUP_ENUM_DESKTOP_XFCE,
+			PK_GROUP_ENUM_DESKTOP_OTHER,
+			PK_GROUP_ENUM_EDUCATION,
+			PK_GROUP_ENUM_FONTS,
+			PK_GROUP_ENUM_GAMES,
+			PK_GROUP_ENUM_GRAPHICS,
+			PK_GROUP_ENUM_INTERNET,
+			PK_GROUP_ENUM_LEGACY,
+			PK_GROUP_ENUM_LOCALIZATION,
+			PK_GROUP_ENUM_MULTIMEDIA,
+			PK_GROUP_ENUM_OFFICE,
+			PK_GROUP_ENUM_OTHER,
+			PK_GROUP_ENUM_PROGRAMMING,
+			PK_GROUP_ENUM_PUBLISHING,
+			PK_GROUP_ENUM_SERVERS,
+			PK_GROUP_ENUM_SYSTEM,
+			PK_GROUP_ENUM_VIRTUALIZATION,
+			-1);
+		goto out;
+	}
 
 	/* get the dynamic group list */
 	groups = zif_groups_get_groups (priv->groups, &error);
@@ -588,7 +623,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 
 	/* check if we can use zif */
 	ret = backend_is_all_installed (package_ids);
-	if (ret) {
+	if (ret && use_zif) {
 		pk_backend_thread_create (backend, backend_get_details_thread);
 		return;
 	}
@@ -710,6 +745,12 @@ out:
 static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-distro-upgrades", NULL);
+		return;
+	}
+
 	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
 }
 
@@ -830,7 +871,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 
 	/* check if we can use zif */
 	ret = backend_is_all_installed (package_ids);
-	if (ret) {
+	if (ret && use_zif) {
 		pk_backend_thread_create (backend, backend_get_files_thread);
 		return;
 	}
@@ -1195,6 +1236,15 @@ out:
 static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-repo-list", filters_text, NULL);
+		g_free (filters_text);
+		return;
+	}
+
 	pk_backend_thread_create (backend, backend_get_repo_list_thread);
 }
 
@@ -1267,6 +1317,15 @@ out:
 static void
 backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 {
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		if (enabled == TRUE) {
+			pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "true", NULL);
+		} else {
+			pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "false", NULL);
+		}
+		return;
+	}
 	pk_backend_thread_create (backend, backend_repo_enable_thread);
 }
 
@@ -1522,6 +1581,11 @@ out:
 static void
 backend_get_categories (PkBackend *backend)
 {
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-categories", NULL);
+		return;
+	}
 	pk_backend_thread_create (backend, backend_get_categories_thread);
 }
 

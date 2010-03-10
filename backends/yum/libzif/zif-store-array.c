@@ -295,10 +295,9 @@ zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, G
 	ZifPackage *package = NULL;
 	ZifCompletion *completion_local = NULL;
 
-
 	/* nothing to do */
 	if (store_array->len == 0) {
-		egg_debug ("nothing to do");
+		g_set_error_literal (error, 1, 0, "package cannot be found as the store array is empty");
 		goto out;
 	}
 
@@ -316,6 +315,12 @@ zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, G
 
 		/* this section done */
 		zif_completion_done (completion);
+	}
+
+	/* nothing to do */
+	if (package == NULL) {
+		g_set_error_literal (error, 1, 0, "package cannot be found");
+		goto out;
 	}
 out:
 	return package;

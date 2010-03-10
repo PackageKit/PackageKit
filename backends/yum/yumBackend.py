@@ -790,6 +790,72 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     package_list = pkgfilter.post_process()
                     self._show_package_list(package_list)
 
+    def get_categories(self):
+        '''
+        Implement the get-categories functionality
+        '''
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        cats = []
+        try:
+            cats = self.yumbase.comps.categories
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_NO_CACHE, "failed to get comps list: %s" %_to_unicode(e), exit=False)
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        else:
+            if len(cats) == 0:
+                self.error(ERROR_GROUP_LIST_INVALID, "no comps categories", exit=False)
+                return
+            for cat in cats:
+                cat_id = cat.categoryid
+                # yum >= 3.2.10
+                # name = cat.nameByLang(self.lang)
+                # summary = cat.descriptionByLang(self.lang)
+                name = cat.name
+                summary = cat.description
+                fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
+                if os.access(fn, os.R_OK):
+                    icon = cat_id
+                else:
+                    icon = "image-missing"
+                self.category("", cat_id, name, summary, icon)
+                self._get_groups(cat_id)
+
+    def _get_groups(self, cat_id):
+        '''
+        Implement the get-collections functionality
+        '''
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        if cat_id:
+            cats = [cat_id]
+        else:
+            cats =  [cat.categoryid for cat in self.yumbase.comps.categories]
+        for cat in cats:
+            grps = []
+            for grp_id in self.comps.get_groups(cat):
+                try:
+                    grp = self.yumbase.comps.return_group(grp_id)
+                except Exception, e:
+                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                if grp:
+                    grps.append(grp)
+            for grp in sorted(grps):
+                grp_id = grp.groupid
+                cat_id_name = "@%s" % (grp_id)
+                name = grp.nameByLang(self.lang)
+                summary = grp.descriptionByLang(self.lang)
+                icon = "image-missing"
+                fn = "/usr/share/pixmaps/comps/%s.png" % grp_id
+                if os.access(fn, os.R_OK):
+                    icon = grp_id
+                else:
+                    fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
+                    if os.access(fn, os.R_OK):
+                        icon = cat_id
+                self.category(cat, cat_id_name, name, summary, icon)
+
     def download_packages(self, directory, package_ids):
         '''
         Implement the download-packages functionality
@@ -2253,6 +2319,56 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         package_id = self._pkg_to_id(pkg)
         self.package(package_id, status, pkg.summary)
 
+    def get_distro_upgrades(self):
+        '''
+        Implement the get-distro-upgrades functionality
+        '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        # if we're RHEL, then we don't have preupgrade
+        if not os.path.exists('/usr/share/preupgrade/releases.list'):
+            return
+
+        # parse the releases file
+        config = ConfigParser.ConfigParser()
+        config.read('/usr/share/preupgrade/releases.list')
+
+        # find the newest release
+        newest = None
+        last_version = 0
+        for section in config.sections():
+            # we only care about stable versions
+            if config.has_option(section, 'stable') and config.getboolean(section, 'stable'):
+                version = config.getfloat(section, 'version')
+                if (version > last_version):
+                    newest = section
+                    last_version = version
+
+        # got no valid data
+        if not newest:
+            self.error(ERROR_FAILED_CONFIG_PARSING, "could not get latest distro data")
+
+        # are we already on the latest version
+        try:
+            present_version = float(self.yumbase.conf.yumvar['releasever'])
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        if (present_version >= last_version):
+            return
+
+        # if we have an upgrade candidate then pass back data to daemon
+        tok = newest.split(" ")
+        name = "%s-%s" % (tok[0].lower(), tok[1])
+        self.distro_upgrade(DISTRO_UPGRADE_STABLE, name, newest)
+
     def _get_status(self, notice):
         ut = notice['type']
         if ut == 'security':
@@ -2341,6 +2457,58 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         package_list = pkgfilter.post_process()
         self._show_package_list(package_list)
+
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the repo-enable functionality
+        '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.status(STATUS_INFO)
+        try:
+            repo = self.yumbase.repos.getRepo(repoid)
+            if not enable:
+                if repo.isEnabled():
+                    repo.disablePersistent()
+            else:
+                if not repo.isEnabled():
+                    repo.enablePersistent()
+                    if repoid.find ("rawhide") != -1:
+                        warning = "These packages are untested and still under development." \
+                                  "This repository is used for development of new releases.\n\n" \
+                                  "This repository can see significant daily turnover and major " \
+                                  "functionality changes which cause unexpected problems with " \
+                                  "other development packages.\n" \
+                                  "Please use these packages if you want to work with the " \
+                                  "Fedora developers by testing these new development packages.\n\n" \
+                                  "If this is not correct, please disable the %s software source." % repoid
+                        self.message(MESSAGE_REPO_FOR_DEVELOPERS_ONLY, warning.replace("\n", ";"))
+        except yum.Errors.RepoError, e:
+            self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+    def get_repo_list(self, filters):
+        '''
+        Implement the get-repo-list functionality
+        '''
+        self._check_init()
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.status(STATUS_INFO)
+
+        try:
+            repos = self.yumbase.repos.repos.values()
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            return
+        for repo in repos:
+            if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
+                enabled = repo.isEnabled()
+                self.repo_detail(repo.id, repo.name, enabled)
 
     def _get_obsoleted(self, name):
         try:
