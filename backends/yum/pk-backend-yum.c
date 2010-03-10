@@ -41,6 +41,7 @@ typedef struct {
 	ZifGroups	*groups;
 	ZifCompletion	*completion;
 	ZifLock		*lock;
+	GTimer		*timer;
 } PkBackendYumPrivate;
 
 static PkBackendYumPrivate *priv;
@@ -89,6 +90,23 @@ static void
 backend_completion_subpercentage_changed_cb (ZifCompletion *completion, guint subpercentage, PkBackend *backend)
 {
 	pk_backend_set_sub_percentage (backend, subpercentage);
+}
+
+/**
+ * backend_profile:
+ */
+static void
+backend_profile (const gchar *title)
+{
+	gdouble elapsed;
+
+	/* just reset?  */
+	if (title == NULL)
+		goto out;
+	elapsed = g_timer_elapsed (priv->timer, NULL);
+	g_print ("PROFILE: %ims\t%s\n", (guint) (elapsed * 1000.0f), title);
+out:
+	g_timer_reset (priv->timer);
 }
 
 /**
@@ -175,8 +193,14 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 	}
 
+	/* use a timer for profiling */
+	priv->timer = g_timer_new ();
+
 	/* init rpm */
 	zif_init ();
+
+	/* profile */
+	backend_profile ("zif init");
 
 	/* TODO: hook up errors */
 	priv->cancellable = g_cancellable_new ();
@@ -195,6 +219,9 @@ backend_initialize (PkBackend *backend)
 		goto out;
 	}
 
+	/* profile */
+	backend_profile ("read config_file");
+
 	/* ZifDownload */
 	priv->download = zif_download_new ();
 
@@ -210,6 +237,9 @@ backend_initialize (PkBackend *backend)
 		goto out;
 	}
 
+	/* profile */
+	backend_profile ("read local store");
+
 	/* ZifRepos */
 	priv->repos = zif_repos_new ();
 	ret = zif_repos_set_repos_dir (priv->repos, "/etc/yum.repos.d", &error);
@@ -219,6 +249,9 @@ backend_initialize (PkBackend *backend)
 		goto out;
 	}
 
+	/* profile */
+	backend_profile ("read repos");
+
 	/* ZifGroups */
 	priv->groups = zif_groups_new ();
 	ret = zif_groups_set_mapping_file (priv->groups, "/usr/share/PackageKit/helpers/yum/yum-comps-groups.conf", &error);
@@ -227,6 +260,9 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
+
+	/* profile */
+	backend_profile ("read groups");
 out:
 	g_object_unref (file);
 }
@@ -256,6 +292,8 @@ backend_destroy (PkBackend *backend)
 		g_object_unref (priv->store_local);
 	if (priv->lock != NULL)
 		g_object_unref (priv->lock);
+	if (priv->timer != NULL)
+		g_timer_destroy (priv->timer);
 	g_free (priv);
 }
 
@@ -526,12 +564,133 @@ backend_get_distro_upgrades (PkBackend *backend)
 }
 
 /**
+ * backend_get_files_thread:
+ */
+static gboolean
+backend_get_files_thread (PkBackend *backend)
+{
+	gboolean ret;
+	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	GPtrArray *store_array = NULL;
+	ZifPackage *package;
+	GPtrArray *files;
+	ZifCompletion *completion_local;
+	const gchar *id;
+	guint i, j;
+	guint len;
+	GError *error = NULL;
+	const gchar *file;
+	GString *files_str;
+
+	/* reset */
+	backend_profile (NULL);
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* profile */
+	backend_profile ("get lock");
+
+	len = g_strv_length (package_ids);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, len + 1);
+
+	/* find all the packages */
+	completion_local = zif_completion_get_child (priv->completion);
+//	store_array = backend_get_default_store_array_for_filter (backend, PK_FILTER_ENUM_UNKNOWN, completion_local);
+{
+	ZifStore *store;
+	store = ZIF_STORE (zif_store_local_new ());
+	store_array = zif_store_array_new ();
+	zif_store_array_add_store (store_array, store);
+	g_object_unref (store);
+}
+
+	/* profile */
+	backend_profile ("add local");
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = package_ids[i];
+		completion_local = zif_completion_get_child (priv->completion);
+		package = zif_store_array_find_package (store_array, id, priv->cancellable, completion_local, &error);
+		if (package == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "failed to find %s: %s", package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* profile */
+		backend_profile ("find package");
+
+		files = zif_package_get_files (package, &error);
+		if (files == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "no files for %s: %s", package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* profile */
+		backend_profile ("get files");
+
+		files_str = g_string_new ("");
+		for (j=0; j<files->len; j++) {
+			file = g_ptr_array_index (files, j);
+			g_string_append_printf (files_str, "%s\n", file);
+		}
+		pk_backend_files (backend, package_ids[i], files_str->str);
+
+		/* profile */
+		backend_profile ("emit files");
+
+		/* this section done */
+		zif_completion_done (priv->completion);
+
+		g_string_free (files_str, TRUE);
+		g_object_unref (package);
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+	return TRUE;
+}
+
+/**
  * backend_get_files:
  */
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
+	guint i;
+	gboolean is_all_installed = TRUE;
+
+	/* check if we can use zif */
+	for (i=0; package_ids[i] != NULL; i++) {
+		if (!g_str_has_suffix (package_ids[i], ";installed")) {
+			is_all_installed = FALSE;
+			break;
+		}
+	}
+
+	/* yippee, we can use zif */
+	if (is_all_installed) {
+		pk_backend_thread_create (backend, backend_get_files_thread);
+		return;
+	}
+
+	/* fall back to spawning */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);

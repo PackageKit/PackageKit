@@ -29,12 +29,12 @@
 #include <zif-string.h>
 #include <zif-depend.h>
 #include <zif-package.h>
+#include <zif-store-array.h>
 #include <zif-package-local.h>
 #include <zif-package-remote.h>
 #include <zif-store-local.h>
 #include <zif-store-remote.h>
 #include <zif-repos.h>
-#include <zif-sack.h>
 #include <zif-utils.h>
 #include <zif-groups.h>
 #include <zif-download.h>

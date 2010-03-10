@@ -491,20 +491,61 @@ zif_package_get_package_id (ZifPackage *package)
 }
 
 /**
+ * zif_package_ensure_type_to_string:
+ * @type: the #ZifPackageEnsureType enumerated value
+ *
+ * Gets the string representation of a #ZifPackageEnsureType
+ *
+ * Return value: The #ZifPackageEnsureType represented as a string
+ **/
+static const gchar *
+zif_package_ensure_type_to_string (ZifPackageEnsureType type)
+{
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_FILES)
+		return "files";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_SUMMARY)
+		return "summary";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_LICENCE)
+		return "licence";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_DESCRIPTION)
+		return "description";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_URL)
+		return "url";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_SIZE)
+		return "size";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_GROUP)
+		return "group";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_REQUIRES)
+		return "requires";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_PROVIDES)
+		return "provides";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_CONFLICTS)
+		return "conflicts";
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_OBSOLETES)
+		return "obsoletes";
+	return "unknown";
+}
+
+/**
  * zif_package_ensure_data:
  **/
 static gboolean
 zif_package_ensure_data (ZifPackage *package, ZifPackageEnsureType type, GError **error)
 {
+	gboolean ret = FALSE;
 	ZifPackageClass *klass = ZIF_PACKAGE_GET_CLASS (package);
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), FALSE);
 
 	/* no support */
-	if (klass->ensure_data == NULL)
-		return TRUE;
+	if (klass->ensure_data == NULL) {
+		g_set_error (error, 1, 0, "cannot ensure data for %s data", zif_package_ensure_type_to_string (type));
+		goto out;
+	}
 
-	return klass->ensure_data (package, type, error);
+	ret = klass->ensure_data (package, type, error);
+out:
+	return ret;
 }
 
 /**

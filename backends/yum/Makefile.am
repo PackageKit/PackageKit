@@ -63,8 +63,8 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-repo-md-mirrorlist.h				\
 	libzif/zif-repo-md-comps.c				\
 	libzif/zif-repo-md-comps.h				\
-	libzif/zif-sack.c					\
-	libzif/zif-sack.h					\
+	libzif/zif-store-array.c				\
+	libzif/zif-store-array.h				\
 	libzif/zif-repos.c					\
 	libzif/zif-repos.h					\
 	libzif/zif-utils.c					\

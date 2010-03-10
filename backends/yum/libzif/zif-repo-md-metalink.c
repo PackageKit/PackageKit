@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <string.h>
 
 #include "zif-repo-md.h"
 #include "zif-repo-md-metalink.h"
@@ -153,6 +154,8 @@ zif_repo_md_metalink_parser_text (GMarkupParseContext *context, const gchar *tex
 
 {
 	ZifRepoMdMetalink *metalink = user_data;
+	gchar *uri = NULL;
+	guint len;
 
 	if (metalink->priv->section != ZIF_REPO_MD_METALINK_PARSER_SECTION_URL)
 		goto out;
@@ -168,8 +171,20 @@ zif_repo_md_metalink_parser_text (GMarkupParseContext *context, const gchar *tex
 		egg_warning ("previously set uri to '%s', cannot overwrite with '%s'", metalink->priv->temp->uri, text);
 		goto out;
 	}
-	metalink->priv->temp->uri = g_strdup (text);
+
+	/* copy */
+	uri = g_strdup (text);
+
+	/* do we need to trim the junk from the end */
+	if (g_str_has_suffix (uri, "/repodata/repomd.xml")) {
+		len = strlen (uri);
+		uri[len-19] = '\0';
+	}
+
+	/* save */
+	metalink->priv->temp->uri = g_strdup (uri);
 out:
+	g_free (uri);
 	return;
 }
 

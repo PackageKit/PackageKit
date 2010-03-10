@@ -20,11 +20,15 @@
  */
 
 /**
- * SECTION:zif-sack
- * @short_description: A sack is a container that holds one or more stores
+ * SECTION:zif-store_array
+ * @short_description: A store_array is a container that holds one or more stores
  *
- * A #ZifSack is a container that #ZifStore's are kept. Global operations can
- * be done on the sack and not the indervidual stores.
+ * A #GPtrArray is the container where #ZifStore's are kept. Global operations can
+ * be done on the array and not the indervidual stores.
+ *
+ * IMPORTANT: any errors that happen on the ZifStores are fatal. You will need to
+ * copy this functionality in this file and issue warnings if the error policy
+ * needs to be less harsh.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -38,7 +42,7 @@
 #include "zif-completion.h"
 #include "zif-store.h"
 #include "zif-store-local.h"
-#include "zif-sack.h"
+#include "zif-store-array.h"
 #include "zif-package.h"
 #include "zif-utils.h"
 #include "zif-repos.h"
@@ -46,59 +50,48 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#define ZIF_SACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_SACK, ZifSackPrivate))
-
-struct _ZifSackPrivate
-{
-	GPtrArray		*array;
-};
-
 /* in PackageKit we split categories from groups using a special @ prefix (bodge) */
-#define PK_ROLE_ENUM_SEARCH_CATEGORY	PK_ROLE_ENUM_UNKNOWN + 1
-
-G_DEFINE_TYPE (ZifSack, zif_sack, G_TYPE_OBJECT)
+#define PK_ROLE_ENUM_SEARCH_CATEGORY	(PK_ROLE_ENUM_UNKNOWN + 1)
 
 /**
- * zif_sack_add_store:
- * @sack: the #ZifSack object
+ * zif_store_array_add_store:
+ * @store_array: the #GPtrArray of #ZifStores
  * @store: the #ZifStore to add
  *
- * Add a single #ZifStore to the #ZifSack.
+ * Add a single #ZifStore to the #GPtrArray.
  *
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_add_store (ZifSack *sack, ZifStore *store)
+zif_store_array_add_store (GPtrArray *store_array, ZifStore *store)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
 	g_return_val_if_fail (store != NULL, FALSE);
 
-	g_ptr_array_add (sack->priv->array, g_object_ref (store));
+	g_ptr_array_add (store_array, g_object_ref (store));
 	return TRUE;
 }
 
 /**
- * zif_sack_add_stores:
- * @sack: the #ZifSack object
+ * zif_store_array_add_stores:
+ * @store_array: the #GPtrArray of #ZifStores
  * @stores: the array of #ZifStore's to add
  *
- * Add an array of #ZifStore's to the #ZifSack.
+ * Add an array of #ZifStore's to the #GPtrArray.
  *
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_add_stores (ZifSack *sack, GPtrArray *stores)
+zif_store_array_add_stores (GPtrArray *store_array, GPtrArray *stores)
 {
 	guint i;
 	ZifStore *store;
 	gboolean ret = FALSE;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
 	g_return_val_if_fail (stores != NULL, FALSE);
 
 	for (i=0; i<stores->len; i++) {
 		store = g_ptr_array_index (stores, i);
-		ret = zif_sack_add_store (sack, store);
+		ret = zif_store_array_add_store (store_array, store);
 		if (!ret)
 			break;
 	}
@@ -106,50 +99,46 @@ zif_sack_add_stores (ZifSack *sack, GPtrArray *stores)
 }
 
 /**
- * zif_sack_add_local:
- * @sack: the #ZifSack object
+ * zif_store_array_add_local:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
  *
- * Convenience function to add local store to the #ZifSack.
+ * Convenience function to add local store to the #GPtrArray.
  *
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_add_local (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_add_local (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreLocal *store;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
-
 	store = zif_store_local_new ();
-	zif_sack_add_store (sack, ZIF_STORE (store));
+	zif_store_array_add_store (store_array, ZIF_STORE (store));
 	g_object_unref (store);
 
 	return TRUE;
 }
 
 /**
- * zif_sack_add_remote:
- * @sack: the #ZifSack object
+ * zif_store_array_add_remote:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
  *
- * Convenience function to add remote stores to the #ZifSack.
+ * Convenience function to add remote stores to the #GPtrArray.
  *
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_add_remote (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_add_remote (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array;
 	ZifRepos *repos;
 	GError *error_local = NULL;
 	gboolean ret = TRUE;
-
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
 
 	/* get stores */
 	repos = zif_repos_new ();
@@ -162,7 +151,7 @@ zif_sack_add_remote (ZifSack *sack, GCancellable *cancellable, ZifCompletion *co
 	}
 
 	/* add */
-	zif_sack_add_stores (ZIF_SACK (sack), array);
+	zif_store_array_add_stores (store_array, array);
 
 	/* free */
 	g_ptr_array_unref (array);
@@ -172,25 +161,23 @@ out:
 }
 
 /**
- * zif_sack_add_remote_enabled:
- * @sack: the #ZifSack object
+ * zif_store_array_add_remote_enabled:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
  *
- * Convenience function to add enabled remote stores to the #ZifSack.
+ * Convenience function to add enabled remote stores to the #GPtrArray.
  *
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_add_remote_enabled (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_add_remote_enabled (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array;
 	ZifRepos *repos;
 	GError *error_local = NULL;
 	gboolean ret = TRUE;
-
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
 
 	/* get stores */
 	repos = zif_repos_new ();
@@ -203,7 +190,7 @@ zif_sack_add_remote_enabled (ZifSack *sack, GCancellable *cancellable, ZifComple
 	}
 
 	/* add */
-	zif_sack_add_stores (ZIF_SACK (sack), array);
+	zif_store_array_add_stores (store_array, array);
 
 	/* free */
 	g_ptr_array_unref (array);
@@ -213,37 +200,33 @@ out:
 }
 
 /**
- * zif_sack_repos_search:
+ * zif_store_array_repos_search:
  **/
 static GPtrArray *
-zif_sack_repos_search (ZifSack *sack, PkRoleEnum role, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i, j;
 	GPtrArray *array = NULL;
-	GPtrArray *stores;
 	GPtrArray *part;
 	ZifStore *store;
 	ZifPackage *package;
 	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
-	/* find results in each store */
-	stores = sack->priv->array;
-
 	/* nothing to do */
-	if (stores->len == 0) {
+	if (store_array->len == 0) {
 		egg_warning ("nothing to do");
-		g_set_error (error, 1, 0, "nothing to do as no stores in sack");
+		g_set_error (error, 1, 0, "nothing to do as no stores in store_array");
 		goto out;
 	}
 
 	/* set number of stores */
-	zif_completion_set_number_steps (completion, stores->len);
+	zif_completion_set_number_steps (completion, store_array->len);
 
 	/* do each one */
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	for (i=0; i<stores->len; i++) {
-		store = g_ptr_array_index (stores, i);
+	for (i=0; i<store_array->len; i++) {
+		store = g_ptr_array_index (store_array, i);
 
 		/* create a chain of completions */
 		completion_local = zif_completion_get_child (completion);
@@ -293,43 +276,38 @@ out:
 }
 
 /**
- * zif_sack_find_package:
- * @sack: the #ZifSack object
+ * zif_store_array_find_package:
+ * @store_array: the #GPtrArray of #ZifStores
  * @package_id: the PackageId which defines the package
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
  *
- * Find a single package in the #ZifSack.
+ * Find a single package in the #GPtrArray.
  *
  * Return value: A single #ZifPackage or %NULL
  **/
 ZifPackage *
-zif_sack_find_package (ZifSack *sack, const gchar *package_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i;
-	GPtrArray *stores;
 	ZifStore *store;
 	ZifPackage *package = NULL;
 	ZifCompletion *completion_local = NULL;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-
-	/* find results in each store */
-	stores = sack->priv->array;
 
 	/* nothing to do */
-	if (stores->len == 0) {
+	if (store_array->len == 0) {
 		egg_debug ("nothing to do");
 		goto out;
 	}
 
 	/* create a chain of completions */
-	zif_completion_set_number_steps (completion, stores->len);
+	zif_completion_set_number_steps (completion, store_array->len);
 
 	/* do each one */
-	for (i=0; i<stores->len; i++) {
-		store = g_ptr_array_index (stores, i);
+	for (i=0; i<store_array->len; i++) {
+		store = g_ptr_array_index (store_array, i);
 
 		completion_local = zif_completion_get_child (completion);
 		package = zif_store_find_package (store, package_id, cancellable, completion_local, NULL);
@@ -344,8 +322,8 @@ out:
 }
 
 /**
- * zif_sack_clean:
- * @sack: the #ZifSack object
+ * zif_store_array_clean:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
@@ -355,32 +333,26 @@ out:
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_clean (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_clean (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i;
-	GPtrArray *stores;
 	ZifStore *store;
 	gboolean ret = TRUE;
 	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
-
-	/* clean each store */
-	stores = sack->priv->array;
-
 	/* nothing to do */
-	if (stores->len == 0) {
+	if (store_array->len == 0) {
 		egg_debug ("nothing to do");
 		goto out;
 	}
 
 	/* set number of stores */
-	zif_completion_set_number_steps (completion, stores->len);
+	zif_completion_set_number_steps (completion, store_array->len);
 
 	/* do each one */
-	for (i=0; i<stores->len; i++) {
-		store = g_ptr_array_index (stores, i);
+	for (i=0; i<store_array->len; i++) {
+		store = g_ptr_array_index (store_array, i);
 
 		/* clean this one */
 		completion_local = zif_completion_get_child (completion);
@@ -399,8 +371,8 @@ out:
 }
 
 /**
- * zif_sack_refresh:
- * @sack: the #ZifSack object
+ * zif_store_array_refresh:
+ * @store_array: the #GPtrArray of #ZifStores
  * @force: if the data should be re-downloaded if it's still valid
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -411,32 +383,26 @@ out:
  * Return value: %TRUE for success, %FALSE for failure
  **/
 gboolean
-zif_sack_refresh (ZifSack *sack, gboolean force, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_refresh (GPtrArray *store_array, gboolean force, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i;
-	GPtrArray *stores;
 	ZifStore *store;
 	gboolean ret = TRUE;
 	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), FALSE);
-
-	/* refresh each store */
-	stores = sack->priv->array;
-
 	/* nothing to do */
-	if (stores->len == 0) {
+	if (store_array->len == 0) {
 		egg_debug ("nothing to do");
 		goto out;
 	}
 
 	/* create a chain of completions */
-	zif_completion_set_number_steps (completion, stores->len);
+	zif_completion_set_number_steps (completion, store_array->len);
 
 	/* do each one */
-	for (i=0; i<stores->len; i++) {
-		store = g_ptr_array_index (stores, i);
+	for (i=0; i<store_array->len; i++) {
+		store = g_ptr_array_index (store_array, i);
 
 		egg_warning ("refreshing %s", zif_store_get_id (store));
 
@@ -458,8 +424,8 @@ out:
 }
 
 /**
- * zif_sack_resolve:
- * @sack: the #ZifSack object
+ * zif_store_array_resolve:
+ * @store_array: the #GPtrArray of #ZifStores
  * @search: the search term, e.g. "gnome-power-manager"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -470,15 +436,14 @@ out:
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_resolve (ZifSack *sack, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_resolve (GPtrArray *store_array, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_RESOLVE, search, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_RESOLVE, search, cancellable, completion, error);
 }
 
 /**
- * zif_sack_search_name:
- * @sack: the #ZifSack object
+ * zif_store_array_search_name:
+ * @store_array: the #GPtrArray of #ZifStores
  * @search: the search term, e.g. "power"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -489,15 +454,14 @@ zif_sack_resolve (ZifSack *sack, const gchar *search, GCancellable *cancellable,
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_search_name (ZifSack *sack, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_search_name (GPtrArray *store_array, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_NAME, search, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_NAME, search, cancellable, completion, error);
 }
 
 /**
- * zif_sack_search_details:
- * @sack: the #ZifSack object
+ * zif_store_array_search_details:
+ * @store_array: the #GPtrArray of #ZifStores
  * @search: the search term, e.g. "trouble"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -508,15 +472,14 @@ zif_sack_search_name (ZifSack *sack, const gchar *search, GCancellable *cancella
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_search_details (ZifSack *sack, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_search_details (GPtrArray *store_array, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_DETAILS, search, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_DETAILS, search, cancellable, completion, error);
 }
 
 /**
- * zif_sack_search_group:
- * @sack: the #ZifSack object
+ * zif_store_array_search_group:
+ * @store_array: the #GPtrArray of #ZifStores
  * @group_enum: the group enumerated value, e.g. "games"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -527,15 +490,14 @@ zif_sack_search_details (ZifSack *sack, const gchar *search, GCancellable *cance
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_search_group (ZifSack *sack, const gchar *group_enum, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_search_group (GPtrArray *store_array, const gchar *group_enum, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_GROUP, group_enum, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_GROUP, group_enum, cancellable, completion, error);
 }
 
 /**
- * zif_sack_search_category:
- * @sack: the #ZifSack object
+ * zif_store_array_search_category:
+ * @store_array: the #GPtrArray of #ZifStores
  * @group_id: the group id, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -546,7 +508,7 @@ zif_sack_search_group (ZifSack *sack, const gchar *group_enum, GCancellable *can
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_search_category (ZifSack *sack, const gchar *group_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_search_category (GPtrArray *store_array, const gchar *group_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i, j;
 	GPtrArray *array;
@@ -555,10 +517,9 @@ zif_sack_search_category (ZifSack *sack, const gchar *group_id, GCancellable *ca
 	const gchar *package_id_tmp;
 	gchar **split;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
 
 	/* get all results from all repos */
-	array = zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_CATEGORY, group_id, cancellable, completion, error);
+	array = zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_CATEGORY, group_id, cancellable, completion, error);
 	if (array == NULL)
 		goto out;
 
@@ -584,8 +545,8 @@ out:
 }
 
 /**
- * zif_sack_search_file:
- * @sack: the #ZifSack object
+ * zif_store_array_search_file:
+ * @store_array: the #GPtrArray of #ZifStores
  * @search: the search term, e.g. "/usr/bin/gnome-power-manager"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -596,33 +557,31 @@ out:
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_search_file (ZifSack *sack, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_search_file (GPtrArray *store_array, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_FILE, search, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_FILE, search, cancellable, completion, error);
 }
 
 /**
- * zif_sack_get_packages:
- * @sack: the #ZifSack object
+ * zif_store_array_get_packages:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
  *
- * Return all packages in the #ZifSack's.
+ * Return all packages in the #GPtrArray's.
  *
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_get_packages (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_get_packages (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_GET_PACKAGES, NULL, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_PACKAGES, NULL, cancellable, completion, error);
 }
 
 /**
- * zif_sack_get_updates:
- * @sack: the #ZifSack object
+ * zif_store_array_get_updates:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
@@ -632,15 +591,14 @@ zif_sack_get_packages (ZifSack *sack, GCancellable *cancellable, ZifCompletion *
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_get_updates (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_get_updates (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_GET_UPDATES, NULL, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, NULL, cancellable, completion, error);
 }
 
 /**
- * zif_sack_what_provides:
- * @sack: the #ZifSack object
+ * zif_store_array_what_provides:
+ * @store_array: the #GPtrArray of #ZifStores
  * @search: the search term, e.g. "gstreamer(codec-mp3)"
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
@@ -651,19 +609,18 @@ zif_sack_get_updates (ZifSack *sack, GCancellable *cancellable, ZifCompletion *c
  * Return value: an array of #ZifPackage's
  **/
 GPtrArray *
-zif_sack_what_provides (ZifSack *sack, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_what_provides (GPtrArray *store_array, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
 
 	/* if this is a path, then we use the file list and treat like a SearchFile */
 	if (g_str_has_prefix (search, "/"))
-		return zif_sack_repos_search (sack, PK_ROLE_ENUM_SEARCH_FILE, search, cancellable, completion, error);
-	return zif_sack_repos_search (sack, PK_ROLE_ENUM_WHAT_PROVIDES, search, cancellable, completion, error);
+		return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_FILE, search, cancellable, completion, error);
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_WHAT_PROVIDES, search, cancellable, completion, error);
 }
 
 /**
- * zif_sack_get_categories:
- * @sack: the #ZifSack object
+ * zif_store_array_get_categories:
+ * @store_array: the #GPtrArray of #ZifStores
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
@@ -673,7 +630,7 @@ zif_sack_what_provides (ZifSack *sack, const gchar *search, GCancellable *cancel
  * Return value: an array of #PkCategory's
  **/
 GPtrArray *
-zif_sack_get_categories (ZifSack *sack, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_array_get_categories (GPtrArray *store_array, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	guint i, j;
 	GPtrArray *array;
@@ -684,10 +641,9 @@ zif_sack_get_categories (ZifSack *sack, GCancellable *cancellable, ZifCompletion
 	gchar *cat_id;
 	gchar *cat_id_tmp;
 
-	g_return_val_if_fail (ZIF_IS_SACK (sack), NULL);
 
 	/* get all results from all repos */
-	array = zif_sack_repos_search (sack, PK_ROLE_ENUM_GET_CATEGORIES, NULL, cancellable, completion, error);
+	array = zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_CATEGORIES, NULL, cancellable, completion, error);
 	if (array == NULL)
 		goto out;
 
@@ -723,53 +679,15 @@ out:
 }
 
 /**
- * zif_sack_finalize:
- **/
-static void
-zif_sack_finalize (GObject *object)
-{
-	ZifSack *sack;
-
-	g_return_if_fail (object != NULL);
-	g_return_if_fail (ZIF_IS_SACK (object));
-	sack = ZIF_SACK (object);
-
-	g_ptr_array_unref (sack->priv->array);
-
-	G_OBJECT_CLASS (zif_sack_parent_class)->finalize (object);
-}
-
-/**
- * zif_sack_class_init:
- **/
-static void
-zif_sack_class_init (ZifSackClass *klass)
-{
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = zif_sack_finalize;
-	g_type_class_add_private (klass, sizeof (ZifSackPrivate));
-}
-
-/**
- * zif_sack_init:
- **/
-static void
-zif_sack_init (ZifSack *sack)
-{
-	sack->priv = ZIF_SACK_GET_PRIVATE (sack);
-	sack->priv->array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-}
-
-/**
- * zif_sack_new:
+ * zif_store_array_new:
  *
- * Return value: A new #ZifSack class instance.
+ * Return value: A new #GPtrArray class instance.
  **/
-ZifSack *
-zif_sack_new (void)
+GPtrArray *
+zif_store_array_new (void)
 {
-	ZifSack *sack;
-	sack = g_object_new (ZIF_TYPE_SACK, NULL);
-	return ZIF_SACK (sack);
+	GPtrArray *store_array;
+	store_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	return store_array;
 }
 

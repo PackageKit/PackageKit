@@ -423,6 +423,7 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 {
 	gboolean ret;
 	gboolean uncompressed_check;
+	gchar *dirname = NULL;
 	GError *error_local = NULL;
 	ZifRepoMdClass *klass = ZIF_REPO_MD_GET_CLASS (md);
 	ZifCompletion *completion_local;
@@ -466,8 +467,10 @@ zif_repo_md_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *compl
 			goto out;
 		}
 
-		/* TODO: download file */
-		//ret = download (&error_local)
+		/* download file */
+		completion_local = zif_completion_get_child (completion);
+		dirname = g_path_get_dirname (md->priv->filename);
+		ret = zif_store_remote_download (md->priv->remote, md->priv->location, dirname, cancellable, completion_local, &error_local);
 		if (!ret) {
 			g_set_error (error, 1, 0, "failed to download missing compressed file: %s", error_local->message);
 			goto out;
@@ -520,6 +523,7 @@ skip_compressed_check:
 	/* this section done */
 	zif_completion_done (completion);
 out:
+	g_free (dirname);
 	return ret;
 }
 
