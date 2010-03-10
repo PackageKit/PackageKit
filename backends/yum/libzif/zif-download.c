@@ -60,6 +60,22 @@ static gpointer zif_download_object = NULL;
 G_DEFINE_TYPE (ZifDownload, zif_download, G_TYPE_OBJECT)
 
 /**
+ * zif_download_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+zif_download_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("zif_download_error");
+	return quark;
+}
+
+/**
  * zif_download_file_got_chunk_cb:
  **/
 static void
@@ -135,6 +151,8 @@ zif_download_cancelled_cb (GCancellable *cancellable, ZifDownload *download)
  * Downloads a file.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filename, GCancellable *cancellable, ZifCompletion *completion, GError **error)
@@ -162,14 +180,16 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 
 	base_uri = soup_uri_new (uri);
 	if (base_uri == NULL) {
-		g_set_error (error, 1, 0, "could not parse uri: %s", uri);
+		g_set_error (error, ZIF_DOWNLOAD_ERROR, ZIF_DOWNLOAD_ERROR_FAILED,
+			     "could not parse uri: %s", uri);
 		goto out;
 	}
 
 	/* GET package */
 	msg = soup_message_new_from_uri (SOUP_METHOD_GET, base_uri);
 	if (msg == NULL) {
-		g_set_error_literal (error, 1, 0, "could not setup message");
+		g_set_error_literal (error, ZIF_DOWNLOAD_ERROR, ZIF_DOWNLOAD_ERROR_FAILED,
+				     "could not setup message");
 		goto out;
 	}
 
@@ -188,14 +208,16 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 
 	/* find length */
 	if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
-		g_set_error (error, 1, 0, "failed to get valid response for %s: %s", uri, soup_status_get_phrase (msg->status_code));
+		g_set_error (error, ZIF_DOWNLOAD_ERROR, ZIF_DOWNLOAD_ERROR_FAILED,
+			     "failed to get valid response for %s: %s", uri, soup_status_get_phrase (msg->status_code));
 		goto out;
 	}
 
 	/* write file */
 	ret = g_file_set_contents (filename, msg->response_body->data, msg->response_body->length, &error_local);
 	if (!ret) {
-		g_set_error (error, 1, 0, "failed to write file: %s",  error_local->message);
+		g_set_error (error, ZIF_DOWNLOAD_ERROR, ZIF_DOWNLOAD_ERROR_FAILED,
+			     "failed to write file: %s",  error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -213,6 +235,8 @@ out:
 
 /**
  * zif_download_set_proxy:
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_download_set_proxy (ZifDownload *download, const gchar *http_proxy, GError **error)
@@ -234,7 +258,8 @@ zif_download_set_proxy (ZifDownload *download, const gchar *http_proxy, GError *
 								      SOUP_SESSION_TIMEOUT, connection_timeout,
 								      NULL);
 	if (download->priv->session == NULL) {
-		g_set_error_literal (error, 1, 0, "could not setup session");
+		g_set_error_literal (error, ZIF_DOWNLOAD_ERROR, ZIF_DOWNLOAD_ERROR_FAILED,
+				     "could not setup session");
 		goto out;
 	}
 	ret = TRUE;
@@ -294,6 +319,8 @@ zif_download_init (ZifDownload *download)
  * zif_download_new:
  *
  * Return value: A new download class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifDownload *
 zif_download_new (void)
@@ -314,6 +341,7 @@ zif_download_new (void)
 #include "egg-test.h"
 
 static guint _updates = 0;
+static GMainLoop *_loop = NULL;
 
 static void
 zif_download_progress_changed (ZifDownload *download, guint value, gpointer data)
@@ -326,7 +354,19 @@ zif_download_cancel_cb (GCancellable *cancellable)
 {
 	egg_debug ("sending cancel");
 	g_cancellable_cancel (cancellable);
+	g_main_loop_quit (_loop);
 	return FALSE;
+}
+
+static gpointer
+zif_download_cancel_thread_cb (GCancellable *cancellable)
+{
+	egg_debug ("thread running");
+	g_timeout_add (50, (GSourceFunc) zif_download_cancel_cb, cancellable);
+	_loop = g_main_loop_new (NULL, FALSE);
+	g_main_loop_run (_loop);
+	g_main_loop_unref (_loop);
+	return NULL;
 }
 
 void
@@ -362,7 +402,8 @@ zif_download_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "download file");
-	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", cancellable, completion, &error);
+	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png",
+				 "../test/downloads", cancellable, completion, &error);
 	if (ret)
 		egg_test_success (test, NULL);
 	else
@@ -376,12 +417,13 @@ zif_download_test (EggTest *test)
 		egg_test_failed (test, "got %i updates", _updates);
 
 	/* setup cancel */
-	g_timeout_add (50, (GSourceFunc) zif_download_cancel_cb, cancellable);
+	g_thread_create (zif_download_cancel_thread_cb, cancellable, FALSE, NULL);
 
 	/************************************************************/
 	egg_test_title (test, "download second file (should be cancelled)");
 	zif_completion_reset (completion);
-	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png", "../test/downloads", cancellable, completion, &error);
+	ret = zif_download_file (download, "http://people.freedesktop.org/~hughsient/temp/Screenshot.png",
+				 "../test/downloads", cancellable, completion, &error);
 	if (!ret)
 		egg_test_success (test, NULL);
 	else

@@ -89,7 +89,8 @@ zif_repo_md_mirrorlist_load (ZifRepoMd *md, GCancellable *cancellable, ZifComple
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		g_set_error_literal (error, 1, 0, "failed to get filename for mirrorlist");
+		g_set_error_literal (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+				     "failed to get filename for mirrorlist");
 		goto out;
 	}
 
@@ -128,6 +129,8 @@ out:
  * Finds all mirrors we should use.
  *
  * Return value: the uris to use as an array of strings
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancellable, ZifCompletion *completion, GError **error)
@@ -147,7 +150,8 @@ zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancella
 	if (!mirrorlist->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to get uris from mirrorlist: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to get uris from mirrorlist: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -160,7 +164,8 @@ zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancella
 		data = g_ptr_array_index (mirrorlist->priv->array, i);
 		uri = zif_config_expand_substitutions (md->priv->config, data, &error_local);
 		if (uri == NULL) {
-			g_set_error (error, 1, 0, "failed to expand substitutions: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+				     "failed to expand substitutions: %s", error_local->message);
 			g_error_free (error_local);
 			/* rip apart what we've done already */
 			g_ptr_array_unref (array);
@@ -223,6 +228,8 @@ zif_repo_md_mirrorlist_init (ZifRepoMdMirrorlist *md)
  * zif_repo_md_mirrorlist_new:
  *
  * Return value: A new #ZifRepoMdMirrorlist class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifRepoMdMirrorlist *
 zif_repo_md_mirrorlist_new (void)

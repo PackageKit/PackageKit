@@ -277,7 +277,8 @@ zif_package_local_ensure_data (ZifPackage *pkg, ZifPackageEnsureType type, GErro
 
 	/* eigh? */
 	if (header == NULL) {
-		g_set_error (error, 1, 0, "no header for %s", zif_package_get_id (pkg));
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "no header for %s", zif_package_get_id (pkg));
 		ret = FALSE;
 		goto out;
 	}
@@ -292,10 +293,18 @@ zif_package_local_ensure_data (ZifPackage *pkg, ZifPackageEnsureType type, GErro
 			/* get the mapping */
 			dirnames = zif_get_header_string_array (header, RPMTAG_DIRNAMES);
 			fileindex = zif_get_header_uint32_index (header, RPMTAG_DIRINDEXES, basenames->len);
-			if (basenames->len != fileindex->len)
-				egg_error ("internal error, basenames length is not the same as index length, possibly corrupt db?");
-			if (fileindex->len > fileindex->len)
-				egg_error ("internal error, fileindex length is bigger than index length, possibly corrupt db?");
+			if (basenames->len != fileindex->len) {
+				ret = FALSE;
+ 				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+						     "internal error, basenames length is not the same as index length, possibly corrupt db?");
+				goto out;
+ 			}
+			if (fileindex->len > fileindex->len) {
+				ret = FALSE;
+ 				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+						     "internal error, fileindex length is bigger than index length, possibly corrupt db?");
+				goto out;
+			}
 
 			files = g_ptr_array_new_with_free_func (g_free);
 			for (i=0; i<basenames->len-2 /* why -1? I'm not sure */; i++) {
@@ -460,6 +469,8 @@ out:
  * Sets the local package from an RPM header object.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_local_set_from_header (ZifPackageLocal *pkg, Header header, GError **error)
@@ -510,6 +521,8 @@ zif_package_local_rpmrc_to_string (rpmRC rc)
  * Sets a local package object from a local file.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename, GError **error)
@@ -524,11 +537,13 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* open the file for reading */
 	fd = Fopen(filename, "r.fdio"); 
 	if (fd == NULL) {
-		g_set_error (error, 1, 0, "failed to open %s", filename);
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "failed to open %s", filename);
 		goto out;
 	}
 	if (Ferror(fd)) {
-		g_set_error (error, 1, 0, "failed to open %s: %s", filename, Fstrerror(fd));
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "failed to open %s: %s", filename, Fstrerror(fd));
 		goto out;
 	}
 
@@ -541,7 +556,8 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* read in the file */
 	rc = rpmReadPackageFile (ts, fd, filename, &hdr);
 	if (rc != RPMRC_OK) {
-		g_set_error (error, 1, 0, "failed to read %s: %s", filename, zif_package_local_rpmrc_to_string (rc));
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "failed to read %s: %s", filename, zif_package_local_rpmrc_to_string (rc));
 		goto out;
 	}
 
@@ -551,7 +567,8 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* set from header */
 	ret = zif_package_local_set_from_header (pkg, hdr, &error_local);
 	if (!ret) {
-		g_set_error (error, 1, 0, "failed to set from header: %s", error_local->message);
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "failed to set from header: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -559,7 +576,8 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	/* close the database used by the transaction */
 	rc = rpmtsCloseDB (ts);
 	if (rc != RPMRC_OK) {
-		g_set_error (error, 1, 0, "failed to close: %s", zif_package_local_rpmrc_to_string (rc));
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "failed to close: %s", zif_package_local_rpmrc_to_string (rc));
 		ret = FALSE;
 		goto out;
 	}
@@ -621,6 +639,8 @@ zif_package_local_init (ZifPackageLocal *pkg)
  * zif_package_local_new:
  *
  * Return value: A new #ZifPackageLocal class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifPackageLocal *
 zif_package_local_new (void)

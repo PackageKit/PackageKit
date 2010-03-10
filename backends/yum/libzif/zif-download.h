@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_DOWNLOAD(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_DOWNLOAD))
 #define ZIF_IS_DOWNLOAD_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_DOWNLOAD))
 #define ZIF_DOWNLOAD_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_DOWNLOAD, ZifDownloadClass))
+#define ZIF_DOWNLOAD_ERROR		(zif_download_error_quark ())
 
 typedef struct _ZifDownload		ZifDownload;
 typedef struct _ZifDownloadPrivate	ZifDownloadPrivate;
@@ -53,7 +54,13 @@ struct _ZifDownloadClass
 	GObjectClass	parent_class;
 };
 
+typedef enum {
+	ZIF_DOWNLOAD_ERROR_FAILED,
+	ZIF_DOWNLOAD_ERROR_LAST
+} ZifDownloadError;
+
 GType		 zif_download_get_type			(void);
+GQuark		 zif_download_error_quark		(void);
 ZifDownload	*zif_download_new			(void);
 gboolean	 zif_download_set_proxy			(ZifDownload		*download,
 							 const gchar		*http_proxy,

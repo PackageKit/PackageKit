@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_LOCK(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_LOCK))
 #define ZIF_IS_LOCK_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_LOCK))
 #define ZIF_LOCK_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_LOCK, ZifLockClass))
+#define ZIF_LOCK_ERROR		(zif_lock_error_quark ())
 
 typedef struct _ZifLock		ZifLock;
 typedef struct _ZifLockPrivate	ZifLockPrivate;
@@ -53,7 +54,15 @@ struct _ZifLockClass
 	GObjectClass	parent_class;
 };
 
+typedef enum {
+	ZIF_LOCK_ERROR_FAILED,
+	ZIF_LOCK_ERROR_ALREADY_LOCKED,
+	ZIF_LOCK_ERROR_NOT_LOCKED,
+	ZIF_LOCK_ERROR_LAST
+} ZifLockError;
+
 GType		 zif_lock_get_type			(void);
+GQuark		 zif_lock_error_quark			(void);
 ZifLock		*zif_lock_new				(void);
 gboolean	 zif_lock_is_locked			(ZifLock		*lock,
 							 guint			*pid);

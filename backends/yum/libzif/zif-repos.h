@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_REPOS(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_REPOS))
 #define ZIF_IS_REPOS_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_REPOS))
 #define ZIF_REPOS_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_REPOS, ZifReposClass))
+#define ZIF_REPOS_ERROR		(zif_repos_error_quark ())
 
 typedef struct _ZifRepos	ZifRepos;
 typedef struct _ZifReposPrivate	ZifReposPrivate;
@@ -53,7 +54,13 @@ struct _ZifReposClass
 	GObjectClass		 parent_class;
 };
 
+typedef enum {
+	ZIF_REPOS_ERROR_FAILED,
+	ZIF_REPOS_ERROR_LAST
+} ZifReposError;
+
 GType		 zif_repos_get_type		(void);
+GQuark		 zif_repos_error_quark			(void);
 ZifRepos	*zif_repos_new			(void);
 gboolean	 zif_repos_set_repos_dir	(ZifRepos		*repos,
 						 const gchar		*repos_dir,

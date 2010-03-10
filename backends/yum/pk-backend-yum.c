@@ -209,6 +209,360 @@ backend_unlock (PkBackend *backend)
 	return ret;
 }
 
+
+/**
+ * backend_add_package_array:
+ **/
+static gboolean
+backend_add_package_array (GPtrArray *array, GPtrArray *add)
+{
+	guint i;
+	ZifPackage *package;
+
+	for (i=0;i<add->len;i++) {
+		package = g_ptr_array_index (add, i);
+		g_ptr_array_add (array, g_object_ref (package));
+	}
+	return TRUE;
+}
+
+/**
+ * backend_filter_package_array_newest:
+ *
+ * This function needs to scale well, and be fast to process 50,000 packages in
+ * less than one second. If it looks overcomplicated, it's because it needs to
+ * be O(n) not O(n*n).
+ **/
+static gboolean
+backend_filter_package_array_newest (GPtrArray *array)
+{
+	gchar **split;
+	const gchar *package_id;
+	gboolean installed;
+	gchar *key;
+	GHashTable *hash;
+	gint retval;
+	guint i;
+	ZifPackage *found;
+	ZifPackage *package;
+
+	/* as an indexed hash table for speed */
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+
+	for (i=0; i<array->len; i++) {
+
+		/* get the current package */
+		package = g_ptr_array_index (array, i);
+		package_id = zif_package_get_id (package);
+		installed = zif_package_is_installed (package);
+
+		/* generate enough data to be specific */
+		split = pk_package_id_split (package_id);
+		key = g_strdup_printf ("%s-%s-%i", split[PK_PACKAGE_ID_NAME], split[PK_PACKAGE_ID_ARCH], installed);
+		g_strfreev (split);
+
+		/* we've not already come across this package */
+		found = g_hash_table_lookup (hash, key);
+		if (found == NULL) {
+			g_hash_table_insert (hash, key, g_object_ref (package));
+			continue;
+		}
+
+		/* compare one package vs the other package */
+		retval = zif_package_compare (package, found);
+
+		/* the package is older than the one we have stored */
+		if (retval <= 0) {
+			g_free (key);
+			g_object_unref (package);
+			g_ptr_array_remove (array, package);
+			continue;
+		}
+
+		/* the package is newer than what we have stored, delete the old store, and add this one */
+		g_hash_table_remove (hash, found);
+		g_hash_table_insert (hash, key, g_object_ref (package));
+	}
+
+	g_hash_table_unref (hash);
+	return TRUE;
+}
+
+/**
+ * backend_filter_package_array:
+ **/
+static GPtrArray *
+backend_filter_package_array (GPtrArray *array, PkBitfield filters)
+{
+	guint i;
+	ZifPackage *package;
+	GPtrArray *result = NULL;
+
+	result = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+	/* pre-result */
+	for (i=0;i<array->len;i++) {
+		package = g_ptr_array_index (array, i);
+
+		/* installed */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			if (!zif_package_is_installed (package))
+				continue;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (zif_package_is_installed (package))
+				continue;
+		}
+
+		/* development */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+			if (!zif_package_is_devel (package))
+				continue;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+			if (zif_package_is_devel (package))
+				continue;
+		}
+
+		/* gui */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI)) {
+			if (!zif_package_is_gui (package))
+				continue;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI)) {
+			if (zif_package_is_gui (package))
+				continue;
+		}
+
+		/* free */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_FREE)) {
+			if (!zif_package_is_free (package))
+				continue;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_FREE)) {
+			if (zif_package_is_free (package))
+				continue;
+		}
+
+		/* arch */
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
+			if (!zif_package_is_native (package))
+				continue;
+		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH)) {
+			if (zif_package_is_native (package))
+				continue;
+		}
+
+		/* add to array so we can post process */
+		g_ptr_array_add (result, g_object_ref (package));
+	}
+
+	/* do newest filtering */
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
+		backend_filter_package_array_newest (result);
+
+	return result;
+}
+
+/**
+ * backend_emit_package_array:
+ **/
+static gboolean
+backend_emit_package_array (PkBackend *backend, GPtrArray *array)
+{
+	guint i;
+	gboolean installed;
+	PkInfoEnum info;
+	const gchar *package_id;
+	ZifString *summary;
+	ZifPackage *package;
+
+	g_return_val_if_fail (array != NULL, FALSE);
+
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		installed = zif_package_is_installed (package);
+		package_id = zif_package_get_package_id (package);
+		summary = zif_package_get_summary (package, NULL);
+		info = installed ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+		/* hack until we have update details */
+		if (strstr (package_id, "update") != NULL)
+			info = PK_INFO_ENUM_NORMAL;
+		pk_backend_package (backend, info, package_id, zif_string_get_value (summary));
+		zif_string_unref (summary);
+	}
+	return TRUE;
+}
+
+/**
+ * backend_search_thread_get_array:
+ */
+static GPtrArray *
+backend_search_thread_get_array (PkBackend *backend, GPtrArray *store_array, const gchar *search, ZifCompletion *completion, GError **error)
+{
+	PkRoleEnum role;
+	GPtrArray *array = NULL;
+
+	role = pk_backend_get_role (backend);
+	if (role == PK_ROLE_ENUM_SEARCH_NAME)
+		array = zif_store_array_search_name (store_array, search, priv->cancellable, completion, error);
+	else if (role == PK_ROLE_ENUM_SEARCH_DETAILS)
+		array = zif_store_array_search_details (store_array, search, priv->cancellable, completion, error);
+	else if (role == PK_ROLE_ENUM_SEARCH_GROUP)
+		array = zif_store_array_search_group (store_array, search, priv->cancellable, completion, error);
+	else if (role == PK_ROLE_ENUM_SEARCH_FILE)
+		array = zif_store_array_search_file (store_array, search, priv->cancellable, completion, error);
+	else if (role == PK_ROLE_ENUM_RESOLVE)
+		array = zif_store_array_resolve (store_array, search, priv->cancellable, completion, error);
+	else if (role == PK_ROLE_ENUM_WHAT_PROVIDES)
+		array = zif_store_array_what_provides (store_array, search, priv->cancellable, completion, error);
+	else
+		g_set_error (error, 1, 0, "does not support: %s", pk_role_enum_to_string (role));
+	return array;
+}
+
+/**
+ * backend_get_default_store_array_for_filter:
+ */
+static GPtrArray *
+backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield filters, ZifCompletion *completion, GError **error)
+{
+	GPtrArray *store_array;
+	ZifStore *store;
+	GPtrArray *array;
+	GError *error_local = NULL;
+
+	store_array = zif_store_array_new ();
+
+	/* add local packages to the store_array */
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		store = ZIF_STORE (zif_store_local_new ());
+		zif_store_array_add_store (store_array, store);
+		g_object_unref (store);
+	}
+
+	/* add remote packages to the store_array */
+	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		array = zif_repos_get_stores_enabled (priv->repos, priv->cancellable, completion, &error_local);
+		if (array == NULL) {
+			g_set_error (error, 1, 0, "failed to get enabled stores: %s", error_local->message);
+			g_error_free (error_local);
+			g_ptr_array_unref (store_array);
+			store_array = NULL;
+			goto out;
+		}
+		zif_store_array_add_stores (store_array, array);
+		g_ptr_array_unref (array);
+	}
+out:
+	return store_array;
+}
+
+/**
+ * backend_search_thread:
+ */
+static gboolean
+backend_search_thread (PkBackend *backend)
+{
+	gboolean ret;
+	GPtrArray *store_array = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *result;
+	PkBitfield filters;
+	PkRoleEnum role;
+	ZifCompletion *completion_local;
+	ZifCompletion *completion_loop;
+	GError *error = NULL;
+	gchar **search;
+	guint i;
+	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	role = pk_backend_get_role (backend);
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, 3);
+
+	/* get default store_array */
+	completion_local = zif_completion_get_child (priv->completion);
+	store_array = backend_get_default_store_array_for_filter (backend, filters, completion_local, &error);
+	if (store_array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* do get action */
+	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
+		completion_local = zif_completion_get_child (priv->completion);
+		array = zif_store_array_get_packages (store_array, priv->cancellable, completion_local, &error);
+		if (array == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+	} else {
+		/* treat these all the same */
+		search = pk_backend_get_strv (backend, "search");
+		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+		completion_local = zif_completion_get_child (priv->completion);
+		zif_completion_set_number_steps (completion_local, g_strv_length (search));
+
+		/* do OR search */
+		for (i=0; search[i] != NULL; i++) {
+			/* make loop deeper */
+			completion_loop = zif_completion_get_child (completion_local);
+			result = backend_search_thread_get_array (backend, store_array, search[i], completion_loop, &error);
+			if (result == NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to search: %s", error->message);
+				g_error_free (error);
+				goto out;
+			}
+
+			/* this section done */
+			zif_completion_done (completion_local);
+
+			backend_add_package_array (array, result);
+			g_ptr_array_unref (result);
+		}
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* filter */
+	result = backend_filter_package_array (array, filters);
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* done */
+	pk_backend_set_percentage (backend, 100);
+
+	/* emit */
+	backend_emit_package_array (backend, result);
+out:
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
 /**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
@@ -516,7 +870,6 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	g_free (package_ids_temp);
 }
 
-
 /**
  * backend_get_details_thread:
  */
@@ -537,6 +890,7 @@ backend_get_details_thread (PkBackend *backend)
 	ZifString *url;
 	PkGroupEnum group;
 	guint64 size;
+	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 
 	/* get lock */
 	ret = backend_get_lock (backend);
@@ -556,14 +910,14 @@ backend_get_details_thread (PkBackend *backend)
 
 	/* find all the packages */
 	completion_local = zif_completion_get_child (priv->completion);
-//	store_array = backend_get_default_store_array_for_filter (backend, PK_FILTER_ENUM_UNKNOWN, completion_local);
-{
-	ZifStore *store;
-	store = ZIF_STORE (zif_store_local_new ());
-	store_array = zif_store_array_new ();
-	zif_store_array_add_store (store_array, store);
-	g_object_unref (store);
-}
+	if (backend_is_all_installed (package_ids))
+		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
+	store_array = backend_get_default_store_array_for_filter (backend, filters, completion_local, &error);
+	if (store_array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* this section done */
 	zif_completion_done (priv->completion);
@@ -618,19 +972,15 @@ out:
 static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
-	gchar *package_ids_temp;
-	gboolean ret;
-
 	/* check if we can use zif */
-	ret = backend_is_all_installed (package_ids);
-	if (ret && use_zif) {
-		pk_backend_thread_create (backend, backend_get_details_thread);
+	if (!use_zif) {
+		gchar *package_ids_temp;
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
+		g_free (package_ids_temp);
 		return;
 	}
-
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
-	g_free (package_ids_temp);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -772,6 +1122,7 @@ backend_get_files_thread (PkBackend *backend)
 	GError *error = NULL;
 	const gchar *file;
 	GString *files_str;
+	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 
 	/* reset */
 	backend_profile (NULL);
@@ -797,14 +1148,14 @@ backend_get_files_thread (PkBackend *backend)
 
 	/* find all the packages */
 	completion_local = zif_completion_get_child (priv->completion);
-//	store_array = backend_get_default_store_array_for_filter (backend, PK_FILTER_ENUM_UNKNOWN, completion_local);
-{
-	ZifStore *store;
-	store = ZIF_STORE (zif_store_local_new ());
-	store_array = zif_store_array_new ();
-	zif_store_array_add_store (store_array, store);
-	g_object_unref (store);
-}
+	if (backend_is_all_installed (package_ids))
+		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
+	store_array = backend_get_default_store_array_for_filter (backend, filters, completion_local, &error);
+	if (store_array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* profile */
 	backend_profile ("add local");
@@ -915,10 +1266,15 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
-	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-packages", filters_text, NULL);
-	g_free (filters_text);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-packages", filters_text, NULL);
+		g_free (filters_text);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1052,13 +1408,18 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static void
 backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	gchar *filters_text;
-	gchar *search;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-details", filters_text, search, NULL);
-	g_free (filters_text);
-	g_free (search);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		gchar *search;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		search = g_strjoinv ("&", values);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-details", filters_text, search, NULL);
+		g_free (filters_text);
+		g_free (search);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1067,13 +1428,18 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 static void
 backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	gchar *filters_text;
-	gchar *search;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-file", filters_text, search, NULL);
-	g_free (filters_text);
-	g_free (search);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		gchar *search;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		search = g_strjoinv ("&", values);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-file", filters_text, search, NULL);
+		g_free (filters_text);
+		g_free (search);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1082,13 +1448,18 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 static void
 backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	gchar *filters_text;
-	gchar *search;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-group", filters_text, search, NULL);
-	g_free (filters_text);
-	g_free (search);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		gchar *search;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		search = g_strjoinv ("&", values);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-group", filters_text, search, NULL);
+		g_free (filters_text);
+		g_free (search);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1097,13 +1468,18 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 static void
 backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	gchar *filters_text;
-	gchar *search;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-name", filters_text, search, NULL);
-	g_free (filters_text);
-	g_free (search);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		gchar *search;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		search = g_strjoinv ("&", values);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "search-name", filters_text, search, NULL);
+		g_free (filters_text);
+		g_free (search);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1133,15 +1509,21 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
-	gchar *filters_text;
-	gchar *package_ids_temp;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "resolve", filters_text, package_ids_temp, NULL);
-	g_free (filters_text);
-	g_free (package_ids_temp);
+	/* it seems some people are not ready for the awesomeness */
+	if (!use_zif) {
+		gchar *filters_text;
+		gchar *package_ids_temp;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		package_ids_temp = pk_package_ids_to_string (packages);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "resolve", filters_text, package_ids_temp, NULL);
+		g_free (filters_text);
+		g_free (package_ids_temp);
+		return;
+	}
+	pk_backend_set_strv (backend, "search", packages);
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -1476,7 +1858,6 @@ backend_get_unique_categories (PkBackend *backend, GPtrArray *stores, ZifComplet
 			if (g_strcmp0 (parent_id_tmp, parent_id) == 0 &&
 			    g_strcmp0 (cat_id_tmp, cat_id) == 0) {
 				egg_warning ("duplicate %s-%s", parent_id, cat_id);
-				g_object_unref (obj_tmp);
 				g_ptr_array_remove_index (array, j);
 			}
 			g_free (parent_id_tmp);

@@ -34,8 +34,19 @@
 
 G_BEGIN_DECLS
 
+#define ZIF_UTILS_ERROR	(zif_utils_error_quark ())
+
+typedef enum {
+	ZIF_UTILS_ERROR_FAILED,
+	ZIF_UTILS_ERROR_FAILED_TO_READ,
+	ZIF_UTILS_ERROR_FAILED_TO_WRITE,
+	ZIF_UTILS_ERROR_CANCELLED,
+	ZIF_UTILS_ERROR_LAST
+} ZifUtilsError;
+
 gboolean	 zif_init			(void);
 void		 zif_debug_crash		(void);
+GQuark		 zif_utils_error_quark		(void);
 void		 zif_list_print_array		(GPtrArray	*array);
 gchar		*zif_package_id_from_nevra	(const gchar	*name,
 						 const gchar	*epoch,

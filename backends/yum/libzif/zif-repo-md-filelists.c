@@ -92,7 +92,8 @@ zif_repo_md_filelists_load (ZifRepoMd *md, GCancellable *cancellable, ZifComplet
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		g_set_error_literal (error, 1, 0, "failed to get filename for filelists");
+		g_set_error_literal (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+				     "failed to get filename for filelists");
 		goto out;
 	}
 
@@ -101,7 +102,8 @@ zif_repo_md_filelists_load (ZifRepoMd *md, GCancellable *cancellable, ZifComplet
 	rc = sqlite3_open (filename, &filelists->priv->db);
 	if (rc != 0) {
 		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (filelists->priv->db));
-		g_set_error (error, 1, 0, "can't open database: %s", sqlite3_errmsg (filelists->priv->db));
+		g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_BAD_SQL,
+			     "can't open database: %s", sqlite3_errmsg (filelists->priv->db));
 		goto out;
 	}
 
@@ -196,7 +198,8 @@ zif_repo_md_filelists_search_file (ZifRepoMdFilelists *md, const gchar *search, 
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_filelists_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to load store file: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to load store file: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -217,7 +220,8 @@ zif_repo_md_filelists_search_file (ZifRepoMdFilelists *md, const gchar *search, 
 	rc = sqlite3_exec (md->priv->db, statement, zif_repo_md_filelists_sqlite_get_files_cb, data, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		g_set_error (error, 1, 0, "SQL error (failed to get keys): %s\n", error_msg);
+		g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_BAD_SQL,
+			     "SQL error (failed to get keys): %s\n", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
@@ -234,14 +238,16 @@ zif_repo_md_filelists_search_file (ZifRepoMdFilelists *md, const gchar *search, 
 		rc = sqlite3_exec (md->priv->db, statement, zif_repo_md_filelists_sqlite_get_id_cb, &pkgid, &error_msg);
 		g_free (statement);
 		if (rc != SQLITE_OK) {
-			g_set_error (error, 1, 0, "SQL error (failed to get packages): %s", error_msg);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_BAD_SQL,
+				     "SQL error (failed to get packages): %s", error_msg);
 			sqlite3_free (error_msg);
 			goto out;
 		}
 
 		/* we failed to get any results */
 		if (pkgid == NULL) {
-			g_set_error (error, 1, 0, "failed to resolve pkgKey: %i", key);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_BAD_SQL,
+				     "failed to resolve pkgKey: %i", key);
 			goto out;
 		}
 
@@ -307,6 +313,8 @@ zif_repo_md_filelists_init (ZifRepoMdFilelists *md)
  * zif_repo_md_filelists_new:
  *
  * Return value: A new #ZifRepoMdFilelists class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifRepoMdFilelists *
 zif_repo_md_filelists_new (void)

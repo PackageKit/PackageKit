@@ -68,6 +68,8 @@ G_DEFINE_TYPE (ZifPackageRemote, zif_package_remote, ZIF_TYPE_PACKAGE)
  * Sets details on a remote package from repo data derived from the metadata xml.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_remote_set_from_repo (ZifPackageRemote *pkg, guint length, gchar **type, gchar **data, const gchar *repo_id, GError **error)
@@ -180,6 +182,8 @@ zif_package_remote_init (ZifPackageRemote *pkg)
  * zif_package_remote_new:
  *
  * Return value: A new #ZifPackageRemote class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifPackageRemote *
 zif_package_remote_new (void)

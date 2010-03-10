@@ -36,6 +36,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_CONFIG(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_CONFIG))
 #define ZIF_IS_CONFIG_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_CONFIG))
 #define ZIF_CONFIG_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_CONFIG, ZifConfigClass))
+#define ZIF_CONFIG_ERROR	(zif_config_error_quark ())
 
 typedef struct _ZifConfig		ZifConfig;
 typedef struct _ZifConfigPrivate	ZifConfigPrivate;
@@ -52,6 +53,12 @@ struct _ZifConfigClass
 	GObjectClass		 parent_class;
 };
 
+typedef enum {
+	ZIF_CONFIG_ERROR_FAILED,
+	ZIF_CONFIG_ERROR_LAST
+} ZifConfigError;
+
+GQuark		 zif_config_error_quark		(void);
 GType		 zif_config_get_type		(void);
 ZifConfig	*zif_config_new			(void);
 gboolean	 zif_config_set_filename	(ZifConfig	*config,

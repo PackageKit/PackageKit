@@ -59,6 +59,22 @@ static gpointer zif_lock_object = NULL;
 G_DEFINE_TYPE (ZifLock, zif_lock, G_TYPE_OBJECT)
 
 /**
+ * zif_lock_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+zif_lock_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("zif_lock_error");
+	return quark;
+}
+
+/**
  * zif_lock_get_pid:
  **/
 static guint
@@ -115,6 +131,8 @@ out:
  * Gets the lock state.
  *
  * Return value: %TRUE if we are already locked
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_lock_is_locked (ZifLock *lock, guint *pid)
@@ -161,6 +179,8 @@ out:
  * Tries to lock the packaging system.
  *
  * Return value: %TRUE if we locked, else %FALSE and the error is set
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
@@ -175,7 +195,8 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 	/* already locked */
 	ret = zif_lock_is_locked (lock, &pid_tmp);
 	if (ret) {
-		g_set_error (error, 1, 0, "already locked by %i", pid_tmp);
+		g_set_error (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_ALREADY_LOCKED,
+			     "already locked by %i", pid_tmp);
 		if (pid != NULL)
 			*pid = pid_tmp;
 		ret = FALSE;
@@ -184,7 +205,8 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 
 	/* no lock file set */
 	if (lock->priv->filename == NULL) {
-		g_set_error_literal (error, 1, 0, "lock file not set");
+		g_set_error_literal (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_FAILED,
+				     "lock file not set");
 		ret = FALSE;
 		goto out;
 	}
@@ -194,7 +216,8 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 	pid_text = g_strdup_printf ("%i", pid_tmp);
 	ret = g_file_set_contents (lock->priv->filename, pid_text, -1, &error_local);
 	if (!ret) {
-		g_set_error (error, 1, 0, "failed to write: %s", error_local->message);
+		g_set_error (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_FAILED,
+			     "failed to write: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -218,6 +241,8 @@ out:
  * Unlocks the packaging system.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_lock_set_unlocked (ZifLock *lock, GError **error)
@@ -238,14 +263,16 @@ zif_lock_set_unlocked (ZifLock *lock, GError **error)
 	/* are we already locked */
 	ret = zif_lock_is_locked (lock, &pid);
 	if (!ret) {
-		g_set_error_literal (error, 1, 0, "not locked");
+		g_set_error_literal (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_NOT_LOCKED,
+				     "not locked");
 		goto out;
 	}
 
 	/* is it locked by somethine that isn't us? */
 	pid_tmp = getpid ();
 	if (pid != pid_tmp) {
-		g_set_error (error, 1, 0, "locked by %i, cannot unlock", pid_tmp);
+		g_set_error (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_ALREADY_LOCKED,
+			     "locked by %i, cannot unlock", pid_tmp);
 		ret = FALSE;
 		goto out;
 	}
@@ -255,7 +282,8 @@ skip_checks:
 	/* remove file */
 	retval = g_unlink (lock->priv->filename);
 	if (retval != 0) {
-		g_set_error (error, 1, 0, "cannot remove %s, cannot unlock", lock->priv->filename);
+		g_set_error (error, ZIF_LOCK_ERROR, ZIF_LOCK_ERROR_FAILED,
+			     "cannot remove %s, cannot unlock", lock->priv->filename);
 		ret = FALSE;
 		goto out;
 	}
@@ -321,6 +349,8 @@ zif_lock_init (ZifLock *lock)
  * zif_lock_new:
  *
  * Return value: A new lock class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifLock *
 zif_lock_new (void)

@@ -136,6 +136,8 @@ zif_completion_discrete_to_percent (guint discrete, guint steps)
  * NOTE: this must be above what was previously set, or it will be rejected.
  *
  * Return value: %TRUE if the signal was propagated, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_completion_set_percentage (ZifCompletion *completion, guint percentage)
@@ -164,6 +166,8 @@ out:
  * Get the percentage completion.
  *
  * Return value: A percentage value, or G_MAXUINT for error
+ *
+ * Since: 0.0.1
  **/
 guint
 zif_completion_get_percentage (ZifCompletion *completion)
@@ -252,6 +256,8 @@ zif_completion_child_subpercentage_changed_cb (ZifCompletion *child, guint perce
  * Resets the #ZifCompletion object to unset
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_completion_reset (ZifCompletion *completion)
@@ -290,6 +296,8 @@ zif_completion_reset (ZifCompletion *completion)
  * Yo udo not have to g_object_unref() this value.
  *
  * Return value: a new %ZifCompletion or %NULL for failure
+ *
+ * Since: 0.0.1
  **/
 ZifCompletion *
 zif_completion_get_child (ZifCompletion *completion)
@@ -329,6 +337,8 @@ zif_completion_get_child (ZifCompletion *completion)
  * function will be called in the loop.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_completion_set_number_steps (ZifCompletion *completion, guint steps)
@@ -359,6 +369,8 @@ zif_completion_set_number_steps (ZifCompletion *completion, guint steps)
  * Called when the current sub-task has finished.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_completion_done (ZifCompletion *completion)
@@ -457,6 +469,8 @@ zif_completion_init (ZifCompletion *completion)
  * zif_completion_new:
  *
  * Return value: A new #ZifCompletion class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifCompletion *
 zif_completion_new (void)

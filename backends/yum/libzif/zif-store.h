@@ -41,6 +41,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_STORE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_STORE))
 #define ZIF_IS_STORE_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_STORE))
 #define ZIF_STORE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_STORE, ZifStoreClass))
+#define ZIF_STORE_ERROR		(zif_store_error_quark ())
 
 typedef struct _ZifStore	ZifStore;
 typedef struct _ZifStorePrivate	ZifStorePrivate;
@@ -125,7 +126,20 @@ struct _ZifStoreClass
 	void		 (*print)		(ZifStore		*store);
 };
 
+
+typedef enum {
+	ZIF_STORE_ERROR_FAILED,
+	ZIF_STORE_ERROR_FAILED_AS_OFFLINE,
+	ZIF_STORE_ERROR_FAILED_TO_FIND,
+	ZIF_STORE_ERROR_ARRAY_IS_EMPTY,
+	ZIF_STORE_ERROR_NO_SUPPORT,
+	ZIF_STORE_ERROR_NOT_LOCKED,
+	ZIF_STORE_ERROR_MULTIPLE_MATCHES,
+	ZIF_STORE_ERROR_LAST
+} ZifStoreError;
+
 GType		 zif_store_get_type		(void);
+GQuark		 zif_store_error_quark		(void);
 ZifStore	*zif_store_new			(void);
 gboolean	 zif_store_load			(ZifStore		*store,
 						 GCancellable		*cancellable,

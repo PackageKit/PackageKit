@@ -51,6 +51,8 @@ struct ZifString {
  * Creates a new referenced counted string
  *
  * Return value: New allocated object
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_string_new (const gchar *value)
@@ -70,6 +72,8 @@ zif_string_new (const gchar *value)
  * Do not free this string as it is now owned by the #ZifString.
  *
  * Return value: New allocated object
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_string_new_value (gchar *value)
@@ -89,6 +93,8 @@ zif_string_new_value (gchar *value)
  * This value is only valid while the #ZifString's reference count > 1.
  *
  * Return value: string value
+ *
+ * Since: 0.0.1
  **/
 const gchar *
 zif_string_get_value (ZifString *string)
@@ -104,6 +110,8 @@ zif_string_get_value (ZifString *string)
  * Increases the reference count on the object.
  *
  * Return value: the #ZifString object
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_string_ref (ZifString *string)
@@ -121,6 +129,8 @@ zif_string_ref (ZifString *string)
  * it calls to zero.
  *
  * Return value: the #ZifString object
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_string_unref (ZifString *string)

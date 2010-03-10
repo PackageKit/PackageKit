@@ -227,7 +227,8 @@ zif_repo_md_metalink_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompleti
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		g_set_error_literal (error, 1, 0, "failed to get filename for metalink");
+		g_set_error_literal (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+				     "failed to get filename for metalink");
 		goto out;
 	}
 
@@ -266,6 +267,8 @@ out:
  * Finds all mirrors we should use.
  *
  * Return value: the uris to use as an array of strings
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_repo_md_metalink_get_uris (ZifRepoMdMetalink *md, guint threshold, GCancellable *cancellable, ZifCompletion *completion, GError **error)
@@ -285,7 +288,8 @@ zif_repo_md_metalink_get_uris (ZifRepoMdMetalink *md, guint threshold, GCancella
 	if (!metalink->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to get mirrors from metalink: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to get mirrors from metalink: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -305,7 +309,8 @@ zif_repo_md_metalink_get_uris (ZifRepoMdMetalink *md, guint threshold, GCancella
 		if (data->preference >= threshold) {
 			uri = zif_config_expand_substitutions (md->priv->config, data->uri, &error_local);
 			if (uri == NULL) {
-				g_set_error (error, 1, 0, "failed to expand substitutions: %s", error_local->message);
+				g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+					     "failed to expand substitutions: %s", error_local->message);
 				g_error_free (error_local);
 				/* rip apart what we've done already */
 				g_ptr_array_unref (array);
@@ -379,6 +384,8 @@ zif_repo_md_metalink_init (ZifRepoMdMetalink *md)
  * zif_repo_md_metalink_new:
  *
  * Return value: A new #ZifRepoMdMetalink class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifRepoMdMetalink *
 zif_repo_md_metalink_new (void)
@@ -478,7 +485,7 @@ zif_repo_md_metalink_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct value");
 	uri = g_ptr_array_index (array, 0);
-	if (g_strcmp0 (uri, "http://www.mirrorservice.org/sites/download.fedora.redhat.com/pub/fedora/linux/releases/12/Everything/i386/os/repodata/repomd.xml") == 0)
+	if (g_strcmp0 (uri, "http://www.mirrorservice.org/sites/download.fedora.redhat.com/pub/fedora/linux/releases/12/Everything/i386/os/") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get correct url '%s'", uri);

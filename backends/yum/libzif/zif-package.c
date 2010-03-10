@@ -71,6 +71,22 @@ struct _ZifPackagePrivate
 G_DEFINE_TYPE (ZifPackage, zif_package, G_TYPE_OBJECT)
 
 /**
+ * zif_package_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+zif_package_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("zif_package_error");
+	return quark;
+}
+
+/**
  * zif_package_compare:
  * @a: the first package to compare
  * @b: the second package to compare
@@ -78,6 +94,8 @@ G_DEFINE_TYPE (ZifPackage, zif_package, G_TYPE_OBJECT)
  * Compares one package versions against each other.
  *
  * Return value: 1 for a>b, 0 for a==b, -1 for b>a
+ *
+ * Since: 0.0.1
  **/
 gint
 zif_package_compare (ZifPackage *a, ZifPackage *b)
@@ -119,6 +137,8 @@ out:
  * Returns the newest package from a list.
  *
  * Return value: a single %ZifPackage, or %NULL in the case of an error
+ *
+ * Since: 0.0.1
  **/
 ZifPackage *
 zif_package_array_get_newest (GPtrArray *array, GError **error)
@@ -130,7 +150,8 @@ zif_package_array_get_newest (GPtrArray *array, GError **error)
 
 	/* no results */
 	if (array->len == 0) {
-		g_set_error_literal (error, 1, 0, "nothing in array");
+		g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+				     "nothing in array");
 		goto out;
 	}
 
@@ -162,6 +183,8 @@ out:
  * Downloads a package.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_download (ZifPackage *package, const gchar *directory, GCancellable *cancellable, ZifCompletion *completion, GError **error)
@@ -177,7 +200,8 @@ zif_package_download (ZifPackage *package, const gchar *directory, GCancellable 
 
 	/* check we are not installed */
 	if (package->priv->installed) {
-		g_set_error_literal (error, 1, 0, "cannot download installed packages");
+		g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+				     "cannot download installed packages");
 		goto out;
 	}
 
@@ -188,7 +212,8 @@ zif_package_download (ZifPackage *package, const gchar *directory, GCancellable 
 	completion_local = zif_completion_get_child (completion);
 	repo = zif_repos_get_store (package->priv->repos, package->priv->package_id_split[PK_PACKAGE_ID_DATA], cancellable, completion_local, &error_local);
 	if (repo == NULL) {
-		g_set_error (error, 1, 0, "cannot find remote repo: %s", error_local->message);
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "cannot find remote repo: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -202,7 +227,8 @@ zif_package_download (ZifPackage *package, const gchar *directory, GCancellable 
 	/* download from the repo */
 	ret = zif_store_remote_download (repo, zif_string_get_value (package->priv->location_href), directory, cancellable, completion_local, &error_local);
 	if (!ret) {
-		g_set_error (error, 1, 0, "cannot download from repo: %s", error_local->message);
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "cannot download from repo: %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -220,6 +246,8 @@ out:
  * @package: the #ZifPackage object
  *
  * Prints details about a package to %STDOUT.
+ *
+ * Since: 0.0.1
  **/
 void
 zif_package_print (ZifPackage *package)
@@ -277,6 +305,8 @@ zif_package_print (ZifPackage *package)
  * Finds out if a package is a development package.
  *
  * Return value: %TRUE or %FALSE
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_is_devel (ZifPackage *package)
@@ -302,6 +332,8 @@ zif_package_is_devel (ZifPackage *package)
  * Finds out if a package is a GUI package.
  *
  * Return value: %TRUE or %FALSE
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_is_gui (ZifPackage *package)
@@ -336,6 +368,8 @@ out:
  * Finds out if a package is installed.
  *
  * Return value: %TRUE or %FALSE
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_is_installed (ZifPackage *package)
@@ -352,6 +386,8 @@ zif_package_is_installed (ZifPackage *package)
  * Finds out if a package is the native architecture for the system.
  *
  * Return value: %TRUE or %FALSE
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_is_native (ZifPackage *package)
@@ -404,6 +440,8 @@ zif_package_is_native (ZifPackage *package)
  * is empty, the package is considered non-free.
  *
  * Return value: %TRUE or %FALSE
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_is_free (ZifPackage *package)
@@ -465,6 +503,8 @@ zif_package_is_free (ZifPackage *package)
  * Gets the id uniquely identifying the package in all repos.
  *
  * Return value: the PackageId representing the package.
+ *
+ * Since: 0.0.1
  **/
 const gchar *
 zif_package_get_id (ZifPackage *package)
@@ -481,6 +521,8 @@ zif_package_get_id (ZifPackage *package)
  * Gets the id (as text) uniquely identifying the package in all repos.
  *
  * Return value: The %package_id representing the package.
+ *
+ * Since: 0.0.1
  **/
 const gchar *
 zif_package_get_package_id (ZifPackage *package)
@@ -539,7 +581,8 @@ zif_package_ensure_data (ZifPackage *package, ZifPackageEnsureType type, GError 
 
 	/* no support */
 	if (klass->ensure_data == NULL) {
-		g_set_error (error, 1, 0, "cannot ensure data for %s data", zif_package_ensure_type_to_string (type));
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "cannot ensure data for %s data", zif_package_ensure_type_to_string (type));
 		goto out;
 	}
 
@@ -556,6 +599,8 @@ out:
  * Gets the package summary.
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_summary (ZifPackage *package, GError **error)
@@ -584,6 +629,8 @@ zif_package_get_summary (ZifPackage *package, GError **error)
  * Gets the package description.
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_description (ZifPackage *package, GError **error)
@@ -612,6 +659,8 @@ zif_package_get_description (ZifPackage *package, GError **error)
  * Gets the package licence.
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_license (ZifPackage *package, GError **error)
@@ -640,6 +689,8 @@ zif_package_get_license (ZifPackage *package, GError **error)
  * Gets the homepage URL for the package.
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_url (ZifPackage *package, GError **error)
@@ -668,6 +719,8 @@ zif_package_get_url (ZifPackage *package, GError **error)
  * Gets the remote filename for the package, e.g. Packages/net-snmp-5.4.2-3.fc10.i386.rpm
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_filename (ZifPackage *package, GError **error)
@@ -677,7 +730,8 @@ zif_package_get_filename (ZifPackage *package, GError **error)
 
 	/* not exists */
 	if (package->priv->location_href == NULL) {
-		g_set_error (error, 1, 0, "no data for %s", package->priv->package_id_split[PK_PACKAGE_ID_NAME]);
+		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+			     "no data for %s", package->priv->package_id_split[PK_PACKAGE_ID_NAME]);
 		return NULL;
 	}
 
@@ -693,6 +747,8 @@ zif_package_get_filename (ZifPackage *package, GError **error)
  * Gets the category the packag is in.
  *
  * Return value: the reference counted #ZifString or %NULL, use zif_string_unref() when done
+ *
+ * Since: 0.0.1
  **/
 ZifString *
 zif_package_get_category (ZifPackage *package, GError **error)
@@ -721,6 +777,8 @@ zif_package_get_category (ZifPackage *package, GError **error)
  * Gets the package group.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 PkGroupEnum
 zif_package_get_group (ZifPackage *package, GError **error)
@@ -749,6 +807,8 @@ zif_package_get_group (ZifPackage *package, GError **error)
  * remote packages.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 guint64
 zif_package_get_size (ZifPackage *package, GError **error)
@@ -774,6 +834,8 @@ zif_package_get_size (ZifPackage *package, GError **error)
  * Gets the file list for the package.
  *
  * Return value: the reference counted #GPtrArray, use g_ptr_array_unref() when done
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_package_get_files (ZifPackage *package, GError **error)
@@ -802,6 +864,8 @@ zif_package_get_files (ZifPackage *package, GError **error)
  * Gets all the package requires.
  *
  * Return value: the reference counted #GPtrArray, use g_ptr_array_unref() when done
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_package_get_requires (ZifPackage *package, GError **error)
@@ -830,6 +894,8 @@ zif_package_get_requires (ZifPackage *package, GError **error)
  * Get all the package provides.
  *
  * Return value: the reference counted #GPtrArray, use g_ptr_array_unref() when done
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_package_get_provides (ZifPackage *package, GError **error)
@@ -858,6 +924,8 @@ zif_package_get_provides (ZifPackage *package, GError **error)
  * Sets the package installed status.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_installed (ZifPackage *package, gboolean installed)
@@ -875,6 +943,8 @@ zif_package_set_installed (ZifPackage *package, gboolean installed)
  * Sets the unique id for the package.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_id (ZifPackage *package, const gchar *package_id)
@@ -896,6 +966,8 @@ zif_package_set_id (ZifPackage *package, const gchar *package_id)
  * Sets the package summary.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_summary (ZifPackage *package, ZifString *summary)
@@ -916,6 +988,8 @@ zif_package_set_summary (ZifPackage *package, ZifString *summary)
  * Sets the package description.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_description (ZifPackage *package, ZifString *description)
@@ -936,6 +1010,8 @@ zif_package_set_description (ZifPackage *package, ZifString *description)
  * Sets the package license.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_license (ZifPackage *package, ZifString *license)
@@ -956,6 +1032,8 @@ zif_package_set_license (ZifPackage *package, ZifString *license)
  * Sets the project homepage URL.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_url (ZifPackage *package, ZifString *url)
@@ -976,6 +1054,8 @@ zif_package_set_url (ZifPackage *package, ZifString *url)
  * Sets the remote download location.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_location_href (ZifPackage *package, ZifString *location_href)
@@ -996,6 +1076,8 @@ zif_package_set_location_href (ZifPackage *package, ZifString *location_href)
  * Sets the package category.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_category (ZifPackage *package, ZifString *category)
@@ -1016,6 +1098,8 @@ zif_package_set_category (ZifPackage *package, ZifString *category)
  * Sets the package group.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_group (ZifPackage *package, PkGroupEnum group)
@@ -1036,6 +1120,8 @@ zif_package_set_group (ZifPackage *package, PkGroupEnum group)
  * Sets the package size in bytes.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_size (ZifPackage *package, guint64 size)
@@ -1056,6 +1142,8 @@ zif_package_set_size (ZifPackage *package, guint64 size)
  * Sets the package file list.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_files (ZifPackage *package, GPtrArray *files)
@@ -1076,6 +1164,8 @@ zif_package_set_files (ZifPackage *package, GPtrArray *files)
  * Sets the package requires.
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_requires (ZifPackage *package, GPtrArray *requires)
@@ -1096,6 +1186,8 @@ zif_package_set_requires (ZifPackage *package, GPtrArray *requires)
  * Sets the package provides
  *
  * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
  **/
 gboolean
 zif_package_set_provides (ZifPackage *package, GPtrArray *provides)
@@ -1188,6 +1280,8 @@ zif_package_init (ZifPackage *package)
  * zif_package_new:
  *
  * Return value: A new #ZifPackage class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifPackage *
 zif_package_new (void)

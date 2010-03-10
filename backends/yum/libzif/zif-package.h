@@ -41,6 +41,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_PACKAGE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_PACKAGE))
 #define ZIF_IS_PACKAGE_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_PACKAGE))
 #define ZIF_PACKAGE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_PACKAGE, ZifPackageClass))
+#define ZIF_PACKAGE_ERROR		(zif_package_error_quark ())
 
 typedef struct _ZifPackage		ZifPackage;
 typedef struct _ZifPackagePrivate	ZifPackagePrivate;
@@ -78,7 +79,13 @@ struct _ZifPackageClass
 							 GError		**error);
 };
 
+typedef enum {
+	ZIF_PACKAGE_ERROR_FAILED,
+	ZIF_PACKAGE_ERROR_LAST
+} ZifPackageError;
+
 GType			 zif_package_get_type		(void);
+GQuark			 zif_package_error_quark	(void);
 ZifPackage		*zif_package_new		(void);
 
 /* public getters */

@@ -450,7 +450,8 @@ zif_repo_md_comps_load (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion 
 	/* get filename */
 	filename = zif_repo_md_get_filename_uncompressed (md);
 	if (filename == NULL) {
-		g_set_error_literal (error, 1, 0, "failed to get filename for comps");
+		g_set_error_literal (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+				     "failed to get filename for comps");
 		goto out;
 	}
 
@@ -519,6 +520,8 @@ out:
  * Gets the available list of categories.
  *
  * Return value: %PkCategory array of categories, with parent_id set to %NULL
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_repo_md_comps_get_categories (ZifRepoMdComps *md, GCancellable *cancellable,
@@ -538,7 +541,8 @@ zif_repo_md_comps_get_categories (ZifRepoMdComps *md, GCancellable *cancellable,
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -597,6 +601,8 @@ zif_repo_md_comps_get_category_for_group (ZifRepoMdComps *md, const gchar *group
  * Gets the list of groups for a specific category.
  *
  * Return value: %PkCategory array of groups
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *category_id,
@@ -619,7 +625,8 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -651,7 +658,8 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 
 	/* nothing found */
 	if (array == NULL) {
-		g_set_error (error, 1, 0, "could not find category: %s", category_id);
+		g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+			     "could not find category: %s", category_id);
 	}
 out:
 	return array;
@@ -668,6 +676,8 @@ out:
  * Gets the package names for a group.
  *
  * Return value: gchar pointer array of package names (not %ZifPackage's)
+ *
+ * Since: 0.0.1
  **/
 GPtrArray *
 zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group_id,
@@ -689,7 +699,8 @@ zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group
 	if (!md->priv->loaded) {
 		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
-			g_set_error (error, 1, 0, "failed to get load comps: %s", error_local->message);
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to get load comps: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
@@ -713,7 +724,8 @@ zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group
 
 	/* nothing found */
 	if (array == NULL) {
-		g_set_error (error, 1, 0, "could not find group: %s", group_id);
+		g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED,
+			     "could not find group: %s", group_id);
 	}
 out:
 	return array;
@@ -775,6 +787,8 @@ zif_repo_md_comps_init (ZifRepoMdComps *md)
  * zif_repo_md_comps_new:
  *
  * Return value: A new #ZifRepoMdComps class instance.
+ *
+ * Since: 0.0.1
  **/
 ZifRepoMdComps *
 zif_repo_md_comps_new (void)

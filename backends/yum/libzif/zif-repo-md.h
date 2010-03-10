@@ -41,6 +41,7 @@ G_BEGIN_DECLS
 #define ZIF_IS_REPO_MD(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), ZIF_TYPE_REPO_MD))
 #define ZIF_IS_REPO_MD_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), ZIF_TYPE_REPO_MD))
 #define ZIF_REPO_MD_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), ZIF_TYPE_REPO_MD, ZifRepoMdClass))
+#define ZIF_REPO_MD_ERROR		(zif_repo_md_error_quark ())
 
 typedef struct _ZifRepoMd		ZifRepoMd;
 typedef struct _ZifRepoMdPrivate	ZifRepoMdPrivate;
@@ -83,7 +84,18 @@ typedef enum {
 	ZIF_REPO_MD_TYPE_UNKNOWN
 } ZifRepoMdType;
 
+typedef enum {
+	ZIF_REPO_MD_ERROR_FAILED,
+	ZIF_REPO_MD_ERROR_NO_SUPPORT,
+	ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+	ZIF_REPO_MD_ERROR_FAILED_AS_OFFLINE,
+	ZIF_REPO_MD_ERROR_FAILED_DOWNLOAD,
+	ZIF_REPO_MD_ERROR_BAD_SQL,
+	ZIF_REPO_MD_ERROR_LAST
+} ZifRepoMdError;
+
 GType		 zif_repo_md_get_type			(void);
+GQuark		 zif_repo_md_error_quark			(void);
 ZifRepoMd	*zif_repo_md_new			(void);
 
 /* setters */
