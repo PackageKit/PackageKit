@@ -110,6 +110,32 @@ out:
 }
 
 /**
+ * backend_setup_network:
+ */
+static void
+backend_setup_network (PkBackend *backend)
+{
+	gboolean ret;
+	gchar *http_proxy = NULL;
+
+	/* get network state */
+	ret = pk_backend_is_online (backend);
+	if (!ret) {
+		zif_config_set_local (priv->config, "network", "false", NULL);
+		goto out;
+	}
+
+	/* tell ZifConfig it's okay to contact the network */
+	zif_config_set_local (priv->config, "network", "true", NULL);
+
+	/* set the proxy */
+	http_proxy = pk_backend_get_proxy_http (backend);
+	zif_download_set_proxy (priv->download, http_proxy, NULL);
+out:
+	g_free (http_proxy);
+}
+
+/**
  * backend_get_lock:
  */
 static gboolean
@@ -592,6 +618,9 @@ backend_get_files_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set the network state */
+	backend_setup_network (backend);
+
 	/* profile */
 	backend_profile ("get lock");
 
@@ -667,25 +696,36 @@ out:
 }
 
 /**
+ * backend_is_all_installed:
+ */
+static gboolean
+backend_is_all_installed (gchar **package_ids)
+{
+	guint i;
+	gboolean ret = TRUE;
+
+	/* check if we can use zif */
+	for (i=0; package_ids[i] != NULL; i++) {
+		if (!g_str_has_suffix (package_ids[i], ";installed")) {
+			ret = FALSE;
+			break;
+		}
+	}
+	return ret;
+}
+
+/**
  * backend_get_files:
  */
 static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	guint i;
-	gboolean is_all_installed = TRUE;
+	gboolean ret;
 
 	/* check if we can use zif */
-	for (i=0; package_ids[i] != NULL; i++) {
-		if (!g_str_has_suffix (package_ids[i], ";installed")) {
-			is_all_installed = FALSE;
-			break;
-		}
-	}
-
-	/* yippee, we can use zif */
-	if (is_all_installed) {
+	ret = backend_is_all_installed (package_ids);
+	if (ret) {
 		pk_backend_thread_create (backend, backend_get_files_thread);
 		return;
 	}
@@ -983,6 +1023,9 @@ backend_get_repo_list_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set the network state */
+	backend_setup_network (backend);
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -1069,6 +1112,9 @@ backend_repo_enable_thread (PkBackend *backend)
 		egg_warning ("failed to get lock");
 		goto out;
 	}
+
+	/* set the network state */
+	backend_setup_network (backend);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -1301,6 +1347,9 @@ backend_get_categories_thread (PkBackend *backend)
 		egg_warning ("failed to get lock");
 		goto out;
 	}
+
+	/* set the network state */
+	backend_setup_network (backend);
 
 	/* setup completion */
 	zif_completion_reset (priv->completion);
