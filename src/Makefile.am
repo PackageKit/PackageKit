@@ -14,7 +14,7 @@ INCLUDES =						\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	$(PYTHON_CFLAGS)				\
-	$(LIBNM_CFLAGS)					\
+	$(NETWORK_MANAGER_CFLAGS)			\
 	$(CONNMAN_CFLAGS)				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DBINDIR=\"$(bindir)\"				\
@@ -124,7 +124,7 @@ packagekitd_SOURCES =					\
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
-	$(LIBNM_LIBS)					\
+	$(NETWORK_MANAGER_LIBS)				\
 	$(CONNMAN_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
@@ -219,7 +219,7 @@ pk_self_test_LDADD =					\
 	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
-	$(LIBNM_LIBS)					\
+	$(NETWORK_MANAGER_LIBS)				\
 	$(CONNMAN_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
 	$(POLKIT_LIBS)					\
