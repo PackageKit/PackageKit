@@ -90,6 +90,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 simultaneous;
 	gboolean		 use_time;
+	gboolean		 use_threads;
 	gchar			*transaction_id;
 	gchar			*locale;
 	gchar			*name;
@@ -2137,6 +2138,8 @@ pk_backend_use_background (PkBackend *backend)
 gboolean
 pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 {
+	gboolean ret = TRUE;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (func != NULL, FALSE);
 
@@ -2144,12 +2147,24 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 		egg_warning ("already has thread");
 		return FALSE;
 	}
+
+	/* DBus-Glib isn't threadsafe */
+	if (!backend->priv->use_threads) {
+		egg_warning ("not using threads, so daemon will block");
+		ret = func (backend);
+		goto out;
+	}
+
+	/* create a thread */
+	egg_warning ("using threads, so daemon may crash");
 	backend->priv->thread = g_thread_create ((GThreadFunc) func, backend, FALSE, NULL);
 	if (backend->priv->thread == NULL) {
 		egg_warning ("failed to create thread");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
-	return TRUE;
+out:
+	return ret;
 }
 
 /**
@@ -2988,6 +3003,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->file_changed_data = NULL;
 	backend->priv->last_package = NULL;
 	backend->priv->locked = FALSE;
+	backend->priv->use_threads = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->speed = 0;
 	backend->priv->signal_error_timeout = 0;
@@ -3009,6 +3025,7 @@ pk_backend_init (PkBackend *backend)
 	/* do we use time estimation? */
 	conf = pk_conf_new ();
 	backend->priv->use_time = pk_conf_get_bool (conf, "UseRemainingTimeEstimation");
+	backend->priv->use_threads = pk_conf_get_bool (conf, "UseThreadsInBackend");
 	g_object_unref (conf);
 
 	pk_backend_reset (backend);
