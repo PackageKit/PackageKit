@@ -2056,6 +2056,25 @@ pk_backend_finished (PkBackend *backend)
 }
 
 /**
+ * pk_backend_thread_finished_cb:
+ **/
+static gboolean
+pk_backend_thread_finished_cb (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
+/**
+ * pk_backend_thread_finished:
+ **/
+void
+pk_backend_thread_finished (PkBackend *backend)
+{
+	g_idle_add ((GSourceFunc) pk_backend_thread_finished_cb, backend);
+}
+
+/**
  * pk_backend_bool_to_string:
  */
 const gchar *
