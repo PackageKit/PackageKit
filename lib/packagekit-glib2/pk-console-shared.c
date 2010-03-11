@@ -135,9 +135,11 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 gchar *
 pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *package_name, GError **error)
 {
+	const gchar *package_id_tmp;
 	gchar *package_id = NULL;
 	gboolean valid;
 	gchar **tmp;
+	gchar **split = NULL;
 	PkResults *results;
 	GPtrArray *array = NULL;
 	guint i;
@@ -183,13 +185,11 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	g_print ("%s\n", _("More than one package matches:"));
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		g_object_get (package,
-			      "package-id", &package_id,
-			      NULL);
-		printable = pk_package_id_to_printable (package_id);
-		g_print ("%i. %s\n", i+1, printable);
+		package_id_tmp = pk_package_get_id (package);
+		split = pk_package_id_split (package_id_tmp);
+		printable = pk_package_id_to_printable (package_id_tmp);
+		g_print ("%i. %s [%s]\n", i+1, printable, split[PK_PACKAGE_ID_DATA]);
 		g_free (printable);
-		g_free (package_id);
 	}
 
 	/* TRANSLATORS: This finds out which package in the list to use */
@@ -204,6 +204,7 @@ out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	g_strfreev (tmp);
+	g_strfreev (split);
 	return package_id;
 }
 
