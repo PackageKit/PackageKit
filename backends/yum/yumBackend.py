@@ -2449,7 +2449,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 notices = md.get_applicable_notices(pkg.pkgtup)
                 status = INFO_NORMAL
                 if notices:
-                    for notice in notices:
+                    for (pkgtup, notice) in notices:
                         status = self._get_status(notice)
                         if status == INFO_SECURITY:
                             break
