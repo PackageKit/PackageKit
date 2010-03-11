@@ -304,7 +304,7 @@ zif_completion_get_child (ZifCompletion *completion)
 {
 	ZifCompletion *child = NULL;
 
-	g_return_val_if_fail (ZIF_IS_COMPLETION (completion), FALSE);
+	g_return_val_if_fail (ZIF_IS_COMPLETION (completion), NULL);
 
 	/* already set child */
 	if (completion->priv->child != NULL) {

@@ -115,6 +115,7 @@ zif_monitor_add_watch (ZifMonitor *monitor, const gchar *filename, GError **erro
 
 	g_return_val_if_fail (ZIF_IS_MONITOR (monitor), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* watch this file */
 	file = g_file_new_for_path (filename);

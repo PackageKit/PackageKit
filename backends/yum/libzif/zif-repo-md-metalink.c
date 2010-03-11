@@ -282,7 +282,8 @@ zif_repo_md_metalink_get_uris (ZifRepoMdMetalink *md, guint threshold, GCancella
 	guint i;
 	ZifRepoMdMetalink *metalink = ZIF_REPO_MD_METALINK (md);
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_METALINK (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_METALINK (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!metalink->priv->loaded) {

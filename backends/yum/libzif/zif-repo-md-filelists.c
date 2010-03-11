@@ -192,7 +192,8 @@ zif_repo_md_filelists_search_file (ZifRepoMdFilelists *md, const gchar *search, 
 	gchar *dirname = NULL;
 	ZifRepoMdFilelistsData *data = NULL;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_FILELISTS (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_FILELISTS (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!md->priv->loaded) {

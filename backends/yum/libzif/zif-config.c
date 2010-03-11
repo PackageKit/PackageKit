@@ -34,6 +34,10 @@
  * zif_config_set_filename() and any reads prior to that will fail.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <string.h>
 
 #include <glib.h>
@@ -181,6 +185,7 @@ zif_config_get_boolean (ZifConfig *config, const gchar *key, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_CONFIG (config), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get string value */
 	value = zif_config_get_string (config, key, error);
@@ -216,6 +221,7 @@ zif_config_get_uint (ZifConfig *config, const gchar *key, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_CONFIG (config), G_MAXUINT);
 	g_return_val_if_fail (key != NULL, G_MAXUINT);
+	g_return_val_if_fail (error == NULL || *error == NULL, G_MAXUINT);
 
 	/* get string value */
 	value = zif_config_get_string (config, key, error);
@@ -299,7 +305,7 @@ out:
  *
  * Gets a time value from a local setting, falling back to the config file.
  *
- * Return value: the data value
+ * Return value: the data value, or 0 for an error
  *
  * Since: 0.0.1
  **/
@@ -309,8 +315,9 @@ zif_config_get_time (ZifConfig *config, const gchar *key, GError **error)
 	gchar *value;
 	guint timeval = 0;
 
-	g_return_val_if_fail (ZIF_IS_CONFIG (config), FALSE);
-	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (ZIF_IS_CONFIG (config), 0);
+	g_return_val_if_fail (key != NULL, 0);
+	g_return_val_if_fail (error == NULL || *error == NULL, 0);
 
 	/* get string value */
 	value = zif_config_get_string (config, key, error);
@@ -410,6 +417,7 @@ zif_config_set_filename (ZifConfig *config, const gchar *filename, GError **erro
 	g_return_val_if_fail (ZIF_IS_CONFIG (config), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);
 	g_return_val_if_fail (!config->priv->loaded, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check file exists */
 	ret = g_file_test (filename, G_FILE_TEST_IS_REGULAR);
@@ -513,6 +521,7 @@ gboolean
 zif_config_reset_default (ZifConfig *config, GError **error)
 {
 	g_return_val_if_fail (ZIF_IS_CONFIG (config), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	g_hash_table_remove_all (config->priv->hash);
 	return TRUE;
 }
@@ -538,6 +547,7 @@ zif_config_set_local (ZifConfig *config, const gchar *key, const gchar *value, G
 
 	g_return_val_if_fail (ZIF_IS_CONFIG (config), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already exists? */
 	value_tmp = g_hash_table_lookup (config->priv->hash, key);

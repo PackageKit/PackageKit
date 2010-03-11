@@ -321,6 +321,8 @@ zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, G
 	ZifPackage *package = NULL;
 	ZifCompletion *completion_local = NULL;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
 	/* nothing to do */
 	if (store_array->len == 0) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_ARRAY_IS_EMPTY,
@@ -380,6 +382,8 @@ zif_store_array_clean (GPtrArray *store_array,
 	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	/* nothing to do */
 	if (store_array->len == 0) {
 		egg_debug ("nothing to do");
@@ -399,6 +403,7 @@ zif_store_array_clean (GPtrArray *store_array,
 		if (!ret) {
 			/* do we need to skip this error */
 			if (error_cb != NULL && error_cb (store_array, error_local, user_data)) {
+				ret = TRUE;
 				g_clear_error (&error_local);
 				goto skip_error;
 			}
@@ -442,6 +447,8 @@ zif_store_array_refresh (GPtrArray *store_array, gboolean force,
 	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	/* nothing to do */
 	if (store_array->len == 0) {
 		egg_debug ("nothing to do");
@@ -461,6 +468,7 @@ zif_store_array_refresh (GPtrArray *store_array, gboolean force,
 		if (!ret) {
 			/* do we need to skip this error */
 			if (error_cb != NULL && error_cb (store_array, error_local, user_data)) {
+				ret = TRUE;
 				g_clear_error (&error_local);
 				goto skip_error;
 			}
@@ -498,6 +506,7 @@ zif_store_array_resolve (GPtrArray *store_array, const gchar *search,
 			 ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			 GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_RESOLVE, search,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -523,6 +532,7 @@ zif_store_array_search_name (GPtrArray *store_array, const gchar *search,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_NAME, search,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -548,6 +558,7 @@ zif_store_array_search_details (GPtrArray *store_array, const gchar *search,
 				ZifStoreArrayErrorCb error_cb, gpointer user_data,
 				GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_DETAILS, search,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -573,6 +584,7 @@ zif_store_array_search_group (GPtrArray *store_array, const gchar *group_enum,
 			      ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_GROUP, group_enum,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -604,6 +616,8 @@ zif_store_array_search_category (GPtrArray *store_array, const gchar *group_id,
 	const gchar *package_id;
 	const gchar *package_id_tmp;
 	gchar **split;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* get all results from all repos */
 	array = zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_CATEGORY, group_id,
@@ -653,6 +667,7 @@ zif_store_array_search_file (GPtrArray *store_array, const gchar *search,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_FILE, search,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -677,6 +692,7 @@ zif_store_array_get_packages (GPtrArray *store_array,
 			      ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_PACKAGES, NULL,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -701,6 +717,7 @@ zif_store_array_get_updates (GPtrArray *store_array,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, NULL,
 					     error_cb, user_data, cancellable, completion, error);
 }
@@ -726,6 +743,7 @@ zif_store_array_what_provides (GPtrArray *store_array, const gchar *search,
 			       ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			       GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if this is a path, then we use the file list and treat like a SearchFile */
 	if (g_str_has_prefix (search, "/")) {
@@ -764,6 +782,8 @@ zif_store_array_get_categories (GPtrArray *store_array,
 	gchar *parent_id_tmp;
 	gchar *cat_id;
 	gchar *cat_id_tmp;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* get all results from all repos */
 	array = zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_CATEGORIES, NULL,

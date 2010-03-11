@@ -90,6 +90,7 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 	g_return_val_if_fail (store->priv->prefix == NULL, FALSE);
 	g_return_val_if_fail (!store->priv->loaded, FALSE);
 	g_return_val_if_fail (prefix != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check file exists */
 	ret = g_file_test (prefix, G_FILE_TEST_IS_DIR);

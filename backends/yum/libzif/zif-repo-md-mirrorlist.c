@@ -144,7 +144,8 @@ zif_repo_md_mirrorlist_get_uris (ZifRepoMdMirrorlist *md, GCancellable *cancella
 	guint i;
 	ZifRepoMdMirrorlist *mirrorlist = ZIF_REPO_MD_MIRRORLIST (md);
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_MIRRORLIST (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_MIRRORLIST (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!mirrorlist->priv->loaded) {

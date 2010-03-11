@@ -578,6 +578,7 @@ zif_package_ensure_data (ZifPackage *package, ZifPackageEnsureType type, GError 
 	ZifPackageClass *klass = ZIF_PACKAGE_GET_CLASS (package);
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no support */
 	if (klass->ensure_data == NULL) {
@@ -609,6 +610,7 @@ zif_package_get_summary (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->summary == NULL) {
@@ -639,6 +641,7 @@ zif_package_get_description (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->description == NULL) {
@@ -669,6 +672,7 @@ zif_package_get_license (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->license == NULL) {
@@ -699,6 +703,7 @@ zif_package_get_url (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->url == NULL) {
@@ -727,13 +732,7 @@ zif_package_get_filename (ZifPackage *package, GError **error)
 {
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
-
-	/* doesn't make much sense */
-	if (package->priv->installed) {
-		g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
-				     "cannot get remote filename for installed package");
-		return NULL;
-	}
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->location_href == NULL) {
@@ -764,6 +763,7 @@ zif_package_get_category (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->category == NULL) {
@@ -792,6 +792,9 @@ zif_package_get_group (ZifPackage *package, GError **error)
 {
 	gboolean ret;
 
+	g_return_val_if_fail (ZIF_IS_PACKAGE (package), 0);
+	g_return_val_if_fail (error == NULL || *error == NULL, 0);
+
 	/* not exists */
 	if (package->priv->group == PK_GROUP_ENUM_UNKNOWN) {
 		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_GROUP, error);
@@ -813,7 +816,7 @@ zif_package_get_group (ZifPackage *package, GError **error)
  * This is the installed size for installed packages, and the download size for
  * remote packages.
  *
- * Return value: %TRUE for success, %FALSE for failure
+ * Return value: the package size, or 0 for failure
  *
  * Since: 0.0.1
  **/
@@ -821,6 +824,9 @@ guint64
 zif_package_get_size (ZifPackage *package, GError **error)
 {
 	gboolean ret;
+
+	g_return_val_if_fail (ZIF_IS_PACKAGE (package), 0);
+	g_return_val_if_fail (error == NULL || *error == NULL, 0);
 
 	if (package->priv->size == 0) {
 		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_SIZE, error);
@@ -851,6 +857,7 @@ zif_package_get_files (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->files == NULL) {
@@ -881,6 +888,7 @@ zif_package_get_requires (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->requires == NULL) {
@@ -911,6 +919,7 @@ zif_package_get_provides (ZifPackage *package, GError **error)
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
 	if (package->priv->requires == NULL) {

@@ -479,6 +479,7 @@ zif_package_local_set_from_header (ZifPackageLocal *pkg, Header header, GError *
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE_LOCAL (pkg), FALSE);
 	g_return_val_if_fail (header != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	zif_package_set_installed (ZIF_PACKAGE (pkg), TRUE);
 
@@ -533,6 +534,10 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	rpmts ts;
 	gboolean ret = FALSE;
 	GError *error_local = NULL;
+
+	g_return_val_if_fail (ZIF_IS_PACKAGE_LOCAL (pkg), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* open the file for reading */
 	fd = Fopen(filename, "r.fdio");

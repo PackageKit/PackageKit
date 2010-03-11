@@ -912,6 +912,9 @@ backend_download_packages_thread (PkBackend *backend)
 	guint len;
 	gboolean ret;
 	GError *error = NULL;
+	ZifString *filename;
+	gchar *basename;
+	gchar *path;
 
 	/* get lock */
 	ret = backend_get_lock (backend);
@@ -963,23 +966,32 @@ backend_download_packages_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	for (i=0; i<packages->len; i++) {
 		package = g_ptr_array_index (packages, i);
+
+		/* get filename */
+		filename = zif_package_get_filename (package, &error);
+		if (filename == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+					       "failed to get filename for %s: %s", zif_package_get_id (package), error->message);
+			g_error_free (error);
+			goto out;
+		}
+
 		ret = zif_package_download (package, directory, priv->cancellable, completion_local, &error);
 		if (!ret) {
-			ZifString *filename;
-			GError *error_local = NULL;
-			filename = zif_package_get_filename (package, &error_local);
-			if (filename == NULL) {
-				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
-						       "failed to get filename for %s: %s", zif_package_get_id (package), error_local->message);
-				g_error_free (error_local);
-				goto out;
-			}
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to download %s: %s", zif_string_get_value (filename), error->message);
 			zif_string_unref (filename);
 			g_error_free (error);
 			goto out;
 		}
+
+		/* send a signal for the daemon so the file is copied */
+		basename = g_path_get_basename (zif_string_get_value (filename));
+		path = g_build_filename (directory, basename, NULL);
+		pk_backend_files (backend, zif_package_get_id (package), path);
+		zif_string_unref (filename);
+		g_free (basename);
+		g_free (path);
 
 		/* this section done */
 		zif_completion_done (priv->completion);
@@ -1001,7 +1013,7 @@ static void
 backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (TRUE || !priv->use_zif) {
+	if (!priv->use_zif) {
 		gchar *package_ids_temp;
 
 		/* send the complete list as stdin */

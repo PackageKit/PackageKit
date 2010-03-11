@@ -29,6 +29,10 @@
  * set using zif_groups_set_mapping_file() before any queries are done.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <string.h>
 
 #include <glib.h>
@@ -248,6 +252,7 @@ zif_groups_get_categories (ZifGroups *groups, GError **error)
 	gboolean ret;
 
 	g_return_val_if_fail (ZIF_IS_GROUPS (groups), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!groups->priv->loaded) {
@@ -289,6 +294,7 @@ zif_groups_get_group_for_cat (ZifGroups *groups, const gchar *cat, GError **erro
 
 	g_return_val_if_fail (ZIF_IS_GROUPS (groups), PK_GROUP_ENUM_UNKNOWN);
 	g_return_val_if_fail (cat != NULL, PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (error == NULL || *error == NULL, PK_GROUP_ENUM_UNKNOWN);
 
 	/* if not already loaded, load */
 	if (!groups->priv->loaded) {

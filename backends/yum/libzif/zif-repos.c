@@ -96,6 +96,7 @@ zif_repos_set_repos_dir (ZifRepos *repos, const gchar *repos_dir, GError **error
 	g_return_val_if_fail (repos->priv->repos_dir == NULL, FALSE);
 	g_return_val_if_fail (!repos->priv->loaded, FALSE);
 	g_return_val_if_fail (repos_dir != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check directory exists */
 	ret = g_file_test (repos_dir, G_FILE_TEST_IS_DIR);
@@ -201,6 +202,7 @@ zif_repos_load (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *compl
 
 	g_return_val_if_fail (ZIF_IS_REPOS (repos), FALSE);
 	g_return_val_if_fail (repos->priv->repos_dir != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already loaded */
 	if (repos->priv->loaded)
@@ -312,10 +314,11 @@ GPtrArray *
 zif_repos_get_stores (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
-	GError *error_local;
+	GError *error_local = NULL;
 	gboolean ret;
 
-	g_return_val_if_fail (ZIF_IS_REPOS (repos), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPOS (repos), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!repos->priv->loaded) {
@@ -351,12 +354,13 @@ GPtrArray *
 zif_repos_get_stores_enabled (ZifRepos *repos, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
-	GError *error_local;
+	GError *error_local = NULL;
 	ZifStoreRemote *store;
 	gboolean ret;
 	guint i;
 
-	g_return_val_if_fail (ZIF_IS_REPOS (repos), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPOS (repos), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!repos->priv->loaded) {
@@ -400,11 +404,12 @@ zif_repos_get_store (ZifRepos *repos, const gchar *id, GCancellable *cancellable
 	ZifStoreRemote *store = NULL;
 	ZifStoreRemote *store_tmp;
 	const gchar *id_tmp;
-	GError *error_local;
+	GError *error_local = NULL;
 	gboolean ret;
 
-	g_return_val_if_fail (ZIF_IS_REPOS (repos), FALSE);
-	g_return_val_if_fail (id != NULL, FALSE);
+	g_return_val_if_fail (ZIF_IS_REPOS (repos), NULL);
+	g_return_val_if_fail (id != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!repos->priv->loaded) {

@@ -620,6 +620,7 @@ zif_repo_md_comps_get_groups_for_category (ZifRepoMdComps *md, const gchar *cate
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD_COMPS (md), NULL);
 	g_return_val_if_fail (category_id != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!md->priv->loaded) {
@@ -694,6 +695,7 @@ zif_repo_md_comps_get_packages_for_group (ZifRepoMdComps *md, const gchar *group
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD_COMPS (md), NULL);
 	g_return_val_if_fail (group_id != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if not already loaded, load */
 	if (!md->priv->loaded) {

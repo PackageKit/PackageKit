@@ -191,6 +191,7 @@ zif_lock_set_locked (ZifLock *lock, guint *pid, GError **error)
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (ZIF_IS_LOCK (lock), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already locked */
 	ret = zif_lock_is_locked (lock, &pid_tmp);
@@ -253,6 +254,7 @@ zif_lock_set_unlocked (ZifLock *lock, GError **error)
 	gint retval;
 
 	g_return_val_if_fail (ZIF_IS_LOCK (lock), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* optimise as we hold the lock */
 	if (lock->priv->self_locked) {

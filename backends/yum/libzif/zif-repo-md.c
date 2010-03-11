@@ -598,6 +598,7 @@ zif_repo_md_unload (ZifRepoMd *md, GCancellable *cancellable, ZifCompletion *com
 	ZifRepoMdClass *klass = ZIF_REPO_MD_GET_CLASS (md);
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD (md), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no support */
 	if (klass->unload == NULL) {
@@ -630,6 +631,7 @@ zif_repo_md_clean (ZifRepoMd *md, GError **error)
 	GError *error_local = NULL;
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD (md), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get filename */
 	filename = zif_repo_md_get_filename (md);
@@ -743,6 +745,7 @@ zif_repo_md_file_check (ZifRepoMd *md, gboolean use_uncompressed, GError **error
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD (md), FALSE);
 	g_return_val_if_fail (md->priv->id != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* metalink has no checksum... */
 	if (md->priv->type == ZIF_REPO_MD_TYPE_METALINK ||

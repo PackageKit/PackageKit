@@ -200,7 +200,8 @@ zif_repo_md_primary_resolve (ZifRepoMdPrimary *md, const gchar *search, GCancell
 	gchar *pred;
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	pred = g_strdup_printf ("WHERE name = '%s'", search);
@@ -230,7 +231,8 @@ zif_repo_md_primary_search_name (ZifRepoMdPrimary *md, const gchar *search, GCan
 	gchar *pred;
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	pred = g_strdup_printf ("WHERE name LIKE '%%%s%%'", search);
@@ -260,7 +262,8 @@ zif_repo_md_primary_search_details (ZifRepoMdPrimary *md, const gchar *search, G
 	gchar *pred;
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	pred = g_strdup_printf ("WHERE name LIKE '%%%s%%' OR summary LIKE '%%%s%%' OR description LIKE '%%%s%%'", search, search, search);
@@ -290,7 +293,8 @@ zif_repo_md_primary_search_group (ZifRepoMdPrimary *md, const gchar *search, GCa
 	gchar *pred;
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	pred = g_strdup_printf ("WHERE rpm_group = '%s'", search);
@@ -320,7 +324,8 @@ zif_repo_md_primary_search_pkgid (ZifRepoMdPrimary *md, const gchar *search, GCa
 	gchar *pred;
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	pred = g_strdup_printf ("WHERE pkgid = '%s'", search);
@@ -351,7 +356,8 @@ zif_repo_md_primary_find_package (ZifRepoMdPrimary *md, const gchar *package_id,
 	GPtrArray *array;
 	gchar **split;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate, TODO: search version (epoch+release) */
 	split = pk_package_id_split (package_id);
@@ -381,7 +387,8 @@ zif_repo_md_primary_get_packages (ZifRepoMdPrimary *md, GCancellable *cancellabl
 {
 	GPtrArray *array;
 
-	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* search with predicate */
 	array = zif_repo_md_primary_search (md, "", cancellable, completion, error);

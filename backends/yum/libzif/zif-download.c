@@ -168,6 +168,7 @@ zif_download_file (ZifDownload *download, const gchar *uri, const gchar *filenam
 	g_return_val_if_fail (filename != NULL, FALSE);
 	g_return_val_if_fail (download->priv->msg == NULL, FALSE);
 	g_return_val_if_fail (download->priv->session != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* save an instance of the completion object */
 	download->priv->completion = g_object_ref (completion);
@@ -246,6 +247,7 @@ zif_download_set_proxy (ZifDownload *download, const gchar *http_proxy, GError *
 	guint connection_timeout;
 
 	g_return_val_if_fail (ZIF_IS_DOWNLOAD (download), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* get default value from the config file */
 	connection_timeout = zif_config_get_uint (download->priv->config, "connection_timeout", NULL);

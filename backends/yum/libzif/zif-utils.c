@@ -504,6 +504,7 @@ zif_file_untar (const gchar *filename, const gchar *directory, GError **error)
 
 	g_return_val_if_fail (filename != NULL, FALSE);
 	g_return_val_if_fail (directory != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* save the PWD as we chdir to extract */
 	retcwd = getcwd (buf, PATH_MAX);

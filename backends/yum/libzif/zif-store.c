@@ -76,6 +76,7 @@ zif_store_load (ZifStore *store, GCancellable *cancellable, ZifCompletion *compl
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
 	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no support */
 	if (klass->load == NULL) {
@@ -106,6 +107,7 @@ zif_store_clean (ZifStore *store, GCancellable *cancellable, ZifCompletion *comp
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
 	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no support */
 	if (klass->clean == NULL) {
@@ -137,6 +139,7 @@ zif_store_refresh (ZifStore *store, gboolean force, GCancellable *cancellable, Z
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
 	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no support */
 	if (klass->refresh == NULL) {
@@ -167,14 +170,15 @@ zif_store_search_name (ZifStore *store, const gchar *search, GCancellable *cance
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->search_name == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->search_name (store, search, cancellable, completion, error);
@@ -199,14 +203,15 @@ zif_store_search_category (ZifStore *store, const gchar *search, GCancellable *c
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->search_category == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->search_category (store, search, cancellable, completion, error);
@@ -231,14 +236,14 @@ zif_store_search_details (ZifStore *store, const gchar *search, GCancellable *ca
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
 
 	/* no support */
 	if (klass->search_details == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->search_details (store, search, cancellable, completion, error);
@@ -263,14 +268,15 @@ zif_store_search_group (ZifStore *store, const gchar *search, GCancellable *canc
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->search_group == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->search_group (store, search, cancellable, completion, error);
@@ -295,14 +301,15 @@ zif_store_search_file (ZifStore *store, const gchar *search, GCancellable *cance
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->search_file == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->search_file (store, search, cancellable, completion, error);
@@ -327,14 +334,15 @@ zif_store_resolve (ZifStore *store, const gchar *search, GCancellable *cancellab
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->resolve == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->resolve (store, search, cancellable, completion, error);
@@ -359,14 +367,15 @@ zif_store_what_provides (ZifStore *store, const gchar *search, GCancellable *can
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (search != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->search_name == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->what_provides (store, search, cancellable, completion, error);
@@ -390,13 +399,14 @@ zif_store_get_packages (ZifStore *store, GCancellable *cancellable, ZifCompletio
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->get_packages == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->get_packages (store, cancellable, completion, error);
@@ -420,13 +430,14 @@ zif_store_get_updates (ZifStore *store, GCancellable *cancellable, ZifCompletion
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->get_updates == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->get_updates (store, cancellable, completion, error);
@@ -451,14 +462,15 @@ zif_store_find_package (ZifStore *store, const gchar *package_id, GCancellable *
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->find_package == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->find_package (store, package_id, cancellable, completion, error);
@@ -482,13 +494,14 @@ zif_store_get_categories (ZifStore *store, GCancellable *cancellable, ZifComplet
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
-	g_return_val_if_fail (ZIF_IS_STORE (store), FALSE);
+	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* no support */
 	if (klass->get_categories == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_NO_SUPPORT,
 				     "operation cannot be performed on this store");
-		return FALSE;
+		return NULL;
 	}
 
 	return klass->get_categories (store, cancellable, completion, error);
