@@ -30,12 +30,12 @@
 #define YUM_BACKEND_LOCKING_RETRIES		10
 #define YUM_BACKEND_LOCKING_DELAY		2 /* seconds */
 
-static gboolean use_zif = TRUE;
 
 typedef struct {
 	PkBackendSpawn	*spawn;
 	GFileMonitor	*monitor;
 	GCancellable	*cancellable;
+	gboolean	 use_zif;
 	ZifDownload	*download;
 	ZifConfig	*config;
 	ZifStoreLocal	*store_local;
@@ -582,6 +582,7 @@ backend_initialize (PkBackend *backend)
 	gboolean ret;
 	GFile *file;
 	GError *error = NULL;
+	GKeyFile *key_file = NULL;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -603,8 +604,18 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 	}
 
+	/* read the config file */
+	key_file = g_key_file_new ();
+	ret = g_key_file_load_from_file (key_file, SYSCONFDIR "/PackageKit/Yum.conf", G_KEY_FILE_NONE, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "failed to load Yum.conf: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif)
+	priv->use_zif = g_key_file_get_boolean (key_file, "Backend", "UseZif", NULL);
+	if (!priv->use_zif)
 		goto out;
 
 	/* use a timer for profiling */
@@ -678,6 +689,7 @@ backend_initialize (PkBackend *backend)
 	/* profile */
 	backend_profile ("read groups");
 out:
+	g_key_file_free (key_file);
 	g_object_unref (file);
 }
 
@@ -721,7 +733,7 @@ backend_get_groups (PkBackend *backend)
 	PkBitfield groups;
 
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		groups = pk_bitfield_from_enums (
 			PK_GROUP_ENUM_COLLECTIONS,
 			PK_GROUP_ENUM_NEWEST,
@@ -982,7 +994,7 @@ static void
 backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	/* check if we can use zif */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *package_ids_temp;
 		package_ids_temp = pk_package_ids_to_string (package_ids);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
@@ -1105,7 +1117,7 @@ static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-distro-upgrades", NULL);
 		return;
 	}
@@ -1231,7 +1243,7 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 
 	/* check if we can use zif */
 	ret = backend_is_all_installed (package_ids);
-	if (ret && use_zif) {
+	if (ret && priv->use_zif) {
 		pk_backend_thread_create (backend, backend_get_files_thread);
 		return;
 	}
@@ -1276,7 +1288,7 @@ static void
 backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-packages", filters_text, NULL);
@@ -1418,7 +1430,7 @@ static void
 backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -1438,7 +1450,7 @@ static void
 backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -1458,7 +1470,7 @@ static void
 backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -1478,7 +1490,7 @@ static void
 backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -1521,7 +1533,7 @@ static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		gchar *package_ids_temp;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -1628,7 +1640,7 @@ static void
 backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-repo-list", filters_text, NULL);
@@ -1709,7 +1721,7 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		if (enabled == TRUE) {
 			pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "true", NULL);
 		} else {
@@ -1971,7 +1983,7 @@ static void
 backend_get_categories (PkBackend *backend)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!use_zif) {
+	if (!priv->use_zif) {
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-categories", NULL);
 		return;
 	}
