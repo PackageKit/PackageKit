@@ -15,6 +15,7 @@ INCLUDES = \
 	$(BZLIB_CFLAGS)						\
 	$(SOUP_CFLAGS)						\
 	$(ARCHIVE_CFLAGS)					\
+	-DSYSCONFDIR=\""$(sysconfdir)"\"			\
 	-I$(top_srcdir)/backends/yum/libzif			\
 	-I$(top_builddir)/backends/yum/libzif
 

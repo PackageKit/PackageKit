@@ -391,6 +391,17 @@ backend_emit_package_array (PkBackend *backend, GPtrArray *array)
 }
 
 /**
+ * backend_error_handler_cb:
+ */
+static gboolean
+backend_error_handler_cb (GPtrArray *store_array, const GError *error, PkBackend *backend)
+{
+	/* emit a warning, this isn't fatal */
+	pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "%s", error->message);
+	return TRUE;
+}
+
+/**
  * backend_search_thread_get_array:
  */
 static GPtrArray *
@@ -400,20 +411,33 @@ backend_search_thread_get_array (PkBackend *backend, GPtrArray *store_array, con
 	GPtrArray *array = NULL;
 
 	role = pk_backend_get_role (backend);
-	if (role == PK_ROLE_ENUM_SEARCH_NAME)
-		array = zif_store_array_search_name (store_array, search, priv->cancellable, completion, error);
-	else if (role == PK_ROLE_ENUM_SEARCH_DETAILS)
-		array = zif_store_array_search_details (store_array, search, priv->cancellable, completion, error);
-	else if (role == PK_ROLE_ENUM_SEARCH_GROUP)
-		array = zif_store_array_search_category (store_array, search, priv->cancellable, completion, error);
-	else if (role == PK_ROLE_ENUM_SEARCH_FILE)
-		array = zif_store_array_search_file (store_array, search, priv->cancellable, completion, error);
-	else if (role == PK_ROLE_ENUM_RESOLVE)
-		array = zif_store_array_resolve (store_array, search, priv->cancellable, completion, error);
-	else if (role == PK_ROLE_ENUM_WHAT_PROVIDES)
-		array = zif_store_array_what_provides (store_array, search, priv->cancellable, completion, error);
-	else
+	if (role == PK_ROLE_ENUM_SEARCH_NAME) {
+		array = zif_store_array_search_name (store_array, search,
+						     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						     priv->cancellable, completion, error);
+	} else if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		array = zif_store_array_search_details (store_array, search,
+							(ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							priv->cancellable, completion, error);
+	} else if (role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		array = zif_store_array_search_category (store_array, search,
+							 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							 priv->cancellable, completion, error);
+	} else if (role == PK_ROLE_ENUM_SEARCH_FILE) {
+		array = zif_store_array_search_file (store_array, search,
+						     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						     priv->cancellable, completion, error);
+	} else if (role == PK_ROLE_ENUM_RESOLVE) {
+		array = zif_store_array_resolve (store_array, search,
+						 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						 priv->cancellable, completion, error);
+	} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+		array = zif_store_array_what_provides (store_array, search,
+						       (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						       priv->cancellable, completion, error);
+	} else {
 		g_set_error (error, 1, 0, "does not support: %s", pk_role_enum_to_string (role));
+	}
 	return array;
 }
 
@@ -507,7 +531,7 @@ backend_search_thread (PkBackend *backend)
 	/* do get action */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
 		completion_local = zif_completion_get_child (priv->completion);
-		array = zif_store_array_get_packages (store_array, priv->cancellable, completion_local, &error);
+		array = zif_store_array_get_packages (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend, priv->cancellable, completion_local, &error);
 		if (array == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
 			g_error_free (error);
@@ -1759,137 +1783,6 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	g_free (search);
 }
 
-#define PK_ROLE_ENUM_SEARCH_CATEGORY	(PK_ROLE_ENUM_UNKNOWN + 1)
-
-/**
- * backend_repos_search:
- **/
-static GPtrArray *
-backend_repos_search (PkBackend *backend, GPtrArray *stores, PkRoleEnum role, const gchar *search, ZifCompletion *completion, GError **error)
-{
-	guint i, j;
-	GPtrArray *array = NULL;
-	GPtrArray *part;
-	ZifStore *store;
-	ZifPackage *package;
-	GError *error_local = NULL;
-	ZifCompletion *completion_local = NULL;
-
-	/* nothing to do */
-	if (stores->len == 0) {
-		if (error != NULL)
-			*error = g_error_new (1, 0, "nothing to do as no stores");
-		goto out;
-	}
-
-	/* set number of stores */
-	zif_completion_set_number_steps (completion, stores->len);
-
-	/* do each one */
-	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	for (i=0; i<stores->len; i++) {
-		store = g_ptr_array_index (stores, i);
-
-		/* create a chain of completions */
-		completion_local = zif_completion_get_child (completion);
-
-		/* get results for this store */
-		if (role == PK_ROLE_ENUM_RESOLVE)
-			part = zif_store_resolve (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_SEARCH_NAME)
-			part = zif_store_search_name (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_SEARCH_DETAILS)
-			part = zif_store_search_details (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_SEARCH_GROUP)
-			part = zif_store_search_group (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_SEARCH_CATEGORY)
-			part = zif_store_search_category (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_SEARCH_FILE)
-			part = zif_store_search_file (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_GET_PACKAGES)
-			part = zif_store_get_packages (store, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_GET_UPDATES)
-			part = zif_store_get_updates (store, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_WHAT_PROVIDES)
-			part = zif_store_what_provides (store, search, priv->cancellable, completion_local, &error_local);
-		else if (role == PK_ROLE_ENUM_GET_CATEGORIES)
-			part = zif_store_get_categories (store, priv->cancellable, completion_local, &error_local);
-		else
-			egg_error ("internal error: %s", pk_role_enum_to_text (role));
-		if (part == NULL) {
-			/* emit a warning, this isn't fatal */
-			pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "failed to %s for repo %s: %s",
-					    pk_role_enum_to_text (role),
-					    zif_store_get_id (store),
-					    error_local->message);
-			g_clear_error (&error_local);
-			zif_completion_done (completion);
-			continue;
-		}
-
-		for (j=0; j<part->len; j++) {
-			package = g_ptr_array_index (part, j);
-			g_ptr_array_add (array, g_object_ref (package));
-		}
-		g_ptr_array_unref (part);
-
-		/* this section done */
-		zif_completion_done (completion);
-	}
-out:
-	return array;
-}
-
-/**
- * backend_get_unique_categories:
- **/
-static GPtrArray *
-backend_get_unique_categories (PkBackend *backend, GPtrArray *stores, ZifCompletion *completion, GError **error)
-{
-	guint i, j;
-	GPtrArray *array;
-	PkCategory *obj;
-	PkCategory *obj_tmp;
-	gchar *parent_id;
-	gchar *parent_id_tmp;
-	gchar *cat_id;
-	gchar *cat_id_tmp;
-
-	/* get all results from all repos */
-	array = backend_repos_search (backend, stores, PK_ROLE_ENUM_GET_CATEGORIES, NULL, completion, error);
-	if (array == NULL)
-		goto out;
-
-	/* remove duplicate parents and groups */
-	for (i=0; i<array->len; i++) {
-		obj = g_ptr_array_index (array, i);
-		g_object_get (obj,
-			      "parent-id", &parent_id,
-			      "cat-id", &cat_id,
-			      NULL);
-		for (j=0; j<array->len; j++) {
-			if (i == j)
-				continue;
-			obj_tmp = g_ptr_array_index (array, j);
-			g_object_get (obj_tmp,
-				      "parent-id", &parent_id_tmp,
-				      "cat-id", &cat_id_tmp,
-				      NULL);
-			if (g_strcmp0 (parent_id_tmp, parent_id) == 0 &&
-			    g_strcmp0 (cat_id_tmp, cat_id) == 0) {
-				egg_warning ("duplicate %s-%s", parent_id, cat_id);
-				g_ptr_array_remove_index (array, j);
-			}
-			g_free (parent_id_tmp);
-			g_free (cat_id_tmp);
-		}
-		g_free (parent_id);
-		g_free (cat_id);
-	}
-out:
-	return array;
-}
-
 /**
  * backend_get_categories_thread:
  */
@@ -1937,7 +1830,8 @@ backend_get_categories_thread (PkBackend *backend)
 
 	/* get sorted list of unique categories */
 	completion_local = zif_completion_get_child (priv->completion);
-	array = backend_get_unique_categories (backend, stores, completion_local, &error);
+	array = zif_store_array_get_categories (stores, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						priv->cancellable, completion_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_LIST_INVALID, "failed to add get categories: %s", error->message);
 		g_error_free (error);
