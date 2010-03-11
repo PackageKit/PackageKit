@@ -531,7 +531,8 @@ backend_search_thread (PkBackend *backend)
 	/* do get action */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
 		completion_local = zif_completion_get_child (priv->completion);
-		array = zif_store_array_get_packages (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend, priv->cancellable, completion_local, &error);
+		array = zif_store_array_get_packages (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+						      priv->cancellable, completion_local, &error);
 		if (array == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
 			g_error_free (error);
@@ -540,6 +541,11 @@ backend_search_thread (PkBackend *backend)
 	} else {
 		/* treat these all the same */
 		search = pk_backend_get_strv (backend, "search");
+		if (search == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+					       "failed to get 'search' for %s", pk_role_enum_to_string (role));
+			goto out;
+		}
 		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
 		completion_local = zif_completion_get_child (priv->completion);
@@ -1418,6 +1424,72 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
+ * backend_refresh_cache_thread:
+ */
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend)
+{
+	GPtrArray *store_array = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	ZifCompletion *completion_local;
+	gboolean force = pk_backend_get_bool (backend, "force");
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, 2);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	/* don't nuke the metadata */
+	if (!force) {
+		egg_debug ("not supported yet");
+		goto out;
+	}
+
+	/* get a store_array of remote stores */
+	store_array = zif_store_array_new ();
+	completion_local = zif_completion_get_child (priv->completion);
+	ret = zif_store_array_add_remote_enabled (store_array, priv->cancellable, completion_local, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to add enabled stores: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* clean all the repos */
+	completion_local = zif_completion_get_child (priv->completion);
+	ret = zif_store_array_clean (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+				     priv->cancellable, completion_local, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to clean: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+
+	return TRUE;
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -1430,7 +1502,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
+	/* it seems some people are not ready for the awesomeness */
+	if (!priv->use_zif) {
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
 /**
