@@ -295,13 +295,13 @@ zif_package_local_ensure_data (ZifPackage *pkg, ZifPackageEnsureType type, GErro
 			fileindex = zif_get_header_uint32_index (header, RPMTAG_DIRINDEXES, basenames->len);
 			if (basenames->len != fileindex->len) {
 				ret = FALSE;
- 				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
 						     "internal error, basenames length is not the same as index length, possibly corrupt db?");
 				goto out;
- 			}
+			}
 			if (fileindex->len > fileindex->len) {
 				ret = FALSE;
- 				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+				g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
 						     "internal error, fileindex length is bigger than index length, possibly corrupt db?");
 				goto out;
 			}
@@ -535,7 +535,7 @@ zif_package_local_set_from_filename (ZifPackageLocal *pkg, const gchar *filename
 	GError *error_local = NULL;
 
 	/* open the file for reading */
-	fd = Fopen(filename, "r.fdio"); 
+	fd = Fopen(filename, "r.fdio");
 	if (fd == NULL) {
 		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
 			     "failed to open %s", filename);

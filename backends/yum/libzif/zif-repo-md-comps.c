@@ -97,7 +97,7 @@ typedef struct {
 struct _ZifRepoMdCompsPrivate
 {
 	gboolean			 loaded;
-	GPtrArray			*array_groups;	 	/* stored as ZifRepoMdCompsGroupData */
+	GPtrArray			*array_groups;		/* stored as ZifRepoMdCompsGroupData */
 	GPtrArray			*array_categories;	/* stored as ZifRepoMdCompsCategoryData */
 	/* for parser */
 	ZifRepoMdCompsSection		 section;

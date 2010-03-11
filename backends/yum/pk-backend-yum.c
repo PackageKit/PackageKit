@@ -381,9 +381,9 @@ backend_emit_package_array (PkBackend *backend, GPtrArray *array)
 		package_id = zif_package_get_package_id (package);
 		summary = zif_package_get_summary (package, NULL);
 		info = installed ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-		/* hack until we have update details */
-		if (strstr (package_id, "update") != NULL)
-			info = PK_INFO_ENUM_NORMAL;
+//		/* hack until we have update details */
+//		if (strstr (package_id, "update") != NULL)
+//			info = PK_INFO_ENUM_NORMAL;
 		pk_backend_package (backend, info, package_id, zif_string_get_value (summary));
 		zif_string_unref (summary);
 	}
@@ -405,7 +405,7 @@ backend_search_thread_get_array (PkBackend *backend, GPtrArray *store_array, con
 	else if (role == PK_ROLE_ENUM_SEARCH_DETAILS)
 		array = zif_store_array_search_details (store_array, search, priv->cancellable, completion, error);
 	else if (role == PK_ROLE_ENUM_SEARCH_GROUP)
-		array = zif_store_array_search_group (store_array, search, priv->cancellable, completion, error);
+		array = zif_store_array_search_category (store_array, search, priv->cancellable, completion, error);
 	else if (role == PK_ROLE_ENUM_SEARCH_FILE)
 		array = zif_store_array_search_file (store_array, search, priv->cancellable, completion, error);
 	else if (role == PK_ROLE_ENUM_RESOLVE)
@@ -470,6 +470,7 @@ backend_search_thread (PkBackend *backend)
 	ZifCompletion *completion_loop;
 	GError *error = NULL;
 	gchar **search;
+	const gchar *search_tmp;
 	guint i;
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	role = pk_backend_get_role (backend);
@@ -524,7 +525,15 @@ backend_search_thread (PkBackend *backend)
 		for (i=0; search[i] != NULL; i++) {
 			/* make loop deeper */
 			completion_loop = zif_completion_get_child (completion_local);
-			result = backend_search_thread_get_array (backend, store_array, search[i], completion_loop, &error);
+
+			/* strip off the prefix '@' */
+			search_tmp = search[i];
+			if (g_str_has_prefix (search_tmp, "@"))
+				search_tmp = search_tmp+1;
+
+			/* get the results */
+			egg_debug ("searching for: %s", search_tmp);
+			result = backend_search_thread_get_array (backend, store_array, search_tmp, completion_loop, &error);
 			if (result == NULL) {
 				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to search: %s", error->message);
 				g_error_free (error);
@@ -1756,7 +1765,6 @@ backend_repos_search (PkBackend *backend, GPtrArray *stores, PkRoleEnum role, co
 
 	/* nothing to do */
 	if (stores->len == 0) {
-		egg_warning ("nothing to do");
 		if (error != NULL)
 			*error = g_error_new (1, 0, "nothing to do as no stores");
 		goto out;

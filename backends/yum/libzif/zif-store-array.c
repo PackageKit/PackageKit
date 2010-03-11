@@ -229,7 +229,6 @@ zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, const gch
 
 	/* nothing to do */
 	if (store_array->len == 0) {
-		egg_warning ("nothing to do");
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_ARRAY_IS_EMPTY,
 			     "nothing to do as no stores in store_array");
 		goto out;
@@ -272,8 +271,8 @@ zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, const gch
 				     "internal error, no such role: %s", pk_role_enum_to_text (role));
 			g_ptr_array_unref (array);
 			array = NULL;
- 			goto out;
- 		}
+			goto out;
+		}
 		if (part == NULL) {
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 				     "failed to %s in %s: %s", pk_role_enum_to_text (role), zif_store_get_id (store), error_local->message);
@@ -439,8 +438,6 @@ zif_store_array_refresh (GPtrArray *store_array, gboolean force, GCancellable *c
 	for (i=0; i<store_array->len; i++) {
 		store = g_ptr_array_index (store_array, i);
 
-		egg_warning ("refreshing %s", zif_store_get_id (store));
-
 		/* refresh this one */
 		completion_local = zif_completion_get_child (completion);
 		ret = zif_store_refresh (store, force, cancellable, completion_local, &error_local);
@@ -579,7 +576,7 @@ zif_store_array_search_category (GPtrArray *store_array, const gchar *group_id, 
 			package_id_tmp = zif_package_get_id (package);
 			if (g_strcmp0 (package_id, package_id_tmp) == 0) {
 				split = pk_package_id_split (package_id);
-				egg_warning ("duplicate %s-%s", split[PK_PACKAGE_ID_NAME], split[PK_PACKAGE_ID_VERSION]);
+				/* duplicate */
 				g_ptr_array_remove_index (array, j);
 				g_strfreev (split);
 			}
@@ -719,7 +716,7 @@ zif_store_array_get_categories (GPtrArray *store_array, GCancellable *cancellabl
 				      NULL);
 			if (g_strcmp0 (parent_id_tmp, parent_id) == 0 &&
 			    g_strcmp0 (cat_id_tmp, cat_id) == 0) {
-				egg_warning ("duplicate %s-%s", parent_id, cat_id);
+				/* duplicate */
 				g_object_unref (obj_tmp);
 				g_ptr_array_remove_index (array, j);
 			}

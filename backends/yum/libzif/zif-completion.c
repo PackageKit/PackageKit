@@ -49,24 +49,24 @@
  * static void
  * _do_something (ZifCompletion *completion)
  * {
- * 	ZifCompletion *completion_local;
+ *	ZifCompletion *completion_local;
  *
- * 	// setup correct number of steps
- * 	zif_completion_set_number_steps (completion, 2);
+ *	// setup correct number of steps
+ *	zif_completion_set_number_steps (completion, 2);
  *
- * 	// run a sub function
- * 	completion_local = zif_completion_get_child (completion);
- * 	_do_something_else1 (completion_local);
+ *	// run a sub function
+ *	completion_local = zif_completion_get_child (completion);
+ *	_do_something_else1 (completion_local);
  *
- * 	// this section done
- * 	zif_completion_done (completion);
+ *	// this section done
+ *	zif_completion_done (completion);
  *
- * 	// run another sub function
- * 	completion_local = zif_completion_get_child (completion);
- * 	_do_something_else2 (completion_local);
+ *	// run another sub function
+ *	completion_local = zif_completion_get_child (completion);
+ *	_do_something_else2 (completion_local);
  *
- * 	// this section done (all complete)
- * 	zif_completion_done (completion);
+ *	// this section done (all complete)
+ *	zif_completion_done (completion);
  * }
  *   </programlisting>
  * </example>

@@ -196,7 +196,7 @@ zif_repo_md_filelists_search_file (ZifRepoMdFilelists *md, const gchar *search, 
 
 	/* if not already loaded, load */
 	if (!md->priv->loaded) {
-		ret = zif_repo_md_filelists_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
+		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion, &error_local);
 		if (!ret) {
 			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
 				     "failed to load store file: %s", error_local->message);

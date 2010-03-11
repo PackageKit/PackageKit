@@ -292,8 +292,8 @@ zif_repo_md_primary_search_group (ZifRepoMdPrimary *md, const gchar *search, GCa
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
 
-	/* FIXME: search with predicate */
-	pred = g_strdup_printf ("WHERE group = '%s'", search);
+	/* search with predicate */
+	pred = g_strdup_printf ("WHERE rpm_group = '%s'", search);
 	array = zif_repo_md_primary_search (md, pred, cancellable, completion, error);
 	g_free (pred);
 
@@ -322,7 +322,7 @@ zif_repo_md_primary_search_pkgid (ZifRepoMdPrimary *md, const gchar *search, GCa
 
 	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), FALSE);
 
-	/* FIXME: search with predicate */
+	/* search with predicate */
 	pred = g_strdup_printf ("WHERE pkgid = '%s'", search);
 	array = zif_repo_md_primary_search (md, pred, cancellable, completion, error);
 	g_free (pred);
