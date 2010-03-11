@@ -148,6 +148,9 @@ backend_get_lock (PkBackend *backend)
 	gboolean ret = FALSE;
 	GError *error = NULL;
 
+	/* quit the spawned backend rather than waiting for it to time out */
+	pk_backend_spawn_kill (priv->spawn);
+
 	for (i=0; i<YUM_BACKEND_LOCKING_RETRIES; i++) {
 
 		/* try to lock */
