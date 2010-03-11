@@ -896,17 +896,121 @@ backend_cancel (PkBackend *backend)
 }
 
 /**
+ * backend_download_packages_thread:
+ */
+static gboolean
+backend_download_packages_thread (PkBackend *backend)
+{
+	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	const gchar *directory = pk_backend_get_string (backend, "directory");
+	GPtrArray *store_array = NULL;
+	ZifPackage *package;
+	ZifCompletion *completion_local;
+	GPtrArray *packages = NULL;
+	const gchar *id;
+	guint i;
+	guint len;
+	gboolean ret;
+	GError *error = NULL;
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	len = g_strv_length (package_ids);
+	zif_completion_set_number_steps (priv->completion, (len * 2) + 1);
+
+	/* find all the packages */
+	packages = g_ptr_array_new ();
+	completion_local = zif_completion_get_child (priv->completion);
+	store_array = backend_get_default_store_array_for_filter (backend, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), completion_local, &error);
+	if (store_array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = package_ids[i];
+		completion_local = zif_completion_get_child (priv->completion);
+		package = zif_store_array_find_package (store_array, id, priv->cancellable, completion_local, &error);
+		if (package == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "failed to find %s: %s", package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		zif_completion_done (priv->completion);
+
+		g_ptr_array_add (packages, g_object_ref (package));
+		g_object_unref (package);
+	}
+
+	/* download list */
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	for (i=0; i<packages->len; i++) {
+		package = g_ptr_array_index (packages, i);
+		ret = zif_package_download (package, directory, priv->cancellable, completion_local, &error);
+		if (!ret) {
+			ZifString *filename;
+			GError *error_local = NULL;
+			filename = zif_package_get_filename (package, &error_local);
+			if (filename == NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+						       "failed to get filename for %s: %s", zif_package_get_id (package), error_local->message);
+				g_error_free (error_local);
+				goto out;
+			}
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+					       "failed to download %s: %s", zif_string_get_value (filename), error->message);
+			zif_string_unref (filename);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		zif_completion_done (priv->completion);
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+	return TRUE;
+}
+
+/**
  * backend_download_packages:
  */
 static void
 backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
-	gchar *package_ids_temp;
+	/* it seems some people are not ready for the awesomeness */
+	if (TRUE || !priv->use_zif) {
+		gchar *package_ids_temp;
 
-	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "download-packages", directory, package_ids_temp, NULL);
-	g_free (package_ids_temp);
+		/* send the complete list as stdin */
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "download-packages", directory, package_ids_temp, NULL);
+		g_free (package_ids_temp);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_download_packages_thread);
 }
 
 /**
