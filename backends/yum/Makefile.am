@@ -87,6 +87,12 @@ libpk_backend_yum_la_LIBADD +=					\
 	$(ARCHIVE_LIBS)						\
 	$(NULL)
 
+confdir = $(PK_CONF_DIR)
+conf_DATA = Yum.conf
+
+EXTRA_DIST =							\
+	$(conf_DATA)
+
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
