@@ -280,6 +280,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return updJob
 
     def _do_update(self, applyList, simulate=False):
+        updJob = None
         jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
         if jobPath:
             updJob = self.client.newUpdateJob()
@@ -295,7 +296,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             restartDir = self.client.applyUpdateJob(updJob, test=simulate)
         except errors.InternalConaryError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
-        except trove.TroveIntegrityError: 
+        except trove.TroveIntegrityError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
         return updJob
 
