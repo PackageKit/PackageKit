@@ -279,6 +279,26 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob
 
+    def _do_update(self, applyList, simulate=False):
+        jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
+        if jobPath:
+            updJob = self.client.newUpdateJob()
+            try:
+                updJob.thaw(jobPath)
+            except IOError, err:
+                updJob = None
+        else:
+            updJob,suggMap = self._get_update(applyList, cache=False)
+        self.allow_cancel(False)
+        try:
+            # TODO we should really handle the restart case here
+            restartDir = self.client.applyUpdateJob(updJob, test=simulate)
+        except errors.InternalConaryError:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
+        except trove.TroveIntegrityError: 
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
+        return updJob
+
     def _get_package_update(self, name, version, flavor):
         if name.startswith('-'):
             applyList = [(name, (version, flavor), (None, None), False)]
