@@ -102,19 +102,19 @@ class BasePKConaryCallback(callbacks.UpdateCallback):
         oldVersion, oldFlavor = job[1]
         newVersion, newFlavor = job[2]
         if oldVersion and newVersion:
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             log.info("Preparing Update %d out of %d: %s" % (troveNum, troveCount, package_id))
             self.backend.status(STATUS_UPDATE)
-            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
+            package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
             log.info("Preparing Remove %d out of %d: %s" % (troveNum, troveCount, package_id))
             self.backend.status(STATUS_REMOVE)
-            package_id = self.backend.get_package_id(name, oldVersion, oldFlavor)
             self.backend.package(package_id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
+            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             log.info("Preparing Install %d out of %d: %s" % (troveNum, troveCount, package_id))
             self.backend.status(STATUS_INSTALL)
-            package_id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(package_id, INFO_INSTALLING, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
