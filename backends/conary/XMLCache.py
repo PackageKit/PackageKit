@@ -7,13 +7,14 @@ import urllib as url
 from conary.lib import sha1helper
 from conary.lib import util
 
-from packagekit.backend import PackageKitBaseBackend
+from packagekit.backend import *
 from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR, ERROR_NO_NETWORK
 
 
 from pkConaryLog import log
 from conarypk import ConaryPk
 from conaryEnums import groupMap
+import generateXML
 
 #{{{ FuNCS
 def getGroup( categorieList ):
@@ -42,7 +43,8 @@ def mapGroup(categorieList):
 class XMLRepo:
     xml_path = ""
     repository = ""
-    def __init__(self, repo, path ):
+    def __init__(self, repo, path, pk):
+        self.pk = pk
         self.xml_path = path
         self._setRepo(repo)
 
@@ -83,8 +85,7 @@ class XMLRepo:
                 self._repo =   cElementTree.parse(r).getroot()
                 return self._repo
             except:
-                Pk = PackageKitBaseBackend("")
-                Pk.error(ERROR_REPO_CONFIGURATION_ERROR," The file %s not parsed submit a issue at http://issues.foresightlinux.org" % self.repo )
+                self.pk.error(ERROR_REPO_CONFIGURATION_ERROR," The file %s not parsed submit a issue at http://issues.foresightlinux.org" % self.repo )
        
 
     def _generatePackage(self, package_node ): 
@@ -173,8 +174,20 @@ class XMLRepo:
 
 
 class XMLCache:
-    #xml_files = ["foresight.rpath.org@fl:2"]
-    xml_files = []
+
+    # Let's only get XML data from things that we support.
+    # XXX We really should replace this with the Conary
+    #     RESTful API real soon now.
+    pregenerated_XML_labels = (
+        'conary.rpath.com@rpl:2-qa',
+        'foresight.rpath.org@fl:2',
+        'foresight.rpath.org@fl:2-qa',
+        'foresight.rpath.org@fl:2-devel',
+        'foresight.rpath.org@fl:2-kernel',
+        'foresight.rpath.org@fl:2-qa-kernel',
+        'foresight.rpath.org@fl:2-devel-kernel',
+    )
+
     server = "http://packages.foresightlinux.org/cache/"
     repos = []
     dbPath = '/var/cache/conary/'
@@ -182,8 +195,9 @@ class XMLCache:
     xml_path =  dbPath + "xmlrepo/"
 
     def __init__(self):
-        con = ConaryPk()
-        labels = con.get_labels_from_config()
+        self.conarypk = ConaryPk()
+        self.labels = ( x for x in self.conarypk.get_labels_from_config() )
+        self.pk = PackageKitBaseBackend("")
 
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
@@ -191,12 +205,11 @@ class XMLCache:
             os.mkdir(self.jobPath)
         if not os.path.isdir( self.xml_path ):
             os.makedirs(self.xml_path )
- 
-        for xml_file in labels:
-           if not os.path.exists( self.xml_path + xml_file + ".xml"  ):
-                self._fetchXML()
-        for xml_file in labels :
-            self.repos.append(XMLRepo( xml_file + ".xml", self.xml_path ))
+
+        for label in self.labels:
+           if not os.path.exists( self.xml_path + label + ".xml"  ):
+                self._fetchXML(label)
+           self.repos.append(XMLRepo( label + ".xml", self.xml_path, self.pk ))
 
     def _getJobCachePath(self, applyList):
         applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
@@ -223,7 +236,7 @@ class XMLCache:
 
     def convertTroveToDict(self, troveTupleList):
         mList = []
-        for troveTuple in troveTupleList: 
+        for troveTuple in troveTupleList:
             pkg = {}
             pkg["name"] = troveTuple[0]
             pkg["version"] = troveTuple[1].trailingRevision()
@@ -233,8 +246,11 @@ class XMLCache:
             
     def searchByGroups(self, groups):
         pass
+
     def refresh(self):
-        self._fetchXML()
+        for label in self.labels:
+            self._fetchXML(label)
+
     def resolve(self, name ):
         for repo in self.repos:
             r =  repo.resolve(name)
@@ -275,30 +291,21 @@ class XMLCache:
         #log.debug([i["name"] for i in results ] )
         return results
 
-    def _fetchXML(self ):
-        con = ConaryPk()
-        labels = con.get_labels_from_config()
-        log.info(labels)
-        Pk = PackageKitBaseBackend("")
-        for i in labels:
-            if "foresight.rpath.org" in i or "conary.rpath.com" in i:
-                label = i + '.xml'
-                filename = self.xml_path + label
-                wwwfile = self.server + label
-                if os.environ.get("NETWORK"):
-                    try:
-                        wget = url.urlopen( wwwfile )
-                    except:
-                        Pk.error(ERROR_NO_NETWORK,"%s can not open" % wwwfile)
-                else:
-                    Pk.error(ERROR_NO_CACHE,"Not exist network conection")
-                openfile = open( filename ,'w')
+    def _fetchXML(self, label):
+        log.info("Updating XMLCache for label %s" % label)
+        filename = label + '.xml'
+        filepath = self.xml_path + filename
+        if label in self.pregenerated_XML_labels:
+            wwwfile = self.server + filename
+            try:
+                wget = url.urlopen( wwwfile )
+                openfile = open(filepath,'w')
                 openfile.writelines(wget.readlines())
                 openfile.close()
-            else:
-                import generateXML
-                filename = self.xml_path + i + ".xml"
-                generateXML.init(i,filename)
+            except:
+                self.pk.error(ERROR_NO_NETWORK,"%s can not open" % wwwfile)
+        else:
+            generateXML.init(label,filepath,self.conarypk)
 
     def getGroup(self,categorieList):
         return getGroup(categorieList)
@@ -344,8 +351,8 @@ if __name__ == '__main__':
     import sys
     #print XMLCache().resolve("gimp")
     l= XMLCache().resolve_list(sys.argv[1:])
-   # print ">> details"
-   # l= XMLCache().search('Internet', 'group' )
+    #print ">> details"
+    #l= XMLCache().search('Internet', 'group' )
 
     for v,p in enumerate(l):
         print v,p["name"]

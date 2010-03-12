@@ -67,20 +67,22 @@ def generate_xml( troves, label):
         document.append(package)
     return document
 
+def init(label, fileoutput, conarypk=None):
 
-def init(label, fileoutput ):
-    conary = ConaryPk()
-    cli = conary.cli
+    if not conarypk:
+        conarypk = ConaryPk()
 
-    cfg = conary.cfg
-    log.info(" write %s on xml" %  label)
-    pkgs = getPackagesFromLabel(cfg,cli,label)
-    troves = conary.repos.getTroves(pkgs,withFiles=False)
-    nodes = generate_xml(troves,label)
-    cElementTree.ElementTree(nodes).write(fileoutput)
-    log.info("%s repo done" % label)
-
-
+    cli = conarypk.cli
+    cfg = conarypk.cfg
+    log.info("Attempting to retrieve repository data for %s" %  label)
+    try:
+        pkgs = getPackagesFromLabel(cfg,cli,label)
+        troves = conarypk.repos.getTroves(pkgs,withFiles=False)
+        nodes = generate_xml(troves,label)
+        cElementTree.ElementTree(nodes).write(fileoutput)
+        log.info("Successfully wrote XML data for label %s into file %s" % (label, fileoutput))
+    except:
+        log.error("Failed to gather data from the repository")
 
 if __name__ == "__main__":
     init('zodyrepo.rpath.org@rpl:devel','tmp.xml')
