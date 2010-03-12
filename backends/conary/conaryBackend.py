@@ -696,30 +696,21 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        package_id = package_ids[0]
-        log.info(package_id)
-        name, version,arch,summary  = pkpackage.get_package_from_id(package_id)
-        pkgDict = self.xmlcache.resolve(name)
-        #update = self._get_updated(pkg)
-        update = ""
-        obsolete = ""
-        cve_url = ""
-        if pkgDict:
-            if "url" in pkgDict:
-                vendor_url = pkgDict["url"]
-            else:
-                vendor_url = ""
-            if "longDesc" in pkgDict:
-                desc = pkgDict["longDesc"]
-            else:
-                desc = ""
-            reboot = self._get_restart(pkgDict.get("name"))
-            state = self._get_branch( pkgDict.get("label"))
-            bz_url = self._get_fits(pkgDict.get("label"), pkgDict.get("name"))
-            #
-            #def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated):
-            self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
-                    reboot, desc, changelog="", state= state, issued="", updated = "")
+        for package_id in package_ids:
+            log.info(package_id)
+            name, version,arch,summary  = pkpackage.get_package_from_id(package_id)
+            pkgDict = self.xmlcache.resolve(name)
+            update = ""
+            obsolete = ""
+            cve_url = ""
+            if pkgDict:
+                vendor_url = pkgDict.get("url","")
+                desc = pkgDict.get("longDesc","")
+                reboot = self._get_restart(pkgDict.get("name"))
+                state = self._get_branch( pkgDict.get("label"))
+                bz_url = self._get_fits(pkgDict.get("label"), pkgDict.get("name"))
+                self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
+                        reboot, desc, changelog="", state= state, issued="", updated = "")
 
    # @ExceptionHandler
     def get_details(self, package_ids):
@@ -731,41 +722,24 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         log.info("========== get_details =============")
-        log.info(package_ids[0])
-        package_id = package_ids[0]
-        #name, version, flavor, installed = self._findPackage(package_id)
-        
-        summary = package_id.split(";")
-        log.info("====== geting summary")
-        log.info(summary)
-        name,version,arch,data = pkpackage.get_package_from_id(package_id)
-        pkgDict = self.xmlcache.resolve(name)
-        
-        if name and pkgDict:
-            shortDesc = ""
-            longDesc = ""
-            url = ""
-            categories  = None
-            license = ""
+        for package_id in package_ids:
+            name,version,arch,data = pkpackage.get_package_from_id(package_id)
+            pkgDict = self.xmlcache.resolve(name)
+            if name and pkgDict:
+                shortDesc = ""
+                longDesc = ""
+                url = ""
+                categories  = None
+                license = ""
 
-            if "shortDesc" in pkgDict:
-                shortDesc = pkgDict["shortDesc"] 
-            if "longDesc" in pkgDict:
-                longDesc = pkgDict["longDesc"]
-            if "url" in pkgDict:
-                url = pkgDict["url"] #+ ";%s" % pkgDict["url"].replace("http://","")
-            if "category" in pkgDict:
-                categories =  self.xmlcache.getGroup( pkgDict['category'])
-            if "licenses" in pkgDict:
-                license = self._get_license(pkgDict["licenses"])
-                log.info(license)
-            # Package size goes here, but I don't know how to find that for conary packages.
-            #
-            #LICENSE_UNKNOWN = "unknown"
-            pkg_id = package_id.split(";")
-            pkg_id[3] = pkgDict["label"]
-            package_id = ";".join(pkg_id)
-            self.details(package_id, license, categories, longDesc, url, 0)
+                shortDesc = pkgDict.get("shortDesc", "")
+                longDesc = pkgDict.get("longDesc", "")
+                url = pkgDict.get("url", "")
+                categories = self.xmlcache.getGroup(pkgDict.get("category",""))
+                license = self._get_license(pkgDict.get("licenses",""))
+                size = pkgDict.get("size", 0)
+                log.info("Details: %s, %s, %s, %s, %s, %d" % (package_id, license, categories, longDesc, url, size))
+                self.details(package_id, license, categories, longDesc, url, size)
 
     def _show_package(self, name, version, flavor, status):
         '''  Show info about package'''
@@ -935,19 +909,19 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	'''
 	Simulate an install of one or more packages.
         '''
-	return self.install_packages(package_ids, False, simulate=True)
+	return self.install_packages(False, package_ids, simulate=True)
 
     def simulate_update_packages(self, package_ids):
 	'''
 	Simulate an update of one or more packages.
         '''
-	return self.update_packages(package_ids, False, simulate=True)
+	return self.update_packages(False, package_ids, simulate=True)
 
     def simulate_remove_packages(self, package_ids):
 	'''
 	Simulate an update of one or more packages.
         '''
-	return self.remove_packages(package_ids, False, simulate=True)
+	return self.remove_packages(False, False, package_ids, simulate=True)
 
 from pkConaryLog import pdb
 
