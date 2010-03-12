@@ -251,40 +251,32 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _get_update(self, applyList, cache=True):
         from conary.conaryclient.update import NoNewTrovesError,DepResolutionFailure
+        self.allow_cancel(False)
         updJob = self.client.newUpdateJob()
-        try:
-            log.info("prepare updateJOb...............")
-            log.info(applyList)
-            suggMap = self.client.prepareUpdateJob(updJob, applyList)
-            log.info("end prepare updateJOB..............")
-        except NoNewTrovesError:
-            #self.error(ERROR_NO_PACKAGES_TO_UPDATE, "No new apps were found")
-            return updJob, None
-        except DepResolutionFailure as error :
-            log.info(error.getErrorMessage())
-            deps =  error.cannotResolve
-            
-            dep_package = [ str(i[0][0]).split(":")[0] for i in deps ]
-            log.info(dep_package)
-            self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
-        if cache:
-            self.xmlcache.checkCachedUpdateJob(applyList)
-        log.info(jobPath)
-        if jobPath:
-            updJob = self.client.newUpdateJob()
+        jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
+        if cache and jobPath:
             try:
+                log.info("Using previously cached update job at %s" % (jobPath,))
                 updJob.thaw(jobPath)
             except IOError, err:
+                log.error("Failed to read update job at %s (error=%s)" % (jobPath, str(err)))
                 updJob = None
         else:
-            updJob,suggMap = self._get_update(applyList, cache=False)
-        self.allow_cancel(False)
-        try:
-            restartDir = self.client.applyUpdateJob(updJob, test=simulate)
-        except errors.InternalConaryError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
-        except trove.TroveIntegrityError: 
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
+            log.info("Creating a new update job")
+            try:
+                suggMap = self.client.prepareUpdateJob(updJob, applyList)
+                log.info("Successfully created a new update job")
+                if cache:
+                    self.xmlcache.cacheUpdateJob(applyList, updJob)
+            except NoNewTrovesError:
+                return updJob, None
+            except DepResolutionFailure as error :
+                log.info(error.getErrorMessage())
+                deps =  error.cannotResolve
+                dep_package = [ str(i[0][0]).split(":")[0] for i in deps ]
+                log.info(dep_package)
+                self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
+
         return updJob
 
     def _get_package_update(self, name, version, flavor):
@@ -763,7 +755,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if "url" in pkgDict:
                 url = pkgDict["url"] #+ ";%s" % pkgDict["url"].replace("http://","")
             if "category" in pkgDict:
-                categories =  Cache().getGroup( pkgDict['category'])
+                categories =  self.xmlcache.getGroup( pkgDict['category'])
             if "licenses" in pkgDict:
                 license = self._get_license(pkgDict["licenses"])
                 log.info(license)
@@ -859,13 +851,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("_get_update ....")
 
         self.status(STATUS_RUNNING)
-        updJob, suggMap = self._get_update(applyList)
+        updJob = self._get_update(applyList)
         log.info("_get_update ....end.")
 
-        jobLists = updJob.getJobs()
         log.info("getting JobLists...........")
         r = []
-        for num, job in enumerate(jobLists):
+        for num, job in enumerate(updJob.getJobs()):
             name = job[0][0]
 
             # On an erase display the old version/flavor information.
@@ -876,13 +867,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             flavor = job[0][2][1]
             if flavor is None:
                 flavor = job[0][1][1]
-            
+
             info = self._get_info(name)
             trove_info = ( ( name,version,flavor ), info) 
             r.append(trove_info)
-            #self._show_package(name, version, flavor, info)
-        
-        pkg_list = Cache().resolve_list([ name for (  ( name,version,flavor), info )  in r ])
+
+        pkg_list = self.xmlcache.resolve_list([ name for (  ( name,version,flavor), info )  in r ])
         log.info("generate the pkgs ")
         new_res = []
         for pkg in pkg_list:
