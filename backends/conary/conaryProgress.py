@@ -17,6 +17,8 @@
 # Copyright (C) 2008
 #    Richard Hughes <richard@hughsie.com>
 
+from pkConaryLog import log
+
 class PackagekitProgress:
     '''
     Progress class there controls the total progress of a transaction
@@ -60,12 +62,14 @@ class PackagekitProgress:
         self.reset()
         self.steps = steps
         self.current_step = 0
+        log.info("[Progress] Setting the following steps: %s" % (str(self.steps),))
 
     def reset(self):
         self.percent = 0
         self.steps = []
         self.current_step = 0
         self.subpercent = 0
+        log.info("[Progress] Reset")
 
     def step(self):
         '''
@@ -78,6 +82,7 @@ class PackagekitProgress:
         else:
             self.percent = 100
             self.subpercent = 0
+        log.info("[Progress] Step -> %d, Percent -> %d " % (self.current_step, self.percent))
 
     def set_subpercent(self, pct):
         '''
@@ -85,6 +90,7 @@ class PackagekitProgress:
         '''
         self.subpercent = pct
         self._update_percent()
+        log.info("[Progress] Update SubPercent: Percent -> %d, SubPercent -> %d" % (self.percent, self.subpercent))
 
     def _update_percent(self):
         '''
