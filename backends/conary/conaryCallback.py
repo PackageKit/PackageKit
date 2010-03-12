@@ -184,9 +184,7 @@ class UpdateSystemCallback(callbacks.UpdateCallback):
  
     def warning(self, msg, *args, **kwargs):
         e = msg %args
-        log.error("<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        log.error(e)
-        self.backend.error(ERROR_DEP_RESOLUTION_FAILED, e, False )
+        log.warning(e)
         
     def tagHandlerOutput(self, tag, msg, stderr = False):
         pass
@@ -402,9 +400,7 @@ class UpdateCallback(callbacks.UpdateCallback):
  
     def warning(self, msg, *args, **kwargs):
         e = msg %args
-        log.error("<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        log.error(e)
-        self.backend.error(ERROR_DEP_RESOLUTION_FAILED, e, False )
+	log.warning(e)
         
     def tagHandlerOutput(self, tag, msg, stderr = False):
         pass
@@ -535,8 +531,6 @@ class RemoveCallback(callbacks.UpdateCallback):
  
     def warning(self, msg, *args, **kwargs):
         e = msg %args
-        self.error.append(e)
-        log.error("<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        log.error( args )
+        log.warning(e)
         
  
