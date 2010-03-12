@@ -39,7 +39,7 @@ from packagekit.progress import PackagekitProgress
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import *
-from XMLCache import XMLCache as Cache
+from XMLCache import XMLCache
 from conaryInit import *
 
 from conary import conarycfg, conaryclient
@@ -128,6 +128,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.conary = conary
         self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
+        self.xmlcache = XMLCache()
 
     def _freezeData(self, version, flavor):
         frzVersion = version.freeze()
@@ -168,8 +169,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_package_id(self, name, versionObj, flavor):
 
         version = versionObj.trailingRevision()
-        cache = Cache()
-        pkg = cache.resolve(name)
+        pkg = self.xmlcache.resolve(name)
         #pkg["shortDesc"] = "."
         arch = self._get_arch(flavor)
         #data = versionObj.asString() + "#"
@@ -230,10 +230,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("where %s" % where)
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
 
-        cache = Cache()
         log.debug((searchlist, where))
         log.info("||||||||||||||||||||||||||||searching  on cache... ")
-        pkgList = cache.search(searchlist, where )
+        pkgList = self.xmlcache.search(searchlist, where )
         log.info("|||||||||||||||||||||||||||||1end searching on cache... ")
 
         if len(pkgList) > 0 :
@@ -269,12 +268,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info(dep_package)
             self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
         if cache:
-            Cache().cacheUpdateJob(applyList, updJob)
-        return updJob, suggMap
-
-    def _do_update(self, applyList, simulate=False):
-        log.info("========= _do_update ========")
-        jobPath = Cache().checkCachedUpdateJob(applyList)
+            self.xmlcache.checkCachedUpdateJob(applyList)
         log.info(jobPath)
         if jobPath:
             updJob = self.client.newUpdateJob()
@@ -368,8 +362,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         log.info("filters: %s package:%s " % (filters, package))
 
-        cache = Cache()
-        pkg_dict = cache.resolve( package[0] )
+        pkg_dict = self.xmlcache.resolve( package[0] )
         log.info(pkg_dict)
         if pkg_dict is None:
             return None
@@ -572,8 +565,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_REFRESH_CACHE)
         self.percentage(None)
-        cache = Cache()
-        cache.refresh()
+        self.xmlcache.refresh()
 
     def install_packages(self, only_trusted, package_ids, simulate=False):
         """
@@ -715,8 +707,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         package_id = package_ids[0]
         log.info(package_id)
         name, version,arch,summary  = pkpackage.get_package_from_id(package_id)
-        cache = Cache()
-        pkgDict = cache.resolve(name)
+        pkgDict = self.xmlcache.resolve(name)
         #update = self._get_updated(pkg)
         update = ""
         obsolete = ""
@@ -756,8 +747,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("====== geting summary")
         log.info(summary)
         name,version,arch,data = pkpackage.get_package_from_id(package_id)
-        cache = Cache()
-        pkgDict = cache.resolve(name)
+        pkgDict = self.xmlcache.resolve(name)
         
         if name and pkgDict:
             shortDesc = ""
