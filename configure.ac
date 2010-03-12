@@ -148,7 +148,7 @@ GLIB_REQUIRED=2.22.0
 GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
-LIBNM_GLIB_REQUIRED=0.6.4
+NETWORK_MANAGER_REQUIRED=0.6.4
 POLKIT_GOBJECT_REQUIRED=0.92
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
@@ -286,11 +286,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),
 		enable_networkmanager=$enableval)
 if test x$enable_networkmanager != xno; then
-	PKG_CHECK_MODULES(LIBNM, libnm-glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-	# look for the old name for the library too
-	if test "x$PK_BUILD_NETWORKMANAGER" = "xno"; then
-		PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
-	fi
+	PKG_CHECK_MODULES(NETWORK_MANAGER, NetworkManager >= $NETWORK_MANAGER_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
 		networking_apis="${networking_apis},NetworkManager"
 		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
@@ -304,8 +300,8 @@ else
 fi
 
 AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
-AC_SUBST(LIBNM_CFLAGS)
-AC_SUBST(LIBNM_LIBS)
+AC_SUBST(NETWORK_MANAGER_CFLAGS)
+AC_SUBST(NETWORK_MANAGER_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
@@ -674,6 +670,59 @@ fi
 
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
+
+if test x$enable_yum = xyes; then
+	PKG_CHECK_MODULES(SQLITE, sqlite3)
+	AC_SUBST(SQLITE_CFLAGS)
+	AC_SUBST(SQLITE_LIBS)
+
+	PKG_CHECK_MODULES(RPM, rpm)
+	AC_SUBST(RPM_CFLAGS)
+	AC_SUBST(RPM_LIBS)
+
+	PKG_CHECK_MODULES(SOUP, libsoup-2.4)
+	AC_SUBST(SOUP_CFLAGS)
+	AC_SUBST(SOUP_LIBS)
+
+	dnl ---------------------------------------------------------------------------
+	dnl - libarchive
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(archive.h,
+			 HAVE_ARCHIVE_H="yes",
+			 HAVE_ARCHIVE_H="no")
+	if test "x$HAVE_ARCHIVE_H" = "xyes"; then
+		ARCHIVE_LIBS=-larchive
+		AC_SUBST(ARCHIVE_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find archive.h])
+	fi
+
+	dnl ---------------------------------------------------------------------------
+	dnl - libbzip2
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(bzlib.h,
+			 HAVE_BZLIB_H="yes",
+			 HAVE_BZLIB_H="no")
+	if test "x$HAVE_BZLIB_H" = "xyes"; then
+		BZLIB_LIBS=-lbz2
+		AC_SUBST(BZLIB_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find bzlib.h])
+	fi
+
+	dnl ---------------------------------------------------------------------------
+	dnl - zlib
+	dnl ---------------------------------------------------------------------------
+	AC_CHECK_HEADERS(zlib.h,
+			 HAVE_ZLIB_H="yes",
+			 HAVE_ZLIB_H="no")
+	if test "x$HAVE_BZLIB_H" = "xyes"; then
+		ZLIB_LIBS=-lz
+		AC_SUBST(ZLIB_LIBS)
+	else
+		AC_MSG_ERROR([Cannot find zlib.h])
+	fi
+fi
 
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))

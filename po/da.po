@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-15 15:21+0000\n"
-"PO-Revision-Date: 2010-02-24 23:36+0100\n"
+"POT-Creation-Date: 2010-03-10 20:48+0000\n"
+"PO-Revision-Date: 2010-03-10 22:08+0100\n"
 "Last-Translator: Kris Thomsen <lakristho@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "MIME-Version: 1.0\n"
@@ -288,18 +288,22 @@ msgstr "Overførslen kunne ikke gennemføres"
 msgid "There are no updates available at this time."
 msgstr "Der er ingen tilgængelige opdateringer i øjeblikket."
 
+#: ../client/pk-console.c:749
+msgid "There are no upgrades available at this time."
+msgstr "Der er ingen tilgængelige opgraderinger i øjeblikket."
+
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:814
+#: ../client/pk-console.c:816
 msgid "Please restart the computer to complete the update."
 msgstr "Genstart venligst computeren for at fuldføre opdateringen."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:817
+#: ../client/pk-console.c:819
 msgid "Please logout and login to complete the update."
 msgstr "Log venligst ud og ind igen for at fuldføre opdateringen."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:820
+#: ../client/pk-console.c:822
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
@@ -308,7 +312,7 @@ msgstr ""
 "sikkerhedsopdateringer er blevet installeret."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:823
+#: ../client/pk-console.c:825
 msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
@@ -317,29 +321,29 @@ msgstr ""
 "sikkerhedsopdateringer er blevet installeret."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
-#: ../client/pk-console.c:849
+#: ../client/pk-console.c:851
 #, c-format
 msgid ""
 "Extected package name, actually got file. Try using 'pkcon install-local %s' "
 "instead."
 msgstr ""
-"Forventet pakkenavn fik faktisk fil. Prøv at bruge \"pkcon install-local %s\" "
-"istedet."
+"Forventet pakkenavn fik faktisk fil. Prøv at bruge \"pkcon install-local %s"
+"\" istedet."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:857
+#: ../client/pk-console.c:859
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Dette værktøj kunne ikke finde nogen tilgængelig pakke: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:887
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Dette værktøj kunne ikke finde den installerede pakke: %s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:913 ../client/pk-console.c:941
+#: ../client/pk-console.c:915 ../client/pk-console.c:943
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Dette værktøj kunne ikke finde pakken: %s"
@@ -348,178 +352,181 @@ msgstr "Dette værktøj kunne ikke finde pakken: %s"
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:969 ../client/pk-console.c:997
-#: ../client/pk-console.c:1025 ../client/pk-console.c:1053
-#: ../client/pk-console.c:1081
+#: ../client/pk-console.c:971 ../client/pk-console.c:999
+#: ../client/pk-console.c:1027 ../client/pk-console.c:1055
+#: ../client/pk-console.c:1083
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Dette værktøj kunne ikke finde alle pakkerne: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1110
+#: ../client/pk-console.c:1112
 msgid "The daemon crashed mid-transaction!"
 msgstr "Dæmonen brød sammen under overførslen!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1144
+#: ../client/pk-console.c:1146
 msgid "PackageKit Console Interface"
 msgstr "PackageKit konsolgrænseflade"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1146
+#: ../client/pk-console.c:1148
 msgid "Subcommands:"
 msgstr "Underkommandoer:"
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:1225
+#: ../client/pk-console.c:1227
 msgid "Failed to get the time since this action was last completed"
 msgstr "Kunne ikke hente tid siden denne handling sidst blev gennemført"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1261 ../client/pk-monitor.c:306
+#: ../client/pk-console.c:1263 ../client/pk-monitor.c:306
 msgid "Show the program version and exit"
 msgstr "Vis programversionen og afslut"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1264
+#: ../client/pk-console.c:1266
 msgid "Set the filter, e.g. installed"
 msgstr "Sæt filteret, f.eks. installeret"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1267
+#: ../client/pk-console.c:1269
 msgid "Exit without waiting for actions to complete"
 msgstr "Afslut uden at vente på at handlingerne færdiggøres"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1272
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "Installér pakkerne uden at spørge efter bekræftelse"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1273
+#: ../client/pk-console.c:1275
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Kør kommandoen ved at bruge lav netværksbåndbredde, hvilket bruger mindre strøm"
+msgstr ""
+"Kør kommandoen ved at bruge lav netværksbåndbredde, hvilket bruger mindre "
+"strøm"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1276
+#: ../client/pk-console.c:1278
 msgid ""
 "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
-"Udskriv for at vise maskinlæsbart output, istedet for at bruge animerede widgets"
+"Udskriv for at vise maskinlæsbart output, istedet for at bruge animerede "
+"widgets"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1298
+#: ../client/pk-console.c:1300
 msgid "Failed to contact PackageKit"
 msgstr "Kunne ikke kontakte PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1356
+#: ../client/pk-console.c:1358
 msgid "The filter specified was invalid"
 msgstr "Filteret det blev angivet er ugyldigt"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1375
+#: ../client/pk-console.c:1377
 msgid "A search type is required, e.g. name"
 msgstr "En søgetype kræves, f.eks. navn"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1382 ../client/pk-console.c:1394
-#: ../client/pk-console.c:1406 ../client/pk-console.c:1418
+#: ../client/pk-console.c:1384 ../client/pk-console.c:1396
+#: ../client/pk-console.c:1408 ../client/pk-console.c:1420
 msgid "A search term is required"
 msgstr "En søgeterm kræves"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1428
+#: ../client/pk-console.c:1430
 msgid "Invalid search type"
 msgstr "Ugyldig søgetype"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1434
+#: ../client/pk-console.c:1436
 msgid "A package name to install is required"
 msgstr "Et pakkenavn til installation er påkrævet"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1443
+#: ../client/pk-console.c:1445
 msgid "A filename to install is required"
 msgstr "Et filnavn til installation er påkrævet"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1455
+#: ../client/pk-console.c:1457
 msgid "A type, key_id and package_id are required"
 msgstr "En type, nøgle_id og pakke_id kræves"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1466
+#: ../client/pk-console.c:1468
 msgid "A package name to remove is required"
 msgstr "Et pakkenavn til fjernelse kræves"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1475
+#: ../client/pk-console.c:1477
 msgid "A destination directory and the package names to download are required"
 msgstr "En destinationsmappe og pakkenavnene kræves for at blive hentet"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1482
+#: ../client/pk-console.c:1484
 msgid "Directory not found"
 msgstr "Mappe ikke fundet"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1491
+#: ../client/pk-console.c:1493
 msgid "A licence identifier (eula-id) is required"
 msgstr "En licensgenkender (eula-id) kræves"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1502
+#: ../client/pk-console.c:1504
 msgid "A transaction identifier (tid) is required"
 msgstr "En overførselsgenkender (tid) kræves"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1525
 msgid "A package name to resolve is required"
 msgstr "Et pakkenavn til at løse kræves"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1534 ../client/pk-console.c:1545
+#: ../client/pk-console.c:1536 ../client/pk-console.c:1547
 msgid "A repository name is required"
 msgstr "Et pakkearkivnavn kræves"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1558
 msgid "A repo name, parameter and value are required"
 msgstr "Et pakkearkivnavn, parameter og værdi kræves"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1573
+#: ../client/pk-console.c:1575
 msgid "An action, e.g. 'update-system' is required"
 msgstr "En handling, f.eks. \"update-system\" kræves"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1580
+#: ../client/pk-console.c:1582
 msgid "A correct role is required"
 msgstr "En korrekt rolle kræves"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1590 ../client/pk-console.c:1605
-#: ../client/pk-console.c:1614 ../client/pk-console.c:1634
-#: ../client/pk-console.c:1643 ../client/pk-generate-pack.c:316
+#: ../client/pk-console.c:1592 ../client/pk-console.c:1607
+#: ../client/pk-console.c:1616 ../client/pk-console.c:1636
+#: ../client/pk-console.c:1645 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "Et pakkenavn kræves"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1623
+#: ../client/pk-console.c:1625
 msgid "A package provide string is required"
 msgstr "En pakke udbydningsstreng kræves"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1703
+#: ../client/pk-console.c:1705
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Indstilling \"%s\" er ikke understøttet"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1713
+#: ../client/pk-console.c:1715
 msgid "Command failed"
 msgstr "Kommando fejlede"
 
@@ -1948,7 +1955,8 @@ msgstr "Opdatér ikke denne pakke medmindre du er sikker på, at det er sikkert.
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Opdatér ikke disse pakker medmindre du er sikker på, at det er sikkert."
+msgstr ""
+"Opdatér ikke disse pakker medmindre du er sikker på, at det er sikkert."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."

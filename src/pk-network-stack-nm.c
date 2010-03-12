@@ -25,7 +25,6 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <NetworkManager.h>
-#include <libnm_glib.h>
 
 #include "egg-debug.h"
 #include "egg-dbus-monitor.h"
@@ -38,10 +37,9 @@ struct PkNetworkStackNmPrivate
 {
 	EggDbusMonitor		*dbus_monitor;
 	PkConf			*conf;
-	libnm_glib_ctx		*ctx;
-	guint			 callback_id;
 	DBusGConnection		*bus;
 	gboolean		 is_enabled;
+	DBusGProxy		*proxy_changed;
 };
 
 G_DEFINE_TYPE (PkNetworkStackNm, pk_network_stack_nm, PK_TYPE_NETWORK_STACK)
@@ -253,13 +251,12 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 }
 
 /**
- * pk_network_stack_nm_nm_changed_cb:
- **/
+ * pk_network_stack_nm_status_changed_cb:
+ */
 static void
-pk_network_stack_nm_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
+pk_network_stack_nm_status_changed_cb (DBusGProxy *proxy, guint status, PkNetworkStackNm *nstack_nm)
 {
 	PkNetworkEnum state;
-	PkNetworkStackNm *nstack_nm = (PkNetworkStackNm *) data;
 
 	g_return_if_fail (PK_IS_NETWORK_STACK_NM (nstack_nm));
 
@@ -293,7 +290,6 @@ static void
 pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 {
 	GError *error = NULL;
-	GMainContext *context;
 	gboolean service_alive;
 
 	nstack_nm->priv = PK_NETWORK_STACK_NM_GET_PRIVATE (nstack_nm);
@@ -301,14 +297,6 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 
 	/* do we use this code? */
 	nstack_nm->priv->is_enabled = pk_conf_get_bool (nstack_nm->priv->conf, "UseNetworkManager");
-
-	/* register with callback */
-	context = g_main_context_default ();
-	nstack_nm->priv->ctx = libnm_glib_init ();
-	nstack_nm->priv->callback_id =
-		libnm_glib_register_callback (nstack_nm->priv->ctx,
-					      pk_network_stack_nm_nm_changed_cb,
-					      nstack_nm, context);
 
 	/* get system connection */
 	nstack_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -321,6 +309,15 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	nstack_nm->priv->dbus_monitor = egg_dbus_monitor_new ();
 	egg_dbus_monitor_assign (nstack_nm->priv->dbus_monitor, EGG_DBUS_MONITOR_SYSTEM, "org.freedesktop.NetworkManager");
 	service_alive = egg_dbus_monitor_is_connected (nstack_nm->priv->dbus_monitor);
+
+	/* connect to changed as libnm-glib is teh suck and causes multithreading issues with dbus-glib */
+	nstack_nm->priv->proxy_changed = dbus_g_proxy_new_for_name (nstack_nm->priv->bus,
+								    "org.freedesktop.NetworkManager",
+								    "/org/freedesktop/NetworkManager",
+								    "org.freedesktop.NetworkManager");
+	dbus_g_proxy_add_signal (nstack_nm->priv->proxy_changed, "StateChanged", G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (nstack_nm->priv->proxy_changed, "StateChanged",
+				     G_CALLBACK (pk_network_stack_nm_status_changed_cb), nstack_nm, NULL);
 
 	/* NetworkManager isn't up, so we can't use it */
 	if (nstack_nm->priv->is_enabled && !service_alive) {
@@ -343,14 +340,11 @@ pk_network_stack_nm_finalize (GObject *object)
 	nstack_nm = PK_NETWORK_STACK_NM (object);
 	g_return_if_fail (nstack_nm->priv != NULL);
 
+	dbus_g_proxy_disconnect_signal (nstack_nm->priv->proxy_changed, "StateChanged",
+					G_CALLBACK (pk_network_stack_nm_status_changed_cb), nstack_nm);
+	g_object_unref (nstack_nm->priv->proxy_changed);
 	g_object_unref (nstack_nm->priv->conf);
 	g_object_unref (nstack_nm->priv->dbus_monitor);
-	libnm_glib_unregister_callback (nstack_nm->priv->ctx, nstack_nm->priv->callback_id);
-	libnm_glib_shutdown (nstack_nm->priv->ctx);
-
-	/* be paranoid */
-	nstack_nm->priv->ctx = NULL;
-	nstack_nm->priv->callback_id = 0;
 
 	G_OBJECT_CLASS (pk_network_stack_nm_parent_class)->finalize (object);
 }

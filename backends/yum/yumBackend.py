@@ -2449,7 +2449,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 notices = md.get_applicable_notices(pkg.pkgtup)
                 status = INFO_NORMAL
                 if notices:
-                    for notice in notices:
+                    for (pkgtup, notice) in notices:
                         status = self._get_status(notice)
                         if status == INFO_SECURITY:
                             break
@@ -3033,10 +3033,19 @@ class PackageKitYumBase(yum.YumBase):
     def __init__(self, backend):
         yum.YumBase.__init__(self)
 
+        # load the config file
+        config = ConfigParser.ConfigParser()
+        try:
+            config.read('/etc/PackageKit/Yum.conf')
+            disabled_plugins = config.get('Backend', 'DisabledPlugins').split(';')
+        except Exception, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
+        disabled_plugins.append('refresh-packagekit')
+
         # disable the PackageKit plugin when running under PackageKit
         try:
             pc = self.preconf
-            pc.disabled_plugins = ['refresh-packagekit', 'rpm-warm-cache', 'remove-with-leaves', 'auto-update-debuginfo']
+            pc.disabled_plugins = disabled_plugins
         except yum.Errors.ConfigError, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
         except ValueError, e:

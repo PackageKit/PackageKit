@@ -277,7 +277,7 @@ static void
 backend_search_name (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-	g_timeout_add (200000, backend_search_name_timeout, backend);
+	g_timeout_add (200, backend_search_name_timeout, backend);
 }
 
 /**

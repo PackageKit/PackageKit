@@ -311,6 +311,12 @@ pk_spawn_kill (PkSpawn *spawn)
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (spawn->priv->kill_id == 0, FALSE);
 
+	/* is there a process running? */
+	if (spawn->priv->child_pid == -1) {
+		egg_warning ("no child pid to kill!");
+		return FALSE;
+	}
+
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
 		egg_warning ("already finished, ignoring");

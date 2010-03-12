@@ -1,18 +1,17 @@
-# translation of packagekit.master.po to Traditional Chinese
-# translation of packagekit.master.po to
+# translation of packagekit.master.po to traditional Chinese
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Terry Chuang <tchuang@redhat.com>, 2008, 2009.
-# Chester Cheng <ccheng@紅帽子>, 2009.
+# Cheng-Chia Tseng <pswo10680@gmail.com>, 2010
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-09 19:49+0000\n"
-"PO-Revision-Date: 2009-12-10 12:31+1000\n"
-"Last-Translator: Chester Cheng <ccheng@紅帽子>\n"
-"Language-Team: Traditional Chinese <zh_TW@li.org>\n"
+"POT-Creation-Date: 2010-03-09 09:20+0000\n"
+"PO-Revision-Date: 2010-03-09 23:06+0800\n"
+"Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
+"Language-Team: chinese-l10n@googlegroups.com\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,9 +20,10 @@ msgstr ""
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
-#: ../client/pk-console.c:175 ../client/pk-console.c:597
+#: ../client/pk-console.c:175
+#: ../client/pk-console.c:597
 msgid "Transaction"
-msgstr "交易"
+msgstr "處理事項"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: ../client/pk-console.c:177
@@ -33,7 +33,7 @@ msgstr "系統時間"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:179
 msgid "Succeeded"
-msgstr "成功"
+msgstr "已成功"
 
 #: ../client/pk-console.c:179
 msgid "True"
@@ -45,9 +45,10 @@ msgstr "False"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:181 ../src/pk-polkit-action-lookup.c:332
+#: ../client/pk-console.c:181
+#: ../src/pk-polkit-action-lookup.c:332
 msgid "Role"
-msgstr "角色"
+msgstr "任務"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: ../client/pk-console.c:186
@@ -56,23 +57,24 @@ msgstr "持續時間"
 
 #: ../client/pk-console.c:186
 msgid "(seconds)"
-msgstr "（秒）"
+msgstr "(秒)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:190 ../src/pk-polkit-action-lookup.c:346
+#: ../client/pk-console.c:190
+#: ../src/pk-polkit-action-lookup.c:346
 msgid "Command line"
 msgstr "指令列"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: ../client/pk-console.c:192
 msgid "User ID"
-msgstr "用戶 ID"
+msgstr "使用者 ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: ../client/pk-console.c:199
 msgid "Username"
-msgstr "用戶名稱"
+msgstr "使用者名稱"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: ../client/pk-console.c:203
@@ -90,7 +92,7 @@ msgstr "受影響的套件：無"
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: ../client/pk-console.c:248
 msgid "Distribution"
-msgstr "發行套件"
+msgstr "發行版"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: ../client/pk-console.c:250
@@ -99,14 +101,15 @@ msgstr "類型"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:252 ../client/pk-console.c:291
+#: ../client/pk-console.c:252
+#: ../client/pk-console.c:291
 msgid "Summary"
 msgstr "摘要"
 
 #. TRANSLATORS: this is the group category name
 #: ../client/pk-console.c:280
 msgid "Category"
-msgstr "類別"
+msgstr "分類"
 
 #. TRANSLATORS: this is group identifier
 #: ../client/pk-console.c:282
@@ -116,7 +119,7 @@ msgstr "ID"
 #. TRANSLATORS: this is the parent group
 #: ../client/pk-console.c:285
 msgid "Parent"
-msgstr "父"
+msgstr "親代"
 
 #. TRANSLATORS: this is the name of the parent group
 #: ../client/pk-console.c:288
@@ -126,19 +129,20 @@ msgstr "名稱"
 #. TRANSLATORS: this is preferred icon for the group
 #: ../client/pk-console.c:294
 msgid "Icon"
-msgstr "圖像"
+msgstr "圖示"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:340
 msgid "Details about the update:"
-msgstr "有關於更新的詳情："
+msgstr "關於更新的詳細資料："
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:346 ../client/pk-console.c:616
+#: ../client/pk-console.c:346
+#: ../client/pk-console.c:616
 #: ../lib/packagekit-glib2/pk-task-text.c:126
 #: ../lib/packagekit-glib2/pk-task-text.c:208
 #: ../src/pk-polkit-action-lookup.c:357
@@ -155,18 +159,19 @@ msgstr "更新"
 #. TRANSLATORS: details about the update, any packages that this update obsoletes
 #: ../client/pk-console.c:353
 msgid "Obsoletes"
-msgstr "已淘汰的套件"
+msgstr "廢棄"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: ../client/pk-console.c:357 ../lib/packagekit-glib2/pk-task-text.c:211
+#: ../client/pk-console.c:357
+#: ../lib/packagekit-glib2/pk-task-text.c:211
 msgid "Vendor"
-msgstr "供應商"
+msgstr "廠商"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: ../client/pk-console.c:361
 msgid "Bugzilla"
-msgstr "供應商"
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: ../client/pk-console.c:365
@@ -196,11 +201,12 @@ msgstr "狀態"
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:385
 msgid "Issued"
-msgstr "已發出"
+msgstr "已發佈的"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: ../client/pk-console.c:389 ../lib/packagekit-glib2/pk-console-shared.c:510
+#: ../client/pk-console.c:389
+#: ../lib/packagekit-glib2/pk-console-shared.c:510
 msgid "Updated"
 msgstr "已更新"
 
@@ -217,27 +223,27 @@ msgstr "已停用"
 #. TRANSLATORS: a package requires the system to be restarted
 #: ../client/pk-console.c:460
 msgid "System restart required by:"
-msgstr "需要系統重新啟動："
+msgstr "系統重新啟動被此需求："
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:463
 msgid "Session restart required:"
-msgstr "需要重新啟動 session："
+msgstr "需要重新啟動作業階段："
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:466
 msgid "System restart (security) required by:"
-msgstr "需要重新啟動系統（安全性）："
+msgstr "系統重新啟動(安全性)被此需求："
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
 #: ../client/pk-console.c:469
 msgid "Session restart (security) required:"
-msgstr "需要重新啟動 session（安全性）："
+msgstr "需要重新啟動(安全性)作業階段："
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:472
 msgid "Application restart required by:"
-msgstr "需要重新啟動應用程式："
+msgstr "應用程式重新啟動被此需求："
 
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:507
@@ -270,358 +276,373 @@ msgid "Status"
 msgstr "狀態"
 
 #. TRANSLATORS: the results from the transaction
-#: ../client/pk-console.c:678
+#: ../client/pk-console.c:679
 msgid "Results:"
 msgstr "結果："
 
 #. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
-#: ../client/pk-console.c:685
+#: ../client/pk-console.c:686
 msgid "Fatal error"
 msgstr "嚴重錯誤"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: ../client/pk-console.c:694
+#: ../client/pk-console.c:695
 #: ../contrib/command-not-found/pk-command-not-found.c:432
 #: ../contrib/command-not-found/pk-command-not-found.c:603
 msgid "The transaction failed"
-msgstr "交易失敗"
+msgstr "處理事項失敗"
 
 #. TRANSLATORS: print a message when there are no updates
-#: ../client/pk-console.c:721
+#: ../client/pk-console.c:726
 msgid "There are no updates available at this time."
-msgstr "目前沒有可用的更新。"
+msgstr "此刻尚無更新可用。"
+
+#: ../client/pk-console.c:749
+msgid "There are no upgrades available at this time."
+msgstr "此刻尚無升級可用。"
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:808
+#: ../client/pk-console.c:816
 msgid "Please restart the computer to complete the update."
 msgstr "請重新啟動電腦來完成更新。"
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:811
+#: ../client/pk-console.c:819
 msgid "Please logout and login to complete the update."
 msgstr "請登出並再次登入來完成更新。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:814
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "請重新啟動電腦來完成更新，因為已經安裝了重要的安全性更新檔。"
+#: ../client/pk-console.c:822
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "因為重大安全性更新已安裝，請重新啟動電腦來完成更新動作。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:817
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr "請登出並再次登入來完成更新，因為已經安裝了重要的安全性更新檔。"
+#: ../client/pk-console.c:825
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "因為重大安全性更新已安裝，請登出並再次登入來完成更新動作。"
+
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
+#: ../client/pk-console.c:851
+#, c-format
+msgid "Extected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "預期的套件名稱，已實際取得檔案。嘗試使用 'pkcon install-local %s' 來替代。"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:840
+#: ../client/pk-console.c:859
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "此工具找不到任何可用的套件：%s"
+msgstr "此工具無法找到任何可用的套件：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:868
+#: ../client/pk-console.c:887
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "此工具找不到任何已安裝的套件：%s"
+msgstr "此工具無法找到已安裝的套件：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:896 ../client/pk-console.c:924
+#: ../client/pk-console.c:915
+#: ../client/pk-console.c:943
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "此工具找不到套件：%s"
+msgstr "此工具無法找到這個套件：%s"
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
 #. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:952 ../client/pk-console.c:980
-#: ../client/pk-console.c:1008 ../client/pk-console.c:1036
-#: ../client/pk-console.c:1064
+#: ../client/pk-console.c:971
+#: ../client/pk-console.c:999
+#: ../client/pk-console.c:1027
+#: ../client/pk-console.c:1055
+#: ../client/pk-console.c:1083
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "此工具找不到所有套件：%s"
+msgstr "此工具無法找到所有套件：%s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1093
+#: ../client/pk-console.c:1112
 msgid "The daemon crashed mid-transaction!"
-msgstr "daemon 損毀了 mid-transaction！"
+msgstr "幕後程式損壞了 mid-transaction！"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1127
+#: ../client/pk-console.c:1146
 msgid "PackageKit Console Interface"
 msgstr "PackageKit 主控台介面"
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1129
+#: ../client/pk-console.c:1148
 msgid "Subcommands:"
 msgstr "次指令："
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:1208
+#: ../client/pk-console.c:1227
 msgid "Failed to get the time since this action was last completed"
 msgstr "無法取得此動作最後完成後的時間"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1244 ../client/pk-monitor.c:280
+#: ../client/pk-console.c:1263
+#: ../client/pk-monitor.c:306
 msgid "Show the program version and exit"
-msgstr "顯示程式版本然後退出"
+msgstr "顯示程式版本然後離開"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1247
+#: ../client/pk-console.c:1266
 msgid "Set the filter, e.g. installed"
-msgstr "設定過濾選項，例如「installed」"
+msgstr "設定過濾條件，例如：installed"
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1250
+#: ../client/pk-console.c:1269
 msgid "Exit without waiting for actions to complete"
-msgstr "不等待動作完成便退出"
+msgstr "不等待動作完成便離開"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1253
+#: ../client/pk-console.c:1272
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
-msgstr "安裝套件，但不需要使用者確認"
+msgstr "安裝套件而不要詢問是否確認"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1256
+#: ../client/pk-console.c:1275
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "執行這指令，在網路閒置時使用網路頻寬，並使用更少的電力"
+msgstr "使用閒置的網路頻寬與較少的能源來執行指令"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1259
+#: ../client/pk-console.c:1278
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "在螢幕上列印出機器可讀取的格式；而不是使用圖形元件"
+msgstr "將機器可讀的輸出列印到畫面，而不是使用動畫的小工具"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1281
+#: ../client/pk-console.c:1300
 msgid "Failed to contact PackageKit"
-msgstr "無法與 PackageKit 連接"
+msgstr "聯絡 PackageKit 失敗"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1339
+#: ../client/pk-console.c:1358
 msgid "The filter specified was invalid"
-msgstr "指定的過濾器無效"
+msgstr "指定的過濾條件無效"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1358
+#: ../client/pk-console.c:1377
 msgid "A search type is required, e.g. name"
-msgstr "需要搜尋類型，例如名稱"
+msgstr "需要選取搜尋類型，例如：名稱"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1365 ../client/pk-console.c:1377
-#: ../client/pk-console.c:1389 ../client/pk-console.c:1401
+#: ../client/pk-console.c:1384
+#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1408
+#: ../client/pk-console.c:1420
 msgid "A search term is required"
-msgstr "需要搜尋關鍵字"
+msgstr "需要輸入搜尋用的關鍵詞"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1411
+#: ../client/pk-console.c:1430
 msgid "Invalid search type"
 msgstr "無效的搜尋類型"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1417
+#: ../client/pk-console.c:1436
 msgid "A package name to install is required"
-msgstr "需要欲安裝的套件之名稱"
+msgstr "需要有要安裝的套件名稱"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1426
+#: ../client/pk-console.c:1445
 msgid "A filename to install is required"
-msgstr "需要檔名以進行安裝"
+msgstr "需要有要安裝的檔案名稱"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1438
+#: ../client/pk-console.c:1457
 msgid "A type, key_id and package_id are required"
 msgstr "需要指定一個類型、key_id 以及 package_id"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1468
 msgid "A package name to remove is required"
-msgstr "需要欲移除的套件之名稱"
+msgstr "需要想移除的套件名稱"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1458
+#: ../client/pk-console.c:1477
 msgid "A destination directory and the package names to download are required"
-msgstr "需要指定目的地目錄以及欲下載的套件之名稱"
+msgstr "需要有目標資料夾與要下載的套件名稱"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1465
+#: ../client/pk-console.c:1484
 msgid "Directory not found"
 msgstr "找不到目錄"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1474
+#: ../client/pk-console.c:1493
 msgid "A licence identifier (eula-id) is required"
 msgstr "需要指定一個授權合約的標示符號（eula-id）"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1485
+#: ../client/pk-console.c:1504
 msgid "A transaction identifier (tid) is required"
-msgstr "需要交易標示符號（tid）"
+msgstr "需要處理事項識別符 (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1506
+#: ../client/pk-console.c:1525
 msgid "A package name to resolve is required"
 msgstr "需要欲解析的套件之名稱"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1517 ../client/pk-console.c:1528
+#: ../client/pk-console.c:1536
+#: ../client/pk-console.c:1547
 msgid "A repository name is required"
-msgstr "需要軟體庫的名稱"
+msgstr "需要套件庫的名稱"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1539
+#: ../client/pk-console.c:1558
 msgid "A repo name, parameter and value are required"
-msgstr "需要指定一個 repo 名稱、參數和數值"
+msgstr "需要指定一個套件庫名稱、參數和值"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1556
+#: ../client/pk-console.c:1575
 msgid "An action, e.g. 'update-system' is required"
-msgstr "需要指定一項動作，例如「update-system」"
+msgstr "需要指定一項動作，例如：「update-system」"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1563
+#: ../client/pk-console.c:1582
 msgid "A correct role is required"
-msgstr "需要正確的角色"
+msgstr "需要正確的任務"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1573 ../client/pk-console.c:1588
-#: ../client/pk-console.c:1597 ../client/pk-console.c:1617
-#: ../client/pk-console.c:1626 ../client/pk-generate-pack.c:298
+#: ../client/pk-console.c:1592
+#: ../client/pk-console.c:1607
+#: ../client/pk-console.c:1616
+#: ../client/pk-console.c:1636
+#: ../client/pk-console.c:1645
+#: ../client/pk-generate-pack.c:316
 msgid "A package name is required"
-msgstr "需要套件的名稱"
+msgstr "需要套件名稱"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1606
+#: ../client/pk-console.c:1625
 msgid "A package provide string is required"
-msgstr "需要提供套件的字串"
+msgstr "需要套件的提供字串"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1686
+#: ../client/pk-console.c:1705
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "「%s」選項不被支援"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1696
+#: ../client/pk-console.c:1715
 msgid "Command failed"
 msgstr "指令失敗"
 
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:237
+#: ../client/pk-generate-pack.c:255
 msgid "Set the file name of dependencies to be excluded"
-msgstr "設定將被排除的相依檔案名稱"
+msgstr "設定要排除的相依檔名"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:240
+#: ../client/pk-generate-pack.c:258
 msgid "The output file or directory (the current directory is used if ommitted)"
 msgstr "輸出檔案或目錄（若省略的話，目前的目錄便會被使用）"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:243
+#: ../client/pk-generate-pack.c:261
 msgid "The package to be put into the service pack"
-msgstr "將放入服務套件中的套件"
+msgstr "將放入服務包中的套件"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:246
+#: ../client/pk-generate-pack.c:264
 msgid "Put all updates available in the service pack"
-msgstr "將所有可用的套件放入服務套件中"
+msgstr "將所有可用的套件放入服務包中"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:282
+#: ../client/pk-generate-pack.c:300
 msgid "Neither --package or --updates option selected."
-msgstr "--package 與 --updates 選項皆未被選擇。"
+msgstr "--package 與 --updates 選項皆未選取。"
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:290
+#: ../client/pk-generate-pack.c:308
 msgid "Both options selected."
-msgstr "兩個選項皆被選擇了。"
+msgstr "兩個選項皆被選取。"
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:306
+#: ../client/pk-generate-pack.c:324
 msgid "A output directory or file name is required"
 msgstr "需要輸出目錄或檔案名稱"
 
 #. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
-#: ../client/pk-generate-pack.c:324
+#: ../client/pk-generate-pack.c:342
 msgid "The dameon failed to startup"
-msgstr "daemon 無法啟動"
+msgstr "幕後程式未能啟動"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
 #. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:335 ../client/pk-generate-pack.c:341
+#: ../client/pk-generate-pack.c:353
+#: ../client/pk-generate-pack.c:359
 msgid "The package manager cannot perform this type of operation."
-msgstr "套件管理員無法進行這類型的作業。"
+msgstr "套件管理員無法執行這種類型的操作。"
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:348
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
-msgstr "無法建立 Service packs，因為 PackageKit 建立時並不支援 libarchive。"
+#: ../client/pk-generate-pack.c:366
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgstr "服務包無法建立，因為建構 PackageKit 時沒有啟用 libarchive 支援。"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:359
+#: ../client/pk-generate-pack.c:377
 msgid "If specifying a file, the service pack name must end with"
-msgstr "若要指定檔案的話，服務套件名稱必須以此為結尾"
+msgstr "若要指定檔案的話，服務包名稱必須以此為結尾"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:375
+#: ../client/pk-generate-pack.c:393
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "擁有相同名稱的套件已經存在，您要覆寫這個檔案嗎？"
+msgstr "擁有相同名稱的服務包已經存在，您要覆寫這個檔案嗎？"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:378
+#: ../client/pk-generate-pack.c:396
 msgid "The pack was not overwritten."
-msgstr "套件並未被覆寫。"
+msgstr "服務包未被覆寫。"
 
 #. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:391
+#: ../client/pk-generate-pack.c:409
 msgid "Failed to create directory:"
 msgstr "建立目錄失敗："
 
 #. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:403
+#: ../client/pk-generate-pack.c:421
 msgid "Failed to open package list."
 msgstr "開啟套件清單失敗。"
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:412
+#: ../client/pk-generate-pack.c:430
 msgid "Finding package name."
 msgstr "正在尋找套件名稱。"
 
 #. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:416
+#: ../client/pk-generate-pack.c:434
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "找不到套件「%s」：%s"
 
 #. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:424
+#: ../client/pk-generate-pack.c:442
 msgid "Creating service pack..."
-msgstr "正在建立服務套件..."
+msgstr "正在建立服務包..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:439
+#: ../client/pk-generate-pack.c:457
 #, c-format
 msgid "Service pack created '%s'"
-msgstr "服務套件建立了「%s」"
+msgstr "服務包建立了「%s」"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:444
+#: ../client/pk-generate-pack.c:462
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "無法建立「%s」：%s"
 
-#: ../client/pk-monitor.c:210
+#: ../client/pk-monitor.c:236
 msgid "Failed to get daemon state"
-msgstr "無法取得 daemon 的狀態"
+msgstr "未能取得幕後程式狀態"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:296
+#: ../client/pk-monitor.c:322
 msgid "PackageKit Monitor"
 msgstr "PackageKit 監控程式"
 
@@ -639,18 +660,18 @@ msgstr "執行 %s"
 #. TRANSLATORS: show the installed version of a package
 #: ../contrib/browser-plugin/pk-plugin-install.c:507
 msgid "Installed version"
-msgstr "安裝版本"
+msgstr "已安裝的版本"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/pk-plugin-install.c:515
 #, c-format
 msgid "Run version %s now"
-msgstr "現在執行版本 %s"
+msgstr "立刻執行版本 %s"
 
 #. TRANSLATORS: run the application now
 #: ../contrib/browser-plugin/pk-plugin-install.c:521
 msgid "Run now"
-msgstr "現在執行"
+msgstr "立刻執行"
 
 #. TRANSLATORS: update to a new version of the package
 #: ../contrib/browser-plugin/pk-plugin-install.c:527
@@ -662,7 +683,7 @@ msgstr "更新至版本 %s"
 #: ../contrib/browser-plugin/pk-plugin-install.c:533
 #, c-format
 msgid "Install %s now"
-msgstr "現在安裝 %s"
+msgstr "立刻安裝 %s"
 
 #. TRANSLATORS: the version of the package
 #: ../contrib/browser-plugin/pk-plugin-install.c:536
@@ -677,27 +698,27 @@ msgstr "找不到適合您系統的套件"
 #. TRANSLATORS: package is being installed
 #: ../contrib/browser-plugin/pk-plugin-install.c:546
 msgid "Installing..."
-msgstr "安裝中..."
+msgstr "正在安裝..."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:365
 msgid "Downloading details about the software sources."
-msgstr "下載軟體來源的詳細資料。"
+msgstr "正在下載關於軟體來源的詳細資料。"
 
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:369
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "下載檔案清單（這可能會花上一點時間）。"
+msgstr "正在下載檔案清單（這會花上一段時間才能完成）。"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:373
 msgid "Waiting for package manager lock."
-msgstr "等待套件管理員解除鎖定。"
+msgstr "正在等待套件管理程式解鎖。"
 
 #. TRANSLATORS: loading package cache so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:377
 msgid "Loading list of packages."
-msgstr "下載套件清單中"
+msgstr "正在載入套件清單。"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:423
@@ -707,7 +728,7 @@ msgstr "搜尋檔案失敗"
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:566
 msgid "Failed to launch:"
-msgstr "啟動失敗"
+msgstr "啟動失敗："
 
 #. TRANSLATORS: we failed to install the package
 #: ../contrib/command-not-found/pk-command-not-found.c:594
@@ -727,7 +748,7 @@ msgstr "找不到指令。"
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:706
 msgid "Similar command is:"
-msgstr "相似指令："
+msgstr "相似指令為："
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: ../contrib/command-not-found/pk-command-not-found.c:716
@@ -739,7 +760,7 @@ msgstr "執行相似指令："
 #: ../contrib/command-not-found/pk-command-not-found.c:730
 #: ../contrib/command-not-found/pk-command-not-found.c:739
 msgid "Similar commands are:"
-msgstr "相似指令："
+msgstr "相似指令有："
 
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:746
@@ -755,7 +776,7 @@ msgstr "提供此檔案的套件為："
 #: ../contrib/command-not-found/pk-command-not-found.c:769
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "是否要安裝「%s」套件來提供「%s」指令？"
+msgstr "是否要安裝「%s」套件以提供「%s」指令？"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:793
@@ -765,7 +786,7 @@ msgstr "提供此檔案的套件有："
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:803
 msgid "Suitable packages are:"
-msgstr "適合的套件有："
+msgstr "合適的套件有："
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
@@ -776,39 +797,39 @@ msgstr "請選擇欲安裝的套件"
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:197
 msgid "Starting install"
-msgstr "開始安裝"
+msgstr "正在開始安裝"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:409
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "找不到套件 %s，或已經安裝：%s"
+msgstr "找不到套件 %s，或是已經安裝了：%s"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
 msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "不實際安裝任何套件，只模擬安裝"
+msgstr "不要真的安裝任何套件，只要模擬要安裝什麼就好"
 
 #. command line argument, do we skip packages that depend on the ones specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:521
 msgid "Do not install dependencies of the core packages"
-msgstr "不安裝核心套件所需的相依性套件"
+msgstr "不要安裝核心套件的相依關係"
 
 #. command line argument, do we operate quietly
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:524
 msgid "Do not display information or progress"
-msgstr "不顯示訊息或進度"
+msgstr "不要顯示資訊或進度"
 
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:542
 msgid "PackageKit Debuginfo Installer"
-msgstr "PackageKit Debuginfo 安裝程式"
+msgstr "PackageKit 除錯資訊安裝程式"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
 #, c-format
 msgid "ERROR: Specify package names to install."
-msgstr "錯誤：請指定要安裝的套件名稱。沒有需要安裝的新套件"
+msgstr "錯誤：指定要安裝的套件名稱。"
 
 #. TRANSLATORS: we are getting the list of repositories
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:592
@@ -836,43 +857,43 @@ msgstr "失敗。"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
 #, c-format
 msgid "OK."
-msgstr "OK."
+msgstr "確定。"
 
 #. TRANSLATORS: tell the user what we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:620
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr "找到 %i 已啟用的來源，以及 %i 已停用的來源。"
+msgstr "找到 %i 個啟用的與 %i 個停用的來源。"
 
 #. TRANSLATORS: we're finding repositories that match out pattern
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:627
 #, c-format
 msgid "Finding debugging sources"
-msgstr "找到 debug 來源"
+msgstr "正在尋找除錯來源"
 
 #. TRANSLATORS: tell the user what we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:660
 #, c-format
 msgid "Found %i disabled debuginfo repos."
-msgstr "找到 %i 已停用的 debuginfo 軟體庫。"
+msgstr "找到 %i 個停用的除錯資訊套件庫。"
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:667
 #, c-format
 msgid "Enabling debugging sources"
-msgstr "啟用 debug 來源"
+msgstr "正在啟用除錯來源"
 
 #. TRANSLATORS: tell the user how many we enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:695
 #, c-format
 msgid "Enabled %i debugging sources."
-msgstr "已啟用 %i 個 debug 來源。"
+msgstr "已啟用 %i 個除錯來源。"
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:702
 #, c-format
 msgid "Finding debugging packages"
-msgstr "正在尋找 debug 套件"
+msgstr "正在尋找除錯套件"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:714
@@ -884,7 +905,7 @@ msgstr "找不到套件 %s：%s"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
-msgstr "找不到 debuginfo 套件 %s：%s"
+msgstr "找不到除錯資訊套件 %s：%s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:765
@@ -902,13 +923,13 @@ msgstr "找到 %i 個套件："
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:795
 #, c-format
 msgid "Finding packages that depend on these packages"
-msgstr "尋找與這些套件相依的套件"
+msgstr "正在尋找依賴於這些套件的套件"
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:808
 #, c-format
 msgid "Could not find dependant packages: %s"
-msgstr "找不到相依套件：%s"
+msgstr "找不到依賴的套件：%s"
 
 #. TRANSLATORS: tell the user we found some more packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:824
@@ -926,13 +947,13 @@ msgstr "不需要額外的套件。"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:837
 #, c-format
 msgid "Found %i packages to install:"
-msgstr "找到 %i 個套件安裝："
+msgstr "找到 %i 個套件要安裝："
 
 #. TRANSLATORS: simulate mode is a testing mode where we quit before the action
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:850
 #, c-format
 msgid "Not installing packages in simulate mode"
-msgstr "不在模擬模式下安裝套件"
+msgstr "在模擬模式內不會安裝套件"
 
 #. TRANSLATORS: we are now installing the debuginfo packages we found earlier
 #. TRANSLATORS: transaction state, installing packages
@@ -940,7 +961,7 @@ msgstr "不在模擬模式下安裝套件"
 #: ../lib/packagekit-glib2/pk-console-shared.c:282
 #, c-format
 msgid "Installing packages"
-msgstr "安裝套件"
+msgstr "正在安裝套件"
 
 #. TRANSLATORS: could not install, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:875
@@ -952,113 +973,113 @@ msgstr "無法安裝套件：%s"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
 #, c-format
 msgid "Disabling sources previously enabled"
-msgstr "正在停用之前啟用的來源"
+msgstr "正在停用先前啟用的來源"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:919
 #, c-format
 msgid "Could not disable the debugging sources: %s"
-msgstr "無法停用 debug 來源：%s"
+msgstr "無法停用除錯來源：%s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:934
 #, c-format
 msgid "Disabled %i debugging sources."
-msgstr "已停用 %i 個 debug 來源。"
+msgstr "已停用 %i 個除錯來源。"
 
 #. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:61
+#: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
 msgstr "開啟檔案失敗"
 
 #. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:70
+#: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
-msgstr "無法寫入檔案"
+msgstr "寫入檔案失敗"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:110
-#: ../contrib/device-rebind/pk-device-rebind.c:147
+#: ../contrib/device-rebind/pk-device-rebind.c:111
+#: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
-msgstr "無法寫入裝置"
+msgstr "寫入裝置失敗"
 
 #. TRANSLATORS: the device could not be found in sysfs
-#: ../contrib/device-rebind/pk-device-rebind.c:175
+#: ../contrib/device-rebind/pk-device-rebind.c:176
 msgid "Device could not be found"
 msgstr "找不到裝置"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:202
+#: ../contrib/device-rebind/pk-device-rebind.c:203
 msgid "Failed to unregister driver"
-msgstr "無法解除註冊驅動程式"
+msgstr "取消註冊驅動程式失敗"
 
 #. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:211
+#: ../contrib/device-rebind/pk-device-rebind.c:212
 msgid "Failed to register driver"
-msgstr "無法註冊驅動程式"
+msgstr "註冊驅動程式失敗"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:260
+#: ../contrib/device-rebind/pk-device-rebind.c:261
 msgid "Device path not found"
 msgstr "找不到裝置路徑"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:268
+#: ../contrib/device-rebind/pk-device-rebind.c:269
 msgid "Incorrect device path specified"
-msgstr "指定的裝置路徑錯誤"
+msgstr "指定了不正確的裝置路徑"
 
-#: ../contrib/device-rebind/pk-device-rebind.c:293
+#: ../contrib/device-rebind/pk-device-rebind.c:294
 msgid "Show extra debugging information"
 msgstr "顯示額外的除錯資訊"
 
 #. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/device-rebind/pk-device-rebind.c:296
+#: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "不真正的改動硬體，只模擬結果"
+msgstr "不要真的碰觸這個硬體，只要模擬要進行什麼事就好"
 
 #. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:299
+#: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
 msgstr "裝置路徑"
 
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:314
+#: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
-msgstr "PackageKit 裝置重新載入程式"
+msgstr "PackageKit 裝置重新載入器"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:322
+#: ../contrib/device-rebind/pk-device-rebind.c:323
 msgid "You need to specify at least one valid device path"
-msgstr "請指定至少一個正確的裝置路徑"
+msgstr "您需要指定至少一個有效的裝置路徑"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:332
+#: ../contrib/device-rebind/pk-device-rebind.c:333
 msgid "This script can only be used by the root user"
-msgstr "只有 root 使用者才可以使用這個 script"
+msgstr "此指令稿只能由 root 使用者使用"
 
 #. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:341
+#: ../contrib/device-rebind/pk-device-rebind.c:342
 msgid "Verifying device path"
-msgstr "驗證裝置路徑"
+msgstr "正在驗證裝置路徑"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:346
+#: ../contrib/device-rebind/pk-device-rebind.c:347
 msgid "Failed to verify device path"
 msgstr "驗證裝置路徑失敗"
 
 #. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:360
+#: ../contrib/device-rebind/pk-device-rebind.c:361
 msgid "Attempting to rebind device"
-msgstr "試圖重新 bind 裝置"
+msgstr "正在試圖重新綁定裝置"
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:365
+#: ../contrib/device-rebind/pk-device-rebind.c:366
 msgid "Failed to rebind device"
-msgstr "重新 bind 裝置失敗"
+msgstr "未能重新綁定裝置"
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "PackageKit 目錄"
+msgstr "PackageKit 型錄"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
@@ -1066,12 +1087,12 @@ msgstr "PackageKit 套件清單"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "PackageKit 服務套件"
+msgstr "PackageKit 服務包"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:59
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "請輸入一組由 1 到 %i 的數字："
+msgstr "請輸入一個 1 到 %i 之間的數字："
 
 #. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:183
@@ -1091,22 +1112,22 @@ msgstr "不明的狀態"
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: ../lib/packagekit-glib2/pk-console-shared.c:254
 msgid "Starting"
-msgstr "開始"
+msgstr "正在開始"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: ../lib/packagekit-glib2/pk-console-shared.c:258
 msgid "Waiting in queue"
-msgstr "在佇列中等待"
+msgstr "正在依佇列等待"
 
 #. TRANSLATORS: transaction state, just started
 #: ../lib/packagekit-glib2/pk-console-shared.c:262
 msgid "Running"
-msgstr "執行中"
+msgstr "正在執行"
 
 #. TRANSLATORS: transaction state, is querying data
 #: ../lib/packagekit-glib2/pk-console-shared.c:266
 msgid "Querying"
-msgstr "查詢中"
+msgstr "正在查詢"
 
 #. TRANSLATORS: transaction state, getting data from a server
 #: ../lib/packagekit-glib2/pk-console-shared.c:270
@@ -1116,101 +1137,101 @@ msgstr "正在取得資訊"
 #. TRANSLATORS: transaction state, removing packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:274
 msgid "Removing packages"
-msgstr "移除套件中"
+msgstr "正在移除套件"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:278
 #: ../lib/packagekit-glib2/pk-console-shared.c:656
 msgid "Downloading packages"
-msgstr "下載套件中"
+msgstr "正在下載套件"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: ../lib/packagekit-glib2/pk-console-shared.c:286
 msgid "Refreshing software list"
-msgstr "正在更新軟體清單"
+msgstr "正在重新整理軟體清單"
 
 #. TRANSLATORS: transaction state, installing updates
 #: ../lib/packagekit-glib2/pk-console-shared.c:290
 msgid "Installing updates"
-msgstr "安裝更新"
+msgstr "正在安裝更新"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: ../lib/packagekit-glib2/pk-console-shared.c:294
 msgid "Cleaning up packages"
-msgstr "正在清除套件"
+msgstr "正在清理套件"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:298
 msgid "Obsoleting packages"
-msgstr "正在淘汰套件"
+msgstr "正在廢棄套件"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: ../lib/packagekit-glib2/pk-console-shared.c:302
 msgid "Resolving dependencies"
-msgstr "正在解決相依性問題"
+msgstr "正在解析相依性"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: ../lib/packagekit-glib2/pk-console-shared.c:306
 msgid "Checking signatures"
-msgstr "正在檢查安全性簽署"
+msgstr "正在檢查簽章"
 
 #. TRANSLATORS: transaction state, when we return to a previous system state
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:310
 #: ../lib/packagekit-glib2/pk-console-shared.c:616
 msgid "Rolling back"
-msgstr "正在回溯"
+msgstr "正在回復"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:314
 msgid "Testing changes"
-msgstr "正在檢查變更"
+msgstr "正在測試變更"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: ../lib/packagekit-glib2/pk-console-shared.c:318
 msgid "Committing changes"
-msgstr "正在進行變動"
+msgstr "正在遞交變更"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: ../lib/packagekit-glib2/pk-console-shared.c:322
 msgid "Requesting data"
-msgstr "求取資料中"
+msgstr "正在請求資料"
 
 #. TRANSLATORS: transaction state, all done!
 #: ../lib/packagekit-glib2/pk-console-shared.c:326
 msgid "Finished"
-msgstr "完成"
+msgstr "已完成"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: ../lib/packagekit-glib2/pk-console-shared.c:330
 msgid "Cancelling"
-msgstr "取消"
+msgstr "正在取消"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Downloading repository information"
-msgstr "正在下載軟體庫資訊"
+msgstr "正在下載套件庫資訊"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Downloading list of packages"
-msgstr "下載套件清單中"
+msgstr "正在下載套件清單"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Downloading file lists"
-msgstr "下載檔案清單中"
+msgstr "正在下載檔案清單"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:346
 msgid "Downloading lists of changes"
-msgstr "下載變更的清單中"
+msgstr "正在下載變更的清單"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:350
 msgid "Downloading groups"
-msgstr "下載群組中"
+msgstr "正在下載群組"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: ../lib/packagekit-glib2/pk-console-shared.c:354
@@ -1220,7 +1241,7 @@ msgstr "正在下載更新資訊"
 #. TRANSLATORS: transaction state, repackaging delta files
 #: ../lib/packagekit-glib2/pk-console-shared.c:358
 msgid "Repackaging files"
-msgstr "重新壓製檔案"
+msgstr "正在重新包裝檔案"
 
 #. TRANSLATORS: transaction state, loading databases
 #: ../lib/packagekit-glib2/pk-console-shared.c:362
@@ -1230,7 +1251,7 @@ msgstr "正在載入快取"
 #. TRANSLATORS: transaction state, scanning for running processes
 #: ../lib/packagekit-glib2/pk-console-shared.c:366
 msgid "Scanning applications"
-msgstr "掃描應用程式"
+msgstr "正在掃描應用程式"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: ../lib/packagekit-glib2/pk-console-shared.c:370
@@ -1240,47 +1261,47 @@ msgstr "正在產生套件清單"
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: ../lib/packagekit-glib2/pk-console-shared.c:374
 msgid "Waiting for package manager lock"
-msgstr "正在等待套件管理員解除鎖定"
+msgstr "正在等候套件管程式解鎖"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 #: ../lib/packagekit-glib2/pk-console-shared.c:378
 msgid "Waiting for authentication"
-msgstr "正在等待授權"
+msgstr "正在等候認證"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 #: ../lib/packagekit-glib2/pk-console-shared.c:382
 msgid "Updating running applications"
-msgstr "正在更新執行中的應用程式"
+msgstr "正在更新正在執行中的應用程式"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
 #: ../lib/packagekit-glib2/pk-console-shared.c:386
 msgid "Checking applications in use"
-msgstr "檢查使用中的應用程式"
+msgstr "正在檢查使用中的應用程式"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
 #: ../lib/packagekit-glib2/pk-console-shared.c:390
 msgid "Checking libraries in use"
-msgstr "檢查使用中的函式庫"
+msgstr "正在檢查使用中的函式庫"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:394
 msgid "Copying files"
-msgstr "複製檔案"
+msgstr "正在複製檔案"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:412
 msgid "Trivial"
-msgstr "不重要的"
+msgstr "小"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:416
 msgid "Normal"
-msgstr "正常的"
+msgstr "一般"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:420
 msgid "Important"
-msgstr "重要的"
+msgstr "重大"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:424
@@ -1290,17 +1311,17 @@ msgstr "安全性"
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:428
 msgid "Bug fix "
-msgstr "修正 bug"
+msgstr "錯誤修正"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:432
 msgid "Enhancement"
-msgstr "加強"
+msgstr "增強"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:436
 msgid "Blocked"
-msgstr "已阻絕的"
+msgstr "已阻擋"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
@@ -1312,86 +1333,86 @@ msgstr "已安裝的"
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: ../lib/packagekit-glib2/pk-console-shared.c:446
 msgid "Available"
-msgstr "可用的"
+msgstr "可用"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:464
 msgid "Downloading"
-msgstr "下載中"
+msgstr "正在下載"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:468
 msgid "Updating"
-msgstr "更新中"
+msgstr "正在更新"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:472
 #: ../lib/packagekit-glib2/pk-console-shared.c:592
 msgid "Installing"
-msgstr "安裝中"
+msgstr "正在安裝"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:476
 #: ../lib/packagekit-glib2/pk-console-shared.c:588
 msgid "Removing"
-msgstr "移除中"
+msgstr "正在移除"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:480
 msgid "Cleaning up"
-msgstr "清除中"
+msgstr "正在清除"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:484
 msgid "Obsoleting"
-msgstr "已淘汰的"
+msgstr "正在廢棄"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:488
 msgid "Reinstalling"
-msgstr "重新安裝中"
+msgstr "正在重新安裝"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:506
 msgid "Downloaded"
-msgstr "已下載的"
+msgstr "已下載"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:518
 msgid "Removed"
-msgstr "已移除的"
+msgstr "已移除"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:522
 msgid "Cleaned up"
-msgstr "已清除的"
+msgstr "已清除"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:526
 msgid "Obsoleted"
-msgstr "已淘汰的"
+msgstr "已廢棄"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:530
 msgid "Reinstalled"
-msgstr "已重新安裝的"
+msgstr "已重新安裝"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:548
 msgid "Unknown role type"
-msgstr "未知的類型"
+msgstr "未知的任務類型"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:552
 msgid "Getting dependencies"
-msgstr "取得相依性中"
+msgstr "正在取得相容性"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:556
 msgid "Getting update details"
-msgstr "正在取得更新套件"
+msgstr "正在取得更新詳細資料"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:560
@@ -1401,7 +1422,7 @@ msgstr "正在取得詳細資料"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:564
 msgid "Getting requires"
-msgstr "正在取得所需的"
+msgstr "正在取得需求"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:568
@@ -1411,22 +1432,22 @@ msgstr "正在取得更新"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:572
 msgid "Searching by details"
-msgstr "藉由詳細資料搜尋"
+msgstr "正在依詳細資料搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:576
 msgid "Searching by file"
-msgstr "藉由檔案搜尋"
+msgstr "正在依檔案搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:580
 msgid "Searching groups"
-msgstr "搜尋群組"
+msgstr "正在搜尋群組"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:584
 msgid "Searching by name"
-msgstr "藉由名稱搜尋"
+msgstr "正在依名稱搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:596
@@ -1436,7 +1457,7 @@ msgstr "正在安裝檔案"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:600
 msgid "Refreshing cache"
-msgstr "更新快取"
+msgstr "正在重新整理快取"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:604
@@ -1451,17 +1472,17 @@ msgstr "正在更新系統"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:612
 msgid "Canceling"
-msgstr "取消中"
+msgstr "正在取消"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:620
 msgid "Getting repositories"
-msgstr "正在取得軟體庫"
+msgstr "正在取得套件庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:624
 msgid "Enabling repository"
-msgstr "正在啟用軟體庫"
+msgstr "正在啟用套件庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:628
@@ -1471,7 +1492,7 @@ msgstr "正在設定資料"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:632
 msgid "Resolving"
-msgstr "正在解決"
+msgstr "正在解析"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:636
@@ -1481,12 +1502,12 @@ msgstr "正在取得檔案清單"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:640
 msgid "Getting provides"
-msgstr "正在取得提供套件的資料"
+msgstr "正在取得提供什麼"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:644
 msgid "Installing signature"
-msgstr "正在安裝簽名"
+msgstr "正在安裝簽章"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:648
@@ -1496,22 +1517,22 @@ msgstr "正在取得套件"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:652
 msgid "Accepting EULA"
-msgstr "正在接受 EULA"
+msgstr "正在接受終端使用者授權同意書"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:660
 msgid "Getting upgrades"
-msgstr "正在取得更新"
+msgstr "正在取得升級"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:664
 msgid "Getting categories"
-msgstr "正在取得類別"
+msgstr "正在取得分類"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:668
 msgid "Getting transactions"
-msgstr "正在取得交易"
+msgstr "正在取得處理事項"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: ../lib/packagekit-glib2/pk-console-shared.c:672
@@ -1532,12 +1553,12 @@ msgstr "正在模擬更新"
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: ../lib/packagekit-glib2/pk-task-text.c:69
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "是否允許安裝未簽署的軟體？"
+msgstr "您想要允許未簽署軟體的安裝嗎？"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:74
 msgid "The unsigned software will not be installed."
-msgstr "不會安裝未簽署的軟體。"
+msgstr "未簽署的軟體不會被安裝。"
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
 #: ../lib/packagekit-glib2/pk-task-text.c:123
@@ -1552,12 +1573,12 @@ msgstr "軟體來源名稱"
 #. TRANSLATORS: the key URL
 #: ../lib/packagekit-glib2/pk-task-text.c:132
 msgid "Key URL"
-msgstr "金鑰的 URL"
+msgstr "金鑰 URL"
 
 #. TRANSLATORS: the username of the key
 #: ../lib/packagekit-glib2/pk-task-text.c:135
 msgid "Key user"
-msgstr "金鑰的使用者"
+msgstr "金鑰使用者"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: ../lib/packagekit-glib2/pk-task-text.c:138
@@ -1567,12 +1588,12 @@ msgstr "金鑰 ID"
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 #: ../lib/packagekit-glib2/pk-task-text.c:141
 msgid "Key fingerprint"
-msgstr "金鑰的指紋"
+msgstr "金鑰指紋"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: ../lib/packagekit-glib2/pk-task-text.c:144
 msgid "Key Timestamp"
-msgstr "金鑰的時間戳記"
+msgstr "金鑰時間戳記"
 
 #. TRANSLATORS: ask the user if they want to import
 #: ../lib/packagekit-glib2/pk-task-text.c:157
@@ -1587,37 +1608,37 @@ msgstr "簽章未被接受。"
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:205
 msgid "End user licence agreement required"
-msgstr "需要終端用戶授權協議"
+msgstr "需要接受終端使用者授權同意書"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: ../lib/packagekit-glib2/pk-task-text.c:214
 msgid "Agreement"
-msgstr "協議"
+msgstr "同意書"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: ../lib/packagekit-glib2/pk-task-text.c:223
 msgid "Do you accept this agreement?"
-msgstr "您是否接受此協議？"
+msgstr "您是否接受此同意書？"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:228
 msgid "The agreement was not accepted."
-msgstr "協議未被接受。"
+msgstr "同意書未被接受。"
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 #: ../lib/packagekit-glib2/pk-task-text.c:267
 msgid "Media change required"
-msgstr "需要變更媒介"
+msgstr "需要變更媒體"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 #: ../lib/packagekit-glib2/pk-task-text.c:270
 msgid "Media type"
-msgstr "媒介類型"
+msgstr "媒體類型"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 #: ../lib/packagekit-glib2/pk-task-text.c:273
 msgid "Media label"
-msgstr "媒介的標籤"
+msgstr "媒體標籤"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: ../lib/packagekit-glib2/pk-task-text.c:276
@@ -1627,12 +1648,12 @@ msgstr "文字"
 #. TRANSLATORS: ask the user to insert the media
 #: ../lib/packagekit-glib2/pk-task-text.c:282
 msgid "Please insert the correct media"
-msgstr "請插入正確的媒介"
+msgstr "請插入正確的媒體"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: ../lib/packagekit-glib2/pk-task-text.c:287
 msgid "The correct media was not inserted."
-msgstr "並未插入正確的媒介"
+msgstr "沒有插入正確的媒體。"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:302
@@ -1642,32 +1663,32 @@ msgstr "下列套件必須被移除掉："
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:307
 msgid "The following packages have to be installed:"
-msgstr "必須安裝以下套件："
+msgstr "下列套件要被安裝："
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:312
 msgid "The following packages have to be updated:"
-msgstr "必須更新以下套件："
+msgstr "下列套件要被更新："
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:317
 msgid "The following packages have to be reinstalled:"
-msgstr "必須重新安裝以下套件："
+msgstr "下列套件要被重新安裝："
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:322
 msgid "The following packages have to be downgraded:"
-msgstr "必須降級以下套件："
+msgstr "下列套件要被降級："
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: ../lib/packagekit-glib2/pk-task-text.c:382
 msgid "Proceed with changes?"
-msgstr "是否進行變更？"
+msgstr "要處理變更嗎？"
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: ../lib/packagekit-glib2/pk-task-text.c:387
 msgid "The transaction did not proceed."
-msgstr "交易並未進行。"
+msgstr "這個處理事項沒有進行。"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1677,25 +1698,23 @@ msgstr "交易並未進行。"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
-msgstr "接受 EULA"
+msgstr "接受終端使用者授權條款協議"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:8
 msgid "Authentication is required to accept a EULA"
-msgstr "要接受 EULA 需先經過身份認證"
+msgstr "要接受終端使用者授權條款協議需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "若要取消一項並非您自行啟動的工作，您必須先經過身份認證"
+msgstr "若要取消一項並非由您啟動的工作，您必須先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "要更改軟體來源參數需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr "要將一個用來簽署套件的金鑰列為信任的金鑰需先經過身份認證"
+msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgstr "要將一個用來簽署套件的金鑰列為已信任的金鑰需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid "Authentication is required to install a signed package"
@@ -1703,15 +1722,15 @@ msgstr "要安裝一個已簽署的套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install an untrusted package"
-msgstr "要安裝非信任的套件需先經過身份認證"
+msgstr "要安裝未信任的套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to refresh the system sources"
-msgstr "要刷新系統來源需先經過身份認證"
+msgstr "要重新整理系統來源需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "要使用新的驅動程式來重新載入裝置，需要先經過身份認證"
+msgstr "要以新驅動程式重新載入裝置的話需要通過認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to remove packages"
@@ -1719,13 +1738,11 @@ msgstr "要移除套件需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to rollback a transaction"
-msgstr "要復原一筆交易，需先經過身份認證"
+msgstr "要回復處理事項需要先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr "要設定用來下載套件的網路 proxy 需先經過身份認證"
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr "要設定用來下載套件的網路代理伺服器 需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid "Authentication is required to update packages"
@@ -1767,7 +1784,7 @@ msgstr "安裝已簽署的套件"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:45
 msgid "Install untrusted local file"
-msgstr "安裝非信任的本地檔案"
+msgstr "安裝未信任的本地檔案"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1775,7 +1792,7 @@ msgstr "安裝非信任的本地檔案"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:50
 msgid "Refresh system sources"
-msgstr "刷新系統來源"
+msgstr "重新整理系統來源"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1808,7 +1825,7 @@ msgstr "移除套件"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:74
 msgid "Rollback to a previous transaction"
-msgstr "復原至先前的交易"
+msgstr "回復至上一個處理事項"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1816,7 +1833,7 @@ msgstr "復原至先前的交易"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:79
 msgid "Set network proxy"
-msgstr "設定網路 proxy"
+msgstr "設定網路代理伺服器"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1856,20 +1873,18 @@ msgstr "正確的用戶（一般為 root）沒有執行可執行檔"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
 msgstr "org.freedesktop.PackageKit.conf 檔案尚未安裝在系統目錄中："
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:199
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "欲使用的套件後端，例如「dummy」"
+msgstr "要使用的套件後端程式，例如：dummy"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:202
 msgid "Daemonize and detach from the terminal"
-msgstr "Daemon 化並由終端機分離"
+msgstr "幕後化並由終端機分離"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: ../src/pk-main.c:205
@@ -1879,17 +1894,17 @@ msgstr "停用閒置計時器"
 #. TRANSLATORS: show version
 #: ../src/pk-main.c:208
 msgid "Show version and exit"
-msgstr "顯示版本並退出"
+msgstr "顯示版本並離開"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: ../src/pk-main.c:211
 msgid "Exit after a small delay"
-msgstr "經過了短暫的延遲後退出"
+msgstr "經過一段短暫延遲後便離開"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: ../src/pk-main.c:214
 msgid "Exit after the engine has loaded"
-msgstr "引擎載入後退出"
+msgstr "引擎載入後離開"
 
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:229
@@ -1899,7 +1914,7 @@ msgstr "PackageKit 服務"
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:266
 msgid "Cannot connect to the system bus"
-msgstr "無法連至系統 bus"
+msgstr "無法連接至系統 bus"
 
 #. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
 #: ../src/pk-main.c:317
@@ -1908,28 +1923,29 @@ msgstr "嘗試啟動時發生錯誤："
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "要安裝 debug 套件，需要啟用額外資源"
+msgstr "要安裝除錯套件，需要啟用額外的來源"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
+#: ../src/pk-polkit-action-lookup.c:171
+#: ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
-msgstr "軟體並非來自受信任的來源。"
+msgstr "這個軟體並非來自信任的來源。"
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "除非您確定安裝這套件是安全的，否則請勿更新。"
+msgstr "請不要更新此套件，除非您確定這樣做是安全的。"
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "除非您確定安裝這些套件是安全的，否則請勿更新。"
+msgstr "請不要更新這些套件，除非您確定這樣做是安全的。"
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "除非您確定安裝這套件是安全的，否則請勿安裝。"
+msgstr "請不要安裝此套件，除非您確定這樣做是安全的。"
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "除非您確定安裝這些套件是安全的，否則請勿安裝。"
+msgstr "請不要安裝這些套件，除非您確定這樣做是安全的。"
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273
@@ -1939,33 +1955,98 @@ msgstr "許多套件"
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
 #: ../src/pk-polkit-action-lookup.c:339
 msgid "Only trusted"
-msgstr "只有受信任的"
+msgstr "只有信任的"
 
 #. TRANSLATORS: turn on all debugging
 #: ../src/egg-debug.c:388
 msgid "Show debugging information for all files"
-msgstr "顯示所有檔案的 debug 資訊"
+msgstr "顯示供所有檔案用的額外除錯資訊"
 
 #. TRANSLATORS: a list of modules to debug
 #: ../src/egg-debug.c:459
 msgid "Debug these specific modules"
-msgstr "debug 這些特定模組"
+msgstr "針對這些指定的模組除錯"
 
 #. TRANSLATORS: a list of functions to debug
 #: ../src/egg-debug.c:462
 msgid "Debug these specific functions"
-msgstr "debug 這些特定功能"
+msgstr "針對這些指定的功能除錯"
 
 #. TRANSLATORS: save to a log
 #: ../src/egg-debug.c:465
 msgid "Log debugging data to a file"
-msgstr "將 debug 資料寫入檔案"
+msgstr "將除錯資料紀錄到檔案"
 
 #: ../src/egg-debug.c:469
 msgid "Debugging Options"
-msgstr "Debug 的選項"
+msgstr "除錯選項"
 
 #: ../src/egg-debug.c:469
 msgid "Show debugging options"
-msgstr "顯示 debug 選項"
+msgstr "顯示除錯選項"
+
+#~ msgid "Cannot install when offline"
+#~ msgstr "當離線時無法安裝"
+#~ msgid "Cannot refresh cache whilst offline"
+#~ msgstr "當離線時無法重新整理快取"
+#~ msgid "Please restart the application as it is being used."
+#~ msgstr "請重新啟動應用程式因為該應用程式正被使用中。"
+#~ msgid "This tool could not install the files: %s"
+#~ msgstr "此工具無法安裝檔案：%s"
+#~ msgid "This tool could not remove %s: %s"
+#~ msgstr "此工具無法移除 %s：%s"
+#~ msgid "This tool could not remove the packages: %s"
+#~ msgstr "此工具無法移除套件：%s"
+#~ msgid "Proceed removing additional packages?"
+#~ msgstr "是否要進行移除額外套件？"
+#~ msgid "The package removal was canceled!"
+#~ msgstr "套件移除已取消！"
+#~ msgid "This tool could not download the package %s as it could not be found"
+#~ msgstr "此工具無法下載 %s 套件因為找不到該套件"
+#~ msgid "This tool could not download the packages: %s"
+#~ msgstr "此工具無法下載套件：%s"
+#~ msgid "This tool could not update %s: %s"
+#~ msgstr "此工具無法更新 %s：%s"
+#~ msgid "This tool could not get the requirements for %s: %s"
+#~ msgstr "此工具無法取得 %s 的需求：%s"
+#~ msgid "This tool could not get the dependencies for %s: %s"
+#~ msgstr "此工具無法取得 %s 的相依性：%s"
+#~ msgid "This tool could not get package details for %s: %s"
+#~ msgstr "此工具無法取得 %s 的套件詳細資料：%s"
+#~ msgid "This tool could not find the files for %s: %s"
+#~ msgstr "此工具找不到 %s 的檔案：%s"
+#~ msgid "This tool could not get the file list for %s: %s"
+#~ msgstr "此工具無法取得 %s 的檔案清單：%s"
+#~ msgid "File already exists: %s"
+#~ msgstr "檔案已經存在：%s"
+#~ msgid "This tool could not get package list: %s"
+#~ msgstr "此工具無法取得套件清單：%s"
+#~ msgid "File does not exist: %s"
+#~ msgstr "檔案不存在：%s"
+#~ msgid "Packages to add"
+#~ msgstr "要新增的套件"
+#~ msgid "Packages to remove"
+#~ msgstr "要移除的套件"
+#~ msgid "not found."
+#~ msgstr "找不到。"
+#~ msgid "No packages can be found to install"
+#~ msgstr "找不到要安裝的套件"
+#~ msgid "This tool could not find the update details for %s: %s"
+#~ msgstr "此工具找不到 %s 的更新詳細資料：%s"
+#~ msgid "This tool could not get the update details for %s: %s"
+#~ msgstr "此工具無法取得 %s 的更新詳細資料：%s"
+#~ msgid "Error:"
+#~ msgstr "錯誤："
+#~ msgid "Do you agree to this license?"
+#~ msgstr "您是否同意此授權合約？"
+#~ msgid "The license was refused."
+#~ msgstr "已拒絕授權合約。"
+#~ msgid "This tool could not connect to system DBUS."
+#~ msgstr "此工具無法連接至系統的 DBUS。"
+#~ msgid "A list file name to create is required"
+#~ msgstr "需要想建立的清單檔名"
+#~ msgid "A list file to open is required"
+#~ msgstr "需要想開啟的清單檔案"
+#~ msgid "Incorrect privileges for this operation"
+#~ msgstr "執行這項操作的權限不對"
 

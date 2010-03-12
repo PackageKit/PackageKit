@@ -745,8 +745,10 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_ptr_array_foreach (array, (GFunc) pk_console_distro_upgrade_cb, NULL);
 
 	/* special case */
-	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+	if (array->len == 0 && role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+		g_print ("%s\n", _("There are no upgrades available at this time."));
 		retval = PK_EXIT_CODE_NOTHING_USEFUL;
+	}
 
 	g_ptr_array_unref (array);
 
@@ -907,7 +909,7 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 	gchar **package_ids;
 	GError *error_local = NULL;
 
-	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NONE), packages, &error_local);
+	package_ids = pk_console_resolve_packages (PK_CLIENT(task), pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), packages, &error_local);
 	if (package_ids == NULL) {
 		/* TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows */
 		*error = g_error_new (1, 0, _("This tool could not find the package: %s"), error_local->message);

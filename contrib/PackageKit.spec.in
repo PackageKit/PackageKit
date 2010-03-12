@@ -37,7 +37,7 @@ BuildRequires: pam-devel
 BuildRequires: libX11-devel
 BuildRequires: xmlto
 BuildRequires: sqlite-devel
-BuildRequires: NetworkManager-glib-devel >= %{libnm_glib_version}
+BuildRequires: NetworkManager-devel >= %{libnm_glib_version}
 BuildRequires: polkit-devel >= %{polkit_version}
 BuildRequires: libtool
 BuildRequires: docbook-utils
@@ -59,6 +59,12 @@ BuildRequires: fontconfig-devel
 BuildRequires: gobject-introspection-devel
 #BuildRequires: gtk-sharp2-devel
 #BuildRequires: mono-core
+
+# for the fancy new yum accelerator
+BuildRequires: rpm-devel
+BuildRequires: libsoup-devel
+BuildRequires: bzip2-devel
+BuildRequires: zlib-devel
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -312,7 +318,8 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_sysconfdir}/bash_completion.d
 %dir %{_libdir}/packagekit-backend
 %config %{_sysconfdir}/bash_completion.d/pk-completion.bash
-%config(noreplace) %{_sysconfdir}/PackageKit/*.conf
+%config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
+%config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
 %dir %{_datadir}/PackageKit/helpers/test_spawn
 %dir %{_datadir}/PackageKit/icons
@@ -360,6 +367,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files yum
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
+%config(noreplace) %{_sysconfdir}/PackageKit/Yum.conf
 %{_libdir}/packagekit-backend/libpk_backend_yum.so
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
@@ -415,6 +423,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
+%config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
 
 %files device-rebind
 %defattr(-,root,root,-)
