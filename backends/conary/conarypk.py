@@ -26,6 +26,9 @@ class ConaryPk:
         cfg.initializeFlavors()
         self.cfg = cfg
 
+        # Don't use threaded mode
+        self.cfg.configLine('threaded False')
+
         cli = ConaryClient(cfg)
 
         # labels enable on /etc/conary/config.d/
