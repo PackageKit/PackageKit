@@ -618,18 +618,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if self._get_package_group(pkg) == group:
                 self._emit_visible_package(filters, pkg)
 
-    def search_name(self, filters, search):
+    def search_name(self, filters, values_string):
         """
         Implement the apt2-search-name functionality
         """
-        pklog.info("Searching for package name: %s" % search)
+        def matches(searches, text):
+            for search in searches:
+                if not search in text:
+                    return False
+            return True
+        pklog.info("Searching for package name: %s" % values_string)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
         self.allow_cancel(True)
 
+        values = values_string.split(PACKAGE_IDS_DELIM)
+
         for pkg_name in self._cache.keys():
-            if search in pkg_name:
+            if matches(values, pkg_name):
                 self._emit_all_visible_pkg_versions(filters,
                                                     self._cache[pkg_name])
 
