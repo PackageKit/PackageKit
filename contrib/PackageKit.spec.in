@@ -159,7 +159,6 @@ Summary: GLib Libraries and headers for PackageKit
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
-Requires: pkgconfig
 Requires: sqlite-devel
 Requires: PackageKit-glib = %{version}-%{release}
 Obsoletes: PackageKit-devel < %{version}-%{release}
@@ -172,7 +171,6 @@ GLib headers and libraries for PackageKit.
 Summary: Qt Libraries and headers for PackageKit
 Group: Development/Libraries
 Requires: %{name}-qt = %{version}-%{release}
-Requires: pkgconfig
 
 %description qt-devel
 Qt headers and libraries for PackageKit.
@@ -244,25 +242,21 @@ user to restart the computer or remove and re-insert the device.
 
 %build
 %configure \
-	--disable-static \
-	--enable-yum \
+        --disable-static \
+        --enable-yum \
 %if 0%{?rhel} == 0
-	--enable-smart \
-	--enable-introspection \
+        --enable-smart \
+        --enable-introspection \
 %endif
-	--with-default-backend=yum \
-	--disable-local \
-	--disable-ruck \
-	--disable-strict \
-%if 0
-	--disable-glib \
-%endif
-	--disable-tests
+        --with-default-backend=yum \
+        --disable-local \
+        --disable-ruck \
+        --disable-strict \
+        --disable-tests
 
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
