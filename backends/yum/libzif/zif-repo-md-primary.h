@@ -82,6 +82,16 @@ GPtrArray	*zif_repo_md_primary_search_pkgid	(ZifRepoMdPrimary	*md,
 							 GCancellable		*cancellable,
 							 ZifCompletion		*completion,
 							 GError			**error);
+GPtrArray	*zif_repo_md_primary_search_pkgkey	(ZifRepoMdPrimary	*md,
+							 guint			 pkgkey,
+							 GCancellable		*cancellable,
+							 ZifCompletion		*completion,
+							 GError			**error);
+GPtrArray	*zif_repo_md_primary_what_provides	(ZifRepoMdPrimary	*md,
+							 const gchar		*search,
+							 GCancellable		*cancellable,
+							 ZifCompletion		*completion,
+							 GError			**error);
 GPtrArray	*zif_repo_md_primary_resolve		(ZifRepoMdPrimary	*md,
 							 const gchar		*search,
 							 GCancellable		*cancellable,

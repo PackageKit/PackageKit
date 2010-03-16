@@ -929,7 +929,7 @@ zif_package_get_provides (ZifPackage *package, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */
-	if (package->priv->requires == NULL) {
+	if (package->priv->provides == NULL) {
 		ret = zif_package_ensure_data (package, ZIF_PACKAGE_ENSURE_TYPE_PROVIDES, error);
 		if (!ret)
 			return NULL;

@@ -2158,10 +2158,13 @@ out:
  * zif_store_remote_what_provides:
  **/
 static GPtrArray *
-zif_store_remote_what_provides (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_what_provides (ZifStore *store, const gchar *search,
+				GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
+	GPtrArray *array = NULL;
+	ZifCompletion *completion_local;
 	ZifStoreRemote *remote = ZIF_STORE_REMOTE (store);
 
 	/* not locked */
@@ -2172,19 +2175,36 @@ zif_store_remote_what_provides (ZifStore *store, const gchar *search, GCancellab
 		goto out;
 	}
 
+	/* setup completion */
+	if (remote->priv->loaded_metadata)
+		zif_completion_set_number_steps (completion, 1);
+	else
+		zif_completion_set_number_steps (completion, 2);
+
 	/* load metadata */
 	if (!remote->priv->loaded_metadata) {
-		ret = zif_store_remote_load_metadata (remote, cancellable, completion, &error_local);
+		completion_local = zif_completion_get_child (completion);
+		ret = zif_store_remote_load_metadata (remote, cancellable, completion_local, &error_local);
 		if (!ret) {
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 				     "failed to load xml: %s", error_local->message);
 			g_error_free (error_local);
 			goto out;
 		}
+
+		/* this section done */
+		zif_completion_done (completion);
 	}
-	//FIXME: load other MD
+
+	/* get details */
+	completion_local = zif_completion_get_child (completion);
+	array = zif_repo_md_primary_what_provides (ZIF_REPO_MD_PRIMARY (remote->priv->md_primary), search,
+						   cancellable, completion_local, error);
+
+	/* this section done */
+	zif_completion_done (completion);
 out:
-	return g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	return array;
 }
 
 /**

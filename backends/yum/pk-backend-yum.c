@@ -1968,15 +1968,54 @@ backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *pa
 static void
 backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
-	gchar *filters_text;
-	gchar *search;
-	const gchar *provides_text;
-	provides_text = pk_provides_enum_to_string (provides);
-	filters_text = pk_filter_bitfield_to_string (filters);
-	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "what-provides", filters_text, provides_text, search, NULL);
-	g_free (filters_text);
-	g_free (search);
+	guint i;
+	guint len;
+	gchar **search = NULL;
+	GPtrArray *array = NULL;
+	gchar *search_tmp;
+
+	/* it seems some people are not ready for the awesomeness */
+	if (!priv->use_zif) {
+		gchar *filters_text;
+		const gchar *provides_text;
+		provides_text = pk_provides_enum_to_string (provides);
+		filters_text = pk_filter_bitfield_to_string (filters);
+		search_tmp = g_strjoinv ("&", values);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "what-provides", filters_text, provides_text, search_tmp, NULL);
+		g_free (filters_text);
+		g_free (search_tmp);
+		return;
+	}
+
+	/* iter on each provide string, and wrap it with the fedora prefix */
+	len = g_strv_length (values);
+	array = g_ptr_array_new_with_free_func (g_free);
+	for (i=0; i<len; i++) {
+		if (provides == PK_PROVIDES_ENUM_CODEC) {
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_FONT) {
+			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+			g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_POSTSCRIPT_DRIVER) {
+			g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_ANY) {
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+		} else {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
+					       "provide type %s not supported", pk_provides_enum_to_string (provides));
+		}
+	}
+
+	/* set the search terms and run */
+	search = pk_ptr_array_to_strv (array);
+	pk_backend_set_strv (backend, "search", search);
+	pk_backend_thread_create (backend, backend_search_thread);
+	g_strfreev (search);
+	g_ptr_array_unref (array);
 }
 
 /**

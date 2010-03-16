@@ -135,7 +135,8 @@ zif_repo_md_primary_sqlite_create_package_cb (void *data, gint argc, gchar **arg
  * zif_repo_md_primary_search:
  **/
 static GPtrArray *
-zif_repo_md_primary_search (ZifRepoMdPrimary *md, const gchar *pred, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_repo_md_primary_search (ZifRepoMdPrimary *md, const gchar *pred,
+			    GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gchar *statement = NULL;
 	gchar *error_msg = NULL;
@@ -332,6 +333,173 @@ zif_repo_md_primary_search_pkgid (ZifRepoMdPrimary *md, const gchar *search, GCa
 	array = zif_repo_md_primary_search (md, pred, cancellable, completion, error);
 	g_free (pred);
 
+	return array;
+}
+
+/**
+ * zif_repo_md_primary_search_pkgkey:
+ * @md: the #ZifRepoMdPrimary object
+ * @pkgkey: the package key, unique to this sqlite file
+ * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
+ * @completion: a #ZifCompletion to use for progress reporting
+ * @error: a #GError which is used on failure, or %NULL
+ *
+ * Finds all packages that match the given pkgId.
+ *
+ * Return value: an array of #ZifPackageRemote's
+ *
+ * Since: 0.0.1
+ **/
+GPtrArray *
+zif_repo_md_primary_search_pkgkey (ZifRepoMdPrimary *md, guint pkgkey,
+				   GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	gchar *pred;
+	GPtrArray *array;
+
+	g_return_val_if_fail (ZIF_IS_REPO_MD_PRIMARY (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* search with predicate */
+	pred = g_strdup_printf ("WHERE pkgKey = '%i'", pkgkey);
+	array = zif_repo_md_primary_search (md, pred, cancellable, completion, error);
+	g_free (pred);
+
+	return array;
+}
+
+/**
+ * zif_repo_md_primary_sqlite_pkgkey_cb:
+ **/
+static gint
+zif_repo_md_primary_sqlite_pkgkey_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	gint i;
+	guint pkgkey;
+	gboolean ret;
+	GPtrArray *array = (GPtrArray *) data;
+
+	/* get the ID */
+	for (i=0; i<argc; i++) {
+		if (g_strcmp0 (col_name[i], "pkgKey") == 0) {
+			ret = egg_strtouint (argv[i], &pkgkey);
+			if (ret)
+				g_ptr_array_add (array, GUINT_TO_POINTER (pkgkey));
+			else
+				egg_warning ("could not parse pkgKey '%s'", argv[i]);
+		} else {
+			egg_warning ("unrecognized: %s=%s", col_name[i], argv[i]);
+		}
+	}
+	return 0;
+}
+
+/**
+ * zif_repo_md_primary_what_provides:
+ * @md: the #ZifRepoMdPrimary object
+ * @search: the provide, e.g. "mimehandler(application/ogg)"
+ * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
+ * @completion: a #ZifCompletion to use for progress reporting
+ * @error: a #GError which is used on failure, or %NULL
+ *
+ * Finds all packages that match the given provide.
+ *
+ * Return value: an array of #ZifPackageRemote's
+ *
+ * Since: 0.0.1
+ **/
+GPtrArray *
+zif_repo_md_primary_what_provides (ZifRepoMdPrimary *md, const gchar *search,
+				   GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	gchar *statement = NULL;
+	gchar *error_msg = NULL;
+	gint rc;
+	gboolean ret;
+	GError *error_local = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *array_tmp = NULL;
+	GPtrArray *pkgkey_array = NULL;
+	guint i;
+	guint pkgkey;
+	ZifCompletion *completion_local;
+	ZifCompletion *completion_loop;
+	ZifPackage *package;
+
+	/* setup completion */
+	if (md->priv->loaded)
+		zif_completion_set_number_steps (completion, 2);
+	else
+		zif_completion_set_number_steps (completion, 3);
+
+	/* if not already loaded, load */
+	if (!md->priv->loaded) {
+		completion_local = zif_completion_get_child (completion);
+		ret = zif_repo_md_load (ZIF_REPO_MD (md), cancellable, completion_local, &error_local);
+		if (!ret) {
+			g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to load repo_md_primary file: %s", error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
+
+		/* this section done */
+		zif_completion_done (completion);
+	}
+
+	/* create data struct we can pass to the callback */
+	pkgkey_array = g_ptr_array_new ();
+	statement = g_strdup_printf ("SELECT pkgKey FROM provides WHERE name = '%s'", search);
+	rc = sqlite3_exec (md->priv->db, statement, zif_repo_md_primary_sqlite_pkgkey_cb, pkgkey_array, &error_msg);
+	if (rc != SQLITE_OK) {
+		g_set_error (error, ZIF_REPO_MD_ERROR, ZIF_REPO_MD_ERROR_BAD_SQL,
+			     "SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+
+	/* output array */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+	/* resolve each pkgkey to a package */
+	completion_local = zif_completion_get_child (completion);
+	if (pkgkey_array->len > 0)
+		zif_completion_set_number_steps (completion_local, pkgkey_array->len);
+	for (i=0; i<pkgkey_array->len; i++) {
+		pkgkey = GPOINTER_TO_UINT (g_ptr_array_index (pkgkey_array, i));
+
+		/* get packages for pkgKey */
+		completion_loop = zif_completion_get_child (completion_local);
+		array_tmp = zif_repo_md_primary_search_pkgkey (md, pkgkey, cancellable, completion, error);
+		if (array_tmp == NULL) {
+			g_ptr_array_unref (array);
+			array = NULL;
+			goto out;
+		}
+
+		/* check we only got one result */
+		if (array_tmp->len == 0) {
+			egg_warning ("no package for pkgKey %i", pkgkey);
+		} else if (array_tmp->len > 1 || array_tmp->len == 0) {
+			egg_warning ("more than one package for pkgKey %i", pkgkey);
+		} else {
+			package = g_ptr_array_index (array_tmp, 0);
+			g_ptr_array_add (array, g_object_ref (package));
+		}
+
+		/* clear array */
+		g_ptr_array_unref (array_tmp);
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+out:
+	g_free (statement);
+	if (pkgkey_array != NULL)
+		g_ptr_array_unref (pkgkey_array);
 	return array;
 }
 

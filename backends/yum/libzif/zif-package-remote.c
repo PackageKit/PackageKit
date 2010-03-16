@@ -129,7 +129,7 @@ zif_package_remote_set_from_repo (ZifPackageRemote *pkg, guint length, gchar **t
 			zif_package_set_location_href (ZIF_PACKAGE (pkg), string);
 			zif_string_unref (string);
 		} else {
-			egg_warning ("unregognised: %s=%s", type[i], data[i]);
+			egg_warning ("unrecognized: %s=%s", type[i], data[i]);
 		}
 	}
 	zif_package_set_installed (ZIF_PACKAGE (pkg), FALSE);
