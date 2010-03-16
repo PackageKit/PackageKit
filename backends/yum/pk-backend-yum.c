@@ -1419,15 +1419,97 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
+ * backend_get_updates_thread:
+ */
+static gboolean
+backend_get_updates_thread (PkBackend *backend)
+{
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	GPtrArray *store_array = NULL;
+	ZifCompletion *completion_local;
+	GPtrArray *array = NULL;
+	GPtrArray *result = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, 2);
+
+	/* get a store_array of remote stores */
+	store_array = zif_store_array_new ();
+	completion_local = zif_completion_get_child (priv->completion);
+	ret = zif_store_array_add_remote_enabled (store_array, priv->cancellable, completion_local, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to add enabled stores: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* get updates */
+	completion_local = zif_completion_get_child (priv->completion);
+	array = zif_store_array_get_updates (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+					     priv->cancellable, completion_local, &error);
+	if (array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get updates: %s\n", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* filter */
+	result = backend_filter_package_array (array, filters);
+
+	/* done */
+	pk_backend_set_percentage (backend, 100);
+
+	/* emit */
+	backend_emit_package_array (backend, result);
+
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	if (result != NULL)
+		g_ptr_array_unref (result);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+
+	return TRUE;
+}
+
+/**
  * backend_get_updates:
  */
 static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	gchar *filters_text;
-	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-updates", filters_text, NULL);
-	g_free (filters_text);
+	/* it seems some people are not ready for the awesomeness */
+	if (TRUE || !priv->use_zif) {
+		gchar *filters_text;
+		filters_text = pk_filter_bitfield_to_string (filters);
+		pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-updates", filters_text, NULL);
+		g_free (filters_text);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
 
 /**

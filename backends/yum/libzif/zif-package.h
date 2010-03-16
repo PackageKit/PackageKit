@@ -90,6 +90,7 @@ ZifPackage		*zif_package_new		(void);
 
 /* public getters */
 const gchar		*zif_package_get_id		(ZifPackage	*package);
+const gchar		*zif_package_get_name		(ZifPackage	*package);
 ZifString		*zif_package_get_summary	(ZifPackage	*package,
 							 GError		**error);
 ZifString		*zif_package_get_description	(ZifPackage	*package,

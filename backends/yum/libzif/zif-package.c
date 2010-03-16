@@ -515,6 +515,24 @@ zif_package_get_id (ZifPackage *package)
 }
 
 /**
+ * zif_package_get_name:
+ * @package: the #ZifPackage object
+ *
+ * Gets the package name.
+ *
+ * Return value: the package name.
+ *
+ * Since: 0.0.1
+ **/
+const gchar *
+zif_package_get_name (ZifPackage *package)
+{
+	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
+	g_return_val_if_fail (package->priv->package_id != NULL, NULL);
+	return package->priv->package_id_split[PK_PACKAGE_ID_NAME];
+}
+
+/**
  * zif_package_get_package_id:
  * @package: the #ZifPackage object
  *

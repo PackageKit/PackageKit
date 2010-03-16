@@ -146,7 +146,7 @@ zif_list_print_array (GPtrArray *array)
 /**
  * zif_package_id_from_header:
  * @name: The package name, e.g. "hal"
- * @epoch: The package epoch, e.g. "1" or %NULL
+ * @epoch: The package epoch, e.g. 1 or 0 for none.
  * @version: The package version, e.g. "1.0.0"
  * @release: The package release, e.g. "2"
  * @arch: The package architecture, e.g. "i386"
@@ -159,16 +159,16 @@ zif_list_print_array (GPtrArray *array)
  * Since: 0.0.1
  **/
 gchar *
-zif_package_id_from_nevra (const gchar *name, const gchar *epoch, const gchar *version, const gchar *release, const gchar *arch, const gchar *data)
+zif_package_id_from_nevra (const gchar *name, guint epoch, const gchar *version, const gchar *release, const gchar *arch, const gchar *data)
 {
 	gchar *version_compound;
 	gchar *package_id;
 
 	/* do we include an epoch? */
-	if (epoch == NULL || epoch[0] == '0')
+	if (epoch == 0)
 		version_compound = g_strdup_printf ("%s-%s", version, release);
 	else
-		version_compound = g_strdup_printf ("%s:%s-%s", epoch, version, release);
+		version_compound = g_strdup_printf ("%i:%s-%s", epoch, version, release);
 
 	package_id = pk_package_id_build (name, version_compound, arch, data);
 	g_free (version_compound);
@@ -654,16 +654,7 @@ zif_utils_test (EggTest *test)
 	 ****************           NEVRA          ******************
 	 ************************************************************/
 	egg_test_title (test, "no epoch");
-	package_id = zif_package_id_from_nevra ("kernel", NULL, "0.0.1", "1", "i386", "fedora");
-	if (egg_strequal (package_id, "kernel;0.0.1-1;i386;fedora"))
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect package_id '%s'", package_id);
-	g_free (package_id);
-
-	/************************************************************/
-	egg_test_title (test, "epoch zero");
-	package_id = zif_package_id_from_nevra ("kernel", "0", "0.0.1", "1", "i386", "fedora");
+	package_id = zif_package_id_from_nevra ("kernel", 0, "0.0.1", "1", "i386", "fedora");
 	if (egg_strequal (package_id, "kernel;0.0.1-1;i386;fedora"))
 		egg_test_success (test, NULL);
 	else
@@ -672,7 +663,7 @@ zif_utils_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "epoch value");
-	package_id = zif_package_id_from_nevra ("kernel", "2", "0.0.1", "1", "i386", "fedora");
+	package_id = zif_package_id_from_nevra ("kernel", 2, "0.0.1", "1", "i386", "fedora");
 	if (egg_strequal (package_id, "kernel;2:0.0.1-1;i386;fedora"))
 		egg_test_success (test, NULL);
 	else

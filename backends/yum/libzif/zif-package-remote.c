@@ -35,6 +35,7 @@
 #include <stdlib.h>
 
 #include "egg-debug.h"
+#include "egg-string.h"
 
 #include "zif-utils.h"
 #include "zif-package-remote.h"
@@ -76,12 +77,13 @@ zif_package_remote_set_from_repo (ZifPackageRemote *pkg, guint length, gchar **t
 {
 	guint i;
 	const gchar *name = NULL;
-	const gchar *epoch = NULL;
+	guint epoch = 0;
 	const gchar *version = NULL;
 	const gchar *release = NULL;
 	const gchar *arch = NULL;
 	gchar *package_id;
 	ZifString *string;
+	gboolean ret;
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE_REMOTE (pkg), FALSE);
 	g_return_val_if_fail (type != NULL, FALSE);
@@ -93,7 +95,9 @@ zif_package_remote_set_from_repo (ZifPackageRemote *pkg, guint length, gchar **t
 		if (g_strcmp0 (type[i], "name") == 0) {
 			name = data[i];
 		} else if (g_strcmp0 (type[i], "epoch") == 0) {
-			epoch = data[i];
+			ret = egg_strtouint (data[i], &epoch);
+			if (!ret)
+				egg_warning ("failed to parse epoch %s", data[i]);
 		} else if (g_strcmp0 (type[i], "version") == 0) {
 			version = data[i];
 		} else if (g_strcmp0 (type[i], "release") == 0) {
@@ -132,6 +136,7 @@ zif_package_remote_set_from_repo (ZifPackageRemote *pkg, guint length, gchar **t
 			egg_warning ("unrecognized: %s=%s", type[i], data[i]);
 		}
 	}
+
 	zif_package_set_installed (ZIF_PACKAGE (pkg), FALSE);
 	package_id = zif_package_id_from_nevra (name, epoch, version, release, arch, repo_id);
 	zif_package_set_id (ZIF_PACKAGE (pkg), package_id);

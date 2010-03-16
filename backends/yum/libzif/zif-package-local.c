@@ -167,7 +167,8 @@ zif_package_local_id_from_header (Header header)
 {
 	gchar *package_id;
 	const gchar *name = NULL;
-	const gchar *epoch = NULL;
+	guint epoch = 0;
+	guint *epoch_p = NULL;
 	const gchar *version = NULL;
 	const gchar *release = NULL;
 	const gchar *arch = NULL;
@@ -177,7 +178,7 @@ zif_package_local_id_from_header (Header header)
 	if (headerGet(header, RPMTAG_NAME, &value, HEADERGET_DEFAULT))
 		name = rpmtdGetString (&value);
 	if (headerGet(header, RPMTAG_EPOCH, &value, HEADERGET_DEFAULT))
-		epoch = rpmtdGetString (&value);
+		epoch_p = rpmtdGetUint32 (&value);
 	if (headerGet(header, RPMTAG_VERSION, &value, HEADERGET_DEFAULT))
 		version = rpmtdGetString (&value);
 	if (headerGet(header, RPMTAG_RELEASE, &value, HEADERGET_DEFAULT))
@@ -185,15 +186,12 @@ zif_package_local_id_from_header (Header header)
 	if (headerGet(header, RPMTAG_ARCH, &value, HEADERGET_DEFAULT))
 		arch = rpmtdGetString (&value);
 
-	/* trivial */
-	if (epoch == NULL) {
-		package_id = zif_package_id_from_nevra (name, NULL, version, release, arch, "installed");
-		goto out;
-	}
+	/* if we got a value, then dereference it */
+	if (epoch_p != NULL)
+		epoch = *epoch_p;
 
-	/* with epoch */
+	/* with or without epoch */
 	package_id = zif_package_id_from_nevra (name, epoch, version, release, arch, "installed");
-out:
 	return package_id;
 }
 

@@ -49,7 +49,7 @@ void		 zif_debug_crash		(void);
 GQuark		 zif_utils_error_quark		(void);
 void		 zif_list_print_array		(GPtrArray	*array);
 gchar		*zif_package_id_from_nevra	(const gchar	*name,
-						 const gchar	*epoch,
+						 guint		 epoch,
 						 const gchar	*version,
 						 const gchar	*release,
 						 const gchar	*arch,
