@@ -55,6 +55,7 @@ PkBackendSpawn	*pk_backend_spawn_new			(void);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
 							 const gchar	*first_element, ...);
 gboolean	 pk_backend_spawn_kill			(PkBackendSpawn	*backend_spawn);
+gboolean	 pk_backend_spawn_exit			(PkBackendSpawn	*backend_spawn);
 const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);
 gboolean	 pk_backend_spawn_set_name		(PkBackendSpawn	*backend_spawn,
 							 const gchar	*name);

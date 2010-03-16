@@ -888,12 +888,27 @@ pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 
 /**
  * pk_backend_spawn_kill:
+ *
+ * A forceful exit, useful for aborting scripts
  **/
 gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	pk_spawn_kill (backend_spawn->priv->spawn);
+	return TRUE;
+}
+
+/**
+ * pk_backend_spawn_exit:
+ *
+ * A gentle nudge to an idle backend that it should be shut down
+ **/
+gboolean
+pk_backend_spawn_exit (PkBackendSpawn *backend_spawn)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	pk_spawn_exit (backend_spawn->priv->spawn);
 	return TRUE;
 }
 
