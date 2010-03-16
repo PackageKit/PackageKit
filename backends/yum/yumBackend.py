@@ -2074,6 +2074,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 retmsg = 'package could not be removed, as other packages depend on it'
                 raise PkError(ERROR_DEP_RESOLUTION_FAILED, retmsg)
 
+        # we did not succeed
+        if rc != 2:
+            if message.find ("is needed by") != -1:
+                raise PkError(ERROR_DEP_RESOLUTION_FAILED, message)
+            if message.find ("empty transaction") != -1:
+                raise PkError(ERROR_NO_PACKAGES_TO_UPDATE, message)
+            raise PkError(ERROR_TRANSACTION_ERROR, message)
+
         # abort now we have the package list
         if only_simulate:
             package_list = []
@@ -2086,14 +2094,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._show_package_list(package_list)
             self.percentage(100)
             return
-
-        # we did not succeed
-        if rc != 2:
-            if message.find ("is needed by") != -1:
-                raise PkError(ERROR_DEP_RESOLUTION_FAILED, message)
-            if message.find ("empty transaction") != -1:
-                raise PkError(ERROR_NO_PACKAGES_TO_UPDATE, message)
-            raise PkError(ERROR_TRANSACTION_ERROR, message)
 
         try:
             rpmDisplay = PackageKitCallback(self)
