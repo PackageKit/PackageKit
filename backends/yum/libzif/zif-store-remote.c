@@ -349,6 +349,22 @@ out:
 }
 
 /**
+ * zif_store_remote_ensure_parent_dir_exists:
+ **/
+static gboolean
+zif_store_remote_ensure_parent_dir_exists (const gchar *filename, GError **error)
+{
+	gchar *dirname = NULL;
+	dirname = g_path_get_dirname (filename);
+	if (!g_file_test (dirname, G_FILE_TEST_EXISTS)) {
+		egg_debug ("creating directory %s", dirname);
+		g_mkdir_with_parents (dirname, 0777);
+	}
+	g_free (dirname);
+	return TRUE;
+}
+
+/**
  * zif_store_remote_download:
  * @store: the #ZifStoreRemote object
  * @filename: the completion filename to download, e.g. "Packages/hal-0.0.1.rpm"
@@ -376,7 +392,6 @@ zif_store_remote_download (ZifStoreRemote *store, const gchar *filename, const g
 	GError *error_local = NULL;
 	gchar *filename_local = NULL;
 	gchar *basename = NULL;
-	gchar *dirname = NULL;
 	const gchar *baseurl;
 	ZifCompletion *completion_local;
 
@@ -436,11 +451,9 @@ zif_store_remote_download (ZifStoreRemote *store, const gchar *filename, const g
 	filename_local = g_build_filename (directory, basename, NULL);
 
 	/* ensure path is valid */
-	dirname = g_path_get_dirname (filename);
-	if (!g_file_test (dirname, G_FILE_TEST_EXISTS)) {
-		egg_debug ("creating directory %s", dirname);
-		g_mkdir_with_parents (dirname, 0777);
-	}
+	ret = zif_store_remote_ensure_parent_dir_exists (filename_local, error);
+	if (!ret)
+		goto out;
 
 	/* try to use all uris */
 	len = store->priv->baseurls->len;
@@ -478,7 +491,6 @@ zif_store_remote_download (ZifStoreRemote *store, const gchar *filename, const g
 	}
 out:
 	g_free (basename);
-	g_free (dirname);
 	g_free (filename_local);
 	return ret;
 }
@@ -512,6 +524,11 @@ zif_store_remote_add_metalink (ZifStoreRemote *store, GCancellable *cancellable,
 	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
 	if (!ret) {
 		completion_local = zif_completion_get_child (completion);
+
+		/* ensure path is valid */
+		ret = zif_store_remote_ensure_parent_dir_exists (filename, error);
+		if (!ret)
+			goto out;
 
 		/* download object directly, as we don't have the repo setup yet */
 		download = zif_download_new ();
@@ -587,6 +604,11 @@ zif_store_remote_add_mirrorlist (ZifStoreRemote *store, GCancellable *cancellabl
 	ret = g_file_test (filename, G_FILE_TEST_EXISTS);
 	if (!ret) {
 		completion_local = zif_completion_get_child (completion);
+
+		/* ensure path is valid */
+		ret = zif_store_remote_ensure_parent_dir_exists (filename, error);
+		if (!ret)
+			goto out;
 
 		/* download object directly, as we don't have the repo setup yet */
 		download = zif_download_new ();
@@ -739,7 +761,7 @@ zif_store_remote_load_metadata (ZifStoreRemote *store, GCancellable *cancellable
 		/* download new file */
 		completion_local = zif_completion_get_child (completion);
 		store->priv->loaded_metadata = TRUE;
-		ret = zif_store_remote_download (store, store->priv->repomd_filename, store->priv->directory, cancellable, completion_local, &error_local);
+		ret = zif_store_remote_download (store, "repodata/repomd.xml", store->priv->directory, cancellable, completion_local, &error_local);
 		store->priv->loaded_metadata = FALSE;
 		if (!ret) {
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,

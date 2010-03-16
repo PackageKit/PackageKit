@@ -734,6 +734,13 @@ zif_package_get_filename (ZifPackage *package, GError **error)
 	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
+	/* doesn't make much sense */
+	if (package->priv->installed) {
+		g_set_error_literal (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
+				     "cannot get remote filename for installed package");
+		return NULL;
+	}
+
 	/* not exists */
 	if (package->priv->location_href == NULL) {
 		g_set_error (error, ZIF_PACKAGE_ERROR, ZIF_PACKAGE_ERROR_FAILED,
