@@ -1828,30 +1828,31 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                        'All of the specified packages have already been installed')
 
         # If only_trusted is true, it means that we will only install trusted files
-        if only_trusted:
-            # disregard the default
+        if only_trusted or simulate:
             self.yumbase.conf.gpgcheck = 1
-
-            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
-            # This means we don't run runYumTransaction, and don't get the GPG failure in
-            # PackageKitYumBase(_checkSignatures) -- so we check here
-            for inst_file in inst_files:
-                try:
-                    po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-                except yum.Errors.MiscError:
-                    self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file, exit=False)
-                    return
-                except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                try:
-                    self.yumbase._checkSignatures([po], None)
-                except yum.Errors.YumGPGCheckError, e:
-                    self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
-                    return
-                except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             self.yumbase.conf.gpgcheck = 0
+
+        # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
+        # This means we don't run runYumTransaction, and don't get the GPG failure in
+        # PackageKitYumBase(_checkSignatures) -- so we check here
+        for inst_file in inst_files:
+            try:
+                po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            except yum.Errors.MiscError:
+                self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file, exit=False)
+                return
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            try:
+                self.yumbase._checkSignatures([po], None)
+            except yum.Errors.YumGPGCheckError, e:
+                if only_trusted:
+                    self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
+                    return
+                self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # common checks copied from yum
         for inst_file in inst_files:
