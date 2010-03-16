@@ -277,46 +277,48 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	sack = pk_results_get_package_sack (results);
 
 	/* remove all the original packages from the sack */
-	length = g_strv_length (state->package_ids);
-	for (i=0; i<length; i++)
-		pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
+	if (state->package_ids != NULL) {
+		length = g_strv_length (state->package_ids);
+		for (i=0; i<length; i++)
+			pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
 
-	/* remove packages from the array that will not be useful */
-	array = pk_results_get_package_array (results);
-	while (idx < array->len) {
-		item = g_ptr_array_index (array, idx);
-		package_id = pk_package_get_id (item);
-		g_object_get (item,
-			      "info", &info,
-			      NULL);
+		/* remove packages from the array that will not be useful */
+		array = pk_results_get_package_array (results);
+		while (idx < array->len) {
+			item = g_ptr_array_index (array, idx);
+			package_id = pk_package_get_id (item);
+			g_object_get (item,
+				      "info", &info,
+				      NULL);
 
-		/* remove all the cleanup and finished packages */
-		if (info == PK_INFO_ENUM_CLEANUP ||
-		    info == PK_INFO_ENUM_FINISHED) {
-			egg_debug ("removing %s", package_id);
-			g_ptr_array_remove (array, item);
-			continue;
-		}
-
-		/* remove all the original packages */
-		ret = FALSE;
-		for (i=0; i<length; i++) {
-			if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
+			/* remove all the cleanup and finished packages */
+			if (info == PK_INFO_ENUM_CLEANUP ||
+			    info == PK_INFO_ENUM_FINISHED) {
 				egg_debug ("removing %s", package_id);
 				g_ptr_array_remove (array, item);
-				ret = TRUE;
-				break;
+				continue;
 			}
-		}
-		if (ret)
-			continue;
 
-		/* no removal done */
-		idx++;
+			/* remove all the original packages */
+			ret = FALSE;
+			for (i=0; i<length; i++) {
+				if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
+					egg_debug ("removing %s", package_id);
+					g_ptr_array_remove (array, item);
+					ret = TRUE;
+					break;
+				}
+			}
+			if (ret)
+				continue;
+
+			/* no removal done */
+			idx++;
+		}
 	}
 
 	/* no results from simulate */
-	if (array->len == 0) {
+	if (pk_package_sack_get_size (sack) == 0) {
 		pk_task_do_async_action (state);
 		goto out;
 	}
