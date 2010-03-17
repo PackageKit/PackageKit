@@ -355,18 +355,21 @@ pk_package_sack_remove_by_filter (PkPackageSack *sack, PkPackageSackFilterFunc f
 {
 	gboolean ret = FALSE;
 	PkPackage *package;
-	guint i;
+	gint i;
 	PkPackageSackPrivate *priv = sack->priv;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (filter_cb != NULL, FALSE);
 
 	/* add each that matches the info enum */
-	for (i = 0; i < priv->array->len; i++) {
+	for (i = 0; i < (gint) priv->array->len; i++) {
 		package = g_ptr_array_index (priv->array, i);
 		if (!filter_cb (package, user_data)) {
 			ret = TRUE;
 			pk_package_sack_remove_package (sack, package);
+
+			/* ensure we pick up subsequent matches */
+			i--;
 		}
 	}
 	return ret;
@@ -1158,6 +1161,19 @@ pk_package_sack_test_update_detail_cb (GObject *object, GAsyncResult *res, EggTe
 	egg_test_loop_quit (test);
 }
 
+/**
+ * pk_package_sack_test_filter_cb:
+ **/
+static gboolean
+pk_package_sack_test_filter_cb (PkPackage *package, gpointer user_data)
+{
+	PkInfoEnum info;
+	info = pk_package_get_info (package);
+	if (info == PK_INFO_ENUM_UNKNOWN)
+		return FALSE;
+	return TRUE;
+}
+
 void
 pk_package_sack_test (gpointer user_data)
 {
@@ -1289,6 +1305,18 @@ pk_package_sack_test (gpointer user_data)
 	egg_test_title (test, "remove already removed package");
 	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
 	egg_test_assert (test, !ret);
+
+	/************************************************************/
+	egg_test_title (test, "remove by filter");
+	pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora", NULL);
+	pk_package_sack_add_package_by_id (sack, "powertop-debuginfo;1.8-1.fc8;i386;fedora", NULL);
+	ret = pk_package_sack_remove_by_filter (sack, pk_package_sack_test_filter_cb, test);
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "check all removed");
+	size = pk_package_sack_get_size (sack);
+	egg_test_assert (test, (size == 0));
 
 	g_object_unref (sack);
 	egg_test_end (test);
