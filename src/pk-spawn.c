@@ -269,7 +269,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 		return FALSE;
 	}
 
-	/* we won't overwrite this if not unknown */
+	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 
 	egg_debug ("sending SIGKILL %i", spawn->priv->child_pid);
@@ -302,6 +302,9 @@ pk_spawn_is_running (PkSpawn *spawn)
  * pk_spawn_kill:
  *
  * We send SIGQUIT and after a few ms SIGKILL (if allowed)
+ *
+ * IMPORTANT: This is not a syncronous operation, and client programs will need
+ * to wait for the ::exit signal.
  **/
 gboolean
 pk_spawn_kill (PkSpawn *spawn)
@@ -323,7 +326,7 @@ pk_spawn_kill (PkSpawn *spawn)
 		return FALSE;
 	}
 
-	/* we won't overwrite this if not unknown */
+	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
 
 	egg_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
@@ -407,8 +410,10 @@ pk_spawn_exit (PkSpawn *spawn)
 	/* send command */
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
-	if (!ret)
+	if (!ret) {
+		egg_warning ("failed to send exit");
 		goto out;
+	}
 
 	/* block until the previous script exited */
 	do {
