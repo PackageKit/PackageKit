@@ -197,6 +197,20 @@ pk_task_do_async_action (PkTaskState *state)
 }
 
 /**
+ * pk_task_package_filter_cb:
+ **/
+static gboolean
+pk_task_package_filter_cb (PkPackage *package, gpointer user_data)
+{
+	PkInfoEnum info;
+	info = pk_package_get_info (package);
+	if (info == PK_INFO_ENUM_CLEANUP ||
+	    info == PK_INFO_ENUM_FINISHED)
+		return FALSE;
+	return TRUE;
+}
+
+/**
  * pk_task_simulate_ready_cb:
  **/
 static void
@@ -276,13 +290,18 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get data */
 	sack = pk_results_get_package_sack (results);
 
+	/* remove all the cleanup and finished packages */
+	pk_package_sack_remove_by_filter (sack, pk_task_package_filter_cb, state);
+
 	/* remove all the original packages from the sack */
 	if (state->package_ids != NULL) {
 		length = g_strv_length (state->package_ids);
 		for (i=0; i<length; i++)
 			pk_package_sack_remove_package_by_id (sack, state->package_ids[i]);
+	}
 
-		/* remove packages from the array that will not be useful */
+	/* remove packages from the array that will not be useful */
+	if (state->package_ids != NULL) {
 		array = pk_results_get_package_array (results);
 		while (idx < array->len) {
 			item = g_ptr_array_index (array, idx);
