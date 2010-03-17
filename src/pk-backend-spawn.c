@@ -570,10 +570,18 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 				       "Process had to be killed to be cancelled");
 	}
 
+	if (exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT ||
+	    exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
+		egg_debug ("dispatcher exited, nothing to see here");
+		return;
+	}
+
 	/* only emit if not finished */
-	if (!backend_spawn->priv->finished &&
-	    exit_enum != PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
+	if (!backend_spawn->priv->finished) {
 		egg_warning ("script exited without doing finished");
+		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "The backend exited unexpectedly. "
+				       "This is a serious error as the spawned backend did not complete the pending transaction.");
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
 }
