@@ -616,6 +616,7 @@ backend_initialize (PkBackend *backend)
 	GFile *file;
 	GError *error = NULL;
 	GKeyFile *key_file = NULL;
+	gchar *config_file = NULL;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -639,7 +640,9 @@ backend_initialize (PkBackend *backend)
 
 	/* read the config file */
 	key_file = g_key_file_new ();
-	ret = g_key_file_load_from_file (key_file, SYSCONFDIR "/PackageKit/Yum.conf", G_KEY_FILE_NONE, &error);
+	config_file = g_build_filename (SYSCONFDIR, "PackageKit", "Yum.conf", NULL);
+	egg_debug ("loading configuration from %s", config_file);
+	ret = g_key_file_load_from_file (key_file, config_file, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "failed to load Yum.conf: %s", error->message);
 		g_error_free (error);
@@ -722,6 +725,7 @@ backend_initialize (PkBackend *backend)
 	/* profile */
 	backend_profile ("read groups");
 out:
+	g_free (config_file);
 	g_key_file_free (key_file);
 	g_object_unref (file);
 }
