@@ -80,6 +80,9 @@ GType		 pk_package_sack_get_type		(void);
 PkPackageSack	*pk_package_sack_new			(void);
 void		 pk_package_sack_test			(gpointer		 user_data);
 
+typedef gboolean (*PkPackageSackFilterFunc)		(PkPackage		*package,
+							 gpointer		 user_data);
+
 /* managing the array */
 void		 pk_package_sack_clear			(PkPackageSack		*sack);
 gchar		**pk_package_sack_get_ids		(PkPackageSack		*sack);
@@ -96,10 +99,16 @@ gboolean	 pk_package_sack_remove_package		(PkPackageSack		*sack,
 							 PkPackage		*package);
 gboolean	 pk_package_sack_remove_package_by_id	(PkPackageSack		*sack,
 							 const gchar		*package_id);
+gboolean	 pk_package_sack_remove_by_filter	(PkPackageSack		*sack,
+							 PkPackageSackFilterFunc filter_cb,
+							 gpointer		 user_data);
 PkPackage	*pk_package_sack_find_by_id		(PkPackageSack		*sack,
 							 const gchar		*package_id);
 PkPackageSack	*pk_package_sack_filter_by_info		(PkPackageSack		*sack,
 							 PkInfoEnum		 info);
+PkPackageSack	*pk_package_sack_filter			(PkPackageSack		*sack,
+							 PkPackageSackFilterFunc filter_cb,
+							 gpointer		 user_data);
 guint64		 pk_package_sack_get_total_bytes	(PkPackageSack		*sack);
 
 gboolean	 pk_package_sack_merge_generic_finish	(PkPackageSack		*sack,

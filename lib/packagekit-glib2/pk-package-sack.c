@@ -181,6 +181,42 @@ pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
 }
 
 /**
+ * pk_package_sack_filter:
+ * @sack: a valid #PkPackageSack instance
+ * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to add
+ * @user_data: user data to pass to @filter_cb
+ *
+ * Returns a new package sack which only matches packages that return %TRUE
+ * from the filter function.
+ *
+ * Return value: a new #PkPackageSack, free with g_object_unref()
+ *
+ * Since: 0.6.3
+ **/
+PkPackageSack *
+pk_package_sack_filter (PkPackageSack *sack, PkPackageSackFilterFunc filter_cb, gpointer user_data)
+{
+	PkPackageSack *results;
+	PkPackage *package;
+	guint i;
+	PkPackageSackPrivate *priv = sack->priv;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
+	g_return_val_if_fail (filter_cb != NULL, NULL);
+
+	/* create new sack */
+	results = pk_package_sack_new ();
+
+	/* add each that matches the info enum */
+	for (i = 0; i < priv->array->len; i++) {
+		package = g_ptr_array_index (priv->array, i);
+		if (filter_cb (package, user_data))
+			pk_package_sack_add_package (results, package);
+	}
+	return results;
+}
+
+/**
  * pk_package_sack_add_package:
  * @sack: a valid #PkPackageSack instance
  * @package: a valid #PkPackage instance
@@ -298,6 +334,41 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
 		}
 	}
 
+	return ret;
+}
+
+/**
+ * pk_package_sack_remove_by_filter:
+ * @sack: a valid #PkPackageSack instance
+ * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to retain
+ * @user_data: user data to pass to @filter_cb
+ *
+ * Removes from the package sack any packages that return %FALSE from the filter
+ * function.
+ *
+ * Return value: %TRUE if a package was removed from the sack
+ *
+ * Since: 0.6.3
+ **/
+gboolean
+pk_package_sack_remove_by_filter (PkPackageSack *sack, PkPackageSackFilterFunc filter_cb, gpointer user_data)
+{
+	gboolean ret = FALSE;
+	PkPackage *package;
+	guint i;
+	PkPackageSackPrivate *priv = sack->priv;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+	g_return_val_if_fail (filter_cb != NULL, FALSE);
+
+	/* add each that matches the info enum */
+	for (i = 0; i < priv->array->len; i++) {
+		package = g_ptr_array_index (priv->array, i);
+		if (!filter_cb (package, user_data)) {
+			ret = TRUE;
+			pk_package_sack_remove_package (sack, package);
+		}
+	}
 	return ret;
 }
 
