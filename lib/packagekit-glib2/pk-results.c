@@ -67,6 +67,7 @@ struct _PkResultsPrivate
 	GPtrArray		*media_change_required_array;
 	GPtrArray		*repo_detail_array;
 	GPtrArray		*message_array;
+	PkPackageSack		*package_sack;
 };
 
 enum {
@@ -182,6 +183,7 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 	}
 
 	/* copy and add to array */
+	pk_package_sack_add_package (results->priv->package_sack, item);
 	g_ptr_array_add (results->priv->package_array, g_object_ref (item));
 
 	return TRUE;
@@ -553,32 +555,15 @@ pk_results_get_package_array (PkResults *results)
  *
  * Gets a package sack from the transaction.
  *
- * Return value: A #PkPackageSack of data.
+ * Return value: A #PkPackageSack of data, g_object_unref() to free.
  *
  * Since: 0.5.2
  **/
 PkPackageSack *
 pk_results_get_package_sack (PkResults *results)
 {
-	PkPackage *package;
-	PkPackageSack *sack;
-	GPtrArray *array;
-	guint i;
-
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-
-	/* create a new sack */
-	sack = pk_package_sack_new ();
-
-	/* go through each of the bare packages */
-	array = results->priv->package_array;
-	for (i=0; i<array->len; i++) {
-		package = g_ptr_array_index (array, i);
-		pk_package_sack_add_package (sack, g_object_ref (package));
-		g_object_unref (package);
-	}
-
-	return sack;
+	return g_object_ref (results->priv->package_sack);
 }
 
 /**
@@ -884,6 +869,7 @@ pk_results_init (PkResults *results)
 	results->priv->progress = NULL;
 	results->priv->error_code = NULL;
 	results->priv->package_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	results->priv->package_sack = pk_package_sack_new ();
 	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	results->priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -920,6 +906,7 @@ pk_results_finalize (GObject *object)
 	g_ptr_array_unref (priv->media_change_required_array);
 	g_ptr_array_unref (priv->repo_detail_array);
 	g_ptr_array_unref (priv->message_array);
+	g_object_unref (priv->package_sack);
 	if (results->priv->progress != NULL)
 		g_object_unref (results->priv->progress);
 	if (results->priv->error_code != NULL)
