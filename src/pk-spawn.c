@@ -461,13 +461,15 @@ pk_spawn_exit (PkSpawn *spawn)
 		 * If we run the loop, other idle events can be processed,
 		 * and this includes sending data to a new instance,
 		 * which of course will fail as the 'old' script is exiting */
-		g_usleep (100*1000); /* 100 ms */
+		g_usleep (10*1000); /* 10 ms */
 		ret = pk_spawn_check_child (spawn);
-	} while (ret && count++ < 50);
+	} while (ret && count++ < 500);
 
 	/* the script exited okay */
-	if (count < 50)
+	if (count < 500)
 		ret = TRUE;
+	else
+		egg_warning ("failed to exit script");
 out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
