@@ -260,13 +260,12 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 		/* get the exit code */
 		retval = WEXITSTATUS (status);
-		egg_debug ("the child exited with return code %i", retval);
 		if (retval == 0) {
 			egg_debug ("the child exited with success");
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
 		} else {
-			egg_warning ("something has gone very wrong: the child exited with return code %i", retval);
+			egg_warning ("the child exited with return code %i", retval);
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
 		}

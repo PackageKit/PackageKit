@@ -1854,6 +1854,15 @@ out:
 }
 
 /**
+ * pk_backend_has_set_error_code:
+ **/
+gboolean
+pk_backend_has_set_error_code (PkBackend *backend)
+{
+	return backend->priv->set_error;
+}
+
+/**
  * pk_backend_set_allow_cancel:
  **/
 gboolean
@@ -1939,7 +1948,6 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 		egg_warning ("already set exit status: old=%s, new=%s",
 			    pk_exit_enum_to_string (backend->priv->exit),
 			    pk_exit_enum_to_string (exit_enum));
-		egg_debug_backtrace ();
 		return FALSE;
 	}
 

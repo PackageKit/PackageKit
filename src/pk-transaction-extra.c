@@ -80,13 +80,14 @@ G_DEFINE_TYPE (PkTransactionExtra, pk_transaction_extra, G_TYPE_OBJECT)
 static void
 pk_transaction_extra_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransactionExtra *extra)
 {
-	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		egg_warning ("%s failed with exit code: %s",
-			     pk_role_enum_to_string (pk_backend_get_role (backend)),
-			     pk_exit_enum_to_string (exit_enum));
-	}
-	if (g_main_loop_is_running (extra->priv->loop))
+	if (g_main_loop_is_running (extra->priv->loop)) {
+		if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+			egg_warning ("%s failed with exit code: %s",
+				     pk_role_enum_to_string (pk_backend_get_role (backend)),
+				     pk_exit_enum_to_string (exit_enum));
+		}
 		g_main_loop_quit (extra->priv->loop);
+	}
 }
 
 /**

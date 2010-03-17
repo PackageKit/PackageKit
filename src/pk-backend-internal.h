@@ -74,6 +74,7 @@ PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
 gchar		*pk_backend_get_mime_types		(PkBackend	*backend);
+gboolean	 pk_backend_has_set_error_code		(PkBackend	*backend);
 gboolean	 pk_backend_is_implemented		(PkBackend	*backend,
 							 PkRoleEnum	 role);
 gchar		*pk_backend_get_accepted_eula_string	(PkBackend	*backend);
