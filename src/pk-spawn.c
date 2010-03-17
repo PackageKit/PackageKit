@@ -179,7 +179,9 @@ pk_spawn_exit_type_enum_to_string (PkSpawnExitType type)
 static gboolean
 pk_spawn_check_child (PkSpawn *spawn)
 {
+	pid_t pid;
 	int status;
+	gint retval;
 	static guint limit_printing = 0;
 
 	/* this shouldn't happen */
@@ -206,8 +208,20 @@ pk_spawn_check_child (PkSpawn *spawn)
 		egg_debug ("polling child_pid=%i (1/20)", spawn->priv->child_pid);
 
 	/* check if the child exited */
-	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
+	pid = waitpid (spawn->priv->child_pid, &status, WNOHANG);
+	if (pid == -1) {
+		egg_warning ("failed to get the child PID data for %i", spawn->priv->child_pid);
 		return TRUE;
+	}
+	if (pid == 0) {
+		/* process still exist, but has not changed state */
+		return TRUE;
+	}
+	if (pid != spawn->priv->child_pid) {
+		egg_warning ("some other process id was returned: got %i and wanted %i",
+			     pid, spawn->priv->child_pid);
+		return TRUE;
+	}
 
 	/* disconnect the poll as there will be no more updates */
 	if (spawn->priv->poll_id > 0) {
@@ -224,13 +238,38 @@ pk_spawn_check_child (PkSpawn *spawn)
 	spawn->priv->stderr_fd = -1;
 	spawn->priv->child_pid = -1;
 
-	if (WEXITSTATUS (status) > 0) {
-		egg_debug ("Running fork failed with return value %d", WEXITSTATUS (status));
-		if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
-			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
+	/* use this to detect SIGKILL and SIGQUIT */
+	if (WIFSIGNALED (status)) {
+		retval = WTERMSIG (status);
+		if (retval == SIGQUIT) {
+			egg_debug ("the child process was terminated by SIGQUIT");
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
+		} else if (retval == SIGKILL) {
+			egg_debug ("the child process was terminated by SIGKILL");
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
+		} else {
+			egg_warning ("the child process was terminated by signal %i", WTERMSIG (status));
+			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
+		}
 	} else {
-		if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
-			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
+		/* check we are dead and buried */
+		if (!WIFEXITED (status)) {
+			egg_warning ("the process did not exit, but waitpid() returned!");
+			return TRUE;
+		}
+
+		/* get the exit code */
+		retval = WEXITSTATUS (status);
+		egg_debug ("the child exited with return code %i", retval);
+		if (retval == 0) {
+			egg_debug ("the child exited with success");
+			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
+				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
+		} else {
+			egg_warning ("something has gone very wrong: the child exited with return code %i", retval);
+			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
+				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
+		}
 	}
 
 	/* officially done, although no signal yet */
