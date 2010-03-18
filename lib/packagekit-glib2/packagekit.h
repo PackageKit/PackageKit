@@ -48,6 +48,7 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-package-sack.h>
+#include <packagekit-glib2/pk-package-sack-sync.h>
 #include <packagekit-glib2/pk-progress.h>
 #include <packagekit-glib2/pk-repo-detail.h>
 #include <packagekit-glib2/pk-repo-signature-required.h>

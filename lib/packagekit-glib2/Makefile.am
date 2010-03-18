@@ -48,6 +48,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-sack.h					\
+	pk-package-sack-sync.h					\
 	pk-progress.h						\
 	pk-repo-detail.h					\
 	pk-repo-signature-required.h				\
@@ -111,6 +112,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-package-ids.h					\
 	pk-package-sack.c					\
 	pk-package-sack.h					\
+	pk-package-sack-sync.c					\
+	pk-package-sack-sync.h					\
 	pk-progress.c						\
 	pk-progress.h						\
 	pk-repo-detail.c					\

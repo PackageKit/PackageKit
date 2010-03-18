@@ -311,6 +311,12 @@ pk_spawn_kill (PkSpawn *spawn)
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
 	g_return_val_if_fail (spawn->priv->kill_id == 0, FALSE);
 
+	/* is there a process running? */
+	if (spawn->priv->child_pid == -1) {
+		egg_warning ("no child pid to kill!");
+		return FALSE;
+	}
+
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
 		egg_warning ("already finished, ignoring");
@@ -550,8 +556,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
 	/* sanity check */
-	if (spawn->priv->poll_id != 0)
-		egg_error ("trying to set timeout when already set");
+	if (spawn->priv->poll_id != 0) {
+		egg_warning ("trying to set timeout when already set");
+		g_source_remove (spawn->priv->poll_id);
+	}
 
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);

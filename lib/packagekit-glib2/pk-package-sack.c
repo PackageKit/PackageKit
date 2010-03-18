@@ -312,17 +312,11 @@ pk_package_sack_sort_compare_package_id_func (PkPackage **a, PkPackage **b)
 static gint
 pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
 {
-	gint retval;
-	gchar *summary1;
-	gchar *summary2;
-
-	g_object_get (*a, "summary", &summary1, NULL);
-	g_object_get (*b, "summary", &summary2, NULL);
-	retval = g_strcmp0 (summary1, summary2);
-
-	g_free (summary1);
-	g_free (summary2);
-	return retval;
+	const gchar *summary1;
+	const gchar *summary2;
+	summary1 = pk_package_get_summary (*a);
+	summary2 = pk_package_get_summary (*b);
+	return g_strcmp0 (summary1, summary2);
 }
 
 /**
@@ -331,12 +325,10 @@ pk_package_sack_sort_compare_summary_func (PkPackage **a, PkPackage **b)
 static gint
 pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
 {
-	PkInfoEnum *info1;
-	PkInfoEnum *info2;
-
-	g_object_get (*a, "info", &info1, NULL);
-	g_object_get (*b, "info", &info2, NULL);
-
+	PkInfoEnum info1;
+	PkInfoEnum info2;
+	info1 = pk_package_get_info (*a);
+	info2 = pk_package_get_info (*b);
 	if (info1 == info2)
 		return 0;
 	else if (info1 > info2)

@@ -127,8 +127,11 @@ class PackageKitBaseBackend:
         print "error\t%s\t%s" % (err, description)
         sys.stdout.flush()
         if exit:
-            print "finished"
-            sys.stdout.flush()
+            # Paradoxically, we don't want to print "finished" to stdout here.
+            # Python takes an _enormous_ amount of time to exit, and leaves a
+            # huge race when you try to change a dispatcher because of an error.
+            #
+            # Leave PackageKit to clean up for us in this case.
             sys.exit(1)
 
     def message(self, typ, msg):

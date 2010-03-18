@@ -297,10 +297,10 @@ pk_client_real_path (const gchar *path)
 }
 
 /**
- * pk_client_real_paths:
+ * pk_client_convert_real_paths:
  **/
 static gchar **
-pk_client_real_paths (gchar **paths)
+pk_client_convert_real_paths (gchar **paths, GError **error)
 {
 	guint i;
 	guint len;
@@ -311,8 +311,17 @@ pk_client_real_paths (gchar **paths)
 	res = g_new0 (gchar *, len+1);
 
 	/* resolve each path */
-	for (i=0; i<len; i++)
+	for (i=0; i<len; i++) {
 		res[i] = pk_client_real_path (paths[i]);
+		if (res[i] == NULL) {
+			/* set an error, and abort, tearing down all our hard work */
+			g_set_error (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT, "could not resolve: %s", paths[i]);
+			g_strfreev (res);
+			res = NULL;
+			goto out;
+		}
+	}
+out:
 	return res;
 }
 
@@ -1117,17 +1126,17 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *tid, const gchar *time
  * pk_client_distro_upgrade_cb:
  */
 static void
-pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *type_text, const gchar *name,
+pk_client_distro_upgrade_cb (DBusGProxy *proxy, const gchar *state_text, const gchar *name,
 			     const gchar *summary, PkClientState *state)
 {
-	PkUpdateStateEnum type_enum;
+	PkUpdateStateEnum state_enum;
 	PkDistroUpgrade *item;
-	type_enum = pk_update_state_enum_from_text (type_text);
+	state_enum = pk_update_state_enum_from_text (state_text);
 
 	/* add to results */
 	item = pk_distro_upgrade_new ();
 	g_object_set (item,
-		      "type", type_enum,
+		      "state", state_enum,
 		      "name", name,
 		      "summary", summary,
 		      NULL);
@@ -3054,6 +3063,7 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 	PkClientState *state;
 	gboolean ret;
 	guint i;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3071,11 +3081,18 @@ pk_client_install_files_async (PkClient *client, gboolean only_trusted, gchar **
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->only_trusted = only_trusted;
-	state->files = pk_client_real_paths (files);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
+
+	/* check files are valid */
+	state->files = pk_client_convert_real_paths (files, &error);
+	if (state->files == NULL) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* how many non-native */
 	for (i=0; state->files[i] != NULL; i++) {
@@ -3351,6 +3368,7 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 	PkClientState *state;
 	gboolean ret;
 	guint i;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
@@ -3367,12 +3385,19 @@ pk_client_simulate_install_files_async (PkClient *client, gchar **files, GCancel
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
-	state->files = pk_client_real_paths (files);
 
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
 	pk_client_set_role (state, state->role);
+
+	/* check files are valid */
+	state->files = pk_client_convert_real_paths (files, &error);
+	if (state->files == NULL) {
+		pk_client_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
 
 	/* how many non-native */
 	for (i=0; state->files[i] != NULL; i++) {

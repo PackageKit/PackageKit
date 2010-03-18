@@ -122,6 +122,11 @@ void		 pk_package_sack_merge_update_detail_async (PkPackageSack	*sack,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
 
+/* compat defines for git master */
+#define pk_package_sack_resolve_async		pk_package_sack_merge_resolve_async
+#define pk_package_sack_get_details_async	pk_package_sack_merge_details_async
+#define pk_package_sack_get_update_detail_async	pk_package_sack_merge_update_detail_async
+
 G_END_DECLS
 
 #endif /* __PK_PACKAGE_SACK_H */

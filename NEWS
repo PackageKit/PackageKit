@@ -1,3 +1,48 @@
+Version 0.5.7
+~~~~~~~~~~~~~
+Released: 2010-03-03
+
+Note:
+ - This release adds some forward compatibility defines for applications that
+   want to track the new API in 0.6.0. New methods have been added, but the API
+   or ABI has not been changed.
+
+Backends:
+ - aptcc: Improved kind of updates detection (Daniel Nicoletti)
+ - aptcc: Fix once package descriptions FDO bug #26357 (Daniel Nicoletti)
+ - aptcc: Fix unknown progress when download takes too much time to go to 1% (Daniel Nicoletti)
+ - yum: Blacklist auto-update-debuginfo when using PK tools to prevent madness. Fixes rh#566578 (Richard Hughes)
+ - yum: Don't show an internal error if the database was changed by rpm when we are building a transaction (Richard Hughes)
+ - yum: Add simulate-install-packages, simulate-update-packages and simulate-remove-packages (Richard Hughes)
+ - yum: Ensure we look in all update notices for a security update. Fixes rh#526279 (Richard Hughes)
+ - yum: Emit a warning when a developer tries to use autoremove (Richard Hughes)
+ - yum: Ensure we actually do self._check_init() for RefreshCache so non-contactable repos get disabled (Richard Hughes)
+ - yum: If yum, rpm or PackageKit are available as updates, then update these packages first (Richard Hughes)
+
+New Features:
+ - Add a new message enum 'repo-for-developers-only' for repos that should not be used by users (Richard Hughes)
+ - Add Kubuntu support for upgrade (using env var exported by KPackageKit) (Daniel Nicoletti)
+ - Do not run the transaction with only_trusted if the simulation inferred that any packages were unsigned (Richard Hughes)
+ - packagekit-glib2: add pk_control_suggest_daemon_quit() (Vincent Untz)
+ - packagekit-glib2: Backport the PkPackageSack sync methods from git master (Richard Hughes)
+ - packagekit-glib2: Ensure PkProgress sends ::notify signals when properties change (Richard Hughes)
+ - Show messages in the pkmon output when the task has completed (Richard Hughes)
+ - Show the translated role and status when using pkgenpack (Richard Hughes)
+
+Bugfixes:
+ - Cache autoremove too in transaction_remove_packages (Valeriy Lyasotskiy)
+ - Ensure that pkgenpack generates filenames without ';' embedded in them (Richard Hughes)
+ - Ensure we enter SETUP before we run the pre-transaction checks (Richard Hughes)
+ - Ensure we set an error when the transaction is cancelled (Richard Hughes)
+ - Fix a logic problem where the PkSpawn and PkBackend instances would race (Richard Hughes)
+ - Fixed packagekit.client.install_packages() in Python bindings (Tim Waugh)
+ - Fix up a typo that prevents compiling programs that use packagekit-qt with -pedantic-errors (Slawomir Czarko)
+ - Initialize relevant GError's to NULL (Jonathan Conder)
+ - PackageKit-Qt: Switch from QDbusReply to QDBusPendingReply (Adrien Bustany)
+ - Update the Free Software Foundation address (Richard Hughes)
+ - Update the list of free licences from the Fedora wiki (Richard Hughes)
+ - When adopting a transaction ensure we set the role on the PkResults object (Richard Hughes)
+
 Version 0.5.6
 ~~~~~~~~~~~~~
 Released: 2010-01-05

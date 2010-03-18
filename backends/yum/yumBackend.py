@@ -1529,6 +1529,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the refresh_cache functionality
         '''
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
@@ -1845,30 +1850,31 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                        'All of the specified packages have already been installed')
 
         # If only_trusted is true, it means that we will only install trusted files
-        if only_trusted:
-            # disregard the default
+        if only_trusted or simulate:
             self.yumbase.conf.gpgcheck = 1
-
-            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
-            # This means we don't run runYumTransaction, and don't get the GPG failure in
-            # PackageKitYumBase(_checkSignatures) -- so we check here
-            for inst_file in inst_files:
-                try:
-                    po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-                except yum.Errors.MiscError:
-                    self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file, exit=False)
-                    return
-                except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                try:
-                    self.yumbase._checkSignatures([po], None)
-                except yum.Errors.YumGPGCheckError, e:
-                    self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
-                    return
-                except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             self.yumbase.conf.gpgcheck = 0
+
+        # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck = 1
+        # This means we don't run runYumTransaction, and don't get the GPG failure in
+        # PackageKitYumBase(_checkSignatures) -- so we check here
+        for inst_file in inst_files:
+            try:
+                po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            except yum.Errors.MiscError:
+                self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file, exit=False)
+                return
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            try:
+                self.yumbase._checkSignatures([po], None)
+            except yum.Errors.YumGPGCheckError, e:
+                if only_trusted:
+                    self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
+                    return
+                self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
         # common checks copied from yum
         for inst_file in inst_files:
@@ -2090,6 +2096,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 retmsg = 'package could not be removed, as other packages depend on it'
                 raise PkError(ERROR_DEP_RESOLUTION_FAILED, retmsg)
 
+        # we did not succeed
+        if rc != 2:
+            if message.find ("is needed by") != -1:
+                raise PkError(ERROR_DEP_RESOLUTION_FAILED, message)
+            if message.find ("empty transaction") != -1:
+                raise PkError(ERROR_NO_PACKAGES_TO_UPDATE, message)
+            raise PkError(ERROR_TRANSACTION_ERROR, message)
+
         # abort now we have the package list
         if only_simulate:
             package_list = []
@@ -2102,14 +2116,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self._show_package_list(package_list)
             self.percentage(100)
             return
-
-        # we did not succeed
-        if rc != 2:
-            if message.find ("is needed by") != -1:
-                raise PkError(ERROR_DEP_RESOLUTION_FAILED, message)
-            if message.find ("empty transaction") != -1:
-                raise PkError(ERROR_NO_PACKAGES_TO_UPDATE, message)
-            raise PkError(ERROR_TRANSACTION_ERROR, message)
 
         try:
             rpmDisplay = PackageKitCallback(self)
@@ -2436,6 +2442,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+        # some packages should be updated before the others
+        infra_pkgs = []
+        for pkg in pkgs:
+            infra_packages = ['PackageKit', 'yum', 'rpm']
+            if pkg.name in infra_packages or pkg.name.partition('-')[0] in infra_packages:
+                infra_pkgs.append(pkg)
+        if len(infra_pkgs) > 0:
+            msg = []
+            for pkg in infra_pkgs:
+                msg.append(pkg.name)
+            self.message(MESSAGE_BACKEND_ERROR, "The packages '%s' will be updated before other packages" % msg)
+            pkgs = infra_pkgs
+
         md = self.updateMetadata
         for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):
@@ -2453,7 +2473,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 notices = md.get_applicable_notices(pkg.pkgtup)
                 status = INFO_NORMAL
                 if notices:
-                    for notice in notices:
+                    for (pkgtup, notice) in notices:
                         status = self._get_status(notice)
                         if status == INFO_SECURITY:
                             break
@@ -2500,7 +2520,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the get-repo-list functionality
         '''
-        self._check_init()
+        try:
+            self._check_init()
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
         self.yumbase.conf.cache = 0 # Allow new files
         self.status(STATUS_INFO)
 

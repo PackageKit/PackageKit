@@ -1700,9 +1700,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* might have to reset again if we used the backend */
 	pk_backend_reset (transaction->priv->backend);
 
-	/* set the role again, as resetting will have cleared the value */
-	pk_backend_set_role (priv->backend, priv->role);
-
 	/* connect up the signals */
 	transaction->priv->signal_allow_cancel =
 		g_signal_connect (transaction->priv->backend, "allow-cancel",
