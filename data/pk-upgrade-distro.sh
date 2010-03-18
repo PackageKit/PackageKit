@@ -24,12 +24,10 @@ if [ -e /etc/fedora-release ]; then
 		xdg-open http://fedoraproject.org/en/get-fedora
 	fi
 elif [ "$DISTRO" = "Ubuntu" ]; then
-	if [ -e /usr/bin/do-release-upgrade ]; then
-		if [ "$DESKTOP" = "kde" ]; then
-			PATH=`kde4-config --path exe` kdesu -- "/usr/bin/do-release-upgrade -d -m desktop -f kde -p"
-		else
-			gksu "/usr/bin/do-release-upgrade -m desktop -f gtk -p"
-		fi
+	if [ -e /usr/share/pyshared/UpdateManager/DistUpgradeFetcherKDE.py ] && [ "$DESKTOP" = "kde" ]; then
+		PATH=`kde4-config --path exe` kdesu -- "python /usr/share/pyshared/UpdateManager/DistUpgradeFetcherKDE.py"
+	elif [ -e /usr/bin/do-release-upgrade ]; then
+			gksu "/usr/bin/do-release-upgrade -m desktop"
 	elif [ "$DESKTOP" = "kde" ]; then
 		xdg-open http://www.kubuntu.org/getkubuntu
 	else
