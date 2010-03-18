@@ -556,8 +556,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
 	/* sanity check */
-	if (spawn->priv->poll_id != 0)
-		egg_error ("trying to set timeout when already set");
+	if (spawn->priv->poll_id != 0) {
+		egg_warning ("trying to set timeout when already set");
+		g_source_remove (spawn->priv->poll_id);
+	}
 
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
