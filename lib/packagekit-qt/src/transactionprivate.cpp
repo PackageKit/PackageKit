@@ -146,7 +146,7 @@ void TransactionPrivate::updateDetail(const QString& pid, const QString& updates
 	i.restart = (Enum::Restart)Util::enumFromString<Enum>(restart, "Restart", "Restart");
 	i.updateText = updateText;
 	i.changelog = changelog;
-	i.state = (Enum::UpdateState)Util::enumFromString<Enum>(state, "UpdateState", "Update");
+	i.state = (Enum::UpdateState)Util::enumFromString<Enum>(state, "UpdateState", "UpdateState");
 	i.issued = QDateTime::fromString(issued, Qt::ISODate);
 	i.updated = QDateTime::fromString(updated, Qt::ISODate);
 
