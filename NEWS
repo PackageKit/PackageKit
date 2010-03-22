@@ -1,3 +1,31 @@
+Version 0.5.8
+~~~~~~~~~~~~~
+Released: 2010-03-20
+
+Note:
+ - This release contains some important fixes that many distributors may want to
+   include in rebased packages.
+
+Backends:
+ - apt: Show a sub progress for package downloads (Sebastian Heinlein)
+ - apt: Use UTF-8 as default encoding and allow to write unicode to stdout (Sebastian Heinlein)
+ - apt: Allow to do an AND search for multiple package names (Sebastian Heinlein)
+ - yum: Fix up the LXDE and Moblin groups. Fixes rh#571775 (Richard Hughes)
+ - yum: Fix up API usage of get_applicable_notices to prevent an internal error (Richard Hughes)
+ - yum: Ensure to catch exceptions when we fail to initialize for GetRepoList (Richard Hughes)
+ - yum: If we failed to resolve deps in a simulate pass don't return an empty package list (Richard Hughes)
+ - yum: Ensure we send out UntrustedPackage when we simulate installing a file (Richard Hughes)
+
+Bugfixes:
+ - When realpath fails, do not silently fail but return with an error (Richard Hughes)
+ - Fix reporting distribution upgrades by setting the correct property (Richard Hughes)
+ - Do not crash libdbus when libnm-glib uses it's own context (Richard Hughes)
+ - Set the backend role in the pk_backend_(role) functions, not in PkTransaction (Richard Hughes)
+ - Do not show installed packages when we choose packages to download (Richard Hughes)
+ - python: Do not call finished before exiting the script due to an error (Richard Hughes)
+ - Never exit the daemon, even when we hit a race in PkSpawn (Richard Hughes)
+ - Fix Kubuntu support for upgrade (Jonathan Riddel)
+
 Version 0.5.7
 ~~~~~~~~~~~~~
 Released: 2010-03-03
