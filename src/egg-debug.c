@@ -431,7 +431,6 @@ egg_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointe
 	_modules_array = egg_debug_strv_split_to_ptr_array (_modules);
 	_functions_array = egg_debug_strv_split_to_ptr_array (_functions);
 	_console = (isatty (fileno (stdout)) == 1);
-	egg_debug ("Verbose debugging %i (on console %i)", _verbose, _console);
 
 	/* run this function on cleanup */
 	atexit (egg_debug_free);
