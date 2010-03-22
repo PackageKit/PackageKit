@@ -27,6 +27,8 @@
 #include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-progress.h>
 
+G_BEGIN_DECLS
+
 PkResults	*pk_client_resolve			(PkClient		*client,
 							 PkBitfield		 filters,
 							 gchar			**packages,
@@ -291,7 +293,7 @@ PkProgress	*pk_client_get_progress			(PkClient		*client,
 							 GCancellable		*cancellable,
 							 GError			**error);
 
+G_END_DECLS
+
 #endif /* __PK_CLIENT_SYNC_H */
-
-
 

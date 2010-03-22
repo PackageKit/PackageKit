@@ -27,6 +27,8 @@
 #include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-enum.h>
 
+G_BEGIN_DECLS
+
 void		 pk_console_test			(gpointer	 user_data);
 guint		 pk_console_get_number			(const gchar	*question,
 							 guint		 maxnum);
@@ -45,7 +47,7 @@ const gchar	*pk_info_enum_to_localised_past		(PkInfoEnum	 info);
 const gchar	*pk_info_enum_to_localised_present	(PkInfoEnum	 info);
 const gchar	*pk_role_enum_to_localised_present	(PkRoleEnum	 role);
 
+G_END_DECLS
+
 #endif /* __PK_CONSOLE_SHARED_H */
-
-
 

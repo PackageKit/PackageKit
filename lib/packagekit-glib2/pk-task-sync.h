@@ -27,6 +27,8 @@
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-progress.h>
 
+G_BEGIN_DECLS
+
 PkResults	*pk_task_remove_packages_sync		(PkTask			*task,
 							 gchar			**package_ids,
 							 gboolean		 allow_deps,
@@ -62,6 +64,8 @@ PkResults	*pk_task_update_system_sync		(PkTask			*task,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
 							 GError			**error);
+
+G_END_DECLS
 
 #endif /* __PK_TASK_SYNC_H */
 

@@ -25,6 +25,8 @@
 #include <glib.h>
 #include <packagekit-glib2/pk-package-sack.h>
 
+G_BEGIN_DECLS
+
 gboolean	 pk_package_sack_resolve		(PkPackageSack		*package_sack,
 							 GCancellable		*cancellable,
 							 GError			**error);
@@ -35,7 +37,7 @@ gboolean	 pk_package_sack_get_update_detail	(PkPackageSack		*package_sack,
 							 GCancellable		*cancellable,
 							 GError			**error);
 
+G_END_DECLS
+
 #endif /* __PK_PACKAGE_SACK_SYNC_H */
-
-
 

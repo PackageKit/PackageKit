@@ -25,6 +25,8 @@
 #include <glib.h>
 #include <packagekit-glib2/pk-control.h>
 
+G_BEGIN_DECLS
+
 gboolean	 pk_control_get_properties		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GError			**error);
@@ -34,8 +36,8 @@ gchar		**pk_control_get_transaction_list	(PkControl		*control,
 gboolean	 pk_control_suggest_daemon_quit		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GError			**error);
+G_END_DECLS
+
 
 #endif /* __PK_CONTROL_SYNC_H */
-
-
 
