@@ -51,6 +51,7 @@ typedef struct {
 	PkCnfPolicy	 single_install;
 	PkCnfPolicy	 multiple_install;
 	gboolean	 software_source_search;
+	gboolean	 similar_name_search;
 	gchar		**locations;
 } PkCnfPolicyConfig;
 
@@ -512,6 +513,7 @@ pk_cnf_get_config (void)
 	config->single_install = PK_CNF_POLICY_UNKNOWN;
 	config->multiple_install = PK_CNF_POLICY_UNKNOWN;
 	config->software_source_search = FALSE;
+	config->similar_name_search = FALSE;
 	config->locations = NULL;
 
 	/* load file */
@@ -530,6 +532,7 @@ pk_cnf_get_config (void)
 	config->single_install = pk_cnf_get_policy_from_file (file, "SingleInstall");
 	config->multiple_install = pk_cnf_get_policy_from_file (file, "MultipleInstall");
 	config->software_source_search = g_key_file_get_boolean (file, "CommandNotFound", "SoftwareSourceSearch", NULL);
+	config->similar_name_search = g_key_file_get_boolean (file, "CommandNotFound", "SimilarNameSearch", NULL);
 	config->locations = g_key_file_get_string_list (file, "CommandNotFound", "SearchLocations", NULL, NULL);
 
 	/* fallback */
@@ -692,14 +695,22 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* generate swizzles */
-	array = pk_cnf_find_alternatives (argv[1], len);
-
 	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
 	g_printerr ("%s ", _("Command not found."));
 
+	/* user is not allowing CNF to do anything useful */
+	if (!config->software_source_search &&
+	    !config->similar_name_search) {
+		retval = EXIT_COMMAND_NOT_FOUND;
+		goto out;
+	}
+
+	/* generate swizzles */
+	if (config->similar_name_search)
+		array = pk_cnf_find_alternatives (argv[1], len);
+
 	/* one exact possibility */
-	if (array->len == 1) {
+	if (array != NULL && array->len == 1) {
 		possible = g_ptr_array_index (array, 0);
 		if (config->single_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: tell the user what we think the command is */
@@ -724,7 +735,7 @@ main (int argc, char *argv[])
 		goto out;
 
 	/* multiple choice */
-	} else if (array->len > 1) {
+	} else if (array != NULL && array->len > 1) {
 		if (config->multiple_match == PK_CNF_POLICY_WARN) {
 			/* TRANSLATORS: show the user a list of commands that they could have meant */
 			g_printerr ("%s:\n", _("Similar commands are:"));
