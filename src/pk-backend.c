@@ -911,7 +911,7 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, PkPackage *
 	}
 
 	/* same package, just info change */
-	if (pk_package_equal_id (backend->priv->last_package, item) == 0) {
+	if (pk_package_equal_id (backend->priv->last_package, item)) {
 		egg_debug ("same package_id, ignoring");
 		goto out;
 	}
