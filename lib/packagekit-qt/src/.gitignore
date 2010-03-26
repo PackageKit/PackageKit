@@ -5,4 +5,9 @@ CMakeFiles
 *.la
 *.o
 *.lo
+daemonproxy.cpp
+daemonproxy.h
+dbus_proxies.stamp
+transactionproxy.cpp
+transactionproxy.h
 
