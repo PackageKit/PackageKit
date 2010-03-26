@@ -897,7 +897,6 @@ static gboolean
 pk_backend_package_emulate_finished_for_package (PkBackend *backend, PkPackage *item)
 {
 	gboolean ret = FALSE;
-	PkInfoEnum info;
 
 	/* simultaneous handles this on it's own */
 	if (backend->priv->simultaneous) {
@@ -908,17 +907,6 @@ pk_backend_package_emulate_finished_for_package (PkBackend *backend, PkPackage *
 	/* first package in transaction */
 	if (backend->priv->last_package == NULL) {
 		egg_debug ("first package, so no finished");
-		goto out;
-	}
-
-	/* get data */
-	g_object_get (item,
-		      "info", &info,
-		      NULL);
-
-	/* sending finished already */
-	if (info == PK_INFO_ENUM_FINISHED) {
-		egg_debug ("is finished ourelves");
 		goto out;
 	}
 
@@ -1020,7 +1008,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	}
 
 	/* simulate the finish here when required */
-	pk_backend_package_emulate_finished_for_package (backend, item);
+	if (info != PK_INFO_ENUM_FINISHED)
+		pk_backend_package_emulate_finished_for_package (backend, item);
 
 	/* update the 'last' package */
 	if (backend->priv->last_package != NULL)
