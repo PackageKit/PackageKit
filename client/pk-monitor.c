@@ -165,9 +165,13 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 {
 	PkRoleEnum role;
 	PkStatusEnum status;
+	PkPackage *package = NULL;
+	PkInfoEnum info;
 	guint percentage;
 	gboolean allow_cancel;
+	gchar *summary = NULL;
 	gchar *package_id = NULL;
+	gchar *package_id_tmp = NULL;
 	gchar *transaction_id = NULL;
 
 	/* get data */
@@ -176,6 +180,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		      "status", &status,
 		      "percentage", &percentage,
 		      "allow-cancel", &allow_cancel,
+		      "package", &package,
 		      "package-id", &package_id,
 		      "transaction-id", &transaction_id,
 		      NULL);
@@ -187,7 +192,18 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_string (role));
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
-		g_print ("%s\tpackage      %s\n", transaction_id, package_id);
+		g_print ("%s\tpackage-id   %s\n", transaction_id, package_id);
+	} else if (type == PK_PROGRESS_TYPE_PACKAGE) {
+		g_object_get (package,
+			      "info", &info,
+			      "package-id", &package_id_tmp,
+			      "summary", &summary,
+			      NULL);
+		g_print ("%s\tpackage      %s:%s:%s\n",
+			 transaction_id,
+			 pk_info_enum_to_string (info),
+			 package_id_tmp,
+			 summary);
 	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
 		g_print ("%s\tpercentage   %i\n", transaction_id, percentage);
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
@@ -196,7 +212,11 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_string (status));
 	}
 out:
+	if (package != NULL)
+		g_object_unref (package);
 	g_free (package_id);
+	g_free (package_id_tmp);
+	g_free (summary);
 	g_free (transaction_id);
 }
 
