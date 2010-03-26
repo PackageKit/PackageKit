@@ -159,29 +159,15 @@ dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
 dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED gobject-2.0)
-AC_SUBST(GLIB_CFLAGS)
-AC_SUBST(GLIB_LIBS)
-
 PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
-AC_SUBST(GMODULE_CFLAGS)
-AC_SUBST(GMODULE_LIBS)
-
 PKG_CHECK_MODULES(SQLITE, sqlite3)
-AC_SUBST(SQLITE_CFLAGS)
-AC_SUBST(SQLITE_LIBS)
-
 PKG_CHECK_MODULES(DBUS, \
  dbus-glib-1 >= $DBUS_GLIB_REQUIRED \
  dbus-1 >= $DBUS_REQUIRED \
  gthread-2.0)
-AC_SUBST(DBUS_CFLAGS)
-AC_SUBST(DBUS_LIBS)
-
 PKG_CHECK_MODULES(GIO, \
  gio-2.0 >= $GIO_REQUIRED \
  gio-unix-2.0 >= $GIO_REQUIRED)
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Build PackageKit-Qt
@@ -190,20 +176,9 @@ AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt],[Build PackageKit-Qt]),
 	      enable_qt=$enableval,enable_qt=yes)
 if test x$enable_qt = xyes; then
 	PKG_CHECK_MODULES(QTCORE, QtCore >= $QTCORE_REQUIRED)
-	AC_SUBST(QTCORE_CFLAGS)
-	AC_SUBST(QTCORE_LIBS)
-
 	PKG_CHECK_MODULES(QTDBUS, QtDBus >= $QTDBUS_REQUIRED)
-	AC_SUBST(QTDBUS_CFLAGS)
-	AC_SUBST(QTDBUS_LIBS)
-
 	PKG_CHECK_MODULES(QTSQL, QtSql >= $QTSQL_REQUIRED)
-	AC_SUBST(QTSQL_CFLAGS)
-	AC_SUBST(QTSQL_LIBS)
-
 	PKG_CHECK_MODULES(QTXML, QtXml >= $QTXML_REQUIRED)
-	AC_SUBST(QTXML_CFLAGS)
-	AC_SUBST(QTXML_LIBS)
 
 	# look for MOC
 	AC_PATH_PROG(MOC, moc-qt4)
@@ -226,8 +201,6 @@ AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp
 	      enable_managed=$enableval,enable_managed=false)
 if test x$enable_managed = xyes; then
 	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
-	AC_SUBST(GLIBSHARP_CFLAGS)
-	AC_SUBST(GLIBSHARP_LIBS)
 
 	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
 	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
@@ -300,8 +273,6 @@ else
 fi
 
 AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
-AC_SUBST(NETWORK_MANAGER_CFLAGS)
-AC_SUBST(NETWORK_MANAGER_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - ConnMan (default enabled)
@@ -322,8 +293,6 @@ else
 fi
 
 AM_CONDITIONAL(PK_BUILD_CONNMAN, test x$PK_BUILD_CONNMAN = xyes)
-AC_SUBST(CONNMAN_CFLAGS)
-AC_SUBST(CONNMAN_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check if ConsoleKit is installed, otherwise, warn the user at the end
@@ -414,8 +383,6 @@ if test x$enable_browser_plugin = xyes; then
 			  gtk+-2.0 >= 2.14.0	\
 			  dbus-glib-1,
 			  build_browser_plugin=yes, build_browser_plugin=no)
-	AC_SUBST(PK_BROWSER_PLUGIN_CFLAGS)
-	AC_SUBST(PK_BROWSER_PLUGIN_LIBS)
 	if test $build_browser_plugin = "yes"; then
 
 		# check we have xulrunner headers
@@ -454,8 +421,6 @@ AC_ARG_ENABLE(gstreamer_plugin, AS_HELP_STRING([--enable-gstreamer-plugin],[Buil
 if test x$enable_gstreamer_plugin = xyes; then
 	PKG_CHECK_MODULES(PK_GSTREAMER_PLUGIN, gstreamer-0.10 gstreamer-plugins-base-0.10 glib-2.0 dbus-glib-1,
 	                  build_gstreamer_plugin=yes, build_gstreamer_plugin=no)
-	AC_SUBST(PK_GSTREAMER_PLUGIN_CFLAGS)
-	AC_SUBST(PK_GSTREAMER_PLUGIN_LIBS)
 else
 	build_gstreamer_plugin=no
 fi
@@ -469,8 +434,6 @@ AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module
 if test x$enable_gtk_module = xyes; then
 	PKG_CHECK_MODULES(PK_GTK_MODULE, gtk+-2.0 >= 2.14.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module=yes, build_gtk_module=no)
-	AC_SUBST(PK_GTK_MODULE_CFLAGS)
-	AC_SUBST(PK_GTK_MODULE_LIBS)
 else
 	build_gtk_module=no
 fi
@@ -612,8 +575,6 @@ if test x$with_security_framework = xpolkit; then
 	PKG_CHECK_MODULES(POLKIT, \
 			  polkit-backend-1 \
 			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
-	AC_SUBST(POLKIT_CFLAGS)
-	AC_SUBST(POLKIT_LIBS)
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
@@ -673,16 +634,8 @@ AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_yum = xyes; then
 	PKG_CHECK_MODULES(SQLITE, sqlite3)
-	AC_SUBST(SQLITE_CFLAGS)
-	AC_SUBST(SQLITE_LIBS)
-
 	PKG_CHECK_MODULES(RPM, rpm)
-	AC_SUBST(RPM_CFLAGS)
-	AC_SUBST(RPM_LIBS)
-
 	PKG_CHECK_MODULES(SOUP, libsoup-2.4)
-	AC_SUBST(SOUP_CFLAGS)
-	AC_SUBST(SOUP_LIBS)
 
 	dnl ---------------------------------------------------------------------------
 	dnl - libarchive
@@ -766,14 +719,10 @@ fi
 
 if test x$enable_box = xyes; then
 	PKG_CHECK_MODULES(BOX, libbox >= 0.1.4 )
-	AC_SUBST(BOX_CFLAGS)
-	AC_SUBST(BOX_LIBS)
 fi
 
 if test x$enable_opkg = xyes; then
 	PKG_CHECK_MODULES(OPKG, libopkg >= 0.1.5)
-	AC_SUBST(OPKG_CFLAGS)
-	AC_SUBST(OPKG_LIBS)
 fi
 
 if test x$enable_alpm = xyes; then
@@ -792,14 +741,10 @@ fi
 
 if test x$enable_zypp = xyes; then
 	PKG_CHECK_MODULES(ZYPP, libzypp >= 6.16.0)
-	AC_SUBST(ZYPP_CFLAGS)
-	AC_SUBST(ZYPP_LIBS)
 fi
 
 if test x$enable_razor = xyes; then
 	PKG_CHECK_MODULES(RAZOR, razor >= 0.1)
-	AC_SUBST(RAZOR_CFLAGS)
-	AC_SUBST(RAZOR_LIBS)
 fi
 
 if test x$enable_slapt = xyes; then
