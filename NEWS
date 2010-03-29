@@ -1,10 +1,104 @@
+Version 0.6.3
+~~~~~~~~~~~~~
+Released: 2010-03-29
+
+Notes:
+ - Two important bugfixes, one that causes high CPU load in client programs, and
+   one that fixes an odd crash in the libnm-glib threading code.
+ - Lots of yum backend improvements, using libzif for performance speedups if
+   it is enabled.
+
+Translations:
+ - Updated Finnish translation (vpv)
+ - Updated Portuguese translation (ruigo)
+ - Updated Serbian translation (sr@latin) translation (kmilos)
+ - Updated Serbian translation (kmilos)
+ - Updated Chinese translation (Traditional) (zerng07)
+ - Updated Danish translation (kristho)
+ - Updated Dutch translation (warrink)
+ - Updated Polish translation (raven)
+ - Updated Russian translation (shnurapet)
+ - Updated Spanish translation (logan)
+ - Updated Swedish translation (yeager)
+ - Updated Ukrainian translation (yurchor)
+
+Libraries:
+ - glib: Add pk_package_sack_filter() and pk_package_sack_remove_by_filter() (Richard Hughes)
+ - glib: Do not generate a PkPackageSack from the package array, instead add packages as they appear (Richard Hughes)
+ - glib: Ensure we remove CLEANUP and FINISHED from the package sack before we run the simulate callback (Richard Hughes)
+ - glib: Fix up a critical warning when installing a file, not a package (Richard Hughes)
+ - qt: Fixed UpdateState enum (Daniel Nicoletti)
+ - python: Fixed packagekit.client.search_file() (Tim Waugh)
+
+Backends:
+ - aptcc: Don't allow essential packages to be removed (Daniel Nicoletti)
+ - aptcc: Fix a small mem leak (Daniel Nicoletti)
+ - aptcc: Fix show broken packages (Daniel Nicoletti)
+ - apt: Convert search-files to latest Python backend API changes. Perform an AND instead an OR search (Sebastian Heinlein)
+ - conary: Get conary backend to listen to simulate_* (Scott Parkerson)
+ - conary: Fix details views, more or less (Scott Parkerson)
+ - conary: Improvements to XMLCache and generateXML (Scott Parkerson)
+ - conary: Instantiate XMLCache only once, avoiding massive memory usage (Scott Parkerson)
+ - conary: Make _get_update a bit less spaghetti-ish (Scott Parkerson)
+ - conary: Refrain from using threaded mode (Scott Parkerson)
+ - conary: Refuse to explode on a warning callback (Scott Parkerson)
+ - conary: Tidy things up a bit in conaryCallback (Scott Parkerson)
+ - entropy: Fix up the backend as the filters string is now a list, not a delimited string (Fabio Erculiani)
+ - smart: Convert filters string to array (Anders F Bjorklund)
+ - yum: Add an entry UseZif into Yum.conf so admins can change the default setting (Richard Hughes)
+ - yum: Add a Yum.conf configuration file and add the DisabledPlugin key there (Richard Hughes)
+ - yum: Add the 'Zif' accelerator so we don't have to use yum for small local queries (Richard Hughes)
+ - yum: enable the libzif code for downloading packages (Richard Hughes)
+ - yum: ensure to catch exceptions when we fail to initialize for GetRepoList (Richard Hughes)
+ - yum: ensure we actually do self._check_init() for RefreshCache so non-contactable repos get disabled (Richard Hughes)
+ - yum: ensure we inform Zif of the network state so it can download repodata if required (Richard Hughes)
+ - yum: ensure we send out the UntrustedPackage message when we simulate installing a file, so ensure we don't prompt the user twice (Richard Hughes)
+ - yum: ensure we trigger the GCancellable when we're doing a transaction cancel (Richard Hughes)
+ - yum: fix up API usage of get_applicable_notices to prevent an internal error (Richard Hughes)
+ - yum: fix up the backend as the filters string is now a list, not a delimited string (Richard Hughes)
+ - yum: Fix up the LXDE and Moblin groups. Fixes rh#571775 (Richard Hughes)
+ - yum: for installed files, use Zif to get the file list (Richard Hughes)
+ - yum: for installed packages, use Zif to get the package details (Richard Hughes)
+ - yum: get the group list from Zif rather than hardcoding a fixed list (Richard Hughes)
+ - yum: if we failed to resolve deps in a simulate pass, then don't just return empty package list (Richard Hughes)
+ - yum: if yum, rpm or PackageKit are available as updates, then update these packages first and surpress any other updates until the next check (Richard Hughes)
+ - yum: ignore repos that are not contactable when using libzif (Richard Hughes)
+ - yum: use libzif to refresh the repos (Richard Hughes)
+ - yum: use libzif when doing WhatProvides (Richard Hughes)
+ - yum: use more Zif functionality when searching for packages (Richard Hughes)
+ - yum: Use Zif for enabling and disabling repos (Richard Hughes)
+ - yum: Use Zif for getting the category lists (Richard Hughes)
+ - yum: Use Zif for getting the repo list (2x speedup) (Richard Hughes)
+ - yum: Use Zif to get the list of distro-upgrades (Richard Hughes)
+ - yum: when using libzif, quit the spawned backend rather than waiting for it to time out (Richard Hughes)
+
+New Features:
+ - Add a configure option UseThreadsInBackend so we can more easily debug packagekitd (Richard Hughes)
+ - Break internal python API by supplying a list of filters to the backend, not a delimited list (Richard Hughes)
+ - Add a boolean configure variable 'SimilarNameSearch' to allow skipping swizzle testing. Fixes #27246 (Richard Hughes)
+ - Show PkPackage changes in pkmon for easier debugging (Richard Hughes)
+
+Bugfixes:
+ - Add some missing G_BEGIN_DECLS and G_END_DECLS to fix including from C++ (Richard Hughes)
+ - Be more careful when testing the value of waitpid() to try to debug a problem where the backend appears to exit (Richard Hughes)
+ - Do not crash libdbus when libnm-glib uses it's own context (Richard Hughes)
+ - Do not finish the transaction with success when the spawned backend does a non-finished exit (Richard Hughes)
+ - Do not show installed packages when we choose packages to download (Richard Hughes)
+ - Ensure the Package(finished) signal is always sent during the transaction. Fixes rh#522628 (Richard Hughes)
+ - Fix a nasty segfault if the library check-restart code tries to emit a restart-required (Richard Hughes)
+ - Fix Kubuntu support for upgrade (Jonathan Riddell)
+ - Fix reporting distribution upgrades by setting the correct property in two places (Richard Hughes)
+ - Never exit the daemon, even when we hit a race in PkSpawn - just cleanup, warn, and continue (Richard Hughes)
+ - Do not call finished before exiting the script due to an error (Richard Hughes)
+ - When realpath fails, do not silently fail but return with an error (Richard Hughes)
+
 Version 0.6.2
 ~~~~~~~~~~~~~
 Released: 2010-03-01
 
 Notes:
  - We broke PackageKit-Qt API in a big way this release. You'll need a new KPackageKit if you're using KDE.
- - There is a _tiny_ API break in PackageKit-glib2 which means most apps just need a recomple.
+ - There is a _tiny_ API break in PackageKit-glib2 which means most apps just need a recompile.
  - A new backend called entropy has been merged by Fabio Erculiani.
 
 Translations:
