@@ -2077,7 +2077,10 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	len = g_strv_length (values);
 	array = g_ptr_array_new_with_free_func (g_free);
 	for (i=0; i<len; i++) {
-		if (provides == PK_PROVIDES_ENUM_CODEC) {
+		/* compatibility with previous versions of GPK */
+		if (g_str_has_prefix (values[i], "gstreamer0.10(")) {
+			g_ptr_array_add (array, g_strdup (values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
 			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
 		} else if (provides == PK_PROVIDES_ENUM_FONT) {
 			g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
