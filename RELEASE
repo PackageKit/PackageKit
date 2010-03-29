@@ -2,7 +2,7 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_6_2.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_6_3.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
 Version 0.6.x
@@ -28,8 +28,8 @@ Bugfixes:
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.6.3"
-git tag -s -f -m "Release 0.6.3" PACKAGEKIT_0_6_3
+git commit -a -m "Release version 0.6.4"
+git tag -s -f -m "Release 0.6.4" PACKAGEKIT_0_6_4
 <gpg password>
 git push --tags
 git push
