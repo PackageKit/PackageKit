@@ -1008,16 +1008,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    # multiple entries
-        if len(pkgs) > 1:
-            raise PkError(ERROR_INTERNAL_ERROR, "more than one package match for %s" % _format_package_id(package_id))
-
-        # one NEVRA in a single repo
-        if len(pkgs) == 1:
-            return pkgs[0], False
-
         # nothing found
-        return None, False
+        if len(pkgs) == 0:
+            return None, False
+
+        # multiple entries
+        if len(pkgs) > 1:
+            self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "more than one package match for %s" % _format_package_id(package_id))
+
+        # return first entry
+        return pkgs[0], False
 
     def get_requires(self, filters, package_ids, recursive):
         '''
