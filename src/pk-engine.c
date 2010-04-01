@@ -691,7 +691,7 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
  * pk_engine_set_proxy_internal:
  **/
 static gboolean
-pk_engine_set_proxy_internal (PkEngine *engine)
+pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender)
 {
 	gboolean ret;
 	guint uid;
@@ -705,14 +705,14 @@ pk_engine_set_proxy_internal (PkEngine *engine)
 	}
 
 	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, engine->priv->sender);
+	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
 		egg_warning ("failed to get the uid");
 		goto out;
 	}
 
 	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, engine->priv->sender);
+	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
 		egg_warning ("failed to get the session");
 		goto out;
@@ -731,41 +731,64 @@ out:
 }
 
 #ifdef USE_SECURITY_POLKIT
+typedef struct {
+	DBusGMethodInvocation	*context;
+	PkEngine		*engine;
+	gchar			*sender;
+} PkEngineDbusState;
+#endif
+
+#ifdef USE_SECURITY_POLKIT
 /**
  * pk_engine_action_obtain_authorization:
  **/
 static void
-pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngine *engine)
+pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngineDbusState *state)
 {
 	PolkitAuthorizationResult *result;
-	GError *error = NULL;
+	GError *error_local = NULL;
+	GError *error;
 	gboolean ret;
 
 	/* finish the call */
-	result = polkit_authority_check_authorization_finish (engine->priv->authority, res, &error);
+	result = polkit_authority_check_authorization_finish (state->engine->priv->authority, res, &error_local);
 
 	/* failed */
 	if (result == NULL) {
-		egg_warning ("failed to check for auth: %s", error->message);
-		g_error_free (error);
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "setting the proxy failed, could not check for auth: %s", error_local->message);
+		dbus_g_method_return_error (state->context, error);
+		g_error_free (error_local);
 		goto out;
 	}
 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
-		egg_warning ("failed to obtain auth");
+		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "failed to obtain auth");
+		dbus_g_method_return_error (state->context, error);
 		goto out;
 	}
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (engine);
+	ret = pk_engine_set_proxy_internal (state->engine, state->sender);
 	if (!ret) {
-		egg_warning ("setting the proxy failed");
+		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "setting the proxy failed");
+		dbus_g_method_return_error (state->context, error);
 		goto out;
 	}
+
+	/* all okay */
+	dbus_g_method_return (state->context);
 out:
 	if (result != NULL)
 		g_object_unref (result);
+
+	/* unref state, we're done */
+	g_object_unref (state->engine);
+	g_free (state->sender);
+	g_free (state);
 }
 #endif
 
@@ -773,7 +796,7 @@ out:
  * pk_engine_is_proxy_unchanged:
  **/
 static gboolean
-pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp)
+pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender, const gchar *proxy_http, const gchar *proxy_ftp)
 {
 	guint uid;
 	gboolean ret = FALSE;
@@ -782,16 +805,16 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *proxy_http, const g
 	gchar *proxy_ftp_tmp = NULL;
 
 	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, engine->priv->sender);
+	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		egg_warning ("failed to get the uid for %s", engine->priv->sender);
+		egg_warning ("failed to get the uid for %s", sender);
 		goto out;
 	}
 
 	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, engine->priv->sender);
+	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		egg_warning ("failed to get the session for %s", engine->priv->sender);
+		egg_warning ("failed to get the session for %s", sender);
 		goto out;
 	}
 
@@ -820,9 +843,11 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	guint len;
 	GError *error = NULL;
 	gboolean ret;
+	gchar *sender = NULL;
 #ifdef USE_SECURITY_POLKIT
 	PolkitSubject *subject;
 	PolkitDetails *details;
+	PkEngineDbusState *state;
 #endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
@@ -839,7 +864,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	if (len == 1024) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "http proxy was too long");
 		dbus_g_method_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* check length of ftp */
@@ -847,19 +872,18 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	if (len == 1024) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "ftp proxy was too long");
 		dbus_g_method_return_error (context, error);
-		return;
+		goto out;
 	}
 
 	/* save sender */
-	g_free (engine->priv->sender);
-	engine->priv->sender = dbus_g_method_get_sender (context);
+	sender = dbus_g_method_get_sender (context);
 
 	/* is exactly the same proxy? */
-	ret = pk_engine_is_proxy_unchanged (engine, proxy_http, proxy_ftp);
+	ret = pk_engine_is_proxy_unchanged (engine, sender, proxy_http, proxy_ftp);
 	if (ret) {
 		egg_debug ("not changing proxy as the same as before");
 		dbus_g_method_return (context);
-		return;
+		goto out;
 	}
 
 	/* save these so we can set them after the auth success */
@@ -867,16 +891,22 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	g_free (engine->priv->proxy_ftp);
 	engine->priv->proxy_http = g_strdup (proxy_http);
 	engine->priv->proxy_ftp = g_strdup (proxy_ftp);
-	egg_debug ("changing http proxy to %s for %s", proxy_http, engine->priv->sender);
-	egg_debug ("changing ftp proxy to %s for %s", proxy_ftp, engine->priv->sender);
+	egg_debug ("changing http proxy to %s for %s", proxy_http, sender);
+	egg_debug ("changing ftp proxy to %s for %s", proxy_ftp, sender);
 
 #ifdef USE_SECURITY_POLKIT
 	/* check subject */
-	subject = polkit_system_bus_name_new (engine->priv->sender);
+	subject = polkit_system_bus_name_new (sender);
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
 	polkit_details_insert (details, "role", pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
+
+	/* cache state */
+	state = g_new0 (PkEngineDbusState, 1);
+	state->context = context;
+	state->engine = g_object_ref (engine);
+	state->sender = g_strdup (sender);
 
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -885,7 +915,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
 					      (GAsyncReadyCallback) pk_engine_action_obtain_authorization_finished_cb,
-					      engine);
+					      state);
 
 	/* check_authorization ref's this */
 	g_object_unref (details);
@@ -897,11 +927,12 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
 		dbus_g_method_return_error (context, error);
-		return;
+		goto out;
 	}
-#endif
+
 	/* all okay */
 	dbus_g_method_return (context);
+#endif
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -909,6 +940,8 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 #ifdef USE_SECURITY_POLKIT
 	g_object_unref (subject);
 #endif
+out:
+	g_free (sender);
 }
 
 /**
@@ -1284,7 +1317,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->backend_name = NULL;
 	engine->priv->backend_description = NULL;
 	engine->priv->backend_author = NULL;
-	engine->priv->sender = NULL;
 	engine->priv->locked = FALSE;
 	engine->priv->distro_id = NULL;
 
@@ -1448,7 +1480,6 @@ pk_engine_finalize (GObject *object)
 	g_free (engine->priv->mime_types);
 	g_free (engine->priv->proxy_http);
 	g_free (engine->priv->proxy_ftp);
-	g_free (engine->priv->sender);
 	g_free (engine->priv->backend_name);
 	g_free (engine->priv->backend_description);
 	g_free (engine->priv->backend_author);

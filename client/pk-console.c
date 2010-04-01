@@ -1359,7 +1359,7 @@ main (int argc, char *argv[])
 	ftp_proxy = g_getenv ("ftp_proxy");
 	if (http_proxy != NULL ||
 	    ftp_proxy != NULL) {
-		ret = pk_control_set_proxy (control, http_proxy, http_proxy, NULL, &error_local);
+		ret = pk_control_set_proxy (control, http_proxy, ftp_proxy, NULL, &error_local);
 		if (!ret) {
 			/* TRANSLATORS: The user specified an incorrect filter */
 			error = g_error_new (1, 0, "%s: %s", _("The proxy could not be set"), error_local->message);
