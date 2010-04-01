@@ -108,6 +108,14 @@ manpage.1: manpage.xml
           <para>Nothing useful was done.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>
+          <option>6</option>
+        </term>
+        <listitem>
+          <para>The initial setup failed, e.g. setting the network proxy.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>

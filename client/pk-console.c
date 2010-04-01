@@ -38,6 +38,7 @@
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
+#define PK_EXIT_CODE_CANNOT_SETUP	6
 
 static GMainLoop *loop = NULL;
 static PkBitfield roles;
@@ -1241,6 +1242,7 @@ main (int argc, char *argv[])
 {
 	gboolean ret;
 	GError *error = NULL;
+	GError *error_local = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
 	gboolean plain = FALSE;
@@ -1250,6 +1252,8 @@ main (int argc, char *argv[])
 	gchar *filter = NULL;
 	gchar *summary = NULL;
 	const gchar *mode;
+	const gchar *http_proxy;
+	const gchar *ftp_proxy;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
@@ -1349,6 +1353,21 @@ main (int argc, char *argv[])
 		      "background", background,
 		      "simulate", !noninteractive,
 		      NULL);
+
+	/* set the proxy */
+	http_proxy = g_getenv ("http_proxy");
+	ftp_proxy = g_getenv ("ftp_proxy");
+	if (http_proxy != NULL ||
+	    ftp_proxy != NULL) {
+		ret = pk_control_set_proxy (control, http_proxy, http_proxy, NULL, &error_local);
+		if (!ret) {
+			/* TRANSLATORS: The user specified an incorrect filter */
+			error = g_error_new (1, 0, "%s: %s", _("The proxy could not be set"), error_local->message);
+			g_error_free (error_local);
+			retval = PK_EXIT_CODE_CANNOT_SETUP;
+			goto out;
+		}
+	}
 
 	/* check filter */
 	if (filter != NULL) {

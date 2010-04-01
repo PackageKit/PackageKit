@@ -36,6 +36,12 @@ gchar		**pk_control_get_transaction_list	(PkControl		*control,
 gboolean	 pk_control_suggest_daemon_quit		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gboolean	 pk_control_set_proxy			(PkControl		*control,
+							 const gchar		*proxy_http,
+							 const gchar		*proxy_ftp,
+							 GCancellable		*cancellable,
+							 GError			**error);
+
 G_END_DECLS
 
 
