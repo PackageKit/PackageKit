@@ -72,6 +72,8 @@ gboolean	 pk_backend_set_simultaneous_mode	(PkBackend	*backend,
 							 gboolean	 simultaneous);
 gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
+gboolean	 pk_backend_set_frontend_socket		(PkBackend	*backend,
+							 const gchar	*frontend_socket);
 
 /* get the state */
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
@@ -84,6 +86,7 @@ guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
+gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);

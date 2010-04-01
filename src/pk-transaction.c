@@ -103,6 +103,7 @@ struct PkTransactionPrivate
 	PkHintEnum		 background;
 	PkHintEnum		 interactive;
 	gchar			*locale;
+	gchar			*frontend_socket;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
 	PkBackend		*backend;
@@ -1623,6 +1624,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 		pk_backend_set_locale (priv->backend, "C");
 	else
 		pk_backend_set_locale (priv->backend, priv->locale);
+
+	/* set the frontend socket if it exists */
+	pk_backend_set_frontend_socket (priv->backend, priv->frontend_socket);
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
@@ -4487,6 +4491,46 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 		goto out;
 	}
 
+	/* frontend_socket=/tmp/socket.3456 */
+	if (g_strcmp0 (key, "frontend-socket") == 0) {
+
+		/* already set */
+		if (priv->frontend_socket != NULL) {
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Already set frontend-socket to %s", priv->frontend_socket);
+			ret = FALSE;
+			goto out;
+		}
+
+		/* nothing provided */
+		if (value == NULL || value[0] == '\0') {
+			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "Could not set frontend-socket to nothing");
+			ret = FALSE;
+			goto out;
+		}
+
+		/* nothing provided */
+		if (value[0] != '/') {
+			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "frontend-socket has to be an absolute path");
+			ret = FALSE;
+			goto out;
+		}
+
+		/* socket does not exist */
+		if (!g_file_test (value, G_FILE_TEST_EXISTS)) {
+			g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "frontend-socket does not exist");
+			ret = FALSE;
+			goto out;
+		}
+
+		/* success */
+		priv->frontend_socket = g_strdup (value);
+		goto out;
+	}
+
 	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
 		priv->background = pk_hint_enum_from_string (value);
@@ -5407,6 +5451,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->tid = NULL;
 	transaction->priv->sender = NULL;
 	transaction->priv->locale = NULL;
+	transaction->priv->frontend_socket = NULL;
 #ifdef USE_SECURITY_POLKIT
 	transaction->priv->subject = NULL;
 #endif
@@ -5498,6 +5543,7 @@ pk_transaction_finalize (GObject *object)
 #endif
 	g_free (transaction->priv->last_package_id);
 	g_free (transaction->priv->locale);
+	g_free (transaction->priv->frontend_socket);
 	g_free (transaction->priv->cached_package_id);
 	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);

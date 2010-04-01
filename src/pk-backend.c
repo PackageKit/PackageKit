@@ -93,6 +93,7 @@ struct _PkBackendPrivate
 	gboolean		 use_threads;
 	gchar			*transaction_id;
 	gchar			*locale;
+	gchar			*frontend_socket;
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
@@ -1314,6 +1315,34 @@ pk_backend_set_locale (PkBackend *backend, const gchar *code)
 }
 
 /**
+ * pk_backend_get_frontend_socket:
+ *
+ * Return value: session frontend_socket, e.g. /tmp/socket.345
+ **/
+gchar *
+pk_backend_get_frontend_socket (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->frontend_socket);
+}
+
+/**
+ * pk_backend_set_frontend_socket:
+ **/
+gboolean
+pk_backend_set_frontend_socket (PkBackend *backend, const gchar *frontend_socket)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	egg_debug ("frontend_socket changed to %s", frontend_socket);
+	g_free (backend->priv->frontend_socket);
+	backend->priv->frontend_socket = g_strdup (frontend_socket);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_details:
  **/
 gboolean
@@ -2404,6 +2433,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
+	g_free (backend->priv->frontend_socket);
 	g_free (backend->priv->transaction_id);
 	g_object_unref (backend->priv->results);
 	g_object_unref (backend->priv->time);
@@ -3043,6 +3073,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->locale = NULL;
+	backend->priv->frontend_socket = NULL;
 	backend->priv->transaction_id = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;
