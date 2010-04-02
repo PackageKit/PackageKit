@@ -255,7 +255,7 @@ main (int argc, char *argv[])
 			_("Set the file name of dependencies to be excluded"), NULL},
 		{ "output", 'o', 0, G_OPTION_ARG_STRING, &directory,
 			/* TRANSLATORS: the output location */
-			_("The output file or directory (the current directory is used if ommitted)"), NULL},
+			_("The output file or directory (the current directory is used if omitted)"), NULL},
 		{ "package", 'p', 0, G_OPTION_ARG_STRING, &package,
 			/* TRANSLATORS: put a list of packages in the pack */
 			_("The package to be put into the service pack"), NULL},
@@ -338,8 +338,8 @@ main (int argc, char *argv[])
 	control = pk_control_new ();
 	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
-		/* TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup */
-		g_print ("%s: %s\n", _("The dameon failed to startup"), error->message);
+		/* TRANSLATORS: This is when the daemon is not-installed/broken and fails to startup */
+		g_print ("%s: %s\n", _("The daemon failed to startup"), error->message);
 		goto out;
 	}
 

@@ -849,7 +849,7 @@ pk_console_install_packages (gchar **packages, GError **error)
 		ret = !g_file_test (packages[i], G_FILE_TEST_EXISTS);
 		if (!ret) {
 			/* TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm' */
-			*error = g_error_new (1, 0, _("Extected package name, actually got file. Try using 'pkcon install-local %s' instead."), packages[i]);
+			*error = g_error_new (1, 0, _("Expected package name, actually got file. Try using 'pkcon install-local %s' instead."), packages[i]);
 			goto out;
 		}
 	}
