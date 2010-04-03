@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-02 10:29+0000\n"
-"PO-Revision-Date: 2010-04-02 12:54+0200\n"
+"POT-Creation-Date: 2010-04-03 11:30+0000\n"
+"PO-Revision-Date: 2010-04-03 13:35+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
@@ -324,7 +324,7 @@ msgstr ""
 #: ../client/pk-console.c:852
 #, c-format
 msgid ""
-"Extected package name, actually got file. Try using 'pkcon install-local %s' "
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
 "instead."
 msgstr ""
 "Oczekiwano nazwy pakietu, otrzymano plik. Proszę zamiast tego spróbować "
@@ -543,10 +543,9 @@ msgstr "Proszę ustawić nazwy plików zależności do wykluczenia"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:258
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
+msgid "The output file or directory (the current directory is used if omitted)"
 msgstr ""
-"Plik lub katalog wyjścia (użyty zostanie bieżący katalog, jeśli zostanie "
+"Plik lub katalog wyjściowy (użyty zostanie bieżący katalog, jeśli zostanie "
 "pominięte)"
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -572,11 +571,11 @@ msgstr "Wybrano obie opcje."
 #. TRANSLATORS: This is when the user fails to supply the output
 #: ../client/pk-generate-pack.c:324
 msgid "A output directory or file name is required"
-msgstr "Wymagany jest katalog lub nazwa pliku wyjścia"
+msgstr "Wymagany jest katalog lub nazwa pliku wyjściowego"
 
-#. TRANSLATORS: This is when the dameon is not-installed/broken and fails to startup
+#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to startup
 #: ../client/pk-generate-pack.c:342
-msgid "The dameon failed to startup"
+msgid "The daemon failed to startup"
 msgstr "Uruchomienie demona nie powiodło się"
 
 #. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
