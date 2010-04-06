@@ -18,8 +18,6 @@ Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-glib = %{version}-%{release}
-Requires: PackageKit-gtk-module = %{version}-%{release}
-Requires: PackageKit-yum-plugin = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
 Requires: comps-extras
