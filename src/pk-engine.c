@@ -923,7 +923,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (engine);
+	ret = pk_engine_set_proxy_internal (engine, sender);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
 		dbus_g_method_return_error (context, error);
