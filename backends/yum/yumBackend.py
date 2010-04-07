@@ -321,6 +321,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.doLock(YUM_PID_FILE)
                 PackageKitBaseBackend.doLock(self)
                 self.allow_cancel(False)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except yum.Errors.LockError, e:
                 self.allow_cancel(True)
                 self.status(STATUS_WAITING_FOR_LOCK)
@@ -350,6 +352,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 self.yumbase.closeRpmDB()
                 self.yumbase.doUnlock(YUM_PID_FILE)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -394,6 +398,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         available.append(pkg)
             except yum.Errors.RepoError, e:
                 raise PkError(ERROR_NO_CACHE, "failed to use search generator: %s" %_to_unicode(e))
+            except exceptions.IOError, e:
+                raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
@@ -425,6 +431,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         try:
@@ -443,6 +451,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             return
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # Allow new files
@@ -461,6 +471,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         for package in name_list:
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=package)
+            except exceptions.IOError, e:
+                raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
@@ -473,6 +485,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs = self.yumbase.pkgSack.searchNames(names=name_list)
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_NO_CACHE, "failed to search names: %s" %_to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
@@ -490,7 +504,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
-            raise PkError(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -499,6 +513,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for pkg in pkgs:
                 try:
                     instpo = self.yumbase.rpmdb.searchNevra(name=pkg.name, epoch=pkg.epoch, ver=pkg.ver, rel=pkg.rel, arch=pkg.arch)
+                except exceptions.IOError, e:
+                    raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if len(instpo) > 0:
@@ -544,6 +560,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" %_to_unicode(e))
         except yum.Errors.GroupsError, e:
             raise PkError(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -568,6 +586,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
@@ -638,6 +658,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
@@ -648,6 +670,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # Now show installed packages.
         try:
             pkgs = self.yumbase.rpmdb
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgfilter.add_installed(pkgs)
@@ -659,6 +683,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, "failed to get package sack: %s" %_to_unicode(e), exit=False)
                 return
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
@@ -690,6 +716,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for value in values:
                 try:
                     pkgs = self.yumbase.rpmdb.searchFiles(value)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 pkgfilter.add_installed(pkgs)
@@ -703,6 +731,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, "failed to search sack: %s" %_to_unicode(e), exit=False)
                     return
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
@@ -781,6 +811,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         except yum.Errors.RepoError, e:
                             self.error(ERROR_NO_CACHE, "failed to get provides for sack: %s" %_to_unicode(e), exit=False)
                             return
+                        except exceptions.IOError, e:
+                            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                         except Exception, e:
                             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                         else:
@@ -801,6 +833,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, "failed to get comps list: %s" %_to_unicode(e), exit=False)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -837,6 +871,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for grp_id in self.comps.get_groups(cat):
                 try:
                     grp = self.yumbase.comps.return_group(grp_id)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if grp:
@@ -890,6 +926,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.RepoError, e:
                 self.error(ERROR_NO_CACHE, "failed to search package sack: %s" %_to_unicode(e), exit=False)
                 return
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -903,6 +941,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self._show_package(pkg_download, INFO_DOWNLOADING)
                 try:
                     repo = self.yumbase.repos.getRepo(pkg_download.repoid)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 remote = pkg_download.returnSimple('relativepath')
@@ -941,12 +981,16 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if repo == 'meta':
                 try:
                     grp = self.yumbase.comps.return_group(name)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             elif name[0] == '@':
                 try:
                     grp = self.yumbase.comps.return_group(name[1:])
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
@@ -975,6 +1019,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # search the rpmdb for the nevra
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
+            except exceptions.IOError, e:
+                raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             # if the package is found, then return it (do not have to match the repo_id)
@@ -985,6 +1031,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # searches all repos and takes 66ms
         try:
             repos = self.yumbase.repos.findRepos(repo)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
@@ -997,6 +1045,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # populate the sack with data
         try:
             self.yumbase.repos.populateSack(repo)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -1005,6 +1055,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pkgs = repos[0].sack.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -1047,6 +1099,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 else:
                     try:
                         txmbrs = self.yumbase.groupRemove(grp.groupid)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
@@ -1065,6 +1119,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     resolve_list.append(pkg)
                     try:
                         txmbrs = self.yumbase.remove(po=pkg)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             percentage += bump
@@ -1075,6 +1131,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 rc, msgs =  self.yumbase.buildTransaction()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
@@ -1099,6 +1157,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # search only for requested arch
         try:
             ret = self.yumbase.rpmdb.installed(po=pkg)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return ret
@@ -1122,6 +1182,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         try:
             exactarchlist = self.yumbase.conf.exactarchlist
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         # we look through each returned possibility and rule out the
@@ -1133,6 +1195,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # everything installed that matches the name
         try:
             installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name, arch=pkg.arch)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         comparable = []
@@ -1164,6 +1228,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     if ematch:
                         try:
                             ret = self.yumbase.allowedMultipleInstalls(pkg)
+                        except exceptions.IOError, e:
+                            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                         except Exception, e:
                             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                         if ret:
@@ -1185,6 +1251,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             n, a, e, v, r = pkgi.pkgtup
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, arch=a)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             for pkg in pkgs:
@@ -1215,6 +1283,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # get the dep list
         try:
             results = self.yumbase.findDeps(pkgs)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         require_list = []
@@ -1254,11 +1324,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not grp.installed:
             try:
                 txmbrs = self.yumbase.selectGroup(grp.groupid)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             try:
                 txmbrs = self.yumbase.groupRemove(grp.groupid)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         pkgs = []
@@ -1267,11 +1341,15 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if not grp.installed:
             try:
                 self.yumbase.deselectGroup(grp.groupid)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
             try:
                 self.yumbase.groupUnremove(grp.groupid)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
@@ -1296,6 +1374,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 else:
                     try:
                         txmbrs = self.yumbase.selectGroup(grp.groupid)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     for txmbr in self.yumbase.tsInfo:
@@ -1303,6 +1383,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     # unselect what we previously selected
                     try:
                         self.yumbase.deselectGroup(grp.groupid)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             else:
@@ -1318,6 +1400,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         txmbrs = self.yumbase.install(po=pkg)
                     except yum.Errors.RepoError, e:
                         self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             percentage += bump
@@ -1327,6 +1411,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 rc, msgs =  self.yumbase.buildTransaction()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
@@ -1445,6 +1531,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             signed = repo.gpgcheck
         except yum.Errors.RepoError, e:
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return signed
@@ -1475,6 +1563,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             txmbr = self.yumbase.update() # Add all updates to Transaction
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e), exit=False)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -1549,6 +1639,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.yumbase.doGroupSetup()
             except yum.Errors.GroupsError, e:
                 pass
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             #we might have a rounding error
@@ -1581,6 +1673,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
         try:
             self.yumbase.doConfigSetup(errorlevel=0, debuglevel=0)# Setup Yum Config
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         self.yumbase.conf.cache = 0 # TODO: can we just look in the cache?
@@ -1595,6 +1689,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if FILTER_NOT_INSTALLED not in filters:
                 try:
                     pkgs = self.yumbase.rpmdb.searchNevra(name=package)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
@@ -1610,6 +1706,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_NO_CACHE, "failed to return newest by package sack: %s" %_to_unicode(e), exit=False)
                     return
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
@@ -1660,6 +1758,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     txmbr = self.yumbase.selectGroup(grp.groupid)
                     if not txmbr:
                         self.error(ERROR_GROUP_NOT_FOUND, "No packages were found in the %s group for %s." % (grp.groupid, _format_package_id(package_id)))
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
@@ -1708,6 +1808,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             pass
         except yum.Errors.RepoError, e:
             pass
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
@@ -1802,6 +1904,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file)
                     except yum.Errors.YumBaseError, e:
                         self.error(ERROR_INVALID_PACKAGE_FILE, 'Package could not be decompressed')
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except:
                         self.error(ERROR_UNKNOWN, "Failed to open local file -- please report")
                     else:
@@ -1842,6 +1946,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except yum.Errors.MiscError:
                 self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % inst_file, exit=False)
                 return
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             try:
@@ -1851,6 +1957,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_MISSING_GPG_SIGNATURE, _to_unicode(e), exit=False)
                     return
                 self.message (MESSAGE_UNTRUSTED_PACKAGE, "The package %s is untrusted" % po.name)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -1864,6 +1972,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for inst_file in inst_files:
                 try:
                     txmbr = self.yumbase.installLocal(inst_file)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if txmbr:
@@ -1895,6 +2005,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 for inst_file in inst_files:
                     try:
                         txmbr = self.yumbase.installLocal(inst_file)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if txmbr:
@@ -1925,6 +2037,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
             self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg, exit=False)
+            return False
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             return False
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
@@ -1992,6 +2107,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if pkg:
                     try:
                         txmbr = self.yumbase.update(po=pkg)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     if not txmbr:
@@ -2053,6 +2170,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except yum.Errors.PackageSackError, e:
             raise PkError(ERROR_PACKAGE_DATABASE_CHANGED, _to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2064,6 +2183,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 message += " : %s" % _format_msgs(msgs)
             except yum.Errors.RepoError, e:
                 raise PkError(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            except exceptions.IOError, e:
+                raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2130,6 +2251,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 raise PkError(ERROR_PACKAGE_CONFLICTS, message)
             else:
                 raise PkError(ERROR_TRANSACTION_ERROR, message)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2166,6 +2289,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_PACKAGE_NOT_INSTALLED, "This Group %s is not installed" % grp.groupid)
                 try:
                     txmbr = self.yumbase.groupRemove(grp.groupid)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 txmbrs.extend(txmbr)
@@ -2178,6 +2303,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if pkg and inst:
                     try:
                         txmbr = self.yumbase.remove(po=pkg)
+                    except exceptions.IOError, e:
+                        self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                     except Exception, e:
                         self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                     txmbrs.extend(txmbr)
@@ -2189,6 +2316,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 rc, msgs =  self.yumbase.buildTransaction()
             except yum.Errors.RepoError, e:
                 self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             if rc != 2:
@@ -2416,7 +2545,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
         except exceptions.IOError, e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, _to_unicode(e))
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2443,6 +2572,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     changelog = pkg.returnChangelog()
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2490,6 +2621,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                         self.message(MESSAGE_REPO_FOR_DEVELOPERS_ONLY, warning.replace("\n", ";"))
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, _to_unicode(e))
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -2507,6 +2640,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         try:
             repos = self.yumbase.repos.repos.values()
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+            return
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return
@@ -2524,6 +2660,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 if obsoleting[0] == name:
                     pkg =  self.yumbase.rpmdb.searchPkgTuple(installed)[0]
                     return self._pkg_to_id(pkg)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             pass # no obsolete data - fd#17528
         return ""
@@ -2531,6 +2669,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _get_updated(self, pkg):
         try:
             pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name, arch=pkg.arch)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if pkgs:
@@ -2544,6 +2684,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             for repo in self.yumbase.repos.listEnabled():
                 try:
                     self._updateMetadata.add(repo)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     pass # No updateinfo.xml.gz in repo
         return self._updateMetadata
@@ -2640,6 +2782,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 instpkg = None
                 try:
                     instpkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 if len(instpkgs) == 1:
@@ -2650,6 +2794,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     changes = pkg.returnChangelog()
                 except yum.Errors.RepoError, e:
                     self.error(ERROR_REPO_NOT_AVAILABLE, _to_unicode(e))
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 for change in changes:
@@ -2697,6 +2843,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             repo = self.yumbase.repos.getRepo(repoid)
         except yum.Errors.RepoError, e:
             self.error(ERROR_REPO_NOT_FOUND, "repo '%s' cannot be found in list" % repoid, exit=False)
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
@@ -2728,6 +2876,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.yumbase.getKeyForRepo(repo, callback = lambda x: True)
                 except yum.Errors.YumBaseError, e:
                     self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_GPG_FAILURE, "Error importing GPG Key for the %s repository: %s" % (repo, str(e)))
         else: # This is a package signature
@@ -2741,6 +2891,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
                 except yum.Errors.YumBaseError, e:
                     self.error(ERROR_UNKNOWN, "cannot install signature: %s" % str(e))
+                except exceptions.IOError, e:
+                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 except:
@@ -2779,6 +2931,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         for repo in self.yumbase.repos.listEnabled():
             try:
                 repo.repoXML
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except yum.Errors.RepoError, e:
                 self.yumbase.repos.disableRepo(repo.id)
                 self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, "Could not contact source '%s', so it will be disabled" % repo.id)
@@ -2958,6 +3112,8 @@ class PackageKitCallback(RPMBaseCallback):
             try:
                 self.base.status(TransactionsStateMap[action])
                 self._showName(TransactionsInfoMap[action])
+            except exceptions.IOError, e:
+                self.base.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except exceptions.KeyError, e:
                 self.base.message(MESSAGE_BACKEND_ERROR, "The constant '%s' was unknown, please report. details: %s" % (action, _to_unicode(e)))
 
@@ -3053,6 +3209,8 @@ class PackageKitYumBase(yum.YumBase):
             pc.disabled_plugins = disabled_plugins
         except yum.Errors.ConfigError, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, _to_unicode(e))
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except ValueError, e:
             raise PkError(ERROR_FAILED_CONFIG_PARSING, _to_unicode(e))
 
@@ -3068,6 +3226,8 @@ class PackageKitYumBase(yum.YumBase):
         try:
             self.repos.confirm_func = self._repo_gpg_confirm
             self.repos.gpg_import_func = self._repo_gpg_import
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
             # helpfully, yum gives us TypeError when it can't open the rpmdb
             if str(e).find('rpmdb open failed') != -1:
