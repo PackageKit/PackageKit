@@ -372,6 +372,7 @@ backend_emit_package_array (PkBackend *backend, GPtrArray *array)
 	guint i;
 	gboolean installed;
 	PkInfoEnum info;
+	const gchar *info_hint;
 	const gchar *package_id;
 	ZifString *summary;
 	ZifPackage *package;
@@ -383,10 +384,15 @@ backend_emit_package_array (PkBackend *backend, GPtrArray *array)
 		installed = zif_package_is_installed (package);
 		package_id = zif_package_get_package_id (package);
 		summary = zif_package_get_summary (package, NULL);
-		info = installed ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-//		/* hack until we have update details */
-//		if (strstr (package_id, "update") != NULL)
-//			info = PK_INFO_ENUM_NORMAL;
+
+		/* if we set a hint, use that, otherwise just get the installed status correct */
+		info_hint = (const gchar *)g_object_get_data (G_OBJECT(package), "kind");
+		if (info_hint == NULL) {
+			info = installed ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+		} else {
+			info = pk_info_enum_from_string (info_hint);
+		}
+
 		pk_backend_package (backend, info, package_id, zif_string_get_value (summary));
 		zif_string_unref (summary);
 	}
@@ -1431,12 +1437,20 @@ backend_get_updates_thread (PkBackend *backend)
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	GPtrArray *store_array = NULL;
 	ZifCompletion *completion_local;
+	ZifCompletion *completion_loop;
 	GPtrArray *array = NULL;
 	GPtrArray *result = NULL;
 	GPtrArray *packages = NULL;
 	gboolean ret;
 	GError *error = NULL;
+	ZifUpdate *update;
+	ZifPackage *package;
+	PkInfoEnum info;
+	guint i;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	/* reset */
+	backend_profile (NULL);
 
 	/* get lock */
 	ret = backend_get_lock (backend);
@@ -1445,12 +1459,15 @@ backend_get_updates_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* profile */
+	backend_profile ("get lock");
+
 	/* set the network state */
 	backend_setup_network (backend);
 
 	/* setup completion */
 	zif_completion_reset (priv->completion);
-	zif_completion_set_number_steps (priv->completion, 4);
+	zif_completion_set_number_steps (priv->completion, 5);
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
@@ -1465,6 +1482,9 @@ backend_get_updates_thread (PkBackend *backend)
 	/* this section done */
 	zif_completion_done (priv->completion);
 
+	/* profile */
+	backend_profile ("get remote stores");
+
 	/* get all the installed packages */
 	completion_local = zif_completion_get_child (priv->completion);
 	packages = zif_store_get_packages (ZIF_STORE (priv->store_local), NULL, completion_local, &error);
@@ -1478,11 +1498,17 @@ backend_get_updates_thread (PkBackend *backend)
 	/* this section done */
 	zif_completion_done (priv->completion);
 
+	/* profile */
+	backend_profile ("get installed packages");
+
 	/* remove any packages that are not newest (think kernel) */
 	zif_package_array_filter_newest (packages);
 
 	/* this section done */
 	zif_completion_done (priv->completion);
+
+	/* profile */
+	backend_profile ("filter installed newest");
 
 	/* get updates */
 	completion_local = zif_completion_get_child (priv->completion);
@@ -1497,6 +1523,40 @@ backend_get_updates_thread (PkBackend *backend)
 	/* this section done */
 	zif_completion_done (priv->completion);
 
+	/* profile */
+	backend_profile ("get updates of packages");
+
+	/* setup steps on updatinfo completion */
+	completion_local = zif_completion_get_child (priv->completion);
+	zif_completion_set_number_steps (completion_local, array->len);
+
+	/* get update info */
+	for (i=0; i<array->len; i++) {
+		package = g_ptr_array_index (array, i);
+		completion_loop = zif_completion_get_child (completion_local);
+		update = zif_package_get_update_detail (package, priv->cancellable, completion_loop, &error);
+		if (update == NULL) {
+			egg_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
+			g_clear_error (&error);
+			info = PK_INFO_ENUM_NORMAL;
+		} else {
+			info = zif_update_get_kind (update);
+			g_object_unref (update);
+		}
+
+		/* set new severity */
+		g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (info));
+
+		/* this section done */
+		zif_completion_done (completion_local);
+	}
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* profile */
+	backend_profile ("get updateinfo");
+
 	/* filter */
 	result = backend_filter_package_array (array, filters);
 
@@ -1505,6 +1565,9 @@ backend_get_updates_thread (PkBackend *backend)
 
 	/* emit */
 	backend_emit_package_array (backend, result);
+
+	/* profile */
+	backend_profile ("filter and emit");
 
 out:
 	backend_unlock (backend);
@@ -1528,7 +1591,7 @@ static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (TRUE || !priv->use_zif) {
+	if (!priv->use_zif) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-updates", filters_text, NULL);

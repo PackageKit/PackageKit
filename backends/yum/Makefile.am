@@ -64,6 +64,8 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-md-metalink.h				\
 	libzif/zif-md-mirrorlist.c				\
 	libzif/zif-md-mirrorlist.h				\
+	libzif/zif-md-updateinfo.c				\
+	libzif/zif-md-updateinfo.h				\
 	libzif/zif-md-comps.c					\
 	libzif/zif-md-comps.h					\
 	libzif/zif-store-array.c				\
