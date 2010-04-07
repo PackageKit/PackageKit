@@ -320,6 +320,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 
 			/* remove all the original packages */
 			ret = FALSE;
+			length = g_strv_length (state->package_ids);
 			for (i=0; i<length; i++) {
 				if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
 					egg_debug ("removing %s", package_id);

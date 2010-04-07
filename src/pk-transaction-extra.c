@@ -1039,6 +1039,8 @@ out:
  *  4) The list of pids are converted to a list of files
  *  5) The list of files is converted to a list of packages
  *  6) For each package, emit a RequireRestart of the correct type (according to the UID)
+ *
+ * Return value: success, so %TRUE means the library check completed okay
  **/
 gboolean
 pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar **package_ids)

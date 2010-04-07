@@ -1534,6 +1534,10 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* find files in security updates */
 	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
+	if (!ret) {
+		egg_debug ("could not check the library list");
+		goto out;
+	}
 out:
 	g_strfreev (package_ids_security);
 	return success;
