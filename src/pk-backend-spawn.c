@@ -674,7 +674,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *line;
 	gchar *uri;
 	gchar *eulas;
-	gchar *transaction_id;
+	gchar *transaction_id = NULL;
 	guint i;
 	GPtrArray *array;
 	gboolean ret;
