@@ -128,6 +128,7 @@ GPtrArray	*zif_store_array_get_packages		(GPtrArray		*store_array,
 							 ZifCompletion		*completion,
 							 GError			**error);
 GPtrArray	*zif_store_array_get_updates		(GPtrArray		*store_array,
+							 GPtrArray		*packages,
 							 ZifStoreArrayErrorCb	 error_cb,
 							 gpointer		 user_data,
 							 GCancellable		*cancellable,

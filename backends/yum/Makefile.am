@@ -52,18 +52,20 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-store-local.h				\
 	libzif/zif-store-remote.c				\
 	libzif/zif-store-remote.h				\
-	libzif/zif-repo-md.c					\
-	libzif/zif-repo-md.h					\
-	libzif/zif-repo-md-filelists.c				\
-	libzif/zif-repo-md-filelists.h				\
-	libzif/zif-repo-md-primary.c				\
-	libzif/zif-repo-md-primary.h				\
-	libzif/zif-repo-md-metalink.c				\
-	libzif/zif-repo-md-metalink.h				\
-	libzif/zif-repo-md-mirrorlist.c				\
-	libzif/zif-repo-md-mirrorlist.h				\
-	libzif/zif-repo-md-comps.c				\
-	libzif/zif-repo-md-comps.h				\
+	libzif/zif-md.c						\
+	libzif/zif-md.h						\
+	libzif/zif-md-filelists.c				\
+	libzif/zif-md-filelists.h				\
+	libzif/zif-md-primary-sql.c				\
+	libzif/zif-md-primary-sql.h				\
+	libzif/zif-md-primary-xml.c				\
+	libzif/zif-md-primary-xml.h				\
+	libzif/zif-md-metalink.c				\
+	libzif/zif-md-metalink.h				\
+	libzif/zif-md-mirrorlist.c				\
+	libzif/zif-md-mirrorlist.h				\
+	libzif/zif-md-comps.c					\
+	libzif/zif-md-comps.h					\
 	libzif/zif-store-array.c				\
 	libzif/zif-store-array.h				\
 	libzif/zif-repos.c					\
@@ -76,6 +78,10 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-config.h					\
 	libzif/zif-monitor.c					\
 	libzif/zif-monitor.h					\
+	libzif/zif-update.c					\
+	libzif/zif-update.h					\
+	libzif/zif-update-info.c				\
+	libzif/zif-update-info.h				\
 	libzif/zif-download.c					\
 	libzif/zif-download.h
 

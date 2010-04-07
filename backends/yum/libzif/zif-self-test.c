@@ -37,14 +37,15 @@ void zif_package_local_test (EggTest *test);
 void zif_store_local_test (EggTest *test);
 void zif_groups_test (EggTest *test);
 void zif_store_remote_test (EggTest *test);
-void zif_repo_md_metalink_test (EggTest *test);
-void zif_repo_md_primary_test (EggTest *test);
-void zif_repo_md_filelists_test (EggTest *test);
-void zif_repo_md_comps_test (EggTest *test);
+void zif_md_metalink_test (EggTest *test);
+void zif_md_primary_test (EggTest *test);
+void zif_md_filelists_test (EggTest *test);
+void zif_md_comps_test (EggTest *test);
 void zif_repos_test (EggTest *test);
 void zif_download_test (EggTest *test);
 void zif_string_test (EggTest *test);
 void zif_lock_test (EggTest *test);
+void zif_update_info_test (EggTest *test);
 
 int
 main (int argc, char **argv)
@@ -58,15 +59,19 @@ main (int argc, char **argv)
 	zif_init ();
 
 	/* tests go here */
+	zif_md_primary_xml_test (test);
 	zif_lock_test (test);
 	zif_completion_test (test);
 	zif_config_test (test);
 	zif_string_test (test);
-	zif_repo_md_metalink_test (test);
-	zif_repo_md_mirrorlist_test (test);
-	zif_repo_md_filelists_test (test);
-	zif_repo_md_primary_test (test);
-	zif_repo_md_comps_test (test);
+	zif_update_test (test);
+	zif_update_info_test (test);
+	zif_md_metalink_test (test);
+	zif_md_mirrorlist_test (test);
+	zif_md_filelists_test (test);
+	zif_md_primary_sql_test (test);
+	zif_md_comps_test (test);
+	zif_md_updateinfo_test (test);
 	zif_download_test (test);
 	zif_monitor_test (test);
 	zif_package_test (test);

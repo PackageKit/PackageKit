@@ -47,6 +47,8 @@ typedef struct _ZifPackage		ZifPackage;
 typedef struct _ZifPackagePrivate	ZifPackagePrivate;
 typedef struct _ZifPackageClass		ZifPackageClass;
 
+#include "zif-update.h"
+
 typedef enum {
 	ZIF_PACKAGE_ENSURE_TYPE_FILES,
 	ZIF_PACKAGE_ENSURE_TYPE_SUMMARY,
@@ -147,6 +149,10 @@ gboolean		 zif_package_download		(ZifPackage	*package,
 							 GCancellable	*cancellable,
 							 ZifCompletion	*completion,
 							 GError		**error);
+ZifUpdate		*zif_package_get_update_detail	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
+							 GError		**error);
 const gchar		*zif_package_get_package_id	(ZifPackage	*package);
 void			 zif_package_print		(ZifPackage	*package);
 gboolean		 zif_package_is_devel		(ZifPackage	*package);
@@ -158,6 +164,7 @@ gint			 zif_package_compare		(ZifPackage	*a,
 							 ZifPackage	*b);
 ZifPackage		*zif_package_array_get_newest	(GPtrArray	*array,
 							 GError		**error);
+gboolean		 zif_package_array_filter_newest (GPtrArray	*packages);
 
 G_END_DECLS
 

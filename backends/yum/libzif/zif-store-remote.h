@@ -31,6 +31,7 @@
 
 #include "zif-store.h"
 #include "zif-package.h"
+#include "zif-update.h"
 
 G_BEGIN_DECLS
 
@@ -82,6 +83,11 @@ gboolean	 zif_store_remote_set_enabled		(ZifStoreRemote		*store,
 gboolean	 zif_store_remote_download		(ZifStoreRemote		*store,
 							 const gchar		*filename,
 							 const gchar		*directory,
+							 GCancellable		*cancellable,
+							 ZifCompletion		*completion,
+							 GError			**error);
+ZifUpdate	*zif_store_remote_get_update_detail	(ZifStoreRemote		*store,
+							 const gchar		*package_id,
 							 GCancellable		*cancellable,
 							 ZifCompletion		*completion,
 							 GError			**error);

@@ -110,6 +110,7 @@ struct _ZifStoreClass
 						 ZifCompletion		*completion,
 						 GError			**error);
 	GPtrArray	*(*get_updates)		(ZifStore		*store,
+						 GPtrArray		*packages,
 						 GCancellable		*cancellable,
 						 ZifCompletion		*completion,
 						 GError			**error);
@@ -194,6 +195,7 @@ GPtrArray	*zif_store_get_packages		(ZifStore		*store,
 						 ZifCompletion		*completion,
 						 GError			**error);
 GPtrArray	*zif_store_get_updates		(ZifStore		*store,
+						 GPtrArray		*packages,
 						 GCancellable		*cancellable,
 						 ZifCompletion		*completion,
 						 GError			**error);

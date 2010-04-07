@@ -260,7 +260,7 @@ zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, const gch
 		else if (role == PK_ROLE_ENUM_GET_PACKAGES)
 			part = zif_store_get_packages (store, cancellable, completion_local, &error_local);
 		else if (role == PK_ROLE_ENUM_GET_UPDATES)
-			part = zif_store_get_updates (store, cancellable, completion_local, &error_local);
+			part = zif_store_get_updates (store, (GPtrArray *) search, cancellable, completion_local, &error_local);
 		else if (role == PK_ROLE_ENUM_WHAT_PROVIDES)
 			part = zif_store_what_provides (store, search, cancellable, completion_local, &error_local);
 		else if (role == PK_ROLE_ENUM_GET_CATEGORIES)
@@ -713,12 +713,12 @@ zif_store_array_get_packages (GPtrArray *store_array,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_get_updates (GPtrArray *store_array,
+zif_store_array_get_updates (GPtrArray *store_array, GPtrArray *packages,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, NULL,
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, (gchar *) packages,
 					     error_cb, user_data, cancellable, completion, error);
 }
 

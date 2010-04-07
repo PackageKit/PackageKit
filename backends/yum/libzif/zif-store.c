@@ -415,6 +415,7 @@ zif_store_get_packages (ZifStore *store, GCancellable *cancellable, ZifCompletio
 /**
  * zif_store_get_updates:
  * @store: the #ZifStore object
+ * @packages: an array of #ZifPackage's
  * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
  * @completion: a #ZifCompletion to use for progress reporting
  * @error: a #GError which is used on failure, or %NULL
@@ -426,12 +427,14 @@ zif_store_get_packages (ZifStore *store, GCancellable *cancellable, ZifCompletio
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_get_updates (ZifStore *store, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_get_updates (ZifStore *store, GPtrArray *packages,
+		       GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
 	g_return_val_if_fail (ZIF_IS_STORE (store), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+	g_return_val_if_fail (packages != NULL, NULL);
 
 	/* no support */
 	if (klass->get_updates == NULL) {
@@ -440,7 +443,7 @@ zif_store_get_updates (ZifStore *store, GCancellable *cancellable, ZifCompletion
 		return NULL;
 	}
 
-	return klass->get_updates (store, cancellable, completion, error);
+	return klass->get_updates (store, packages, cancellable, completion, error);
 }
 
 /**

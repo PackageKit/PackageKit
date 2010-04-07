@@ -1433,6 +1433,7 @@ backend_get_updates_thread (PkBackend *backend)
 	ZifCompletion *completion_local;
 	GPtrArray *array = NULL;
 	GPtrArray *result = NULL;
+	GPtrArray *packages = NULL;
 	gboolean ret;
 	GError *error = NULL;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1449,7 +1450,7 @@ backend_get_updates_thread (PkBackend *backend)
 
 	/* setup completion */
 	zif_completion_reset (priv->completion);
-	zif_completion_set_number_steps (priv->completion, 2);
+	zif_completion_set_number_steps (priv->completion, 4);
 
 	/* get a store_array of remote stores */
 	store_array = zif_store_array_new ();
@@ -1464,9 +1465,28 @@ backend_get_updates_thread (PkBackend *backend)
 	/* this section done */
 	zif_completion_done (priv->completion);
 
+	/* get all the installed packages */
+	completion_local = zif_completion_get_child (priv->completion);
+	packages = zif_store_get_packages (ZIF_STORE (priv->store_local), NULL, completion_local, &error);
+	if (packages == NULL) {
+		g_print ("failed to get local store: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	egg_debug ("searching for updates with %i packages", packages->len);
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
+	/* remove any packages that are not newest (think kernel) */
+	zif_package_array_filter_newest (packages);
+
+	/* this section done */
+	zif_completion_done (priv->completion);
+
 	/* get updates */
 	completion_local = zif_completion_get_child (priv->completion);
-	array = zif_store_array_get_updates (store_array, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+	array = zif_store_array_get_updates (store_array, packages, (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
 					     priv->cancellable, completion_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get updates: %s\n", error->message);
@@ -1489,6 +1509,8 @@ backend_get_updates_thread (PkBackend *backend)
 out:
 	backend_unlock (backend);
 	pk_backend_finished (backend);
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (result != NULL)
