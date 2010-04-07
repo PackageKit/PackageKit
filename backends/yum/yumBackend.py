@@ -240,7 +240,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         self.package_summary_cache = {}
         self.comps = yumComps(self.yumbase)
         if not self.comps.connect():
-            self.refresh_cache()
+            self.refresh_cache(True)
             if not self.comps.connect():
                 self.error(ERROR_GROUP_LIST_INVALID, 'comps categories could not be loaded')
 
