@@ -1619,15 +1619,125 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
+ * backend_get_update_detail_thread:
+ */
+static gboolean
+backend_get_update_detail_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	guint i;
+	guint j;
+	gboolean ret;
+	ZifUpdate *update;
+	ZifCompletion *completion_local;
+	ZifPackage *package;
+	GError *error = NULL;
+
+	/* reset */
+	backend_profile (NULL);
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* get the data */
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+
+	/* profile */
+	backend_profile ("get lock");
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	/* setup completion */
+	zif_completion_reset (priv->completion);
+	zif_completion_set_number_steps (priv->completion, g_strv_length (package_ids));
+
+	/* get the update info */
+	for (i=0; package_ids[i] != NULL; i++) {
+
+		package = zif_package_new ();
+		ret = zif_package_set_id (package, package_ids[i]);
+		if (!ret) {
+			g_error ("moo");
+		}
+
+		completion_local = zif_completion_get_child (priv->completion);
+		update = zif_package_get_update_detail (package, priv->cancellable, completion_local, &error);
+		if (update == NULL) {
+			egg_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
+			g_clear_error (&error);
+		} else {
+			GPtrArray *array;
+			GString *string_cve;
+			GString *string_bugzilla;
+			ZifUpdateInfo *info;
+			array = zif_update_get_update_infos (update);
+			string_cve = g_string_new (NULL);
+			string_bugzilla = g_string_new (NULL);
+			for (j=0; j<array->len; j++) {
+				info = g_ptr_array_index (array, j);
+				switch (zif_update_info_get_kind (info)) {
+				case ZIF_UPDATE_INFO_KIND_CVE:
+					g_string_append_printf (string_cve, "%s\t%s\t",
+								zif_update_info_get_title (info),
+								zif_update_info_get_url (info));
+					break;
+				case ZIF_UPDATE_INFO_KIND_BUGZILLA:
+					g_string_append_printf (string_bugzilla, "%s\t%s\t",
+								zif_update_info_get_title (info),
+								zif_update_info_get_url (info));
+					break;
+				default:
+					break;
+				}
+			}
+			pk_backend_update_detail (backend, package_ids[i],
+						  NULL, //updates,
+						  NULL, //obsoletes,
+						  NULL, //vendor_url,
+						  string_bugzilla->str,
+						  string_cve->str,
+						  PK_RESTART_ENUM_NONE,
+						  zif_update_get_description (update),
+						  NULL, //changelog,
+						  zif_update_get_state (update),
+						  zif_update_get_issued (update),
+						  NULL);
+			g_ptr_array_unref (array);
+			g_string_free (string_cve, TRUE);
+			g_string_free (string_bugzilla, TRUE);
+		}
+
+		g_object_unref (package);
+
+		/* this section done */
+		zif_completion_done (priv->completion);
+	}
+out:
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
  * backend_get_update_detail:
  */
 static void
 backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
-	g_free (package_ids_temp);
+	/* it seems some people are not ready for the awesomeness */
+	if (TRUE || !priv->use_zif) {
+		gchar *package_ids_temp;
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
+		g_free (package_ids_temp);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_get_update_detail_thread);
 }
 
 /**
