@@ -41,7 +41,6 @@ G_BEGIN_DECLS
 #define PK_IS_TASK(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK))
 #define PK_IS_TASK_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK))
 #define PK_TASK_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK, PkTaskClass))
-#define PK_TASK_ERROR		(pk_task_error_quark ())
 #define PK_TASK_TYPE_ERROR	(pk_task_error_get_type ())
 
 typedef struct _PkTaskPrivate	PkTaskPrivate;
@@ -80,7 +79,6 @@ struct _PkTaskClass
 	void (*_pk_reserved5)	(void);
 };
 
-GQuark		 pk_task_error_quark			(void);
 GType		 pk_task_get_type			(void);
 PkTask		*pk_task_new				(void);
 void		 pk_task_test				(gpointer		 user_data);
