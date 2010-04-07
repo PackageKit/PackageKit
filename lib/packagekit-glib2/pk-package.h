@@ -74,14 +74,20 @@ void		 pk_package_test			(gpointer	 user_data);
 gboolean	 pk_package_set_id			(PkPackage	*package,
 							 const gchar	*package_id,
 							 GError		**error);
-const gchar	*pk_package_get_id			(PkPackage	*package);
-PkInfoEnum	 pk_package_get_info			(PkPackage	*package);
-const gchar	*pk_package_get_summary			(PkPackage	*package);
 void		 pk_package_print			(PkPackage	*package);
 gboolean	 pk_package_equal			(PkPackage	*package1,
 							 PkPackage	*package2);
 gboolean	 pk_package_equal_id			(PkPackage	*package1,
 							 PkPackage	*package2);
+
+/* accessors */
+const gchar	*pk_package_get_id			(PkPackage	*package);
+PkInfoEnum	 pk_package_get_info			(PkPackage	*package);
+const gchar	*pk_package_get_summary			(PkPackage	*package);
+const gchar	*pk_package_get_name			(PkPackage	*package);
+const gchar	*pk_package_get_version			(PkPackage	*package);
+const gchar	*pk_package_get_arch			(PkPackage	*package);
+const gchar	*pk_package_get_data			(PkPackage	*package);
 
 G_END_DECLS
 

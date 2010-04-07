@@ -52,6 +52,7 @@ struct _PkPackagePrivate
 {
 	PkInfoEnum		 info;
 	gchar			*package_id;
+	gchar			**package_id_split;
 	gchar			*summary;
 	gchar			*license;
 	PkGroupEnum		 group;
@@ -190,6 +191,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 
 	/* save */
 	priv->package_id = g_strdup (package_id);
+	priv->package_id_split = g_strdupv (sections);
 out:
 	g_strfreev (sections);
 	return ret;
@@ -247,6 +249,76 @@ pk_package_get_summary (PkPackage *package)
 }
 
 /**
+ * pk_package_get_name:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package name.
+ *
+ * Return value: the name, or %NULL if unset
+ *
+ * Since: 0.6.4
+ **/
+const gchar *
+pk_package_get_name (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+	return package->priv->package_id_split[PK_PACKAGE_ID_NAME];
+}
+
+/**
+ * pk_package_get_version:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package version.
+ *
+ * Return value: the version, or %NULL if unset
+ *
+ * Since: 0.6.4
+ **/
+const gchar *
+pk_package_get_version (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+	return package->priv->package_id_split[PK_PACKAGE_ID_VERSION];
+}
+
+/**
+ * pk_package_get_arch:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package arch.
+ *
+ * Return value: the arch, or %NULL if unset
+ *
+ * Since: 0.6.4
+ **/
+const gchar *
+pk_package_get_arch (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+	return package->priv->package_id_split[PK_PACKAGE_ID_ARCH];
+}
+
+/**
+ * pk_package_get_data:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package data, which is usually the repository ID that contains the
+ * package. Special ID's include "installed" for installed packages, and "local"
+ * for local packages that exist on disk but not in a repoitory.
+ *
+ * Return value: the data, or %NULL if unset
+ *
+ * Since: 0.6.4
+ **/
+const gchar *
+pk_package_get_data (PkPackage *package)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+	return package->priv->package_id_split[PK_PACKAGE_ID_DATA];
+}
+
+/**
  * pk_package_print:
  * @package: a valid #PkPackage instance
  *
@@ -257,17 +329,14 @@ pk_package_get_summary (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	gchar **parts;
+	PkPackagePrivate *priv = package->priv;
 	g_return_if_fail (PK_IS_PACKAGE (package));
-
-	parts = pk_package_id_split (package->priv->package_id);
 	g_print ("%s-%s.%s\t%s\t%s\n",
-		 parts[PK_PACKAGE_ID_NAME],
-		 parts[PK_PACKAGE_ID_VERSION],
-		 parts[PK_PACKAGE_ID_ARCH],
-		 parts[PK_PACKAGE_ID_DATA],
+		 priv->package_id_split[PK_PACKAGE_ID_NAME],
+		 priv->package_id_split[PK_PACKAGE_ID_VERSION],
+		 priv->package_id_split[PK_PACKAGE_ID_ARCH],
+		 priv->package_id_split[PK_PACKAGE_ID_DATA],
 		 package->priv->summary);
-	g_strfreev (parts);
 }
 
 /**
@@ -702,6 +771,7 @@ pk_package_finalize (GObject *object)
 	g_free (priv->update_changelog);
 	g_free (priv->update_issued);
 	g_free (priv->update_updated);
+	g_strfreev (priv->package_id_split);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);
 }
