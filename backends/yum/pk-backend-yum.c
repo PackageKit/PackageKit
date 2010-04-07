@@ -277,7 +277,6 @@ backend_filter_package_array_newest (GPtrArray *array)
 		/* the package is older than the one we have stored */
 		if (retval <= 0) {
 			g_free (key);
-			g_object_unref (package);
 			g_ptr_array_remove (array, package);
 			continue;
 		}
