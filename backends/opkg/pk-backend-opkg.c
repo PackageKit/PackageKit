@@ -27,6 +27,7 @@
 #include <pk-backend.h>
 #include <egg-debug.h>
 
+#include <stdio.h>
 #include <libopkg/opkg.h>
 
 enum {
