@@ -254,6 +254,12 @@ AC_PATH_PROG(GMSGFMT, msgfmt, msgfmt)
 networking_apis="unix"
 
 dnl ---------------------------------------------------------------------------
+dnl - Haiku compatibility
+dnl ---------------------------------------------------------------------------
+AC_SEARCH_LIBS([daemon], [bsd])
+AC_CHECK_FUNCS(setpriority)
+
+dnl ---------------------------------------------------------------------------
 dnl - NetworkManager (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(networkmanager, AS_HELP_STRING([--disable-networkmanager],[Disable NetworkManager support]),

@@ -59,7 +59,7 @@ static void     pk_spawn_finalize	(GObject       *object);
 
 struct PkSpawnPrivate
 {
-	gint			 child_pid;
+	pid_t			 child_pid;
 	gint			 stdin_fd;
 	gint			 stdout_fd;
 	gint			 stderr_fd;
@@ -205,12 +205,12 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* Only print one in twenty times to avoid filling the screen */
 	if (limit_printing++ % 20 == 0)
-		egg_debug ("polling child_pid=%i (1/20)", spawn->priv->child_pid);
+		egg_debug ("polling child_pid=%ld (1/20)", (long)spawn->priv->child_pid);
 
 	/* check if the child exited */
 	pid = waitpid (spawn->priv->child_pid, &status, WNOHANG);
 	if (pid == -1) {
-		egg_warning ("failed to get the child PID data for %i", spawn->priv->child_pid);
+		egg_warning ("failed to get the child PID data for %ld", (long)spawn->priv->child_pid);
 		return TRUE;
 	}
 	if (pid == 0) {
@@ -218,8 +218,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 		return TRUE;
 	}
 	if (pid != spawn->priv->child_pid) {
-		egg_warning ("some other process id was returned: got %i and wanted %i",
-			     pid, spawn->priv->child_pid);
+		egg_warning ("some other process id was returned: got %ld and wanted %ld",
+			     (long)pid, (long)spawn->priv->child_pid);
 		return TRUE;
 	}
 
@@ -310,7 +310,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 
-	egg_debug ("sending SIGKILL %i", spawn->priv->child_pid);
+	egg_debug ("sending SIGKILL %ld", (long)spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
 		egg_warning ("The signum argument is an invalid or unsupported number");
@@ -367,7 +367,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
 
-	egg_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
+	egg_debug ("sending SIGQUIT %ld", (long)spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
 	if (retval == EINVAL) {
 		egg_warning ("The signum argument is an invalid or unsupported number");
@@ -566,11 +566,13 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	nice_value = pk_conf_get_int (spawn->priv->conf, key);
 	nice_value = CLAMP(nice_value, -20, 19);
 
+#if HAVE_SETPRIORITY
 	/* don't completely bog the system down */
 	if (nice_value != 0) {
 		egg_debug ("renice to %i", nice_value);
 		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice_value);
 	}
+#endif
 
 	/* perhaps set idle IO priority */
 	key = "BackendSpawnIdleIO";
