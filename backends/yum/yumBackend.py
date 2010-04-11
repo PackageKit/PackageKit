@@ -2555,6 +2555,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             infra_packages = ['PackageKit', 'yum', 'rpm']
             if pkg.name in infra_packages or pkg.name.partition('-')[0] in infra_packages:
                 infra_pkgs.append(pkg)
+        if len(infra_pkgs) > len(pkgs):
+            self.message(MESSAGE_OTHER_UPDATES_HELD_BACK, "Infrastructure packages take priority")
         if len(infra_pkgs) > 0:
             msg = []
             for pkg in infra_pkgs:

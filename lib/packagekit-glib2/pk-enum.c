@@ -225,6 +225,7 @@ static const PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "autoremove-ignored"},
 	{PK_MESSAGE_ENUM_REPO_METADATA_DOWNLOAD_FAILED, "repo-metadata-download-failed"},
 	{PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY, "repo-for-developers-only"},
+	{PK_MESSAGE_ENUM_OTHER_UPDATES_HELD_BACK, "other-updates-held-back"},
 	{0, NULL}
 };
 
