@@ -4,10 +4,6 @@ if BACKEND_TYPE_YUM
 SUBDIRS += yum-packagekit
 endif
 
-if PK_BUILD_RUCK
-SUBDIRS += ruck
-endif
-
 if PK_BUILD_BROWSER_PLUGIN
 SUBDIRS += browser-plugin
 endif
