@@ -470,7 +470,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         if self.conffile_prompts:
             self._backend.message(MESSAGE_CONFIG_FILES_CHANGED, 
                                   "The following conffile prompts were found "
-                                  "and need investiagtion: %s" % \
+                                  "and need investigation: %s" % \
                                   "\n".join(self.conffile_prompts))
         # Check for required restarts
         if os.path.exists("/var/run/reboot-required") and \
