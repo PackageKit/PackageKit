@@ -46,6 +46,7 @@
 #include "zif-md-filelists.h"
 #include "zif-md-metalink.h"
 #include "zif-md-mirrorlist.h"
+#include "zif-md-other-sql.h"
 #include "zif-md-primary-sql.h"
 #include "zif-md-primary-xml.h"
 #include "zif-store.h"
@@ -80,6 +81,7 @@ struct _ZifStoreRemotePrivate
 	gboolean		 enabled;
 	gboolean		 loaded;
 	gboolean		 loaded_metadata;
+	ZifMd			*md_other_db;
 	ZifMd			*md_primary_db;
 	ZifMd			*md_primary_xml;
 	ZifMd			*md_filelists;
@@ -148,7 +150,7 @@ zif_store_remote_get_md_from_type (ZifStoreRemote *store, ZifMdType type)
 	if (type == ZIF_MD_TYPE_PRIMARY_XML)
 		return store->priv->md_primary_xml;
 	if (type == ZIF_MD_TYPE_OTHER_SQL)
-		return NULL;
+		return store->priv->md_other_db;
 	if (type == ZIF_MD_TYPE_COMPS_GZ)
 		return store->priv->md_comps;
 	if (type == ZIF_MD_TYPE_UPDATEINFO)
@@ -2627,6 +2629,7 @@ zif_store_remote_finalize (GObject *object)
 	g_free (store->priv->repomd_filename);
 	g_free (store->priv->directory);
 
+	g_object_unref (store->priv->md_other_db);
 	g_object_unref (store->priv->md_primary_db);
 	g_object_unref (store->priv->md_primary_xml);
 	g_object_unref (store->priv->md_filelists);
@@ -2701,6 +2704,7 @@ zif_store_remote_init (ZifStoreRemote *store)
 	store->priv->monitor = zif_monitor_new ();
 	store->priv->lock = zif_lock_new ();
 	store->priv->md_filelists = ZIF_MD (zif_md_filelists_new ());
+	store->priv->md_other_db = ZIF_MD (zif_md_other_sql_new ());
 	store->priv->md_primary_db = ZIF_MD (zif_md_primary_sql_new ());
 	store->priv->md_primary_xml = ZIF_MD (zif_md_primary_xml_new ());
 	store->priv->md_metalink = ZIF_MD (zif_md_metalink_new ());

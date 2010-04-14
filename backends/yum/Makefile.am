@@ -58,6 +58,8 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-md-filelists.h				\
 	libzif/zif-md-primary-sql.c				\
 	libzif/zif-md-primary-sql.h				\
+	libzif/zif-md-other-sql.c				\
+	libzif/zif-md-other-sql.h				\
 	libzif/zif-md-primary-xml.c				\
 	libzif/zif-md-primary-xml.h				\
 	libzif/zif-md-metalink.c				\
@@ -72,6 +74,8 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-store-array.h				\
 	libzif/zif-repos.c					\
 	libzif/zif-repos.h					\
+	libzif/zif-changeset.c					\
+	libzif/zif-changeset.h					\
 	libzif/zif-utils.c					\
 	libzif/zif-utils.h					\
 	libzif/zif-groups.c					\

@@ -647,7 +647,6 @@ zif_md_resolve (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCo
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->resolve (md, search, cancellable, completion, error);
 out:
@@ -684,7 +683,6 @@ zif_md_search_name (ZifMd *md, const gchar *search, GCancellable *cancellable, Z
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->search_name (md, search, cancellable, completion, error);
 out:
@@ -721,7 +719,6 @@ zif_md_search_details (ZifMd *md, const gchar *search, GCancellable *cancellable
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->search_details (md, search, cancellable, completion, error);
 out:
@@ -758,7 +755,6 @@ zif_md_search_group (ZifMd *md, const gchar *search, GCancellable *cancellable, 
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->search_group (md, search, cancellable, completion, error);
 out:
@@ -795,7 +791,6 @@ zif_md_search_pkgid (ZifMd *md, const gchar *search, GCancellable *cancellable, 
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->search_pkgid (md, search, cancellable, completion, error);
 out:
@@ -833,7 +828,6 @@ zif_md_what_provides (ZifMd *md, const gchar *search,
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->what_provides (md, search, cancellable, completion, error);
 out:
@@ -870,9 +864,44 @@ zif_md_find_package (ZifMd *md, const gchar *package_id, GCancellable *cancellab
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->find_package (md, package_id, cancellable, completion, error);
+out:
+	return array;
+}
+
+/**
+ * zif_md_get_changelog:
+ * @md: the #ZifMd object
+ * @pkgid: the internal pkgid to match
+ * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
+ * @completion: a #ZifCompletion to use for progress reporting
+ * @error: a #GError which is used on failure, or %NULL
+ *
+ * Gets the changelog data for a specific package
+ *
+ * Return value: an array of #ZifChangeset's
+ *
+ * Since: 0.0.1
+ **/
+GPtrArray *
+zif_md_get_changelog (ZifMd *md, const gchar *pkgid, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	GPtrArray *array = NULL;
+	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
+
+	g_return_val_if_fail (ZIF_IS_MD (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* no support */
+	if (klass->get_changelog == NULL) {
+		g_set_error_literal (error, ZIF_MD_ERROR, ZIF_MD_ERROR_NO_SUPPORT,
+				     "operation cannot be performed on this md");
+		goto out;
+	}
+
+	/* do subclassed action */
+	array = klass->get_changelog (md, pkgid, cancellable, completion, error);
 out:
 	return array;
 }
@@ -906,7 +935,6 @@ zif_md_get_packages (ZifMd *md, GCancellable *cancellable, ZifCompletion *comple
 		goto out;
 	}
 
-	
 	/* do subclassed action */
 	array = klass->get_packages (md, cancellable, completion, error);
 out:
