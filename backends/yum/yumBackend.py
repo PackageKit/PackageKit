@@ -2564,6 +2564,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.message(MESSAGE_BACKEND_ERROR, "The packages '%s' will be updated before other packages" % msg)
             pkgs = infra_pkgs
 
+        # get the list of installed updates as this is needed for get_applicable_notices()
+        installed_dict = {}
+        for pkgtup_updated, pkgtup_installed in self.yumbase.up.getUpdatesTuples():
+            installed_dict[pkgtup_installed[0]] = pkgtup_installed
+
         md = self.updateMetadata
         for pkg in unique(pkgs):
             if pkgfilter.pre_process(pkg):
@@ -2579,14 +2584,18 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 except Exception, e:
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-                # Get info about package in updates info
-                notices = md.get_applicable_notices(pkg.pkgtup)
+                # fall back to this if there is no installed update or there is no metadata
                 status = INFO_NORMAL
-                if notices:
-                    for (pkgtup, notice) in notices:
-                        status = self._get_status(notice)
-                        if status == INFO_SECURITY:
-                            break
+
+                # Get info about package in updates info (using the installed update of this name)
+                if installed_dict.has_key(pkg.name):
+                    pkgtup = installed_dict[pkg.name]
+                    notices = md.get_applicable_notices(pkgtup)
+                    if notices:
+                        for (pkgtup, notice) in notices:
+                            status = self._get_status(notice)
+                            if status == INFO_SECURITY:
+                                break
                 pkgfilter.add_custom(pkg, status)
 
         package_list = pkgfilter.post_process()
