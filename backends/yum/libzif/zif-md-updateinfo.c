@@ -41,7 +41,6 @@
 #include "zif-utils.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_MD_UPDATEINFO_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_MD_UPDATEINFO, ZifMdUpdateinfoPrivate))
 
@@ -55,6 +54,7 @@ typedef enum {
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_TITLE,
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_DESCRIPTION,
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_ISSUED,
+	ZIF_MD_UPDATEINFO_SECTION_UPDATE_REBOOT,
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_REFERENCES,
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_PKGLIST,
 	ZIF_MD_UPDATEINFO_SECTION_UPDATE_UNKNOWN
@@ -148,6 +148,10 @@ zif_md_updateinfo_parser_start_element (GMarkupParseContext *context, const gcha
 				updateinfo->priv->section_group = ZIF_MD_UPDATEINFO_SECTION_UPDATE_DESCRIPTION;
 				goto out;
 			}
+			if (g_strcmp0 (element_name, "reboot_suggested") == 0) {
+				updateinfo->priv->section_group = ZIF_MD_UPDATEINFO_SECTION_UPDATE_REBOOT;
+				goto out;
+			}
 			if (g_strcmp0 (element_name, "issued") == 0) {
 				updateinfo->priv->section_group = ZIF_MD_UPDATEINFO_SECTION_UPDATE_ISSUED;
 
@@ -200,6 +204,8 @@ zif_md_updateinfo_parser_start_element (GMarkupParseContext *context, const gcha
 			if (g_strcmp0 (element_name, "collection") == 0)
 				goto out;
 			if (g_strcmp0 (element_name, "name") == 0)
+				goto out;
+			if (g_strcmp0 (element_name, "reboot_suggested") == 0)
 				goto out;
 			//TODO: is this better than src?
 			if (g_strcmp0 (element_name, "filename") == 0)
@@ -298,6 +304,18 @@ zif_md_updateinfo_parser_end_element (GMarkupParseContext *context, const gchar 
 			goto out;
 		}
 
+		if (updateinfo->priv->section_group == ZIF_MD_UPDATEINFO_SECTION_UPDATE_REBOOT) {
+
+			/* add property */
+			if (g_strcmp0 (element_name, "reboot_suggested") == 0) {
+				zif_update_set_reboot (updateinfo->priv->update_temp, TRUE);
+				updateinfo->priv->section_group = ZIF_MD_UPDATEINFO_SECTION_UPDATE_UNKNOWN;
+				goto out;
+			}
+			egg_warning ("unhandled reboot_suggested end tag: %s", element_name);
+			goto out;
+		}
+
 		if (updateinfo->priv->section_group == ZIF_MD_UPDATEINFO_SECTION_UPDATE_REFERENCES) {
 
 			if (g_strcmp0 (element_name, "references") == 0) {
@@ -328,6 +346,8 @@ zif_md_updateinfo_parser_end_element (GMarkupParseContext *context, const gchar 
 			if (g_strcmp0 (element_name, "filename") == 0)
 				goto out;
 			if (g_strcmp0 (element_name, "collection") == 0)
+				goto out;
+			if (g_strcmp0 (element_name, "reboot_suggested") == 0)
 				goto out;
 
 			/* add to the update */
@@ -564,7 +584,7 @@ zif_md_updateinfo_get_detail_for_package (ZifMdUpdateinfo *md, const gchar *pack
 	/* nothing found */
 	if (array == NULL) {
 		g_set_error (error, ZIF_MD_ERROR, ZIF_MD_ERROR_FAILED,
-			     "could not find package: %s", package_id);
+			     "could not find package (%i in sack): %s", len, package_id);
 	}
 out:
 	return array;

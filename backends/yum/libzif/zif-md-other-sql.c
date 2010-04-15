@@ -43,7 +43,6 @@
 #include "zif-package-remote.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_MD_OTHER_SQL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_MD_OTHER_SQL, ZifMdOtherSqlPrivate))
 
@@ -120,18 +119,19 @@ zif_md_other_sql_sqlite_create_changelog_cb (void *data, gint argc, gchar **argv
 	GPtrArray *array = (GPtrArray *) data;
 	ZifChangeset *changeset;
 	gint i;
-	guint date = 0;
+	guint64 date = 0;
 	const gchar *author = NULL;
 	const gchar *changelog = NULL;
 	gboolean ret;
 	GError *error = NULL;
+	gchar *endptr = NULL;
 
 	/* get the ID */
 	for (i=0; i<argc; i++) {
 		if (g_strcmp0 (col_name[i], "date") == 0) {
-			ret = egg_strtouint (argv[i], &date);
-			if (!ret)
-				egg_warning ("could not parse date '%s'", argv[i]);
+			date = g_ascii_strtoull (argv[i], &endptr, 10);
+			if (argv[i] == endptr)
+				egg_warning ("failed to parse date %s", argv[i]);
 		} else if (g_strcmp0 (col_name[i], "author") == 0) {
 			author = argv[i];
 		} else if (g_strcmp0 (col_name[i], "changelog") == 0) {
@@ -172,7 +172,7 @@ zif_md_other_sql_search_pkgkey (ZifMdOtherSql *md, guint pkgkey,
 	GPtrArray *array = NULL;
 
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	statement = g_strdup_printf ("SELECT author, date, changelog FROM changelog WHERE pkgKey = '%i' ORDER BY date", pkgkey);
+	statement = g_strdup_printf ("SELECT author, date, changelog FROM changelog WHERE pkgKey = '%i' ORDER BY date DESC", pkgkey);
 	rc = sqlite3_exec (md->priv->db, statement, zif_md_other_sql_sqlite_create_changelog_cb, array, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_set_error (error, ZIF_MD_ERROR, ZIF_MD_ERROR_BAD_SQL,
@@ -195,17 +195,17 @@ zif_md_other_sql_sqlite_pkgkey_cb (void *data, gint argc, gchar **argv, gchar **
 {
 	gint i;
 	guint pkgkey;
-	gboolean ret;
+	gchar *endptr = NULL;
 	GPtrArray *array = (GPtrArray *) data;
 
 	/* get the ID */
 	for (i=0; i<argc; i++) {
 		if (g_strcmp0 (col_name[i], "pkgKey") == 0) {
-			ret = egg_strtouint (argv[i], &pkgkey);
-			if (ret)
-				g_ptr_array_add (array, GUINT_TO_POINTER (pkgkey));
-			else
+			pkgkey = g_ascii_strtoull (argv[i], &endptr, 10);
+			if (argv[i] == endptr)
 				egg_warning ("could not parse pkgKey '%s'", argv[i]);
+			else
+				g_ptr_array_add (array, GUINT_TO_POINTER (pkgkey));
 		} else {
 			egg_warning ("unrecognized: %s=%s", col_name[i], argv[i]);
 		}
@@ -383,7 +383,7 @@ zif_md_other_sql_test (EggTest *test)
 	gboolean ret;
 	GError *error = NULL;
 	GPtrArray *array;
-	ZifPackage *changeset;
+	ZifChangeset *changeset;
 	GCancellable *cancellable;
 	ZifCompletion *completion;
 	const gchar *text;
@@ -467,7 +467,8 @@ zif_md_other_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search for files");
 	zif_completion_reset (completion);
-	array = zif_md_other_sql_get_changelog (md, "42b8d71b303b19c2fcc2b06bb9c764f2902dd72b9376525025ee9ba4a41c38e9",
+	array = zif_md_other_sql_get_changelog (ZIF_MD_OTHER_SQL (md),
+						"42b8d71b303b19c2fcc2b06bb9c764f2902dd72b9376525025ee9ba4a41c38e9",
 						cancellable, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
@@ -486,7 +487,7 @@ zif_md_other_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct version");
 	text = zif_changeset_get_version (changeset);
-	if (g_strcmp0 (text, "0.9.95-8") == 0)
+	if (g_strcmp0 (text, "1.2-3") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get correct value '%s'", text);
@@ -494,7 +495,7 @@ zif_md_other_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct author");
 	text = zif_changeset_get_author (changeset);
-	if (g_strcmp0 (text, "Rex Dieter <rdieter[AT]fedoraproject.org>") == 0)
+	if (g_strcmp0 (text, "Rex Dieter <rdieter@fedoraproject.org>") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get correct value '%s'", text);
@@ -502,7 +503,7 @@ zif_md_other_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct description");
 	text = zif_changeset_get_description (changeset);
-	if (g_strcmp0 (text, "- ExcludeArch: ppc64 (#253847)") == 0)
+	if (g_strcmp0 (text, "- BR: libfac-devel,factory-devel >= 3.1\n- restore ExcludeArch: ppc64 (#253847)") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get correct value '%s'", text);

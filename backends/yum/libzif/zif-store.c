@@ -37,7 +37,6 @@
 #include "zif-package.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 G_DEFINE_TYPE (ZifStore, zif_store, G_TYPE_OBJECT)
 
@@ -166,7 +165,7 @@ zif_store_refresh (ZifStore *store, gboolean force, GCancellable *cancellable, Z
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_search_name (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_search_name (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -199,7 +198,7 @@ zif_store_search_name (ZifStore *store, const gchar *search, GCancellable *cance
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_search_category (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_search_category (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -232,7 +231,7 @@ zif_store_search_category (ZifStore *store, const gchar *search, GCancellable *c
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_search_details (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_search_details (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -264,7 +263,7 @@ zif_store_search_details (ZifStore *store, const gchar *search, GCancellable *ca
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_search_group (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_search_group (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -297,7 +296,7 @@ zif_store_search_group (ZifStore *store, const gchar *search, GCancellable *canc
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_search_file (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_search_file (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -330,7 +329,7 @@ zif_store_search_file (ZifStore *store, const gchar *search, GCancellable *cance
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_resolve (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_resolve (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 
@@ -363,7 +362,7 @@ zif_store_resolve (ZifStore *store, const gchar *search, GCancellable *cancellab
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_what_provides (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_what_provides (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	ZifStoreClass *klass = ZIF_STORE_GET_CLASS (store);
 

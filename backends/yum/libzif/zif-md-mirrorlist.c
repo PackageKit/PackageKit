@@ -39,7 +39,6 @@
 #include "zif-config.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_MD_MIRRORLIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_MD_MIRRORLIST, ZifMdMirrorlistPrivate))
 

@@ -29,8 +29,6 @@ libpk_backend_yum_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
 libpk_backend_yum_la_SOURCES += 				\
 	libzif/egg-debug.c					\
 	libzif/egg-debug.h					\
-	libzif/egg-string.c					\
-	libzif/egg-string.h					\
 	libzif/zif.h						\
 	libzif/zif-lock.c					\
 	libzif/zif-lock.h					\
@@ -54,8 +52,10 @@ libpk_backend_yum_la_SOURCES += 				\
 	libzif/zif-store-remote.h				\
 	libzif/zif-md.c						\
 	libzif/zif-md.h						\
-	libzif/zif-md-filelists.c				\
-	libzif/zif-md-filelists.h				\
+	libzif/zif-md-filelists-sql.c				\
+	libzif/zif-md-filelists-sql.h				\
+	libzif/zif-md-filelists-xml.c				\
+	libzif/zif-md-filelists-xml.h				\
 	libzif/zif-md-primary-sql.c				\
 	libzif/zif-md-primary-sql.h				\
 	libzif/zif-md-other-sql.c				\

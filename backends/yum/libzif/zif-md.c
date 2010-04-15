@@ -24,7 +24,7 @@
  * @short_description: Metadata file common functionality
  *
  * This provides an abstract metadata class.
- * It is implemented by #ZifMdFilelists, #ZifMdMaster and #ZifMdPrimary.
+ * It is implemented by #ZifMdFilelistsSql, #ZifMdMaster and #ZifMdPrimary.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -41,7 +41,6 @@
 #include "zif-config.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_MD_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_MD, ZifMdPrivate))
 
@@ -632,7 +631,7 @@ zif_md_unload (ZifMd *md, GCancellable *cancellable, ZifCompletion *completion, 
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_resolve (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_resolve (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
@@ -654,6 +653,43 @@ out:
 }
 
 /**
+ * zif_md_search_file:
+ * @md: the #ZifMd object
+ * @search: the search term, e.g. "/usr/bin/powertop"
+ * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
+ * @completion: a #ZifCompletion to use for progress reporting
+ * @error: a #GError which is used on failure, or %NULL
+ *
+ * Gets a list of all packages that contain the file.
+ * Results are pkgId's descriptors, i.e. 64 bit hashes as test.
+ *
+ * Return value: a string list of pkgId's
+ *
+ * Since: 0.0.1
+ **/
+GPtrArray *
+zif_md_search_file (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	GPtrArray *array = NULL;
+	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
+
+	g_return_val_if_fail (ZIF_IS_MD (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* no support */
+	if (klass->search_file == NULL) {
+		g_set_error_literal (error, ZIF_MD_ERROR, ZIF_MD_ERROR_NO_SUPPORT,
+				     "operation cannot be performed on this md");
+		goto out;
+	}
+
+	/* do subclassed action */
+	array = klass->search_file (md, search, cancellable, completion, error);
+out:
+	return array;
+}
+
+/**
  * zif_md_search_name:
  * @md: the #ZifMd object
  * @search: the search term, e.g. "power"
@@ -668,7 +704,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_search_name (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_search_name (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
@@ -704,7 +740,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_search_details (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_search_details (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
@@ -740,7 +776,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_search_group (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_search_group (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
@@ -776,7 +812,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_search_pkgid (ZifMd *md, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_search_pkgid (ZifMd *md, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
@@ -812,7 +848,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_md_what_provides (ZifMd *md, const gchar *search,
+zif_md_what_provides (ZifMd *md, gchar **search,
 		      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;

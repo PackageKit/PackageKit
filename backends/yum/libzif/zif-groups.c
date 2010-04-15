@@ -41,7 +41,6 @@
 #include "zif-monitor.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_GROUPS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_GROUPS, ZifGroupsPrivate))
 
@@ -440,10 +439,10 @@ zif_groups_test (EggTest *test)
 	egg_test_title (test, "get groups");
 	groups_bit = zif_groups_get_groups (groups, NULL);
 	text = pk_group_bitfield_to_string (groups_bit);
-	if (egg_strequal (text, "admin-tools;desktop-gnome;desktop-kde;desktop-other;"
-				"education;fonts;games;graphics;internet;"
-				"legacy;localization;multimedia;office;other;programming;"
-				"publishing;servers;system;virtualization"))
+	if (g_strcmp0 (text, "admin-tools;desktop-gnome;desktop-kde;desktop-other;"
+			     "education;fonts;games;graphics;internet;"
+			     "legacy;localization;multimedia;office;other;programming;"
+			     "publishing;servers;system;virtualization") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid groups '%s'", text);
@@ -461,7 +460,7 @@ zif_groups_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get group for cat");
 	group = zif_groups_get_group_for_cat (groups, "language-support;kashubian-support", NULL);
-	if (egg_strequal (pk_group_enum_to_text (group), "localization"))
+	if (g_strcmp0 (pk_group_enum_to_text(group), "localization") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid groups '%s'", pk_group_enum_to_text (group));

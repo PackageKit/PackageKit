@@ -220,7 +220,7 @@ egg_strreplace (const gchar *text, const gchar *find, const gchar *replace)
 	gchar *retval;
 
 	/* common case, not found */
-	if (strstr (text, find) == NULL) {
+	if (g_strstr_len (text, -1, find) == NULL) {
 		return g_strdup (text);
 	}
 

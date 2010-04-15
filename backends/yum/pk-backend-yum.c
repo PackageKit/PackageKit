@@ -212,23 +212,6 @@ backend_unlock (PkBackend *backend)
 	return ret;
 }
 
-
-/**
- * backend_add_package_array:
- **/
-static gboolean
-backend_add_package_array (GPtrArray *array, GPtrArray *add)
-{
-	guint i;
-	ZifPackage *package;
-
-	for (i=0;i<add->len;i++) {
-		package = g_ptr_array_index (add, i);
-		g_ptr_array_add (array, g_object_ref (package));
-	}
-	return TRUE;
-}
-
 /**
  * backend_filter_package_array_newest:
  *
@@ -410,46 +393,6 @@ backend_error_handler_cb (GPtrArray *store_array, const GError *error, PkBackend
 }
 
 /**
- * backend_search_thread_get_array:
- */
-static GPtrArray *
-backend_search_thread_get_array (PkBackend *backend, GPtrArray *store_array, const gchar *search, ZifCompletion *completion, GError **error)
-{
-	PkRoleEnum role;
-	GPtrArray *array = NULL;
-
-	role = pk_backend_get_role (backend);
-	if (role == PK_ROLE_ENUM_SEARCH_NAME) {
-		array = zif_store_array_search_name (store_array, search,
-						     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-						     priv->cancellable, completion, error);
-	} else if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		array = zif_store_array_search_details (store_array, search,
-							(ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-							priv->cancellable, completion, error);
-	} else if (role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		array = zif_store_array_search_category (store_array, search,
-							 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-							 priv->cancellable, completion, error);
-	} else if (role == PK_ROLE_ENUM_SEARCH_FILE) {
-		array = zif_store_array_search_file (store_array, search,
-						     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-						     priv->cancellable, completion, error);
-	} else if (role == PK_ROLE_ENUM_RESOLVE) {
-		array = zif_store_array_resolve (store_array, search,
-						 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-						 priv->cancellable, completion, error);
-	} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		array = zif_store_array_what_provides (store_array, search,
-						       (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
-						       priv->cancellable, completion, error);
-	} else {
-		g_set_error (error, 1, 0, "does not support: %s", pk_role_enum_to_string (role));
-	}
-	return array;
-}
-
-/**
  * backend_get_default_store_array_for_filter:
  */
 static GPtrArray *
@@ -499,11 +442,8 @@ backend_search_thread (PkBackend *backend)
 	PkBitfield filters;
 	PkRoleEnum role;
 	ZifCompletion *completion_local;
-	ZifCompletion *completion_loop;
 	GError *error = NULL;
 	gchar **search;
-	const gchar *search_tmp;
-	guint i;
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	role = pk_backend_get_role (backend);
 
@@ -556,34 +496,43 @@ backend_search_thread (PkBackend *backend)
 		}
 		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
-		completion_local = zif_completion_get_child (priv->completion);
-		zif_completion_set_number_steps (completion_local, g_strv_length (search));
-
 		/* do OR search */
-		for (i=0; search[i] != NULL; i++) {
-			/* make loop deeper */
-			completion_loop = zif_completion_get_child (completion_local);
-
-			/* strip off the prefix '@' */
-			search_tmp = search[i];
-			if (g_str_has_prefix (search_tmp, "@"))
-				search_tmp = search_tmp+1;
-
-			/* get the results */
-			egg_debug ("searching for: %s", search_tmp);
-			result = backend_search_thread_get_array (backend, store_array, search_tmp, completion_loop, &error);
-			if (result == NULL) {
-				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to search: %s", error->message);
-				g_error_free (error);
-				goto out;
-			}
-
-			/* this section done */
-			zif_completion_done (completion_local);
-
-			backend_add_package_array (array, result);
-			g_ptr_array_unref (result);
+		completion_local = zif_completion_get_child (priv->completion);
+		if (role == PK_ROLE_ENUM_SEARCH_NAME) {
+			array = zif_store_array_search_name (store_array, search,
+							     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							     priv->cancellable, completion_local, &error);
+		} else if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+			array = zif_store_array_search_details (store_array, search,
+								(ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+								priv->cancellable, completion_local, &error);
+		} else if (role == PK_ROLE_ENUM_SEARCH_GROUP) {
+			array = zif_store_array_search_category (store_array, search,
+								 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+								 priv->cancellable, completion_local, &error);
+		} else if (role == PK_ROLE_ENUM_SEARCH_FILE) {
+			array = zif_store_array_search_file (store_array, search,
+							     (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							     priv->cancellable, completion_local, &error);
+		} else if (role == PK_ROLE_ENUM_RESOLVE) {
+			array = zif_store_array_resolve (store_array, search,
+							 (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							 priv->cancellable, completion_local, &error);
+		} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+			array = zif_store_array_what_provides (store_array, search,
+							       (ZifStoreArrayErrorCb) backend_error_handler_cb, backend,
+							       priv->cancellable, completion_local, &error);
 		}
+		if (array == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to search: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+//			/* strip off the prefix '@' */
+//			search_tmp = search[i];
+//			if (g_str_has_prefix (search_tmp, "@"))
+//				search_tmp = search_tmp+1;
 	}
 
 	/* this section done */

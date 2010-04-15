@@ -62,6 +62,7 @@ gboolean		 zif_package_remote_set_from_repo	(ZifPackageRemote *pkg,
 								 gchar		**data,
 								 const gchar	*repo_id,
 								 GError		**error);
+const gchar		*zif_package_remote_get_pkgid		(ZifPackageRemote *pkg);
 
 G_END_DECLS
 

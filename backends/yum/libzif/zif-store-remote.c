@@ -43,7 +43,8 @@
 #include "zif-package-remote.h"
 #include "zif-md-comps.h"
 #include "zif-md-updateinfo.h"
-#include "zif-md-filelists.h"
+#include "zif-md-filelists-sql.h"
+#include "zif-md-filelists-xml.h"
 #include "zif-md-metalink.h"
 #include "zif-md-mirrorlist.h"
 #include "zif-md-other-sql.h"
@@ -55,7 +56,6 @@
 #include "zif-utils.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #define ZIF_STORE_REMOTE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_STORE_REMOTE, ZifStoreRemotePrivate))
 
@@ -81,10 +81,11 @@ struct _ZifStoreRemotePrivate
 	gboolean		 enabled;
 	gboolean		 loaded;
 	gboolean		 loaded_metadata;
-	ZifMd			*md_other_db;
-	ZifMd			*md_primary_db;
+	ZifMd			*md_other_sql;
+	ZifMd			*md_primary_sql;
 	ZifMd			*md_primary_xml;
-	ZifMd			*md_filelists;
+	ZifMd			*md_filelists_sql;
+	ZifMd			*md_filelists_xml;
 	ZifMd			*md_metalink;
 	ZifMd			*md_mirrorlist;
 	ZifMd			*md_comps;
@@ -125,10 +126,27 @@ zif_store_remote_get_primary (ZifStoreRemote *store)
 {
 	g_return_val_if_fail (ZIF_IS_STORE_REMOTE (store), NULL);
 
-	if (zif_md_get_location (store->priv->md_primary_db) != NULL)
-		return store->priv->md_primary_db;
+	if (zif_md_get_location (store->priv->md_primary_sql) != NULL)
+		return store->priv->md_primary_sql;
 	if (zif_md_get_location (store->priv->md_primary_xml) != NULL)
 		return store->priv->md_primary_xml;
+
+	/* this should never happen */
+	return NULL;
+}
+
+/**
+ * zif_store_remote_get_filelists:
+ **/
+static ZifMd *
+zif_store_remote_get_filelists (ZifStoreRemote *store)
+{
+	g_return_val_if_fail (ZIF_IS_STORE_REMOTE (store), NULL);
+
+	if (zif_md_get_location (store->priv->md_filelists_sql) != NULL)
+		return store->priv->md_filelists_sql;
+	if (zif_md_get_location (store->priv->md_filelists_xml) != NULL)
+		return store->priv->md_filelists_xml;
 
 	/* this should never happen */
 	return NULL;
@@ -144,13 +162,15 @@ zif_store_remote_get_md_from_type (ZifStoreRemote *store, ZifMdType type)
 	g_return_val_if_fail (type != ZIF_MD_TYPE_UNKNOWN, NULL);
 
 	if (type == ZIF_MD_TYPE_FILELISTS_SQL)
-		return store->priv->md_filelists;
+		return store->priv->md_filelists_sql;
+	if (type == ZIF_MD_TYPE_FILELISTS_XML)
+		return store->priv->md_filelists_xml;
 	if (type == ZIF_MD_TYPE_PRIMARY_SQL)
-		return store->priv->md_primary_db;
+		return store->priv->md_primary_sql;
 	if (type == ZIF_MD_TYPE_PRIMARY_XML)
 		return store->priv->md_primary_xml;
 	if (type == ZIF_MD_TYPE_OTHER_SQL)
-		return store->priv->md_other_db;
+		return store->priv->md_other_sql;
 	if (type == ZIF_MD_TYPE_COMPS_GZ)
 		return store->priv->md_comps;
 	if (type == ZIF_MD_TYPE_UPDATEINFO)
@@ -540,17 +560,30 @@ ZifUpdate *
 zif_store_remote_get_update_detail (ZifStoreRemote *store, const gchar *package_id,
 				    GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
-	ZifUpdate *update = NULL;
-	ZifCompletion *completion_local;
-	GPtrArray *array = NULL;
-	GError *error_local = NULL;
+	const gchar *pkgid;
 	gboolean ret;
+	guint i;
+	GError *error_local = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *array_installed = NULL;
+	GPtrArray *changelog = NULL;
+	GPtrArray *packages = NULL;
+	ZifChangeset *changeset;
+	ZifCompletion *completion_local;
+	ZifMd *md;
+	ZifPackage *package_installed = NULL;
+	ZifUpdate *update = NULL;
+	gchar **split = NULL;
+	gchar **split_installed = NULL;
+	ZifStoreLocal *store_local = NULL;
+	const gchar *version;
+	gchar *to_array[] = { NULL, NULL };
 
 	/* setup completion */
 	if (store->priv->loaded_metadata)
-		zif_completion_set_number_steps (completion, 1);
+		zif_completion_set_number_steps (completion, 4);
 	else
-		zif_completion_set_number_steps (completion, 2);
+		zif_completion_set_number_steps (completion, 5);
 
 	/* if not already loaded, load */
 	if (!store->priv->loaded_metadata) {
@@ -572,22 +605,104 @@ zif_store_remote_get_update_detail (ZifStoreRemote *store, const gchar *package_
 	array = zif_md_updateinfo_get_detail_for_package (ZIF_MD_UPDATEINFO (store->priv->md_updateinfo), package_id,
 							  cancellable, completion_local, &error_local);
 	if (array == NULL) {
+		/* lets try this again with fresh metadata */
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
-			     "failed to find any details: %s", error_local->message);
+			     "failed to find any details in updateinfo (but referenced in primary): %s", error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
-	if (array->len == 1) {
-		update = g_object_ref (g_ptr_array_index (array, 0));
+	if (array->len != 1) {
+		/* FIXME: is this valid? */
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "invalid number of update entries: %i", array->len);
 		goto out;
 	}
 
-	/* FIXME: is this valid? */
-	g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
-		     "invalid number of update entries: %i", array->len);
+	/* get ZifPackage for package-id */
+	md = zif_store_remote_get_primary (store);
+	packages = zif_md_find_package (md, package_id, cancellable, completion_local, &error_local);
+	if (packages == NULL) {
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "cannot find package in primary repo: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+	/* FIXME: non-fatal? */
+	if (packages->len == 0) {
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "cannot find package in primary repo: %s", package_id);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+
+	/* get pkgid */
+	pkgid = zif_package_remote_get_pkgid (ZIF_PACKAGE_REMOTE (g_ptr_array_index (packages, 0)));
+
+	/* get changelog and add to ZifUpdate */
+	completion_local = zif_completion_get_child (completion);
+	changelog = zif_md_get_changelog (ZIF_MD (store->priv->md_other_sql), pkgid, cancellable, completion_local, &error_local);
+	if (changelog == NULL) {
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "failed to get changelog: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+
+	/* get the newest installed package with this name */
+	completion_local = zif_completion_get_child (completion);
+	split = pk_package_id_split (package_id);
+	store_local = zif_store_local_new ();
+	to_array[0] = split[PK_PACKAGE_ID_NAME];
+	array_installed = zif_store_resolve (ZIF_STORE (store_local), to_array, cancellable, completion_local, &error_local);
+	if (array_installed == NULL) {
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "failed to resolve installed package for update: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+
+	/* get newest, ignore error */
+	package_installed = zif_package_array_get_newest (array_installed, NULL);
+	split_installed = pk_package_id_split (zif_package_get_package_id (package_installed));
+
+	/* add the changesets (the changelog) to the update */
+	update = g_object_ref (g_ptr_array_index (array, 0));
+	for (i=0; i<changelog->len; i++) {
+		changeset = g_ptr_array_index (changelog, i);
+		zif_update_add_changeset (update, changeset);
+
+		/* abort when the changeset is older than what we have installed */
+		version = zif_changeset_get_version (changeset);
+		if (version != NULL &&
+		    zif_compare_evr (split_installed[PK_PACKAGE_ID_VERSION], version) >= 0)
+			break;
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
 out:
+	g_strfreev (split);
+	g_strfreev (split_installed);
+	if (changelog != NULL)
+		g_ptr_array_unref (changelog);
 	if (array != NULL)
 		g_ptr_array_unref (array);
+	if (array_installed != NULL)
+		g_ptr_array_unref (array_installed);
+	if (packages != NULL)
+		g_ptr_array_unref (packages);
+	if (package_installed != NULL)
+		g_object_unref (package_installed);
+	if (store_local != NULL)
+		g_object_unref (store_local);
 	return update;
 }
 
@@ -1210,7 +1325,10 @@ zif_store_remote_load (ZifStore *store, GCancellable *cancellable, ZifCompletion
 	}
 
 	/* we need either a base url or mirror list for an enabled store */
-	if (remote->priv->enabled && remote->priv->baseurls->len == 0 && remote->priv->metalink == NULL && remote->priv->mirrorlist == NULL) {
+	if (remote->priv->enabled &&
+	    remote->priv->baseurls->len == 0 &&
+	    remote->priv->metalink == NULL &&
+	    remote->priv->mirrorlist == NULL) {
 		g_set_error_literal (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 				     "baseurl, metalink or mirrorlist required");
 		ret = FALSE;
@@ -1481,7 +1599,7 @@ zif_store_remote_print (ZifStore *store)
  * zif_store_remote_resolve:
  **/
 static GPtrArray *
-zif_store_remote_resolve (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_resolve (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -1536,7 +1654,7 @@ out:
  * zif_store_remote_search_name:
  **/
 static GPtrArray *
-zif_store_remote_search_name (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_search_name (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -1591,7 +1709,7 @@ out:
  * zif_store_remote_search_details:
  **/
 static GPtrArray *
-zif_store_remote_search_details (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_search_details (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -1653,6 +1771,7 @@ zif_store_remote_search_category_resolve (ZifStore *store, const gchar *name, GC
 	GPtrArray *array = NULL;
 	ZifPackage *package = NULL;
 	ZifCompletion *completion_local;
+	const gchar *to_array[] = { NULL, NULL };
 
 	store_local = zif_store_local_new ();
 
@@ -1661,7 +1780,8 @@ zif_store_remote_search_category_resolve (ZifStore *store, const gchar *name, GC
 
 	/* is already installed? */
 	completion_local = zif_completion_get_child (completion);
-	array = zif_store_resolve (ZIF_STORE (store_local), name, cancellable, completion_local, &error_local);
+	to_array[0] = name;
+	array = zif_store_resolve (ZIF_STORE (store_local), (gchar**) to_array, cancellable, completion_local, &error_local);
 	if (array == NULL) {
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 			     "failed to resolve installed package %s: %s", name, error_local->message);
@@ -1685,7 +1805,8 @@ zif_store_remote_search_category_resolve (ZifStore *store, const gchar *name, GC
 
 	/* is available in this repo? */
 	completion_local = zif_completion_get_child (completion);
-	array = zif_store_resolve (ZIF_STORE (store), name, cancellable, completion_local, &error_local);
+	to_array[0] = name;
+	array = zif_store_resolve (ZIF_STORE (store), (gchar**)to_array, cancellable, completion_local, &error_local);
 	if (array == NULL) {
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 			     "failed to resolve installed package %s: %s", name, error_local->message);
@@ -1716,7 +1837,7 @@ out:
  * zif_store_remote_search_category:
  **/
 static GPtrArray *
-zif_store_remote_search_category (ZifStore *store, const gchar *group_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_search_category (ZifStore *store, gchar **group_id, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -1773,7 +1894,7 @@ zif_store_remote_search_category (ZifStore *store, const gchar *group_id, GCance
 	/* get package names for group */
 	completion_local = zif_completion_get_child (completion);
 	array_names = zif_md_comps_get_packages_for_group (ZIF_MD_COMPS (remote->priv->md_comps),
-								group_id, cancellable, completion_local, &error_local);
+							   group_id[0], cancellable, completion_local, &error_local);
 	if (array_names == NULL) {
 		/* ignore when group isn't present, TODO: use GError code */
 		if (g_str_has_prefix (error_local->message, "could not find group")) {
@@ -1782,7 +1903,7 @@ zif_store_remote_search_category (ZifStore *store, const gchar *group_id, GCance
 			goto out;
 		}
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
-			     "failed to get packages for group %s: %s", group_id, error_local->message);
+			     "failed to get packages for group %s: %s", group_id[0], error_local->message);
 		g_error_free (error_local);
 		goto out;
 	}
@@ -1813,7 +1934,7 @@ zif_store_remote_search_category (ZifStore *store, const gchar *group_id, GCance
 			}
 
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
-				     "failed to get resolve %s for %s: %s", name, group_id, error_local->message);
+				     "failed to get resolve %s for %s: %s", name, group_id[0], error_local->message);
 			g_error_free (error_local);
 
 			/* undo all our hard work */
@@ -1841,7 +1962,7 @@ out:
  * zif_store_remote_search_group:
  **/
 static GPtrArray *
-zif_store_remote_search_group (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_search_group (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -2044,7 +2165,6 @@ zif_store_remote_get_categories (ZifStore *store, GCancellable *cancellable, Zif
 	ZifStoreRemote *remote = ZIF_STORE_REMOTE (store);
 	ZifCompletion *completion_local;
 	ZifCompletion *completion_loop;
-//	PkCategory *comps_category;
 	PkCategory *group;
 	PkCategory *category;
 	PkCategory *category_tmp;
@@ -2166,7 +2286,7 @@ zif_store_remote_get_updates (ZifStore *store, GPtrArray *packages,
 			      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
-	GPtrArray *updates;
+	GPtrArray *updates = NULL;
 	GPtrArray *array = NULL;
 	ZifPackage *package;
 	ZifPackage *update;
@@ -2180,6 +2300,7 @@ zif_store_remote_get_updates (ZifStore *store, GPtrArray *packages,
 	gchar **split;
 	gchar **split_update;
 	ZifMd *primary;
+	gchar **resolve_array = NULL;
 
 	/* not locked */
 	ret = zif_lock_is_locked (remote->priv->lock, NULL);
@@ -2216,25 +2337,32 @@ zif_store_remote_get_updates (ZifStore *store, GPtrArray *packages,
 	/* get primary */
 	primary = zif_store_remote_get_primary (remote);
 
-	/* find each one in a remote repo */
-	egg_debug ("searching with %i packages", packages->len);
+	/* get the array of packages to resolve */
+	resolve_array = g_new0 (gchar *, packages->len + 1);
 	for (i=0; i<packages->len; i++) {
 		package = ZIF_PACKAGE (g_ptr_array_index (packages, i));
 		package_id = zif_package_get_id (package);
-
-		/* find package name in repo */
-		completion_local = zif_completion_get_child (completion);
 		split = pk_package_id_split (package_id);
-		updates = zif_md_resolve (primary, split[PK_PACKAGE_ID_NAME],
-					  cancellable, completion_local, NULL);
+		resolve_array[i] = g_strdup (split[PK_PACKAGE_ID_NAME]);
 		g_strfreev (split);
-		if (updates == NULL) {
-			egg_debug ("not found %s", package_id);
-			continue;
-		}
+	}
 
-		/* some repos contain lots of versions of one package */
-		zif_package_array_filter_newest (updates);
+	/* resolve all of them in one fell swoop */
+	completion_local = zif_completion_get_child (completion);
+	updates = zif_md_resolve (primary, resolve_array,
+				  cancellable, completion_local, &error_local);
+	if (updates == NULL) {
+		egg_error ("failed to resolve: %s", error_local->message);
+		g_error_free (error_local);
+	}
+
+	/* some repos contain lots of versions of one package */
+	zif_package_array_filter_newest (updates);
+
+	/* find each one in a remote repo */
+	for (i=0; i<packages->len; i++) {
+		package = ZIF_PACKAGE (g_ptr_array_index (packages, i));
+		package_id = zif_package_get_id (package);
 
 		/* find updates */
 		for (j=0; j<updates->len; j++) {
@@ -2242,6 +2370,8 @@ zif_store_remote_get_updates (ZifStore *store, GPtrArray *packages,
 
 			/* newer? */
 			val = zif_package_compare (update, package);
+			if (val == G_MAXINT)
+				continue;
 			if (val > 0) {
 				package_id_update = zif_package_get_id (update);
 				split = pk_package_id_split (package_id);
@@ -2255,12 +2385,14 @@ zif_store_remote_get_updates (ZifStore *store, GPtrArray *packages,
 				g_ptr_array_add (array, g_object_ref (update));
 			}
 		}
-		g_ptr_array_unref (updates);
 	}
 
 	/* this section done */
 	zif_completion_done (completion);
 out:
+	g_strfreev (resolve_array);
+	if (updates != NULL)
+		g_ptr_array_unref (updates);
 	return array;
 }
 
@@ -2268,7 +2400,7 @@ out:
  * zif_store_remote_what_provides:
  **/
 static GPtrArray *
-zif_store_remote_what_provides (ZifStore *store, const gchar *search,
+zif_store_remote_what_provides (ZifStore *store, gchar **search,
 				GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
@@ -2323,7 +2455,7 @@ out:
  * zif_store_remote_search_file:
  **/
 static GPtrArray *
-zif_store_remote_search_file (ZifStore *store, const gchar *search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_store_remote_search_file (ZifStore *store, gchar **search, GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	gboolean ret;
 	GError *error_local = NULL;
@@ -2336,6 +2468,8 @@ zif_store_remote_search_file (ZifStore *store, const gchar *search, GCancellable
 	guint i, j;
 	ZifStoreRemote *remote = ZIF_STORE_REMOTE (store);
 	ZifMd *primary;
+	ZifMd *filelists;
+	const gchar *to_array[] = { NULL, NULL };
 
 	/* not locked */
 	ret = zif_lock_is_locked (remote->priv->lock, NULL);
@@ -2368,7 +2502,9 @@ zif_store_remote_search_file (ZifStore *store, const gchar *search, GCancellable
 
 	/* gets a list of pkgId's that match this file */
 	completion_local = zif_completion_get_child (completion);
-	pkgids = zif_md_filelists_search_file (ZIF_MD_FILELISTS (remote->priv->md_filelists), search, cancellable, completion_local, &error_local);
+	filelists = zif_store_remote_get_filelists (remote);
+	pkgids = zif_md_search_file (filelists,
+				     search, cancellable, completion_local, &error_local);
 	if (pkgids == NULL) {
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 			     "failed to load get list of pkgids: %s", error_local->message);
@@ -2389,7 +2525,8 @@ zif_store_remote_search_file (ZifStore *store, const gchar *search, GCancellable
 
 		/* get the results (should just be one) */
 		completion_local = zif_completion_get_child (completion);
-		tmp = zif_md_search_pkgid (primary, pkgid, cancellable, completion_local, &error_local);
+		to_array[0] = pkgid;
+		tmp = zif_md_search_pkgid (primary, (gchar **) to_array, cancellable, completion_local, &error_local);
 		if (tmp == NULL) {
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED_TO_FIND,
 				     "failed to resolve pkgId to package: %s", error_local->message);
@@ -2629,10 +2766,11 @@ zif_store_remote_finalize (GObject *object)
 	g_free (store->priv->repomd_filename);
 	g_free (store->priv->directory);
 
-	g_object_unref (store->priv->md_other_db);
-	g_object_unref (store->priv->md_primary_db);
+	g_object_unref (store->priv->md_other_sql);
+	g_object_unref (store->priv->md_primary_sql);
 	g_object_unref (store->priv->md_primary_xml);
-	g_object_unref (store->priv->md_filelists);
+	g_object_unref (store->priv->md_filelists_sql);
+	g_object_unref (store->priv->md_filelists_xml);
 	g_object_unref (store->priv->md_comps);
 	g_object_unref (store->priv->md_updateinfo);
 	g_object_unref (store->priv->md_metalink);
@@ -2703,9 +2841,10 @@ zif_store_remote_init (ZifStoreRemote *store)
 	store->priv->config = zif_config_new ();
 	store->priv->monitor = zif_monitor_new ();
 	store->priv->lock = zif_lock_new ();
-	store->priv->md_filelists = ZIF_MD (zif_md_filelists_new ());
-	store->priv->md_other_db = ZIF_MD (zif_md_other_sql_new ());
-	store->priv->md_primary_db = ZIF_MD (zif_md_primary_sql_new ());
+	store->priv->md_filelists_sql = ZIF_MD (zif_md_filelists_sql_new ());
+	store->priv->md_filelists_xml = ZIF_MD (zif_md_filelists_xml_new ());
+	store->priv->md_other_sql = ZIF_MD (zif_md_other_sql_new ());
+	store->priv->md_primary_sql = ZIF_MD (zif_md_primary_sql_new ());
 	store->priv->md_primary_xml = ZIF_MD (zif_md_primary_xml_new ());
 	store->priv->md_metalink = ZIF_MD (zif_md_metalink_new ());
 	store->priv->md_mirrorlist = ZIF_MD (zif_md_mirrorlist_new ());
@@ -2785,6 +2924,7 @@ zif_store_remote_test (EggTest *test)
 	const gchar *id;
 	PkCategory *category;
 	guint i;
+	const gchar *in_array[] = { NULL, NULL };
 
 	if (!egg_test_start (test, "ZifStoreRemote"))
 		return;
@@ -2857,7 +2997,7 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get id");
 	id = zif_store_get_id (ZIF_STORE (store));
-	if (egg_strequal (id, "fedora"))
+	if (g_strcmp0 (id, "fedora") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid id '%s'", id);
@@ -2865,7 +3005,7 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get name");
 	id = zif_store_remote_get_name (store, NULL, completion, NULL);
-	if (egg_strequal (id, "Fedora 11 - i386"))
+	if (g_strcmp0 (id, "Fedora 11 - i386") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid name '%s'", id);
@@ -2882,7 +3022,8 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "resolve");
 	zif_completion_reset (completion);
-	array = zif_store_remote_resolve (ZIF_STORE (store), "kernel", NULL, completion, &error);
+	in_array[0] = "kernel";
+	array = zif_store_remote_resolve (ZIF_STORE (store), (gchar**)in_array, NULL, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -2900,7 +3041,8 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search name");
 	zif_completion_reset (completion);
-	array = zif_store_remote_search_name (ZIF_STORE (store), "power-manager", NULL, completion, &error);
+	in_array[0] = "power-manager";
+	array = zif_store_remote_search_name (ZIF_STORE (store), (gchar**)in_array, NULL, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -2918,7 +3060,8 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search details");
 	zif_completion_reset (completion);
-	array = zif_store_remote_search_details (ZIF_STORE (store), "browser plugin", NULL, completion, &error);
+	in_array[0] = "browser plugin";
+	array = zif_store_remote_search_details (ZIF_STORE (store), (gchar**)in_array, NULL, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -2936,7 +3079,8 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search file");
 	zif_completion_reset (completion);
-	array = zif_store_remote_search_file (ZIF_STORE (store), "/usr/bin/gnome-power-manager", NULL, completion, &error);
+	in_array[0] = "/usr/bin/gnome-power-manager";
+	array = zif_store_remote_search_file (ZIF_STORE (store), (gchar**)in_array, NULL, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
 	else

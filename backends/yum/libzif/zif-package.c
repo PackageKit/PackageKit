@@ -93,33 +93,27 @@ zif_package_error_quark (void)
  *
  * Compares one package versions against each other.
  *
- * Return value: 1 for a>b, 0 for a==b, -1 for b>a
+ * Return value: 1 for a>b, 0 for a==b, -1 for b>a, or G_MAXINT for error
  *
  * Since: 0.0.1
  **/
 gint
 zif_package_compare (ZifPackage *a, ZifPackage *b)
 {
-	const gchar *package_ida;
-	const gchar *package_idb;
 	gchar **splita;
 	gchar **splitb;
-	gint val = 0;
+	gint val = G_MAXINT;
 
-	g_return_val_if_fail (ZIF_IS_PACKAGE (a), 0);
-	g_return_val_if_fail (ZIF_IS_PACKAGE (b), 0);
+	g_return_val_if_fail (ZIF_IS_PACKAGE (a), G_MAXINT);
+	g_return_val_if_fail (ZIF_IS_PACKAGE (b), G_MAXINT);
 
-	/* shallow copy */
-	package_ida = zif_package_get_id (a);
-	package_idb = zif_package_get_id (b);
-	splita = pk_package_id_split (package_ida);
-	splitb = pk_package_id_split (package_idb);
+	/* no-copy */
+	splita = a->priv->package_id_split;
+	splitb = b->priv->package_id_split;
 
 	/* check name the same */
-	if (g_strcmp0 (splita[PK_PACKAGE_ID_NAME], splitb[PK_PACKAGE_ID_NAME]) != 0) {
-		egg_warning ("comparing between %s and %s", package_ida, package_idb);
+	if (g_strcmp0 (splita[PK_PACKAGE_ID_NAME], splitb[PK_PACKAGE_ID_NAME]) != 0)
 		goto out;
-	}
 
 	/* do a version compare */
 	val = zif_compare_evr (splita[PK_PACKAGE_ID_VERSION], splitb[PK_PACKAGE_ID_VERSION]);
@@ -128,8 +122,6 @@ zif_package_compare (ZifPackage *a, ZifPackage *b)
 	if (val == 0)
 		val = g_strcmp0 (splitb[PK_PACKAGE_ID_ARCH], splita[PK_PACKAGE_ID_ARCH]);
 out:
-	g_strfreev (splita);
-	g_strfreev (splitb);
 	return val;
 }
 
@@ -140,7 +132,7 @@ out:
  *
  * Returns the newest package from a list.
  *
- * Return value: a single %ZifPackage, or %NULL in the case of an error
+ * Return value: a single %ZifPackage, or %NULL in the case of an error. Use g_object_unref() when done.
  *
  * Since: 0.0.1
  **/
@@ -1017,7 +1009,6 @@ zif_package_get_files (ZifPackage *package, GError **error)
 	gboolean ret;
 
 	g_return_val_if_fail (ZIF_IS_PACKAGE (package), NULL);
-	g_return_val_if_fail (package->priv->package_id_split != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* not exists */

@@ -47,7 +47,6 @@
 #include "zif-repos.h"
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 /* in PackageKit we split categories from groups using a special @ prefix (bodge) */
 #define PK_ROLE_ENUM_SEARCH_CATEGORY	(PK_ROLE_ENUM_UNKNOWN + 1)
@@ -214,7 +213,7 @@ out:
  * zif_store_array_repos_search:
  **/
 static GPtrArray *
-zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, const gchar *search,
+zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, gchar **search,
 			      ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -502,7 +501,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_resolve (GPtrArray *store_array, const gchar *search,
+zif_store_array_resolve (GPtrArray *store_array, gchar **search,
 			 ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			 GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -528,7 +527,7 @@ zif_store_array_resolve (GPtrArray *store_array, const gchar *search,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_search_name (GPtrArray *store_array, const gchar *search,
+zif_store_array_search_name (GPtrArray *store_array, gchar **search,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -554,7 +553,7 @@ zif_store_array_search_name (GPtrArray *store_array, const gchar *search,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_search_details (GPtrArray *store_array, const gchar *search,
+zif_store_array_search_details (GPtrArray *store_array, gchar **search,
 				ZifStoreArrayErrorCb error_cb, gpointer user_data,
 				GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -580,7 +579,7 @@ zif_store_array_search_details (GPtrArray *store_array, const gchar *search,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_search_group (GPtrArray *store_array, const gchar *group_enum,
+zif_store_array_search_group (GPtrArray *store_array, gchar **group_enum,
 			      ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			      GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -606,7 +605,7 @@ zif_store_array_search_group (GPtrArray *store_array, const gchar *group_enum,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_search_category (GPtrArray *store_array, const gchar *group_id,
+zif_store_array_search_category (GPtrArray *store_array, gchar **group_id,
 				 ZifStoreArrayErrorCb error_cb, gpointer user_data,
 				 GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -663,7 +662,7 @@ out:
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_search_file (GPtrArray *store_array, const gchar *search,
+zif_store_array_search_file (GPtrArray *store_array, gchar **search,
 			     ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
@@ -718,7 +717,7 @@ zif_store_array_get_updates (GPtrArray *store_array, GPtrArray *packages,
 			     GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, (gchar *) packages,
+	return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_GET_UPDATES, (gchar **) packages,
 					     error_cb, user_data, cancellable, completion, error);
 }
 
@@ -739,14 +738,14 @@ zif_store_array_get_updates (GPtrArray *store_array, GPtrArray *packages,
  * Since: 0.0.1
  **/
 GPtrArray *
-zif_store_array_what_provides (GPtrArray *store_array, const gchar *search,
+zif_store_array_what_provides (GPtrArray *store_array, gchar **search,
 			       ZifStoreArrayErrorCb error_cb, gpointer user_data,
 			       GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* if this is a path, then we use the file list and treat like a SearchFile */
-	if (g_str_has_prefix (search, "/")) {
+	if (g_str_has_prefix (search[0], "/")) {
 		return zif_store_array_repos_search (store_array, PK_ROLE_ENUM_SEARCH_FILE, search,
 						     error_cb, user_data, cancellable, completion, error);
 	}

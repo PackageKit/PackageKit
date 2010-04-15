@@ -40,7 +40,6 @@
 #include <packagekit-glib2/packagekit.h>
 
 #include "egg-debug.h"
-#include "egg-string.h"
 
 #include "zif-utils.h"
 #include "zif-package.h"
@@ -655,7 +654,7 @@ zif_utils_test (EggTest *test)
 	 ************************************************************/
 	egg_test_title (test, "no epoch");
 	package_id = zif_package_id_from_nevra ("kernel", 0, "0.0.1", "1", "i386", "fedora");
-	if (egg_strequal (package_id, "kernel;0.0.1-1;i386;fedora"))
+	if (g_strcmp0 (package_id, "kernel;0.0.1-1;i386;fedora") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect package_id '%s'", package_id);
@@ -664,7 +663,7 @@ zif_utils_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "epoch value");
 	package_id = zif_package_id_from_nevra ("kernel", 2, "0.0.1", "1", "i386", "fedora");
-	if (egg_strequal (package_id, "kernel;2:0.0.1-1;i386;fedora"))
+	if (g_strcmp0 (package_id, "kernel;2:0.0.1-1;i386;fedora") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect package_id '%s'", package_id);
@@ -699,7 +698,7 @@ zif_utils_test (EggTest *test)
 	egg_test_title (test, "convert evr");
 	evr = g_strdup ("7:1.0.0-6");
 	zif_package_convert_evr (evr, &e, &v, &r);
-	if (egg_strequal (e, "7") && egg_strequal (v, "1.0.0") && egg_strequal (r, "6"))
+	if (g_strcmp0 (e, "7") == 0 && g_strcmp0 (v, "1.0.0") == 0 && g_strcmp0 (r, "6") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect evr '%s','%s','%s'", e, v, r);
@@ -709,7 +708,7 @@ zif_utils_test (EggTest *test)
 	egg_test_title (test, "convert evr no epoch");
 	evr = g_strdup ("1.0.0-6");
 	zif_package_convert_evr (evr, &e, &v, &r);
-	if (e == NULL && egg_strequal (v, "1.0.0") && egg_strequal (r, "6"))
+	if (e == NULL && g_strcmp0 (v, "1.0.0") == 0 && g_strcmp0 (r, "6") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect evr '%s','%s','%s'", e, v, r);
@@ -719,7 +718,7 @@ zif_utils_test (EggTest *test)
 	egg_test_title (test, "convert evr no epoch or release");
 	evr = g_strdup ("1.0.0");
 	zif_package_convert_evr (evr, &e, &v, &r);
-	if (e == NULL && egg_strequal (v, "1.0.0") && r == NULL)
+	if (e == NULL && g_strcmp0 (v, "1.0.0") == 0 && r == NULL)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "incorrect evr '%s','%s','%s'", e, v, r);

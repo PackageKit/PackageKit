@@ -220,7 +220,7 @@ zif_changeset_parse_header (ZifChangeset *changeset, const gchar *header, GError
 	/* check if there is a version field */
 	len = strlen (header);
 	if (header[len-1] == '>') {
-		zif_changeset_set_author (changeset, temp);
+		zif_changeset_set_author (changeset, header);
 		ret = TRUE;
 		goto out;
 	}

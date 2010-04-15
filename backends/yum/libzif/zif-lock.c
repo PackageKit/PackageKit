@@ -406,7 +406,7 @@ zif_lock_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "get pidfile");
 	pidfile = zif_config_get_string (config, "pidfile", NULL);
-	if (egg_strequal (pidfile, "../test/run/zif.lock"))
+	if (g_strcmp0 (pidfile, "../test/run/zif.lock") == 0)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "invalid value '%s'", pidfile);
