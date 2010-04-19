@@ -11,7 +11,6 @@ Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   GPLv2+
-Group:     System Environment/Libraries
 URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 
@@ -53,8 +52,6 @@ BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: gobject-introspection-devel
-#BuildRequires: gtk-sharp2-devel
-#BuildRequires: mono-core
 
 # for the fancy new yum accelerator
 BuildRequires: rpm-devel
@@ -277,9 +274,6 @@ ln -s ../pixmaps/comps icons
 popd > /dev/null
 
 %find_lang %name
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %post
 update-mime-database %{_datadir}/mime &> /dev/null || :
