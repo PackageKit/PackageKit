@@ -62,15 +62,36 @@ struct _ZifCompletionClass
 	void (*_zif_reserved4) (void);
 };
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#define zif_completion_done(completion)				zif_completion_done_real (completion, __func__, __LINE__)
+#define zif_completion_finished(completion)			zif_completion_finished_real (completion, __func__, __LINE__)
+#define zif_completion_set_number_steps(completion, steps)	zif_completion_set_number_steps_real (completion, steps, __func__, __LINE__)
+#elif defined(__GNUC__) && __GNUC__ >= 3
+#define zif_completion_done(completion)				zif_completion_done_real (completion, __FUNCTION__, __LINE__)
+#define zif_completion_finished(completion)			zif_completion_finished_real (completion, __FUNCTION__, __LINE__)
+#define zif_completion_set_number_steps(completion, steps)	zif_completion_set_number_steps_real (completion, steps, __FUNCTION__, __LINE__)
+#else
+#define zif_completion_done(completion)
+#define zif_completion_finished(completion)
+#define zif_completion_set_number_steps(completion, steps)
+#endif
+
 GType		 zif_completion_get_type		(void);
 ZifCompletion	*zif_completion_new			(void);
 ZifCompletion	*zif_completion_get_child		(ZifCompletion		*completion);
-gboolean	 zif_completion_set_number_steps	(ZifCompletion		*completion,
-							 guint			 steps);
+gboolean	 zif_completion_set_number_steps_real	(ZifCompletion		*completion,
+							 guint			 steps,
+							 const gchar		*function_name,
+							 gint			 function_line);
 gboolean	 zif_completion_set_percentage		(ZifCompletion		*completion,
 							 guint			 percentage);
 guint		 zif_completion_get_percentage		(ZifCompletion		*completion);
-gboolean	 zif_completion_done			(ZifCompletion		*completion);
+gboolean	 zif_completion_done_real		(ZifCompletion		*completion,
+							 const gchar		*function_name,
+							 gint			 function_line);
+gboolean	 zif_completion_finished_real		(ZifCompletion		*completion,
+							 const gchar		*function_name,
+							 gint			 function_line);
 gboolean	 zif_completion_reset			(ZifCompletion		*completion);
 
 G_END_DECLS

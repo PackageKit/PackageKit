@@ -379,11 +379,11 @@ zif_md_set_id (ZifMd *md, const gchar *id)
 }
 
 /**
- * zif_md_set_id:
+ * zif_md_set_store_remote:
  * @md: the #ZifMd object
- * @id: the repository id, e.g. "fedora"
+ * @remote: the #ZifStoreRemote that created this metadata object
  *
- * Sets the repository ID for this metadata.
+ * Sets the remote store for this metadata.
  *
  * Return value: %TRUE for success, %FALSE for failure
  *
@@ -399,6 +399,23 @@ zif_md_set_store_remote (ZifMd *md, ZifStoreRemote *remote)
 	/* do not take a reference, else the parent device never goes away */
 	md->priv->remote = remote;
 	return TRUE;
+}
+
+/**
+ * zif_md_get_store_remote:
+ * @md: the #ZifMd object
+ *
+ * Gets the remote store for this metadata.
+ *
+ * Return value: A #ZifStoreRemote or %NULL for unset
+ *
+ * Since: 0.0.1
+ **/
+ZifStoreRemote *
+zif_md_get_store_remote (ZifMd *md)
+{
+	g_return_val_if_fail (ZIF_IS_MD (md), NULL);
+	return md->priv->remote;
 }
 
 /**
@@ -938,6 +955,42 @@ zif_md_get_changelog (ZifMd *md, const gchar *pkgid, GCancellable *cancellable, 
 
 	/* do subclassed action */
 	array = klass->get_changelog (md, pkgid, cancellable, completion, error);
+out:
+	return array;
+}
+
+/**
+ * zif_md_get_files:
+ * @md: the #ZifMd object
+ * @package: the %ZifPackage
+ * @cancellable: a #GCancellable which is used to cancel tasks, or %NULL
+ * @completion: a #ZifCompletion to use for progress reporting
+ * @error: a #GError which is used on failure, or %NULL
+ *
+ * Gets the file list for a specific package.
+ *
+ * Return value: an array of strings, free with g_ptr_array_unref()
+ *
+ * Since: 0.0.1
+ **/
+GPtrArray *
+zif_md_get_files (ZifMd *md, ZifPackage *package, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	GPtrArray *array = NULL;
+	ZifMdClass *klass = ZIF_MD_GET_CLASS (md);
+
+	g_return_val_if_fail (ZIF_IS_MD (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* no support */
+	if (klass->get_files == NULL) {
+		g_set_error_literal (error, ZIF_MD_ERROR, ZIF_MD_ERROR_NO_SUPPORT,
+				     "operation cannot be performed on this md");
+		goto out;
+	}
+
+	/* do subclassed action */
+	array = klass->get_files (md, package, cancellable, completion, error);
 out:
 	return array;
 }

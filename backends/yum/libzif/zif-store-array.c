@@ -275,6 +275,7 @@ zif_store_array_repos_search (GPtrArray *store_array, PkRoleEnum role, gchar **s
 			/* do we need to skip this error */
 			if (error_cb != NULL && error_cb (store_array, error_local, user_data)) {
 				g_clear_error (&error_local);
+				zif_completion_finished (completion_local);
 				goto skip_error;
 			}
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
@@ -318,6 +319,7 @@ zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, G
 	guint i;
 	ZifStore *store;
 	ZifPackage *package = NULL;
+	GError *error_local = NULL;
 	ZifCompletion *completion_local = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -337,9 +339,23 @@ zif_store_array_find_package (GPtrArray *store_array, const gchar *package_id, G
 		store = g_ptr_array_index (store_array, i);
 
 		completion_local = zif_completion_get_child (completion);
-		package = zif_store_find_package (store, package_id, cancellable, completion_local, NULL);
-		if (package != NULL)
+		package = zif_store_find_package (store, package_id, cancellable, completion_local, &error_local);
+
+		/* get results */
+		if (package == NULL) {
+			if (error_local->code == ZIF_STORE_ERROR_FAILED_TO_FIND) {
+				/* do not abort */
+				g_clear_error (&error_local);
+				zif_completion_finished (completion_local);
+			} else {
+				g_set_error (error, 1, 0, "failed to find package: %s", error_local->message);
+				g_error_free (error_local);
+				goto out;
+			}
+		} else {
+			zif_completion_finished (completion);
 			break;
+		}
 
 		/* this section done */
 		zif_completion_done (completion);
@@ -404,6 +420,7 @@ zif_store_array_clean (GPtrArray *store_array,
 			if (error_cb != NULL && error_cb (store_array, error_local, user_data)) {
 				ret = TRUE;
 				g_clear_error (&error_local);
+				zif_completion_finished (completion_local);
 				goto skip_error;
 			}
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
@@ -469,6 +486,7 @@ zif_store_array_refresh (GPtrArray *store_array, gboolean force,
 			if (error_cb != NULL && error_cb (store_array, error_local, user_data)) {
 				ret = TRUE;
 				g_clear_error (&error_local);
+				zif_completion_finished (completion_local);
 				goto skip_error;
 			}
 			g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,

@@ -145,7 +145,7 @@ zif_md_other_sql_sqlite_create_changelog_cb (void *data, gint argc, gchar **argv
 	changeset = zif_changeset_new ();
 	zif_changeset_set_date (changeset, date);
 	zif_changeset_set_description (changeset, changelog);
-	ret = zif_changeset_parse_header (changeset, author, NULL);
+	ret = zif_changeset_parse_header (changeset, author, &error);
 	if (!ret) {
 		egg_warning ("failed to parse header: %s", error->message);
 		g_error_free (error);
@@ -299,6 +299,9 @@ zif_md_other_sql_get_changelog (ZifMd *md, const gchar *pkgid,
 
 		/* clear array */
 		g_ptr_array_unref (array_tmp);
+
+		/* this section done */
+		zif_completion_done (completion_local);
 	}
 
 	/* this section done */
@@ -467,7 +470,7 @@ zif_md_other_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search for files");
 	zif_completion_reset (completion);
-	array = zif_md_other_sql_get_changelog (ZIF_MD_OTHER_SQL (md),
+	array = zif_md_other_sql_get_changelog (ZIF_MD (md),
 						"42b8d71b303b19c2fcc2b06bb9c764f2902dd72b9376525025ee9ba4a41c38e9",
 						cancellable, completion, &error);
 	if (array != NULL)

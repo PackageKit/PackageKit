@@ -40,6 +40,7 @@
 #include "zif-package-remote.h"
 #include "zif-groups.h"
 #include "zif-string.h"
+#include "zif-store-remote.h"
 
 #define ZIF_PACKAGE_REMOTE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ZIF_TYPE_PACKAGE_REMOTE, ZifPackageRemotePrivate))
 
@@ -51,6 +52,7 @@
 struct _ZifPackageRemotePrivate
 {
 	ZifGroups		*groups;
+	ZifStoreRemote		*store_remote;
 	gchar			*pkgid;
 };
 
@@ -161,6 +163,80 @@ zif_package_remote_get_pkgid (ZifPackageRemote *pkg)
 }
 
 /**
+ * zif_package_remote_set_pkgid:
+ * @pkg: the #ZifPackageRemote object
+ * @pkgid: the pkgid hash.
+ *
+ * Sets the pkgid used internally to track the package item.
+ *
+ * Return value: the pkgid hash.
+ *
+ * Since: 0.0.1
+ **/
+void
+zif_package_remote_set_pkgid (ZifPackageRemote *pkg, const gchar *pkgid)
+{
+	g_return_if_fail (ZIF_IS_PACKAGE_REMOTE (pkg));
+	g_return_if_fail (pkgid != NULL);
+	g_return_if_fail (pkg->priv->pkgid == NULL);
+	pkg->priv->pkgid = g_strdup (pkgid);
+}
+
+/**
+ * zif_package_remote_set_store_remote:
+ * @pkg: the #ZifPackageRemote object
+ * @store: the #ZifStoreRemote that created this package
+ *
+ * Sets the store used to create this package, which we may need of we ever
+ * need to ensure() data at runtime.
+ *
+ * Return value: the pkgid hash.
+ *
+ * Since: 0.0.1
+ **/
+void
+zif_package_remote_set_store_remote (ZifPackageRemote *pkg, ZifStoreRemote *store)
+{
+	g_return_if_fail (ZIF_IS_PACKAGE_REMOTE (pkg));
+	g_return_if_fail (ZIF_IS_STORE_REMOTE (store));
+	g_return_if_fail (pkg->priv->store_remote == NULL);
+	pkg->priv->store_remote = g_object_ref (store);
+}
+
+/*
+ * zif_package_remote_ensure_data:
+ */
+static gboolean
+zif_package_remote_ensure_data (ZifPackage *pkg, ZifPackageEnsureType type, GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	gboolean ret = TRUE;
+	GPtrArray *array = NULL;
+	ZifPackageRemote *pkg_remote = ZIF_PACKAGE_REMOTE (pkg);
+
+	if (type == ZIF_PACKAGE_ENSURE_TYPE_FILES) {
+
+		/* get the file list for this package */
+		array = zif_store_remote_get_files (pkg_remote->priv->store_remote, pkg, cancellable, completion, error);
+		if (array == NULL) {
+			ret = FALSE;
+			goto out;
+		}
+
+		/* set for this package */
+		zif_package_set_files (pkg, array);
+	} else {
+		g_set_error (error, 1, 0,
+			     "Getting ensure type '%s' not supported on a ZifPackageRemote",
+			     zif_package_ensure_type_to_string (type));
+		ret = FALSE;
+	}
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return ret;
+}
+
+/**
  * zif_package_remote_finalize:
  **/
 static void
@@ -174,6 +250,8 @@ zif_package_remote_finalize (GObject *object)
 
 	g_free (pkg->priv->pkgid);
 	g_object_unref (pkg->priv->groups);
+	if (pkg->priv->store_remote != NULL)
+		g_object_unref (pkg->priv->store_remote);
 
 	G_OBJECT_CLASS (zif_package_remote_parent_class)->finalize (object);
 }
@@ -185,7 +263,9 @@ static void
 zif_package_remote_class_init (ZifPackageRemoteClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	ZifPackageClass *package_class = ZIF_PACKAGE_CLASS (klass);
 	object_class->finalize = zif_package_remote_finalize;
+	package_class->ensure_data = zif_package_remote_ensure_data;
 	g_type_class_add_private (klass, sizeof (ZifPackageRemotePrivate));
 }
 
@@ -197,6 +277,7 @@ zif_package_remote_init (ZifPackageRemote *pkg)
 {
 	pkg->priv = ZIF_PACKAGE_REMOTE_GET_PRIVATE (pkg);
 	pkg->priv->pkgid = NULL;
+	pkg->priv->store_remote = NULL;
 	pkg->priv->groups = zif_groups_new ();
 }
 

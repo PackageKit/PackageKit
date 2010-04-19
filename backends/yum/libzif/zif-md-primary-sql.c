@@ -59,6 +59,7 @@ struct _ZifMdPrimarySqlPrivate
 typedef struct {
 	const gchar		*id;
 	GPtrArray		*packages;
+	ZifMdPrimarySql		*md;
 } ZifMdPrimarySqlData;
 
 G_DEFINE_TYPE (ZifMdPrimarySql, zif_md_primary_sql, ZIF_TYPE_MD)
@@ -123,8 +124,16 @@ zif_md_primary_sql_sqlite_create_package_cb (void *data, gint argc, gchar **argv
 {
 	ZifMdPrimarySqlData *fldata = (ZifMdPrimarySqlData *) data;
 	ZifPackageRemote *package;
+	ZifStoreRemote *store_remote;
 
 	package = zif_package_remote_new ();
+	store_remote = zif_md_get_store_remote (ZIF_MD (fldata->md));
+	if (store_remote != NULL) {
+		/* this is not set in a test harness */
+		zif_package_remote_set_store_remote (package, store_remote);
+	} else {
+		egg_warning ("no remote store for %s", argv[1]);
+	}
 	zif_package_remote_set_from_repo (package, argc, col_name, argv, fldata->id, NULL);
 	g_ptr_array_add (fldata->packages, package);
 
@@ -162,6 +171,7 @@ zif_md_primary_sql_search (ZifMdPrimarySql *md, const gchar *statement,
 
 	/* create data struct we can pass to the callback */
 	data = g_new0 (ZifMdPrimarySqlData, 1);
+	data->md = md;
 	data->id = zif_md_get_id (ZIF_MD (md));
 	data->packages = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	rc = sqlite3_exec (md->priv->db, statement, zif_md_primary_sql_sqlite_create_package_cb, data, &error_msg);
@@ -449,7 +459,7 @@ zif_md_primary_sql_what_provides (ZifMd *md, gchar **search,
 
 		/* get packages for pkgKey */
 		completion_loop = zif_completion_get_child (completion_local);
-		array_tmp = zif_md_primary_sql_search_pkgkey (md, pkgkey, cancellable, completion, error);
+		array_tmp = zif_md_primary_sql_search_pkgkey (md, pkgkey, cancellable, completion_loop, error);
 		if (array_tmp == NULL) {
 			g_ptr_array_unref (array);
 			array = NULL;
@@ -468,6 +478,9 @@ zif_md_primary_sql_what_provides (ZifMd *md, gchar **search,
 
 		/* clear array */
 		g_ptr_array_unref (array_tmp);
+
+		/* this section done */
+		zif_completion_done (completion_local);
 	}
 
 	/* this section done */
@@ -602,7 +615,7 @@ zif_md_primary_sql_test (EggTest *test)
 	GError *error = NULL;
 	GPtrArray *array;
 	ZifPackage *package;
-	ZifString *summary;
+	const gchar *summary;
 	GCancellable *cancellable;
 	ZifCompletion *completion;
 	gchar *data[] = { "gnome-power-manager", "gnome-color-manager", NULL };
@@ -685,7 +698,7 @@ zif_md_primary_sql_test (EggTest *test)
 
 	/************************************************************/
 	egg_test_title (test, "resolve");
-	array = zif_md_primary_sql_resolve (md, data, cancellable, completion, &error);
+	array = zif_md_primary_sql_resolve (ZIF_MD (md), data, cancellable, completion, &error);
 	if (array != NULL)
 		egg_test_success (test, NULL);
 	else
@@ -698,12 +711,12 @@ zif_md_primary_sql_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct value");
 	package = g_ptr_array_index (array, 0);
-	summary = zif_package_get_summary (package, NULL);
-	if (g_strcmp0 (zif_string_get_value (summary), "GNOME Power Manager") == 0)
+	zif_completion_reset (completion);
+	summary = zif_package_get_summary (package, NULL, completion, NULL);
+	if (g_strcmp0 (summary, "GNOME Power Manager") == 0)
 		egg_test_success (test, NULL);
 	else
-		egg_test_failed (test, "failed to get correct summary '%s'", zif_string_get_value (summary));
-	zif_string_unref (summary);
+		egg_test_failed (test, "failed to get correct summary '%s'", summary);
 	g_ptr_array_unref (array);
 
 	g_object_unref (cancellable);

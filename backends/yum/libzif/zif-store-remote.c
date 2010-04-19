@@ -1563,7 +1563,14 @@ zif_store_remote_set_enabled (ZifStoreRemote *store, gboolean enabled, GError **
 	g_key_file_set_boolean (file, store->priv->id, "enabled", store->priv->enabled);
 
 	/* save new data to file */
-	data = g_key_file_to_data (file, NULL, NULL);
+	data = g_key_file_to_data (file, NULL, &error_local);
+	if (data == NULL) {
+		ret = FALSE;
+		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
+			     "failed to get save data: %s", error_local->message);
+		g_error_free (error_local);
+		goto out;
+	}
 	ret = g_file_set_contents (store->priv->repo_filename, data, -1, &error_local);
 	if (!ret) {
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
@@ -1888,6 +1895,7 @@ zif_store_remote_search_category (ZifStore *store, gchar **group_id, GCancellabl
 	if (location == NULL) {
 		/* empty array, as we want success */
 		array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+		zif_completion_finished (completion);
 		goto out;
 	}
 
@@ -1900,6 +1908,7 @@ zif_store_remote_search_category (ZifStore *store, gchar **group_id, GCancellabl
 		if (g_str_has_prefix (error_local->message, "could not find group")) {
 			array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 			g_error_free (error_local);
+			zif_completion_finished (completion);
 			goto out;
 		}
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
@@ -2717,6 +2726,22 @@ out:
 }
 
 /**
+ * zif_store_remote_get_files:
+ **/
+GPtrArray *
+zif_store_remote_get_files (ZifStoreRemote *store, ZifPackage *package,
+			    GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	ZifMd *filelists;
+
+	g_return_val_if_fail (ZIF_IS_STORE_REMOTE (store), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	filelists = zif_store_remote_get_filelists (store);
+	return zif_md_get_files (filelists, package, cancellable, completion, error);
+}
+
+/**
  * zif_store_remote_file_monitor_cb:
  **/
 static void
@@ -3179,7 +3204,8 @@ zif_store_remote_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "search category");
 	zif_completion_reset (completion);
-	array = zif_store_remote_search_category (ZIF_STORE (store), "admin-tools", NULL, completion, &error);
+	in_array[0] = "admin-tools";
+	array = zif_store_remote_search_category (ZIF_STORE (store), (gchar**)in_array, NULL, completion, &error);
 	if (array == NULL)
 		egg_test_failed (test, "no data: %s", error->message);
 	else if (array->len > 0)

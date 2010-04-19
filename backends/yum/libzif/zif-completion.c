@@ -91,8 +91,10 @@ struct _ZifCompletionPrivate
 	guint			 current;
 	guint			 last_percentage;
 	ZifCompletion		*child;
+	ZifCompletion		*parent;
 	gulong			 percentage_child_id;
 	gulong			 subpercentage_child_id;
+	gchar			*id;
 };
 
 enum {
@@ -205,7 +207,6 @@ zif_completion_child_percentage_changed_cb (ZifCompletion *child, guint percenta
 	/* did we call done on a completion that did not have a size set? */
 	if (completion->priv->steps == 0) {
 		egg_warning ("done on a completion %p that did not have a size set!", completion);
-		zif_debug_crash ();
 		return;
 	}
 
@@ -316,6 +317,7 @@ zif_completion_get_child (ZifCompletion *completion)
 	/* connect up signals */
 	child = zif_completion_new ();
 	completion->priv->child = g_object_ref (child);
+	completion->priv->child->priv->parent = g_object_ref (completion);
 	completion->priv->percentage_child_id =
 		g_signal_connect (child, "percentage-changed", G_CALLBACK (zif_completion_child_percentage_changed_cb), completion);
 	completion->priv->subpercentage_child_id =
@@ -341,17 +343,20 @@ zif_completion_get_child (ZifCompletion *completion)
  * Since: 0.0.1
  **/
 gboolean
-zif_completion_set_number_steps (ZifCompletion *completion, guint steps)
+zif_completion_set_number_steps_real (ZifCompletion *completion, guint steps, const gchar *function_name, gint function_line)
 {
 	g_return_val_if_fail (ZIF_IS_COMPLETION (completion), FALSE);
 	g_return_val_if_fail (steps != 0, FALSE);
 
 	/* did we call done on a completion that did not have a size set? */
 	if (completion->priv->steps != 0) {
-		egg_warning ("steps already set (%i)!", completion->priv->steps);
-		zif_debug_crash ();
+		egg_warning ("steps already set (%i)! [%s:%i]",
+			     completion->priv->steps, function_name, function_line);
 		return FALSE;
 	}
+
+	/* set id */
+	completion->priv->id = g_strdup_printf ("%s:%i", function_name, function_line);
 
 	/* imply reset */
 	zif_completion_reset (completion);
@@ -360,6 +365,18 @@ zif_completion_set_number_steps (ZifCompletion *completion, guint steps)
 	completion->priv->steps = steps;
 
 	return TRUE;
+}
+
+/**
+ * zif_completion_print_parent_chain:
+ **/
+static void
+zif_completion_print_parent_chain (ZifCompletion *completion, guint level)
+{
+	if (completion->priv->parent != NULL)
+		zif_completion_print_parent_chain (completion->priv->parent, level + 1);
+	g_print ("%i) %s (%i/%i)\n",
+		 level, completion->priv->id, completion->priv->current, completion->priv->steps);
 }
 
 /**
@@ -373,23 +390,40 @@ zif_completion_set_number_steps (ZifCompletion *completion, guint steps)
  * Since: 0.0.1
  **/
 gboolean
-zif_completion_done (ZifCompletion *completion)
+zif_completion_done_real (ZifCompletion *completion, const gchar *function_name, gint function_line)
 {
+	gboolean ret = TRUE;
 	gfloat percentage;
 
 	g_return_val_if_fail (ZIF_IS_COMPLETION (completion), FALSE);
 
 	/* did we call done on a completion that did not have a size set? */
 	if (completion->priv->steps == 0) {
-		egg_warning ("done on a completion %p that did not have a size set!", completion);
-		zif_debug_crash ();
-		return FALSE;
+		egg_warning ("done on a completion %p that did not have a size set! [%s:%i]",
+			     completion, function_name, function_line);
+		zif_completion_print_parent_chain (completion, 0);
+		ret = FALSE;
+		goto out;
 	}
 
 	/* is already at 100%? */
 	if (completion->priv->current == completion->priv->steps) {
-		egg_warning ("already at 100%% completion");
-		return FALSE;
+		egg_warning ("already at 100%% completion [%s:%i]", function_name, function_line);
+		zif_completion_print_parent_chain (completion, 0);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* is child not at 100%? */
+	if (completion->priv->child != NULL) {
+		ZifCompletionPrivate *child_priv = completion->priv->child->priv;
+		if (child_priv->current != child_priv->steps) {
+			egg_warning ("child is at %i/%i steps and parent done [%s:%i]",
+				     child_priv->current, child_priv->steps, function_name, function_line);
+			zif_completion_print_parent_chain (completion->priv->child, 0);
+			ret = FALSE;
+			/* do not abort, as we want to clean this up */
+		}
 	}
 
 	/* another */
@@ -402,6 +436,43 @@ zif_completion_done (ZifCompletion *completion)
 	/* reset child if it exists */
 	if (completion->priv->child != NULL)
 		zif_completion_reset (completion->priv->child);
+out:
+	return ret;
+}
+
+/**
+ * zif_completion_finished:
+ * @completion: the #ZifCompletion object
+ *
+ * Called when the current sub-task wants to finish early and still complete.
+ *
+ * Return value: %TRUE for success, %FALSE for failure
+ *
+ * Since: 0.0.1
+ **/
+gboolean
+zif_completion_finished_real (ZifCompletion *completion, const gchar *function_name, gint function_line)
+{
+	g_return_val_if_fail (ZIF_IS_COMPLETION (completion), FALSE);
+
+	/* did we call done on a completion that did not have a size set? */
+	if (completion->priv->steps == 0) {
+		egg_warning ("finished on a completion %p that did not have a size set! [%s:%i]",
+			     completion, function_name, function_line);
+		return FALSE;
+	}
+
+	/* is already at 100%? */
+	if (completion->priv->current == completion->priv->steps) {
+		egg_warning ("already at 100%% completion [%s:%i]", function_name, function_line);
+		return FALSE;
+	}
+
+	/* all done */
+	completion->priv->current = completion->priv->steps;
+
+	/* set new percentage */
+	zif_completion_set_percentage (completion, 100);
 
 	return TRUE;
 }
@@ -420,6 +491,8 @@ zif_completion_finalize (GObject *object)
 
 	/* unref child too */
 	zif_completion_reset (completion);
+	if (completion->priv->parent != NULL)
+		g_object_unref (completion->priv->parent);
 
 	G_OBJECT_CLASS (zif_completion_parent_class)->finalize (object);
 }
@@ -458,6 +531,7 @@ zif_completion_init (ZifCompletion *completion)
 {
 	completion->priv = ZIF_COMPLETION_GET_PRIVATE (completion);
 	completion->priv->child = NULL;
+	completion->priv->parent = NULL;
 	completion->priv->steps = 0;
 	completion->priv->current = 0;
 	completion->priv->last_percentage = 0;

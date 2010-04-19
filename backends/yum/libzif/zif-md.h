@@ -114,6 +114,11 @@ struct _ZifMdClass
 						 GCancellable		*cancellable,
 						 ZifCompletion		*completion,
 						 GError			**error);
+	GPtrArray	*(*get_files)		(ZifMd			*md,
+						 ZifPackage		*package,
+						 GCancellable		*cancellable,
+						 ZifCompletion		*completion,
+						 GError			**error);
 };
 
 /* types of metadata */
@@ -152,6 +157,7 @@ gboolean	 zif_md_set_mdtype			(ZifMd		*md,
 							 ZifMdType	 type);
 gboolean	 zif_md_set_store_remote		(ZifMd		*md,
 							 ZifStoreRemote	*remote);
+ZifStoreRemote	*zif_md_get_store_remote		(ZifMd		*md);
 gboolean	 zif_md_set_id				(ZifMd		*md,
 							 const gchar	*id);
 gboolean	 zif_md_set_filename			(ZifMd		*md,
@@ -237,6 +243,11 @@ GPtrArray	*zif_md_find_package			(ZifMd		*md,
 							 GError		**error);
 GPtrArray	*zif_md_get_changelog			(ZifMd		*md,
 							 const gchar	*pkgid,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
+							 GError		**error);
+GPtrArray	*zif_md_get_files			(ZifMd		*md,
+							 ZifPackage	*package,
 							 GCancellable	*cancellable,
 							 ZifCompletion	*completion,
 							 GError		**error);

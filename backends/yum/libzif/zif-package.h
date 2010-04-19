@@ -78,6 +78,8 @@ struct _ZifPackageClass
 	/* vtable */
 	gboolean	 (*ensure_data)			(ZifPackage	*package,
 							 ZifPackageEnsureType type,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 };
 
@@ -93,27 +95,49 @@ ZifPackage		*zif_package_new		(void);
 /* public getters */
 const gchar		*zif_package_get_id		(ZifPackage	*package);
 const gchar		*zif_package_get_name		(ZifPackage	*package);
-ZifString		*zif_package_get_summary	(ZifPackage	*package,
+const gchar		*zif_package_get_summary	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
-ZifString		*zif_package_get_description	(ZifPackage	*package,
+const gchar		*zif_package_get_description	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
-ZifString		*zif_package_get_license	(ZifPackage	*package,
+const gchar		*zif_package_get_license	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
-ZifString		*zif_package_get_url		(ZifPackage	*package,
+const gchar		*zif_package_get_url		(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
-ZifString		*zif_package_get_filename	(ZifPackage	*package,
+const gchar		*zif_package_get_filename	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
-ZifString		*zif_package_get_category	(ZifPackage	*package,
+const gchar		*zif_package_get_category	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 PkGroupEnum		 zif_package_get_group		(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 guint64			 zif_package_get_size		(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 GPtrArray		*zif_package_get_files		(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 GPtrArray		*zif_package_get_requires	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 GPtrArray		*zif_package_get_provides	(ZifPackage	*package,
+							 GCancellable	*cancellable,
+							 ZifCompletion	*completion,
 							 GError		**error);
 
 /* internal setters: TODO, in seporate -internal header file */
@@ -165,6 +189,7 @@ gint			 zif_package_compare		(ZifPackage	*a,
 ZifPackage		*zif_package_array_get_newest	(GPtrArray	*array,
 							 GError		**error);
 gboolean		 zif_package_array_filter_newest (GPtrArray	*packages);
+const gchar		*zif_package_ensure_type_to_string (ZifPackageEnsureType type);
 
 G_END_DECLS
 

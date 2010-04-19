@@ -54,6 +54,7 @@ typedef enum {
 
 #include "zif-md.h"
 #include "zif-md-filelists-xml.h"
+#include "zif-package-remote.h"
 
 #include "egg-debug.h"
 
@@ -120,12 +121,12 @@ zif_md_filelists_xml_parser_start_element (GMarkupParseContext *context, const g
 
 			if (g_strcmp0 (element_name, "package") == 0) {
 				filelists_xml->priv->section_list = ZIF_MD_FILELISTS_XML_SECTION_LIST_PACKAGE;
-				filelists_xml->priv->package_temp = zif_package_new ();
+				filelists_xml->priv->package_temp = ZIF_PACKAGE (zif_package_remote_new ());
 				filelists_xml->priv->array_temp = g_ptr_array_new_with_free_func (g_free);
 				for (i=0; attribute_names[i] != NULL; i++) {
 					if (g_strcmp0 (attribute_names[i], "pkgid") == 0) {
-						g_object_set_data_full (G_OBJECT (filelists_xml->priv->package_temp),
-									"pkgid", g_strdup (attribute_values[i]), g_free);
+						zif_package_remote_set_pkgid (ZIF_PACKAGE_REMOTE (filelists_xml->priv->package_temp),
+									      attribute_values[i]);
 					}
 				}
 				goto out;
@@ -321,22 +322,22 @@ out:
 }
 
 /**
- * zif_md_filelists_xml_search_file:
+ * zif_md_filelists_xml_get_files:
  **/
 static GPtrArray *
-zif_md_filelists_xml_search_file (ZifMd *md, gchar **search,
-				  GCancellable *cancellable, ZifCompletion *completion, GError **error)
+zif_md_filelists_xml_get_files (ZifMd *md, ZifPackage *package,
+				GCancellable *cancellable, ZifCompletion *completion, GError **error)
 {
 	GPtrArray *array = NULL;
 	GPtrArray *packages;
-	ZifPackage *package;
-	GPtrArray *files = NULL;
-	const gchar *filename;
-	guint i, j, k;
+	ZifPackage *package_tmp;
+	guint i;
 	gboolean ret;
 	const gchar *pkgid;
+	const gchar *pkgid_tmp;
 	GError *error_local = NULL;
 	ZifCompletion *completion_local;
+	ZifCompletion *completion_loop;
 	ZifMdFilelistsXml *md_filelists = ZIF_MD_FILELISTS_XML (md);
 
 	g_return_val_if_fail (ZIF_IS_MD_FILELISTS_XML (md), NULL);
@@ -363,13 +364,88 @@ zif_md_filelists_xml_search_file (ZifMd *md, gchar **search,
 		zif_completion_done (completion);
 	}
 
+	/* setup steps */
+	completion_local = zif_completion_get_child (completion);
+	zif_completion_set_number_steps (completion_local, md_filelists->priv->array->len);
+
+	/* search array */
+	pkgid = zif_package_remote_get_pkgid (ZIF_PACKAGE_REMOTE (package));
+	packages = md_filelists->priv->array;
+	for (i=0; i<packages->len; i++) {
+		package_tmp = g_ptr_array_index (packages, i);
+		pkgid_tmp = zif_package_remote_get_pkgid (ZIF_PACKAGE_REMOTE (package_tmp));
+		if (g_strcmp0 (pkgid, pkgid_tmp) == 0) {
+			completion_loop = zif_completion_get_child (completion_local);
+			array = zif_package_get_files (package_tmp, cancellable, completion_loop, NULL);
+			break;
+		}
+
+		/* this section done */
+		zif_completion_done (completion_local);
+	}
+
+	/* this section done */
+	zif_completion_done (completion);
+out:
+	return array;
+}
+
+/**
+ * zif_md_filelists_xml_search_file:
+ **/
+static GPtrArray *
+zif_md_filelists_xml_search_file (ZifMd *md, gchar **search,
+				  GCancellable *cancellable, ZifCompletion *completion, GError **error)
+{
+	GPtrArray *array = NULL;
+	GPtrArray *packages;
+	ZifPackage *package;
+	GPtrArray *files = NULL;
+	const gchar *filename;
+	guint i, j, k;
+	gboolean ret;
+	const gchar *pkgid;
+	GError *error_local = NULL;
+	ZifCompletion *completion_local;
+	ZifCompletion *completion_loop;
+	ZifMdFilelistsXml *md_filelists = ZIF_MD_FILELISTS_XML (md);
+
+	g_return_val_if_fail (ZIF_IS_MD_FILELISTS_XML (md), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* setup completion */
+	if (md_filelists->priv->loaded)
+		zif_completion_set_number_steps (completion, 1);
+	else
+		zif_completion_set_number_steps (completion, 2);
+
+	/* if not already loaded, load */
+	if (!md_filelists->priv->loaded) {
+		completion_local = zif_completion_get_child (completion);
+		ret = zif_md_load (ZIF_MD (md), cancellable, completion_local, &error_local);
+		if (!ret) {
+			g_set_error (error, ZIF_MD_ERROR, ZIF_MD_ERROR_FAILED_TO_LOAD,
+				     "failed to load md_filelists_xml file: %s", error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
+
+		/* this section done */
+		zif_completion_done (completion);
+	}
+
+	/* setup steps */
+	completion_local = zif_completion_get_child (completion);
+	zif_completion_set_number_steps (completion_local, md_filelists->priv->array->len);
+
 	/* search array */
 	array = g_ptr_array_new_with_free_func (g_free);
 	packages = md_filelists->priv->array;
 	for (i=0; i<packages->len; i++) {
 		package = g_ptr_array_index (packages, i);
-		pkgid = g_object_get_data (G_OBJECT (package), "pkgid");
-		files = zif_package_get_files (package, NULL);
+		pkgid = zif_package_remote_get_pkgid (ZIF_PACKAGE_REMOTE (package));
+		completion_loop = zif_completion_get_child (completion_local);
+		files = zif_package_get_files (package, cancellable, completion_loop, NULL);
 		for (k=0; k<files->len; k++) {
 			filename = g_ptr_array_index (files, k);
 			for (j=0; search[j] != NULL; j++) {
@@ -379,6 +455,9 @@ zif_md_filelists_xml_search_file (ZifMd *md, gchar **search,
 				}
 			}
 		}
+
+		/* this section done */
+		zif_completion_done (completion_local);
 	}
 
 	/* this section done */
@@ -420,6 +499,7 @@ zif_md_filelists_xml_class_init (ZifMdFilelistsXmlClass *klass)
 	md_class->load = zif_md_filelists_xml_load;
 	md_class->unload = zif_md_filelists_xml_unload;
 	md_class->search_file = zif_md_filelists_xml_search_file;
+	md_class->get_files = zif_md_filelists_xml_get_files;
 
 	g_type_class_add_private (klass, sizeof (ZifMdFilelistsXmlPrivate));
 }
@@ -569,7 +649,9 @@ zif_md_filelists_xml_test (EggTest *test)
 	/************************************************************/
 	egg_test_title (test, "correct value");
 	pkgid = g_ptr_array_index (array, 0);
-	if (pkgid[0] != '\0' && strlen (pkgid) == 64)
+	if (pkgid == NULL)
+		egg_test_failed (test, "failed to get a pkgId");
+	else if (pkgid[0] != '\0' && strlen (pkgid) == 64)
 		egg_test_success (test, NULL);
 	else
 		egg_test_failed (test, "failed to get a correct pkgId '%s' (%i)", pkgid, strlen (pkgid));

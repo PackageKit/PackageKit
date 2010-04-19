@@ -73,6 +73,11 @@ const gchar	*zif_store_remote_get_name		(ZifStoreRemote		*store,
 							 GCancellable		*cancellable,
 							 ZifCompletion		*completion,
 							 GError			**error);
+GPtrArray	*zif_store_remote_get_files		(ZifStoreRemote		*store,
+							 ZifPackage		*package,
+							 GCancellable		*cancellable,
+							 ZifCompletion		*completion,
+							 GError			**error);
 gboolean	 zif_store_remote_get_enabled		(ZifStoreRemote		*store,
 							 GCancellable		*cancellable,
 							 ZifCompletion		*completion,

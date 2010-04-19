@@ -412,6 +412,22 @@ zif_config_get_basearch_array (ZifConfig *config)
 }
 
 /**
+ * zif_config_get_release_filename:
+ **/
+static const gchar *
+zif_config_get_release_filename (ZifConfig *config)
+{
+	const gchar *filename;
+	filename = "/etc/fedora-release";
+	if (g_file_test (filename, G_FILE_TEST_EXISTS))
+		return filename;
+	filename = "/etc/redhat-release";
+	if (g_file_test (filename, G_FILE_TEST_EXISTS))
+		return filename;
+	return NULL;
+}
+
+/**
  * zif_config_set_filename:
  * @config: the #ZifConfig object
  * @filename: the system wide config file, e.g. "/etc/yum.conf"
@@ -430,6 +446,7 @@ zif_config_set_filename (ZifConfig *config, const gchar *filename, GError **erro
 	GError *error_local = NULL;
 	gchar *basearch = NULL;
 	gchar *releasever = NULL;
+	const gchar *release_filename;
 	const gchar *text;
 	GPtrArray *array;
 	guint i;
@@ -471,8 +488,18 @@ zif_config_set_filename (ZifConfig *config, const gchar *filename, GError **erro
 	/* calculate the release version if not specified in the config file */
 	releasever = zif_config_get_string (config, "releasever", NULL);
 	if (releasever == NULL) {
+
+		/* get correct file */
+		release_filename = zif_config_get_release_filename (config);
+		if (release_filename == NULL) {
+			ret = FALSE;
+			g_set_error_literal (error, ZIF_CONFIG_ERROR, ZIF_CONFIG_ERROR_FAILED,
+					     "could not get a correct release filename");
+			goto out;
+		}
+
 		/* get distro constants from fedora-release */
-		ret = g_file_get_contents ("/etc/fedora-release", &releasever, NULL, &error_local);
+		ret = g_file_get_contents (release_filename, &releasever, NULL, &error_local);
 		if (!ret) {
 			g_set_error (error, ZIF_CONFIG_ERROR, ZIF_CONFIG_ERROR_FAILED,
 				     "failed to get distro release version: %s", error_local->message);
