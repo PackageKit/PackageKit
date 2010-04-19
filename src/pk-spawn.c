@@ -407,6 +407,13 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 		goto out;
 	}
 
+	/* is there a process running? */
+	if (spawn->priv->child_pid == -1) {
+		egg_debug ("no child pid");
+		ret = FALSE;
+		goto out;
+	}
+
 	/* buffer always has to have trailing newline */
 	egg_debug ("sending '%s'", command);
 	buffer = g_strdup_printf ("%s\n", command);
