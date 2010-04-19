@@ -34,6 +34,11 @@ class yumComps:
             db = '/var/cache/PackageKit/groups.sqlite'
         self.db = db
 
+        # ensure the directory exists
+        dirname = os.path.dirname(db)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
+
         # load the group map
         self.groupMap = {}
         mapping = open('/usr/share/PackageKit/helpers/yum/yum-comps-groups.conf', 'r')
