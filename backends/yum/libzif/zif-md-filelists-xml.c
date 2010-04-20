@@ -434,12 +434,20 @@ zif_md_filelists_xml_search_file (ZifMd *md, gchar **search,
 		zif_completion_done (completion);
 	}
 
+	/* create results array */
+	array = g_ptr_array_new_with_free_func (g_free);
+
+	/* no entries, so shortcut */
+	if (md_filelists->priv->array->len == 0) {
+		zif_completion_done (completion);
+		goto out;
+	}
+
 	/* setup steps */
 	completion_local = zif_completion_get_child (completion);
 	zif_completion_set_number_steps (completion_local, md_filelists->priv->array->len);
 
 	/* search array */
-	array = g_ptr_array_new_with_free_func (g_free);
 	packages = md_filelists->priv->array;
 	for (i=0; i<packages->len; i++) {
 		package = g_ptr_array_index (packages, i);

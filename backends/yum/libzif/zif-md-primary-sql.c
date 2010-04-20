@@ -177,7 +177,7 @@ zif_md_primary_sql_search (ZifMdPrimarySql *md, const gchar *statement,
 	rc = sqlite3_exec (md->priv->db, statement, zif_md_primary_sql_sqlite_create_package_cb, data, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_set_error (error, ZIF_MD_ERROR, ZIF_MD_ERROR_BAD_SQL,
-			     "SQL error: %s\n", error_msg);
+			     "SQL error, failed to execute '%s': %s\n", statement, error_msg);
 		sqlite3_free (error_msg);
 		g_ptr_array_unref (data->packages);
 		goto out;
@@ -229,7 +229,9 @@ zif_md_primary_sql_get_statement_for_pred (const gchar *pred, gchar **search)
 			g_string_append (statement, " OR ");
 		g_free (temp);
 	}
-	if (i % max_items != max_items - 1) {
+
+	/* remove trailing OR entry */
+	if (g_str_has_suffix (statement->str, " OR ")) {
 		g_string_set_size (statement, statement->len - 4);
 		g_string_append (statement, ";\n");
 	}
