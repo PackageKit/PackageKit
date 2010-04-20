@@ -1529,7 +1529,8 @@ backend_get_updates_thread (PkBackend *backend)
 
 	/* setup steps on updatinfo completion */
 	completion_local = zif_completion_get_child (priv->completion);
-	zif_completion_set_number_steps (completion_local, array->len);
+	if (array->len > 0)
+		zif_completion_set_number_steps (completion_local, array->len);
 
 	/* get update info */
 	for (i=0; i<array->len; i++) {
