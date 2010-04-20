@@ -1,6 +1,7 @@
 helperdir = $(datadir)/PackageKit/helpers/yum
 dist_helper_DATA = 			\
 	yum-comps-groups.conf		\
+	licenses.txt			\
 	yumBackend.py			\
 	yumComps.py			\
 	yumMediaManager.py		\

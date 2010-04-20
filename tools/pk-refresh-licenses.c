@@ -126,6 +126,7 @@ main (int argc, char *argv[])
 	gboolean is_col;
 	GString *string_h = NULL;
 	GString *string_c = NULL;
+	GString *string_txt = NULL;
 	PkRefreshLicenseItem *item;
 	PkRefreshLicenseItem *item_tmp;
 	const gchar *locations[] =  {
@@ -263,8 +264,9 @@ skip:
 	g_ptr_array_sort (data, pk_refresh_licenses_compare_func);
 
 	/* process data, and output to header file */
-	string_h = g_string_new ("automatically geneated, do not edit\n\n");	
-	string_c = g_string_new ("automatically geneated, do not edit\n\n");	
+	string_h = g_string_new ("automatically geneated, do not edit\n\n");
+	string_c = g_string_new ("automatically geneated, do not edit\n\n");
+	string_txt = g_string_new (NULL);
 	for (i=0; i<data->len; i++) {
 		gchar *tabs;
 		guint len;
@@ -284,6 +286,7 @@ skip:
 		
 		/* need to tab properly */
 		g_string_append_printf (string_c, "\t{%s,%s\"%s\"},\n", item->enum_name, tabs, item->full_name);
+		g_string_append_printf (string_txt, "%s\n", item->full_name);
 		g_free (tabs);
 	}
 	g_string_append (string_c, "\n");
@@ -305,12 +308,22 @@ skip:
 		goto out;
 	}
 
+	/* set c contents */
+	ret = g_file_set_contents ("./licenses.txt", string_txt->str, -1, &error);
+	if (!ret) {
+		g_warning ("failed to set contents: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	retval = EXIT_SUCCESS;
 out:
 	if (string_h != NULL)
 		g_string_free (string_h, TRUE);
 	if (string_c != NULL)
 		g_string_free (string_c, TRUE);
+	if (string_txt != NULL)
+		g_string_free (string_txt, TRUE);
 	if (data != NULL)
 		g_ptr_array_unref (data);
 	g_string_free (contents, TRUE);
