@@ -796,7 +796,7 @@ backend_install_files_thread (PkBackend *backend)
 		zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
 
 		// look for the packages and set them to toBeInstalled
-		std::vector<zypp::sat::Solvable> *solvables = new std::vector<zypp::sat::Solvable>;
+		std::vector<zypp::sat::Solvable> *solvables = 0;
 		solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
 		zypp::PoolItem *item = NULL;
 		gboolean found = FALSE;
@@ -1033,7 +1033,7 @@ backend_install_packages_thread (PkBackend *backend)
 		for (guint i = 0; i < g_strv_length (package_ids); i++) {
 
 			gchar **id_parts = pk_package_id_split (package_ids[i]);
-			
+
 			// Iterate over the selectables and mark the one with the right name
 			zypp::ui::Selectable::Ptr selectable;
 			for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
@@ -1293,13 +1293,14 @@ backend_find_packages_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
-	std::vector<zypp::sat::Solvable> *v2 = new std::vector<zypp::sat::Solvable>;
+	std::vector<zypp::sat::Solvable> *v = 0;
+	std::vector<zypp::sat::Solvable> *v2 = 0;
 
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
 			v = zypp_get_packages_by_name (search, zypp::ResKind::package, TRUE);
 			v2 = zypp_get_packages_by_name (search, zypp::ResKind::srcpackage, TRUE);
+			v->insert (v->end (), v2->begin (), v2->end ());
 			break;
 		case SEARCH_TYPE_DETAILS:
 			v = zypp_get_packages_by_details (search, TRUE);
@@ -1308,8 +1309,6 @@ backend_find_packages_thread (PkBackend *backend)
 			v = zypp_get_packages_by_file (search);
 			break;
 	};
-
-	v->insert (v->end (), v2->begin (), v2->end ());
 
 	zypp_emit_packages_in_list (backend, v, filters);
 	delete (v);
@@ -1591,7 +1590,7 @@ backend_update_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	zypp_get_patches (); // make sure _updating_self is set
+	delete zypp_get_patches (); // make sure _updating_self is set
 
 	if (_updating_self) {
 		egg_debug ("updating self and setting restart");
