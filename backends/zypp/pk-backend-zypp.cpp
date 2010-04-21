@@ -1293,26 +1293,49 @@ backend_find_packages_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
-	std::vector<zypp::sat::Solvable> *v = 0;
-	std::vector<zypp::sat::Solvable> *v2 = 0;
+	std::vector<zypp::sat::Solvable> v;
+
+	zypp::PoolQuery q;
+	q.addString( search ); // may be called multiple times (OR'ed)
+	q.setCaseSensitive( true );
+	q.setMatchSubstring();
 
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
-			v = zypp_get_packages_by_name (search, zypp::ResKind::package, TRUE);
-			v2 = zypp_get_packages_by_name (search, zypp::ResKind::srcpackage, TRUE);
-			v->insert (v->end (), v2->begin (), v2->end ());
+			zypp_build_pool (TRUE); // seems to be necessary?
+			q.addKind( zypp::ResKind::package );
+			q.addKind( zypp::ResKind::srcpackage );
+			q.addAttribute( zypp::sat::SolvAttr::name );
+			// Note: The query result is NOT sorted packages first, then srcpackage.
+			// If that's necessary you need to sort the vector accordongly or use
+			// two separate queries.
 			break;
 		case SEARCH_TYPE_DETAILS:
-			v = zypp_get_packages_by_details (search, TRUE);
+			zypp_build_pool (TRUE); // seems to be necessary?
+			q.addKind( zypp::ResKind::package );
+			//q.addKind( zypp::ResKind::srcpackage );
+			q.addAttribute( zypp::sat::SolvAttr::name );
+			q.addAttribute( zypp::sat::SolvAttr::description );
+			// Note: Don't know if zypp_get_packages_by_details intentionally
+			// did not search in srcpackages.
 			break;
 		case SEARCH_TYPE_FILE:
-			v = zypp_get_packages_by_file (search);
+			{
+			  // zypp_build_pool (TRUE); called by zypp_get_packages_by_file
+			  std::vector<zypp::sat::Solvable> * r = zypp_get_packages_by_file (search);
+			  v.swap( *r );
+			  delete r;
+			  // zypp_get_packages_by_file does strange things :)
+			  // Maybe it would be sufficient to simply query
+			  // zypp::sat::SolvAttr::filelist instead?
+			}
 			break;
 	};
 
-	zypp_emit_packages_in_list (backend, v, filters);
-	delete (v);
-	delete (v2);
+	if ( ! q.empty() ) {
+		std::copy( q.begin(), q.end(), std::back_inserter( v ) );
+	}
+	zypp_emit_packages_in_list (backend, &v, filters);
 
 	pk_backend_finished (backend);
 	return TRUE;

@@ -90,7 +90,7 @@ get_zypp ()
 
         try {
 	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
-	
+
 	        // TODO: Make this threadsafe
 	        if (initialized == FALSE) {
 		        zypp::filesystem::Pathname pathname("/");
@@ -195,25 +195,25 @@ zypp_build_pool (gboolean include_local)
 	return zypp->pool ();
 }
 
-void  
-warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool)  
-{  
-	zypp::Repository repoobj;  
-	zypp::ResPool::repository_iterator it;  
-	for ( it = pool.knownRepositoriesBegin();  
-		it != pool.knownRepositoriesEnd();  
-		++it )  
-	{  
-		zypp::Repository repo(*it);  
-		if ( repo.maybeOutdated() )  
-		{  
-			// warn the user  
+void
+warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool)
+{
+	zypp::Repository repoobj;
+	zypp::ResPool::repository_iterator it;
+	for ( it = pool.knownRepositoriesBegin();
+		it != pool.knownRepositoriesEnd();
+		++it )
+	{
+		zypp::Repository repo(*it);
+		if ( repo.maybeOutdated() )
+		{
+			// warn the user
 			pk_backend_message (backend,
 					PK_MESSAGE_ENUM_BROKEN_MIRROR,
 					zypp::str::form("The repository %s seems to be outdated. You may want to try another mirror.",
 					repo.alias().c_str()).c_str() );
-		}  
-	}  
+		}
+	}
 }
 
 zypp::ResPool
@@ -227,7 +227,7 @@ zypp_build_local_pool ()
 			if (! it->isSystemRepo ())
 				pool.reposErase(it->alias ());
 		}
-		
+
 		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
                 {
 		        // Add local resolvables
@@ -255,7 +255,7 @@ zypp_get_rpmHeader (std::string name, zypp::Edition edition)
 
 	return result;
 }
-		
+
 
 std::string
 zypp_get_group (zypp::sat::Solvable item)
@@ -277,7 +277,7 @@ zypp_get_group (zypp::sat::Solvable item)
 PkGroupEnum
 get_enum_group (std::string group)
 {
-        
+
         // TODO Look for a faster and nice way to do this conversion
         std::transform(group.begin(), group.end(), group.begin(), tolower);
 
@@ -287,7 +287,7 @@ get_enum_group (std::string group)
                 return PK_GROUP_ENUM_PROGRAMMING;
         } else if (group.find ("hardware") != std::string::npos) {
                 return PK_GROUP_ENUM_SYSTEM;
-        } else if (group.find ("archiving") != std::string::npos 
+        } else if (group.find ("archiving") != std::string::npos
                   || group.find("clustering") != std::string::npos
                   || group.find("system/monitoring") != std::string::npos
                   || group.find("databases") != std::string::npos
@@ -299,7 +299,7 @@ get_enum_group (std::string group)
                 return PK_GROUP_ENUM_MULTIMEDIA;
         } else if (group.find ("network") != std::string::npos) {
                 return PK_GROUP_ENUM_NETWORK;
-        } else if (group.find ("office") != std::string::npos 
+        } else if (group.find ("office") != std::string::npos
                   || group.find("text") != std::string::npos
                   || group.find("editors") != std::string::npos) {
                 return PK_GROUP_ENUM_OFFICE;
@@ -344,23 +344,6 @@ zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, 
 }
 
 std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_details (const gchar *search_term, gboolean include_local)
-{
-        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
-
-        zypp::ResPool pool = zypp_build_pool (include_local);
-
-        std::string term (search_term);
-        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
-                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
-                if ((*it)->name ().find (term) != std::string::npos || (*it)->description ().find (term) != std::string::npos )
-                    v->push_back ((*it)->satSolvable ());
-        }
-
-        return v;
-}
-
-std::vector<zypp::sat::Solvable> * 
 zypp_get_packages_by_file (const gchar *search_file)
 {
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
@@ -404,7 +387,7 @@ zypp_get_package_by_id (const gchar *package_id)
 	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
 
 	v->insert (v->end (), v2->begin (), v2->end ());
-	
+
 	if (v == NULL)
 		return zypp::sat::Solvable::noSolvable;
 
@@ -432,7 +415,7 @@ gchar *
 zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 {
 	gchar *package_id;
-	
+
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
 					  resolvable.arch ().asString ().c_str (),
@@ -490,14 +473,14 @@ gboolean
 zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id)
 {
         gboolean ok = FALSE;
-	
+
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), id) == _signatures[backend]->end ()) {
 		zypp::RepoInfo info = zypp_get_Repository (backend, _repoName);
 		if (info.type () == zypp::repo::RepoType::NONE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
 			return FALSE;
 		}
-		
+
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
@@ -526,7 +509,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
 			return FALSE;
 		}
-		
+
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
@@ -590,7 +573,7 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 				//egg_debug ("my default arch is %s", myarch);
 			}
 			if (!print)
-				continue;		
+				continue;
 		}
 
 		pk_backend_package (backend,
@@ -636,7 +619,7 @@ zypp_get_updates (std::string repo)
 {
         std::set<zypp::PoolItem> *pks = new std::set<zypp::PoolItem> ();
         zypp::ResPool pool = zypp::ResPool::instance ();
-        
+
         zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
         zypp::ResPool::byKind_iterator it = pool.byKindBegin (kind);
         zypp::ResPool::byKind_iterator e = pool.byKindEnd (kind);
@@ -671,7 +654,7 @@ zypp_get_patches ()
 
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
-                // check if patch is needed 
+                // check if patch is needed
                 if((*it)->candidateObj ().isRelevant() && !((*it)->candidateObj ().isSatisfied())) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
 			if (_updating_self) {
@@ -719,8 +702,8 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 if (force)
                         zypp->resolver ()->setForceResolve (force);
 		if (type == UPDATE) {
-			//zypp->resolver ()->setOnlyRequires (TRUE);		
-			zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);		
+			//zypp->resolver ()->setOnlyRequires (TRUE);
+			zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		}
 
                 // Gather up any dependencies
@@ -756,7 +739,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			zypp->resolver ()->setForceResolve (FALSE);
 			return FALSE;
 		}
-        
+
                 switch (type) {
                         case INSTALL:
                                 pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
@@ -782,7 +765,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 							eula_id,
 							package_id,
 							(*it)->vendor ().c_str (),
-							it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ()); 
+							it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ());
 					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 					g_free (package_id);
 					g_free (eula_id);
@@ -800,7 +783,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 
                 if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
-			
+
 			zypp::ZYppCommitResult::PoolItemList errors = result._errors;
 			gchar *emsg = NULL, *tmpmsg = NULL;
 
@@ -813,7 +796,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					g_free (tmpmsg);
 				}
 			}
-			
+
 			zypp::ZYppCommitResult::PoolItemList remaining = result._remaining;
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = remaining.begin (); it != remaining.end (); it++){
 				if (emsg == NULL) {
@@ -824,7 +807,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					g_free (tmpmsg);
 				}
 			}
-			
+
 			zypp::ZYppCommitResult::PoolItemList srcremaining = result._srcremaining;
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = srcremaining.begin (); it != srcremaining.end (); it++){
 				if (emsg == NULL) {
@@ -847,7 +830,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 		zypp->resolver ()->setForceResolve (FALSE);
 		if (type == UPDATE) {
-			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);		
+			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);
 		}
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
@@ -859,8 +842,8 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		return FALSE;
-	}       
-        
+	}
+
         return TRUE;
 }
 
@@ -890,7 +873,7 @@ zypp_build_package_id_capabilities (zypp::Capabilities caps)
 	for (zypp::sat::WhatProvides::const_iterator it = provs.begin (); it != provs.end (); it++) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 		//package_ids = g_strconcat (package_ids, package_id, PK_PACKAGE_IDS_DELIM, (gchar *)NULL);
-		if (strlen (package_ids) == 0) {			
+		if (strlen (package_ids) == 0) {
 			package_ids = g_strdup (package_id);
 		} else {
 			package_ids = g_strconcat (package_ids, PK_PACKAGE_IDS_DELIM, package_id, (gchar *)NULL);
@@ -955,9 +938,9 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 				zypp::RepoManager::BuildIfNeeded);
 		} catch (const zypp::Exception &ex) {
 			if (repo_messages == NULL) {
-				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
+				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
 			}else{
-				repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");	
+				repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
 			}
 			if (repo_messages == NULL || !g_utf8_validate (repo_messages, -1, NULL))
 				repo_messages = g_strdup ("A repository could not be refreshed");

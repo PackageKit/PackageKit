@@ -34,8 +34,10 @@
 #include <zypp/media/MediaManager.h>
 #include <zypp/Resolvable.h>
 #include <zypp/ResPool.h>
+#include <zypp/PoolQuery.h>
 #include <zypp/ResFilters.h>
 
+#include <iterator>
 #include <list>
 #include <set>
 
@@ -117,11 +119,6 @@ PkGroupEnum get_enum_group (std::string group);
  * Returns a list of packages that match the specified package_name.
  */
 std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local);
-
-/**
- * Returns a list of packages that match the specified term in its name or description.
- */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_details (const gchar *search_term, gboolean include_local);
 
 /**
  * Returns a list of packages that owns the specified file.
