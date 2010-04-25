@@ -343,7 +343,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # give up, and print process information
                 if retries > 100:
                     msg = "The other process has the command line '%s' (PID %i)" % (cmdline, e.pid)
-                    self.error(ERROR_CANNOT_GET_LOCK, "Yum is locked by another application. %s" % msg)
+                    self.error(ERROR_CANNOT_GET_LOCK, "Yum is locked by another application. %s" % _to_unicode(msg))
 
     def unLock(self):
         ''' Unlock Yum'''
