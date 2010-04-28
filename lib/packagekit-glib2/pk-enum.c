@@ -194,6 +194,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS, "failed-due-to-running-process"},
 	{PK_ERROR_ENUM_PACKAGE_DATABASE_CHANGED, "package-database-changed"},
 	{PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED, "provide-type-not-supported"},
+	{PK_ERROR_ENUM_INSTALL_ROOT_INVALID,	"install-root-invalid"},
 	{0, NULL}
 };
 

@@ -783,6 +783,154 @@ pk_control_set_proxy_finish (PkControl *control, GAsyncResult *res, GError **err
 /***************************************************************************************************/
 
 /**
+ * pk_control_set_root_state_finish:
+ **/
+static void
+pk_control_set_root_state_finish (PkControlState *state, const GError *error)
+{
+	/* get result */
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+	}
+
+	/* remove from list */
+	g_ptr_array_remove (state->control->priv->calls, state);
+	if (state->call != NULL)
+		egg_warning ("state array remove %p (%p)", state, state->call);
+	else
+		egg_debug ("state array remove %p", state);
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* deallocate */
+	if (state->cancellable != NULL) {
+		g_cancellable_disconnect (state->cancellable, state->cancellable_id);
+		g_object_unref (state->cancellable);
+	}
+	g_object_unref (state->res);
+	g_object_unref (state->control);
+	g_slice_free (PkControlState, state);
+}
+
+/**
+ * pk_control_set_root_cb:
+ **/
+static void
+pk_control_set_root_cb (DBusGProxy *root, DBusGProxyCall *call, PkControlState *state)
+{
+	GError *error = NULL;
+	gchar *tid = NULL;
+	gboolean ret;
+
+	/* finished this call */
+	state->call = NULL;
+
+	/* get the result */
+	ret = dbus_g_proxy_end_call (root, call, &error,
+				     G_TYPE_INVALID);
+	if (!ret) {
+		egg_warning ("failed to set root: %s", error->message);
+		pk_control_set_root_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* save data */
+	state->ret = TRUE;
+
+	/* we're done */
+	pk_control_set_root_state_finish (state, NULL);
+out:
+	g_free (tid);
+}
+
+/**
+ * pk_control_set_root_async:
+ * @control: a valid #PkControl instance
+ * @root: an install root string such as "/mnt/ltsp"
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Set the install root for the backend used by PackageKit
+ *
+ * Since: 0.6.4
+ **/
+void
+pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *cancellable,
+			   GAsyncReadyCallback callback, gpointer user_data)
+{
+	GSimpleAsyncResult *res;
+	PkControlState *state;
+
+	g_return_if_fail (PK_IS_CONTROL (control));
+	g_return_if_fail (callback != NULL);
+
+	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_root_async);
+
+	/* save state */
+	state = g_slice_new0 (PkControlState);
+	state->res = g_object_ref (res);
+	state->control = g_object_ref (control);
+	if (cancellable != NULL) {
+		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* call D-Bus set_root async */
+	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "SetRoot",
+					       (DBusGProxyCallNotify) pk_control_set_root_cb, state, NULL,
+					       G_TYPE_STRING, root,
+					       G_TYPE_INVALID);
+	if (state->call == NULL)
+		egg_error ("failed to setup call, maybe OOM or no connection");
+
+	/* track state */
+	g_ptr_array_add (control->priv->calls, state);
+	egg_debug ("state array add %p (%p)", state, state->call);
+
+	g_object_unref (res);
+}
+
+/**
+ * pk_control_set_root_finish:
+ * @control: a valid #PkControl instance
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: %TRUE if we set the root successfully
+ *
+ * Since: 0.6.4
+ **/
+gboolean
+pk_control_set_root_finish (PkControl *control, GAsyncResult *res, GError **error)
+{
+	GSimpleAsyncResult *simple;
+	gpointer source_tag;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	source_tag = g_simple_async_result_get_source_tag (simple);
+
+	g_return_val_if_fail (source_tag == pk_control_set_root_async, FALSE);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+/***************************************************************************************************/
+
+/**
  * pk_control_get_transaction_list_state_finish:
  **/
 static void

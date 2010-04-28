@@ -98,8 +98,6 @@ struct PkEnginePrivate
 #ifdef USE_SECURITY_POLKIT
 	PolkitAuthority		*authority;
 #endif
-	gchar			*proxy_http;
-	gchar			*proxy_ftp;
 	gchar			*sender;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
@@ -168,6 +166,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_ROOT, "CannotSetRoot"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID, "CannotAllocateTid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_CHECK_AUTH, "CannotCheckAuth"),
@@ -691,14 +690,14 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
  * pk_engine_set_proxy_internal:
  **/
 static gboolean
-pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender)
+pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender, const gchar *proxy_http, const gchar *proxy_ftp)
 {
 	gboolean ret;
 	guint uid;
 	gchar *session = NULL;
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
+	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
 	if (!ret) {
 		egg_warning ("setting the proxy failed");
 		goto out;
@@ -719,8 +718,7 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender)
 	}
 
 	/* save to database */
-	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db, uid, session,
-					   engine->priv->proxy_http, engine->priv->proxy_ftp);
+	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db, uid, session, proxy_http, proxy_ftp);
 	if (!ret) {
 		egg_warning ("failed to save the proxy in the database");
 		goto out;
@@ -735,6 +733,8 @@ typedef struct {
 	DBusGMethodInvocation	*context;
 	PkEngine		*engine;
 	gchar			*sender;
+	gchar			*value1;
+	gchar			*value2;
 } PkEngineDbusState;
 #endif
 
@@ -743,15 +743,16 @@ typedef struct {
  * pk_engine_action_obtain_authorization:
  **/
 static void
-pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyncResult *res, PkEngineDbusState *state)
+pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *authority, GAsyncResult *res, PkEngineDbusState *state)
 {
 	PolkitAuthorizationResult *result;
 	GError *error_local = NULL;
 	GError *error;
 	gboolean ret;
+	PkEnginePrivate *priv = state->engine->priv;
 
 	/* finish the call */
-	result = polkit_authority_check_authorization_finish (state->engine->priv->authority, res, &error_local);
+	result = polkit_authority_check_authorization_finish (priv->authority, res, &error_local);
 
 	/* failed */
 	if (result == NULL) {
@@ -771,13 +772,17 @@ pk_engine_action_obtain_authorization_finished_cb (GObject *source_object, GAsyn
 	}
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (state->engine, state->sender);
+	ret = pk_engine_set_proxy_internal (state->engine, state->sender, state->value1, state->value2);
 	if (!ret) {
 		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "setting the proxy failed");
 		dbus_g_method_return_error (state->context, error);
 		goto out;
 	}
+
+	/* only set after the auth success */
+	egg_debug ("changing http proxy to %s for %s", state->value1, state->sender);
+	egg_debug ("changing ftp proxy to %s for %s", state->value2, state->sender);
 
 	/* all okay */
 	dbus_g_method_return (state->context);
@@ -788,6 +793,8 @@ out:
 	/* unref state, we're done */
 	g_object_unref (state->engine);
 	g_free (state->sender);
+	g_free (state->value1);
+	g_free (state->value2);
 	g_free (state);
 }
 #endif
@@ -886,14 +893,6 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 		goto out;
 	}
 
-	/* save these so we can set them after the auth success */
-	g_free (engine->priv->proxy_http);
-	g_free (engine->priv->proxy_ftp);
-	engine->priv->proxy_http = g_strdup (proxy_http);
-	engine->priv->proxy_ftp = g_strdup (proxy_ftp);
-	egg_debug ("changing http proxy to %s for %s", proxy_http, sender);
-	egg_debug ("changing ftp proxy to %s for %s", proxy_ftp, sender);
-
 #ifdef USE_SECURITY_POLKIT
 	/* check subject */
 	subject = polkit_system_bus_name_new (sender);
@@ -907,6 +906,8 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	state->context = context;
 	state->engine = g_object_ref (engine);
 	state->sender = g_strdup (sender);
+	state->value1 = g_strdup (proxy_http);
+	state->value2 = g_strdup (proxy_ftp);
 
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -914,7 +915,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
-					      (GAsyncReadyCallback) pk_engine_action_obtain_authorization_finished_cb,
+					      (GAsyncReadyCallback) pk_engine_action_obtain_proxy_authorization_finished_cb,
 					      state);
 
 	/* check_authorization ref's this */
@@ -931,6 +932,248 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	}
 
 	/* all okay */
+	dbus_g_method_return (context);
+#endif
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+#ifdef USE_SECURITY_POLKIT
+	g_object_unref (subject);
+#endif
+out:
+	g_free (sender);
+}
+
+/**
+ * pk_engine_set_root_internal:
+ **/
+static gboolean
+pk_engine_set_root_internal (PkEngine *engine, const gchar *root)
+{
+	gboolean ret;
+	guint uid;
+	gchar *session = NULL;
+
+	/* try to set the new root */
+	ret = pk_backend_set_root (engine->priv->backend, root);
+	if (!ret) {
+		egg_warning ("setting the root failed");
+		goto out;
+	}
+
+	/* get uid */
+	uid = pk_dbus_get_uid (engine->priv->dbus, engine->priv->sender);
+	if (uid == G_MAXUINT) {
+		egg_warning ("failed to get the uid");
+		goto out;
+	}
+
+	/* get session */
+	session = pk_dbus_get_session (engine->priv->dbus, engine->priv->sender);
+	if (session == NULL) {
+		egg_warning ("failed to get the session");
+		goto out;
+	}
+
+	/* save to database */
+	ret = pk_transaction_db_set_root (engine->priv->transaction_db, uid, session, root);
+	if (!ret) {
+		egg_warning ("failed to save the root in the database");
+		goto out;
+	}
+out:
+	g_free (session);
+	return ret;
+}
+
+#ifdef USE_SECURITY_POLKIT
+/**
+ * pk_engine_action_obtain_authorization:
+ **/
+static void
+pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authority, GAsyncResult *res, PkEngineDbusState *state)
+{
+	PolkitAuthorizationResult *result;
+	GError *error_local = NULL;
+	GError *error;
+	gboolean ret;
+	PkEnginePrivate *priv = state->engine->priv;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (priv->authority, res, &error_local);
+
+	/* failed */
+	if (result == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "could not check for auth: %s", error_local->message);
+		dbus_g_method_return_error (state->context, error);
+		g_error_free (error_local);
+		goto out;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "failed to obtain auth");
+		dbus_g_method_return_error (state->context, error);
+		goto out;
+	}
+
+	/* try to set the new root and save to database */
+	ret = pk_engine_set_root_internal (state->engine, state->value1);
+	if (!ret) {
+		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "setting the root failed");
+		dbus_g_method_return_error (state->context, error);
+		goto out;
+	}
+
+	/* save these so we can set them after the auth success */
+	egg_debug ("changing root to %s for %s", state->value1, state->sender);
+
+	/* all okay */
+	dbus_g_method_return (state->context);
+out:
+	if (result != NULL)
+		g_object_unref (result);
+
+	/* unref state, we're done */
+	g_object_unref (state->engine);
+	g_free (state->sender);
+	g_free (state->value1);
+	g_free (state->value2);
+	g_free (state);
+}
+#endif
+
+/**
+ * pk_engine_is_root_unchanged:
+ **/
+static gboolean
+pk_engine_is_root_unchanged (PkEngine *engine, const gchar *sender, const gchar *root)
+{
+	guint uid;
+	gboolean ret = FALSE;
+	gchar *session = NULL;
+	gchar *root_tmp = NULL;
+
+	/* get uid */
+	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
+	if (uid == G_MAXUINT) {
+		egg_warning ("failed to get the uid for %s", sender);
+		goto out;
+	}
+
+	/* get session */
+	session = pk_dbus_get_session (engine->priv->dbus, sender);
+	if (session == NULL) {
+		egg_warning ("failed to get the session for %s", sender);
+		goto out;
+	}
+
+	/* find out if they are the same as what we tried to set before */
+	ret = pk_transaction_db_get_root (engine->priv->transaction_db, uid, session, &root_tmp);
+	if (!ret)
+		goto out;
+
+	/* are different? */
+	if (g_strcmp0 (root_tmp, root) != 0)
+		ret = FALSE;
+out:
+	g_free (session);
+	g_free (root_tmp);
+	return ret;
+}
+
+/**
+ * pk_engine_set_root:
+ **/
+void
+pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *context)
+{
+	guint len;
+	GError *error = NULL;
+	gboolean ret;
+	gchar *sender = NULL;
+#ifdef USE_SECURITY_POLKIT
+	PolkitSubject *subject;
+	PolkitDetails *details;
+	PkEngineDbusState *state;
+#endif
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* blank is default */
+	if (root == NULL ||
+	    root[0] == '\0')
+		root = "/";
+
+	egg_debug ("SetRoot method called: %s", root);
+
+	/* check length of root */
+	len = egg_strlen (root, 1024);
+	if (len == 1024) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "root was too long: %s", root);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* check prefix of root */
+	if (root[0] != '/') {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "root is not absolute: %s", root);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* save sender */
+	sender = dbus_g_method_get_sender (context);
+
+	/* is exactly the same root? */
+	ret = pk_engine_is_root_unchanged (engine, sender, root);
+	if (ret) {
+		egg_debug ("not changing root as the same as before");
+		dbus_g_method_return (context);
+		goto out;
+	}
+
+#ifdef USE_SECURITY_POLKIT
+	/* check subject */
+	subject = polkit_system_bus_name_new (engine->priv->sender);
+
+	/* insert details about the authorization */
+	details = polkit_details_new ();
+	polkit_details_insert (details, "role", pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
+
+	/* cache state */
+	state = g_new0 (PkEngineDbusState, 1);
+	state->context = context;
+	state->engine = g_object_ref (engine);
+	state->sender = g_strdup (sender);
+	state->value1 = g_strdup (root);
+
+	/* do authorization async */
+	polkit_authority_check_authorization (engine->priv->authority, subject,
+					      "org.freedesktop.packagekit.system-change-install-root",
+					      details,
+					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+					      NULL,
+					      (GAsyncReadyCallback) pk_engine_action_obtain_root_authorization_finished_cb,
+					      state);
+
+	/* check_authorization ref's this */
+	g_object_unref (details);
+#else
+	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+
+	/* try to set the new root and save to database */
+	ret = pk_engine_set_root_internal (engine, root);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* all okay, TODO: return only when done the polkit auth */
 	dbus_g_method_return (context);
 #endif
 
@@ -1309,6 +1552,9 @@ pk_engine_init (PkEngine *engine)
 	DBusGConnection *connection;
 	gboolean ret;
 	gchar *filename;
+	gchar *root;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->notify_clients_of_upgrade = FALSE;
@@ -1409,9 +1655,16 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
 
 	/* set the default proxy */
-	engine->priv->proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
-	engine->priv->proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
-	pk_backend_set_proxy (engine->priv->backend, engine->priv->proxy_http, engine->priv->proxy_ftp);
+	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
+	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
+	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	g_free (proxy_http);
+	g_free (proxy_ftp);
+
+	/* set the default root */
+	root = pk_conf_get_string (engine->priv->conf, "UseRoot");
+	pk_backend_set_root (engine->priv->backend, root);
+	g_free (root);
 
 	/* get the StateHasChanged timeouts */
 	engine->priv->timeout_priority = (guint) pk_conf_get_int (engine->priv->conf, "StateChangedTimeoutPriority");
@@ -1478,8 +1731,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->conf);
 	g_object_unref (engine->priv->dbus);
 	g_free (engine->priv->mime_types);
-	g_free (engine->priv->proxy_http);
-	g_free (engine->priv->proxy_ftp);
 	g_free (engine->priv->backend_name);
 	g_free (engine->priv->backend_description);
 	g_free (engine->priv->backend_author);

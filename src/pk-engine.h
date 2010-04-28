@@ -59,6 +59,7 @@ typedef enum
 	PK_ENGINE_ERROR_INVALID_STATE,
 	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
 	PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+	PK_ENGINE_ERROR_CANNOT_SET_ROOT,
 	PK_ENGINE_ERROR_NOT_SUPPORTED,
 	PK_ENGINE_ERROR_CANNOT_ALLOCATE_TID,
 	PK_ENGINE_ERROR_CANNOT_CHECK_AUTH,
@@ -95,6 +96,9 @@ gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
 void		 pk_engine_set_proxy			(PkEngine	*engine,
 							 const gchar	*proxy_http,
 							 const gchar	*proxy_ftp,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_set_root			(PkEngine	*engine,
+							 const gchar	*root,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_can_authorize		(PkEngine	*engine,
 							 const gchar	*action_id,

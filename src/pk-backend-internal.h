@@ -64,6 +64,8 @@ gboolean	 pk_backend_set_name			(PkBackend	*backend,
 gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_http,
 							 const gchar	*proxy_ftp);
+gboolean	 pk_backend_set_root			(PkBackend	*backend,
+							 const gchar	*root);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_backend_get_description		(PkBackend	*backend)

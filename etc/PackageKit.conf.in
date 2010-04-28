@@ -279,3 +279,17 @@ NoUpdateProcessList=/usr/lib/*/firefox
 #
 # default=true
 UseThreadsInBackend=true
+
+# If a custom root should be used when installing packages
+#
+# A custom route can be used to install to a LTSP instance or a virtual machine
+# image, typically using chroot or by mounting an image using virt-inspector.
+#
+# Additional authentication is required to change the root from the default.
+#
+# Most users do not need to change this value, as you need to have setup a
+# native package database (e.g. the rpmdb) on the new root.
+#
+# default=/
+UseRoot=/
+

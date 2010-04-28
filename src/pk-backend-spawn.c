@@ -675,6 +675,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *uri;
 	gchar *eulas;
 	gchar *transaction_id = NULL;
+	const gchar *value;
 	guint i;
 	GPtrArray *array;
 	gboolean ret;
@@ -722,6 +723,13 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	locale = pk_backend_get_locale (priv->backend);
 	if (!egg_strzero (locale)) {
 		line = g_strdup_printf ("%s=%s", "LANG", locale);
+		g_ptr_array_add (array, line);
+	}
+
+	/* ROOT */
+	value = pk_backend_get_root (priv->backend);
+	if (!egg_strzero (value)) {
+		line = g_strdup_printf ("%s=%s", "ROOT", value);
 		g_ptr_array_add (array, line);
 	}
 

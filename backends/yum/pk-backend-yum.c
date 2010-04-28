@@ -573,10 +573,11 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	gboolean ret;
-	GFile *file;
+	GFile *file = NULL;
 	GError *error = NULL;
 	GKeyFile *key_file = NULL;
 	gchar *config_file = NULL;
+	const gchar *root;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -587,6 +588,13 @@ backend_initialize (PkBackend *backend)
 	pk_backend_spawn_set_filter_stdout (priv->spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");
 	pk_backend_spawn_set_allow_sigkill (priv->spawn, FALSE);
+
+	/* this backend does not support a relocatable root */
+	root = pk_backend_get_root (backend);
+	if (g_strcmp0 (root, "/") != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID, "backend does not support this root: '%s'", root);
+		goto out;
+	}
 
 	/* setup a file monitor on the repos directory */
 	file = g_file_new_for_path (YUM_REPOS_DIRECTORY);
@@ -651,7 +659,7 @@ backend_initialize (PkBackend *backend)
 
 	/* ZifStoreLocal */
 	priv->store_local = zif_store_local_new ();
-	ret = zif_store_local_set_prefix (priv->store_local, "/", &error);
+	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
 		g_error_free (error);
@@ -686,8 +694,10 @@ backend_initialize (PkBackend *backend)
 	backend_profile ("read groups");
 out:
 	g_free (config_file);
-	g_key_file_free (key_file);
-	g_object_unref (file);
+	if (key_file != NULL)
+		g_key_file_free (key_file);
+	if (file != NULL)
+		g_object_unref (file);
 }
 
 /**

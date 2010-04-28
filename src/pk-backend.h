@@ -85,6 +85,7 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
+const gchar	*pk_backend_get_root			(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
 gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
 

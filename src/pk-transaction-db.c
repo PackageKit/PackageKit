@@ -880,6 +880,169 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_ftp TEXT, uid INTEGER, session TEXT);";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 	}
+
+	/* transaction root (since 0.6.4) */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM root LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_debug ("adding table root: %s", error_msg);
+		statement = "CREATE TABLE root (created TEXT, root TEXT, uid INTEGER, session TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	}
+}
+
+/**
+ * pk_transaction_sqlite_root_cb:
+ **/
+static gint
+pk_transaction_sqlite_root_cb (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	gchar **root = (gchar **) data;
+	gint i;
+
+	g_return_val_if_fail (root != NULL, 0);
+
+	for (i=0; i<argc; i++) {
+		if (g_strcmp0 (col_name[i], "root") == 0) {
+			*root = g_strdup (argv[i]);
+		} else {
+			egg_warning ("%s = %s\n", col_name[i], argv[i]);
+		}
+	}
+	return 0;
+}
+
+/**
+ * pk_transaction_db_get_root:
+ * @tdb: the #PkTransactionDb instance
+ * @uid: the user ID of the user
+ * @session: the ConsoleKit session
+ * @root: the install root
+ *
+ * Retrieves the root information from the database.
+ *
+ * Return value: %TRUE if we matched a root
+ **/
+gboolean
+pk_transaction_db_get_root (PkTransactionDb *tdb, guint uid, const gchar *session,
+			     gchar **root)
+{
+	gchar *error_msg = NULL;
+	gchar *statement;
+	gboolean ret = FALSE;
+	gint rc;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
+	g_return_val_if_fail (root != NULL, FALSE);
+
+	/* get existing data */
+	statement = g_strdup_printf ("SELECT root FROM root WHERE uid = '%i' AND session = '%s' LIMIT 1",
+				     uid, session);
+	rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_root_cb, root, &error_msg);
+	if (rc != SQLITE_OK) {
+		egg_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		goto out;
+	}
+
+	/* nothing matched */
+	if (*root == NULL) {
+		egg_debug ("no data");
+		goto out;
+	}
+
+	/* success, even if we got no data */
+	ret = TRUE;
+out:
+	g_free (statement);
+	return ret;
+}
+
+/**
+ * pk_transaction_db_set_root:
+ * @tdb: the #PkTransactionDb instance
+ * @uid: the user ID of the user
+ * @session: the ConsoleKit session
+ * @root: the HTTP root
+ *
+ * Saves the root install prefix to the database.
+ *
+ * Return value: %TRUE for success
+ **/
+gboolean
+pk_transaction_db_set_root (PkTransactionDb *tdb, guint uid, const gchar *session,
+			    const gchar *root)
+{
+	gchar *timespec = NULL;
+	gchar *root_tmp = NULL;
+	gboolean ret = FALSE;
+	gint rc;
+	sqlite3_stmt *statement = NULL;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
+
+	/* check for previous entries */
+	ret = pk_transaction_db_get_root (tdb, uid, session, &root_tmp);
+	if (ret) {
+		egg_debug ("updated root %s for uid:%i and session:%s", root, uid, session);
+
+		/* prepare statement */
+		rc = sqlite3_prepare_v2 (tdb->priv->db,
+					 "UPDATE root SET root = ? WHERE uid = ? AND session = ?",
+					 -1, &statement, NULL);
+		if (rc != SQLITE_OK) {
+			egg_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->priv->db));
+			goto out;
+		}
+
+		/* bind data, so that the freeform root text cannot be used to inject SQL */
+		sqlite3_bind_text (statement, 1, root, -1, SQLITE_STATIC);
+		sqlite3_bind_int (statement, 2, uid);
+		sqlite3_bind_text (statement, 3, session, -1, SQLITE_STATIC);
+
+		/* execute statement */
+		rc = sqlite3_step (statement);
+		if (rc != SQLITE_DONE) {
+			egg_warning ("failed to execute statement: %s", sqlite3_errmsg (tdb->priv->db));
+			goto out;
+		}
+		goto out;
+	}
+
+	/* insert new entry */
+	timespec = pk_iso8601_present ();
+	egg_debug ("set root %s for uid:%i and session:%s", root, uid, session);
+
+	/* prepare statement */
+	rc = sqlite3_prepare_v2 (tdb->priv->db,
+				 "INSERT INTO root (created, uid, session, root) VALUES (?, ?, ?, ?)",
+				 -1, &statement, NULL);
+	if (rc != SQLITE_OK) {
+		egg_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->priv->db));
+		goto out;
+	}
+
+	/* bind data, so that the freeform root text cannot be used to inject SQL */
+	sqlite3_bind_text (statement, 1, timespec, -1, SQLITE_STATIC);
+	sqlite3_bind_int (statement, 2, uid);
+	sqlite3_bind_text (statement, 3, session, -1, SQLITE_STATIC);
+	sqlite3_bind_text (statement, 4, root, -1, SQLITE_STATIC);
+
+	/* execute statement */
+	rc = sqlite3_step (statement);
+	if (rc != SQLITE_DONE) {
+		egg_warning ("failed to execute statement: %s", sqlite3_errmsg (tdb->priv->db));
+		goto out;
+	}
+
+	ret = TRUE;
+out:
+	if (statement != NULL)
+		sqlite3_finalize (statement);
+	g_free (timespec);
+	g_free (root_tmp);
+	return ret;
 }
 
 /**
@@ -936,6 +1099,7 @@ pk_transaction_db_test (EggTest *test)
 	guint ms;
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
+	gchar *root = NULL;
 	guint seconds;
 
 	if (!egg_test_start (test, "PkTransactionDb"))
@@ -1066,6 +1230,35 @@ pk_transaction_db_test (EggTest *test)
 	else
 		egg_test_failed (test, "failed to get correct proxies, %s and %s", proxy_http, proxy_ftp);
 
+	/************************************************************
+	 ****************            ROOT          ******************
+	 ************************************************************/
+	egg_test_title (test, "can we set the root");
+	ret = pk_transaction_db_set_root (db, 500, "session1", "/mnt/chroot");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "can we set the root (overwrite)");
+	ret = pk_transaction_db_set_root (db, 500, "session1", "/mnt/chroot2");
+	egg_test_assert (test, ret);
+
+	/************************************************************/
+	egg_test_title (test, "can we get the root (non-existant user)");
+	ret = pk_transaction_db_get_root (db, 501, "session1", &root);
+	if (root == NULL)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct root: %s", root);
+
+	/************************************************************/
+	egg_test_title (test, "can we get the root (match)");
+	ret = pk_transaction_db_get_root (db, 500, "session1", &root);
+	if (g_strcmp0 (root, "/mnt/chroot2") == 0)
+		egg_test_success (test, NULL);
+	else
+		egg_test_failed (test, "failed to get correct root: %s", root);
+
+	g_free (root);
 	g_free (proxy_http);
 	g_free (proxy_ftp);
 	g_object_unref (db);

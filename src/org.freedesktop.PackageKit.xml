@@ -352,6 +352,27 @@
       </arg>
     </method>
 
+    <!--*****************************************************************************************-->
+    <method name="SetRoot">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Sets the root used by the dameon backend.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.packagekit.system-change-install-root</doc:permission>
+      </doc:doc>
+      <arg type="s" name="root" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The install root, e.g. <doc:tt>/</doc:tt> or <doc:tt>/mnt/ltsp</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
 
     <!--*****************************************************************************************-->
     <signal name="TransactionListChanged">

@@ -197,6 +197,23 @@
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.system-change-install-root">
+    <!-- SECURITY:
+          - This is used when users want to install to a different prefix, for
+            instance to a LTSP image or a virtual machine.
+          - This could be used to overwrite files not owned by the user using
+            a carefully created package file.
+     -->
+    <_description>Change location that packages are installed</_description>
+    <_message>Authentication is required to change the location used to decompress packages</_message>
+    <icon_name>security-high</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.device-rebind">
     <!-- SECURITY:
           - Normal users require admin authentication to rebind a driver

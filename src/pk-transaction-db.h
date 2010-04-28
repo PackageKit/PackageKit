@@ -87,6 +87,14 @@ gboolean	 pk_transaction_db_set_proxy		(PkTransactionDb	*tdb,
 							 const gchar		*session,
 							 const gchar		*proxy_http,
 							 const gchar		*proxy_ftp);
+gboolean	 pk_transaction_db_get_root		(PkTransactionDb	*tdb,
+							 guint			 uid,
+							 const gchar		*session,
+							 gchar			**root);
+gboolean	 pk_transaction_db_set_root		(PkTransactionDb	*tdb,
+							 guint			 uid,
+							 const gchar		*session,
+							 const gchar		*root);
 
 G_END_DECLS
 

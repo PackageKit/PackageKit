@@ -97,6 +97,7 @@ struct _PkBackendPrivate
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
+	gchar			*root;
 	gpointer		 file_changed_data;
 	guint			 download_files;
 	guint			 last_percentage;
@@ -563,6 +564,36 @@ pk_backend_get_proxy_ftp (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	return g_strdup (backend->priv->proxy_ftp);
+}
+
+/**
+ * pk_backend_set_root:
+ **/
+gboolean
+pk_backend_set_root (PkBackend	*backend, const gchar *root)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* NULL is actually the default, which is '/' */
+	if (root == NULL)
+		root = "/";
+
+	g_free (backend->priv->root);
+	backend->priv->root = g_strdup (root);
+	egg_debug ("install root now %s", backend->priv->root);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_root:
+ *
+ * Return value: root to use for installing, or %NULL
+ **/
+const gchar *
+pk_backend_get_root (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return backend->priv->root;
 }
 
 /**
@@ -2446,6 +2477,7 @@ pk_backend_finalize (GObject *object)
 	pk_backend_reset (backend);
 	g_free (backend->priv->proxy_http);
 	g_free (backend->priv->proxy_ftp);
+	g_free (backend->priv->root);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
 	g_free (backend->priv->frontend_socket);
@@ -3093,6 +3125,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->transaction_id = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;
+	backend->priv->root = NULL;
 	backend->priv->file_changed_func = NULL;
 	backend->priv->file_changed_data = NULL;
 	backend->priv->last_package = NULL;

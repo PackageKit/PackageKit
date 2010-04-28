@@ -197,6 +197,59 @@ pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, G
 }
 
 /**
+ * pk_control_set_root_cb:
+ **/
+static void
+pk_control_set_root_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
+{
+	/* get the result */
+	helper->ret = pk_control_set_root_finish (control, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
+/**
+ * pk_control_set_root:
+ * @control: a valid #PkControl instance
+ * @root: the install root, e.g. '/'
+ * @cancellable: a #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Sets the install root to use in the daemon.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: %TRUE if the root was set correctly
+ *
+ * Since: 0.6.4
+ **/
+gboolean
+pk_control_set_root (PkControl *control, const gchar *root, GCancellable *cancellable, GError **error)
+{
+	gboolean ret;
+	PkControlHelper *helper;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* create temp object */
+	helper = g_new0 (PkControlHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_control_set_root_async (control, root, cancellable, (GAsyncReadyCallback) pk_control_set_root_cb, helper);
+	g_main_loop_run (helper->loop);
+
+	ret = helper->ret;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return ret;
+}
+
+/**
  * pk_control_set_proxy_cb:
  **/
 static void

@@ -1544,15 +1544,16 @@ out:
 }
 
 /**
- * pk_transaction_set_proxy:
+ * pk_transaction_set_session_state:
  */
 static gboolean
-pk_transaction_set_proxy (PkTransaction *transaction, GError **error)
+pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 {
 	gboolean ret = FALSE;
 	gchar *session = NULL;
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
+	gchar *root = NULL;
 
 	/* get session */
 	session = pk_dbus_get_session (transaction->priv->dbus, transaction->priv->sender);
@@ -1574,7 +1575,22 @@ pk_transaction_set_proxy (PkTransaction *transaction, GError **error)
 		g_set_error_literal (error, 1, 0, "failed to set the proxy");
 		goto out;
 	}
-	egg_debug ("using http_proxy=%s, ftp_proxy=%s for %i:%s", proxy_http, proxy_ftp, transaction->priv->uid, session);
+
+	/* get from database */
+	ret = pk_transaction_db_get_root (transaction->priv->transaction_db, transaction->priv->uid, session, &root);
+	if (!ret) {
+		g_set_error_literal (error, 1, 0, "failed to get the root from the database");
+		goto out;
+	}
+
+	/* try to set the new proxy */
+	ret = pk_backend_set_root (transaction->priv->backend, root);
+	if (!ret) {
+		g_set_error_literal (error, 1, 0, "failed to set the root");
+		goto out;
+	}
+	egg_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
+		   proxy_http, proxy_ftp, root, transaction->priv->uid, session);
 out:
 	g_free (proxy_http);
 	g_free (proxy_ftp);
@@ -1637,9 +1653,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
 
 	/* set proxy */
-	ret = pk_transaction_set_proxy (transaction, &error);
+	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
-		egg_warning ("failed to set the proxy: %s", error->message);
+		egg_warning ("failed to set the session state: %s", error->message);
 		g_error_free (error);
 	}
 
