@@ -655,7 +655,7 @@ zypp_get_patches ()
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed
-                if((*it)->candidateObj ().isRelevant() && !((*it)->candidateObj ().isSatisfied())) {
+                if((*it)->isNeeded()) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
 			if (_updating_self) {
 				if (patch->restartSuggested ())
