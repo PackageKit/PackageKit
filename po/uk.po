@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-03 04:18+0000\n"
-"PO-Revision-Date: 2010-04-03 08:56+0300\n"
+"POT-Creation-Date: 2010-04-29 08:42+0000\n"
+"PO-Revision-Date: 2010-04-29 19:09+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
 "MIME-Version: 1.0\n"
@@ -382,35 +382,41 @@ msgid "Failed to get the time since this action was last completed"
 msgstr "Не вдалося визначити час, коли цю дію було виконано востаннє"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1267 ../client/pk-monitor.c:326
+#: ../client/pk-console.c:1268 ../client/pk-monitor.c:326
 msgid "Show the program version and exit"
 msgstr "Показати версію програми і завершити роботу"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1271
 msgid "Set the filter, e.g. installed"
 msgstr "Встановити фільтр, наприклад, встановлені"
 
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1274
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr ""
+"Встановити кореневий каталог встановлення, наприклад, '/' або '/mnt/ltsp'"
+
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1273
+#: ../client/pk-console.c:1277
 msgid "Exit without waiting for actions to complete"
 msgstr "Завершити роботу, не чекаючи на завершення дії"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1276
+#: ../client/pk-console.c:1280
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "Встановити пакунки без запиту щодо підтвердження"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1279
+#: ../client/pk-console.c:1283
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr ""
 "Виконати команду з мінімальним використанням мережевого каналу і меншою "
 "витратою ресурсів системи"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1282
+#: ../client/pk-console.c:1286
 msgid ""
 "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
@@ -418,123 +424,128 @@ msgstr ""
 "анімованих віджетів"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1308
 msgid "Failed to contact PackageKit"
 msgstr "Не вдалося зв’язатися з PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1365
+#: ../client/pk-console.c:1369
 msgid "The proxy could not be set"
 msgstr "Не вдалося встановити параметри проксі-сервера"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1377
+#: ../client/pk-console.c:1381
+msgid "The install root could not be set"
+msgstr "Не вдалося призначити кореневий каталог встановлення"
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
 msgid "The filter specified was invalid"
 msgstr "Вказано некоректний фільтр"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1412
 msgid "A search type is required, e.g. name"
 msgstr "Тип пошуку, якщо такий потрібен, наприклад, назва"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1403 ../client/pk-console.c:1415
-#: ../client/pk-console.c:1427 ../client/pk-console.c:1439
+#: ../client/pk-console.c:1419 ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443 ../client/pk-console.c:1455
 msgid "A search term is required"
 msgstr "Потрібен ключ пошуку"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1465
 msgid "Invalid search type"
 msgstr "Некоректний тип пошуку"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1455
+#: ../client/pk-console.c:1471
 msgid "A package name to install is required"
 msgstr "Слід вказати назву пакунка, який слід встановити"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1480
 msgid "A filename to install is required"
 msgstr "Слід вказати назву файла, який слід встановити"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1476
+#: ../client/pk-console.c:1492
 msgid "A type, key_id and package_id are required"
 msgstr "Слід вказати тип, ідентифікатор ключа і ідентифікатор пакунка"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1487
+#: ../client/pk-console.c:1503
 msgid "A package name to remove is required"
 msgstr "Слід вказати назву пакунка, який потрібно вилучити"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1496
+#: ../client/pk-console.c:1512
 msgid "A destination directory and the package names to download are required"
 msgstr ""
 "Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1519
 msgid "Directory not found"
 msgstr "Каталог не знайдено"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1528
 msgid "A licence identifier (eula-id) is required"
 msgstr "Слід вказати ідентифікатор ліцензії (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1539
 msgid "A transaction identifier (tid) is required"
 msgstr "Слід вказати ідентифікатор операції (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1544
+#: ../client/pk-console.c:1560
 msgid "A package name to resolve is required"
 msgstr "Слід вказати назву пакунка для розв’язання конфлікту"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1555 ../client/pk-console.c:1566
+#: ../client/pk-console.c:1571 ../client/pk-console.c:1582
 msgid "A repository name is required"
 msgstr "Слід вказати назву сховища"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1593
 msgid "A repo name, parameter and value are required"
 msgstr "Слід вказати назву сховища, параметр і значення"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1610
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Слід вказати дію, наприклад «update-system»"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1601
+#: ../client/pk-console.c:1617
 msgid "A correct role is required"
 msgstr "Слід вказати належну роль"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1611 ../client/pk-console.c:1626
-#: ../client/pk-console.c:1635 ../client/pk-console.c:1655
-#: ../client/pk-console.c:1664 ../client/pk-generate-pack.c:316
+#: ../client/pk-console.c:1627 ../client/pk-console.c:1642
+#: ../client/pk-console.c:1651 ../client/pk-console.c:1671
+#: ../client/pk-console.c:1680 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "Слід вказати назву пакунка"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1644
+#: ../client/pk-console.c:1660
 msgid "A package provide string is required"
 msgstr "Слід вказати рядок вмісту"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1724
+#: ../client/pk-console.c:1740
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Підтримки параметра «%s» не передбачено"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1750
 msgid "Command failed"
 msgstr "Спроба виконання команди зазнала невдачі"
 
@@ -1721,74 +1732,91 @@ msgstr "Для підтвердження EULA слід виконати роз�
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Для скасування дії, започаткованої не вами, слід пройти автентифікацію"
+msgstr "Для скасування дії, започаткованої не вами, слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr ""
 "Для зміни параметрів джерел програмного забезпечення слід пройти "
-"автентифікацію"
+"розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid ""
+"Authentication is required to change the location used to decompress packages"
+msgstr ""
+"Для визначення адреси каталогу, куди буде видобуто вміст пакунків, слід "
+"пройти розпізнавання"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
 "Для визнання ключа, використаного для підписування пакунків, як надійного "
-"слід пройти автентифікацію"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to install a signed package"
-msgstr "Для встановлення підписаного пакунка слід пройти автентифікацію"
+"слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Authentication is required to install an untrusted package"
-msgstr "Для встановлення ненадійного пакунка слід пройти автентифікацію"
+msgid "Authentication is required to install a signed package"
+msgstr "Для встановлення підписаного пакунка слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Authentication is required to refresh the system sources"
-msgstr "Для оновлення списку джерел системи слід пройти автентифікацію"
+msgid "Authentication is required to install an untrusted package"
+msgstr "Для встановлення ненадійного пакунка слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to reload the device with a new driver"
-msgstr ""
-"Для перезавантаження пристрою з новим драйвером слід пройти автентифікацію"
+msgid "Authentication is required to refresh the system sources"
+msgstr "Для оновлення списку джерел системи слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Authentication is required to remove packages"
-msgstr "Для вилучення пакунків слід пройти автентифікацію"
+msgid "Authentication is required to reload the device with a new driver"
+msgstr ""
+"Для перезавантаження пристрою з новим драйвером слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Authentication is required to rollback a transaction"
-msgstr "Для скасування дії слід пройти автентифікацію"
+msgid "Authentication is required to remove packages"
+msgstr "Для вилучення пакунків слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Authentication is required to rollback a transaction"
+msgstr "Для скасування дії слід пройти розпізнавання"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr ""
 "Для визначення проксі-сервера, який буде використано для звантаження "
-"пакунків, слід пройти автентифікацію"
+"пакунків, слід пройти розпізнавання"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
-msgstr "Для оновлення пакунків слід пройти автентифікацію"
+msgstr "Для оновлення пакунків слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#: ../policy/org.freedesktop.packagekit.policy.in.h:26
 msgid "Cancel foreign task"
 msgstr "Скасування сторонніх завдань"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:33
+msgid "Change location that packages are installed"
+msgstr "Змінити каталог, куди встановлюватимуться пакунки"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
 msgid "Change software source parameters"
 msgstr "Зміна параметрів джерела програм"
 
@@ -1798,7 +1826,7 @@ msgstr "Зміна параметрів джерела програм"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+#: ../policy/org.freedesktop.packagekit.policy.in.h:46
 msgid "Install signed package"
 msgstr "Встановлення підписаного пакунка"
 
@@ -1808,7 +1836,7 @@ msgstr "Встановлення підписаного пакунка"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#: ../policy/org.freedesktop.packagekit.policy.in.h:53
 msgid "Install untrusted local file"
 msgstr "Встановлення ненадійного локального файла"
 
@@ -1816,7 +1844,7 @@ msgstr "Встановлення ненадійного локального ф�
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Refresh system sources"
 msgstr "Оновлення списків джерел системи"
 
@@ -1827,7 +1855,7 @@ msgstr "Оновлення списків джерел системи"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Reload a device"
 msgstr "Перезавантаження пристрою"
 
@@ -1840,7 +1868,7 @@ msgstr "Перезавантаження пристрою"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#: ../policy/org.freedesktop.packagekit.policy.in.h:76
 msgid "Remove package"
 msgstr "Вилучення пакунка"
 
@@ -1849,7 +1877,7 @@ msgstr "Вилучення пакунка"
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#: ../policy/org.freedesktop.packagekit.policy.in.h:82
 msgid "Rollback to a previous transaction"
 msgstr "Повернення до попередньої операції"
 
@@ -1857,7 +1885,7 @@ msgstr "Повернення до попередньої операції"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:87
 msgid "Set network proxy"
 msgstr "Встановлення проксі-сервер"
 
@@ -1867,7 +1895,7 @@ msgstr "Встановлення проксі-сервер"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Trust a key used for signing packages"
 msgstr "Визначення надійності ключа, яким підписано пакунки"
 
@@ -1878,7 +1906,7 @@ msgstr "Визначення надійності ключа, яким підп�
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Update packages"
 msgstr "Оновлення пакунків"
 
