@@ -7,12 +7,13 @@
 #
 # Igor Miletic (Igor Miletić) <grejigl-gnomeprevod@yahoo.ca>, 2009.
 # Miloš Komarčević <kmilos@gmail.com>, 2009.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-07 19:20+0000\n"
-"PO-Revision-Date: 2010-04-07 23:02-0000\n"
+"POT-Creation-Date: 2010-04-29 19:54+0000\n"
+"PO-Revision-Date: 2010-04-29 21:19+0100\n"
 "Last-Translator: Miloš Komarčević <kmilos@gmail.com>\n"
 "Language-Team: Serbian <trans-sr@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
@@ -387,157 +388,167 @@ msgid "Failed to get the time since this action was last completed"
 msgstr "Datum poslednjeg izvršavanja ove radnje nije pronađen"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1267 ../client/pk-monitor.c:326
+#: ../client/pk-console.c:1268 ../client/pk-monitor.c:326
 msgid "Show the program version and exit"
 msgstr "Prikaži verziju programa i završi rad"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1271
 msgid "Set the filter, e.g. installed"
 msgstr "Namesti filter, npr. instalirani"
 
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1274
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr "Postavi koren instalacije, npr. „/“ ili „/mnt/ltsp“"
+
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1273
+#: ../client/pk-console.c:1277
 msgid "Exit without waiting for actions to complete"
 msgstr "Završi rad bez čekanja da se poslovi završe"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1276
+#: ../client/pk-console.c:1280
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "Instaliraj pakete bez pitanja za potvrdu"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1279
+#: ../client/pk-console.c:1283
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr ""
 "Izvrši naredbu koristeći neiskorišćeni mrežni opseg i takođe trošeći manje "
 "energije"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1282
+#: ../client/pk-console.c:1286
 msgid ""
 "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
 "Štampaj izlaz čitljiv mašini na ekranu, umesto upotrebe animiranih vidžeta"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1308
 msgid "Failed to contact PackageKit"
 msgstr "Neuspešno kontaktiranje PaketKita."
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1365
+#: ../client/pk-console.c:1369
 msgid "The proxy could not be set"
 msgstr "Proksi nije mogao da bude postavljen"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1377
+#: ../client/pk-console.c:1381
+msgid "The install root could not be set"
+msgstr "Koren instalacije nije mogao da bude postavljen"
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
 msgid "The filter specified was invalid"
 msgstr "Navedeni filter nije ispravan"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1412
 msgid "A search type is required, e.g. name"
 msgstr "Morate navesti vrstu pretrage, npr. po imenu"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1403 ../client/pk-console.c:1415
-#: ../client/pk-console.c:1427 ../client/pk-console.c:1439
+#: ../client/pk-console.c:1419 ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443 ../client/pk-console.c:1455
 msgid "A search term is required"
 msgstr "Morate navesti termin za pretragu"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1465
 msgid "Invalid search type"
 msgstr "Neispravna vrsta pretrage"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1455
+#: ../client/pk-console.c:1471
 msgid "A package name to install is required"
 msgstr "Neophodno je ime paketa za instalaciju"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1480
 msgid "A filename to install is required"
 msgstr "Neophodno je ime datoteke za instalaciju"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1476
+#: ../client/pk-console.c:1492
 msgid "A type, key_id and package_id are required"
 msgstr "Morate navesti vrstu, IB ključa i IB paketa (key_id i package_id)"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1487
+#: ../client/pk-console.c:1503
 msgid "A package name to remove is required"
 msgstr "Morate navesti naziv paketa za uklanjanje"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1496
+#: ../client/pk-console.c:1512
 msgid "A destination directory and the package names to download are required"
 msgstr "Neophodni su odredišni direktorijum i imena paketa za preuzimanje"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1519
 msgid "Directory not found"
 msgstr "Direktorijum nije nađen"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1528
 msgid "A licence identifier (eula-id) is required"
 msgstr "Morete navesti identifikator licence (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1539
 msgid "A transaction identifier (tid) is required"
 msgstr "Morate navesti identifikator transakcije (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1544
+#: ../client/pk-console.c:1560
 msgid "A package name to resolve is required"
 msgstr "Morate navesti ime paketa za razrešavanje"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1555 ../client/pk-console.c:1566
+#: ../client/pk-console.c:1571 ../client/pk-console.c:1582
 msgid "A repository name is required"
 msgstr "Morate navesti ime riznice"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1593
 msgid "A repo name, parameter and value are required"
 msgstr "Morate navesti ime, parametar i vrednost riznice"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1610
 msgid "An action, e.g. 'update-system' is required"
 msgstr "Morate navesti radnju, npr. „update-system“ (ažuriranje sistema)"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1601
+#: ../client/pk-console.c:1617
 msgid "A correct role is required"
 msgstr "Morate navesti važeću radnju"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1611 ../client/pk-console.c:1626
-#: ../client/pk-console.c:1635 ../client/pk-console.c:1655
-#: ../client/pk-console.c:1664 ../client/pk-generate-pack.c:316
+#: ../client/pk-console.c:1627 ../client/pk-console.c:1642
+#: ../client/pk-console.c:1651 ../client/pk-console.c:1671
+#: ../client/pk-console.c:1680 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "Morate navesti ime paketa"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1644
+#: ../client/pk-console.c:1660
 msgid "A package provide string is required"
 msgstr "Morate navesti „provide“ niz (šta paket pruža)"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1724
+#: ../client/pk-console.c:1740
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Opcija „%s“ nije podržana"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1750
 msgid "Command failed"
 msgstr "Naredba nije uspela"
 
@@ -1732,48 +1743,55 @@ msgstr "Neophodna je autentifikacija za izmenu parametara izvora softvera"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
+"Authentication is required to change the location used to decompress packages"
+msgstr ""
+"Neophodna je autentifikacija za izmenu lokacije upotrebljene za raspakivanje "
+"paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
 "Neophodna je autentifikacija da bi se ključ korišćen za potpisivanje paketa "
 "smatrao poverljivim"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
 msgstr "Neophodna je autentifikacija za instalaciju potpisanog paketa"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
 msgstr ""
 "Neophodna je autentifikacija za instalaciju paketa iz nepoverljivog izvora"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
 msgstr "Neophodna je autentifikacija za osvežavanje sistemskih riznica"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
 msgstr ""
 "Neophodna je autentifikacija za ponovno učitavanje uređaja sa novim "
 "upravljačkim programom"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
 msgstr "Neophodna je autentifikacija za uklanjanje paketa"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
 msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr ""
-"Neophodna je autentifikacija  kako bise namestio mrežni posrednik korišćen "
+"Neophodna je autentifikacija kako bi se namestio mrežni posrednik korišćen "
 "za preuzimanje paketa"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
 msgstr "Neophodna je autentifikacija za ažuriranje paketa"
 
@@ -1782,16 +1800,26 @@ msgstr "Neophodna je autentifikacija za ažuriranje paketa"
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#: ../policy/org.freedesktop.packagekit.policy.in.h:26
 msgid "Cancel foreign task"
 msgstr "Otkaži strani posao"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:33
+msgid "Change location that packages are installed"
+msgstr "Izmeni lokaciju instalacije paketa"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
 msgid "Change software source parameters"
 msgstr "Izmeni parametre izvora softvera"
 
@@ -1801,7 +1829,7 @@ msgstr "Izmeni parametre izvora softvera"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+#: ../policy/org.freedesktop.packagekit.policy.in.h:46
 msgid "Install signed package"
 msgstr "Instaliraj potpisani paket"
 
@@ -1811,7 +1839,7 @@ msgstr "Instaliraj potpisani paket"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#: ../policy/org.freedesktop.packagekit.policy.in.h:53
 msgid "Install untrusted local file"
 msgstr "Instaliraj nepoverljivu lokalnu datoteku"
 
@@ -1819,7 +1847,7 @@ msgstr "Instaliraj nepoverljivu lokalnu datoteku"
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Refresh system sources"
 msgstr "Osveži sistemske riznice"
 
@@ -1830,7 +1858,7 @@ msgstr "Osveži sistemske riznice"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Reload a device"
 msgstr "Ponovo učitaj uređaj"
 
@@ -1843,7 +1871,7 @@ msgstr "Ponovo učitaj uređaj"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#: ../policy/org.freedesktop.packagekit.policy.in.h:76
 msgid "Remove package"
 msgstr "Ukloni paket"
 
@@ -1852,7 +1880,7 @@ msgstr "Ukloni paket"
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#: ../policy/org.freedesktop.packagekit.policy.in.h:82
 msgid "Rollback to a previous transaction"
 msgstr "Vrati se na stanje prethodne promene"
 
@@ -1860,7 +1888,7 @@ msgstr "Vrati se na stanje prethodne promene"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:87
 msgid "Set network proxy"
 msgstr "Postavi mrežnog posrednika"
 
@@ -1870,7 +1898,7 @@ msgstr "Postavi mrežnog posrednika"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Trust a key used for signing packages"
 msgstr "Veruj ključu korišćenom za potpisivanje paketa"
 
@@ -1881,7 +1909,7 @@ msgstr "Veruj ključu korišćenom za potpisivanje paketa"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Update packages"
 msgstr "Ažuriraj pakete"
 
