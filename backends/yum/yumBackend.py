@@ -2555,13 +2555,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             infra_packages = ['PackageKit', 'yum', 'rpm']
             if pkg.name in infra_packages or pkg.name.partition('-')[0] in infra_packages:
                 infra_pkgs.append(pkg)
-        if len(infra_pkgs) > len(pkgs):
-            self.message(MESSAGE_OTHER_UPDATES_HELD_BACK, "Infrastructure packages take priority")
         if len(infra_pkgs) > 0:
-            msg = []
-            for pkg in infra_pkgs:
-                msg.append(pkg.name)
-            self.message(MESSAGE_BACKEND_ERROR, "The packages '%s' will be updated before other packages" % msg)
+            if len(infra_pkgs) < len(pkgs):
+                msg = []
+                for pkg in infra_pkgs:
+                    msg.append(pkg.name)
+                self.message(MESSAGE_OTHER_UPDATES_HELD_BACK, "Infrastructure packages take priority. " \
+                             "The packages '%s' will be updated before other packages" % msg)
             pkgs = infra_pkgs
 
         # get the list of installed updates as this is needed for get_applicable_notices()
