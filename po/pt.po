@@ -3,10 +3,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-14 19:46+0000\n"
-"PO-Revision-Date: 2010-04-14 22:07+0100\n"
+"POT-Creation-Date: 2010-04-30 14:41+0000\n"
+"PO-Revision-Date: 2010-04-30 18:14+0100\n"
 "Last-Translator: Rui Gouveia <rui.gouveia@gmail.com>\n"
-"Language-Team: trans-pt@fedoraproject.org\n"
+"Language-Team: fedora-trans-pt@redhat.com\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -383,160 +383,170 @@ msgstr ""
 "Não foi possível obter a hora da última vez que esta acção foi concluída"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1267 ../client/pk-monitor.c:326
+#: ../client/pk-console.c:1268 ../client/pk-monitor.c:326
 msgid "Show the program version and exit"
 msgstr "Mostrar a versão da aplicação e terminar"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1271
 msgid "Set the filter, e.g. installed"
 msgstr "Configurar o filtro, exemplo, instalado"
 
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1274
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr "Defina a raiz da instalação, por exemplo, '/' ou '/mnt/ltsp'"
+
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1273
+#: ../client/pk-console.c:1277
 msgid "Exit without waiting for actions to complete"
 msgstr "Sair sem esperar que as acções completem"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1276
+#: ../client/pk-console.c:1280
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "Instalar os pacotes sem pedir por confirmação"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1279
+#: ../client/pk-console.c:1283
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr ""
 "Executar o comando utilizando períodos de inactividade da rede e também "
 "utilizando menos energia"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1282
+#: ../client/pk-console.c:1286
 msgid ""
 "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
 "Escrever no ecrã o resultado legível, ao invés de utilizar objectos animados"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1308
 msgid "Failed to contact PackageKit"
 msgstr "Falhou o contacto com o PackageKit"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1365
+#: ../client/pk-console.c:1369
 msgid "The proxy could not be set"
 msgstr "Não foi possível definir o proxy"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1377
+#: ../client/pk-console.c:1381
+msgid "The install root could not be set"
+msgstr "Não foi possível definir a raiz da instalação"
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
 msgid "The filter specified was invalid"
 msgstr "O filtro especificado era inválido"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1412
 msgid "A search type is required, e.g. name"
 msgstr "Um tipo de pesquisa é necessário. Por exemplo, nome"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1403 ../client/pk-console.c:1415
-#: ../client/pk-console.c:1427 ../client/pk-console.c:1439
+#: ../client/pk-console.c:1419 ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443 ../client/pk-console.c:1455
 msgid "A search term is required"
 msgstr "Um termo de pesquisa é necessário"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1465
 msgid "Invalid search type"
 msgstr "Tipo de pesquisa inválida"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1455
+#: ../client/pk-console.c:1471
 msgid "A package name to install is required"
 msgstr "É necessário indicar um nome de pacote a instalar"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1480
 msgid "A filename to install is required"
 msgstr "É necessário um nome de ficheiro a instalar"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1476
+#: ../client/pk-console.c:1492
 msgid "A type, key_id and package_id are required"
 msgstr "São necessários um tipo, id de chave e id de pacote"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1487
+#: ../client/pk-console.c:1503
 msgid "A package name to remove is required"
 msgstr "É necessário um nome de pacote para remover"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1496
+#: ../client/pk-console.c:1512
 msgid "A destination directory and the package names to download are required"
 msgstr ""
 "São necessários uma directoria de destino assim como os nomes dos pacotes a "
 "transferir"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1519
 msgid "Directory not found"
 msgstr "Directório não encontrado"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1528
 msgid "A licence identifier (eula-id) is required"
 msgstr "É necessário um identificador de licença (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1539
 msgid "A transaction identifier (tid) is required"
 msgstr "É necessário um identificador de transacção (tid)"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1544
+#: ../client/pk-console.c:1560
 msgid "A package name to resolve is required"
 msgstr "É necessário indicar um nome de pacote"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1555 ../client/pk-console.c:1566
+#: ../client/pk-console.c:1571 ../client/pk-console.c:1582
 msgid "A repository name is required"
 msgstr "É obrigatório um nome de repositório"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1593
 msgid "A repo name, parameter and value are required"
 msgstr "É necessário indicar um repositório, parâmetro e valor"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1610
 msgid "An action, e.g. 'update-system' is required"
 msgstr "É necessária uma acção, por exemplo 'update-system'"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1601
+#: ../client/pk-console.c:1617
 msgid "A correct role is required"
 msgstr "É necessária uma função correcta"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1611 ../client/pk-console.c:1626
-#: ../client/pk-console.c:1635 ../client/pk-console.c:1655
-#: ../client/pk-console.c:1664 ../client/pk-generate-pack.c:316
+#: ../client/pk-console.c:1627 ../client/pk-console.c:1642
+#: ../client/pk-console.c:1651 ../client/pk-console.c:1671
+#: ../client/pk-console.c:1680 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "É obrigatório um nome de pacote"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1644
+#: ../client/pk-console.c:1660
 msgid "A package provide string is required"
 msgstr ""
 "É necessário especificar a string que define o que o pacote disponibiliza"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1724
+#: ../client/pk-console.c:1740
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "A opção '%s' não é suportada"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1750
 msgid "Command failed"
 msgstr "Comando falhou"
 
@@ -1735,39 +1745,47 @@ msgstr "Autenticação é necessária para alterar parâmetros do código fonte"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
 msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"A autenticação é necessária para alterar a localização utilizada para "
+"descomprimir pacotes"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr ""
 "Autenticação é necessária para considerar segura uma chave utilizada para "
 "assinar pacotes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
 msgstr "Autenticação é necessária para instalar um pacote assinado"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
 msgstr "Autenticação é necessária para instalar um pacote não confiável"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
 msgstr "Autenticação é necessária para actualizar as fontes do sistema"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
 msgstr ""
 "Autenticação é necessária para recarregar o dispositivo com o novo "
 "controlador"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
 msgstr "Autenticação é necessária para remover pacotes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
 msgstr "Autenticação é necessária para voltar atrás uma transacção"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
@@ -1775,7 +1793,7 @@ msgstr ""
 "Autenticação é necessária para configurar o proxy de rede utilizado para "
 "transferir pacotes"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
 msgstr "Autenticação é necessária para actualizar pacotes"
 
@@ -1784,16 +1802,26 @@ msgstr "Autenticação é necessária para actualizar pacotes"
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#: ../policy/org.freedesktop.packagekit.policy.in.h:26
 msgid "Cancel foreign task"
 msgstr "Cancelar tarefa externa"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:33
+msgid "Change location that packages are installed"
+msgstr "Mudar a localização onde os pacotes são instalados"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
 msgid "Change software source parameters"
 msgstr "Alterar parâmetros do código fonte"
 
@@ -1803,7 +1831,7 @@ msgstr "Alterar parâmetros do código fonte"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+#: ../policy/org.freedesktop.packagekit.policy.in.h:46
 msgid "Install signed package"
 msgstr "Instalar pacote assinado"
 
@@ -1813,7 +1841,7 @@ msgstr "Instalar pacote assinado"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#: ../policy/org.freedesktop.packagekit.policy.in.h:53
 msgid "Install untrusted local file"
 msgstr "Instalar ficheiro local não confiável"
 
@@ -1821,7 +1849,7 @@ msgstr "Instalar ficheiro local não confiável"
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Refresh system sources"
 msgstr "Actualizar fontes do sistema"
 
@@ -1832,7 +1860,7 @@ msgstr "Actualizar fontes do sistema"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Reload a device"
 msgstr "Recarregar dispositivo"
 
@@ -1845,7 +1873,7 @@ msgstr "Recarregar dispositivo"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#: ../policy/org.freedesktop.packagekit.policy.in.h:76
 msgid "Remove package"
 msgstr "Remover pacote"
 
@@ -1854,7 +1882,7 @@ msgstr "Remover pacote"
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#: ../policy/org.freedesktop.packagekit.policy.in.h:82
 msgid "Rollback to a previous transaction"
 msgstr "Voltar a uma transacção anterior"
 
@@ -1862,7 +1890,7 @@ msgstr "Voltar a uma transacção anterior"
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:87
 msgid "Set network proxy"
 msgstr "Configurar o proxy da rede"
 
@@ -1872,7 +1900,7 @@ msgstr "Configurar o proxy da rede"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Trust a key used for signing packages"
 msgstr "Confiar numa chave utilizada para assinar pacotes"
 
@@ -1883,7 +1911,7 @@ msgstr "Confiar numa chave utilizada para assinar pacotes"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Update packages"
 msgstr "Actualizar pacotes"
 
