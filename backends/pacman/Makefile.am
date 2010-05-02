@@ -20,6 +20,7 @@ plugin_LTLIBRARIES = libpk_backend_pacman.la
 
 libpk_backend_pacman_la_SOURCES = backend-error.c \
                                   backend-groups.c \
+                                  backend-packages.c \
                                   backend-pacman.c \
                                   backend-repos.c
 libpk_backend_pacman_la_LIBADD = $(PK_PLUGIN_LIBS) \

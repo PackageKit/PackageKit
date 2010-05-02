@@ -23,6 +23,7 @@
 
 #include "backend-error.h"
 #include "backend-groups.h"
+#include "backend-packages.h"
 #include "backend-repos.h"
 #include "backend-pacman.h"
 
@@ -207,9 +208,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
 	NULL,					/* get_depends */
-	NULL,					/* get_details */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
+	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* get_requires */
@@ -222,7 +223,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
 	NULL,					/* search_files */
