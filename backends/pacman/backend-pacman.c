@@ -25,6 +25,7 @@
 #include "backend-groups.h"
 #include "backend-packages.h"
 #include "backend-repos.h"
+#include "backend-search.h"
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
@@ -211,7 +212,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
-	NULL,					/* get_packages */
+	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
@@ -225,13 +226,13 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
-	NULL,					/* search_files */
-	NULL,					/* search_groups */
-	NULL,					/* search_names */
+	backend_search_details,			/* search_details */
+	backend_search_files,			/* search_files */
+	backend_search_groups,			/* search_groups */
+	backend_search_names,			/* search_names */
 	NULL,					/* update_packages */
 	NULL,					/* update_system */
-	NULL,					/* what_provides */
+	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */

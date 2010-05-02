@@ -22,7 +22,8 @@ libpk_backend_pacman_la_SOURCES = backend-error.c \
                                   backend-groups.c \
                                   backend-packages.c \
                                   backend-pacman.c \
-                                  backend-repos.c
+                                  backend-repos.c \
+                                  backend-search.c
 libpk_backend_pacman_la_LIBADD = $(PK_PLUGIN_LIBS) \
                                  $(PACMAN_LIBS)
 libpk_backend_pacman_la_LDFLAGS = -module -avoid-version
