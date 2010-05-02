@@ -100,15 +100,38 @@ backend_destroy (PkBackend *backend)
 	}
 }
 
+/**
+ * backend_get_filters:
+ **/
+static PkBitfield
+backend_get_filters (PkBackend *backend)
+{
+	g_return_val_if_fail (backend != NULL, 0);
+
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1);
+}
+
+/**
+ * backend_get_mime_types:
+ **/
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	g_return_val_if_fail (backend != NULL, NULL);
+
+	/* packages currently use .pkg.tar.gz and .pkg.tar.xz */
+	return g_strdup ("application/x-compressed-tar;application/x-xz-compressed-tar");
+}
+
 PK_BACKEND_OPTIONS (
 	"pacman",				/* description */
 	"Jonathan Conder <j@skurvy.no-ip.org>",	/* author */
 	backend_initialize,			/* initialize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
-	NULL,					/* get_filters */
+	backend_get_filters,			/* get_filters */
 	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	NULL,					/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
