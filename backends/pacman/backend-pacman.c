@@ -24,6 +24,7 @@
 #include "backend-depends.h"
 #include "backend-error.h"
 #include "backend-groups.h"
+#include "backend-install.h"
 #include "backend-packages.h"
 #include "backend-repos.h"
 #include "backend-search.h"
@@ -216,7 +217,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_roles */
 	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
+	backend_download_packages,		/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
@@ -227,8 +228,8 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_files */
-	NULL,					/* install_packages */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_packages */
@@ -244,7 +245,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* update_system */
 	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
+	backend_simulate_install_packages,	/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL					/* simulate_update_packages */
 );
