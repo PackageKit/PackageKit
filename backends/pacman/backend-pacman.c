@@ -21,9 +21,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "backend-error.h"
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
+
+static void
+pacman_message_cb (const gchar *domain, GLogLevelFlags level, const gchar *message, gpointer user_data)
+{
+	g_return_if_fail (message != NULL);
+	g_return_if_fail (user_data != NULL);
+
+	/* report important output to PackageKit */
+	switch (level) {
+		case G_LOG_LEVEL_WARNING:
+		case G_LOG_LEVEL_MESSAGE:
+			egg_warning ("pacman: %s", message);
+			backend_message ((PkBackend *) user_data, message);
+			break;
+
+		case G_LOG_LEVEL_INFO:
+		case G_LOG_LEVEL_DEBUG:
+			egg_debug ("pacman: %s", message);
+			break;
+
+		default:
+			break;
+	}
+}
 
 /**
  * backend_initialize:
@@ -32,8 +57,12 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	GError *error = NULL;
+	GLogLevelFlags flags = G_LOG_LEVEL_WARNING | G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG;
 
 	g_return_if_fail (backend != NULL);
+
+	/* handle output from pacman */
+	g_log_set_handler ("Pacman", flags, pacman_message_cb, backend);
 
 	/* PATH needs to be set for install scriptlets */
 	g_setenv ("PATH", PACMAN_DEFAULT_PATH, FALSE);

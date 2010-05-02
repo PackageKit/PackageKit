@@ -10,7 +10,8 @@ conf_DATA = pacman.conf
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_pacman.la
 
-libpk_backend_pacman_la_SOURCES = backend-pacman.c
+libpk_backend_pacman_la_SOURCES = backend-error.c \
+                                  backend-pacman.c
 libpk_backend_pacman_la_LIBADD = $(PK_PLUGIN_LIBS) \
                                  $(PACMAN_LIBS)
 libpk_backend_pacman_la_LDFLAGS = -module -avoid-version
