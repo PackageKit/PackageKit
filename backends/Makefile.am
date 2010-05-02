@@ -32,6 +32,10 @@ if BACKEND_TYPE_OPKG
 SUBDIRS += opkg
 endif
 
+if BACKEND_TYPE_PACMAN
+SUBDIRS += pacman
+endif
+
 if BACKEND_TYPE_RAZOR
 SUBDIRS += razor
 endif
