@@ -22,6 +22,7 @@
  */
 
 #include "backend-error.h"
+#include "backend-groups.h"
 #include "backend-repos.h"
 #include "backend-pacman.h"
 
@@ -85,6 +86,13 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 		return;
 	}
+
+	/* read the group mapping from a config file */
+	if (!backend_initialize_groups (backend, &error)) {
+		egg_error ("pacman: %s", error->message);
+		g_error_free (error);
+		return;
+	}
 }
 
 /**
@@ -97,6 +105,7 @@ backend_destroy (PkBackend *backend)
 
 	egg_debug ("pacman: cleaning up");
 
+	backend_destroy_groups (backend);
 	backend_destroy_databases (backend);
 
 	if (pacman != NULL) {
@@ -190,7 +199,7 @@ PK_BACKEND_OPTIONS (
 	"Jonathan Conder <j@skurvy.no-ip.org>",	/* author */
 	backend_initialize,			/* initialize */
 	backend_destroy,			/* destroy */
-	NULL,					/* get_groups */
+	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* get_roles */
 	backend_get_mime_types,			/* get_mime_types */
