@@ -22,6 +22,7 @@
  */
 
 #include "backend-error.h"
+#include "backend-repos.h"
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
@@ -78,8 +79,8 @@ backend_initialize (PkBackend *backend)
 		return;
 	}
 
-	/* read configuration from PackageKit pacman config file */
-	if (!pacman_manager_configure (pacman, PACMAN_CONFIG_FILE, &error)) {
+	/* configure and disable the relevant databases */
+	if (!backend_initialize_databases (backend, &error)) {
 		egg_error ("pacman: %s", error->message);
 		g_error_free (error);
 		return;
@@ -95,6 +96,8 @@ backend_destroy (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 
 	egg_debug ("pacman: cleaning up");
+
+	backend_destroy_databases (backend);
 
 	if (pacman != NULL) {
 		g_object_unref (pacman);
@@ -199,7 +202,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_distro_upgrades */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
-	NULL,					/* get_repo_list */
+	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
@@ -208,7 +211,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_packages */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
