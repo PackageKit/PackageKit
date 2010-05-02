@@ -21,6 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "backend-depends.h"
 #include "backend-error.h"
 #include "backend-groups.h"
 #include "backend-packages.h"
@@ -208,13 +209,13 @@ PK_BACKEND_OPTIONS (
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
-	NULL,					/* get_depends */
+	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_distro_upgrades */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
-	NULL,					/* get_requires */
+	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_files */

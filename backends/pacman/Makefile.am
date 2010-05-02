@@ -18,7 +18,8 @@ conf_DATA = groups.list \
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_pacman.la
 
-libpk_backend_pacman_la_SOURCES = backend-error.c \
+libpk_backend_pacman_la_SOURCES = backend-depends.c \
+                                  backend-error.c \
                                   backend-groups.c \
                                   backend-packages.c \
                                   backend-pacman.c \
