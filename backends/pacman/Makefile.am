@@ -24,7 +24,8 @@ libpk_backend_pacman_la_SOURCES = backend-depends.c \
                                   backend-packages.c \
                                   backend-pacman.c \
                                   backend-repos.c \
-                                  backend-search.c
+                                  backend-search.c \
+                                  backend-transaction.c
 libpk_backend_pacman_la_LIBADD = $(PK_PLUGIN_LIBS) \
                                  $(PACMAN_LIBS)
 libpk_backend_pacman_la_LDFLAGS = -module -avoid-version

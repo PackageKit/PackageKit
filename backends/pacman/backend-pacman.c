@@ -27,6 +27,7 @@
 #include "backend-packages.h"
 #include "backend-repos.h"
 #include "backend-search.h"
+#include "backend-transaction.h"
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
@@ -96,6 +97,13 @@ backend_initialize (PkBackend *backend)
 		g_error_free (error);
 		return;
 	}
+
+	/* setup better download progress reporting */
+	if (!backend_initialize_downloads (backend, &error)) {
+		egg_error ("pacman: %s", error->message);
+		g_error_free (error);
+		return;
+	}
 }
 
 /**
@@ -108,6 +116,7 @@ backend_destroy (PkBackend *backend)
 
 	egg_debug ("pacman: cleaning up");
 
+	backend_destroy_downloads (backend);
 	backend_destroy_groups (backend);
 	backend_destroy_databases (backend);
 
