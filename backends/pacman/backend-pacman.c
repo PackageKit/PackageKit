@@ -25,6 +25,7 @@
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
+GCancellable *cancellable = NULL;
 
 static void
 pacman_message_cb (const gchar *domain, GLogLevelFlags level, const gchar *message, gpointer user_data)
@@ -123,6 +124,64 @@ backend_get_mime_types (PkBackend *backend)
 	return g_strdup ("application/x-compressed-tar;application/x-xz-compressed-tar");
 }
 
+void
+backend_run (PkBackend *backend, PkStatusEnum status, PkBackendThreadFunc func)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (func != NULL);
+
+	if (cancellable != NULL) {
+		egg_warning ("pacman: cancellable was not NULL");
+		g_object_unref (cancellable);
+	}
+	cancellable = g_cancellable_new ();
+	pk_backend_set_allow_cancel (backend, TRUE);
+
+	pk_backend_set_status (backend, status);
+	pk_backend_thread_create (backend, func);
+}
+
+/**
+ * backend_cancel:
+ **/
+static void
+backend_cancel (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	if (cancellable != NULL) {
+		g_cancellable_cancel (cancellable);
+	}
+}
+
+gboolean
+backend_cancelled (PkBackend *backend)
+{
+	g_return_val_if_fail (cancellable != NULL, FALSE);
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	if (g_cancellable_is_cancelled (cancellable)) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+void
+backend_finished (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_allow_cancel (backend, FALSE);
+	if (cancellable != NULL) {
+		g_object_unref (cancellable);
+		cancellable = NULL;
+	}
+
+	pk_backend_thread_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"pacman",				/* description */
 	"Jonathan Conder <j@skurvy.no-ip.org>",	/* author */
@@ -132,7 +191,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* get_roles */
 	backend_get_mime_types,			/* get_mime_types */
-	NULL,					/* cancel */
+	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
 	NULL,					/* get_depends */

@@ -21,7 +21,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <gio/gio.h>
 #include <pacman.h>
 #include <pk-backend.h>
 
 extern PacmanManager	*pacman;
+extern GCancellable	*cancellable;
+
+void		 backend_run		(PkBackend		*backend,
+					 PkStatusEnum		 status,
+					 PkBackendThreadFunc	 func);
+gboolean	 backend_cancelled	(PkBackend		*backend);
+void		 backend_finished	(PkBackend		*backend);
