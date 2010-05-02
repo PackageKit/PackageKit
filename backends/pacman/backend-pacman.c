@@ -26,6 +26,7 @@
 #include "backend-groups.h"
 #include "backend-install.h"
 #include "backend-packages.h"
+#include "backend-remove.h"
 #include "backend-repos.h"
 #include "backend-search.h"
 #include "backend-transaction.h"
@@ -232,7 +233,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_packages */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */
@@ -246,6 +247,6 @@ PK_BACKEND_OPTIONS (
 	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
+	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	NULL					/* simulate_update_packages */
 );

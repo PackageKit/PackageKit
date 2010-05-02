@@ -24,6 +24,7 @@ libpk_backend_pacman_la_SOURCES = backend-depends.c \
                                   backend-install.c \
                                   backend-packages.c \
                                   backend-pacman.c \
+                                  backend-remove.c \
                                   backend-repos.c \
                                   backend-search.c \
                                   backend-transaction.c
