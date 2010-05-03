@@ -60,6 +60,10 @@ from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.exceptions import SystemDatabaseError
+try:
+    from entropy.exceptions import DependenciesNotRemovable
+except ImportError:
+    DependenciesNotRemovable = Exception
 from entropy.fetchers import UrlFetcher
 
 import entropy.tools
@@ -416,7 +420,17 @@ class PackageKitEntropyMixin(object):
         matches = [pkg_id for pkg_id, c_repo, pk_pkg in pkgs]
 
         # calculate deps
-        run_queue = self._entropy.get_removal_queue(matches)
+        try:
+            run_queue = self._entropy.get_removal_queue(matches)
+        except DependenciesNotRemovable as err:
+            c_repo = self._entropy.installed_repository()
+            vpkgs = getattr(err, 'value', set())
+            vit_pkgs = ', '.join(sorted([c_repo.retrieveAtom(x[0]) for x in vpkgs],
+                key = lambda x: c_repo.retrieveAtom(x)))
+            self.error(ERROR_DEP_RESOLUTION_FAILED,
+                "Could not perform remove operation, these packages are vital: %s" % (vit_pkgs,))
+            return
+
         added_pkgs = [x for x in run_queue if x not in matches]
 
         # if there are required packages, allowdep must be on
