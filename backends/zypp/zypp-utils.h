@@ -182,7 +182,15 @@ gboolean zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch);
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkBitfield filters);
+/**
+ * should we omit a solvable from a result because of filtering ?
+ */
+gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item);
+
+/**
+ * apply filters to a list.
+ */
+void zypp_emit_filtered_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array

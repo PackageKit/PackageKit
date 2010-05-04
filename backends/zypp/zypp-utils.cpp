@@ -535,46 +535,56 @@ system_and_package_are_x86 (zypp::sat::Solvable item)
 			!strcmp (zypp::ZConfig::defaultSystemArchitecture ().asString().c_str(), "i686"));
 }
 
-void
-zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkBitfield filters)
+/* should we filter out this package ? */
+gboolean
+zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 {
+	// iterate through the given filters
+	if (!filters)
+		return FALSE;
+
+	for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
+		if ((filters & pk_bitfield_value (i)) == 0)
+			continue;
+		if (i == PK_FILTER_ENUM_INSTALLED && !(item.isSystem ()))
+			return TRUE;
+		if (i == PK_FILTER_ENUM_NOT_INSTALLED && item.isSystem ())
+			return TRUE;
+		if (i == PK_FILTER_ENUM_ARCH) {
+			if (item.arch () != zypp::ZConfig::defaultSystemArchitecture () &&
+			    item.arch () != zypp::Arch_noarch &&
+			    ! system_and_package_are_x86 (item))
+				return TRUE;
+		}
+		if (i == PK_FILTER_ENUM_NOT_ARCH) {
+			if (item.arch () == zypp::ZConfig::defaultSystemArchitecture () ||
+			    system_and_package_are_x86 (item))
+				return TRUE;
+		}
+		if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(item))) {
+			return TRUE;
+		}
+		if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(item)) {
+			return TRUE;
+		}
+		//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
+		//egg_debug ("my default arch is %s", myarch);
+	}
+
+	return FALSE;
+}
+
+void
+zypp_emit_filtered_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
+{
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
-		// iterate through the given filters
-		if (filters != 0){
-			gboolean print = TRUE;
-			for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
-				if ((filters & pk_bitfield_value (i)) == 0)
-					continue;
-				if (i == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
-					print = FALSE;
-				if (i == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
-					print = FALSE;;
-				if (i == PK_FILTER_ENUM_ARCH) {
-					if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () &&
-							it->arch () != zypp::Arch_noarch &&
-							! system_and_package_are_x86 (*it))
-						print = FALSE;
-				}
-				if (i == PK_FILTER_ENUM_NOT_ARCH) {
-					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture () ||
-							system_and_package_are_x86 (*it))
-						print = FALSE;
-				}
-				if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(*it))) {
-					print = FALSE;
-				}
-				if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(*it)) {
-					print = FALSE;
-				}
-				//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
-				//egg_debug ("my default arch is %s", myarch);
-			}
-			if (!print)
-				continue;
-		}
+		if (zypp_filter_solvable (filters, *it))
+			continue;
 
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
@@ -777,8 +787,9 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
                 // Perform the installation
                 zypp::ZYppCommitPolicy policy;
-                policy.restrictToMedia (0);	// 0 - install all packages regardless to media
-				policy.downloadMode (zypp::DownloadInHeaps);
+                policy.restrictToMedia (0); // 0 == install all packages regardless to media
+		policy.downloadMode (zypp::DownloadInHeaps);
+		policy.syncPoolAfterCommit (true);
 
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 

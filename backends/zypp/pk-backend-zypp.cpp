@@ -127,6 +127,7 @@ static gboolean
 backend_get_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -217,7 +218,7 @@ backend_get_requires_thread (PkBackend *backend)
 				hit = TRUE;
 			}
 
-			if (hit) {
+			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
 				gchar *package_id;
 				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
 						it->resolvable ()->edition ().asString ().c_str(),
@@ -292,10 +293,23 @@ backend_get_filters (PkBackend *backend)
 		-1);
 }
 
+static bool
+zypp_is_no_solvable (const zypp::sat::Solvable &solv)
+{
+	return solv.id() == zypp::sat::detail::noSolvableId;
+}
+
+/*
+ * This method is a bit of a travesty of the complexity of
+ * solving dependencies. We try to give a simple answer to
+ * "what packages are required for these packages" - but,
+ * clearly often there is no simple answer.
+ */
 static gboolean
 backend_get_depends_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -309,6 +323,8 @@ backend_get_depends_thread (PkBackend *backend)
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
+
+	egg_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
 
 	try
 	{
@@ -357,28 +373,60 @@ backend_get_depends_thread (PkBackend *backend)
 		zypp::sat::Solvable solvable = pool_item.satSolvable ();
 		zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
 
+		// which package each capability
 		std::map<std::string, zypp::sat::Solvable> caps;
-		std::vector<std::string> temp;
+		// packages already providing a capability
+		std::vector<std::string> pkg_names;
 
-		for (zypp::Capabilities::const_iterator it = req.begin (); it != req.end (); ++it) {
-			zypp::sat::WhatProvides provider (*it);
-			for (zypp::sat::WhatProvides::const_iterator it2 = provider.begin ();
-					it2 != provider.end ();
-					it2++) {
-				// Adding Packages only one time
-				std::map<std::string, zypp::sat::Solvable>::iterator mIt;
-				mIt = caps.find(it->asString ());
-				if (std::find (temp.begin (), temp.end(), it2->name ()) == temp.end()) {
-					if( mIt != caps.end()){
-						if(it2->isSystem ()){
-							caps.erase (mIt);
-							caps[it->asString ()] = *it2;
-						}
-					} else {
-						caps[it->asString ()] = *it2;
-					}
-					temp.push_back(it2->name ());
+		for (zypp::Capabilities::const_iterator cap = req.begin (); cap != req.end (); ++cap) {
+			egg_debug ("get_depends - capability '%s'", cap->asString().c_str());
+
+			if (caps.find (cap->asString ()) != caps.end()) {
+				egg_debug ("Interesting ! already have capability '%s'", cap->asString().c_str());
+				continue;
+			}
+
+			// Look for packages providing each capability
+			bool have_preference = false;
+			zypp::sat::Solvable preferred;
+
+			zypp::sat::WhatProvides prov_list (*cap);
+			for (zypp::sat::WhatProvides::const_iterator provider = prov_list.begin ();
+			     provider != prov_list.end (); provider++) {
+
+				egg_debug ("provider: '%s'", provider->asString().c_str());
+
+				// filter out caps like "rpmlib(PayloadFilesHavePrefix) <= 4.0-1" (bnc#372429)
+				if (zypp_is_no_solvable (*provider))
+					continue;
+
+
+				// Is this capability provided by a package we already have listed ?
+				if (std::find (pkg_names.begin (), pkg_names.end(),
+					       provider->name ()) != pkg_names.end()) {
+					preferred = *provider;
+					have_preference = true;
+					break;
 				}
+
+				// Something is better than nothing
+				if (!have_preference) {
+					preferred = *provider;
+					have_preference = true;
+
+				// Prefer system packages
+				} else if (provider->isSystem()) {
+					preferred = *provider;
+					break;
+
+				} // else keep our first love
+			}
+
+			if (have_preference &&
+			    std::find (pkg_names.begin (), pkg_names.end(),
+				       preferred.name ()) == pkg_names.end()) {
+				caps[cap->asString()] = preferred;
+				pkg_names.push_back (preferred.name ());
 			}
 		}
 
@@ -386,42 +434,32 @@ backend_get_depends_thread (PkBackend *backend)
 		for (std::map<std::string, zypp::sat::Solvable>::iterator it = caps.begin ();
 				it != caps.end();
 				it++) {
-			gchar *package_id_temp;
-			gchar *package_name;
 
-			/* do not emit packages with invalid names generated above via dependencies such as "rpmlib(PayloadFilesHavePrefix) <= 4.0-1"
-			   this was causing a crash - BNC# 372429
-			   Fixme - need to find if those dependencies should actually be in the list above and if so a better way to strip them out
-			*/
-			package_name = g_strdup (it->second.name ().c_str());
-
-			if (package_name == NULL || *package_name == '\0')
-			{
-				egg_debug ("Skipping emitting a non valid package");
-				g_free (package_name);
+			// backup sanity check for no-solvables
+			if (! it->second.name ().c_str() ||
+			    it->second.name ().c_str()[0] == '\0')
 				continue;
-			}
-			g_free (package_name);
-
-			package_id_temp = pk_package_id_build (it->second.name ().c_str(),
-					it->second.edition ().asString ().c_str(),
-					it->second.arch ().c_str(),
-					it->second.repository ().alias ().c_str());
 
 			zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
+			PkInfoEnum info = it->second.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
-			if (it->second.isSystem ()) {
-				pk_backend_package (backend,
-						PK_INFO_ENUM_INSTALLED,
-						package_id_temp,
-						item->summary ().c_str());
-			} else {
-				pk_backend_package (backend,
-						PK_INFO_ENUM_AVAILABLE,
-						package_id_temp,
-						item->summary ().c_str());
+			egg_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
+				   info == PK_INFO_ENUM_INSTALLED ? "installed" : "available",
+				   it->second.isSystem(), 
+				   zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
+
+			if (!zypp_filter_solvable (_filters, it->second)) {
+				gchar *package_id_temp;
+
+				package_id_temp = pk_package_id_build (it->second.name ().c_str(),
+								       it->second.edition ().asString ().c_str(),
+								       it->second.arch ().c_str(),
+								       it->second.repository ().alias ().c_str());
+				pk_backend_package (backend, info,
+						    package_id_temp,
+						    item->summary ().c_str());
+				g_free (package_id_temp);
 			}
-			g_free (package_id_temp);
 		}
 
 		pk_backend_set_percentage (backend, 100);
@@ -641,6 +679,8 @@ check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
+	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -695,13 +735,15 @@ backend_get_updates_thread (PkBackend *backend)
 			}
 		}
 
-		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
-		pk_backend_package (backend, infoEnum, package_id, res->summary ().c_str ());
-					// some package descriptions generate markup parse failures
-					// causing the update to show empty package lines, comment for now
-					// res->summary ().c_str ());
-					// Test if this still happens!
-		g_free (package_id);
+		if (!zypp_filter_solvable (_filters, res->satSolvable())) {
+			gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
+			pk_backend_package (backend, infoEnum, package_id, res->summary ().c_str ());
+			// some package descriptions generate markup parse failures
+			// causing the update to show empty package lines, comment for now
+			// res->summary ().c_str ());
+			// Test if this still happens!
+			g_free (package_id);
+		}
 	}
 
 	delete (candidates);
@@ -1067,8 +1109,10 @@ backend_install_packages_thread (PkBackend *backend)
 			pk_backend_set_percentage (backend, 40);
 		}
 
+		// Todo: ideally we should call pk_backend_package (...
+		// PK_INFO_ENUM_DOWNLOADING | INSTALLING) for each package.
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
-			//reset the status of the marked packages
+			// reset the status of the marked packages
 			for (std::vector<zypp::PoolItem>::iterator it = items->begin (); it != items->end (); it++) {
 				it->statusReset ();
 			}
@@ -1210,8 +1254,7 @@ static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
-	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	gchar *filters = pk_filter_bitfield_to_string(filters_field);
+	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1226,6 +1269,11 @@ backend_resolve_thread (PkBackend *backend)
 		zypp::sat::Solvable package;
 		for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 				it != v->end (); it++) {
+			if (!it->isSystem() && pk_bitfield_contain (_filters, PK_FILTER_ENUM_INSTALLED))
+				continue;
+			if (it->isSystem() && pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_INSTALLED))
+				continue;
+
 			const char *version = it->edition ().asString ().c_str ();
 			if (package == zypp::sat::Solvable::noSolvable) {
 				package = *it;
@@ -1238,23 +1286,16 @@ backend_resolve_thread (PkBackend *backend)
 		delete (v2);
 
 		if (package == NULL) {
-			g_free (filters);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 			pk_backend_finished (backend);
 			return FALSE;
 		}
 
-		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
+		if (zypp_filter_solvable (_filters, package))
+			continue;
 
-		PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-		if( package.isSystem ()){
-			info = PK_INFO_ENUM_INSTALLED;
-			if (g_strrstr (filters, "~installed") != NULL)
-				continue;
-		}else{
-			if (g_strrstr (filters, "~installed") == NULL)
-				continue;
-		}
+		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
+		PkInfoEnum info = package.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
 		pk_backend_package (backend,
 				    info,
@@ -1262,7 +1303,6 @@ backend_resolve_thread (PkBackend *backend)
 				    package.lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 
-	g_free (filters);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1281,13 +1321,11 @@ backend_find_packages_thread (PkBackend *backend)
 {
 	gchar **values;
 	const gchar *search;
-	PkBitfield filters;
 	guint mode;
 	//GList *list = NULL;
 
 	values = pk_backend_get_strv (backend, "search");
 	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
-	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1335,7 +1373,7 @@ backend_find_packages_thread (PkBackend *backend)
 	if ( ! q.empty() ) {
 		std::copy( q.begin(), q.end(), std::back_inserter( v ) );
 	}
-	zypp_emit_packages_in_list (backend, &v, filters);
+	zypp_emit_filtered_packages_in_list (backend, &v);
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1366,11 +1404,9 @@ backend_search_group_thread (PkBackend *backend)
 {
 	gchar **values;
 	const gchar *group;
-	PkBitfield filters;
 
 	values = pk_backend_get_strv (backend, "search");
 	group = values[0];  //Fixme - add support for possible multiple values.
-	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -1385,7 +1421,7 @@ backend_search_group_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 30);
 
-	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
+	std::vector<zypp::sat::Solvable> v;
 	PkGroupEnum pkGroup = pk_group_enum_from_string (group);
 
 	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
@@ -1393,13 +1429,12 @@ backend_search_group_thread (PkBackend *backend)
 	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
 		PkGroupEnum rpmGroup = get_enum_group (it.asString ());
 		if (pkGroup == rpmGroup)
-			v->push_back (it.inSolvable ());
+			v.push_back (it.inSolvable ());
 	}
 
 	pk_backend_set_percentage (backend, 70);
 
-	zypp_emit_packages_in_list (backend ,v, filters);
-	delete (v);
+	zypp_emit_filtered_packages_in_list (backend, &v);
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -1576,22 +1611,18 @@ backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
-	PkBitfield filters;
-	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
+	std::vector<zypp::sat::Solvable> v;
 
 	zypp_build_pool (TRUE);
 	zypp::ResPool pool = zypp::ResPool::instance ();
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-		v->push_back (it->satSolvable ());
+		v.push_back (it->satSolvable ());
 	}
 
-	zypp_emit_packages_in_list (backend, v, filters);
+	zypp_emit_filtered_packages_in_list (backend, &v);
 
-	delete (v);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1787,8 +1818,7 @@ backend_what_provides_thread (PkBackend *backend)
 	gchar **values = pk_backend_get_strv (backend, "search");
 	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
-	PkBitfield filters_field = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	gchar *filters = pk_filter_bitfield_to_string(filters_field);
+	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	zypp::Capability cap (search);
 	zypp::sat::WhatProvides prov (cap);
 
@@ -1804,7 +1834,6 @@ backend_what_provides_thread (PkBackend *backend)
 				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			solver.setIgnoreAlreadyRecommended (FALSE);
-			g_free (filters);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 			pk_backend_finished (backend);
 			return FALSE;
@@ -1822,10 +1851,7 @@ backend_what_provides_thread (PkBackend *backend)
 				hit = TRUE;
 			}
 
-			if (hit) {
-				if (g_strrstr(filters, "~installed") != NULL)
-					continue;
-
+			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
 				gchar *package_id;
 				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
 						it->resolvable ()->edition ().asString ().c_str(),
@@ -1841,22 +1867,16 @@ backend_what_provides_thread (PkBackend *backend)
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	}else{
 		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
-			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
-			PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
-			if( it->isSystem ()){
-				info = PK_INFO_ENUM_INSTALLED;
-				if (g_strrstr (filters, "~installed") != NULL)
-					continue;
-			}else{
-				if (g_strrstr (filters, "~installed") == NULL)
-					continue;
-			}
+			if (zypp_filter_solvable (_filters, *it))
+				continue;
+			
+			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 			pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		}
 	}
 
-	g_free (filters);
 	pk_backend_finished (backend);
 	return TRUE;
 }
