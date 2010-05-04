@@ -833,6 +833,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, "failed to get comps list: %s" %_to_unicode(e), exit=False)
+        except yum.Errors.GroupsError, e:
+            self.error(ERROR_GROUP_LIST_INVALID, "Failed to get groups list: %s" %_to_unicode(e), exit=False)
         except exceptions.IOError, e:
             self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
