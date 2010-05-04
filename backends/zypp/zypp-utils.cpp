@@ -408,19 +408,6 @@ zypp_get_package_by_id (const gchar *package_id)
 	return package;
 }
 
-gchar *
-zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable)
-{
-	gchar *package_id;
-
-	package_id = pk_package_id_build (resolvable.name ().c_str (),
-					  resolvable.edition ().asString ().c_str (),
-					  resolvable.arch ().asString ().c_str (),
-					  resolvable.repository (). alias().c_str ());
-
-	return package_id;
-}
-
 zypp::RepoInfo
 zypp_get_Repository (PkBackend *backend, const gchar *alias)
 {
@@ -999,6 +986,25 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 	g_free (id);
 }
 
+gchar *
+zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable)
+{
+	gchar *package_id;
+	const char *arch;
+
+	if (zypp::isKind<zypp::SrcPackage>(resolvable))
+		arch = "source";
+	else
+		arch = resolvable.arch ().asString ().c_str ();
+
+	package_id = pk_package_id_build (
+		resolvable.name ().c_str (),
+		resolvable.edition ().asString ().c_str (),
+		arch, resolvable.repository ().alias().c_str ());
+
+	return package_id;
+}
+
 gboolean
 zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
 			 const char *name, const char *arch)
@@ -1006,6 +1012,10 @@ zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
 	const std::string &ver = pkg.edition ().asString();
 	if (g_strcmp0 (ver.c_str (), name))
 	    return FALSE;
+
+	if (arch && !strcmp (arch, "source")) {
+		return zypp::isKind<zypp::SrcPackage>(pkg);
+	}
 
 	const zypp::Arch &parch = pkg.arch();
 	if (g_strcmp0 (parch.c_str(), arch))
