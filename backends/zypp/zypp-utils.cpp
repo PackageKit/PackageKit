@@ -586,18 +586,15 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp:
 
 	for (std::vector<zypp::sat::Solvable>::const_iterator it = v.begin ();
 			it != v.end (); it++) {
-		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 		if (zypp_filter_solvable (filters, *it))
 			continue;
-
-		pk_backend_package (backend,
-			    it->isSystem() == true ?
-				PK_INFO_ENUM_INSTALLED :
-				PK_INFO_ENUM_AVAILABLE,
-			    package_id,
-			    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
-		g_free (package_id);
+		zypp_backend_package (backend, 
+				      it->isSystem() == true ?
+				      PK_INFO_ENUM_INSTALLED :
+				      PK_INFO_ENUM_AVAILABLE,
+				      *it,
+				      it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 }
 
@@ -993,4 +990,14 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	pk_backend_finished (backend);
 
 	return FALSE;
+}
+
+void
+zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+		      const zypp::sat::Solvable &pkg,
+		      const char *opt_summary)
+{
+	gchar *id = zypp_build_package_id_from_resolvable (pkg);
+	pk_backend_package (backend, info, id, opt_summary);
+	g_free (id);
 }

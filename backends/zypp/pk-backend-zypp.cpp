@@ -218,10 +218,8 @@ backend_get_requires_thread (PkBackend *backend)
 			}
 
 			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
-				gchar *package_id;
-				package_id = zypp_build_package_id_from_resolvable (it->resolvable()->satSolvable());
-				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
-				g_free (package_id);
+				zypp_backend_package (backend, status, it->resolvable()->satSolvable(),
+						      it->resolvable ()->summary ().c_str ());
 			}
 			it->statusReset ();
 		}
@@ -443,13 +441,8 @@ backend_get_depends_thread (PkBackend *backend)
 				   zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
 
 			if (!zypp_filter_solvable (_filters, it->second)) {
-				gchar *package_id_temp;
-
-				package_id_temp = zypp_build_package_id_from_resolvable (it->second);
-				pk_backend_package (backend, info,
-						    package_id_temp,
-						    item->summary ().c_str());
-				g_free (package_id_temp);
+				zypp_backend_package (backend, info, it->second,
+						      item->summary ().c_str());
 			}
 		}
 
@@ -716,13 +709,12 @@ backend_get_updates_thread (PkBackend *backend)
 		}
 
 		if (!zypp_filter_solvable (_filters, res->satSolvable())) {
-			gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
-			pk_backend_package (backend, infoEnum, package_id, res->summary ().c_str ());
 			// some package descriptions generate markup parse failures
 			// causing the update to show empty package lines, comment for now
 			// res->summary ().c_str ());
 			// Test if this still happens!
-			g_free (package_id);
+			zypp_backend_package (backend, infoEnum, res->satSolvable (),
+					      res->summary ().c_str ());
 		}
 	}
 
@@ -1274,11 +1266,8 @@ backend_resolve_thread (PkBackend *backend)
 
 		/* Emit callbacks */
 		for (std::vector<zypp::sat::Solvable>::iterator it = pkgs.begin (); it != pkgs.end (); it++) {
-			const gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-			pk_backend_package (backend,
-					    info,
-					    package_id,
+			zypp_backend_package (backend, info, *it,
 					    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		}
 
@@ -1839,25 +1828,19 @@ backend_what_provides_thread (PkBackend *backend)
 			}
 
 			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
-				gchar *package_id;
-
-				package_id = zypp_build_package_id_from_resolvable (it->resolvable()->satSolvable());
-				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
-
-				g_free (package_id);
+				zypp_backend_package (backend, status, it->resolvable()->satSolvable(),
+						      it->resolvable ()->summary ().c_str ());
 			}
 			it->statusReset ();
 		}
 		solver.setIgnoreAlreadyRecommended (FALSE);
-	}else{
-		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
-
+	} else {
+		for (zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
 			if (zypp_filter_solvable (_filters, *it))
 				continue;
 			
-			gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-			pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+			zypp_backend_package (backend, info, *it, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		}
 	}
 
