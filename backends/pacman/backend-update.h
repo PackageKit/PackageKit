@@ -21,31 +21,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <pacman.h>
 #include <pk-backend.h>
 
-typedef enum {
-	PACMAN_TRANSACTION_INSTALL,
-	PACMAN_TRANSACTION_REMOVE,
-	PACMAN_TRANSACTION_SYNC,
-	PACMAN_TRANSACTION_UPDATE,
-	PACMAN_TRANSACTION_LAST
-} PacmanTransactionType;
-
-gboolean		 backend_initialize_downloads	(PkBackend		*backend,
-							 GError			**error);
-void			 backend_destroy_downloads	(PkBackend		*backend);
-
-PacmanTransaction	*backend_transaction_simulate	(PkBackend		*backend,
-							 PacmanTransactionType	 type,
-							 guint32		 flags,
-							 const PacmanList	*targets);
-PacmanTransaction	*backend_transaction_run	(PkBackend		*backend,
-							 PacmanTransactionType	 type,
-							 guint32		 flags,
-							 const PacmanList	*targets);
-
-PacmanTransaction	*backend_transaction_commit	(PkBackend		*backend,
-							 PacmanTransaction	*transaction);
-gboolean		 backend_transaction_finished	(PkBackend		*backend,
-							 PacmanTransaction	*transaction);
+void	 backend_get_update_detail		(PkBackend	*backend,
+						 gchar		**package_ids);
+void	 backend_get_updates			(PkBackend	*backend,
+						 PkBitfield	 filters);
+void	 backend_refresh_cache			(PkBackend	*backend,
+						 gboolean	 force);

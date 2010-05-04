@@ -30,6 +30,7 @@
 #include "backend-repos.h"
 #include "backend-search.h"
 #include "backend-transaction.h"
+#include "backend-update.h"
 #include "backend-pacman.h"
 
 PacmanManager *pacman = NULL;
@@ -227,12 +228,12 @@ PK_BACKEND_OPTIONS (
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
-	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
+	backend_get_update_detail,		/* get_update_detail */
+	backend_get_updates,			/* get_updates */
 	backend_install_files,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
-	NULL,					/* refresh_cache */
+	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
@@ -242,11 +243,11 @@ PK_BACKEND_OPTIONS (
 	backend_search_files,			/* search_files */
 	backend_search_groups,			/* search_groups */
 	backend_search_names,			/* search_names */
-	NULL,					/* update_packages */
+	backend_update_packages,		/* update_packages */
 	NULL,					/* update_system */
 	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	NULL					/* simulate_update_packages */
+	backend_simulate_update_packages	/* simulate_update_packages */
 );

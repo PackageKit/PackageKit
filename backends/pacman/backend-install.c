@@ -25,6 +25,7 @@
 #include "backend-error.h"
 #include "backend-pacman.h"
 #include "backend-packages.h"
+#include "backend-repos.h"
 #include "backend-transaction.h"
 #include "backend-install.h"
 
@@ -55,6 +56,9 @@ backend_transaction_packages (PkBackend *backend, PacmanTransaction *transaction
 {
 	const PacmanList *removes, *packages;
 
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (transaction != NULL);
+
 	/* emit packages that would have been installed */
 	for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
 		PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
@@ -65,14 +69,24 @@ backend_transaction_packages (PkBackend *backend, PacmanTransaction *transaction
 			if (backend_cancelled (backend)) {
 				break;
 			} else {
-				backend_package (backend, remove, PK_INFO_ENUM_REMOVING);
+				PkRoleEnum role = pk_backend_get_role (backend);
+				if (role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+					backend_package (backend, remove, PK_INFO_ENUM_OBSOLETING);
+				} else {
+					backend_package (backend, remove, PK_INFO_ENUM_REMOVING);
+				}
 			}
 		}
 
 		if (backend_cancelled (backend)) {
 			break;
 		} else {
-			backend_package (backend, package, PK_INFO_ENUM_INSTALLING);
+			const gchar *name = pacman_package_get_name (package);
+			if (pacman_database_find_package (local_database, name) != NULL) {
+				backend_package (backend, package, PK_INFO_ENUM_UPDATING);
+			} else {
+				backend_package (backend, package, PK_INFO_ENUM_INSTALLING);
+			}
 		}
 	}
 }
@@ -217,6 +231,7 @@ backend_simulate_install_packages_thread (PkBackend *backend)
 		pacman_list_free_full (list, g_free);
 
 		if (transaction != NULL) {
+			/* emit packages that would have been installed or removed */
 			backend_transaction_packages (backend, transaction);
 		}
 	}
@@ -229,6 +244,94 @@ backend_simulate_install_packages_thread (PkBackend *backend)
  **/
 void
 backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (package_ids != NULL);
+
+	backend_run (backend, PK_STATUS_ENUM_SETUP, backend_simulate_install_packages_thread);
+}
+
+static gboolean
+backend_update_packages_thread (PkBackend *backend)
+{
+	PacmanList *list, *asdeps = NULL;
+	/* FS#5331: use only_trusted */
+	PacmanTransaction *transaction = NULL;
+	PacmanTransactionFlags flags = PACMAN_TRANSACTION_FLAGS_NONE, dflags = PACMAN_TRANSACTION_FLAGS_INSTALL_IMPLICIT;
+
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	/* prepare the transaction */
+	list = backend_transaction_list_targets (backend);
+	if (list != NULL) {
+		transaction = backend_transaction_simulate (backend, PACMAN_TRANSACTION_SYNC, flags, list);
+		pacman_list_free_full (list, g_free);
+
+		if (transaction != NULL) {
+			const PacmanList *packages;
+
+			/* check for packages that should be installed as deps */
+			for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
+				PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
+				const PacmanList *removes = pacman_package_get_removes (package);
+
+				if (backend_cancelled (backend)) {
+					break;
+				} else if (removes != NULL) {
+					for (; removes != NULL; removes = pacman_list_next (removes)) {
+						PacmanPackage *remove = (PacmanPackage *) pacman_list_get (removes);
+
+						if (backend_cancelled (backend)) {
+							break;
+						} else if (pacman_package_was_explicitly_installed (remove)) {
+							break;
+						}
+					}
+
+					/* if all removes were installed as dependencies, do the same for this package */
+					if (removes == NULL) {
+						const gchar *name, *repo;
+						PacmanDatabase *database = pacman_package_get_database (package);
+
+						name = pacman_package_get_name (package);
+						repo = pacman_database_get_name (database);
+
+						asdeps = pacman_list_add (asdeps, g_strdup_printf ("%s/%s", repo, name));
+					}
+				}
+			}
+
+			transaction = backend_transaction_commit (backend, transaction);
+		}
+	}
+
+	/* mark replacements as deps if required */
+	if (transaction != NULL && asdeps != NULL) {
+		g_object_unref (transaction);
+		transaction = backend_transaction_run (backend, PACMAN_TRANSACTION_SYNC, dflags, asdeps);
+		pacman_list_free_full (asdeps, g_free);
+	}
+
+	return backend_transaction_finished (backend, transaction);
+}
+
+/**
+ * backend_update_packages:
+ **/
+void
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (package_ids != NULL);
+
+	backend_run (backend, PK_STATUS_ENUM_SETUP, backend_update_packages_thread);
+}
+
+/**
+ * backend_simulate_update_packages:
+ **/
+void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (package_ids != NULL);

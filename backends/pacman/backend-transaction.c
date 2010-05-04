@@ -442,11 +442,18 @@ PacmanTransaction *
 backend_transaction_run (PkBackend *backend, PacmanTransactionType type, guint32 flags, const PacmanList *targets)
 {
 	PacmanTransaction *transaction;
-	GError *error = NULL;
 
 	g_return_val_if_fail (backend != NULL, NULL);
 
 	transaction = backend_transaction_simulate (backend, type, flags, targets);
+
+	return backend_transaction_commit (backend, transaction);
+}
+
+PacmanTransaction *
+backend_transaction_commit (PkBackend *backend, PacmanTransaction *transaction)
+{
+	GError *error = NULL;
 
 	if (backend_cancelled (backend)) {
 		return transaction;
