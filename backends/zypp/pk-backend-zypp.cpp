@@ -206,13 +206,13 @@ backend_get_requires_thread (PkBackend *backend)
 			if (it->status ().isToBeUninstalled ()) {
 				status = PK_INFO_ENUM_REMOVING;
 				hit = TRUE;
-			}else if (it->status ().isToBeInstalled ()) {
+			} else if (it->status ().isToBeInstalled ()) {
 				status = PK_INFO_ENUM_INSTALLING;
 				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
+			} else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
 				status = PK_INFO_ENUM_UPDATING;
 				hit = TRUE;
-			}else if (it->status ().isToBeUninstalledDueToObsolete ()) {
+			} else if (it->status ().isToBeUninstalledDueToObsolete ()) {
 				status = PK_INFO_ENUM_OBSOLETING;
 				hit = TRUE;
 			}
@@ -691,11 +691,11 @@ backend_get_updates_thread (PkBackend *backend)
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
 			if (patch->category () == "recommended") {
 				infoEnum = PK_INFO_ENUM_IMPORTANT;
-			}else if (patch->category () == "optional") {
+			} else if (patch->category () == "optional") {
 				infoEnum = PK_INFO_ENUM_LOW;
-			}else if (patch->category () == "security") {
+			} else if (patch->category () == "security") {
 				infoEnum = PK_INFO_ENUM_SECURITY;
-			}else if (patch->category () == "distupgrade") {
+			} else if (patch->category () == "distupgrade") {
 				continue;
 			} else {
 				infoEnum = PK_INFO_ENUM_NORMAL;
@@ -1671,16 +1671,16 @@ backend_repo_set_data_thread (PkBackend *backend)
 			manager.addRepository (repo);
 
 		// remove a repo
-		}else if (g_ascii_strcasecmp (parameter, "remove") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "remove") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			manager.removeRepository (repo);
 		// set autorefresh of a repo true/false
-		}else if (g_ascii_strcasecmp (parameter, "refresh") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "refresh") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 
 			if (g_ascii_strcasecmp (value, "true") == 0) {
 				repo.setAutorefresh (TRUE);
-			}else if (g_ascii_strcasecmp (value, "false") == 0) {
+			} else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setAutorefresh (FALSE);
 			} else {
 				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Autorefresh a repo: Enter true or false");
@@ -1688,28 +1688,28 @@ backend_repo_set_data_thread (PkBackend *backend)
 			}
 
 			manager.modifyRepository (repo_id, repo);
-		}else if (g_ascii_strcasecmp (parameter, "keep") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "keep") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 
 			if (g_ascii_strcasecmp (value, "true") == 0) {
 				repo.setKeepPackages (TRUE);
-			}else if (g_ascii_strcasecmp (value, "false") == 0) {
+			} else if (g_ascii_strcasecmp (value, "false") == 0) {
 				repo.setKeepPackages (FALSE);
-			}else {
+			} else {
 				pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, "Keep downloaded packages: Enter true or false");
 				bReturn = FALSE;
 			}
 
 			manager.modifyRepository (repo_id, repo);
-		}else if (g_ascii_strcasecmp (parameter, "url") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "url") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			repo.setBaseUrl (zypp::Url(value));
 			manager.modifyRepository (repo_id, repo);
-		}else if (g_ascii_strcasecmp (parameter, "name") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "name") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			repo.setName(value);
 			manager.modifyRepository (repo_id, repo);
-		}else if (g_ascii_strcasecmp (parameter, "prio") == 0) {
+		} else if (g_ascii_strcasecmp (parameter, "prio") == 0) {
 			repo = manager.getRepositoryInfo (repo_id);
 			gint prio = 0;
 			gint length = strlen (value);
