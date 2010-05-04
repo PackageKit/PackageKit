@@ -575,12 +575,12 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 }
 
 void
-zypp_emit_filtered_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
+zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &v)
 {
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
-	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
-			it != v->end (); it++) {
+	for (std::vector<zypp::sat::Solvable>::const_iterator it = v.begin ();
+			it != v.end (); it++) {
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 		if (zypp_filter_solvable (filters, *it))

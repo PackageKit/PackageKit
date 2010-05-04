@@ -1346,7 +1346,7 @@ backend_find_packages_thread (PkBackend *backend)
 	if ( ! q.empty() ) {
 		std::copy( q.begin(), q.end(), std::back_inserter( v ) );
 	}
-	zypp_emit_filtered_packages_in_list (backend, &v);
+	zypp_emit_filtered_packages_in_list (backend, v);
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1406,7 +1406,7 @@ backend_search_group_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 70);
 
-	zypp_emit_filtered_packages_in_list (backend, &v);
+	zypp_emit_filtered_packages_in_list (backend, v);
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -1596,7 +1596,7 @@ backend_get_packages_thread (PkBackend *backend)
 		v.push_back (it->satSolvable ());
 	}
 
-	zypp_emit_filtered_packages_in_list (backend, &v);
+	zypp_emit_filtered_packages_in_list (backend, v);
 
 	pk_backend_finished (backend);
 	return TRUE;

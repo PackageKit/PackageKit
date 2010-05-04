@@ -191,7 +191,7 @@ gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &it
 /**
  * apply filters to a list.
  */
-void zypp_emit_filtered_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
+void zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array
