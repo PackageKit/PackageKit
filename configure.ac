@@ -1,5 +1,5 @@
 # Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
-AC_PREREQ(2.65)
+AC_PREREQ(2.63)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
