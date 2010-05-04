@@ -412,7 +412,7 @@ zypp_get_package_by_id (const gchar *package_id)
 }
 
 gchar *
-zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
+zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable)
 {
 	gchar *package_id;
 
@@ -543,6 +543,8 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 	if (!filters)
 		return FALSE;
 
+	//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
+
 	for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
 			continue;
@@ -567,8 +569,11 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 		if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(item)) {
 			return TRUE;
 		}
-		//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
-		//egg_debug ("my default arch is %s", myarch);
+
+		// FIXME: add enums
+		// PK_FILTER_ENUM_DEVELOPMENT,
+		// PK_FILTER_ENUM_NOT_DEVELOPMENT,
+
 	}
 
 	return FALSE;

@@ -135,7 +135,7 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
  */
-gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
+gchar * zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable);
 
 /**
   * Get the RepoInfo

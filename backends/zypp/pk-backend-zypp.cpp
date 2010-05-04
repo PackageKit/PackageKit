@@ -219,13 +219,8 @@ backend_get_requires_thread (PkBackend *backend)
 
 			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
 				gchar *package_id;
-				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
-						it->resolvable ()->edition ().asString ().c_str(),
-						it->resolvable ()->arch ().c_str(),
-						it->resolvable ()->repoInfo().alias ().c_str ());
-
+				package_id = zypp_build_package_id_from_resolvable (it->resolvable()->satSolvable());
 				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
-
 				g_free (package_id);
 			}
 			it->statusReset ();
@@ -450,10 +445,7 @@ backend_get_depends_thread (PkBackend *backend)
 			if (!zypp_filter_solvable (_filters, it->second)) {
 				gchar *package_id_temp;
 
-				package_id_temp = pk_package_id_build (it->second.name ().c_str(),
-								       it->second.edition ().asString ().c_str(),
-								       it->second.arch ().c_str(),
-								       it->second.repository ().alias ().c_str());
+				package_id_temp = zypp_build_package_id_from_resolvable (it->second);
 				pk_backend_package (backend, info,
 						    package_id_temp,
 						    item->summary ().c_str());
@@ -1233,47 +1225,68 @@ backend_resolve_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+	for (uint i = 0; i < g_strv_length (package_ids); i++) {
 		std::vector<zypp::sat::Solvable> *v;
-		std::vector<zypp::sat::Solvable> *v2;
+
+		/* Build a list of packages with this name */
 		v = zypp_get_packages_by_name (package_ids[i], zypp::ResKind::package, TRUE);
-		v2 = zypp_get_packages_by_name (package_ids[i], zypp::ResKind::srcpackage, TRUE);
 
-		v->insert (v->end (), v2->begin (), v2->end ());
+		if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_SOURCE)) {
+			std::vector<zypp::sat::Solvable> *src;
+			src = zypp_get_packages_by_name (package_ids[i], zypp::ResKind::srcpackage, TRUE);
+			v->insert (v->end (), src->begin (), src->end ());
+			delete (src);
+		}
 
-		zypp::sat::Solvable package;
-		for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
-				it != v->end (); it++) {
+		zypp::sat::Solvable newest;
+		std::vector<zypp::sat::Solvable> pkgs;
+
+		/* Filter the list of packages with this name to 'pkgs' */
+		for (std::vector<zypp::sat::Solvable>::iterator it = v->begin (); it != v->end (); it++) {
 			if (zypp_filter_solvable (_filters, *it))
 				continue;
 
-			const char *version = it->edition ().asString ().c_str ();
-			if (package == zypp::sat::Solvable::noSolvable) {
-				package = *it;
-			} else if (g_ascii_strcasecmp (version, package.edition ().asString ().c_str ()) > 0) {
-				package = *it;
+			if (*it == zypp::sat::Solvable::noSolvable) {
+				egg_debug ("WARNING - changed behaviour - filtering pseudo-system pkgs!");
+				continue;
 			}
+
+			if (newest == zypp::sat::Solvable::noSolvable)
+				newest = *it;
+			else if (it->edition().match (newest.edition()) > 0) {
+				egg_debug ("TESTME: '%s' > '%s'",
+					   it->asString().c_str(),
+					   newest.asString().c_str());
+				newest = *it;
+			}
+			pkgs.push_back (*it);
+		}
+
+		/* 'newest' filter support */
+		if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NEWEST)) {
+			pkgs.clear();
+			pkgs.push_back (newest);
+		} else if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_NEWEST)) {
+			pkgs.erase (std::find (pkgs.begin (), pkgs.end(), newest));
 		}
 
 		delete (v);
-		delete (v2);
 
-		if (package == NULL) {
+		/* Emit callbacks */
+		for (std::vector<zypp::sat::Solvable>::iterator it = pkgs.begin (); it != pkgs.end (); it++) {
+			const gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+			pk_backend_package (backend,
+					    info,
+					    package_id,
+					    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		}
+
+		if (pkgs.size() < 1) {
 			return zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"couldn't find package");
 		}
-
-		if (zypp_filter_solvable (_filters, package))
-			continue;
-
-		const gchar *package_id = zypp_build_package_id_from_resolvable (package);
-		PkInfoEnum info = package.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-
-		pk_backend_package (backend,
-				    info,
-				    package_id,
-				    package.lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 
 	pk_backend_finished (backend);
@@ -1827,11 +1840,8 @@ backend_what_provides_thread (PkBackend *backend)
 
 			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
 				gchar *package_id;
-				package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
-						it->resolvable ()->edition ().asString ().c_str(),
-						it->resolvable ()->arch ().c_str(),
-						it->resolvable ()->repoInfo().alias ().c_str ());
 
+				package_id = zypp_build_package_id_from_resolvable (it->resolvable()->satSolvable());
 				pk_backend_package (backend, status, package_id, it->resolvable ()->summary ().c_str ());
 
 				g_free (package_id);
