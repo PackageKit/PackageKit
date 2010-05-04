@@ -821,6 +821,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             cats = self.yumbase.comps.categories
         except yum.Errors.RepoError, e:
             self.error(ERROR_NO_CACHE, "failed to get comps list: %s" %_to_unicode(e), exit=False)
+        except yum.Errors.GroupsError, e:
+            self.error(ERROR_GROUP_LIST_INVALID, "Failed to get groups list: %s" %_to_unicode(e), exit=False)
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         else:
