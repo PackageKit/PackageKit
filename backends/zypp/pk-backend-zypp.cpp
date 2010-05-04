@@ -277,11 +277,9 @@ backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_NOT_INSTALLED,
 		PK_FILTER_ENUM_ARCH,
-		PK_FILTER_ENUM_NOT_ARCH,
+		PK_FILTER_ENUM_NEWEST,
 		PK_FILTER_ENUM_SOURCE,
-		PK_FILTER_ENUM_NOT_SOURCE,
 		-1);
 }
 
@@ -497,15 +495,11 @@ backend_get_details_thread (PkBackend *backend)
 		zypp::sat::Solvable package;
 		for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 				it != v->end (); it++) {
-			gchar *version = g_strdup (it->edition ().asString ().c_str ());
-			gchar *arch = g_strdup (it->arch ().c_str ());
-
-			if (strcmp (id_parts[PK_PACKAGE_ID_VERSION], version) == 0 && strcmp (id_parts[PK_PACKAGE_ID_ARCH], arch) == 0) {
+			if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
+						     id_parts[PK_PACKAGE_ID_ARCH])) {
 				package = *it;
 				break;
 			}
-			g_free (version);
-			g_free (arch);
 		}
 		delete (v);
 		delete (v2);
@@ -1054,8 +1048,8 @@ backend_install_packages_thread (PkBackend *backend)
 			// Choose the PoolItem with the right architecture and version
 			for (zypp::ui::Selectable::available_iterator it = selectable->availableBegin ();
 					it != selectable->availableEnd (); it++) {
-				if (strcmp ((*it)->edition ().asString ().c_str (), id_parts[PK_PACKAGE_ID_VERSION]) == 0
-						&& strcmp ((*it)->arch ().c_str (), id_parts[PK_PACKAGE_ID_ARCH]) == 0 ) {
+				if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
+							     id_parts[PK_PACKAGE_ID_ARCH])) {
 					hit = true;
 					// set status to ToBeInstalled
 					it->status ().setToBeInstalled (zypp::ResStatus::USER);

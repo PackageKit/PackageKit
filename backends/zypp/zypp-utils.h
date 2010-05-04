@@ -221,5 +221,12 @@ void     zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 			       const zypp::sat::Solvable &pkg,
 			       const char *opt_summary);
 
+/**
+  * helper to compare a version + architecture, with source arch mangling.
+  */
+gboolean zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
+				   const char *name, const char *arch);
+
+
 #endif // _ZYPP_UTILS_H_
 

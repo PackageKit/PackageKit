@@ -395,14 +395,11 @@ zypp_get_package_by_id (const gchar *package_id)
 
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		gchar *version = g_strdup (it->edition ().c_str ());
-		gchar *arch = g_strdup (it->arch ().c_str ());
-		if (strcmp (id_parts[PK_PACKAGE_ID_VERSION], version) == 0 && strcmp (id_parts[PK_PACKAGE_ID_ARCH], arch) == 0) {
+		if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
+					     id_parts[PK_PACKAGE_ID_ARCH])) {
 			package = *it;
 			break;
 		}
-		g_free (version);
-		g_free (arch);
 	}
 
 	delete (v);
@@ -1000,4 +997,19 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 	gchar *id = zypp_build_package_id_from_resolvable (pkg);
 	pk_backend_package (backend, info, id, opt_summary);
 	g_free (id);
+}
+
+gboolean
+zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
+			 const char *name, const char *arch)
+{
+	const std::string &ver = pkg.edition ().asString();
+	if (g_strcmp0 (ver.c_str (), name))
+	    return FALSE;
+
+	const zypp::Arch &parch = pkg.arch();
+	if (g_strcmp0 (parch.c_str(), arch))
+		return FALSE;
+
+	return TRUE;
 }
