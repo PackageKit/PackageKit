@@ -58,8 +58,9 @@ libpackagekit_qt_la_SOURCES =					\
 	bitfield.h						\
 	bitfield.cpp						\
 	enum.h							\
-	enum.cpp							\
-	dbus_proxies.stamp				\
+	enum.cpp						\
+	dbus_proxies.stamp					\
+	$(MOCFILES)						\
 	$(NULL)
 
 libpackagekit_qt_la_LIBADD =					\
