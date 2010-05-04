@@ -36,6 +36,7 @@
 #include <zypp/ResPool.h>
 #include <zypp/PoolQuery.h>
 #include <zypp/ResFilters.h>
+#include <packagekit-glib2/pk-enum.h>
 
 #include <iterator>
 #include <list>
@@ -206,6 +207,12 @@ gchar * zypp_build_package_id_capabilities (zypp::Capabilities caps);
   * refresh the enabled repositories
   */
 gboolean zypp_refresh_cache (PkBackend *backend, gboolean force);
+
+/**
+  * helper to simplify returning errors
+  */
+gboolean zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
+				      const char *format, ...);
 
 #endif // _ZYPP_UTILS_H_
 

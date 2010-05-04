@@ -968,3 +968,24 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	g_free (repo_messages);
 	return TRUE;
 }
+
+gboolean
+zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
+			     const char *format, ...)
+{
+	va_list args;
+	gchar *buffer;
+
+	/* sadly no _va variant for error code setting */
+	va_start (args, format);
+	buffer = g_strdup_vprintf (format, args);
+	va_end (args);
+
+	pk_backend_error_code (backend, err_code, "%s", buffer);
+	
+	g_free (buffer);
+
+	pk_backend_finished (backend);
+
+	return FALSE;
+}
