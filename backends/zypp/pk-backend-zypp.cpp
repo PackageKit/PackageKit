@@ -1235,20 +1235,14 @@ backend_resolve_thread (PkBackend *backend)
 
 		/* Filter the list of packages with this name to 'pkgs' */
 		for (std::vector<zypp::sat::Solvable>::iterator it = v->begin (); it != v->end (); it++) {
-			if (zypp_filter_solvable (_filters, *it))
+
+			if (zypp_filter_solvable (_filters, *it) ||
+			    *it == zypp::sat::Solvable::noSolvable)
 				continue;
 
-			if (*it == zypp::sat::Solvable::noSolvable) {
-				egg_debug ("WARNING - changed behaviour - filtering pseudo-system pkgs!");
-				continue;
-			}
-
-			if (newest == zypp::sat::Solvable::noSolvable)
+			if (newest == zypp::sat::Solvable::noSolvable) {
 				newest = *it;
-			else if (it->edition().match (newest.edition()) > 0) {
-				egg_debug ("TESTME: '%s' > '%s'",
-					   it->asString().c_str(),
-					   newest.asString().c_str());
+			} else if (it->edition().match (newest.edition()) > 0) {
 				newest = *it;
 			}
 			pkgs.push_back (*it);
