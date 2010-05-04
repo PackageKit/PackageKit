@@ -181,7 +181,8 @@ gboolean zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch);
 /**
   * perform changes in pool to the system
   */
-gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
+gboolean zypp_perform_execution (PkBackend *backend, PerformType type,
+				 gboolean force, gboolean simulate = FALSE);
 
 /**
  * should we omit a solvable from a result because of filtering ?
@@ -220,6 +221,12 @@ gboolean zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 void     zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 			       const zypp::sat::Solvable &pkg,
 			       const char *opt_summary);
+
+/**
+  * helper to emit pk package status signals based on a ResPool object
+  */
+void     zypp_backend_pool_item_notify (PkBackend  *backend,
+					const zypp::PoolItem &item);
 
 /**
   * helper to compare a version + architecture, with source arch mangling.

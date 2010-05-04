@@ -199,28 +199,11 @@ backend_get_requires_thread (PkBackend *backend)
 		// look for packages which would be uninstalled
 		for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
 				it != pool.byKindEnd (zypp::ResKind::package); it++) {
-			PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
 
-			gboolean hit = FALSE;
-
-			if (it->status ().isToBeUninstalled ()) {
-				status = PK_INFO_ENUM_REMOVING;
-				hit = TRUE;
-			} else if (it->status ().isToBeInstalled ()) {
-				status = PK_INFO_ENUM_INSTALLING;
-				hit = TRUE;
-			} else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
-				status = PK_INFO_ENUM_UPDATING;
-				hit = TRUE;
-			} else if (it->status ().isToBeUninstalledDueToObsolete ()) {
-				status = PK_INFO_ENUM_OBSOLETING;
-				hit = TRUE;
+			if (!zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
+				zypp_backend_pool_item_notify (backend, *it);
 			}
 
-			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
-				zypp_backend_package (backend, status, it->resolvable()->satSolvable(),
-						      it->resolvable ()->summary ().c_str ());
-			}
 			it->statusReset ();
 		}
 
@@ -1127,6 +1110,7 @@ static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	gboolean simulate;
 	std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
@@ -1142,6 +1126,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	target->load ();
 	pk_backend_set_percentage (backend, 10);
 
+	simulate = pk_backend_get_bool (backend, "simulate");
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
 		return zypp_backend_finished_error (
@@ -1167,7 +1152,7 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	try
 	{
-		if (!zypp_perform_execution (backend, REMOVE, TRUE)){
+		if (!zypp_perform_execution (backend, REMOVE, TRUE, simulate)) {
 			//reset the status of the marked packages
 			for (std::vector<zypp::PoolItem>::iterator it = items->begin (); it != items->end (); it++) {
 				it->statusReset();
@@ -1199,7 +1184,15 @@ backend_remove_packages_thread (PkBackend *backend)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
+	pk_backend_set_bool(backend, "simulate", false);
 	pk_backend_set_uint (backend, "allow_deps", allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
+}
+
+static void
+backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
+{
+	pk_backend_set_bool(backend, "simulate", true);
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
@@ -1892,7 +1885,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
+	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	NULL					/* simulate_update_packages */
 );
 

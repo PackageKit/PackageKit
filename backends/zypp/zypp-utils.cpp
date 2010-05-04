@@ -690,8 +690,11 @@ zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
 }
 
 gboolean
-zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
+zypp_perform_execution (PkBackend *backend, PerformType type,
+			gboolean force, gboolean simulate)
 {
+	gboolean ret = FALSE;
+
         try {
                 zypp::ZYpp::Ptr zypp = get_zypp ();
 
@@ -732,8 +735,8 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
 			g_free (emsg);
-			zypp->resolver ()->setForceResolve (FALSE);
-			return FALSE;
+
+			goto exit;
 		}
 
                 switch (type) {
@@ -748,9 +751,20 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                                 break;
                 };
 
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		if (simulate) {
+
+			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+				zypp_backend_pool_item_notify (backend, *it);
+				it->statusReset ();
+			}
+
+			ret = TRUE;
+			goto exit;
+		}
+
 		// look for licenses to confirm
 
-		zypp::ResPool pool = zypp::ResPool::instance ();
 		for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
 			if (it->status ().isToBeInstalled () && !(it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).empty ())) {
 				gchar *eula_id = g_strdup ((*it)->name ().c_str ());
@@ -765,7 +779,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 					g_free (package_id);
 					g_free (eula_id);
-					return FALSE;
+					goto exit;
 				}
 				g_free (eula_id);
 			}
@@ -821,27 +835,28 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					emsg);
 
 			g_free (emsg);
-			zypp->resolver ()->setForceResolve (FALSE);
-                        return FALSE;
+			goto exit;
                 }
 
-		zypp->resolver ()->setForceResolve (FALSE);
-		if (type == UPDATE) {
-			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);
-		}
-
+		ret = TRUE;
         } catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
-		return FALSE;
 	} catch (const zypp::target::rpm::RpmException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
-		return FALSE;
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		return FALSE;
 	}
 
-        return TRUE;
+ exit:
+	/* reset the various options */
+        try {
+                zypp::ZYpp::Ptr zypp = get_zypp ();
+		zypp->resolver ()->setForceResolve (FALSE);
+		if (type == UPDATE)
+			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);
+	} catch (const zypp::Exception &ex) { /* we tried */ }
+
+        return ret;
 }
 
 gchar **
@@ -984,6 +999,31 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 	gchar *id = zypp_build_package_id_from_resolvable (pkg);
 	pk_backend_package (backend, info, id, opt_summary);
 	g_free (id);
+}
+
+void
+zypp_backend_pool_item_notify (PkBackend  *backend,
+			       const zypp::PoolItem &item)
+{
+	PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
+
+	if (item.status ().isToBeUninstalled ()) {
+		status = PK_INFO_ENUM_REMOVING;
+	} else if (item.status ().isToBeInstalled ()) {
+		status = PK_INFO_ENUM_INSTALLING;
+	} else if (item.status ().isToBeUninstalledDueToUpgrade ()) {
+		status = PK_INFO_ENUM_UPDATING;
+	} else if (item.status ().isToBeUninstalledDueToObsolete ()) {
+		status = PK_INFO_ENUM_OBSOLETING;
+	}
+
+	// FIXME: do we need more heavy lifting here cf. zypper's
+	// Summary.cc (readPool) to generate _DOWNGRADING types ?
+	
+	if (status != PK_INFO_ENUM_UNKNOWN) {
+		const std::string &summary = item.resolvable ()->summary ();
+		zypp_backend_package (backend, status, item.resolvable()->satSolvable(), summary.c_str ());
+	}
 }
 
 gchar *
