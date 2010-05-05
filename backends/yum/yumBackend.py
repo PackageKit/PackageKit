@@ -238,6 +238,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             config.read('/etc/PackageKit/Yum.conf')
             self.system_packages = config.get('Backend', 'SystemPackages').split(';')
+            self.infra_packages = config.get('Backend', 'InfrastructurePackages').split(';')
         except Exception, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
 
@@ -2561,8 +2562,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # some packages should be updated before the others
         infra_pkgs = []
         for pkg in pkgs:
-            infra_packages = ['PackageKit', 'yum', 'rpm']
-            if pkg.name in infra_packages or pkg.name.partition('-')[0] in infra_packages:
+            if pkg.name in self.infra_packages or pkg.name.partition('-')[0] in self.infra_packages:
                 infra_pkgs.append(pkg)
         if len(infra_pkgs) > 0:
             if len(infra_pkgs) < len(pkgs):
