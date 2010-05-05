@@ -1234,6 +1234,7 @@ backend_resolve_thread (PkBackend *backend)
 			}
 			pkgs.push_back (*it);
 		}
+		delete (v);
 
 		/* 'newest' filter support */
 		if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NEWEST)) {
@@ -1243,14 +1244,7 @@ backend_resolve_thread (PkBackend *backend)
 			pkgs.erase (std::find (pkgs.begin (), pkgs.end(), newest));
 		}
 
-		delete (v);
-
-		/* Emit callbacks */
-		for (std::vector<zypp::sat::Solvable>::iterator it = pkgs.begin (); it != pkgs.end (); it++) {
-			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-			zypp_backend_package (backend, info, *it,
-					    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
-		}
+		zypp_emit_filtered_packages_in_list (backend, pkgs);
 
 		if (pkgs.size() < 1) {
 			return zypp_backend_finished_error (

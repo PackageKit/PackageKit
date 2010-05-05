@@ -563,23 +563,62 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 	return FALSE;
 }
 
+/*
+ * Emit signals for the packages, -but- if we have an installed package
+ * we don't notify the client that the package is also available, since
+ * PK doesn't handle re-installs (by some quirk).
+ */
 void
 zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &v)
 {
+	typedef std::vector<zypp::sat::Solvable>::const_iterator sat_it_t;
+
+	// FIXME: we should move the 'NEWEST' handling here from _resolve_thread
+	//        that will require calculating 'newest' per package name.
+
+	std::vector<zypp::sat::Solvable> installed;
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
-	for (std::vector<zypp::sat::Solvable>::const_iterator it = v.begin ();
-			it != v.end (); it++) {
-
-		if (zypp_filter_solvable (filters, *it))
+	// always emit system installed packages first
+	for (sat_it_t it = v.begin (); it != v.end (); it++) {
+		if (!it->isSystem() ||
+		    zypp_filter_solvable (filters, *it))
 			continue;
-		zypp_backend_package (backend, 
-				      it->isSystem() == true ?
-				      PK_INFO_ENUM_INSTALLED :
-				      PK_INFO_ENUM_AVAILABLE,
-				      *it,
+
+		zypp_backend_package (backend, PK_INFO_ENUM_INSTALLED, *it,
 				      it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		installed.push_back (*it);
 	}
+
+	// then available packages later
+	for (sat_it_t it = v.begin (); it != v.end (); it++) {
+		gboolean match;
+
+		if (it->isSystem() ||
+		    zypp_filter_solvable (filters, *it))
+			continue;
+
+		match = FALSE;
+		for (sat_it_t i = installed.begin (); !match && i != installed.end (); i++) {
+			match = it->sameNVRA (*i) && 
+				!(!zypp::isKind<zypp::SrcPackage>(*it) ^
+				  !zypp::isKind<zypp::SrcPackage>(*i));
+		}
+		if (!match) {
+			zypp_backend_package (backend, PK_INFO_ENUM_AVAILABLE, *it,
+					      it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+		}
+	}
+}
+
+void
+zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+		      const zypp::sat::Solvable &pkg,
+		      const char *opt_summary)
+{
+	gchar *id = zypp_build_package_id_from_resolvable (pkg);
+	pk_backend_package (backend, info, id, opt_summary);
+	g_free (id);
 }
 
 /**
@@ -989,16 +1028,6 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	pk_backend_finished (backend);
 
 	return FALSE;
-}
-
-void
-zypp_backend_package (PkBackend *backend, PkInfoEnum info,
-		      const zypp::sat::Solvable &pkg,
-		      const char *opt_summary)
-{
-	gchar *id = zypp_build_package_id_from_resolvable (pkg);
-	pk_backend_package (backend, info, id, opt_summary);
-	g_free (id);
 }
 
 void
