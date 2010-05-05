@@ -135,7 +135,7 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
  */
-gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
+gchar * zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable);
 
 /**
   * Get the RepoInfo
@@ -191,7 +191,7 @@ gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &it
 /**
  * apply filters to a list.
  */
-void zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
+void     zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array
@@ -213,6 +213,20 @@ gboolean zypp_refresh_cache (PkBackend *backend, gboolean force);
   */
 gboolean zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 				      const char *format, ...);
+
+/**
+  * helper to emit pk package signals for a backend for a zypp solvable
+  */
+void     zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+			       const zypp::sat::Solvable &pkg,
+			       const char *opt_summary);
+
+/**
+  * helper to compare a version + architecture, with source arch mangling.
+  */
+gboolean zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
+				   const char *name, const char *arch);
+
 
 #endif // _ZYPP_UTILS_H_
 

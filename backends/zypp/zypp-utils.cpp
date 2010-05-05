@@ -267,7 +267,7 @@ zypp_get_group (zypp::sat::Solvable item)
                 zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (item.name (), item.edition ());
                 group = rpmHeader->tag_group ();
 
-        }else{
+        } else {
                 group = item.lookupStrAttribute (zypp::sat::SolvAttr::group);
         }
         std::transform(group.begin(), group.end(), group.begin(), tolower);
@@ -395,33 +395,17 @@ zypp_get_package_by_id (const gchar *package_id)
 
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		gchar *version = g_strdup (it->edition ().c_str ());
-		gchar *arch = g_strdup (it->arch ().c_str ());
-		if (strcmp (id_parts[PK_PACKAGE_ID_VERSION], version) == 0 && strcmp (id_parts[PK_PACKAGE_ID_ARCH], arch) == 0) {
+		if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
+					     id_parts[PK_PACKAGE_ID_ARCH])) {
 			package = *it;
 			break;
 		}
-		g_free (version);
-		g_free (arch);
 	}
 
 	delete (v);
 	delete (v2);
 	g_strfreev (id_parts);
 	return package;
-}
-
-gchar *
-zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
-{
-	gchar *package_id;
-
-	package_id = pk_package_id_build (resolvable.name ().c_str (),
-					  resolvable.edition ().asString ().c_str (),
-					  resolvable.arch ().asString ().c_str (),
-					  resolvable.repository (). alias().c_str ());
-
-	return package_id;
 }
 
 zypp::RepoInfo
@@ -462,7 +446,7 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
         	                key.created ().asString ().c_str (),
                 	        PK_SIGTYPE_ENUM_GPG);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
-	}else{
+	} else {
 		ok = TRUE;
 	}
 
@@ -491,7 +475,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
         	                "UNKNOWN",
                 	        PK_SIGTYPE_ENUM_GPG);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
-	}else{
+	} else {
 		ok = TRUE;
 	}
 
@@ -520,7 +504,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
                         	"UNKNOWN",
 	                        PK_SIGTYPE_ENUM_GPG);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
-	}else{
+	} else {
 		ok = TRUE;
 	}
 
@@ -542,6 +526,8 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 	// iterate through the given filters
 	if (!filters)
 		return FALSE;
+
+	//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
 
 	for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
@@ -567,8 +553,11 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 		if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(item)) {
 			return TRUE;
 		}
-		//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
-		//egg_debug ("my default arch is %s", myarch);
+
+		// FIXME: add enums
+		// PK_FILTER_ENUM_DEVELOPMENT,
+		// PK_FILTER_ENUM_NOT_DEVELOPMENT,
+
 	}
 
 	return FALSE;
@@ -581,18 +570,15 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp:
 
 	for (std::vector<zypp::sat::Solvable>::const_iterator it = v.begin ();
 			it != v.end (); it++) {
-		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 		if (zypp_filter_solvable (filters, *it))
 			continue;
-
-		pk_backend_package (backend,
-			    it->isSystem() == true ?
-				PK_INFO_ENUM_INSTALLED :
-				PK_INFO_ENUM_AVAILABLE,
-			    package_id,
-			    it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
-		g_free (package_id);
+		zypp_backend_package (backend, 
+				      it->isSystem() == true ?
+				      PK_INFO_ENUM_INSTALLED :
+				      PK_INFO_ENUM_AVAILABLE,
+				      *it,
+				      it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 	}
 }
 
@@ -642,7 +628,7 @@ zypp_get_updates (std::string repo)
                         continue;
 		if (repo.empty ()) {
 	                pks->insert (candidate);
-		}else{
+		} else {
 			if (candidate->repoInfo ().alias ().compare (repo) != 0)
 				pks->insert (candidate);
 		}
@@ -801,7 +787,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = errors.begin (); it != errors.end (); it++){
 				if (emsg == NULL) {
 					emsg = g_strdup ((*it)->name ().c_str ());
-				}else{
+				} else {
 					tmpmsg = emsg;
 					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
 					g_free (tmpmsg);
@@ -812,7 +798,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = remaining.begin (); it != remaining.end (); it++){
 				if (emsg == NULL) {
 					emsg = g_strdup ((*it)->name ().c_str ());
-				}else{
+				} else {
 					tmpmsg = emsg;
 					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
 					g_free (tmpmsg);
@@ -823,7 +809,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = srcremaining.begin (); it != srcremaining.end (); it++){
 				if (emsg == NULL) {
 					emsg = g_strdup ((*it)->name ().c_str ());
-				}else{
+				} else {
 					tmpmsg = emsg;
 					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
 					g_free (tmpmsg);
@@ -950,7 +936,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 		} catch (const zypp::Exception &ex) {
 			if (repo_messages == NULL) {
 				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
-			}else{
+			} else {
 				repo_messages = g_strdup_printf ("%s%s: %s%s", repo_messages, repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
 			}
 			if (repo_messages == NULL || !g_utf8_validate (repo_messages, -1, NULL))
@@ -988,4 +974,52 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	pk_backend_finished (backend);
 
 	return FALSE;
+}
+
+void
+zypp_backend_package (PkBackend *backend, PkInfoEnum info,
+		      const zypp::sat::Solvable &pkg,
+		      const char *opt_summary)
+{
+	gchar *id = zypp_build_package_id_from_resolvable (pkg);
+	pk_backend_package (backend, info, id, opt_summary);
+	g_free (id);
+}
+
+gchar *
+zypp_build_package_id_from_resolvable (const zypp::sat::Solvable &resolvable)
+{
+	gchar *package_id;
+	const char *arch;
+
+	if (zypp::isKind<zypp::SrcPackage>(resolvable))
+		arch = "source";
+	else
+		arch = resolvable.arch ().asString ().c_str ();
+
+	package_id = pk_package_id_build (
+		resolvable.name ().c_str (),
+		resolvable.edition ().asString ().c_str (),
+		arch, resolvable.repository ().alias().c_str ());
+
+	return package_id;
+}
+
+gboolean
+zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
+			 const char *name, const char *arch)
+{
+	const std::string &ver = pkg.edition ().asString();
+	if (g_strcmp0 (ver.c_str (), name))
+	    return FALSE;
+
+	if (arch && !strcmp (arch, "source")) {
+		return zypp::isKind<zypp::SrcPackage>(pkg);
+	}
+
+	const zypp::Arch &parch = pkg.arch();
+	if (g_strcmp0 (parch.c_str(), arch))
+		return FALSE;
+
+	return TRUE;
 }
