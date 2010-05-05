@@ -729,10 +729,10 @@ zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
 }
 
 gboolean
-zypp_perform_execution (PkBackend *backend, PerformType type,
-			gboolean force, gboolean simulate)
+zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 {
 	gboolean ret = FALSE;
+	gboolean simulate = pk_backend_get_bool (backend, "hint:simulate");
 
         try {
                 zypp::ZYpp::Ptr zypp = get_zypp ();

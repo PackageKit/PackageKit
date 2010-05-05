@@ -67,16 +67,6 @@ enum PkgSearchType {
 	SEARCH_TYPE_RESOLVE = 3
 };
 
-enum DepsType {
-	DEPS_TYPE_DEPENDS = 0,
-	DEPS_TYPE_REQUIRES = 1
-};
-
-enum DepsBehavior {
-	DEPS_ALLOW = 0,
-	DEPS_NO_ALLOW = 1
-};
-
 /**
  * A map to keep track of the EventDirector objects for
  * each zypp backend that is created.
@@ -446,7 +436,6 @@ backend_get_depends_thread (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_thread);
 }
 
@@ -831,6 +820,15 @@ backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_p
 	pk_backend_thread_create (backend, backend_install_files_thread);
 }
 
+/**
+  * backend_simulate_install_files
+  */
+static void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+	pk_backend_thread_create (backend, backend_install_files_thread);
+}
+
 static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
@@ -1086,6 +1084,15 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
+/**
+ * backend_simulate_install_packages:
+ */
+static void
+backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_thread_create (backend, backend_install_packages_thread);
+}
+
 static gboolean
 backend_install_signature_thread (PkBackend *backend)
 {
@@ -1110,7 +1117,6 @@ static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
 	gchar **package_ids;
-	gboolean simulate;
 	std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
@@ -1126,7 +1132,6 @@ backend_remove_packages_thread (PkBackend *backend)
 	target->load ();
 	pk_backend_set_percentage (backend, 10);
 
-	simulate = pk_backend_get_bool (backend, "simulate");
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
 		return zypp_backend_finished_error (
@@ -1152,7 +1157,7 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	try
 	{
-		if (!zypp_perform_execution (backend, REMOVE, TRUE, simulate)) {
+		if (!zypp_perform_execution (backend, REMOVE, TRUE)) {
 			//reset the status of the marked packages
 			for (std::vector<zypp::PoolItem>::iterator it = items->begin (); it != items->end (); it++) {
 				it->statusReset();
@@ -1184,15 +1189,12 @@ backend_remove_packages_thread (PkBackend *backend)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_set_bool (backend, "simulate", false);
-	pk_backend_set_uint (backend, "allow_deps", allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW);
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
 static void
 backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
-	pk_backend_set_bool (backend, "simulate", true);
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
@@ -1621,12 +1623,21 @@ backend_update_packages_thread (PkBackend *backend)
 }
 
 /**
-  *backend_update_packages
+  * backend_update_packages
   */
 static void
-backend_update_packages(PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
-	pk_backend_thread_create(backend, backend_update_packages_thread);
+	pk_backend_thread_create (backend, backend_update_packages_thread);
+}
+
+/**
+  * backend_simulate_update_packages
+  */
+static void
+backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	pk_backend_thread_create (backend, backend_update_packages_thread);
 }
 
 static gboolean
@@ -1877,9 +1888,9 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_what_provides,			/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
+	backend_simulate_install_files,		/* simulate_install_files */
+	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	NULL					/* simulate_update_packages */
+	backend_simulate_update_packages	/* simulate_update_packages */
 );
 

@@ -179,10 +179,9 @@ std::set<zypp::PoolItem> * zypp_get_patches ();
 gboolean zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch);
 
 /**
-  * perform changes in pool to the system
+  * simulate, or perform changes in pool to the system
   */
-gboolean zypp_perform_execution (PkBackend *backend, PerformType type,
-				 gboolean force, gboolean simulate = FALSE);
+gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
 /**
  * should we omit a solvable from a result because of filtering ?
