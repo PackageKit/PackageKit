@@ -1019,7 +1019,6 @@ zypp_backend_pool_item_notify (PkBackend  *backend,
 
 	// FIXME: do we need more heavy lifting here cf. zypper's
 	// Summary.cc (readPool) to generate _DOWNGRADING types ?
-	
 	if (status != PK_INFO_ENUM_UNKNOWN) {
 		const std::string &summary = item.resolvable ()->summary ();
 		zypp_backend_package (backend, status, item.resolvable()->satSolvable(), summary.c_str ());

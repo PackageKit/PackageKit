@@ -1184,7 +1184,7 @@ backend_remove_packages_thread (PkBackend *backend)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_set_bool(backend, "simulate", false);
+	pk_backend_set_bool (backend, "simulate", false);
 	pk_backend_set_uint (backend, "allow_deps", allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW);
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
@@ -1192,7 +1192,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 static void
 backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
-	pk_backend_set_bool(backend, "simulate", true);
+	pk_backend_set_bool (backend, "simulate", true);
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
