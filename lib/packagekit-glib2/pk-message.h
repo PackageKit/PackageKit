@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-source.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -62,6 +63,10 @@ struct _PkMessageClass
 
 GType		 pk_message_get_type		(void);
 PkMessage	*pk_message_new			(void);
+
+/* accessors */
+const gchar	*pk_message_get_details		(PkMessage	*message);
+PkMessageEnum	 pk_message_get_kind		(PkMessage	*message);
 
 G_END_DECLS
 

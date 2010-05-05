@@ -62,6 +62,40 @@ enum {
 G_DEFINE_TYPE (PkMessage, pk_message, PK_TYPE_SOURCE)
 
 /**
+ * pk_message_get_kind:
+ * @message: a valid #PkMessage instance
+ *
+ * Gets the message kind
+ *
+ * Return value: the %PkMessageEnum
+ *
+ * Since: 0.6.4
+ **/
+PkMessageEnum
+pk_message_get_kind (PkMessage *message)
+{
+	g_return_val_if_fail (PK_IS_MESSAGE (message), PK_MESSAGE_ENUM_UNKNOWN);
+	return message->priv->type;
+}
+
+/**
+ * pk_message_get_details:
+ * @message: a valid #PkMessage instance
+ *
+ * Gets the message details.
+ *
+ * Return value: the details, or %NULL if unset
+ *
+ * Since: 0.6.4
+ **/
+const gchar *
+pk_message_get_details (PkMessage *message)
+{
+	g_return_val_if_fail (PK_IS_MESSAGE (message), NULL);
+	return message->priv->details;
+}
+
+/**
  * pk_message_get_property:
  **/
 static void
