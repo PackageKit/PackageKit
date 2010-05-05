@@ -23,6 +23,8 @@
 #define __PK_CACHE_H
 
 #include <glib-object.h>
+#include <packagekit-glib2/pk-results.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -49,9 +51,11 @@ typedef struct
 GType		 pk_cache_get_type		(void);
 PkCache		*pk_cache_new			(void);
 
-GPtrArray	*pk_cache_get_updates		(PkCache	*cache);
-gboolean	 pk_cache_set_updates		(PkCache	*cache,
-						 GPtrArray	*list);
+PkResults	*pk_cache_get_results		(PkCache	*cache,
+						 PkRoleEnum	 role);
+gboolean	 pk_cache_set_results		(PkCache	*cache,
+						 PkRoleEnum	 role,
+						 PkResults	*results);
 gboolean	 pk_cache_invalidate		(PkCache	*cache);
 
 G_END_DECLS

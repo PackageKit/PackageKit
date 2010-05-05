@@ -37,42 +37,57 @@
 struct PkCachePrivate
 {
 	PkConf			*conf;
-	gboolean		 use_update_cache;
-	GPtrArray		*updates_cache;
+	gboolean		 use_cache;
+	PkResults		*get_updates;
 };
 
 G_DEFINE_TYPE (PkCache, pk_cache, G_TYPE_OBJECT)
 static gpointer pk_cache_object = NULL;
 
 /**
- * pk_cache_get_updates:
+ * pk_cache_get_results:
  **/
-GPtrArray *
-pk_cache_get_updates (PkCache *cache)
+PkResults *
+pk_cache_get_results (PkCache *cache, PkRoleEnum role)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), NULL);
 
 	/* do not use */
-	if (!cache->priv->use_update_cache) {
+	if (!cache->priv->use_cache) {
 		egg_debug ("not using cache");
 		return NULL;
 	}
 
-	return cache->priv->updates_cache;
+	/* only support GetUpdates */
+	if (role != PK_ROLE_ENUM_GET_UPDATES) {
+		egg_debug ("only caching update lists");
+		return FALSE;
+	}
+
+	return cache->priv->get_updates;
 }
 
 /**
- * pk_cache_set_updates:
+ * pk_cache_set_results:
+ *
+ * If you add to this method to support other calls than GetUpdates then be sure
+ * to add the required signals to pk_transaction_try_emit_cache().
  **/
 gboolean
-pk_cache_set_updates (PkCache *cache, GPtrArray *list)
+pk_cache_set_results (PkCache *cache, PkRoleEnum role, PkResults *results)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
-	g_return_val_if_fail (list != NULL, FALSE);
+	g_return_val_if_fail (results != NULL, FALSE);
 
 	/* do not use */
-	if (!cache->priv->use_update_cache) {
+	if (!cache->priv->use_cache) {
 		egg_debug ("not using cache");
+		return FALSE;
+	}
+
+	/* only support GetUpdates */
+	if (role != PK_ROLE_ENUM_GET_UPDATES) {
+		egg_debug ("only caching update lists");
 		return FALSE;
 	}
 
@@ -80,7 +95,7 @@ pk_cache_set_updates (PkCache *cache, GPtrArray *list)
 	pk_cache_invalidate (cache);
 
 	egg_debug ("reffing updates cache");
-	cache->priv->updates_cache = g_ptr_array_ref (list);
+	cache->priv->get_updates = g_object_ref (results);
 	return TRUE;
 }
 
@@ -93,9 +108,9 @@ pk_cache_invalidate (PkCache *cache)
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 
 	egg_debug ("unreffing updates cache");
-	if (cache->priv->updates_cache != NULL) {
-		g_ptr_array_unref (cache->priv->updates_cache);
-		cache->priv->updates_cache = NULL;
+	if (cache->priv->get_updates != NULL) {
+		g_object_unref (cache->priv->get_updates);
+		cache->priv->get_updates = NULL;
 	}
 	return TRUE;
 }
@@ -110,8 +125,8 @@ pk_cache_finalize (GObject *object)
 	g_return_if_fail (PK_IS_CACHE (object));
 	cache = PK_CACHE (object);
 
-	if (cache->priv->updates_cache != NULL)
-		g_ptr_array_unref (cache->priv->updates_cache);
+	if (cache->priv->get_updates != NULL)
+		g_object_unref (cache->priv->get_updates);
 
 	G_OBJECT_CLASS (pk_cache_parent_class)->finalize (object);
 }
@@ -138,9 +153,9 @@ static void
 pk_cache_init (PkCache *cache)
 {
 	cache->priv = PK_CACHE_GET_PRIVATE (cache);
-	cache->priv->updates_cache = NULL;
+	cache->priv->get_updates = NULL;
 	cache->priv->conf = pk_conf_new ();
-	cache->priv->use_update_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCache");
+	cache->priv->use_cache = pk_conf_get_bool (cache->priv->conf, "UseUpdateCache");
 }
 
 /**

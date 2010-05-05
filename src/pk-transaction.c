@@ -300,11 +300,11 @@ static gboolean
 pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
 	gchar *transaction_id;
-	GPtrArray *array;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
-	g_object_get (transaction->priv->backend,
+	g_object_get (priv->backend,
 		      "transaction-id", &transaction_id,
 		      NULL);
 	if (transaction_id == NULL) {
@@ -312,27 +312,23 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		return FALSE;
 	}
 
-	/* copy this into the cache if we are getting updates */
-	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		array = pk_results_get_package_array (transaction->priv->results);
-		pk_cache_set_updates (transaction->priv->cache, array);
-		g_ptr_array_unref (array);
-	}
+	/* copy this into the cache */
+	pk_cache_set_results (priv->cache, priv->role, priv->results);
 
 	/* could the update list have changed? */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
-	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
-	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+	if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    priv->role == PK_ROLE_ENUM_REPO_SET_DATA ||
+	    priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* the cached list is no longer valid */
 		egg_debug ("invalidating caches");
-		pk_cache_invalidate (transaction->priv->cache);
+		pk_cache_invalidate (priv->cache);
 
 		/* this needs to be done after a small delay */
-		pk_notify_wait_updates_changed (transaction->priv->notify,
+		pk_notify_wait_updates_changed (priv->notify,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
 	g_free (transaction_id);
@@ -849,6 +845,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* clear the firmware requests directory */
 		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
+
+	/* save this so we know if the cache is valid */
+	pk_results_set_exit_code (transaction->priv->results, exit_enum);
 
 	/* if we did not send this, ensure the GUI has the right state */
 	if (transaction->priv->allow_cancel)
@@ -1431,8 +1430,9 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
 static gboolean
 pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **package_ids, GError **error)
 {
-	GPtrArray *updates;
+	GPtrArray *updates = NULL;
 	PkPackage *item;
+	PkResults *results;
 	guint i;
 	guint j = 0;
 	guint length = 0;
@@ -1441,43 +1441,45 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	gchar **package_ids_security = NULL;
 	gchar *package_id;
 	PkInfoEnum info;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	/* only do this for update actions, FIXME: need to get cached updtae list for update */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		success = pk_transaction_extra_applications_are_running (transaction->priv->transaction_extra, package_ids, error);
+	if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		success = pk_transaction_extra_applications_are_running (priv->transaction_extra, package_ids, error);
 		if (!success)
 			goto out;
 	}
 
 	/* check we have anything to process */
 	if (package_ids == NULL) {
-		egg_debug ("no package_ids for %s", pk_role_enum_to_string (transaction->priv->role));
+		egg_debug ("no package_ids for %s", pk_role_enum_to_string (priv->role));
 		goto out;
 	}
 
 	/* only do this for update actions */
-	if (transaction->priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
-	    transaction->priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	    transaction->priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
+	if (priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
+	    priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	    priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		egg_debug ("doing nothing, as not update or install");
 		goto out;
 	}
 
 	/* do we want to enable this codepath? */
-	ret = pk_conf_get_bool (transaction->priv->conf, "CheckSharedLibrariesInUse");
+	ret = pk_conf_get_bool (priv->conf, "CheckSharedLibrariesInUse");
 	if (!ret) {
 		egg_warning ("not checking for library restarts");
 		goto out;
 	}
 
 	/* do we have a cache */
-	updates = pk_cache_get_updates (transaction->priv->cache);
-	if (updates == NULL) {
+	results = pk_cache_get_results (priv->cache, PK_ROLE_ENUM_GET_UPDATES);
+	if (results == NULL) {
 		egg_warning ("no updates cache");
 		goto out;
 	}
 
 	/* find security update packages */
+	updates = pk_results_get_package_array (results);
 	for (i=0; i<updates->len; i++) {
 		item = g_ptr_array_index (updates, i);
 		g_object_get (item,
@@ -1512,7 +1514,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 
 	/* is a security update we are installing */
-	if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+	if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		ret = FALSE;
 
 		/* do any of the packages we are updating match */
@@ -1533,12 +1535,14 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	}
 
 	/* find files in security updates */
-	ret = pk_transaction_extra_check_library_restart_pre (transaction->priv->transaction_extra, package_ids_security);
+	ret = pk_transaction_extra_check_library_restart_pre (priv->transaction_extra, package_ids_security);
 	if (!ret) {
 		egg_debug ("could not check the library list");
 		goto out;
 	}
 out:
+	if (updates != NULL)
+		g_ptr_array_unref (updates);
 	g_strfreev (package_ids_security);
 	return success;
 }
@@ -1554,43 +1558,44 @@ pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 	gchar *proxy_http = NULL;
 	gchar *proxy_ftp = NULL;
 	gchar *root = NULL;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	/* get session */
-	session = pk_dbus_get_session (transaction->priv->dbus, transaction->priv->sender);
+	session = pk_dbus_get_session (priv->dbus, priv->sender);
 	if (session == NULL) {
 		g_set_error_literal (error, 1, 0, "failed to get the session");
 		goto out;
 	}
 
 	/* get from database */
-	ret = pk_transaction_db_get_proxy (transaction->priv->transaction_db, transaction->priv->uid, session, &proxy_http, &proxy_ftp);
+	ret = pk_transaction_db_get_proxy (priv->transaction_db, priv->uid, session, &proxy_http, &proxy_ftp);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "failed to get the proxy from the database");
 		goto out;
 	}
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (transaction->priv->backend, proxy_http, proxy_ftp);
+	ret = pk_backend_set_proxy (priv->backend, proxy_http, proxy_ftp);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "failed to set the proxy");
 		goto out;
 	}
 
 	/* get from database */
-	ret = pk_transaction_db_get_root (transaction->priv->transaction_db, transaction->priv->uid, session, &root);
+	ret = pk_transaction_db_get_root (priv->transaction_db, priv->uid, session, &root);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "failed to get the root from the database");
 		goto out;
 	}
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_root (transaction->priv->backend, root);
+	ret = pk_backend_set_root (priv->backend, root);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "failed to set the root");
 		goto out;
 	}
 	egg_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
-		   proxy_http, proxy_ftp, root, transaction->priv->uid, session);
+		   proxy_http, proxy_ftp, root, priv->uid, session);
 out:
 	g_free (proxy_http);
 	g_free (proxy_ftp);
@@ -1625,10 +1630,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (priv->tid != NULL, FALSE);
 
 	/* prepare for use; the transaction list ensures this is safe */
-	pk_backend_reset (transaction->priv->backend);
+	pk_backend_reset (priv->backend);
 
 	/* assign */
 	g_object_set (priv->backend,
@@ -1679,68 +1684,68 @@ pk_transaction_set_running (PkTransaction *transaction)
 	}
 
 	/* might have to reset again if we used the backend */
-	pk_backend_reset (transaction->priv->backend);
+	pk_backend_reset (priv->backend);
 
 	/* connect up the signals */
-	transaction->priv->signal_allow_cancel =
-		g_signal_connect (transaction->priv->backend, "allow-cancel",
+	priv->signal_allow_cancel =
+		g_signal_connect (priv->backend, "allow-cancel",
 				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
-	transaction->priv->signal_details =
-		g_signal_connect (transaction->priv->backend, "details",
+	priv->signal_details =
+		g_signal_connect (priv->backend, "details",
 				  G_CALLBACK (pk_transaction_details_cb), transaction);
-	transaction->priv->signal_error_code =
-		g_signal_connect (transaction->priv->backend, "error-code",
+	priv->signal_error_code =
+		g_signal_connect (priv->backend, "error-code",
 				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
-	transaction->priv->signal_files =
-		g_signal_connect (transaction->priv->backend, "files",
+	priv->signal_files =
+		g_signal_connect (priv->backend, "files",
 				  G_CALLBACK (pk_transaction_files_cb), transaction);
-	transaction->priv->signal_distro_upgrade =
-		g_signal_connect (transaction->priv->backend, "distro-upgrade",
+	priv->signal_distro_upgrade =
+		g_signal_connect (priv->backend, "distro-upgrade",
 				  G_CALLBACK (pk_transaction_distro_upgrade_cb), transaction);
-	transaction->priv->signal_finished =
-		g_signal_connect (transaction->priv->backend, "finished",
+	priv->signal_finished =
+		g_signal_connect (priv->backend, "finished",
 				  G_CALLBACK (pk_transaction_finished_cb), transaction);
-	transaction->priv->signal_message =
-		g_signal_connect (transaction->priv->backend, "message",
+	priv->signal_message =
+		g_signal_connect (priv->backend, "message",
 				  G_CALLBACK (pk_transaction_message_cb), transaction);
-	transaction->priv->signal_package =
-		g_signal_connect (transaction->priv->backend, "package",
+	priv->signal_package =
+		g_signal_connect (priv->backend, "package",
 				  G_CALLBACK (pk_transaction_package_cb), transaction);
-	transaction->priv->signal_progress_changed =
-		g_signal_connect (transaction->priv->backend, "progress-changed",
+	priv->signal_progress_changed =
+		g_signal_connect (priv->backend, "progress-changed",
 				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
-	transaction->priv->signal_repo_detail =
-		g_signal_connect (transaction->priv->backend, "repo-detail",
+	priv->signal_repo_detail =
+		g_signal_connect (priv->backend, "repo-detail",
 				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
-	transaction->priv->signal_repo_signature_required =
-		g_signal_connect (transaction->priv->backend, "repo-signature-required",
+	priv->signal_repo_signature_required =
+		g_signal_connect (priv->backend, "repo-signature-required",
 				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
-	transaction->priv->signal_eula_required =
-		g_signal_connect (transaction->priv->backend, "eula-required",
+	priv->signal_eula_required =
+		g_signal_connect (priv->backend, "eula-required",
 				  G_CALLBACK (pk_transaction_eula_required_cb), transaction);
-	transaction->priv->signal_media_change_required =
-		g_signal_connect (transaction->priv->backend, "media-change-required",
+	priv->signal_media_change_required =
+		g_signal_connect (priv->backend, "media-change-required",
 				  G_CALLBACK (pk_transaction_media_change_required_cb), transaction);
-	transaction->priv->signal_require_restart =
-		g_signal_connect (transaction->priv->backend, "require-restart",
+	priv->signal_require_restart =
+		g_signal_connect (priv->backend, "require-restart",
 				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
-	transaction->priv->signal_status_changed =
-		g_signal_connect (transaction->priv->backend, "status-changed",
+	priv->signal_status_changed =
+		g_signal_connect (priv->backend, "status-changed",
 				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	transaction->priv->signal_update_detail =
-		g_signal_connect (transaction->priv->backend, "update-detail",
+	priv->signal_update_detail =
+		g_signal_connect (priv->backend, "update-detail",
 				  G_CALLBACK (pk_transaction_update_detail_cb), transaction);
-	transaction->priv->signal_category =
-		g_signal_connect (transaction->priv->backend, "category",
+	priv->signal_category =
+		g_signal_connect (priv->backend, "category",
 				  G_CALLBACK (pk_transaction_category_cb), transaction);
-	transaction->priv->signal_speed =
-		g_signal_connect (transaction->priv->backend, "notify::speed",
+	priv->signal_speed =
+		g_signal_connect (priv->backend, "notify::speed",
 				  G_CALLBACK (pk_transaction_speed_cb), transaction);
 
 	/* mark running */
-	transaction->priv->running = TRUE;
-	transaction->priv->has_been_run = TRUE;
-	transaction->priv->allow_cancel = FALSE;
+	priv->running = TRUE;
+	priv->has_been_run = TRUE;
+	priv->allow_cancel = FALSE;
 
 	/* reset after the pre-transaction checks */
 	pk_backend_set_percentage (priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -1933,21 +1938,22 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (priv->tid != NULL, FALSE);
 
 	/* set the idle really early as this affects scheduling */
-	if (transaction->priv->background == PK_HINT_ENUM_TRUE ||
-	    transaction->priv->background == PK_HINT_ENUM_FALSE) {
-		pk_transaction_list_set_background (transaction->priv->transaction_list,
-					      transaction->priv->tid,
-					      transaction->priv->background);
+	if (priv->background == PK_HINT_ENUM_TRUE ||
+	    priv->background == PK_HINT_ENUM_FALSE) {
+		pk_transaction_list_set_background (priv->transaction_list,
+					      priv->tid,
+					      priv->background);
 	}
 
 	/* commit, so it appears in the JobList */
-	ret = pk_transaction_list_commit (transaction->priv->transaction_list,
-					  transaction->priv->tid);
+	ret = pk_transaction_list_commit (priv->transaction_list,
+					  priv->tid);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
 		egg_warning ("failed to commit (job not run?)");
@@ -1955,29 +1961,29 @@ pk_transaction_commit (PkTransaction *transaction)
 	}
 
 	/* only save into the database for useful stuff */
-	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 
 		/* add to database */
-		pk_transaction_db_add (transaction->priv->transaction_db, transaction->priv->tid);
+		pk_transaction_db_add (priv->transaction_db, priv->tid);
 
 		/* save role in the database */
-		pk_transaction_db_set_role (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->role);
+		pk_transaction_db_set_role (priv->transaction_db, priv->tid, priv->role);
 
 		/* save uid */
-		pk_transaction_db_set_uid (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->uid);
+		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->uid);
 
 #ifdef USE_SECURITY_POLKIT
 		/* save cmdline in db */
-		if (transaction->priv->cmdline != NULL)
-			pk_transaction_db_set_cmdline (transaction->priv->transaction_db, transaction->priv->tid, transaction->priv->cmdline);
+		if (priv->cmdline != NULL)
+			pk_transaction_db_set_cmdline (priv->transaction_db, priv->tid, priv->cmdline);
 #endif
 
 		/* report to syslog */
-		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
-			       pk_role_enum_to_string (transaction->priv->role), transaction->priv->tid, transaction->priv->uid);
+		pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_INFO, "new %s transaction %s scheduled from uid %i",
+			       pk_role_enum_to_string (priv->role), priv->tid, priv->uid);
 	}
 	return TRUE;
 }
@@ -2178,13 +2184,14 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	gboolean ret;
 	gchar *message;
 	GError *error = NULL;
+	PkTransactionPrivate *priv = transaction->priv;
 
 	/* finish the call */
-	result = polkit_authority_check_authorization_finish (transaction->priv->authority, res, &error);
-	transaction->priv->waiting_for_auth = FALSE;
+	result = polkit_authority_check_authorization_finish (priv->authority, res, &error);
+	priv->waiting_for_auth = FALSE;
 
 	/* failed because the request was cancelled */
-	ret = g_cancellable_is_cancelled (transaction->priv->cancellable);
+	ret = g_cancellable_is_cancelled (priv->cancellable);
 	if (ret) {
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
@@ -2216,7 +2223,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 						"Failed to obtain authentication.");
 		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_FAILED, 0);
 
-		pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", transaction->priv->uid);
+		pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i failed to obtain auth", priv->uid);
 		goto out;
 	}
 
@@ -2229,7 +2236,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	}
 
 	/* log success too */
-	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i obtained auth", transaction->priv->uid);
+	pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i obtained auth", priv->uid);
 out:
 	if (result != NULL)
 		g_object_unref (result);
@@ -2321,13 +2328,14 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	const gchar *action_id;
 	gboolean ret = FALSE;
 	gchar *package_ids = NULL;
+	PkTransactionPrivate *priv = transaction->priv;
 
-	g_return_val_if_fail (transaction->priv->sender != NULL, FALSE);
+	g_return_val_if_fail (priv->sender != NULL, FALSE);
 
 	/* we should always have subject */
-	if (transaction->priv->subject == NULL) {
+	if (priv->subject == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-				      "subject %s not found", transaction->priv->sender);
+				      "subject %s not found", priv->sender);
 		goto out;
 	}
 
@@ -2342,39 +2350,39 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	}
 
 	/* log */
-	pk_syslog_add (transaction->priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", transaction->priv->uid, action_id, only_trusted);
+	pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", priv->uid, action_id, only_trusted);
 
 	/* emit status for GUIs */
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
 	pk_transaction_progress_changed_emit (transaction, PK_BACKEND_PERCENTAGE_INVALID, PK_BACKEND_PERCENTAGE_INVALID, 0, 0);
 
 	/* check subject */
-	transaction->priv->waiting_for_auth = TRUE;
+	priv->waiting_for_auth = TRUE;
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_string (transaction->priv->role));
-	polkit_details_insert (details, "only-trusted", transaction->priv->cached_only_trusted ? "true" : "false");
+	polkit_details_insert (details, "role", pk_role_enum_to_string (priv->role));
+	polkit_details_insert (details, "only-trusted", priv->cached_only_trusted ? "true" : "false");
 
 	/* do we have package details? */
-	if (transaction->priv->cached_package_id != NULL)
-		package_ids = g_strdup (transaction->priv->cached_package_id);
-	else if (transaction->priv->cached_package_ids != NULL)
-		package_ids = pk_package_ids_to_string (transaction->priv->cached_package_ids);
+	if (priv->cached_package_id != NULL)
+		package_ids = g_strdup (priv->cached_package_id);
+	else if (priv->cached_package_ids != NULL)
+		package_ids = pk_package_ids_to_string (priv->cached_package_ids);
 
 	/* save optional stuff */
 	if (package_ids != NULL)
 		polkit_details_insert (details, "package_ids", package_ids);
-	if (transaction->priv->cmdline != NULL)
-		polkit_details_insert (details, "cmdline", transaction->priv->cmdline);
+	if (priv->cmdline != NULL)
+		polkit_details_insert (details, "cmdline", priv->cmdline);
 
 	/* do authorization async */
-	polkit_authority_check_authorization (transaction->priv->authority,
-					      transaction->priv->subject,
+	polkit_authority_check_authorization (priv->authority,
+					      priv->subject,
 					      action_id,
 					      details,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
-					      transaction->priv->cancellable,
+					      priv->cancellable,
 					      (GAsyncReadyCallback) pk_transaction_action_obtain_authorization_finished_cb,
 					      transaction);
 
@@ -3387,6 +3395,71 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 }
 
 /**
+ * pk_transaction_try_emit_cache:
+ **/
+static gboolean
+pk_transaction_try_emit_cache (PkTransaction *transaction)
+{
+	PkResults *results;
+	gboolean ret = FALSE;
+	GPtrArray *package_array;
+	GPtrArray *message_array;
+	PkPackage *package;
+	PkMessage *message;
+	PkExitEnum exit_enum;
+	guint i;
+
+	/* get results */
+	results = pk_cache_get_results (transaction->priv->cache, transaction->priv->role);
+	if (results == NULL)
+		goto out;
+
+	/* failed last time */
+	exit_enum = pk_results_get_exit_code (results);
+	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
+		egg_warning ("failed last time with: %s", pk_exit_enum_to_string (exit_enum));
+		goto out;
+	}
+
+	egg_debug ("we have cached data we should use");
+
+	/* packages */
+	package_array = pk_results_get_package_array (results);
+	for (i=0; i<package_array->len; i++) {
+		package = g_ptr_array_index (package_array, i);
+		g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
+			       pk_info_enum_to_string (pk_package_get_info (package)),
+			       pk_package_get_id (package),
+			       pk_package_get_summary (package));
+	}
+
+	/* messages */
+	message_array = pk_results_get_message_array (results);
+	for (i=0; i<message_array->len; i++) {
+		message = g_ptr_array_index (message_array, i);
+		g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0,
+			       pk_message_enum_to_string (pk_message_get_kind (message)),
+			       pk_message_get_details (message));
+	}
+
+	/* success */
+	ret = TRUE;
+
+	/* set finished */
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+
+	/* we are done */
+	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+
+out:
+	if (package_array != NULL)
+		g_ptr_array_unref (package_array);
+	if (message_array != NULL)
+		g_ptr_array_unref (message_array);
+	return ret;
+}
+
+/**
  * pk_transaction_get_updates:
  **/
 void
@@ -3394,7 +3467,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 {
 	gboolean ret;
 	GError *error = NULL;
-	GPtrArray *updates_cache;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -3431,39 +3503,8 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
 	/* try and reuse cache */
-	updates_cache = pk_cache_get_updates (transaction->priv->cache);
-	if (updates_cache != NULL) {
-		PkPackage *item;
-		const gchar *info_text;
-		guint i;
-		PkInfoEnum info;
-		gchar *package_id;
-		gchar *summary;
-
-		egg_debug ("we have cached data (%i) we should use!", updates_cache->len);
-
-		/* emulate the backend */
-		for (i=0; i<updates_cache->len; i++) {
-			item = g_ptr_array_index (updates_cache, i);
-			g_object_get (item,
-				      "info", &info,
-				      "package-id", &package_id,
-				      "summary", &summary,
-				      NULL);
-			info_text = pk_info_enum_to_string (info);
-			egg_debug ("emitting package");
-			g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0,
-				       info_text, package_id, summary);
-			g_free (package_id);
-			g_free (summary);
-		}
-
-		/* set finished */
-		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-
-		/* we are done */
-		g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-
+	ret = pk_transaction_try_emit_cache (transaction);
+	if (ret) {
 		/* not set inside the test suite */
 		if (context != NULL)
 			dbus_g_method_return (context);
