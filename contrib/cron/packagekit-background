@@ -12,3 +12,7 @@ CHECK_ONLY=no
 # differently default is output of hostname command
 #SYSTEM_NAME=""
 
+# update checks will sleep random time before contacting the servers to
+# avoid hammering them with thousands of request at the same time - this
+# is the maximum sleep time (in seconds) for the random wait period
+SLEEP_MAX=3600

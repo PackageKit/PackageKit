@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 #
 # Some material taken from yum-cron, Copyright 2007 Alec Habig <ahabig@umn.edu>
@@ -23,7 +23,8 @@ PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
 PKCON_OPTIONS="--background --noninteractive --plain"
 
 # wait a random amount of time to avoid hammering the servers
-sleep $RANDOM
+[ -z "$SLEEP_MAX" ] && SLEEP_MAX=$RANDOM
+sleep $(( $RANDOM % $SLEEP_MAX + 1 ))
 
 # do action
 if [ "$CHECK_ONLY" = "yes" ]; then
