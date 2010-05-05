@@ -233,6 +233,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except PkError, e:
             self.error(e.code, e.details)
 
+        # load the config file
+        config = ConfigParser.ConfigParser()
+        try:
+            config.read('/etc/PackageKit/Yum.conf')
+            self.system_packages = config.get('Backend', 'SystemPackages').split(';')
+        except Exception, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
+
         # get the lock early
         if lock:
             self.doLock()
@@ -2327,8 +2335,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 for txmbr in self.yumbase.tsInfo:
                     pkg = txmbr.po
-                    system_packages = ['yum', 'rpm', 'glibc', 'PackageKit']
-                    if pkg.name in system_packages:
+                    if pkg.name in self.system_packages:
                         self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "The package %s is essential to correct operation and cannot be removed using this tool." % pkg.name, exit=False)
                         return
             try:
