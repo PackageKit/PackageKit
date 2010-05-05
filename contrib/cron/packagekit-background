@@ -8,7 +8,7 @@ CHECK_ONLY=no
 # by default MAILTO is unset, so crond mails the output by itself
 #MAILTO=root
 
-# you may set SYSTEMNAME if you want your PackageKit emails tagged differently
-# default is output of hostname command
+# you may set SYSTEM_NAME if you want your PackageKit emails tagged 
+# differently default is output of hostname command
 #SYSTEM_NAME=""
 
