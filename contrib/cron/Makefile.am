@@ -2,7 +2,7 @@ cronfiledir = ${SYSCONFDIR}/cron.daily
 cronfile_SCRIPTS = packagekit-background.cron
 
 crondatadir = ${SYSCONFDIR}/sysconfig
-crondata_SCRIPTS = packagekit-background
+crondata_DATA = packagekit-background
 
 EXTRA_DIST =						\
 	packagekit-background				\
