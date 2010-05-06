@@ -573,9 +573,6 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp:
 {
 	typedef std::vector<zypp::sat::Solvable>::const_iterator sat_it_t;
 
-	// FIXME: we should move the 'NEWEST' handling here from _resolve_thread
-	//        that will require calculating 'newest' per package name.
-
 	std::vector<zypp::sat::Solvable> installed;
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
@@ -649,8 +646,12 @@ zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item)
 	return info.best;
 }
 
-std::set<zypp::PoolItem> *
-zypp_get_updates (std::string repo)
+/**
+ * Returns a set of all packages the could be updated
+ * (you're able to exclude a single (normally the 'patch' repo)
+ */
+static std::set<zypp::PoolItem> *
+zypp_get_package_updates (std::string repo)
 {
         std::set<zypp::PoolItem> *pks = new std::set<zypp::PoolItem> ();
         zypp::ResPool pool = zypp::ResPool::instance ();
@@ -676,7 +677,10 @@ zypp_get_updates (std::string repo)
         return pks;
 }
 
-std::set<zypp::PoolItem> *
+/**
+ * Returns a set of all patches the could be installed
+ */
+static std::set<zypp::PoolItem> *
 zypp_get_patches ()
 {
         std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
@@ -713,6 +717,55 @@ zypp_get_patches ()
 
 }
 
+std::set<zypp::PoolItem> *
+zypp_get_updates ()
+{
+	typedef std::set<zypp::PoolItem>::iterator pi_it_t;
+
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+
+	if (!_updating_self) {
+		// exclude the patch-repository
+		std::string patchRepo;
+		if (!candidates->empty ()) {
+			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
+		}
+
+		std::set<zypp::PoolItem> *packages;
+
+		packages = zypp_get_package_updates (patchRepo);
+		pi_it_t cb = candidates->begin (), ce = candidates->end (), ci;
+		for (ci = cb; ci != ce; ++ci) {
+			if (!zypp::isKind<zypp::Patch>(ci->resolvable()))
+				continue;
+
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(ci->resolvable());
+
+			// Remove contained packages from list of packages to add
+			zypp::sat::SolvableSet::const_iterator pki;
+			for (pki = patch->contents().begin(); pki != patch->contents().end(); pki++) {
+
+				pi_it_t pb = packages->begin (), pe = packages->end (), pi;
+				for (pi = pb; pi != pe; ++pi) {
+					if (pi->satSolvable() == zypp::sat::Solvable::noSolvable)
+						continue;
+					
+					if (pi->satSolvable().identical (*pki)) {
+						packages->erase (pi);
+						break;
+					}
+				}
+			}
+		}
+
+		// merge into the list
+		candidates->insert (packages->begin (), packages->end ());
+		delete (packages);
+	}
+
+	return candidates;
+}
+
 gboolean
 zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
 {
@@ -720,9 +773,9 @@ zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
 	if (restart != PK_RESTART_ENUM_SYSTEM && (patch->reloginSuggested () ||
 						  patch->restartSuggested () ||
 						  patch->rebootSuggested ())) {
-			if(patch->reloginSuggested () || patch->restartSuggested ())
+			if (patch->reloginSuggested () || patch->restartSuggested ())
 				restart = PK_RESTART_ENUM_SESSION;
-			if(patch->rebootSuggested ())
+			if (patch->rebootSuggested ())
 				restart = PK_RESTART_ENUM_SYSTEM;
 	}
 	return true;

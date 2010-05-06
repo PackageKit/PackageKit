@@ -1,0 +1,19 @@
+package updating
+	+ re-test patch updating carefully
+	+ ensure no packages overlap with patches etc.
+
+pkcon remove glibc
+	+ morphs the remove into an install (somehow)
+	+ doesn't complain that we might destroy the system
+	+ OTOH: doesn't destroy the system 
+
+implement backend_download ...
+	+ essentially an install with --download-only set to true.
+
+NEWEST handling
+	+ should move from backend_resolve_thread to
+	+ zypp_emit_filtered_packages_in_list
+		+ where it can be shared & more generic
+		+ will require calculating 'newest' per package
+		+ which would make that method more efficient anyway
+

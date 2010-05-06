@@ -164,14 +164,11 @@ gboolean zypp_signature_required (PkBackend *backend, const std::string &file, c
 zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item);
 
 /**
-  * Returns a set of all packages the could be updated (you're able to exclude a repo)
+  * Return the best, most friendly selection of update patches and packages that
+  * we can find. Also manages _updating_self to prioritise critical infrastructure
+  * updates.
   */
-std::set<zypp::PoolItem> * zypp_get_updates (std::string repo);
-
-/**
-  * Returns a set of all patches the could be installed
-  */
-std::set<zypp::PoolItem> * zypp_get_patches ();
+std::set<zypp::PoolItem> * zypp_get_updates ();
 
 /**
   * Sets the restart flag of a patch

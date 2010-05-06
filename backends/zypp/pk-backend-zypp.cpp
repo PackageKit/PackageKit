@@ -620,6 +620,8 @@ backend_get_updates_thread (PkBackend *backend)
 {
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
+	typedef std::set<zypp::PoolItem>::iterator pi_it_t;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -633,27 +635,13 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 40);
 
 	// check if the repositories may be dead (feature #301904)
-	 warn_outdated_repos(backend, pool);
+	warn_outdated_repos (backend, pool);
 
-	// get all Packages and Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
-	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
-
-	if (!_updating_self) {
-		// exclude the patch-repository
-		std::string patchRepo;
-		if (!candidates->empty ()) {
-			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
-		}
-
-		//candidates2 = zypp_get_updates (patchRepo);
-
-		//candidates->insert (candidates2->begin (), candidates2->end ());
-	}
+	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
 
 	pk_backend_set_percentage (backend, 80);
 
-	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	pi_it_t cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		zypp::ResObject::constPtr res = ci->resolvable();
 
@@ -683,9 +671,7 @@ backend_get_updates_thread (PkBackend *backend)
 					      res->summary ().c_str ());
 		}
 	}
-
 	delete (candidates);
-	//delete (candidates2);
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -931,26 +917,10 @@ backend_update_system_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 40);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	//get all Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
-	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
 
 	if (_updating_self) {
 		_updating_self = FALSE;
-	}
-	else {
-		//disabling patchrepo
-		std::string patchRepo;
-		if (!candidates->empty ()) {
-			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
-		}
-
-		//get all Updates
-		//candidates2 = zypp_get_updates (patchRepo);
-
-		//concatenate these sets
-
-		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
 
 	pk_backend_set_percentage (backend, 80);
@@ -959,7 +929,9 @@ backend_update_system_thread (PkBackend *backend)
 		// set the status of the update to ToBeInstalled
 		zypp::ResStatus &status = ci->status ();
 		status.setToBeInstalled (zypp::ResStatus::USER);
-		zypp_get_restart (restart, zypp::asKind<zypp::Patch>(ci->resolvable ()));
+		if (zypp::isKind<zypp::Patch>(ci->resolvable ())) {
+			zypp_get_restart (restart, zypp::asKind<zypp::Patch>(ci->resolvable ()));
+		}
 	}
 
 	if (!zypp_perform_execution (backend, UPDATE, FALSE)) {
@@ -971,7 +943,6 @@ backend_update_system_thread (PkBackend *backend)
 	if (restart != PK_RESTART_ENUM_NONE)
 		pk_backend_require_restart (backend, restart, "A restart is needed");
 
-	//delete (candidates2);
 	delete (candidates);
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -1621,7 +1592,7 @@ backend_update_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	delete zypp_get_patches (); // make sure _updating_self is set
+	delete zypp_get_updates (); // make sure _updating_self is set
 
 	if (_updating_self) {
 		egg_debug ("updating self and setting restart");
