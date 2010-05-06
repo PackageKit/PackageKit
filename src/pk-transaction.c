@@ -1653,10 +1653,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set the frontend socket if it exists */
 	pk_backend_set_frontend_socket (priv->backend, priv->frontend_socket);
 
-	/* set the role */
-	pk_backend_set_role (priv->backend, priv->role);
-	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
-
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
@@ -1685,6 +1681,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* might have to reset again if we used the backend */
 	pk_backend_reset (priv->backend);
+
+	/* set the role */
+	pk_backend_set_role (priv->backend, priv->role);
+	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
 
 	/* connect up the signals */
 	priv->signal_allow_cancel =
