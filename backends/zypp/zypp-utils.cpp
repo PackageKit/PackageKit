@@ -792,15 +792,18 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 		zypp::ResPool pool = zypp::ResPool::instance ();
 		if (simulate) {
+			ret = TRUE;
+
+			egg_debug ("simulating");
 
 			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
-				zypp_backend_pool_item_notify (backend, *it);
+				if (!zypp_backend_pool_item_notify (backend, *it, TRUE))
+					ret = FALSE;
 				it->statusReset ();
 			}
-
-			ret = TRUE;
 			goto exit;
 		}
+
 
 		// look for licenses to confirm
 
@@ -1030,20 +1033,30 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	return FALSE;
 }
 
-void
+gboolean
 zypp_backend_pool_item_notify (PkBackend  *backend,
-			       const zypp::PoolItem &item)
+			       const zypp::PoolItem &item,
+			       gboolean sanity_check)
 {
 	PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
 
-	if (item.status ().isToBeUninstalled ()) {
-		status = PK_INFO_ENUM_REMOVING;
-	} else if (item.status ().isToBeInstalled ()) {
-		status = PK_INFO_ENUM_INSTALLING;
-	} else if (item.status ().isToBeUninstalledDueToUpgrade ()) {
+	if (item.status ().isToBeUninstalledDueToUpgrade ()) {
 		status = PK_INFO_ENUM_UPDATING;
 	} else if (item.status ().isToBeUninstalledDueToObsolete ()) {
 		status = PK_INFO_ENUM_OBSOLETING;
+	} else if (item.status ().isToBeInstalled ()) {
+		status = PK_INFO_ENUM_INSTALLING;
+	} else if (item.status ().isToBeUninstalled ()) {
+		status = PK_INFO_ENUM_REMOVING;
+
+		const std::string &name = item.satSolvable().name();
+		egg_debug ("should we remove '%s'", name.c_str());
+		if (name == "glibc" || name == "gedit") {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
+					       "The package %s is essential to correct operation and cannot be removed using this tool.",
+					       name.c_str());
+			return FALSE;
+		}
 	}
 
 	// FIXME: do we need more heavy lifting here cf. zypper's
@@ -1052,6 +1065,7 @@ zypp_backend_pool_item_notify (PkBackend  *backend,
 		const std::string &summary = item.resolvable ()->summary ();
 		zypp_backend_package (backend, status, item.resolvable()->satSolvable(), summary.c_str ());
 	}
+	return TRUE;
 }
 
 gchar *

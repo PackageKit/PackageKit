@@ -224,8 +224,9 @@ void     zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 /**
   * helper to emit pk package status signals based on a ResPool object
   */
-void     zypp_backend_pool_item_notify (PkBackend  *backend,
-					const zypp::PoolItem &item);
+gboolean zypp_backend_pool_item_notify (PkBackend  *backend,
+					const zypp::PoolItem &item,
+					gboolean sanity_check = FALSE);
 
 /**
   * helper to compare a version + architecture, with source arch mangling.

@@ -130,7 +130,7 @@ backend_get_requires_thread (PkBackend *backend)
 	//TODO repair percentages
 	//pk_backend_set_percentage (backend, 0);
 
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+	for (uint i = 0; package_ids[i]; i++) {
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		zypp::PoolItem package;
 
@@ -451,7 +451,7 @@ backend_get_details_thread (PkBackend *backend)
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+	for (uint i = 0; package_ids[i]; i++) {
 		gchar **id_parts = pk_package_id_split (package_ids[i]);
 
 		std::vector<zypp::sat::Solvable> *v;
@@ -716,7 +716,7 @@ backend_install_files_thread (PkBackend *backend)
 			"Could not create a temporary directory");
 	}
 
-	for (guint i = 0; i < g_strv_length (full_paths); i++) {
+	for (guint i = 0; full_paths[i]; i++) {
 
 		// check if file is really a rpm
 		zypp::Pathname rpmPath (full_paths[i]);
@@ -766,7 +766,7 @@ backend_install_files_thread (PkBackend *backend)
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	}
 
-	for (guint i = 0; i < g_strv_length (full_paths); i++) {
+	for (guint i = 0; full_paths[i]; i++) {
 
 		zypp::Pathname rpmPath (full_paths[i]);
 		zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
@@ -841,7 +841,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	for (uint i = 0; i < g_strv_length(package_ids); i++) {
+	for (uint i = 0; package_ids[i]; i++) {
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 
 		zypp::Capabilities obs = solvable.obsoletes ();
@@ -1009,44 +1009,67 @@ backend_install_packages_thread (PkBackend *backend)
 	{
 		zypp::ResPool pool = zypp_build_pool (TRUE);
 		pk_backend_set_percentage (backend, 10);
-		gboolean hit = false;
 		std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
-		for (guint i = 0; i < g_strv_length (package_ids); i++) {
-
+		guint to_install = 0;
+		for (guint i = 0; package_ids[i]; i++) {
 			gchar **id_parts = pk_package_id_split (package_ids[i]);
 
 			// Iterate over the selectables and mark the one with the right name
-			zypp::ui::Selectable::Ptr selectable;
-			for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
-					it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-				if (strcmp ((*it)->name ().c_str (), id_parts[PK_PACKAGE_ID_NAME]) == 0) {
-					selectable = *it;
-					break;
-				}
-			}
+			zypp::ui::Selectable::constPtr selectable;
+			std::string name = id_parts[PK_PACKAGE_ID_NAME];
 
-			// Choose the PoolItem with the right architecture and version
-			for (zypp::ui::Selectable::available_iterator it = selectable->availableBegin ();
-					it != selectable->availableEnd (); it++) {
+			// Do we have this installed ?
+			gboolean system = false;
+			for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
+			     it != pool.byNameEnd (name); it++) {
+
+				egg_debug ("PoolItem '%s'", it->satSolvable().asString().c_str());
+
+				if (!it->satSolvable().isSystem())
+					continue;
+
 				if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
 							     id_parts[PK_PACKAGE_ID_ARCH])) {
-					hit = true;
-					// set status to ToBeInstalled
-					it->status ().setToBeInstalled (zypp::ResStatus::USER);
-					items->push_back (*it);
+					system = true;
 					break;
 				}
 			}
-			g_strfreev (id_parts);
+			
+			if (!system) {
+				gboolean hit = false;
 
-			if (!hit) {
-				return zypp_backend_finished_error (
-					backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-					"Couldn't find the package.");
+				// Choose the PoolItem with the right architecture and version
+				for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
+				     it != pool.byNameEnd (name); it++) {
+
+					if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
+								     id_parts[PK_PACKAGE_ID_ARCH])) {
+						hit = true;
+						to_install++;
+						// set status to ToBeInstalled
+						it->status ().setToBeInstalled (zypp::ResStatus::USER);
+						items->push_back (*it);
+						break;
+					}
+				}
+				if (!hit) {
+					g_strfreev (id_parts);
+					return zypp_backend_finished_error (
+						backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						"Couldn't find the package '%s'.", package_ids[i]);
+				}
+
 			}
+			g_strfreev (id_parts);
+		}
 
-			pk_backend_set_percentage (backend, 40);
+		pk_backend_set_percentage (backend, 40);
+
+		if (!to_install) {
+			return zypp_backend_finished_error (
+				backend, PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
+				"The packages are already all installed");
 		}
 
 		// Todo: ideally we should call pk_backend_package (...
@@ -1137,7 +1160,7 @@ backend_remove_packages_thread (PkBackend *backend)
 		return zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 	}
-	for (guint i = 0; i < g_strv_length (package_ids); i++) {
+	for (guint i = 0; package_ids[i]; i++) {
 		gchar **id_parts = pk_package_id_split (package_ids[i]);
 
 		// Iterate over the resolvables and mark the ones we want to remove
@@ -1206,7 +1229,7 @@ backend_resolve_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	for (uint i = 0; i < g_strv_length (package_ids); i++) {
+	for (uint i = 0; package_ids[i]; i++) {
 		std::vector<zypp::sat::Solvable> *v;
 
 		/* Build a list of packages with this name */
@@ -1493,7 +1516,7 @@ backend_get_files_thread (PkBackend *backend)
 			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 	}
 
-	for(uint i = 0; i < g_strv_length(package_ids); i++) {
+	for (uint i = 0; package_ids[i]; i++) {
 		gchar **id_parts = pk_package_id_split (package_ids[i]);
 		pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1605,7 +1628,7 @@ backend_update_packages_thread (PkBackend *backend)
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
-	for (guint i = 0; i < g_strv_length (package_ids); i++) {
+	for (guint i = 0; package_ids[i]; i++) {
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
