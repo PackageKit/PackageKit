@@ -310,6 +310,8 @@ backend_update_packages_thread (PkBackend *backend)
 		g_object_unref (transaction);
 		transaction = backend_transaction_run (backend, PACMAN_TRANSACTION_SYNC, dflags, asdeps);
 		pacman_list_free_full (asdeps, g_free);
+	} else if (asdeps != NULL) {
+		pacman_list_free_full (asdeps, g_free);
 	}
 
 	return backend_transaction_finished (backend, transaction);
