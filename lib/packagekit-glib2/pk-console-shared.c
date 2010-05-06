@@ -50,11 +50,17 @@ pk_console_get_number (const gchar *question, guint maxnum)
 	g_print ("%s", question);
 
 	do {
+		char buffer[64];
+
+		/* swallow the \n at end of line too */
+		if (!fgets (buffer, 64, stdin))
+			break;
+
 		/* get a number */
-		retval = scanf("%u", &answer);
+		retval = sscanf(buffer, "%u", &answer);
 
 		/* positive */
-		if (retval == 1 && answer > 0 && answer <= (gint) maxnum)
+		if (answer > 0 && answer <= (gint) maxnum)
 			break;
 		g_print (_("Please enter a number from 1 to %i: "), maxnum);
 	} while (TRUE);
@@ -80,7 +86,7 @@ pk_console_getchar_unbuffered (void)
 	memcpy (&new_opts, &org_opts, sizeof(new_opts));
 	new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
 	tcsetattr (STDIN_FILENO, TCSANOW, &new_opts);
-	c = getchar ();
+	c = getc (stdin);
 
 	/* restore old settings */
 	res = tcsetattr (STDIN_FILENO, TCSANOW, &org_opts);
