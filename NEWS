@@ -1,3 +1,80 @@
+Version 0.6.4
+~~~~~~~~~~~~~
+Released: 2010-05-06
+
+Notes:
+ - This release is the first to support a relocatable root, which may be useful
+   to LTSP and some virtualised environments. It's not yet well tested, and
+   early adopters are encouraged to joint the mailing list.
+
+Translations:
+ - Updates to Danish (da) translation (kristho)
+ - Updates to Dutch (Flemish) (nl) translation (warrink)
+ - Updates to Indonesian (id) translation (dichi)
+ - Updates to Panjabi (Punjabi) (pa) translation (aalam)
+ - Updates to Polish (pl) translation (raven)
+ - Updates to Portuguese (pt) translation (ruigo)
+ - Updates to Serbian (Latin) (sr@latin) translation (kmilos)
+ - Updates to Serbian (sr) translation (kmilos)
+ - Updates to Spanish (Castilian) (es) translation (logan)
+ - Updates to Ukrainian (uk) translation (yurchor)
+
+Libraries:
+ - glib: Add C accessors for PkMessage (Richard Hughes)
+ - glib: Add some more C accessors for PkPackage (Richard Hughes)
+
+Backends:
+ - apt: Fix a spelling error in the config file prompt message (Warren Turkal)
+ - entropy: Catch DependenciesNotRemovable exception during reverse dependencies calculation (Fabio Erculiani)
+ - opkg: Include stdio.h before opkg.h to make newer gcc happy (Koen Kooi)
+ - box: Updated backend to fix compile (Grzegorz Dabrowski)
+ - yum: Catch exceptions.IOError whenever we do a low-level yum call. Fixes rh#577549 (Richard Hughes)
+ - yum: Do not abort if the package-id is not unique in the reposet (Richard Hughes)
+ - yum: Ensure the lock failure message is proper unicode. Fixes rh#585620 (Richard Hughes)
+ - yum: Ensure we catch the exception if there are no groups. Fixes rh#587196 (Richard Hughes)
+ - yum: Ensure we create /var/cache/PackageKit if the user nukes it and then tries to re-create the comps cache (Richard Hughes)
+ - yum: Ensure we force a cache update if the comps groups cannot be loaded (Richard Hughes)
+ - yum: Get the correct state for each update. Fixes rh#574658 (Richard Hughes)
+ - yum: Move the list of infrastructure packages that are updated first to the config file (Richard Hughes)
+ - yum: Move the list of system packages that cannot be removed to the config file (Richard Hughes)
+ - yum: Ship a standalone version of licenses.txt for future code (Richard Hughes)
+ - yum: Sync with libzif upstream which offers a pretty stellar performance increase (Richard Hughes)
+ - yum: Use zif to get the update lists if UseZif is enabled (Richard Hughes)
+ - zypp: Attempt to improve backend_find_packages (Michael Andres)
+ - zypp: Cleanup a certain amount of superstitious coding (Michael Meeks)
+ - zypp: cleanup 'resolve' filtering code (Michael Meeks)
+ - zypp: Factor pool item change notification out into zypp_backend_pool_item_notify (Michael Meeks)
+ - zypp: Fix leaks in GetRequires, resolve and what_provides (Michael Meeks)
+ - zypp: Fix memory leaks (Michael Andres)
+ - zypp: Fix multiple bugs in Resolve() (Michael Meeks)
+ - zypp: Get the final 'finished' signal right on remove (Michael Meeks)
+ - zypp: Implement simulated package removal (Michael Meeks)
+ - zypp: Improve exception handling (Michael Meeks)
+ - zypp: Introduce a pseudo-architecture "source" to distinguish source packages from binary ones (Michael Meeks)
+ - zypp: Let libzypp determine whether a patch is needed (Michael Andres)
+ - zypp: Share the version / architecture comparison code into zypp_ver_and_arch_equal (Michael Meeks)
+ - zypp: Tweak filtering to ensure that we never emit both states even if a package is also re-installable (Michael Meeks)
+
+New Features:
+ - Allow clients to request a relocatable root, but only with admin authority (Richard Hughes)
+ - Add hint:simulate boolean on the backend, set for all simulation methods, to increase code re-use (Michael Meeks)
+ - Add maximum wait time limit to cron checks (Marko Myllynen)
+ - Add support for the 'frontend-socket' hint and pass it to backends (Richard Hughes)
+ - Ported PackageKit to Haiku (Grzegorz Dabrowski)
+ - Send a message when other updates are held back so we can add a note to the GUI tool (Richard Hughes)
+
+Bugfixes:
+ - Correctly fallback by checking the transaction role, not the backend role. Fixes fd#27527 (Richard Hughes)
+ - Don't return from SetProxy() before we've got the authentication result (Richard Hughes)
+ - Downgrade required autoconf version (Michael Meeks)
+ - Ensure the daemon emits Message() signals when replaying the cached GetUpdates data (Richard Hughes)
+ - Fix parallel-build snafu wrt. MOC generated files (Michael Meeks)
+ - Fix system name variable name inconsistency in the cron script (Marko Myllynen)
+ - Fix the permission of /etc/sysconfig/packagekit-background to be non-executable (Richard Hughes)
+ - Fix up three typos in translated strings (Yuri Chornoivan)
+ - If http_proxy or ftp_proxy are set in the environment, use them in pkcon (Richard Hughes)
+ - Remove the ruck client, it's been broken for the last few releases (Richard Hughes)
+
 Version 0.6.3
 ~~~~~~~~~~~~~
 Released: 2010-03-29
