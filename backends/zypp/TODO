@@ -1,3 +1,10 @@
+progress reporting
+	+ seems not to work - I get 0%'s for most things (why?)
+	+ particularly (eg.) updating a lot of packages; most odd.
+		+ we get signals starting / finishing packages etc.
+			+ but nothing more (?)
+		+ do we only notify on a 'sub' progress %age ?
+
 package updating
 	+ re-test patch updating carefully
 	+ ensure no packages overlap with patches etc.
