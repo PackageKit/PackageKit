@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master.pa\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-18 19:48+0000\n"
-"PO-Revision-Date: 2010-04-19 07:57+0530\n"
+"POT-Creation-Date: 2010-05-05 16:54+0000\n"
+"PO-Revision-Date: 2010-05-06 07:38+0530\n"
 "Last-Translator: A S Alam <aalam@users.sf.net>\n"
-"Language-Team: Punjabi/Panjabi <kde-i18n-doc@kde.org>\n"
+"Language-Team: Punjabi/Panjabi <punjabi-users@lists.sf.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -378,153 +378,163 @@ msgid "Failed to get the time since this action was last completed"
 msgstr "ਇਸ ਕਾਰਵਾਈ ਦੇ ਆਖਰੀ ਵਾਰ ਪੂਰੀ ਹੋਣ ਤੋਂ ਬਾਅਦ ਸਮਾਂ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1267 ../client/pk-monitor.c:326
+#: ../client/pk-console.c:1268 ../client/pk-monitor.c:326
 msgid "Show the program version and exit"
 msgstr "ਪਰੋਗਰਾਮ ਵਰਜਨ ਵੇਖੋ ਅਤੇ ਬੰਦ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1270
+#: ../client/pk-console.c:1271
 msgid "Set the filter, e.g. installed"
 msgstr "ਫਿਲਟਰ ਸੈੱਟ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਇੰਸਟਾਲ"
 
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1274
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr "ਇੰਸਟਾਲ ਰੂਟ ਸੈੱਟ ਕਰੋ, ਜਿਵੇਂ  '/' ਜਾਂ '/mnt/ltsp'"
+
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1273
+#: ../client/pk-console.c:1277
 msgid "Exit without waiting for actions to complete"
 msgstr "ਪੂਰੇ ਹੋਣ ਵਾਲੇ ਐਕਸ਼ਨ ਦੀ ਉਡੀਕ ਕੀਤੇ ਬਿਨਾਂ ਬੰਦ ਕਰੋ"
 
 #. command line argument, do we ask questions
-#: ../client/pk-console.c:1276
+#: ../client/pk-console.c:1280
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:527
 msgid "Install the packages without asking for confirmation"
 msgstr "ਪੁਸ਼ਟੀ ਕੀਤੇ ਬਿਨਾਂ ਹੀ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: ../client/pk-console.c:1279
+#: ../client/pk-console.c:1283
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "ਕਮਾਂਡ ਨੂੰ ਵੇਹਲੀ ਨੈੱਟਵਰਕ ਬੈਂਡਵਿਥ ਦੌਰਾਨ ਚਲਾਓ ਅਤੇ ਘੱਟ ਊਰਜਾ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਵੀ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: ../client/pk-console.c:1282
+#: ../client/pk-console.c:1286
 msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "ਐਨੀਮੇਟਡ ਵਿਡਜੈੱਟ ਵਰਤਣ ਦੀ ਬਜਾਏ, ਮਸ਼ੀਨ ਦੇ ਪੜ੍ਹਨ ਯੋਗ ਜਾਣਕਾਰੀ ਸਕਰੀਨ ਤੇ ਪਰਿੰਟ ਕਰੋ"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: ../client/pk-console.c:1304
+#: ../client/pk-console.c:1308
 msgid "Failed to contact PackageKit"
 msgstr "ਪੈਕੇਜਕਿੱਟ ਨਾਲ ਸੰਪਰਕ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1365
+#: ../client/pk-console.c:1369
 msgid "The proxy could not be set"
 msgstr "ਪਰਾਕਸੀ ਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1377
+#: ../client/pk-console.c:1381
+msgid "The install root could not be set"
+msgstr "ਇੰਸਟਾਲ ਰੂਟ ਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
 msgid "The filter specified was invalid"
 msgstr "ਦਿੱਤਾ ਫਿਲਟਰ ਅਢੁੱਕਵਾਂ ਹੈ।"
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1396
+#: ../client/pk-console.c:1412
 msgid "A search type is required, e.g. name"
 msgstr "ਖੋਜ ਕਿਸਮ ਚਾਹੀਦੀ ਹੈ, ਜਿਵੇਂ ਨਾਂ"
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1403 ../client/pk-console.c:1415
-#: ../client/pk-console.c:1427 ../client/pk-console.c:1439
+#: ../client/pk-console.c:1419 ../client/pk-console.c:1431
+#: ../client/pk-console.c:1443 ../client/pk-console.c:1455
 msgid "A search term is required"
 msgstr "ਖੋਜ ਸ਼ਬਦ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1465
 msgid "Invalid search type"
 msgstr "ਗਲਤ ਖੋਜ ਟਾਈਪ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1455
+#: ../client/pk-console.c:1471
 msgid "A package name to install is required"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1464
+#: ../client/pk-console.c:1480
 msgid "A filename to install is required"
 msgstr "ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਇੱਕ ਫਾਇਲ ਨਾਂ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1476
+#: ../client/pk-console.c:1492
 msgid "A type, key_id and package_id are required"
 msgstr "ਟਾਈਪ, key_id ਜਾਂ package_id ਦੇਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1487
+#: ../client/pk-console.c:1503
 msgid "A package name to remove is required"
 msgstr "ਹਟਾਉਣ ਵਾਸਤੇ ਪੈਕੇਜ ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:1496
+#: ../client/pk-console.c:1512
 msgid "A destination directory and the package names to download are required"
 msgstr "ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਟਿਕਾਣਾ ਡਾਇਰੈਕਟਰੀ ਅਤੇ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1519
 msgid "Directory not found"
 msgstr "ਡਾਇਰੈਕਟਰੀ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1512
+#: ../client/pk-console.c:1528
 msgid "A licence identifier (eula-id) is required"
 msgstr "ਇੱਕ ਲਾਈਸੈਂਸ ਪਛਾਣਕਰਤਾ (eula-id) ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1523
+#: ../client/pk-console.c:1539
 msgid "A transaction identifier (tid) is required"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਪਛਾਣ (tid) ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:1544
+#: ../client/pk-console.c:1560
 msgid "A package name to resolve is required"
 msgstr "ਹੱਲ ਕਰਨ ਲਈ ਪੈਕੇਜ ਨਾਂ ਲਾਜ਼ਮੀ ਹੈ"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:1555 ../client/pk-console.c:1566
+#: ../client/pk-console.c:1571 ../client/pk-console.c:1582
 msgid "A repository name is required"
 msgstr "ਰਿਪੋਜ਼ਟਰੀ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:1577
+#: ../client/pk-console.c:1593
 msgid "A repo name, parameter and value are required"
 msgstr "ਰੈਪੋ ਨਾਂ, ਪੈਰਾਮੀਟਰ ਅਤੇ ਮੁੱਲ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:1594
+#: ../client/pk-console.c:1610
 msgid "An action, e.g. 'update-system' is required"
 msgstr "ਕਾਰਵਾਈ, ਜਿਵੇਂ 'ਅੱਪਡੇਟ-ਸਿਸਟਮ' ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:1601
+#: ../client/pk-console.c:1617
 msgid "A correct role is required"
 msgstr "ਠੀਕ ਰੋਲ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:1611 ../client/pk-console.c:1626
-#: ../client/pk-console.c:1635 ../client/pk-console.c:1655
-#: ../client/pk-console.c:1664 ../client/pk-generate-pack.c:316
+#: ../client/pk-console.c:1627 ../client/pk-console.c:1642
+#: ../client/pk-console.c:1651 ../client/pk-console.c:1671
+#: ../client/pk-console.c:1680 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
 msgstr "ਪੈਕੇਜ ਨਾਂ ਲੋੜੀਦਾ ਹੈ"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:1644
+#: ../client/pk-console.c:1660
 msgid "A package provide string is required"
 msgstr "ਪੈਕੇਜ ਦੇਣ ਵਾਲੀ ਸਤਰ ਲੋੜੀਦੀ ਹੈ"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:1724
+#: ../client/pk-console.c:1740
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ਚੋਣ '%s' ਸਹਾਇਕ ਨਹੀਂ ਹੈ"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:1734
+#: ../client/pk-console.c:1750
 msgid "Command failed"
 msgstr "ਕਮਾਂਡ ਫੇਲ੍ਹ ਹੈ"
 
@@ -1712,42 +1722,46 @@ msgid "Authentication is required to change software source parameters"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to change the location used to decompress packages"
+msgstr "ਪੈਕੇਜ ਡੀਕੰਪਰੈੱਸ ਕਰਨ ਲਈ ਟਿਕਾਣਾ ਬਦਲਣ ਵਾਸਤੇ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
 msgid ""
 "Authentication is required to consider a key used for signing packages as "
 "trusted"
 msgstr "ਪੈਕੇਜ ਟਰੱਸਟ ਕੀਤਾ ਬਣਾਉਣ ਲਈ ਸਾਈਨ ਵਾਸਤੇ ਕੁੰਜੀ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
 msgstr "ਸਾਈਨ ਕੀਤਾ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
 msgstr "ਅਣ-ਟਰੱਸਟ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
 msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "ਨਵੇਂ ਡਰਾਈਵਰ ਨਾਲ ਜੰਤਰ ਰੀਲੋਡ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
 msgstr "ਪੈਕੇਜ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
 msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਰੋਲਬੈਕ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr "ਪੈਕੇਜ ਡਾਊਨਲੋਡ ਕਰਨ ਵਾਸਤੇ ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
 msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
@@ -1756,16 +1770,26 @@ msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਪਰਮ�
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#: ../policy/org.freedesktop.packagekit.policy.in.h:26
 msgid "Cancel foreign task"
 msgstr "ਬਾਹਰੀ ਟਾਸਕ ਰੱਦ ਕਰੋ"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#.
+#: ../policy/org.freedesktop.packagekit.policy.in.h:33
+msgid "Change location that packages are installed"
+msgstr "ਟਿਕਾਣਾ ਬਦਲੋ, ਜਿੱਥੇ ਪੈਕੇਜ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾਂਦੇ ਹਨ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#: ../policy/org.freedesktop.packagekit.policy.in.h:39
 msgid "Change software source parameters"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲੋ"
 
@@ -1775,7 +1799,7 @@ msgstr "ਸਾਫਟਵੇਅਰ ਸਰੋਤ ਪੈਰਾਮੀਟਰ ਬਦਲ
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+#: ../policy/org.freedesktop.packagekit.policy.in.h:46
 msgid "Install signed package"
 msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
 
@@ -1785,7 +1809,7 @@ msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#: ../policy/org.freedesktop.packagekit.policy.in.h:53
 msgid "Install untrusted local file"
 msgstr "ਅਣ-ਟਰੱਸਟ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ"
 
@@ -1793,7 +1817,7 @@ msgstr "ਅਣ-ਟਰੱਸਟ ਲੋਕਲ ਫਾਇਲ ਇੰਸਟਾਲ"
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#: ../policy/org.freedesktop.packagekit.policy.in.h:58
 msgid "Refresh system sources"
 msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਕਰੋ"
 
@@ -1804,7 +1828,7 @@ msgstr "ਸਿਸਟਮ ਸਰੋਤ ਤਾਜ਼ਾ ਕਰੋ"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#: ../policy/org.freedesktop.packagekit.policy.in.h:66
 msgid "Reload a device"
 msgstr "ਜੰਤਰ ਮੁੜ-ਲੋਡ ਕਰੋ"
 
@@ -1817,7 +1841,7 @@ msgstr "ਜੰਤਰ ਮੁੜ-ਲੋਡ ਕਰੋ"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#: ../policy/org.freedesktop.packagekit.policy.in.h:76
 msgid "Remove package"
 msgstr "ਪੈਕੇਜ ਹਟਾਓ"
 
@@ -1826,7 +1850,7 @@ msgstr "ਪੈਕੇਜ ਹਟਾਓ"
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#: ../policy/org.freedesktop.packagekit.policy.in.h:82
 msgid "Rollback to a previous transaction"
 msgstr "ਪਿਛਲੀ ਟਰਾਂਸੈਕਸ਼ਨ ਰੋਲ-ਬੈਕ ਕਰੋ"
 
@@ -1834,7 +1858,7 @@ msgstr "ਪਿਛਲੀ ਟਰਾਂਸੈਕਸ਼ਨ ਰੋਲ-ਬੈਕ ਕ�
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#: ../policy/org.freedesktop.packagekit.policy.in.h:87
 msgid "Set network proxy"
 msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
 
@@ -1844,7 +1868,7 @@ msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#: ../policy/org.freedesktop.packagekit.policy.in.h:94
 msgid "Trust a key used for signing packages"
 msgstr "ਪੈਕੇਜ ਸਾਈਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱਤੇ ਟਰੱਸਟ"
 
@@ -1855,7 +1879,7 @@ msgstr "ਪੈਕੇਜ ਸਾਈਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱ�
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#: ../policy/org.freedesktop.packagekit.policy.in.h:102
 msgid "Update packages"
 msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ"
 
