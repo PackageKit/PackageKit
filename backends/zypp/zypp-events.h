@@ -114,7 +114,7 @@ struct ZyppBackendReceiver
 		first_dash_found = FALSE;
 		for (tmp--; tmp != basename; tmp--) {
 			if (tmp [0] == '-') {
-				if (first_dash_found == FALSE) {
+				if (!first_dash_found) {
 					first_dash_found = TRUE;
 					continue;
 				} else {

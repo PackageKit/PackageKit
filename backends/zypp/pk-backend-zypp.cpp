@@ -149,7 +149,7 @@ backend_get_requires_thread (PkBackend *backend)
 			}
 			g_strfreev (id_parts);
 
-			if (found == FALSE) {
+			if (!found) {
 				return zypp_backend_finished_error (
 					backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
 					"Package is not installed");
@@ -176,7 +176,7 @@ backend_get_requires_thread (PkBackend *backend)
 
 		solver.setForceResolve (true);
 
-		if (solver.resolvePool () == FALSE) {
+		if (!solver.resolvePool ()) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
 				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
@@ -321,7 +321,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 		pk_backend_set_percentage (backend, 40);
 
-		if (pool_item_found == FALSE) {
+		if (!pool_item_found) {
 			return zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 				"Did not find the specified package.");
@@ -1814,7 +1814,7 @@ backend_what_provides_thread (PkBackend *backend)
 		zypp::Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
 
-		if (solver.resolvePool () == FALSE) {
+		if (!solver.resolvePool ()) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
 				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());

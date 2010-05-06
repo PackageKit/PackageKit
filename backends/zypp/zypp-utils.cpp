@@ -71,7 +71,7 @@ class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
 
 	bool operator() (zypp::PoolItem provider)
 	{
-		if ((provider.status ().isLocked () == FALSE) && (!best || best->edition ().compare (provider->edition ()) < 0)) {
+		if (!provider.status ().isLocked () && (!best || best->edition ().compare (provider->edition ()) < 0)) {
 			best = provider;
 		}
 
@@ -92,7 +92,7 @@ get_zypp ()
 	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
 
 	        // TODO: Make this threadsafe
-	        if (initialized == FALSE) {
+	        if (!initialized) {
 		        zypp::filesystem::Pathname pathname("/");
 		        zypp->initializeTarget (pathname);
 
@@ -154,7 +154,7 @@ zypp_build_pool (gboolean include_local)
 {
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 
-	if (include_local == TRUE) {
+	if (include_local) {
 		//FIXME have to wait for fix in zypp (repeated loading of target)
 		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
 		{
@@ -746,7 +746,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
                 // Gather up any dependencies
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-		if (zypp->resolver ()->resolvePool () == FALSE) {
+		if (!zypp->resolver ()->resolvePool ()) {
                        // Manual intervention required to resolve dependencies
                        // TODO: Figure out what we need to do with PackageKit
                        // to pull off interactive problem solving.
@@ -754,7 +754,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			zypp::ResolverProblemList problems = zypp->resolver ()->problems ();
 			gchar * emsg = NULL, * tempmsg = NULL;
 
-			for (zypp::ResolverProblemList::iterator it = problems.begin (); it != problems.end (); it++){
+			for (zypp::ResolverProblemList::iterator it = problems.begin (); it != problems.end (); it++) {
 				if (emsg == NULL) {
 					emsg = g_strdup ((*it)->description ().c_str ());
 				}
@@ -984,10 +984,10 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 		try {
 			// Refreshing metadata
 			_repoName = g_strdup (repo.alias ().c_str ());
-			manager.refreshMetadata (repo, force == TRUE ?
+			manager.refreshMetadata (repo, force ?
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
-			manager.buildCache (repo, force == TRUE ?
+			manager.buildCache (repo, force ?
 				zypp::RepoManager::BuildForced :
 				zypp::RepoManager::BuildIfNeeded);
 		} catch (const zypp::Exception &ex) {
@@ -1050,8 +1050,8 @@ zypp_backend_pool_item_notify (PkBackend  *backend,
 		status = PK_INFO_ENUM_REMOVING;
 
 		const std::string &name = item.satSolvable().name();
-		egg_debug ("should we remove '%s'", name.c_str());
-		if (name == "glibc" || name == "gedit") {
+		if (name == "glibc" || name == "PackageKit" ||
+		    name == "rpm" || name == "libzypp") {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
 					       "The package %s is essential to correct operation and cannot be removed using this tool.",
 					       name.c_str());
