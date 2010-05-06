@@ -1,7 +1,4 @@
-%define glib2_version                   2.16.1
 %define dbus_version                    1.1.1
-%define dbus_glib_version               0.74
-%define polkit_version                  0.92
 %define alphatag                        #ALPHATAG#
 
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -23,17 +20,16 @@ Requires: comps-extras
 %if 0%{?rhel} == 0
 Requires: preupgrade
 %endif
-BuildRequires: polkit >= %{polkit_version}
 
-BuildRequires: glib2-devel >= %{glib2_version}
+BuildRequires: glib2-devel >= 2.16.1
 BuildRequires: dbus-devel  >= %{dbus_version}
-BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
+BuildRequires: dbus-glib-devel >= 0.74
 BuildRequires: pam-devel
 BuildRequires: libX11-devel
 BuildRequires: xmlto
 BuildRequires: sqlite-devel
-BuildRequires: NetworkManager-devel >= %{libnm_glib_version}
-BuildRequires: polkit-devel >= %{polkit_version}
+BuildRequires: NetworkManager-devel
+BuildRequires: polkit-devel >= 0.92
 BuildRequires: libtool
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
@@ -125,6 +121,7 @@ GLib libraries for accessing PackageKit.
 Summary: QT libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
+%{?_qt4_version:Requires: qt4%{?_isa} >= %{_qt4_version}}
 
 %description qt
 QT libraries for accessing PackageKit.
