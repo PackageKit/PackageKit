@@ -3402,8 +3402,8 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 {
 	PkResults *results;
 	gboolean ret = FALSE;
-	GPtrArray *package_array;
-	GPtrArray *message_array;
+	GPtrArray *package_array = NULL;
+	GPtrArray *message_array = NULL;
 	PkPackage *package;
 	PkMessage *message;
 	PkExitEnum exit_enum;
