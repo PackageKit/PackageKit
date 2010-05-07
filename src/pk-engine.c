@@ -390,6 +390,19 @@ pk_engine_get_distro_id (PkEngine *engine)
 		goto out;
 	}
 
+	/* check for meego */
+	ret = g_file_get_contents ("/etc/meego-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Meego release 1.0 (MeeGo) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("meego;%s;%s", split[2], arch);
+		goto out;
+	}
+
 	/* check for foresight or foresight derivatives */
 	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
 	if (ret) {
