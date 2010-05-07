@@ -5,6 +5,10 @@ progress reporting
 			+ but nothing more (?)
 		+ do we only notify on a 'sub' progress %age ?
 
+Root handling
+	+ get_zypp needs to handle multiple roots properly /
+	  more carefully.
+
 package updating
 	+ re-test patch updating carefully
 	+ ensure no packages overlap with patches etc.
@@ -23,4 +27,9 @@ NEWEST handling
 		+ where it can be shared & more generic
 		+ will require calculating 'newest' per package
 		+ which would make that method more efficient anyway
+
+PkBackend
+	+ if/when this is switched to a GObject - we need to sub-class
+	  and store our (currently) static pointers on it for elegance's
+	  sake - also to allow 'destroy' to do a better job there.
 

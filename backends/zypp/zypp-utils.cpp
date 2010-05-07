@@ -83,7 +83,7 @@ class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
  * Initialize Zypp (Factory method)
  */
 zypp::ZYpp::Ptr
-get_zypp ()
+get_zypp (PkBackend *backend)
 {
 	static gboolean initialized = FALSE;
         zypp::ZYpp::Ptr zypp = NULL;
@@ -91,9 +91,10 @@ get_zypp ()
         try {
 	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
 
-	        // TODO: Make this threadsafe
+		/* TODO: we need to lifecycle manage this, detect changes
+		   in the requested 'root' etc. */
 	        if (!initialized) {
-		        zypp::filesystem::Pathname pathname("/");
+			zypp::filesystem::Pathname pathname(pk_backend_get_root (backend));
 		        zypp->initializeTarget (pathname);
 
 		        initialized = TRUE;
@@ -134,7 +135,7 @@ zypp_logging ()
 }
 
 gboolean
-zypp_is_changeable_media (const zypp::Url &url)
+zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url)
 {
 	gboolean is_cd = false;
 	try {
@@ -150,9 +151,9 @@ zypp_is_changeable_media (const zypp::Url &url)
 }
 
 zypp::ResPool
-zypp_build_pool (gboolean include_local)
+zypp_build_pool (PkBackend *backend, gboolean include_local)
 {
-	zypp::ZYpp::Ptr zypp = get_zypp ();
+	zypp::ZYpp::Ptr zypp = get_zypp (backend);
 
 	if (include_local) {
 		//FIXME have to wait for fix in zypp (repeated loading of target)
@@ -216,11 +217,16 @@ warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool)
 	}
 }
 
+
+#if 0 // apparently unused
+/**
+ * Build and return a ResPool that contains only the local resolvables.
+ */
 zypp::ResPool
-zypp_build_local_pool ()
+zypp_build_local_pool (PkBackend *backend)
 {
 	zypp::sat::Pool pool = zypp::sat::Pool::instance ();
-	zypp::ZYpp::Ptr zypp = get_zypp ();
+	zypp::ZYpp::Ptr zypp = get_zypp (backend);
 
 	try {
 		for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
@@ -242,6 +248,7 @@ zypp_build_local_pool ()
         return zypp->pool ();
 
 }
+#endif
 
 zypp::target::rpm::RpmHeader::constPtr
 zypp_get_rpmHeader (std::string name, zypp::Edition edition)
@@ -329,11 +336,12 @@ get_enum_group (std::string group)
 }
 
 std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local)
+zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
+			   const zypp::ResKind kind, gboolean include_local)
 {
 	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-	zypp::ResPool pool = zypp_build_pool (include_local);
+	zypp::ResPool pool = zypp_build_pool (backend, include_local);
 
         for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
                         it != pool.byIdentEnd (kind, package_name); it++) {
@@ -344,11 +352,11 @@ zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, 
 }
 
 std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_file (const gchar *search_file)
+zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file)
 {
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-        zypp::ResPool pool = zypp_build_pool (TRUE);
+        zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 
         std::string file (search_file);
 
@@ -375,7 +383,7 @@ zypp_get_packages_by_file (const gchar *search_file)
 }
 
 zypp::sat::Solvable
-zypp_get_package_by_id (const gchar *package_id)
+zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
 {
 	if (!pk_package_id_check(package_id)) {
 		// TODO: Do we need to do something more for this error?
@@ -383,8 +391,8 @@ zypp_get_package_by_id (const gchar *package_id)
 	}
 
 	gchar **id_parts = pk_package_id_split(package_id);
-	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
+	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
+	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
 
 	v->insert (v->end (), v2->begin (), v2->end ());
 
@@ -681,13 +689,13 @@ zypp_get_package_updates (std::string repo)
  * Returns a set of all patches the could be installed
  */
 static std::set<zypp::PoolItem> *
-zypp_get_patches ()
+zypp_get_patches (PkBackend *backend)
 {
         std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
 	_updating_self = FALSE;
 
         zypp::ZYpp::Ptr zypp;
-        zypp = get_zypp ();
+        zypp = get_zypp (backend);
 
 	zypp->resolver ()->resolvePool ();
 
@@ -718,11 +726,11 @@ zypp_get_patches ()
 }
 
 std::set<zypp::PoolItem> *
-zypp_get_updates ()
+zypp_get_updates (PkBackend *backend)
 {
 	typedef std::set<zypp::PoolItem>::iterator pi_it_t;
 
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches (backend);
 
 	if (!_updating_self) {
 		// exclude the patch-repository
@@ -788,7 +796,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 	gboolean simulate = pk_backend_get_bool (backend, "hint:simulate");
 
         try {
-                zypp::ZYpp::Ptr zypp = get_zypp ();
+                zypp::ZYpp::Ptr zypp = get_zypp (backend);
 
                 if (force)
                         zypp->resolver ()->setForceResolve (force);
@@ -945,7 +953,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
  exit:
 	/* reset the various options */
         try {
-                zypp::ZYpp::Ptr zypp = get_zypp ();
+                zypp::ZYpp::Ptr zypp = get_zypp (backend);
 		zypp->resolver ()->setForceResolve (FALSE);
 		if (type == UPDATE)
 			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);
@@ -994,7 +1002,8 @@ zypp_build_package_id_capabilities (zypp::Capabilities caps)
 gboolean
 zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
-	get_zypp ();  //This call is needed as it calls initializeTarget which appears to properly setup the keyring
+	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
+	get_zypp (backend);
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		return FALSE;
@@ -1031,7 +1040,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 
 		// skip changeable meda (DVDs and CDs).  Without doing this,
 		// the disc would be required to be physically present.
-		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
+		if (zypp_is_changeable_media (backend, *repo.baseUrlsBegin ()) == true)
 			continue;
 
 		try {

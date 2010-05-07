@@ -76,30 +76,25 @@ extern gboolean _updating_self;
   */
 extern gchar *_repoName;
 
-zypp::ZYpp::Ptr get_zypp ();
+zypp::ZYpp::Ptr get_zypp (PkBackend *backend);
 
 /**
   * Enable and rotate logging
   */
 gboolean zypp_logging ();
 
-gboolean zypp_is_changeable_media (const zypp::Url &url);
+gboolean zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url);
 
 /**
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.
  */
-zypp::ResPool zypp_build_pool (gboolean include_local);
+zypp::ResPool zypp_build_pool (PkBackend *backend, gboolean include_local);
 
 /**
 * check and warns the user that a repository may be outdated
 */
 void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
-
-/**
- * Build and return a ResPool that contains only the local resolvables.
- */
-zypp::ResPool zypp_build_local_pool ();
 
 /**
   * Return the rpmHeader of a package
@@ -119,17 +114,18 @@ PkGroupEnum get_enum_group (std::string group);
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
+							      const zypp::ResKind kind, gboolean include_local);
 
 /**
  * Returns a list of packages that owns the specified file.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_file (const gchar *search_file);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file);
 
 /**
  * Returns the Resolvable for the specified package_id.
  */
-zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
+zypp::sat::Solvable zypp_get_package_by_id (PkBackend *backend, const gchar *package_id);
 
 /**
  * Build a package_id from the specified resolvable.  The returned
@@ -168,7 +164,7 @@ zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::Poo
   * we can find. Also manages _updating_self to prioritise critical infrastructure
   * updates.
   */
-std::set<zypp::PoolItem> * zypp_get_updates ();
+std::set<zypp::PoolItem> * zypp_get_updates (PkBackend *backend);
 
 /**
   * Sets the restart flag of a patch

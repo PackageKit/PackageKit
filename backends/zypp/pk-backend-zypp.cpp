@@ -83,7 +83,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
-	get_zypp ();
+	get_zypp (backend);
 	egg_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
@@ -131,11 +131,11 @@ backend_get_requires_thread (PkBackend *backend)
 	//pk_backend_set_percentage (backend, 0);
 
 	for (uint i = 0; package_ids[i]; i++) {
-		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		zypp::sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		zypp::PoolItem package;
 
 		if (solvable.isSystem ()) {
-			zypp::ResPool pool = zypp_build_pool (true);
+			zypp::ResPool pool = zypp_build_pool (backend, true);
 
 			gboolean found = FALSE;
 			gchar **id_parts = pk_package_id_split (package_ids[i]);
@@ -285,7 +285,7 @@ backend_get_depends_thread (PkBackend *backend)
 	}
 
 	zypp::ZYpp::Ptr zypp;
-	zypp = get_zypp ();
+	zypp = get_zypp (backend);
 
 	egg_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
 
@@ -294,7 +294,7 @@ backend_get_depends_thread (PkBackend *backend)
 		gchar **id_parts = pk_package_id_split (package_ids[0]);
 		pk_backend_set_percentage (backend, 20);
 		// Load resolvables from all the enabled repositories
-		zypp::ResPool pool = zypp_build_pool(true);
+		zypp::ResPool pool = zypp_build_pool (backend, true);
 
 		zypp::PoolItem pool_item;
 		gboolean pool_item_found = FALSE;
@@ -457,9 +457,9 @@ backend_get_details_thread (PkBackend *backend)
 		std::vector<zypp::sat::Solvable> *v;
 		std::vector<zypp::sat::Solvable> *v2;
 		std::vector<zypp::sat::Solvable> *v3;
-		v = zypp_get_packages_by_name ((const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-		v2 = zypp_get_packages_by_name ((const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
-		v3 = zypp_get_packages_by_name ((const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
+		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
+		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
+		v3 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
 
 		v->insert (v->end (), v2->begin (), v2->end ());
 		v->insert (v->end (), v3->begin (), v3->end ());
@@ -631,13 +631,13 @@ backend_get_updates_thread (PkBackend *backend)
 		return FALSE;
 	}
 
-	zypp::ResPool pool = zypp_build_pool (TRUE);
+	zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 	pk_backend_set_percentage (backend, 40);
 
 	// check if the repositories may be dead (feature #301904)
 	warn_outdated_repos (backend, pool);
 
-	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_updates (backend);
 
 	pk_backend_set_percentage (backend, 80);
 
@@ -734,7 +734,7 @@ backend_install_files_thread (PkBackend *backend)
 		tmpRepo.setAutorefresh (true);
 		tmpRepo.setAlias ("PK_TMP_DIR");
 		tmpRepo.setName ("PK_TMP_DIR");
-		zypp_build_pool(true);
+		zypp_build_pool (backend, true);
 
 		// add Repo to pool
 
@@ -759,7 +759,7 @@ backend_install_files_thread (PkBackend *backend)
 
 		// look for the packages and set them to toBeInstalled
 		std::vector<zypp::sat::Solvable> *solvables = 0;
-		solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
+		solvables = zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
 		zypp::PoolItem *item = NULL;
 		gboolean found = FALSE;
 
@@ -828,7 +828,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	for (uint i = 0; package_ids[i]; i++) {
-		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		zypp::sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 
 		zypp::Capabilities obs = solvable.obsoletes ();
 
@@ -913,11 +913,11 @@ backend_update_system_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 0);
 
 	/* FIXME: support only_trusted */
-	zypp::ResPool pool = zypp_build_pool (TRUE);
+	zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 	pk_backend_set_percentage (backend, 40);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_updates (backend);
 
 	if (_updating_self) {
 		_updating_self = FALSE;
@@ -967,7 +967,7 @@ backend_install_packages_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 0);
 
 	zypp::ZYpp::Ptr zypp;
-	zypp = get_zypp ();
+	zypp = get_zypp (backend);
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -978,7 +978,7 @@ backend_install_packages_thread (PkBackend *backend)
 
 	try
 	{
-		zypp::ResPool pool = zypp_build_pool (TRUE);
+		zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 		pk_backend_set_percentage (backend, 10);
 		std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
@@ -1118,7 +1118,7 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	zypp::Target_Ptr target;
 	zypp::ZYpp::Ptr zypp;
-	zypp = get_zypp ();
+	zypp = get_zypp (backend);
 
 	target = zypp->target ();
 
@@ -1204,11 +1204,11 @@ backend_resolve_thread (PkBackend *backend)
 		std::vector<zypp::sat::Solvable> *v;
 
 		/* Build a list of packages with this name */
-		v = zypp_get_packages_by_name (package_ids[i], zypp::ResKind::package, TRUE);
+		v = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::package, TRUE);
 
 		if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_SOURCE)) {
 			std::vector<zypp::sat::Solvable> *src;
-			src = zypp_get_packages_by_name (package_ids[i], zypp::ResKind::srcpackage, TRUE);
+			src = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::srcpackage, TRUE);
 			v->insert (v->end (), src->begin (), src->end ());
 			delete (src);
 		}
@@ -1285,35 +1285,35 @@ backend_find_packages_thread (PkBackend *backend)
 	q.setMatchSubstring();
 
 	switch (mode) {
-		case SEARCH_TYPE_NAME:
-			zypp_build_pool (TRUE); // seems to be necessary?
-			q.addKind( zypp::ResKind::package );
-			q.addKind( zypp::ResKind::srcpackage );
-			q.addAttribute( zypp::sat::SolvAttr::name );
-			// Note: The query result is NOT sorted packages first, then srcpackage.
-			// If that's necessary you need to sort the vector accordongly or use
-			// two separate queries.
-			break;
-		case SEARCH_TYPE_DETAILS:
-			zypp_build_pool (TRUE); // seems to be necessary?
-			q.addKind( zypp::ResKind::package );
-			//q.addKind( zypp::ResKind::srcpackage );
-			q.addAttribute( zypp::sat::SolvAttr::name );
-			q.addAttribute( zypp::sat::SolvAttr::description );
-			// Note: Don't know if zypp_get_packages_by_details intentionally
-			// did not search in srcpackages.
-			break;
-		case SEARCH_TYPE_FILE:
-			{
-			  // zypp_build_pool (TRUE); called by zypp_get_packages_by_file
-			  std::vector<zypp::sat::Solvable> * r = zypp_get_packages_by_file (search);
-			  v.swap( *r );
-			  delete r;
-			  // zypp_get_packages_by_file does strange things :)
-			  // Maybe it would be sufficient to simply query
-			  // zypp::sat::SolvAttr::filelist instead?
-			}
-			break;
+	case SEARCH_TYPE_NAME:
+		zypp_build_pool (backend, TRUE); // seems to be necessary?
+		q.addKind( zypp::ResKind::package );
+		q.addKind( zypp::ResKind::srcpackage );
+		q.addAttribute( zypp::sat::SolvAttr::name );
+		// Note: The query result is NOT sorted packages first, then srcpackage.
+		// If that's necessary you need to sort the vector accordongly or use
+		// two separate queries.
+		break;
+	case SEARCH_TYPE_DETAILS:
+		zypp_build_pool (backend, TRUE); // seems to be necessary?
+		q.addKind( zypp::ResKind::package );
+		//q.addKind( zypp::ResKind::srcpackage );
+		q.addAttribute( zypp::sat::SolvAttr::name );
+		q.addAttribute( zypp::sat::SolvAttr::description );
+		// Note: Don't know if zypp_get_packages_by_details intentionally
+		// did not search in srcpackages.
+		break;
+	case SEARCH_TYPE_FILE: {
+		// zypp_build_pool (TRUE); called by zypp_get_packages_by_file
+		std::vector<zypp::sat::Solvable> *r;
+		r = zypp_get_packages_by_file (backend, search);
+		v.swap( *r );
+		delete r;
+		// zypp_get_packages_by_file does strange things :)
+		// Maybe it would be sufficient to simply query
+		// zypp::sat::SolvAttr::filelist instead?
+		break;
+	    }
 	};
 
 	if ( ! q.empty() ) {
@@ -1362,7 +1362,7 @@ backend_search_group_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
-	zypp::ResPool pool = zypp_build_pool(true);
+	zypp::ResPool pool = zypp_build_pool (backend, true);
 
 	pk_backend_set_percentage (backend, 30);
 
@@ -1493,8 +1493,8 @@ backend_get_files_thread (PkBackend *backend)
 
 		std::vector<zypp::sat::Solvable> *v;
 		std::vector<zypp::sat::Solvable> *v2;
-		v = zypp_get_packages_by_name ((const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-		v2 = zypp_get_packages_by_name ((const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
+		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
+		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
 
 		v->insert (v->end (), v2->begin (), v2->end ());
 
@@ -1563,7 +1563,7 @@ backend_get_packages_thread (PkBackend *backend)
 
 	std::vector<zypp::sat::Solvable> v;
 
-	zypp_build_pool (TRUE);
+	zypp_build_pool (backend, TRUE);
 	zypp::ResPool pool = zypp::ResPool::instance ();
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
 		v.push_back (it->satSolvable ());
@@ -1592,7 +1592,7 @@ backend_update_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	delete zypp_get_updates (); // make sure _updating_self is set
+	delete zypp_get_updates (backend); // make sure _updating_self is set
 
 	if (_updating_self) {
 		egg_debug ("updating self and setting restart");
@@ -1600,7 +1600,7 @@ backend_update_packages_thread (PkBackend *backend)
 		_updating_self = FALSE;
 	}
 	for (guint i = 0; package_ids[i]; i++) {
-		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		zypp::sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item.resolvable ());
@@ -1781,7 +1781,7 @@ backend_what_provides_thread (PkBackend *backend)
 
 	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 		// solver run
-		zypp::ResPool pool = zypp_build_pool(true);
+		zypp::ResPool pool = zypp_build_pool (backend, true);
 		zypp::Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
 
