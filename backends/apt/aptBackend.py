@@ -279,7 +279,7 @@ class DpkgInstallProgress(apt.progress.InstallProgress):
             pkg = statusl[1].strip()
             #print status
             if status == "error":
-                self.error(pkg, status)
+                self.error(pkg, format_string(status))
             elif status == "conffile-prompt":
                 # we get a string like this:
                 # 'current-conffile' 'new-conffile' useredited distedited
@@ -586,7 +586,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 result_names.update(stdout.split())
                 self._emit_visible_packages_by_name(filters, result_names)
             else:
-                self.error(ERROR_INTERNAL_ERROR, "%s %s" % (stdout, stderr))
+                self.error(ERROR_INTERNAL_ERROR,
+                           format_string("%s %s" % (stdout, stderr)))
         # Search for installed files
         filenames_regex = []
         for filename in filenames:
@@ -909,8 +910,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             cve_url = ";;".join(get_cve_urls(changelog))
             self.update_detail(pkg_id, updates, obsoletes, vendor_url,
                                bugzilla_url, cve_url, restart,
-                               update_text.replace("\n", ";"),
-                               changelog.replace("\n", ";"),
+                               format_string(update_text),
+                               format_string(changelog),
                                state, issued, updated)
 
     def get_details(self, pkg_ids):
@@ -934,7 +935,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 license = "unknown"
             group = self._get_package_group(pkg)
             self.details(pkg_id, license, group,
-                         pkg.description.replace("\n", ";"),
+                         format_string(pkg.description),
                          pkg.homepage.decode(DEFAULT_ENCODING),
                          pkg.packageSize)
 
@@ -1347,7 +1348,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             try:
                 ver.fetch_binary(dest, progress)
             except Exception, error:
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, error.message)
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
+                           format_string(error.message))
             else:
                 self.files(id, os.path.join(dest,
                                             os.path.basename(ver.filename)))
@@ -1441,7 +1443,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             deb = apt.debfile.DebPackage(path, self._cache)
             packages.append(deb)
             if not deb.check():
-                self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
+                self.error(ERROR_LOCAL_INSTALL_FAILED,
+                           format_string(deb._failureString))
             (install, remove, unauthenticated) = deb.required_changes
             pklog.debug("Changes: Install %s, Remove %s, Unauthenticated "
                         "%s" % (install, remove, unauthenticated))
@@ -1466,17 +1469,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except InstallTimeOutPKError, e:
             self._recover()
             #FIXME: should provide more information
-            self.error(ERROR_INTERNAL_ERROR,
-                       "Transaction was cancelled since the installation "
-                       "of a package hung.\n"
-                       "This can be caused by maintainer scripts which "
-                       "require input on the terminal:\n%s" % e.message)
+            msg = "Transaction was cancelled since the installation " \
+                  "of a package hung.\n" \
+                  "This can be caused by maintainer scripts which " \
+                  "require input on the terminal:\n%s" % e.message
+            self.error(ERROR_INTERNAL_ERROR, format_string(msg))
         except PackageManagerFailedPKError, e:
             self._recover()
-            self.error(ERROR_INTERNAL_ERROR, "%s\n%s" % (e.message, e.output))
+            self.error(ERROR_INTERNAL_ERROR,
+                       format_string("%s\n%s" % (e.message, e.output)))
         except Exception, e:
             self._recover()
-            self.error(ERROR_INTERNAL_ERROR, e.message)
+            self.error(ERROR_INTERNAL_ERROR, format_string(e.message))
         self.percentage(100)
 
     def simulate_install_files(self, inst_files):
@@ -1494,7 +1498,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             deb = apt.debfile.DebPackage(path, self._cache)
             pkgs.append(deb.pkgname)
             if not deb.check():
-                self.error(ERROR_LOCAL_INSTALL_FAILED, deb._failureString)
+                self.error(ERROR_LOCAL_INSTALL_FAILED,
+                           format_string(deb._failureString))
         self._emit_changes(pkgs)
 
     @lock_cache
@@ -1863,24 +1868,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             self._cache.commit(PackageKitFetchProgress(self, fetch_range), 
                                PackageKitInstallProgress(self, install_range))
-        except apt.cache.FetchFailedException, e:
+        except apt.cache.FetchFailedException, err:
             self._open_cache(prange=(95,100))
-            pklog.critical(format_string(e.message))
-            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, format_string(e.message))
+            pklog.critical(format_string(err.message))
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
+                       format_string(err.message))
         except apt.cache.FetchCancelledException:
             self._open_cache(prange=(95,100))
-        except InstallTimeOutPKError, e:
+        except InstallTimeOutPKError, err:
             self._recover()
             self._open_cache(prange=(95,100))
             #FIXME: should provide more information
-            self.error(ERROR_INTERNAL_ERROR,
-                       "Transaction was cancelled since the installation "
-                       "of a package hung.\n"
-                       "This can be caused by maintainer scripts which "
-                       "require input on the terminal:\n%s" % e.message)
-        except PackageManagerFailedPKError, e:
+            msg = "Transaction was cancelled since the installation " \
+                  "of a package hung.\n" \
+                  "This can be caused by maintainer scripts which " \
+                  "require input on the terminal:\n%s" % err.message
+            self.error(ERROR_INTERNAL_ERROR, format_string(msg))
+        except PackageManagerFailedPKError, err:
             self._recover()
-            self.error(ERROR_INTERNAL_ERROR, "%s\n%s" % (e.message, e.output))
+            self.error(ERROR_INTERNAL_ERROR,
+                       format_string("%s\n%s" % (err.message, err.output)))
         else:
             return True
         return False
