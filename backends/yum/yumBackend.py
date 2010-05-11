@@ -237,8 +237,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         config = ConfigParser.ConfigParser()
         try:
             config.read('/etc/PackageKit/Yum.conf')
+        except Exception, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
+
+        # if this key does not exist, it's not fatal
+        try:
             self.system_packages = config.get('Backend', 'SystemPackages').split(';')
+        except ConfigParser.NoOptionError, e:
+            self.system_packages = []
+        except Exception, e:
+            raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
+        try:
             self.infra_packages = config.get('Backend', 'InfrastructurePackages').split(';')
+        except ConfigParser.NoOptionError, e:
+            self.infra_packages = []
         except Exception, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
 
@@ -3219,6 +3231,8 @@ class PackageKitYumBase(yum.YumBase):
         try:
             config.read('/etc/PackageKit/Yum.conf')
             disabled_plugins = config.get('Backend', 'DisabledPlugins').split(';')
+        except ConfigParser.NoOptionError, e:
+            disabled_plugins = []
         except Exception, e:
             raise PkError(ERROR_REPO_CONFIGURATION_ERROR, "Failed to load Yum.conf: %s" % _to_unicode(e))
         disabled_plugins.append('refresh-packagekit')
