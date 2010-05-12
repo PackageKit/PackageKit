@@ -98,7 +98,6 @@ struct PkEnginePrivate
 #ifdef USE_SECURITY_POLKIT
 	PolkitAuthority		*authority;
 #endif
-	gchar			*sender;
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
 };
@@ -962,7 +961,7 @@ out:
  * pk_engine_set_root_internal:
  **/
 static gboolean
-pk_engine_set_root_internal (PkEngine *engine, const gchar *root)
+pk_engine_set_root_internal (PkEngine *engine, const gchar *root, const gchar *sender)
 {
 	gboolean ret;
 	guint uid;
@@ -976,14 +975,14 @@ pk_engine_set_root_internal (PkEngine *engine, const gchar *root)
 	}
 
 	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, engine->priv->sender);
+	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
 		egg_warning ("failed to get the uid");
 		goto out;
 	}
 
 	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, engine->priv->sender);
+	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
 		egg_warning ("failed to get the session");
 		goto out;
@@ -1034,7 +1033,7 @@ pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authori
 	}
 
 	/* try to set the new root and save to database */
-	ret = pk_engine_set_root_internal (state->engine, state->value1);
+	ret = pk_engine_set_root_internal (state->engine, state->value1, state->sender);
 	if (!ret) {
 		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "setting the root failed");
@@ -1149,9 +1148,22 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 		goto out;
 	}
 
+	/* '/' is the default root, which doesn't need additional authentication */
+	if (g_strcmp0 (root, "/") == 0) {
+		ret = pk_engine_set_root_internal (engine, root, sender);
+		if (ret) {
+			egg_debug ("using default root, so no need to authenticate");
+			dbus_g_method_return (context);
+		} else {
+			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
+			dbus_g_method_return_error (context, error);
+		}
+		goto out;
+	}
+
 #ifdef USE_SECURITY_POLKIT
 	/* check subject */
-	subject = polkit_system_bus_name_new (engine->priv->sender);
+	subject = polkit_system_bus_name_new (sender);
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
@@ -1179,14 +1191,14 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new root and save to database */
-	ret = pk_engine_set_root_internal (engine, root);
+	ret = pk_engine_set_root_internal (engine, root, sender);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
 		dbus_g_method_return_error (context, error);
 		goto out;
 	}
 
-	/* all okay, TODO: return only when done the polkit auth */
+	/* all okay */
 	dbus_g_method_return (context);
 #endif
 
