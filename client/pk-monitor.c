@@ -103,6 +103,29 @@ pk_monitor_message_cb (PkMessage *item, const gchar *transaction_id)
 }
 
 /**
+ * pk_monitor_media_change_required_cb:
+ **/
+static void
+pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *transaction_id)
+{
+	gchar *id;
+	gchar *text;
+	PkMediaTypeEnum type;
+
+	/* get data */
+	g_object_get (item,
+		      "media-type", &type,
+		      "media-id", &id,
+		      "media-text", &text,
+		      NULL);
+
+	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
+		 transaction_id, pk_media_type_enum_to_string (type), id, text);
+	g_free (id);
+	g_free (text);
+}
+
+/**
  * pk_monitor_adopt_cb:
  **/
 static void
@@ -114,7 +137,8 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	PkExitEnum exit_enum;
 	gchar *transaction_id = NULL;
 	PkError *error_code = NULL;
-	GPtrArray *array = NULL;
+	GPtrArray *message_array = NULL;
+	GPtrArray *media_array = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -138,8 +162,12 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_string (exit_enum));
 
 	/* message */
-	array = pk_results_get_message_array (results);
-	g_ptr_array_foreach (array, (GFunc) pk_monitor_message_cb, transaction_id);
+	message_array = pk_results_get_message_array (results);
+	g_ptr_array_foreach (message_array, (GFunc) pk_monitor_message_cb, transaction_id);
+
+	/* media change required */
+	media_array = pk_results_get_media_change_required_array (results);
+	g_ptr_array_foreach (media_array, (GFunc) pk_monitor_media_change_required_cb, transaction_id);
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
@@ -147,8 +175,10 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 		g_print ("%s\terror code: %s, %s\n", transaction_id, pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
 out:
 	g_free (transaction_id);
-	if (array != NULL)
-		g_ptr_array_unref (array);
+	if (message_array != NULL)
+		g_ptr_array_unref (message_array);
+	if (media_array != NULL)
+		g_ptr_array_unref (media_array);
 	if (error_code != NULL)
 		g_object_unref (error_code);
 	if (progress != NULL)
