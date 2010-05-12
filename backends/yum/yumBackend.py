@@ -2962,7 +2962,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # disable repos that are not contactable
         for repo in self.yumbase.repos.listEnabled():
             try:
-                repo.repoXML
+                if not repo.mediaid:
+                    repo.repoXML
+                else:
+                    root = self.yumbase._media_find_root(repo.mediaid)
+                    if not root:
+                        self.yumbase.repos.disableRepo(repo.id)
+                        self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
+                                     "Could not contact media source '%s', so it will be disabled" % repo.id)
             except exceptions.IOError, e:
                 self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
             except yum.Errors.RepoError, e:
@@ -3268,15 +3275,8 @@ class PackageKitYumBase(yum.YumBase):
             else:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def MediaGrabber(self, *args, **kwargs):
-        """
-        Handle physical media.
-        """
-        media_id = kwargs["mediaid"]
-        disc_number = kwargs["discnum"]
-        name = kwargs["name"]
-        found = False
-        print kwargs
+    def _media_find_root(self, media_id, disc_number=1):
+        """ returns the root "/media/Fedora Extras" or None """
 
         # search all the disks
         vm = gio.volume_monitor_get()
@@ -3302,7 +3302,17 @@ class PackageKitYumBase(yum.YumBase):
                 continue
             if disc_number_tmp != disc_number:
                 continue
+            return root
 
+        # nothing remaining
+        return None
+
+    def MediaGrabber(self, *args, **kwargs):
+        """
+        Handle physical media.
+        """
+        root = self._media_find_root(kwargs["mediaid"], kwargs["discnum"])
+        if root:
             # the actual copying is done by URLGrabber
             ug = URLGrabber(checkfunc = kwargs["checkfunc"])
             try:
@@ -3311,12 +3321,10 @@ class PackageKitYumBase(yum.YumBase):
                            range=kwargs["range"], copy_local=1)
             except (IOError, URLGrabError), e:
                 pass
-            else:
-                found = True
-            break;
 
         # we have to send a message to the client
-        if not found:
+        if not root:
+            name = kwargs["name"]
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,

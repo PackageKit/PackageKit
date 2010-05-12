@@ -44,6 +44,7 @@ typedef struct {
 	ZifCompletion	*completion;
 	ZifLock		*lock;
 	GTimer		*timer;
+	GVolumeMonitor	*volume_monitor;
 } PkBackendYumPrivate;
 
 static PkBackendYumPrivate *priv;
@@ -601,6 +602,47 @@ out:
 }
 
 /**
+ * backend_mount_add:
+ */
+static void
+backend_mount_add (GMount *mount, gpointer user_data)
+{
+	GFile *root;
+	GFile *repo;
+	GFile *dest;
+	gchar *root_path;
+	gchar *repo_path;
+	gboolean ret;
+	GError *error = NULL;
+
+	/* check if any installed media is an install disk */
+	root = g_mount_get_root (mount);
+	root_path = g_file_get_path (root);
+	repo_path = g_build_filename (root_path, "media.repo", NULL);
+	repo = g_file_new_for_path (repo_path);
+	dest = g_file_new_for_path ("/etc/yum.repos.d/packagekit-media.repo");
+
+	/* media.repo exists */
+	ret = g_file_query_exists (repo, NULL);
+	egg_warning ("checking for %s: %s", repo_path, ret ? "yes" : "no");
+	if (!ret)
+		goto out;
+
+	/* copy to the system repo dir */
+	ret = g_file_copy (repo, dest, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error);
+	if (!ret) {
+		egg_warning ("failed to copy: %s", error->message);
+		g_error_free (error);
+	}
+out:
+	g_free (root_path);
+	g_free (repo_path);
+	g_object_unref (dest);
+	g_object_unref (root);
+	g_object_unref (repo);
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -612,6 +654,7 @@ backend_initialize (PkBackend *backend)
 	GError *error = NULL;
 	GKeyFile *key_file = NULL;
 	gchar *config_file = NULL;
+	GList *mounts;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -622,6 +665,13 @@ backend_initialize (PkBackend *backend)
 	pk_backend_spawn_set_filter_stdout (priv->spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");
 	pk_backend_spawn_set_allow_sigkill (priv->spawn, FALSE);
+
+	/* coldplug the mounts */
+	priv->volume_monitor = g_volume_monitor_get ();
+	mounts = g_volume_monitor_get_mounts (priv->volume_monitor);
+	g_list_foreach (mounts, (GFunc) backend_mount_add, NULL);
+	g_list_foreach (mounts, (GFunc) g_object_unref, NULL);
+	g_list_free (mounts);
 
 	/* setup a file monitor on the repos directory */
 	file = g_file_new_for_path (YUM_REPOS_DIRECTORY);
@@ -748,6 +798,8 @@ backend_destroy (PkBackend *backend)
 		g_object_unref (priv->lock);
 	if (priv->timer != NULL)
 		g_timer_destroy (priv->timer);
+	if (priv->volume_monitor != NULL)
+		g_object_unref (priv->volume_monitor);
 	g_free (priv);
 }
 
