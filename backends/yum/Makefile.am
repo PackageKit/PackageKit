@@ -4,7 +4,6 @@ dist_helper_DATA = 			\
 	licenses.txt			\
 	yumBackend.py			\
 	yumComps.py			\
-	yumMediaManager.py		\
 	yumFilter.py
 
 INCLUDES = \
