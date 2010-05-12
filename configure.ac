@@ -636,48 +636,21 @@ AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend pr
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 if test x$enable_yum = xyes; then
-	PKG_CHECK_MODULES(SQLITE, sqlite3)
-	PKG_CHECK_MODULES(RPM, rpm)
-	PKG_CHECK_MODULES(SOUP, libsoup-2.4)
-
 	dnl ---------------------------------------------------------------------------
-	dnl - libarchive
+	dnl - Zif is an experimental library for direct metadata access
 	dnl ---------------------------------------------------------------------------
-	AC_CHECK_HEADERS(archive.h,
-			 HAVE_ARCHIVE_H="yes",
-			 HAVE_ARCHIVE_H="no")
-	if test "x$HAVE_ARCHIVE_H" = "xyes"; then
-		ARCHIVE_LIBS=-larchive
-		AC_SUBST(ARCHIVE_LIBS)
+	AC_ARG_ENABLE(zif, AS_HELP_STRING([--enable-zif],[Build ZIF experimental code]),
+		      enable_zif=$enableval,enable_zif=yes)
+	if test x$enable_zif = xyes; then
+		PKG_CHECK_MODULES(ZIF, zif,
+			          build_zif=yes, build_zif=no)
 	else
-		AC_MSG_ERROR([Cannot find archive.h])
+		build_zif=no
 	fi
-
-	dnl ---------------------------------------------------------------------------
-	dnl - libbzip2
-	dnl ---------------------------------------------------------------------------
-	AC_CHECK_HEADERS(bzlib.h,
-			 HAVE_BZLIB_H="yes",
-			 HAVE_BZLIB_H="no")
-	if test "x$HAVE_BZLIB_H" = "xyes"; then
-		BZLIB_LIBS=-lbz2
-		AC_SUBST(BZLIB_LIBS)
-	else
-		AC_MSG_ERROR([Cannot find bzlib.h])
+	if test "x$build_zif" = "xyes"; then
+		AC_DEFINE([HAVE_ZIF], [1], [If Zif support should be enabled])
 	fi
-
-	dnl ---------------------------------------------------------------------------
-	dnl - zlib
-	dnl ---------------------------------------------------------------------------
-	AC_CHECK_HEADERS(zlib.h,
-			 HAVE_ZLIB_H="yes",
-			 HAVE_ZLIB_H="no")
-	if test "x$HAVE_BZLIB_H" = "xyes"; then
-		ZLIB_LIBS=-lz
-		AC_SUBST(ZLIB_LIBS)
-	else
-		AC_MSG_ERROR([Cannot find zlib.h])
-	fi
+	AM_CONDITIONAL(PK_BUILD_ZIF, test $build_zif = "yes")
 fi
 
 if test x$enable_apt = xyes; then
@@ -902,6 +875,7 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
+          (with zif):              ${build_zif}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "

@@ -19,11 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+//#include <config.h>
 #include <gio/gio.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <string.h>
+
+#ifdef HAVE_ZIF
 #include <zif.h>
+#endif
 
 #define PREUPGRADE_BINARY			"/usr/bin/preupgrade"
 #define YUM_REPOS_DIRECTORY			"/etc/yum.repos.d"
@@ -36,6 +40,7 @@ typedef struct {
 	GFileMonitor	*monitor;
 	GCancellable	*cancellable;
 	gboolean	 use_zif;
+#ifdef HAVE_ZIF
 	ZifDownload	*download;
 	ZifConfig	*config;
 	ZifStoreLocal	*store_local;
@@ -43,6 +48,7 @@ typedef struct {
 	ZifGroups	*groups;
 	ZifCompletion	*completion;
 	ZifLock		*lock;
+#endif
 	GTimer		*timer;
 	GVolumeMonitor	*volume_monitor;
 } PkBackendYumPrivate;
@@ -82,6 +88,8 @@ backend_yum_repos_changed_cb (GFileMonitor *monitor_, GFile *file, GFile *other_
 {
 	pk_backend_repo_list_changed (backend);
 }
+
+#ifdef HAVE_ZIF
 
 static void
 backend_completion_percentage_changed_cb (ZifCompletion *completion, guint percentage, PkBackend *backend)
@@ -459,6 +467,7 @@ backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield filte
 out:
 	return store_array;
 }
+#endif
 
 /**
  * backend_search_thread:
@@ -466,6 +475,7 @@ out:
 static gboolean
 backend_search_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	GPtrArray *store_array = NULL;
 	GPtrArray *array = NULL;
@@ -598,6 +608,7 @@ out:
 		g_ptr_array_unref (array);
 	backend_unlock (backend);
 	pk_backend_finished (backend);
+#endif
 	return TRUE;
 }
 
@@ -694,6 +705,7 @@ backend_initialize (PkBackend *backend)
 		goto out;
 	}
 
+#ifdef HAVE_ZIF
 	/* it seems some people are not ready for the awesomeness */
 	priv->use_zif = g_key_file_get_boolean (key_file, "Backend", "UseZif", NULL);
 	if (!priv->use_zif)
@@ -763,6 +775,9 @@ backend_initialize (PkBackend *backend)
 
 	/* profile */
 	backend_profile ("read groups");
+#else
+	priv->use_zif = FALSE;
+#endif
 out:
 	g_free (config_file);
 	if (key_file != NULL)
@@ -782,6 +797,7 @@ backend_destroy (PkBackend *backend)
 	g_object_unref (priv->spawn);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
+#ifdef HAVE_ZIF
 	if (priv->config != NULL)
 		g_object_unref (priv->config);
 	if (priv->download != NULL)
@@ -798,6 +814,7 @@ backend_destroy (PkBackend *backend)
 		g_object_unref (priv->lock);
 	if (priv->timer != NULL)
 		g_timer_destroy (priv->timer);
+#endif
 	if (priv->volume_monitor != NULL)
 		g_object_unref (priv->volume_monitor);
 	g_free (priv);
@@ -809,8 +826,10 @@ backend_destroy (PkBackend *backend)
 static PkBitfield
 backend_get_groups (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	GError *error = NULL;
-	PkBitfield groups;
+#endif
+	PkBitfield groups = 0;
 
 	/* it seems some people are not ready for the awesomeness */
 	if (!priv->use_zif) {
@@ -841,6 +860,7 @@ backend_get_groups (PkBackend *backend)
 		goto out;
 	}
 
+#ifdef HAVE_ZIF
 	/* get the dynamic group list */
 	groups = zif_groups_get_groups (priv->groups, &error);
 	if (groups == 0) {
@@ -848,6 +868,7 @@ backend_get_groups (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
+#endif
 
 	/* add the virtual groups */
 	pk_bitfield_add (groups, PK_GROUP_ENUM_COLLECTIONS);
@@ -948,6 +969,7 @@ backend_cancel (PkBackend *backend)
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	const gchar *directory = pk_backend_get_string (backend, "directory");
 	GPtrArray *store_array = NULL;
@@ -1064,6 +1086,7 @@ out:
 		g_ptr_array_unref (packages);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
+#endif
 	return TRUE;
 }
 
@@ -1107,6 +1130,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	GPtrArray *store_array = NULL;
@@ -1236,6 +1260,7 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
+#endif
 	return TRUE;
 }
 
@@ -1262,6 +1287,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_distro_upgrades_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	gchar *distro_id = NULL;
 	gchar *filename = NULL;
@@ -1359,6 +1385,7 @@ out:
 		g_key_file_free (file);
 	g_strfreev (groups);
 	g_strfreev (split);
+#endif
 	return TRUE;
 }
 
@@ -1383,6 +1410,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	GPtrArray *store_array = NULL;
@@ -1493,6 +1521,7 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
+#endif
 	return TRUE;
 }
 
@@ -1503,11 +1532,9 @@ static void
 backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
-	gboolean ret;
 
 	/* check if we can use zif */
-	ret = backend_is_all_installed (package_ids);
-	if (ret && priv->use_zif) {
+	if (priv->use_zif) {
 		pk_backend_thread_create (backend, backend_get_files_thread);
 		return;
 	}
@@ -1539,6 +1566,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	GPtrArray *store_array = NULL;
 	ZifCompletion *completion_local;
@@ -1695,7 +1723,7 @@ out:
 		g_ptr_array_unref (result);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-
+#endif
 	return TRUE;
 }
 
@@ -1739,6 +1767,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gchar **package_ids;
 	guint i;
 	guint j;
@@ -1842,6 +1871,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 out:
 	backend_unlock (backend);
 	pk_backend_finished (backend);
+#endif
 	return TRUE;
 }
 
@@ -1951,6 +1981,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	GPtrArray *store_array = NULL;
 	gboolean ret;
 	GError *error = NULL;
@@ -2014,7 +2045,7 @@ out:
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
-
+#endif
 	return TRUE;
 }
 
@@ -2183,6 +2214,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 static gboolean
 backend_get_repo_list_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	guint i;
@@ -2267,6 +2299,7 @@ out:
 	pk_backend_finished (backend);
 	if (array != NULL)
 		g_ptr_array_unref (array);
+#endif
 	return TRUE;
 }
 
@@ -2294,6 +2327,7 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 static gboolean
 backend_repo_enable_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	ZifStoreRemote *repo = NULL;
 	gboolean ret;
 	GError *error = NULL;
@@ -2355,6 +2389,7 @@ out:
 	g_free (warning);
 	if (repo != NULL)
 		g_object_unref (repo);
+#endif
 	return TRUE;
 }
 
@@ -2451,6 +2486,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 static gboolean
 backend_get_categories_thread (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	gboolean ret;
 	guint i;
 	GPtrArray *array = NULL;
@@ -2536,6 +2572,7 @@ out:
 		g_ptr_array_unref (array);
 	if (stores != NULL)
 		g_ptr_array_unref (stores);
+#endif
 	return TRUE;
 }
 
