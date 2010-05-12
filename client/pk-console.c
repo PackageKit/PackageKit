@@ -681,7 +681,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	}
 
 	/* get the results */
-	results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	results = pk_task_generic_finish (PK_TASK(task), res, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to get any results, which is pretty fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
@@ -920,9 +920,9 @@ pk_console_download_packages (gchar **packages, const gchar *directory, GError *
 	}
 
 	/* do the async action */
-	pk_client_download_packages_async (PK_CLIENT(task), package_ids, directory, cancellable,
-				           (PkProgressCallback) pk_console_progress_cb, NULL,
-				           (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_download_packages_async (PK_TASK (task),package_ids, directory, cancellable,
+				         (PkProgressCallback) pk_console_progress_cb, NULL,
+				         (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -976,9 +976,9 @@ pk_console_get_requires (PkBitfield filters, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_client_get_requires_async (PK_CLIENT(task), filters, package_ids, TRUE, cancellable,
-				      (PkProgressCallback) pk_console_progress_cb, NULL,
-				      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_get_requires_async (PK_TASK (task),filters, package_ids, TRUE, cancellable,
+				    (PkProgressCallback) pk_console_progress_cb, NULL,
+				    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1004,9 +1004,9 @@ pk_console_get_depends (PkBitfield filters, gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_client_get_depends_async (PK_CLIENT(task), filters, package_ids, FALSE, cancellable,
-				     (PkProgressCallback) pk_console_progress_cb, NULL,
-				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_get_depends_async (PK_TASK (task),filters, package_ids, FALSE, cancellable,
+				   (PkProgressCallback) pk_console_progress_cb, NULL,
+				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1032,9 +1032,9 @@ pk_console_get_details (gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_client_get_details_async (PK_CLIENT(task), package_ids, cancellable,
-				     (PkProgressCallback) pk_console_progress_cb, NULL,
-				     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_get_details_async (PK_TASK (task),package_ids, cancellable,
+				   (PkProgressCallback) pk_console_progress_cb, NULL,
+				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1060,9 +1060,9 @@ pk_console_get_files (gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_client_get_files_async (PK_CLIENT(task), package_ids, cancellable,
-				   (PkProgressCallback) pk_console_progress_cb, NULL,
-				   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_get_files_async (PK_TASK (task),package_ids, cancellable,
+				 (PkProgressCallback) pk_console_progress_cb, NULL,
+				 (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1088,9 +1088,9 @@ pk_console_get_update_detail (gchar **packages, GError **error)
 	}
 
 	/* do the async action */
-	pk_client_get_update_detail_async (PK_CLIENT(task), package_ids, cancellable,
-					   (PkProgressCallback) pk_console_progress_cb, NULL,
-					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+	pk_task_get_update_detail_async (PK_TASK (task),package_ids, cancellable,
+					 (PkProgressCallback) pk_console_progress_cb, NULL,
+					 (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 out:
 	g_strfreev (package_ids);
 	return ret;
@@ -1421,9 +1421,9 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_names_async (PK_CLIENT(task), filters, argv+3, cancellable,
-						     (PkProgressCallback) pk_console_progress_cb, NULL,
-						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+			pk_task_search_names_async (PK_TASK (task),filters, argv+3, cancellable,
+						    (PkProgressCallback) pk_console_progress_cb, NULL,
+						    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
@@ -1433,9 +1433,9 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_details_async (PK_CLIENT(task), filters, argv+3, cancellable,
-						        (PkProgressCallback) pk_console_progress_cb, NULL,
-						        (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+			pk_task_search_details_async (PK_TASK (task),filters, argv+3, cancellable,
+						      (PkProgressCallback) pk_console_progress_cb, NULL,
+						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
@@ -1445,9 +1445,9 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_groups_async (PK_CLIENT(task), filters, argv+3, cancellable,
-						      (PkProgressCallback) pk_console_progress_cb, NULL,
-						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+			pk_task_search_groups_async (PK_TASK (task),filters, argv+3, cancellable,
+						     (PkProgressCallback) pk_console_progress_cb, NULL,
+						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
@@ -1457,9 +1457,9 @@ main (int argc, char *argv[])
 				goto out;
 			}
 			/* fire off an async request */
-			pk_client_search_files_async (PK_CLIENT(task), filters, argv+3, cancellable,
-						     (PkProgressCallback) pk_console_progress_cb, NULL,
-						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+			pk_task_search_files_async (PK_TASK (task),filters, argv+3, cancellable,
+						    (PkProgressCallback) pk_console_progress_cb, NULL,
+						    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 		} else {
 			/* TRANSLATORS: the search type was provided, but invalid */
 			error = g_error_new (1, 0, "%s", _("Invalid search type"));
@@ -1540,9 +1540,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_rollback_async (PK_CLIENT(task), value, cancellable,
-					  (PkProgressCallback) pk_console_progress_cb, NULL,
-					  (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_rollback_async (PK_TASK (task),value, cancellable,
+					(PkProgressCallback) pk_console_progress_cb, NULL,
+					(GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
@@ -1561,9 +1561,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_resolve_async (PK_CLIENT(task), filters, argv+2, cancellable,
-				         (PkProgressCallback) pk_console_progress_cb, NULL,
-					 (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_resolve_async (PK_TASK (task),filters, argv+2, cancellable,
+				       (PkProgressCallback) pk_console_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -1572,9 +1572,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_enable_async (PK_CLIENT(task), value, TRUE, cancellable,
-					     (PkProgressCallback) pk_console_progress_cb, NULL,
-					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_repo_enable_async (PK_TASK (task),value, TRUE, cancellable,
+					   (PkProgressCallback) pk_console_progress_cb, NULL,
+					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
@@ -1583,9 +1583,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_enable_async (PK_CLIENT(task), value, FALSE, cancellable,
-					     (PkProgressCallback) pk_console_progress_cb, NULL,
-					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_repo_enable_async (PK_TASK (task),value, FALSE, cancellable,
+					   (PkProgressCallback) pk_console_progress_cb, NULL,
+					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1599,9 +1599,9 @@ main (int argc, char *argv[])
 					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
-		pk_client_get_repo_list_async (PK_CLIENT(task), filters, cancellable,
-					       (PkProgressCallback) pk_console_progress_cb, NULL,
-					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_get_repo_list_async (PK_TASK (task),filters, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
@@ -1661,9 +1661,9 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_what_provides_async (PK_CLIENT(task), filters, PK_PROVIDES_ENUM_ANY, argv+2, cancellable,
-					       (PkProgressCallback) pk_console_progress_cb, NULL,
-					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_what_provides_async (PK_TASK (task),filters, PK_PROVIDES_ENUM_ANY, argv+2, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
@@ -1684,19 +1684,19 @@ main (int argc, char *argv[])
 		nowait = !pk_console_get_files (argv+2, &error);
 
 	} else if (strcmp (mode, "get-updates") == 0) {
-		pk_client_get_updates_async (PK_CLIENT(task), filters, cancellable,
-					     (PkProgressCallback) pk_console_progress_cb, NULL,
-					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_get_updates_async (PK_TASK (task),filters, cancellable,
+					   (PkProgressCallback) pk_console_progress_cb, NULL,
+					   (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
-		pk_client_get_categories_async (PK_CLIENT(task), cancellable,
-						(PkProgressCallback) pk_console_progress_cb, NULL,
-						(GAsyncReadyCallback) pk_console_finished_cb, NULL);
-
-	} else if (strcmp (mode, "get-packages") == 0) {
-		pk_client_get_packages_async (PK_CLIENT(task), filters, cancellable,
+		pk_task_get_categories_async (PK_TASK (task),cancellable,
 					      (PkProgressCallback) pk_console_progress_cb, NULL,
 					      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+
+	} else if (strcmp (mode, "get-packages") == 0) {
+		pk_task_get_packages_async (PK_TASK (task),filters, cancellable,
+					    (PkProgressCallback) pk_console_progress_cb, NULL,
+					    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_string (roles);
@@ -1731,9 +1731,9 @@ main (int argc, char *argv[])
 						      (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "refresh") == 0) {
-		pk_client_refresh_cache_async (PK_CLIENT(task), FALSE, cancellable,
-					       (PkProgressCallback) pk_console_progress_cb, NULL,
-					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_refresh_cache_async (PK_TASK (task),FALSE, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
