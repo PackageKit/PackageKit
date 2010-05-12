@@ -86,8 +86,6 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 	gchar *filename = NULL;
 
 	g_return_val_if_fail (ZIF_IS_STORE_LOCAL (store), FALSE);
-	g_return_val_if_fail (store->priv->prefix == NULL, FALSE);
-	g_return_val_if_fail (!store->priv->loaded, FALSE);
 	g_return_val_if_fail (prefix != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -97,6 +95,17 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 		g_set_error (error, ZIF_STORE_ERROR, ZIF_STORE_ERROR_FAILED,
 			     "prefix %s does not exist", prefix);
 		goto out;
+	}
+
+	/* is the same */
+	if (g_strcmp0 (prefix, store->priv->prefix) == 0)
+		goto out;
+
+	/* empty cache */
+	if (store->priv->loaded) {
+		egg_debug ("abandoning cache");
+		g_ptr_array_set_size (store->priv->packages, 0);
+		store->priv->loaded = FALSE;
 	}
 
 	/* setup watch */
@@ -109,6 +118,8 @@ zif_store_local_set_prefix (ZifStoreLocal *store, const gchar *prefix, GError **
 		goto out;
 	}
 
+	/* save new value */
+	g_free (store->priv->prefix);
 	store->priv->prefix = g_strdup (prefix);
 out:
 	g_free (filename);

@@ -95,6 +95,34 @@ backend_completion_subpercentage_changed_cb (ZifCompletion *completion, guint su
 }
 
 /**
+ * backend_set_root:
+ */
+static gboolean
+backend_set_root (PkBackend *backend)
+{
+	gboolean ret = FALSE;
+	GError *error = NULL;
+	const gchar *root;
+
+	/* this backend does not support a relocatable root... yet */
+	root = pk_backend_get_root (backend);
+	if (g_strcmp0 (root, "/") != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID, "backend does not support this root: '%s'", root);
+		goto out;
+	}
+
+	/* try to set, or re-set root */
+	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	return ret;
+}
+
+/**
  * backend_profile:
  */
 static void
@@ -456,6 +484,13 @@ backend_search_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
+		goto out;
+	}
+
 	/* set the network state */
 	backend_setup_network (backend);
 
@@ -577,7 +612,6 @@ backend_initialize (PkBackend *backend)
 	GError *error = NULL;
 	GKeyFile *key_file = NULL;
 	gchar *config_file = NULL;
-	const gchar *root;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -588,13 +622,6 @@ backend_initialize (PkBackend *backend)
 	pk_backend_spawn_set_filter_stdout (priv->spawn, backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");
 	pk_backend_spawn_set_allow_sigkill (priv->spawn, FALSE);
-
-	/* this backend does not support a relocatable root */
-	root = pk_backend_get_root (backend);
-	if (g_strcmp0 (root, "/") != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID, "backend does not support this root: '%s'", root);
-		goto out;
-	}
 
 	/* setup a file monitor on the repos directory */
 	file = g_file_new_for_path (YUM_REPOS_DIRECTORY);
@@ -659,12 +686,6 @@ backend_initialize (PkBackend *backend)
 
 	/* ZifStoreLocal */
 	priv->store_local = zif_store_local_new ();
-	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
 
 	/* profile */
 	backend_profile ("read local store");
@@ -897,6 +918,13 @@ backend_download_packages_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
+		goto out;
+	}
+
 	/* set the network state */
 	backend_setup_network (backend);
 
@@ -1048,6 +1076,13 @@ backend_get_details_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
@@ -1320,6 +1355,13 @@ backend_get_files_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
+		goto out;
+	}
+
 	/* set the network state */
 	backend_setup_network (backend);
 
@@ -1467,6 +1509,13 @@ backend_get_updates_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
@@ -1654,6 +1703,13 @@ backend_get_update_detail_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
@@ -1853,6 +1909,13 @@ backend_refresh_cache_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
@@ -2087,6 +2150,13 @@ backend_get_repo_list_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
+		goto out;
+	}
+
 	/* set the network state */
 	backend_setup_network (backend);
 
@@ -2183,6 +2253,13 @@ backend_repo_enable_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
@@ -2336,6 +2413,13 @@ backend_get_categories_thread (PkBackend *backend)
 	ret = backend_get_lock (backend);
 	if (!ret) {
 		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
 		goto out;
 	}
 
