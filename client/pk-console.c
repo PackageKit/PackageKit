@@ -1732,9 +1732,9 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		gboolean force = value && !strcmp (value, "--force");
-		pk_task_refresh_cache_asyunc (PK_TASK (task), force, cancellable,
-					       (PkProgressCallback) pk_console_progress_cb, NULL,
-					       (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+		pk_task_refresh_cache_async (PK_TASK (task), force, cancellable,
+					     (PkProgressCallback) pk_console_progress_cb, NULL,
+					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else {
 		/* TRANSLATORS: The user tried to use an unsupported option on the command line */
