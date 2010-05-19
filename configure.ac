@@ -635,6 +635,7 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
+build_zif=no
 if test x$enable_yum = xyes; then
 	dnl ---------------------------------------------------------------------------
 	dnl - Zif is an experimental library for direct metadata access
@@ -644,14 +645,12 @@ if test x$enable_yum = xyes; then
 	if test x$enable_zif = xyes; then
 		PKG_CHECK_MODULES(ZIF, zif,
 			          build_zif=yes, build_zif=no)
-	else
-		build_zif=no
 	fi
 	if test "x$build_zif" = "xyes"; then
 		AC_DEFINE([HAVE_ZIF], [1], [If Zif support should be enabled])
 	fi
-	AM_CONDITIONAL(PK_BUILD_ZIF, test $build_zif = "yes")
 fi
+AM_CONDITIONAL(PK_BUILD_ZIF, test $build_zif = "yes")
 
 if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
