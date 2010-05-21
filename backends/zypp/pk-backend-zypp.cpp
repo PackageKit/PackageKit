@@ -83,7 +83,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
-	get_zypp (backend);
+//	disabled get_zypp() - too slow for a dbus timeout after zypper clean -a
 	egg_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
@@ -1092,6 +1092,7 @@ backend_install_signature_thread (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_SIG_CHECK);
 	const gchar *key_id = pk_backend_get_string (backend, "key_id");
+	const gchar *package_id = pk_backend_get_string (backend, "package_id");
 	_signatures[backend]->push_back ((std::string)(key_id));
 
 	pk_backend_finished (backend);
