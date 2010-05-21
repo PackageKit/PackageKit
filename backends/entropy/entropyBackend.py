@@ -684,7 +684,7 @@ class PackageKitEntropyClient(Client):
     _pk_message = None
 
     def output(self, text, header = "", footer = "", back = False,
-        importance = 0, type = "info", count = None, percent = False):
+        importance = 0, level = "info", count = None, percent = False):
         """
         Reimplemented from entropy.output.TextInterface.
         """
@@ -763,15 +763,23 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
     }
 
     def __sigquit(self, signum, frame):
-        if hasattr(self, '_entropy'):
-            self._entropy.destroy()
-        raise SystemExit(1)
+        self._entropy.shutdown()
+        raise SystemExit(0)
+
+    def destroy(self):
+        if hasattr(self, "_entropy"):
+            self._entropy.shutdown()
+
+    def __del__(self):
+        self.destroy()
 
     def __init__(self, args):
         PackageKitEntropyMixin.__init__(self)
+        PackageKitBaseBackend.__init__(self, args)
 
-        signal.signal(signal.SIGQUIT, self.__sigquit)
         self._entropy = PackageKitEntropyClient()
+        self.doLock()
+        signal.signal(signal.SIGQUIT, self.__sigquit)
         PkUrlFetcher._pk_progress = self.sub_percentage
         self._entropy.urlFetcher = PkUrlFetcher
         self._repo_name_cache = {}
@@ -783,7 +791,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             level = self._settings['system']['log_level'],
             filename = self._log_fname, header = "[packagekit]")
 
-        PackageKitBaseBackend.__init__(self, args)
+    def unLock(self):
+        self.destroy()
+        PackageKitBaseBackend.unLock(self)
 
     def _convert_date_to_iso8601(self, unix_time_str):
         unix_time = float(unix_time_str)
@@ -798,7 +808,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
-        scandata = self._entropy.FileUpdates.scanfs(dcache = True,
+        scandata = self._entropy.FileUpdates.scan(dcache = True,
             quiet = True)
         if scandata is None:
             return
@@ -1583,6 +1593,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         pkgs = self._pk_add_pkg_type(pkgs)
         # now feed stdout
         self._pk_feed_sorted_pkgs(pkgs)
+
+        self.percentage(100)
 
     def search_name(self, filters, values):
 
