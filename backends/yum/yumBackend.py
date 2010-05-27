@@ -272,8 +272,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # use idle bandwidth by setting congestion control algorithm to TCP Low Priority
         if self.background:
             socket.TCP_CONGESTION = 13
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
+            except socket.error, e:
+                pass;
 
         # we only check these types
         self.transaction_sig_check_map = [TS_UPDATE, TS_INSTALL, TS_TRUEINSTALL, TS_OBSOLETING]
