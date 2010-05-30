@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Marcin Banasiak <megabajt@pld-linux.org>
+ * Copyright (C) 2008-2010 Marcin Banasiak <megabajt@pld-linux.org>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -69,24 +69,24 @@ typedef struct {
 } PLDGroupRegex;
 
 static PLDGroupRegex group_perlre[] = {
-	{PK_GROUP_ENUM_ACCESSORIES, "/.*Archiving\\|.*Dictionaries/"},
-	{PK_GROUP_ENUM_ADMIN_TOOLS, "/.*Databases.*\\|.*Admin/"},
-	{PK_GROUP_ENUM_COMMUNICATION, "/.*Communications/"},
-	{PK_GROUP_ENUM_DOCUMENTATION, "/Documentation/"},
-	{PK_GROUP_ENUM_EDUCATION, "/.*Engineering\\|.*Math\\|.*Science/"},
-	{PK_GROUP_ENUM_FONTS, "/Fonts/"},
-	{PK_GROUP_ENUM_GAMES, "/.*Games.*/"},
-	{PK_GROUP_ENUM_GRAPHICS, "/.*Graphics/"},
-	{PK_GROUP_ENUM_LOCALIZATION, "/I18n/"},
-	{PK_GROUP_ENUM_MULTIMEDIA, "/.*Multimedia\\|.*Sound/"},
-	{PK_GROUP_ENUM_NETWORK, "/.*Networking.*\\|/.*Mail\\|.*News\\|.*WWW/"},
-	{PK_GROUP_ENUM_OFFICE, "/.*Editors.*\\|.*Spreadsheets/"},
-	{PK_GROUP_ENUM_OTHER, "/^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|^Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/Libraries$\\|.*Window\\ Managers.*/"},
-	{PK_GROUP_ENUM_PROGRAMMING, "/.*Development.*/"},
-	{PK_GROUP_ENUM_PUBLISHING, "/.*Publishing.*/"},
-	{PK_GROUP_ENUM_SERVERS, "/Daemons\\|.*Servers/"},
-	{PK_GROUP_ENUM_SYSTEM, "/.*Shells\\|.*System\\|Base.*/"},
-	{0, NULL}
+	{ PK_GROUP_ENUM_ACCESSORIES, ".*Archiving\\|.*Dictionaries" },
+	{ PK_GROUP_ENUM_ADMIN_TOOLS, ".*Databases.*\\|.*Admin" },
+	{ PK_GROUP_ENUM_COMMUNICATION, ".*Communications" },
+	{ PK_GROUP_ENUM_DOCUMENTATION, "Documentation" },
+	{ PK_GROUP_ENUM_EDUCATION, ".*Engineering\\|.*Math\\|.*Science" },
+	{ PK_GROUP_ENUM_FONTS, "Fonts" },
+	{ PK_GROUP_ENUM_GAMES, ".*Games.*" },
+	{ PK_GROUP_ENUM_GRAPHICS, ".*Graphics" },
+	{ PK_GROUP_ENUM_LOCALIZATION, "I18n" },
+	{ PK_GROUP_ENUM_MULTIMEDIA, ".*Multimedia\\|.*Sound" },
+	{ PK_GROUP_ENUM_NETWORK, ".*Networking.*\\|/.*Mail\\|.*News\\|.*WWW" },
+	{ PK_GROUP_ENUM_OFFICE, ".*Editors.*\\|.*Spreadsheets" },
+	{ PK_GROUP_ENUM_OTHER, "^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|^Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/Libraries$\\|.*Window\\ Managers.*" },
+	{ PK_GROUP_ENUM_PROGRAMMING, ".*Development.*" },
+	{ PK_GROUP_ENUM_PUBLISHING, ".*Publishing.*" },
+	{ PK_GROUP_ENUM_SERVERS, "Daemons\\|.*Servers" },
+	{ PK_GROUP_ENUM_SYSTEM, ".*Shells\\|.*System\\|Base.*" },
+	{ 0, NULL }
 };
 
 typedef struct {
@@ -927,20 +927,21 @@ pld_group_to_enum (const gchar *group)
 }
 
 /**
- * pld_group_get_regex_from_enum:
+ * pld_group_get_regex_from_text:
  **/
 static const gchar*
-pld_group_get_regex_from_enum (PkGroupEnum value)
+pld_group_get_regex_from_text (const gchar *str)
 {
-	gint i;
+	guint		i = 0;
 
-	for (i = 0;; i++) {
-		if (group_perlre[i].regex == NULL)
-			return NULL;
-
-		if (group_perlre[i].group == value)
+	while (group_perlre[i].regex) {
+		if (pk_group_enum_from_string (str) == group_perlre[i].group)
 			return group_perlre[i].regex;
+
+		i++;
 	}
+
+	return NULL;
 }
 
 /**
@@ -1516,6 +1517,47 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 	return pkg;
 }
 
+static tn_array*
+do_search_details (const gchar *tree, gchar **values)
+{
+	guint i;
+	tn_array *pkgs = NULL;
+
+	g_return_val_if_fail (tree != NULL, NULL);
+	g_return_val_if_fail (values != NULL, NULL);
+
+	pkgs = execute_packages_command ("%s; search -qsd *%s*", tree, values[0]);
+
+	if (g_strv_length (values) > 1) {
+		GString *pkgnames = NULL;
+
+		pkgnames = g_string_new ("");
+
+		for (i = 1; pkgs && i < g_strv_length (values); i++) {
+			guint j;
+
+			g_string_truncate (pkgnames, 0);
+
+			/* create string from pkgs names */
+			for (j = 0; j < n_array_size (pkgs); j++) {
+				struct pkg *pkg = n_array_nth (pkgs, j);
+
+				g_string_append (pkgnames, pkg_id (pkg));
+				g_string_append_c (pkgnames, ' ');
+			}
+
+			n_array_free (pkgs);
+
+			pkgs = execute_packages_command ("%s; search -qsd \"*%s*\" %s",
+							 tree, values[i], pkgnames->str);
+		}
+
+		g_string_free (pkgnames, TRUE);
+	}
+
+	return pkgs;
+}
+
 /**
  * search_package_thread:
  */
@@ -1527,7 +1569,8 @@ search_package_thread (PkBackend *backend)
 	gchar		       *search_cmd_available = NULL;
 	gchar		       *search_cmd_installed = NULL;
 	tn_array	       *pkgs = NULL;
-	const gchar *search;
+	gchar		      **values = NULL;
+	gchar		       *search;
 	guint mode;
 
 	pb_load_packages (backend);
@@ -1535,73 +1578,117 @@ search_package_thread (PkBackend *backend)
 	mode = pk_backend_get_uint (backend, "mode");
 	filters = pk_backend_get_uint (backend, "filters");
 
-	/* GetPackages */
-	if (mode == SEARCH_ENUM_NONE) {
-		search_cmd_installed = g_strdup ("ls -q");
-		search_cmd_available = g_strdup (search_cmd_installed);
+	values = pk_backend_get_strv (backend, "search");
+
+	if (values == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to get 'search'");
+		goto out;
+	}
+
 	/* SearchName */
-	} else if (mode == SEARCH_ENUM_NAME) {
-		search = pk_backend_get_string (backend, "search");
+	if (mode == SEARCH_ENUM_NAME) {
+		search = g_strjoinv ("*", values);
 
 		search_cmd_installed = g_strdup_printf ("ls -q *%s*", search);
 		search_cmd_available = g_strdup (search_cmd_installed);
+
+		g_free (search);
 	/* SearchGroup */
 	} else if (mode == SEARCH_ENUM_GROUP) {
-		PkGroupEnum	group;
-		const gchar	*regex;
+		GString        *command;
+		guint		i;
 
-		search = pk_backend_get_string (backend, "search");
+		command = g_string_new ("search -qg --perlre /");
 
-		group = pk_group_enum_from_string (search);
-		regex = pld_group_get_regex_from_enum (group);
+		for (i = 0; i < g_strv_length (values); i++) {
+			const gchar *regex = NULL;
 
-		search_cmd_installed = g_strdup_printf ("search -qg --perlre %s", regex);
-		search_cmd_available = g_strdup (search_cmd_installed);
-	/* SearchDetails */
-	} else if (mode == SEARCH_ENUM_DETAILS) {
-		search = pk_backend_get_string (backend, "search");
+			regex = pld_group_get_regex_from_text (values[i]);
 
-		search_cmd_installed = g_strdup_printf ("search -dsq *%s*", search);
+			if (regex == NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND,
+						       "The group '%s' does not exist.", values[i]);
+				g_string_free (command, TRUE);
+				goto out;
+			}
+
+			if (i > 0)
+				g_string_append (command, "\\|");
+
+			g_string_append (command, regex);
+		}
+
+		g_string_append_c (command, '/');
+
+		search_cmd_installed = g_string_free (command, FALSE);
 		search_cmd_available = g_strdup (search_cmd_installed);
 	/* SearchFile */
 	} else if (mode == SEARCH_ENUM_FILE) {
-		search = pk_backend_get_string (backend, "search");
+		GString *local_pkgs = NULL;
+		GString *installed_pkgs = NULL;
+		GString *available_pkgs = NULL;
+		guint i;
 
-		if (*search == '/') {
-			gchar *pkgid = NULL;
+		local_pkgs = g_string_new ("");
+		installed_pkgs = g_string_new ("");
+		available_pkgs = g_string_new ("");
 
-			/* use rpmdb to get local packages (equivalent to: rpm -qf /foo/bar) */
-			if ((pkgid = get_pkgid_from_localpath (search))) {
-				search_cmd_installed = g_strdup_printf ("ls -q %s", pkgid);
-				g_free (pkgid);
+		for (i = 0; i < g_strv_length (values); i++) {
+			if (available_pkgs->len > 0)
+				g_string_append (available_pkgs, "\\|");
+
+			if (*values[i] == '/') {
+				gchar *pkgid = NULL;
+
+				/* use rpmdb to get local packages (equivalent to: rpm -qf /foo/bar) */
+				if ((pkgid = get_pkgid_from_localpath (values[i]))) {
+					g_string_append_printf (local_pkgs, " %s", pkgid);
+					g_free (pkgid);
+				}
+
+				g_string_append_printf (available_pkgs, "^%s$", values[i]);
+			} else {
+
+				g_string_append_printf (available_pkgs, ".*%s.*", values[i]);
+
+				if (installed_pkgs->len > 0)
+					g_string_append (installed_pkgs, "\\|");
+
+				g_string_append_printf (installed_pkgs, ".*%s.*", values[i]);
 			}
-
-			search_cmd_available = g_strdup_printf ("search -ql --perlre /^%s$/", search);
-		} else {
-			search_cmd_installed = g_strdup_printf ("search -ql --perlre /.*%s.*/", search);
-			search_cmd_available = g_strdup (search_cmd_installed);
 		}
+
+		if (installed_pkgs->len > 0) {
+			g_string_prepend (installed_pkgs, "search -ql --perlre /");
+			g_string_append (installed_pkgs, "/;");
+		}
+
+		if (local_pkgs->len > 0)
+			g_string_append_printf (installed_pkgs, "ls -q %s", local_pkgs->str);
+
+		g_string_prepend (available_pkgs, "search -ql --perlre /");
+		g_string_append_c (available_pkgs, '/');
+
+		g_string_free (local_pkgs, TRUE);
+
+		search_cmd_installed = g_string_free (installed_pkgs, FALSE);
+		search_cmd_available = g_string_free (available_pkgs, FALSE);
+
 	/* WhatProvides */
 	} else if (mode == SEARCH_ENUM_PROVIDES) {
-		provides = pk_backend_get_uint (backend, "provides");
+		search = g_strjoinv ("\\|", values);
 
-		search = pk_backend_get_string (backend, "search");
+		search_cmd_installed = g_strdup_printf ("search -qp --perlre /%s/", search);
+		search_cmd_available = g_strdup_printf ("search -qp --perlre /%s/", search);
 
-		if (provides == PK_PROVIDES_ENUM_ANY || provides == PK_PROVIDES_ENUM_CODEC) {
-			search_cmd_installed = g_strdup_printf ("search -qp %s", search);
-		} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
-		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-			search_cmd_installed = g_strdup_printf ("search -qp mimetype(%s)", search);
-		}
-
-		search_cmd_available = g_strdup (search_cmd_installed);
+		g_free (search);
 	/* Resolve */
 	} else if (mode == SEARCH_ENUM_RESOLVE) {
 		gchar **package_ids;
 		gchar *packages_str;
 
 		package_ids = pk_backend_get_strv (backend, "package_ids");
-
 		packages_str = g_strjoinv(" ", package_ids);
 
 		search_cmd_installed = g_strdup_printf ("ls -q %s", packages_str);
@@ -1610,37 +1697,30 @@ search_package_thread (PkBackend *backend)
 		g_free (packages_str);
 	}
 
-	if (search_cmd_installed != NULL || search_cmd_available != NULL) {
-		tn_array	*installed = NULL, *available = NULL;
+	if ((search_cmd_installed != NULL && search_cmd_available != NULL) || mode == SEARCH_ENUM_DETAILS) {
+		tn_array *installed = NULL;
+		tn_array *available = NULL;
 
-		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) && search_cmd_installed) {
-			installed = execute_packages_command ("cd /installed; %s", search_cmd_installed);
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (mode == SEARCH_ENUM_DETAILS)
+				installed = do_search_details ("cd /installed", values);
+			else
+				installed = execute_packages_command ("cd /installed; %s", search_cmd_installed);
 		}
 
-		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) && search_cmd_available) {
-			available = execute_packages_command ("cd /all-avail; %s", search_cmd_available);
+		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			if (mode == SEARCH_ENUM_DETAILS)
+				available = do_search_details ("cd /all-avail", values);
+			else
+				available = execute_packages_command ("cd /all-avail; %s", search_cmd_available);
 		}
 
+		/* merge installed and available */
 		if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		    !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
-		    installed && available) {
-			guint i;
+		    !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			pkgs = do_post_search_process (installed, available);
 
-			pkgs = available;
-
-			for (i = 0; i < n_array_size (installed); i++) {
-				struct pkg *pkg = n_array_nth (installed, i);
-
-				/* check for duplicates */
-				if (!poldek_pkg_in_array (pkg, pkgs, (tn_fn_cmp)pkg_cmp_name_evr)) {
-					n_array_push (pkgs, pkg_link (pkg));
-				}
-			}
-
-			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
-
-			n_array_free (installed);
-
+		/* filter out installed packages from available */
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) && available) {
 			tn_array *dbpkgs = NULL;
 			guint i;
@@ -1657,19 +1737,24 @@ search_package_thread (PkBackend *backend)
 				}
 			}
 
-			n_array_free (available);
 			n_array_free (dbpkgs);
 
 		} else if (available) {
-			pkgs = available;
+			pkgs = n_ref (available);
 
 		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED) || installed)
-			pkgs = installed;
+			pkgs = n_ref (installed);
+
+		if (installed)
+			n_array_free (installed);
+
+		if (available)
+			n_array_free (available);
 	}
 
 	do_filtering (pkgs, filters);
 
-	if (pkgs) {
+	if (pkgs && n_array_size (pkgs) > 0) {
 		guint	i;
 
 		for (i = 0; i < n_array_size (pkgs); i++) {
@@ -1702,6 +1787,7 @@ search_package_thread (PkBackend *backend)
 	g_free (search_cmd_installed);
 	g_free (search_cmd_available);
 
+out:
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -2138,12 +2224,16 @@ poldek_reload (PkBackend *backend, gboolean load_packages) {
 static void
 backend_initalize (PkBackend *backend)
 {
+	egg_debug ("backend initalize start");
+
 	clv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify)n_array_free);
 
 	pberror = g_new0 (PbError, 1);
 	pberror->tslog = g_string_new ("");
 
 	do_poldek_init (backend);
+
+	egg_debug ("backend initalize end");
 }
 /**
  * backend_destroy:
@@ -3005,7 +3095,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3018,7 +3108,7 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3028,10 +3118,10 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 }
 
 /**
- * backend_search_file:
+ * backend_search_files:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3041,10 +3131,10 @@ backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search
 }
 
 /**
- * backend_search_group:
+ * backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3054,10 +3144,10 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3144,14 +3234,42 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
  * backend_what_provides:
  **/
 static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
+	GPtrArray *array = NULL;
+	gchar **search = NULL;
+	guint i;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_PROVIDES);
+
+	/* prepare array of commands */
+	array = g_ptr_array_new_with_free_func (g_free);
+
+	for (i = 0; i < g_strv_length (values); i++) {
+		if (provides == PK_PROVIDES_ENUM_ANY) {
+			g_ptr_array_add (array, g_strdup_printf ("%s", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10\\(%s\\)", values[i]));
+			g_ptr_array_add (array, g_strdup_printf ("mimetype\\(%s\\)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+			g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10\\(%s\\)", values[i]));
+		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+			g_ptr_array_add (array, g_strdup_printf ("mimetype\\(%s\\)", values[i]));
+		} else {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED,
+					       "provide type '%s' not supported",
+					       pk_provides_enum_to_text (provides));
+		}
+	}
+
+	search = pk_ptr_array_to_strv (array);
+	pk_backend_set_strv (backend, "search", search);
 	pk_backend_thread_create (backend, search_package_thread);
+	g_strfreev (search);
+	g_ptr_array_unref (array);
 }
 
 static gboolean do_simulate_packages (PkBackend *backend)
@@ -3310,9 +3428,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
 	backend_search_details,				/* search_details */
-	backend_search_file,				/* search_file */
-	backend_search_group,				/* search_group */
-	backend_search_name,				/* search_name */
+	backend_search_files,				/* search_file */
+	backend_search_groups,				/* search_group */
+	backend_search_names,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
 	backend_what_provides,				/* what_provides */
