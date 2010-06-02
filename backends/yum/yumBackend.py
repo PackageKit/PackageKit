@@ -2682,7 +2682,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             return
         for repo in repos:
-            if filters != FILTER_NOT_DEVELOPMENT or not _is_development_repo(repo.id):
+            if not FILTER_NOT_DEVELOPMENT in filters or not _is_development_repo(repo.id):
                 enabled = repo.isEnabled()
                 self.repo_detail(repo.id, repo.name, enabled)
 
