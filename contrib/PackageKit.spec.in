@@ -49,12 +49,6 @@ BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: gobject-introspection-devel
 
-# for the fancy new yum accelerator
-BuildRequires: rpm-devel
-BuildRequires: libsoup-devel
-BuildRequires: bzip2-devel
-BuildRequires: zlib-devel
-
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
 Obsoletes: udev-packagekit < %{version}-%{release}
