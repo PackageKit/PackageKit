@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_6_4.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_6_5.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.6.5
+Version 0.6.6
 ~~~~~~~~~~~~~
 Released: 2010-xx-xx
 
@@ -28,8 +28,8 @@ Bugfixes:
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.6.5"
-git tag -s -f -m "Release 0.6.5" PACKAGEKIT_0_6_5
+git commit -a -m "Release version 0.6.6"
+git tag -s -f -m "Release 0.6.6" PACKAGEKIT_0_6_6
 <gpg password>
 git push --tags
 git push
@@ -54,9 +54,9 @@ git push
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit 0.6.5 released!
+Subject: PackageKit 0.6.6 released!
 
-Today I released PackageKit 0.6.5.
+Today I released PackageKit 0.6.6.
 
 PackageKit release notes: http://cgit.freedesktop.org/packagekit/tree/NEWS
 
