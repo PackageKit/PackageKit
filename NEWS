@@ -1,3 +1,60 @@
+Version 0.6.5
+~~~~~~~~~~~~~
+Released: 2010-06-02
+
+Notes:
+ - Added pacman-glib backend (Jonathan Conder)
+
+Translations:
+ - Updates to Chinese (Taiwan) (zh_TW) translation (zerng07)
+ - Updates to Danish (da) translation (kristho)
+ - Updates to Finnish (fi) translation (vpv)
+
+Libraries:
+ - glib: Add some new PkTask methods that handle the Media and Eula callbacks (Richard Hughes)
+ - qt: Add Q_ENUMS to DaemonError (Adrien Bustany)
+ - python: Fix a typo in format_string (Sebastian Heinlein)
+
+Backends:
+ - APT: Adapt patch for name searching to the 0.6 API (Sebastian Heinlein)
+ - APT: Allow to do an AND search for multiple package names (Sebastian Heinlein)
+ - APT: Make sure to use format_string consequently on every output (Sebastian Heinlein)
+ - APT: Show a sub progress for package downloads (Sebastian Heinlein)
+ - APT: Use UTF-8 as default encoding and allow to write unicode to stdout (Sebastian Heinlein)
+ - entropy: Make backend working with latest Entropy releases (Fabio Erculiani)
+ - pacman: Add basic transaction infrastructure (Jonathan Conder)
+ - pacman: Add cancellation infrastructure (Jonathan Conder)
+ - pacman: Add dependency lookup (Jonathan Conder)
+ - pacman: Add error reporting infrastructure (Jonathan Conder)
+ - pacman: Add package-related methods and helpers (Jonathan Conder)
+ - pacman: Add searching support (Jonathan Conder)
+ - pacman: Add support for installing packages (Jonathan Conder)
+ - pacman: Add support for managing repos (Jonathan Conder)
+ - pacman: Add support for package groups (Jonathan Conder)
+ - pacman: Add support for removing packages (Jonathan Conder)
+ - pacman: Add support for updating packages (Jonathan Conder)
+ - yum: Attempt to use removable disk repos if they exist at backend startup (Richard Hughes)
+ - yum: Catch and ignore the socket exception on oddball systems. Fixes rh#596779
+ - yum: Do not abort init when Yum.conf does not contain some required keys (Richard Hughes)
+ - yum: Fix up the filter check when doing GetRepoList(). Fixes rh#598697
+ - yum: Remove all the MediaManager implementations and write a small GIO based callback (Richard Hughes)
+ - yum: The transaction root is not set at _init(), so we have to re-query the root when we start each action (Richard Hughes)
+ - yum: Use the system installed version of the zif accelerator (Richard Hughes)
+ - zypp: Detect and advertise from /etc/meego-release (Peter J Zhu)
+ - zypp: Re-factor to pass PkBackend around (Michael Meeks)
+ - zypp: Re-work install_packages_thread (Michael Meeks)
+ - zypp: Unify code used to generate the list of updates (Michael Meeks)
+
+New Features:
+ - Add --force argument to pkcon refresh (Michael Meeks)
+ - Show the MediaChangeRequired signals in pkmon (Richard Hughes)
+ - Use the new PkTask API in pkcon so we can deal with Media and Eula queries (Richard Hughes)
+
+Bugfixes:
+ - Build conditional BUILD_ZIF needs to be at the top level (Michael Meeks)
+ - Fix problem whereby the terminal wouldn't return data to scanf from a read (Michael Meeks)
+ - Fix up several daemon thinkos when a client tries to set a root other than '/' (Richard Hughes)
+
 Version 0.6.4
 ~~~~~~~~~~~~~
 Released: 2010-05-06
