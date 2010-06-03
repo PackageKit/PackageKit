@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-05-04 11:16+0000\n"
-"PO-Revision-Date: 2010-05-05 18:03+0800\n"
+"PO-Revision-Date: 2010-06-03 22:44+0800\n"
 "Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: chinese-l10n@googlegroups.com\n"
 "MIME-Version: 1.0\n"
@@ -201,7 +201,7 @@ msgstr "狀態"
 #. TRANSLATORS: details about the update, date the update was issued
 #: ../client/pk-console.c:386
 msgid "Issued"
-msgstr "已發佈的"
+msgstr "已發佈"
 
 #. TRANSLATORS: details about the update, date the update was updated
 #. TRANSLATORS: The action of the package, in past tense
@@ -233,12 +233,12 @@ msgstr "需要重新啟動作業階段："
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:467
 msgid "System restart (security) required by:"
-msgstr "系統重新啟動(安全性)被此需求："
+msgstr "系統重新啟動 (安全性) 被此需求："
 
 #. TRANSLATORS: a package requires the session to be restarted due to a security update
 #: ../client/pk-console.c:470
 msgid "Session restart (security) required:"
-msgstr "需要重新啟動(安全性)作業階段："
+msgstr "需要重新啟動 (安全性) 作業階段："
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:473
@@ -414,7 +414,7 @@ msgstr "使用閒置的網路頻寬與較少的能源來執行指令"
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1286
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "將機器可讀的輸出列印到畫面，而不是使用動畫的小工具"
+msgstr "將機器可讀的輸出列印到畫面，而不是使用動畫化的小工具"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1308
@@ -472,7 +472,7 @@ msgstr "需要指定一個類型、key_id 以及 package_id"
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1503
 msgid "A package name to remove is required"
-msgstr "需要想移除的套件名稱"
+msgstr "需要有要移除的套件名稱"
 
 #. TRANSLATORS: the user did not specify anything about what to download or where
 #: ../client/pk-console.c:1512
@@ -487,7 +487,7 @@ msgstr "找不到目錄"
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1528
 msgid "A licence identifier (eula-id) is required"
-msgstr "需要指定一個授權合約的標示符號（eula-id）"
+msgstr "需要指定一個授權合約的辨識符號 (eula-id)"
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1539
@@ -497,13 +497,13 @@ msgstr "需要處理事項識別符 (tid)"
 #. TRANSLATORS: The user did not specify a package name
 #: ../client/pk-console.c:1560
 msgid "A package name to resolve is required"
-msgstr "需要欲解析的套件之名稱"
+msgstr "需要指定想解析套件的名稱"
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
 #: ../client/pk-console.c:1571
 #: ../client/pk-console.c:1582
 msgid "A repository name is required"
-msgstr "需要套件庫的名稱"
+msgstr "需要指定套件庫名稱"
 
 #. TRANSLATORS: The user didn't provide any data
 #: ../client/pk-console.c:1593
@@ -518,7 +518,7 @@ msgstr "需要指定一項動作，例如：「update-system」"
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:1617
 msgid "A correct role is required"
-msgstr "需要正確的任務"
+msgstr "需要指定正確的任務"
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
@@ -529,18 +529,18 @@ msgstr "需要正確的任務"
 #: ../client/pk-console.c:1680
 #: ../client/pk-generate-pack.c:316
 msgid "A package name is required"
-msgstr "需要套件名稱"
+msgstr "需要提供套件名稱"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1660
 msgid "A package provide string is required"
-msgstr "需要套件的提供字串"
+msgstr "需要指定套件提供字串"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command line
 #: ../client/pk-console.c:1740
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "「%s」選項不被支援"
+msgstr "不支援 '%s' 選項"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: ../client/pk-console.c:1750
@@ -555,7 +555,7 @@ msgstr "設定要排除的相依檔名"
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:258
 msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "輸出檔或目錄（若省略的話會使用目前的目錄）"
+msgstr "輸出檔或目錄 (若省略的話會使用目前的目錄)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:261
@@ -723,7 +723,7 @@ msgstr "正在下載關於軟體來源的詳細資料。"
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "正在下載檔案清單（這會花上一段時間才能完成）。"
+msgstr "正在下載檔案清單 (這會花上一段時間才能完成)。"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -1316,7 +1316,7 @@ msgstr "一般"
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:421
 msgid "Important"
-msgstr "重大"
+msgstr "重要"
 
 #. TRANSLATORS: The type of update
 #: ../lib/packagekit-glib2/pk-console-shared.c:425
@@ -1343,7 +1343,7 @@ msgstr "已阻擋"
 #: ../lib/packagekit-glib2/pk-console-shared.c:442
 #: ../lib/packagekit-glib2/pk-console-shared.c:515
 msgid "Installed"
-msgstr "已安裝的"
+msgstr "已安裝"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: ../lib/packagekit-glib2/pk-console-shared.c:447
@@ -1663,12 +1663,12 @@ msgstr "文字"
 #. TRANSLATORS: ask the user to insert the media
 #: ../lib/packagekit-glib2/pk-task-text.c:282
 msgid "Please insert the correct media"
-msgstr "請插入正確的媒體"
+msgstr "請插入正確媒體"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: ../lib/packagekit-glib2/pk-task-text.c:287
 msgid "The correct media was not inserted."
-msgstr "沒有插入正確的媒體。"
+msgstr "沒有插入正確媒體。"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: ../lib/packagekit-glib2/pk-task-text.c:302
@@ -1703,7 +1703,7 @@ msgstr "要處理變更嗎？"
 #. TRANSLATORS: tell the user we didn't do anything
 #: ../lib/packagekit-glib2/pk-task-text.c:387
 msgid "The transaction did not proceed."
-msgstr "這個處理事項沒有進行。"
+msgstr "該處理事項沒有執行。"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1774,7 +1774,7 @@ msgstr "要更新套件需先經過身份認證"
 #.
 #: ../policy/org.freedesktop.packagekit.policy.in.h:26
 msgid "Cancel foreign task"
-msgstr "取消外來的工作"
+msgstr "取消外來工作"
 
 #. SECURITY:
 #. - This is used when users want to install to a different prefix, for
@@ -1898,7 +1898,7 @@ msgstr "這可能有兩種原因："
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "正確的使用者（一般為 root）沒有啟動可執行檔"
+msgstr "正確的使用者 (一般為 root) 沒有啟動可執行檔"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
