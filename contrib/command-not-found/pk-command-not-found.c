@@ -53,6 +53,7 @@ typedef struct {
 	gboolean	 software_source_search;
 	gboolean	 similar_name_search;
 	gchar		**locations;
+	guint		 max_search_time;
 } PkCnfPolicyConfig;
 
 static PkTask *task = NULL;
@@ -388,12 +389,23 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 }
 
 /**
+ * pk_cnf_cancel_cb:
+ */
+static gboolean
+pk_cnf_cancel_cb (GCancellable *_cancellable)
+{
+	egg_warning ("Cancelling request");
+	g_cancellable_cancel (cancellable);
+	return FALSE;
+}
+
+/**
  * pk_cnf_find_available:
  *
  * Find software we could install
  **/
 static gchar **
-pk_cnf_find_available (const gchar *cmd)
+pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 {
 	PkPackage *item;
 	gchar **package_ids = NULL;
@@ -406,12 +418,18 @@ pk_cnf_find_available (const gchar *cmd)
 	PkBitfield filters;
 	PkResults *results = NULL;
 	PkError *error_code = NULL;
+	guint cancel_id;
 
 	/* create new array of full paths */
 	len = g_strv_length ((gchar **)prefixes);
 	values = g_new0 (gchar *, len + 1);
 	for (i=0; prefixes[i] != NULL; i++)
 		values[i] = g_build_filename (prefixes[i], cmd, NULL);
+
+	/* only allow searching for a limited amount of time */
+	cancel_id = g_timeout_add (max_search_time,
+				   (GSourceFunc) pk_cnf_cancel_cb,
+				   cancellable);
 
 	/* do search */
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,
@@ -442,6 +460,8 @@ pk_cnf_find_available (const gchar *cmd)
 		package_ids[i] = g_strdup (pk_package_get_id (item));
 	}
 out:
+	if (cancel_id > 0)
+		g_source_remove (cancel_id);
 	if (error_code != NULL)
 		g_object_unref (error_code);
 	if (results != NULL)
@@ -534,11 +554,16 @@ pk_cnf_get_config (void)
 	config->software_source_search = g_key_file_get_boolean (file, "CommandNotFound", "SoftwareSourceSearch", NULL);
 	config->similar_name_search = g_key_file_get_boolean (file, "CommandNotFound", "SimilarNameSearch", NULL);
 	config->locations = g_key_file_get_string_list (file, "CommandNotFound", "SearchLocations", NULL, NULL);
+	config->max_search_time = g_key_file_get_integer (file, "CommandNotFound", "MaxSearchTime", NULL);
 
 	/* fallback */
 	if (config->locations == NULL) {
 		egg_warning ("not found SearchLocations, using fallback");
 		config->locations = g_strsplit ("/usr/bin;/usr/sbin", ";", -1);
+	}
+	if (config->max_search_time == 0) {
+		egg_warning ("not found MaxSearchTime, using fallback");
+		config->max_search_time = 2000;
 	}
 out:
 	g_free (path);
@@ -764,7 +789,7 @@ main (int argc, char *argv[])
 
 	/* only search using PackageKit if configured to do so */
 	} else if (config->software_source_search) {
-		package_ids = pk_cnf_find_available (argv[1]);
+		package_ids = pk_cnf_find_available (argv[1], config->max_search_time);
 		if (package_ids == NULL)
 			goto out;
 		len = g_strv_length (package_ids);
