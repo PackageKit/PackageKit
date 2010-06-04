@@ -79,6 +79,16 @@
  */
 #define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
+
+/**
+ * PK_BACKEND_CANCEL_ACTION_TIMEOUT:
+ *
+ * The time in ms we cancel the transaction ourselves if the backend is ignoring
+ * us. This means the backend will still be running, but results will not be
+ * sent over the dbus interface.
+ */
+#define PK_BACKEND_CANCEL_ACTION_TIMEOUT	2000 /* ms */
+
 struct _PkBackendPrivate
 {
 	gboolean		 during_initialize;
@@ -106,6 +116,7 @@ struct _PkBackendPrivate
 	guint			 signal_error_timeout;
 	guint			 signal_finished;
 	guint			 speed;
+	guint			 cancel_id;
 	GHashTable		*eulas;
 	GModule			*handle;
 	GThread			*thread;
@@ -2489,6 +2500,9 @@ pk_backend_finalize (GObject *object)
 	g_object_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
+	if (backend->priv->cancel_id > 0)
+		g_source_remove (backend->priv->cancel_id);
+
 	if (backend->priv->handle != NULL)
 		g_module_close (backend->priv->handle);
 	egg_debug ("parent_class->finalize");
@@ -2702,6 +2716,22 @@ pk_backend_reset (PkBackend *backend)
 }
 
 /**
+ * pk_backend_cancel_cb:
+ */
+static gboolean
+pk_backend_cancel_cb (PkBackend *backend)
+{
+	/* set an error if the backend didn't do it for us */
+	if (!backend->priv->set_error) {
+		egg_warning ("backend failed to exit in %ims, cancelling ourselves", PK_BACKEND_CANCEL_ACTION_TIMEOUT);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "transaction was cancelled");
+		pk_backend_finished (backend);
+	}
+	backend->priv->cancel_id = 0;
+	return FALSE;
+}
+
+/**
  * pk_backend_cancel:
  */
 void
@@ -2713,8 +2743,8 @@ pk_backend_cancel (PkBackend *backend)
 	backend->priv->desc->cancel (backend);
 
 	/* set an error if the backend didn't do it for us */
-	if (!backend->priv->set_error)
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "transaction was cancelled");
+	backend->priv->cancel_id = g_timeout_add (PK_BACKEND_CANCEL_ACTION_TIMEOUT,
+						  (GSourceFunc) pk_backend_cancel_cb, backend);
 }
 
 /**
@@ -3141,6 +3171,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->locked = FALSE;
 	backend->priv->use_threads = FALSE;
 	backend->priv->signal_finished = 0;
+	backend->priv->cancel_id = 0;
 	backend->priv->speed = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
