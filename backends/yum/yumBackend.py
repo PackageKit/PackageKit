@@ -3297,12 +3297,22 @@ class PackageKitYumBase(yum.YumBase):
             f = open(discinfo, "r")
             lines = f.readlines()
             f.close()
-            media_id_tmp = lines[0].strip()
-            disc_number_tmp = int(lines[3].strip())
+
+            # not enough lines to be a valid .discinfo
+            if len(lines) < 4:
+                continue
 
             # check this is the right disk
+            media_id_tmp = lines[0].strip()
             if cmp(media_id_tmp, media_id) != 0:
                 continue
+
+            # disc number can be random things like 'ALL'
+            disc_number_tmp = 1
+            try:
+                disc_number_tmp = int(lines[3].strip())
+            except ValueError, e:
+                pass
             if disc_number_tmp != disc_number:
                 continue
             return root
