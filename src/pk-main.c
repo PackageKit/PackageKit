@@ -192,6 +192,7 @@ main (int argc, char *argv[])
 	PkSyslog *syslog = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
+	guint timer_id = 0;
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
@@ -325,8 +326,12 @@ main (int argc, char *argv[])
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
 
 	/* only poll every 10 seconds when we are alive */
-	if (exit_idle_time != 0 && !disable_timer)
-		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
+	if (exit_idle_time != 0 && !disable_timer) {
+		timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
+#if GLIB_CHECK_VERSION(2,25,8)
+		g_source_set_name_by_id (timer_id, "[PkMain] main poll");
+#endif
+	}
 
 	/* immediatly exit */
 	if (immediate_exit)
@@ -338,6 +343,9 @@ main (int argc, char *argv[])
 out:
 	/* log the shutdown */
 	pk_syslog_add (syslog, PK_SYSLOG_TYPE_INFO, "daemon quit");
+
+	if (timer_id > 0)
+		g_source_remove (timer_id);
 
 	g_main_loop_unref (loop);
 	g_object_unref (syslog);

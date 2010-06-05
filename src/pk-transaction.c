@@ -2495,6 +2495,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 {
 	gboolean ret;
 	GError *error = NULL;
+	guint idle_id;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2536,7 +2537,10 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	}
 
 	/* we are done */
-	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from accept");
+#endif
 
 	/* return from async with success */
 	pk_transaction_dbus_return (context);
@@ -3159,6 +3163,8 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 gboolean
 pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, GError **error)
 {
+	guint idle_id;
+
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -3166,7 +3172,10 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
-	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-old-transactions");
+#endif
 
 	return TRUE;
 }
@@ -3408,6 +3417,7 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 	PkMessage *message;
 	PkExitEnum exit_enum;
 	guint i;
+	guint idle_id;
 
 	/* get results */
 	results = pk_cache_get_results (transaction->priv->cache, transaction->priv->role);
@@ -3449,7 +3459,10 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
 
 	/* we are done */
-	g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (idle_id, "[PkTransaction] try-emit-cache");
+#endif
 
 out:
 	if (package_array != NULL)

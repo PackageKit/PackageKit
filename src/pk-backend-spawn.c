@@ -138,6 +138,9 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 
 	/* close down the dispatcher if it is still open after this much time */
 	priv->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (priv->kill_id, "[PkBackendSpawn] exit");
+#endif
 }
 
 /**

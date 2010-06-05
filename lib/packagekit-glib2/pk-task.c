@@ -708,6 +708,7 @@ out:
 gboolean
 pk_task_user_accepted (PkTask *task, guint request)
 {
+	guint idle_id;
 	PkTaskState *state;
 
 	/* get the not-yet-completed request */
@@ -717,7 +718,10 @@ pk_task_user_accepted (PkTask *task, guint request)
 		return FALSE;
 	}
 
-	g_idle_add ((GSourceFunc) pk_task_user_accepted_idle_cb, state);
+	idle_id = g_idle_add ((GSourceFunc) pk_task_user_accepted_idle_cb, state);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (idle_id, "[PkTask] user-accept");
+#endif
 	return TRUE;
 }
 
@@ -756,6 +760,7 @@ out:
 gboolean
 pk_task_user_declined (PkTask *task, guint request)
 {
+	guint idle_id;
 	PkTaskState *state;
 
 	/* get the not-yet-completed request */
@@ -765,7 +770,10 @@ pk_task_user_declined (PkTask *task, guint request)
 		return FALSE;
 	}
 
-	g_idle_add ((GSourceFunc) pk_task_user_declined_idle_cb, state);
+	idle_id = g_idle_add ((GSourceFunc) pk_task_user_declined_idle_cb, state);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (idle_id, "[PkTask] user-declined");
+#endif
 	return TRUE;
 }
 

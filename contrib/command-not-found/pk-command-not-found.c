@@ -430,6 +430,9 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	cancel_id = g_timeout_add (max_search_time,
 				   (GSourceFunc) pk_cnf_cancel_cb,
 				   cancellable);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (cancel_id, "[PkCommandNotFount] cancel");
+#endif
 
 	/* do search */
 	filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED,

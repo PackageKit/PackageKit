@@ -1854,7 +1854,12 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
 	egg_debug ("emit transaction-list-changed (when idle)");
-	control->priv->transaction_list_changed_id = g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
+	control->priv->transaction_list_changed_id =
+		g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (control->priv->transaction_list_changed_id,
+				 "[PkControl] transaction-list-changed");
+#endif
 }
 
 /**
@@ -1892,7 +1897,12 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
 	egg_debug ("emit restart-schedule (when idle)");
-	store->control->priv->restart_schedule_id = g_idle_add ((GSourceFunc) pk_control_restart_schedule_idle_cb, store);
+	store->control->priv->restart_schedule_id =
+		g_idle_add ((GSourceFunc) pk_control_restart_schedule_idle_cb, store);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (store->control->priv->restart_schedule_id,
+				 "[PkControl] restart-schedule");
+#endif
 }
 
 /**
@@ -1930,7 +1940,12 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
 	egg_debug ("emit updates-changed (when idle)");
-	control->priv->updates_changed_id = g_idle_add ((GSourceFunc) pk_control_updates_changed_idle_cb, store);
+	control->priv->updates_changed_id =
+		g_idle_add ((GSourceFunc) pk_control_updates_changed_idle_cb, store);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (control->priv->updates_changed_id,
+				 "[PkControl] updates-changed");
+#endif
 }
 
 /**
@@ -1968,7 +1983,12 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
 	egg_debug ("emit repo-list-changed (when idle)");
-	control->priv->repo_list_changed_id = g_idle_add ((GSourceFunc) pk_control_repo_list_changed_idle_cb, store);
+	control->priv->repo_list_changed_id =
+		g_idle_add ((GSourceFunc) pk_control_repo_list_changed_idle_cb, store);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (control->priv->repo_list_changed_id,
+				 "[PkControl] repo-list-changed");
+#endif
 }
 
 /**

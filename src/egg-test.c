@@ -89,6 +89,9 @@ void
 egg_test_loop_wait (EggTest *test, guint timeout)
 {
 	test->hang_loop_id = g_timeout_add (timeout, egg_test_hang_check, test);
+#if GLIB_CHECK_VERSION(2,25,8)
+	g_source_set_name_by_id (test->hang_loop_id, "[EggTest] egg-test-hang");
+#endif
 	g_main_loop_run (test->loop);
 }
 
