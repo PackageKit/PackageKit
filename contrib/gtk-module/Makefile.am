@@ -1,26 +1,14 @@
-NULL =
-APP = gedit --new-window GLASS.txt
+SUBDIRS =
 
-moduledir = $(LIBDIR)/gtk-2.0/modules
-module_LTLIBRARIES = libpk-gtk-module.la
-libpk_gtk_module_la_SOURCES = pk-gtk-module.c
-libpk_gtk_module_la_LIBADD = $(PK_GTK_MODULE_LIBS)
-libpk_gtk_module_la_LDFLAGS = -module -avoid-version
-libpk_gtk_module_la_CFLAGS = $(PK_GTK_MODULE_CFLAGS) $(WARNINGFLAGS_C)
+if PK_BUILD_GTK_MODULE_GTK2
+SUBDIRS += gtk-2.0
+endif
 
-clean-local:
-	rm -f *~
-
-local: all
-	GTK_MODULES="$$GTK_MODULES:$$PWD/.libs/libpk-gtk-module.so" $(APP)
+if PK_BUILD_GTK_MODULE_GTK3
+SUBDIRS += gtk-3.0
+endif
 
 EXTRA_DIST =						\
 	README						\
-	GLASS.txt					\
-	$(NULL)
-
-MAINTAINERCLEANFILES =					\
-	*~			      			\
-	Makefile.in					\
-	$(NULL)
+	GLASS.txt
 

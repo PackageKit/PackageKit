@@ -31,6 +31,7 @@ BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-devel
 BuildRequires: polkit-devel >= 0.92
 BuildRequires: libtool
+BuildRequires: gtk3
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
 BuildRequires: python-devel
@@ -246,7 +247,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-?.0/modules/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
@@ -391,7 +392,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %files gtk-module
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
-%{_libdir}/gtk-2.0/modules/*.so
+%{_libdir}/gtk-?.0/modules/*.so
 
 %files command-not-found
 %defattr(-,root,root,-)
