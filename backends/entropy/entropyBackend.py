@@ -1026,7 +1026,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             self._log_message(__name__, "get_packages: done %s/100" % (percent,))
 
             self.percentage(percent)
-            pkg_ids = repo_db.listAllIdpackages()
+            try:
+                pkg_ids = repo_db.listAllIdpackages()
+            except AttributeError:
+                pkg_ids = repo_db.listAllPackageIds()
             pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
@@ -1585,7 +1588,10 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                      repo_all_cats if cat_name not in all_matched_categories])
 
             for cat_id in etp_cat_ids:
-                pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
+                try:
+                    pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
+                except AttributeError:
+                    pkg_ids = repo_db.listPackageIdsInCategoryId(cat_id)
                 pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
