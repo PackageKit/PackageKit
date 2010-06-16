@@ -306,7 +306,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/mime/packages/packagekit-*.xml
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
-%{_sbindir}/packagekitd
+%{_libexecdir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %{_bindir}/pkgenpack

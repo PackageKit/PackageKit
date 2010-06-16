@@ -112,7 +112,7 @@ shared_SOURCES +=					\
 	pk-network-stack-connman.c
 endif
 
-sbin_PROGRAMS =						\
+libexec_PROGRAMS =					\
 	packagekitd					\
 	$(NULL)
 

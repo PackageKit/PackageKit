@@ -28,7 +28,7 @@ servicemaindir       = $(DBUS_SERVICES_DIR)
 servicemain_in_files = org.freedesktop.PackageKit.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(sbindir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
 databasedir = $(PK_DB_DIR)
 database_DATA =						\
