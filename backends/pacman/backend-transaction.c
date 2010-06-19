@@ -123,7 +123,7 @@ transaction_download_start (PacmanTransaction *transaction, BackendDownloadData 
 	}
 
 	/* find a new package for the current file */
-	for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
+	for (packages = pacman_transaction_get_installs (transaction); packages != NULL; packages = pacman_list_next (packages)) {
 		PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
 		if (pacman_package_has_filename (package, filename)) {
 			download->package = package;
@@ -402,6 +402,9 @@ backend_transaction_simulate (PkBackend *backend, PacmanTransactionType type, gu
 		case PACMAN_TRANSACTION_INSTALL:
 			transaction = pacman_manager_install (pacman, flags, &error);
 			break;
+		case PACMAN_TRANSACTION_MODIFY:
+			transaction = pacman_manager_modify (pacman, flags, &error);
+			break;
 		case PACMAN_TRANSACTION_REMOVE:
 			transaction = pacman_manager_remove (pacman, flags, &error);
 			break;
@@ -448,6 +451,50 @@ backend_transaction_run (PkBackend *backend, PacmanTransactionType type, guint32
 	transaction = backend_transaction_simulate (backend, type, flags, targets);
 
 	return backend_transaction_commit (backend, transaction);
+}
+
+void
+backend_transaction_packages (PkBackend *backend, PacmanTransaction *transaction)
+{
+	const PacmanList *installs, *removes;
+	PkInfoEnum info;
+
+	g_return_if_fail (local_database != NULL);
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (transaction != NULL);
+
+	/* emit packages that would have been installed */
+	for (installs = pacman_transaction_get_installs (transaction); installs != NULL; installs = pacman_list_next (installs)) {
+		PacmanPackage *install = (PacmanPackage *) pacman_list_get (installs);
+
+		if (backend_cancelled (backend)) {
+			break;
+		} else {
+			const gchar *name = pacman_package_get_name (install);
+			if (pacman_database_find_package (local_database, name) != NULL) {
+				backend_package (backend, install, PK_INFO_ENUM_UPDATING);
+			} else {
+				backend_package (backend, install, PK_INFO_ENUM_INSTALLING);
+			}
+		}
+	}
+
+	if (pk_backend_get_role (backend) == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
+		info = PK_INFO_ENUM_OBSOLETING;
+	} else {
+		info = PK_INFO_ENUM_REMOVING;
+	}
+
+	/* emit packages that would have been removed */
+	for (removes = pacman_transaction_get_removes (transaction); removes != NULL; removes = pacman_list_next (removes)) {
+		PacmanPackage *remove = (PacmanPackage *) pacman_list_get (removes);
+
+		if (backend_cancelled (backend)) {
+			break;
+		} else {
+			backend_package (backend, remove, info);
+		}
+	}
 }
 
 PacmanTransaction *

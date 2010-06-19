@@ -26,6 +26,7 @@
 
 typedef enum {
 	PACMAN_TRANSACTION_INSTALL,
+	PACMAN_TRANSACTION_MODIFY,
 	PACMAN_TRANSACTION_REMOVE,
 	PACMAN_TRANSACTION_SYNC,
 	PACMAN_TRANSACTION_UPDATE,
@@ -45,6 +46,8 @@ PacmanTransaction	*backend_transaction_run	(PkBackend		*backend,
 							 guint32		 flags,
 							 const PacmanList	*targets);
 
+void			 backend_transaction_packages	(PkBackend		*backend,
+							 PacmanTransaction	*transaction);
 PacmanTransaction	*backend_transaction_commit	(PkBackend		*backend,
 							 PacmanTransaction	*transaction);
 gboolean		 backend_transaction_finished	(PkBackend		*backend,

@@ -121,17 +121,8 @@ backend_simulate_remove_packages_thread (PkBackend *backend)
 		pacman_list_free_full (list, g_free);
 
 		if (transaction != NULL) {
-			const PacmanList *packages;
-
-			/* emit packages that would have been removed */
-			for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
-				PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
-				if (backend_cancelled (backend)) {
-					break;
-				} else {
-					backend_package (backend, package, PK_INFO_ENUM_REMOVING);
-				}
-			}
+			/* emit packages that would have been installed or removed */
+			backend_transaction_packages (backend, transaction);
 		}
 	}
 

@@ -51,46 +51,6 @@ backend_transaction_list_targets (PkBackend *backend)
 	return list;
 }
 
-static void
-backend_transaction_packages (PkBackend *backend, PacmanTransaction *transaction)
-{
-	const PacmanList *removes, *packages;
-
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (transaction != NULL);
-
-	/* emit packages that would have been installed */
-	for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
-		PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
-
-		for (removes = pacman_package_get_removes (package); removes != NULL; removes = pacman_list_next (removes)) {
-			PacmanPackage *remove = (PacmanPackage *) pacman_list_get (removes);
-
-			if (backend_cancelled (backend)) {
-				break;
-			} else {
-				PkRoleEnum role = pk_backend_get_role (backend);
-				if (role == PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) {
-					backend_package (backend, remove, PK_INFO_ENUM_OBSOLETING);
-				} else {
-					backend_package (backend, remove, PK_INFO_ENUM_REMOVING);
-				}
-			}
-		}
-
-		if (backend_cancelled (backend)) {
-			break;
-		} else {
-			const gchar *name = pacman_package_get_name (package);
-			if (pacman_database_find_package (local_database, name) != NULL) {
-				backend_package (backend, package, PK_INFO_ENUM_UPDATING);
-			} else {
-				backend_package (backend, package, PK_INFO_ENUM_INSTALLING);
-			}
-		}
-	}
-}
-
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
 {
@@ -174,12 +134,58 @@ backend_install_files_thread (PkBackend *backend)
  * backend_install_files:
  **/
 void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar	**full_paths)
+backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (full_paths != NULL);
 
 	backend_run (backend, PK_STATUS_ENUM_SETUP, backend_install_files_thread);
+}
+
+static gboolean
+backend_simulate_install_files_thread (PkBackend *backend)
+{
+	guint iterator;
+	PacmanList *list = NULL;
+
+	gchar **full_paths;
+
+	PacmanTransaction *transaction = NULL;
+	PacmanTransactionFlags flags = PACMAN_TRANSACTION_FLAGS_NONE;
+
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	full_paths = pk_backend_get_strv (backend, "full_paths");
+
+	g_return_val_if_fail (full_paths != NULL, FALSE);
+
+	/* prepare the transaction */
+	for (iterator = 0; full_paths[iterator] != NULL; ++iterator) {
+		list = pacman_list_add (list, full_paths[iterator]);
+	}
+	if (list != NULL) {
+		transaction = backend_transaction_simulate (backend, PACMAN_TRANSACTION_INSTALL, flags, list);
+		pacman_list_free (list);
+
+		if (transaction != NULL) {
+			/* emit packages that would have been installed or removed */
+			backend_transaction_packages (backend, transaction);
+		}
+	}
+
+	return backend_transaction_finished (backend, transaction);
+}
+
+/**
+ * backend_install_files:
+ **/
+void
+backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (full_paths != NULL);
+
+	backend_run (backend, PK_STATUS_ENUM_SETUP, backend_simulate_install_files_thread);
 }
 
 static gboolean
@@ -257,46 +263,46 @@ backend_update_packages_thread (PkBackend *backend)
 	PacmanList *list, *asdeps = NULL;
 	/* FS#5331: use only_trusted */
 	PacmanTransaction *transaction = NULL;
-	PacmanTransactionFlags flags = PACMAN_TRANSACTION_FLAGS_NONE, dflags = PACMAN_TRANSACTION_FLAGS_INSTALL_IMPLICIT;
+	PacmanTransactionFlags sflags = PACMAN_TRANSACTION_FLAGS_NONE, mflags = PACMAN_TRANSACTION_FLAGS_INSTALL_IMPLICIT;
 
+	g_return_val_if_fail (local_database != NULL, FALSE);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
 	/* prepare the transaction */
 	list = backend_transaction_list_targets (backend);
 	if (list != NULL) {
-		transaction = backend_transaction_simulate (backend, PACMAN_TRANSACTION_SYNC, flags, list);
+		transaction = backend_transaction_simulate (backend, PACMAN_TRANSACTION_SYNC, sflags, list);
 		pacman_list_free_full (list, g_free);
 
 		if (transaction != NULL) {
-			const PacmanList *packages;
+			const PacmanList *installs, *removes;
 
-			/* check for packages that should be installed as deps */
-			for (packages = pacman_transaction_get_packages (transaction); packages != NULL; packages = pacman_list_next (packages)) {
-				PacmanPackage *package = (PacmanPackage *) pacman_list_get (packages);
-				const PacmanList *removes = pacman_package_get_removes (package);
+			/* change the install reason of for packages that replace only dependencies of other packages */
+			for (installs = pacman_transaction_get_installs (transaction); installs != NULL; installs = pacman_list_next (installs)) {
+				PacmanPackage *install = (PacmanPackage *) pacman_list_get (installs);
+				const gchar *name = pacman_package_get_name (install);
 
 				if (backend_cancelled (backend)) {
 					break;
-				} else if (removes != NULL) {
-					for (; removes != NULL; removes = pacman_list_next (removes)) {
+				} else if (pacman_database_find_package (local_database, name) == NULL) {
+					const PacmanList *replaces = pacman_package_get_replaces (install);
+
+					for (removes = pacman_transaction_get_removes (transaction); removes != NULL; removes = pacman_list_next (removes)) {
 						PacmanPackage *remove = (PacmanPackage *) pacman_list_get (removes);
+						const gchar *replace = pacman_package_get_name (remove);
 
 						if (backend_cancelled (backend)) {
 							break;
-						} else if (pacman_package_was_explicitly_installed (remove)) {
-							break;
+						} else if (pacman_list_find_string (replaces, replace)) {
+							if (pacman_package_was_explicitly_installed (remove)) {
+								break;
+							}
 						}
 					}
 
-					/* if all removes were installed as dependencies, do the same for this package */
+					/* none of the replaced packages were installed explicitly */
 					if (removes == NULL) {
-						const gchar *name, *repo;
-						PacmanDatabase *database = pacman_package_get_database (package);
-
-						name = pacman_package_get_name (package);
-						repo = pacman_database_get_name (database);
-
-						asdeps = pacman_list_add (asdeps, g_strdup_printf ("%s/%s", repo, name));
+						asdeps = pacman_list_add (asdeps, g_strdup (name));
 					}
 				}
 			}
@@ -306,11 +312,11 @@ backend_update_packages_thread (PkBackend *backend)
 	}
 
 	/* mark replacements as deps if required */
-	if (transaction != NULL && asdeps != NULL) {
-		g_object_unref (transaction);
-		transaction = backend_transaction_run (backend, PACMAN_TRANSACTION_SYNC, dflags, asdeps);
-		pacman_list_free_full (asdeps, g_free);
-	} else if (asdeps != NULL) {
+	if (asdeps != NULL) {
+		if (transaction != NULL) {
+			g_object_unref (transaction);
+			transaction = backend_transaction_run (backend, PACMAN_TRANSACTION_MODIFY, mflags, asdeps);
+		}
 		pacman_list_free_full (asdeps, g_free);
 	}
 

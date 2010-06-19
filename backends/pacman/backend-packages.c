@@ -254,8 +254,7 @@ backend_get_details_thread (PkBackend *backend)
 		if (pacman_package_get_database (package) == local_database) {
 			size = pacman_package_get_installed_size (package);
 		} else {
-			/* FS#18769: change to get_download_size */
-			size = pacman_package_get_size (package);
+			size = pacman_package_get_download_size (package);
 		}
 
 		licenses = g_string_free (string, FALSE);

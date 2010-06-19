@@ -29,6 +29,8 @@ void	 backend_download_packages		(PkBackend	*backend,
 void	 backend_install_files			(PkBackend	*backend,
 						 gboolean	 only_trusted,
 						 gchar		**full_paths);
+void	 backend_simulate_install_files		(PkBackend	*backend,
+						 gchar		**full_paths);
 
 void	 backend_install_packages		(PkBackend	*backend,
 						 gboolean	 only_trusted,
