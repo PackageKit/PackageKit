@@ -362,7 +362,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
-	"Aurelien Lefebvre <alefebvre@mandriva.com>",	/* author */
+	"Aurelien Lefebvre <alkh@mandriva.org>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */

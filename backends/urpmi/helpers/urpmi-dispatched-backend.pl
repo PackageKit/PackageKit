@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright (C) 2008 Aurelien Lefebvre <alefebvre@mandriva.com>
+# Copyright (C) 2008 Aurelien Lefebvre <alkh@mandriva.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
