@@ -383,7 +383,7 @@ sub install_packages {
     caseinsensitive => 0,
     all => 0);
   eval {
-    perform_installation($urpm, \%requested, { only_trusted => $only_trusted });
+    perform_installation($urpm, \%requested, only_trusted => $only_trusted);
   };
   _finished();
 }
@@ -716,7 +716,7 @@ sub update_system {
 
   my $only_trusted = @{$args}[0];
   eval {
-    perform_installation($urpm, {}, { auto_select => 1, only_trusted => $only_trusted});
+    perform_installation($urpm, {}, auto_select => 1, only_trusted => $only_trusted);
   };
   _finished();
 }
