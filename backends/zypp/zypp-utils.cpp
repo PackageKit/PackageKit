@@ -777,6 +777,9 @@ zypp_get_updates (PkBackend *backend)
 gboolean
 zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
 {
+	if (patch == NULL)
+		return false;
+
 	// set the restart flag if a restart is needed
 	if (restart != PK_RESTART_ENUM_SYSTEM && (patch->reloginSuggested () ||
 						  patch->restartSuggested () ||
