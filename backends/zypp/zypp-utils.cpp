@@ -1028,7 +1028,6 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 
 	int i = 1;
 	int num_of_repos = repos.size ();
-	int percentage_increment = 100 / num_of_repos;
 	gchar *repo_messages = NULL;
 
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
@@ -1065,7 +1064,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 		}
 
 		// Update the percentage completed
-		pk_backend_set_percentage (backend, i == num_of_repos ? 100 : i * percentage_increment);
+		pk_backend_set_percentage (backend, i >= num_of_repos ? 100 : (100 * i) / num_of_repos);
 	}
 	if (repo_messages != NULL)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_CONNECTION_REFUSED, repo_messages);
