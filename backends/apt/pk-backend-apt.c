@@ -331,48 +331,60 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, "aptBackend.py", "search-details", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
  * pk_backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_file (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, "aptBackend.py", "search-file", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
  * pk_backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_group (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, "aptBackend.py", "search-group", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_name (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
+	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
+	search = g_strjoinv ("&", values);
 	pk_backend_spawn_helper (spawn, "aptBackend.py", "search-name", filters_text, search, NULL);
 	g_free (filters_text);
+	g_free (search);
 }
 
 /**
