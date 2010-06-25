@@ -56,6 +56,7 @@ pacman_message_cb (const gchar *domain, GLogLevelFlags level, const gchar *messa
 			break;
 
 		default:
+			egg_warning ("pacman: %s", message);
 			break;
 	}
 }
@@ -67,7 +68,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	GError *error = NULL;
-	GLogLevelFlags flags = G_LOG_LEVEL_WARNING | G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG;
+	GLogLevelFlags flags = G_LOG_LEVEL_MASK;
 
 	g_return_if_fail (backend != NULL);
 
