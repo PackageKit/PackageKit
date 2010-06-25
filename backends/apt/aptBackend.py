@@ -607,11 +607,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     self._emit_visible_package(filters, pkg)
                     break
 
-    def search_group(self, filters_str, group):
+    def search_group(self, filters_str, groups):
         """
         Implement the apt2-search-group functionality
         """
-        pklog.info("Searching for group: %s" % group)
+        pklog.info("Searching for groups: %s" % groups)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
@@ -621,7 +621,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         filters = filters_str.split(";")
 
         for pkg in self._cache:
-            if self._get_package_group(pkg) == group:
+            if self._get_package_group(pkg) in groups:
                 self._emit_visible_package(filters, pkg)
 
     def search_name(self, filters_str, values):
