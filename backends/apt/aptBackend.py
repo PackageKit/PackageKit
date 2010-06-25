@@ -543,7 +543,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     # Methods ( client -> engine -> backend )
 
-    def search_file(self, filters, filenames_string):
+    def search_file(self, filters_str, filenames):
         """Search for files in packages.
 
         Works only for installed file if apt-file isn't installed.
@@ -554,13 +554,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
-        filenames = filenames_string.split("&")
+        #FIXME: Should be done by the backend class
+        filters = filters_str.split(";")
+
         result_names = set()
         # Optionally make use of apt-file's Contents cache to search for not
         # installed files. But still search for installed files additionally
         # to make sure that we provide up-to-date results
         if os.path.exists("/usr/bin/apt-file") and \
-           FILTER_INSTALLED not in filters.split(";"):
+           FILTER_INSTALLED not in filters:
             #FIXME: Make use of rapt-file on Debian if the network is available
             #FIXME: Show a warning to the user if the apt-file cache is several
             #       weeks old
@@ -605,7 +607,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     self._emit_visible_package(filters, pkg)
                     break
 
-    def search_group(self, filters, group):
+    def search_group(self, filters_str, group):
         """
         Implement the apt2-search-group functionality
         """
@@ -615,11 +617,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
+        #FIXME: Should be done by the backend class
+        filters = filters_str.split(";")
+
         for pkg in self._cache:
             if self._get_package_group(pkg) == group:
                 self._emit_visible_package(filters, pkg)
 
-    def search_name(self, filters, values):
+    def search_name(self, filters_str, values):
         """
         Implement the apt2-search-name functionality
         """
@@ -634,12 +639,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
 
+        #FIXME: Should be done by the backend class
+        filters = filters_str.split(";")
+
         for pkg_name in self._cache.keys():
             if matches(values, pkg_name):
                 self._emit_all_visible_pkg_versions(filters,
                                                     self._cache[pkg_name])
 
-    def search_details(self, filters, values):
+    def search_details(self, filters_str, values):
         """
         Implement the apt2-search-details functionality
         """
@@ -649,6 +657,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._check_init(progress=False)
         self.allow_cancel(True)
         results = []
+
+        #FIXME: Should be done by the backend class
+        filters = filters_str.split(";")
 
         if XAPIAN_SUPPORT == True:
             search_flags = (xapian.QueryParser.FLAG_BOOLEAN |
@@ -1088,7 +1099,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,
                            "Please make sure that python-software-properties is"
                            "correctly installed.")
-        filter_list = filters.split(";")
         repos = PackageKitSoftwareProperties()
         # Emit distro components as virtual repositories
         for comp in repos.distro.source_template.components:
@@ -1099,7 +1109,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                comp.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_download_state(comp)[0]
-            if not FILTER_DEVELOPMENT in filter_list:
+            if not FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
                                  description.decode(DEFAULT_ENCODING),
                                  enabled)
@@ -1112,13 +1122,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                                template.name)
             #FIXME: There is no inconsitent state in PackageKit
             enabled = repos.get_comp_child_state(template)[0]
-            if not FILTER_DEVELOPMENT in filter_list:
+            if not FILTER_DEVELOPMENT in filters:
                 self.repo_detail(repo_id,
                                  description.decode(DEFAULT_ENCODING),
                                  enabled)
         # Emit distro's cdrom sources
         for source in repos.get_cdrom_sources():
-            if FILTER_NOT_DEVELOPMENT in filter_list and \
+            if FILTER_NOT_DEVELOPMENT in filters and \
                source.type in ("deb-src", "rpm-src"):
                 continue
             enabled = not source.disabled
@@ -1129,7 +1139,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.repo_detail(repo_id, description.decode(DEFAULT_ENCODING),
                              enabled)
         # Emit distro's virtual source code repositoriy
-        if not FILTER_NOT_DEVELOPMENT in filter_list:
+        if not FILTER_NOT_DEVELOPMENT in filters:
             repo_id = "%s_source" % repos.distro.id
             enabled = repos.get_source_code_state() or False
             #FIXME: no translation :(
@@ -1139,7 +1149,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                              enabled)
         # Emit third party repositories
         for source in repos.get_isv_sources():
-            if FILTER_NOT_DEVELOPMENT in filter_list and \
+            if FILTER_NOT_DEVELOPMENT in filters and \
                source.type in ("deb-src", "rpm-src"):
                 continue
             enabled = not source.disabled
@@ -1570,8 +1580,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             """Send a blocked package signal for the given
             apt.package.BaseDependency.
             """
-            filters_lst = filters.split(";")
-            if FILTER_INSTALLED in filters_lst:
+            if FILTER_INSTALLED in filters:
                 return
             if pkg:
                 summary = pkg.summary
@@ -2021,9 +2030,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         """
         Return True if the package should be shown in the user interface
         """
-        if filters == FILTER_NONE:
+        if filters == [FILTER_NONE]:
             return True
-        for filter in filters.split(";"):
+        for filter in filters:
             if (filter == FILTER_INSTALLED and not pkg.isInstalled) or \
                (filter == FILTER_NOT_INSTALLED and pkg.isInstalled) or \
                (filter == FILTER_SUPPORTED and not \
