@@ -548,7 +548,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         Works only for installed file if apt-file isn't installed.
         """
-        pklog.info("Searching for file: %s" % filenames_string)
+        pklog.info("Searching for file: %s" % filenames)
         self.status(STATUS_QUERY)
         self.percentage(None)
         self._check_init(progress=False)
