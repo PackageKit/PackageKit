@@ -480,6 +480,23 @@ GROUPS = {
     end
   end
 
+  def _distsize(origin)
+    portdir = $portsdb.portdir(origin)
+    file = $portsdb.make_var('MD5_FILE', portdir) # 'distinfo'
+    dist_dir = $portsdb.make_var('DISTDIR', $portsdb.my_portdir)
+    distsize = 0
+    open(file) do |f|
+      f.each do |line|
+        if /^SIZE \((.*)\) = ([0-9]+)/ =~ line
+          if not File.exist?(File.join(dist_dir, $1))
+            distsize += $2.to_i
+          end
+        end
+      end
+    end
+    return distsize
+  end
+
   def get_details(package_ids)
     status(STATUS_INFO)
     package_ids.each do |package|
@@ -506,7 +523,7 @@ GROUPS = {
             desc = desc.gsub(/\n/, ';')
             desc = desc.gsub(/\t/, ' ')
         end
-        size = pkg.totalsize || 0
+        size = pkg.totalsize || _distsize(port.origin)
         details(package, license, group, desc, www, size)
       end
       else
