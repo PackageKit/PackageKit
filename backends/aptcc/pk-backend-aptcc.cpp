@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdio.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/algorithms.h>
 
@@ -218,6 +219,51 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	pk_backend_set_bool (backend, "get_depends", false);
 	pk_backend_set_bool (backend, "recursive", recursive);
 	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
+}
+
+
+static gboolean
+backend_get_distro_upgrades_thread (PkBackend *backend)
+{
+	FILE *fpipe;
+	char releaseName[256];
+	char releaseVersion[256];
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	if (!(fpipe = (FILE*)popen("./get-distro-upgrade.py", "r"))) {
+	    goto out;
+	}
+
+	if (fgets(releaseName, sizeof releaseName, fpipe)) {
+	    goto out;
+	}
+
+	if (fgets(releaseVersion, sizeof releaseVersion, fpipe)) {
+	    goto out;
+	}
+	pclose(fpipe);
+
+	pk_backend_distro_upgrade (backend,
+				   PK_DISTRO_UPGRADE_ENUM_STABLE,
+				   g_strdup_printf("%s %s", releaseName, releaseVersion),
+				   "The latest stable release");
+
+	pk_backend_finished (backend);
+	return true;
+
+out:
+	pk_backend_finished (backend);
+	return false;
+}
+
+/**
+ * backend_get_distro_upgrades:
+ */
+static void
+backend_get_distro_upgrades (PkBackend *backend)
+{
+	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
 }
 
 static gboolean
@@ -1463,7 +1509,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,						/* get_categories */
 	backend_get_depends,				/* get_depends */
 	backend_get_details,				/* get_details */
-	NULL,						/* get_distro_upgrades */
+	backend_get_distro_upgrades,			/* get_distro_upgrades */
 	backend_get_files,				/* get_files */
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */

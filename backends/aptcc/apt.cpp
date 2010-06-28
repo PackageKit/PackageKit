@@ -816,19 +816,19 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 // 	regex_t re;
 // 	gchar *value;
 // 	gchar *values_str;
-// 
+//
 // 	values_str = g_strjoinv("|", values);
 // 	value = g_strdup_printf("^X-AppInstall-Codecs=\\(.*;\\)\\?\\(%s\\)\\(;.*\\)\\?$",
 // 				values_str);
 // 	g_free(values_str);
-// 
+//
 // 	if(regcomp(&re, value, REG_NOSUB) != 0) {
 // 		egg_debug("Regex compilation error");
 // 		g_free(value);
 // 		return vector<string>();
 // 	}
 // 	g_free(value);
-// 
+//
 // 	DIR *dp;
 // 	struct dirent *dirp;
 // 	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
@@ -837,7 +837,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 // 		error = true;
 // 		return vector<string>();
 // 	}
-// 
+//
 // 	string line;
 // 	while ((dirp = readdir(dp)) != NULL) {
 // 		if (_cancel) {
@@ -867,7 +867,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 // 			}
 // 		}
 // 	}
-// 
+//
 // 	closedir(dp);
 // 	regfree(&re);
 // 	return packageList;
@@ -1079,7 +1079,7 @@ bool aptcc::removingEssentialPackages(pkgCacheFile &Cache)
 						      List.c_str()));
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -1220,24 +1220,24 @@ void aptcc::updateInterface(int fd, int writeFd)
 				string orig_file, new_file;
 
 				// go to first ' and read until the end
-				for(;str[i] != '\'' || str[i] == 0; i++) 
+				for(;str[i] != '\'' || str[i] == 0; i++)
 					/*nothing*/
 					;
 				i++;
-				for(;str[i] != '\'' || str[i] == 0; i++) 
+				for(;str[i] != '\'' || str[i] == 0; i++)
 					orig_file.append(1, str[i]);
 				i++;
 
 				// same for second ' and read until the end
-				for(;str[i] != '\'' || str[i] == 0; i++) 
+				for(;str[i] != '\'' || str[i] == 0; i++)
 					/*nothing*/
 				;
 				i++;
-				for(;str[i] != '\'' || str[i] == 0; i++) 
+				for(;str[i] != '\'' || str[i] == 0; i++)
 					new_file.append(1, str[i]);
 				i++;
 
-				gchar *confmsg; 
+				gchar *confmsg;
 				confmsg = g_strdup_printf("The configuration file '%s' "
 							  "(modified by you or a script) "
 							  "has a newer version '%s'.\n"
@@ -1681,7 +1681,15 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		setlocale(LC_ALL, "C");
 
 		// Debconf handlying
-		setenv("DEBIAN_FRONTEND", "dbus", 1);
+		gchar *socket;
+		if (socket = pk_backend_get_frontend_socket(m_backend)) {
+			setenv("DEBIAN_FRONTEND", "passthrough", 1);
+			setenv("DEBCONF_PIPE", socket, 1);
+		} else {
+			// we don't have a socket set, let's fallback to noninteractive
+			setenv("DEBIAN_FRONTEND", "noninteractive", 1);
+		}
+
 		gchar *locale;
 		// Set the LANGUAGE so debconf messages get localization
 		if (locale = pk_backend_get_locale(m_backend)) {
