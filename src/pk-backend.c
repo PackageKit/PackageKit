@@ -1980,8 +1980,9 @@ pk_backend_set_role_internal (PkBackend *backend, PkRoleEnum role)
 {
 	/* Should only be called once... */
 	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
-		egg_warning ("cannot set role more than once, already %s",
-			    pk_role_enum_to_string (backend->priv->role));
+		egg_warning ("cannot set role to %s, already %s",
+			     pk_role_enum_to_string (role),
+			     pk_role_enum_to_string (backend->priv->role));
 		return FALSE;
 	}
 
