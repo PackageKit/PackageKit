@@ -57,6 +57,8 @@ PK_GLIB2_LIBS =						\
 	$(NULL)
 
 pkcon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-console.c					\
 	$(NULL)
 
@@ -72,6 +74,8 @@ pkcon_CFLAGS =						\
 	$(NULL)
 
 pkmon_SOURCES =						\
+	egg-debug.c					\
+	egg-debug.h					\
 	pk-monitor.c					\
 	$(NULL)
 
