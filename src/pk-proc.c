@@ -341,35 +341,3 @@ pk_proc_new (void)
 	return PK_PROC (proc);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-pk_proc_test (EggTest *test)
-{
-	gboolean ret;
-	PkProc *proc;
-//	gchar *files[] = { "/sbin/udevd", NULL };
-
-	if (!egg_test_start (test, "PkProc"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	proc = pk_proc_new ();
-	egg_test_assert (test, proc != NULL);
-
-	/************************************************************/
-	egg_test_title (test, "refresh proc data");
-	ret = pk_proc_refresh (proc);
-	egg_test_assert (test, ret);
-
-	g_object_unref (proc);
-
-	egg_test_end (test);
-}
-#endif
-

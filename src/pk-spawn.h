@@ -68,7 +68,8 @@ PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
 							 gchar		**argv,
-							 gchar		**envp)
+							 gchar		**envp,
+							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_spawn_is_running			(PkSpawn	*spawn);
 gboolean	 pk_spawn_kill				(PkSpawn	*spawn);

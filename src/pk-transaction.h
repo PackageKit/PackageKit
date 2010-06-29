@@ -222,6 +222,10 @@ void		 pk_transaction_what_provides			(PkTransaction	*transaction,
 								 const gchar	*type,
 								 gchar		**values,
 								 DBusGMethodInvocation *context);
+gboolean	 pk_transaction_filter_check			(const gchar	*filter,
+								 GError		**error);
+gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
+								 GError		**error);
 
 G_END_DECLS
 

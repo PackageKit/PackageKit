@@ -73,6 +73,16 @@ struct PkBackendSpawnPrivate
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
 
 /**
+ * pk_backend_spawn_get_backend:
+ **/
+PkBackend *
+pk_backend_spawn_get_backend (PkBackendSpawn *backend_spawn)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
+	return backend_spawn->priv->backend;
+}
+
+/**
  * pk_backend_spawn_set_filter_stdout:
  **/
 gboolean
@@ -145,9 +155,6 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 
 /**
  * pk_backend_spawn_parse_stdout:
- *
- * If you are editing this function creating a new backend,
- * then you are probably doing something wrong.
  **/
 static gboolean
 pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
@@ -594,24 +601,34 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 }
 
 /**
+ * pk_backend_spawn_inject_data:
+ **/
+gboolean
+pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn, const gchar *line)
+{
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* do we ignore with a filter func ? */
+	if (backend_spawn->priv->stdout_func != NULL) {
+		ret = backend_spawn->priv->stdout_func (backend_spawn->priv->backend, line);
+		if (!ret)
+			return TRUE;
+	}
+
+	return pk_backend_spawn_parse_stdout (backend_spawn, line);
+}
+
+/**
  * pk_backend_spawn_stdout_cb:
  **/
 static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-
-	/* do we ignore with a filter func ? */
-	if (backend_spawn->priv->stdout_func != NULL) {
-		ret = backend_spawn->priv->stdout_func (backend_spawn->priv->backend, line);
-		if (!ret)
-			return;
-	}
-
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, line);
+	ret = pk_backend_spawn_inject_data (backend_spawn, line);
 	if (!ret)
-		egg_debug ("failed to parse '%s'", line);
+		egg_debug ("failed to parse: %s", line);
 }
 
 /**
@@ -641,7 +658,7 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
  * Our proxy variable is typically 'username:password@server:port'
  * but http_proxy expects 'http://username:password@server:port/'
  **/
-static gchar *
+gchar *
 pk_backend_spawn_convert_uri (const gchar *proxy)
 {
 	GString *string;
@@ -823,6 +840,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	gchar **argv;
 	gchar **envp;
 	PkHintEnum background;
+	GError *error = NULL;
 	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 #if PK_BUILD_LOCAL
 	const gchar *directory;
@@ -873,10 +891,11 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 
 	priv->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);
-	ret = pk_spawn_argv (priv->spawn, argv, envp);
+	ret = pk_spawn_argv (priv->spawn, argv, envp, &error);
 	if (!ret) {
 		pk_backend_error_code (priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "Spawn of helper '%s' failed", argv[0]);
+				       "Spawn of helper '%s' failed", argv[0], error->message);
+		g_error_free (error);
 		pk_backend_finished (priv->backend);
 	}
 	g_free (filename);
@@ -1060,321 +1079,4 @@ pk_backend_spawn_new (void)
 	backend_spawn = g_object_new (PK_TYPE_BACKEND_SPAWN, NULL);
 	return PK_BACKEND_SPAWN (backend_spawn);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-static GMainLoop *loop;
-static guint number_packages = 0;
-
-/**
- * pk_backend_spawn_test_finished_cb:
- **/
-static void
-pk_backend_spawn_test_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendSpawn *backend_spawn)
-{
-	g_main_loop_quit (loop);
-}
-
-/**
- * pk_backend_spawn_test_package_cb:
- **/
-static void
-pk_backend_spawn_test_package_cb (PkBackend *backend, PkInfoEnum info,
-				  const gchar *package_id, const gchar *summary,
-				  PkBackendSpawn *backend_spawn)
-{
-	number_packages++;
-}
-
-static gchar **
-pk_backend_spawn_va_list_to_argv_test (const gchar *first_element, ...)
-{
-	va_list args;
-	gchar **array;
-
-	/* get the argument list */
-	va_start (args, first_element);
-	array = pk_backend_spawn_va_list_to_argv (first_element, &args);
-	va_end (args);
-
-	return array;
-}
-
-void
-pk_backend_test_spawn (EggTest *test)
-{
-	PkBackendSpawn *backend_spawn;
-	PkBackend *backend;
-	const gchar *text;
-	guint refcount;
-	gboolean ret;
-	gchar *uri;
-	gchar **array;
-
-	loop = g_main_loop_new (NULL, FALSE);
-
-	if (!egg_test_start (test, "PkBackendSpawn"))
-		return;
-
-	/************************************************************
-	 ****************      splitting va_list       **************
-	 ************************************************************/
-	egg_test_title (test, "va_list_to_argv single");
-	array = pk_backend_spawn_va_list_to_argv_test ("richard", NULL);
-	if (g_strcmp0 (array[0], "richard") == 0 &&
-	    array[1] == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect array '%s'", array[0]);
-	g_strfreev (array);
-
-	/************************************************************/
-	egg_test_title (test, "va_list_to_argv triple");
-	array = pk_backend_spawn_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
-	if (g_strcmp0 (array[0], "richard") == 0 &&
-	    g_strcmp0 (array[1], "phillip") == 0 &&
-	    g_strcmp0 (array[2], "hughes") == 0 &&
-	    array[3] == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
-	g_strfreev (array);
-
-	/************************************************************/
-	egg_test_title (test, "get an backend_spawn");
-	backend_spawn = pk_backend_spawn_new ();
-	egg_test_assert (test, backend_spawn != NULL);
-
-	/* private copy for unref testing */
-	backend = backend_spawn->priv->backend;
-	/* incr ref count so we don't kill the object */
-	g_object_ref (backend);
-
-	/************************************************************/
-	egg_test_title (test, "get backend name");
-	text = pk_backend_spawn_get_name (backend_spawn);
-	if (text == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid name %s", text);
-
-	/************************************************************/
-	egg_test_title (test, "set backend name");
-	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid set name");
-
-	/************************************************************/
-	egg_test_title (test, "get backend name");
-	text = pk_backend_spawn_get_name (backend_spawn);
-	if (g_strcmp0 (text, "test_spawn") == 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid name %s", text);
-
-	/* needed to avoid an error */
-	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
-	ret = pk_backend_lock (backend_spawn->priv->backend);
-
-	/************************************************************
-	 **********       Check parsing common error      ***********
-	 ************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Percentage1");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t0");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Percentage2");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\tbrian");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Percentage3");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t12345");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Percentage4");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage\t");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Percentage5");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "percentage");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Subpercentage");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "subpercentage\t17");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout NoPercentageUpdates");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "no-percentage-updates");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout failure");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "error\tnot-present-woohoo\tdescription text");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not detect incorrect enum");
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout Status");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "status\tquery");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid enum");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not detect incorrect enum");
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout RequireRestart invalid PackageId");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not detect incorrect package id");
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate1");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\ttrue");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_stdout AllowUpdate2");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn, "allow-cancel\tbrian");
-	egg_test_assert (test, !ret);
-
-	/************************************************************
-	 **********         Check uri conversion          ***********
-	 ************************************************************/
-	egg_test_title (test, "convert proxy uri (bare)");
-	uri = pk_backend_spawn_convert_uri ("username:password@server:port");
-	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
-	g_free (uri);
-
-	/************************************************************/
-	egg_test_title (test, "convert proxy uri (full)");
-	uri = pk_backend_spawn_convert_uri ("http://username:password@server:port/");
-	egg_test_assert (test, (g_strcmp0 (uri, "http://username:password@server:port/") == 0));
-	g_free (uri);
-
-	/************************************************************/
-	egg_test_title (test, "convert proxy uri (partial)");
-	uri = pk_backend_spawn_convert_uri ("ftp://username:password@server:port");
-	egg_test_assert (test, (g_strcmp0 (uri, "ftp://username:password@server:port/") == 0));
-	g_free (uri);
-
-	/************************************************************
-	 **********        Check parsing common out       ***********
-	 ************************************************************/
-	egg_test_title (test, "test pk_backend_spawn_parse_common_out Package");
-	ret = pk_backend_spawn_parse_stdout (backend_spawn,
-		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "manually unlock as we have no engine");
-	ret = pk_backend_unlock (backend_spawn->priv->backend);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not unlock");
-
-	/* reset */
-	g_object_unref (backend_spawn);
-
-	/************************************************************/
-	egg_test_title (test, "test we unref'd all but one of the PkBackend instances");
-	refcount = G_OBJECT(backend)->ref_count;
-	if (refcount == 1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "refcount invalid %i", refcount);
-
-	/* new */
-	backend_spawn = pk_backend_spawn_new ();
-
-	/************************************************************/
-	egg_test_title (test, "set backend name");
-	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "invalid set name");
-
-	/* so we can spin until we finish */
-	g_signal_connect (backend_spawn->priv->backend, "finished",
-			  G_CALLBACK (pk_backend_spawn_test_finished_cb), backend_spawn);
-	/* so we can count the returned packages */
-	g_signal_connect (backend_spawn->priv->backend, "package",
-			  G_CALLBACK (pk_backend_spawn_test_package_cb), backend_spawn);
-
-	/* needed to avoid an error */
-	ret = pk_backend_lock (backend_spawn->priv->backend);
-
-	/************************************************************
-	 **********          Use a spawned helper         ***********
-	 ************************************************************/
-	egg_test_title (test, "test search-name.sh running");
-	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "cannot spawn search-name.sh");
-
-	/* wait for finished */
-	g_main_loop_run (loop);
-
-	/************************************************************/
-	egg_test_title (test, "test number of packages");
-	if (number_packages == 2)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "wrong number of packages %i", number_packages);
-
-	/************************************************************/
-	egg_test_title (test, "manually unlock as we have no engine");
-	ret = pk_backend_unlock (backend_spawn->priv->backend);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not unlock");
-
-	/* done */
-	g_object_unref (backend_spawn);
-
-	/************************************************************/
-	egg_test_title (test, "test we unref'd all but one of the PkBackend instances");
-	refcount = G_OBJECT(backend)->ref_count;
-	if (refcount == 1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "refcount invalid %i", refcount);
-
-	/* we ref'd it manually for checking, so we need to unref it */
-	g_object_unref (backend);
-	g_main_loop_unref (loop);
-
-	egg_test_end (test);
-}
-#endif
 

@@ -491,9 +491,10 @@ out:
  *
  **/
 gboolean
-pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 	gboolean idleio;
 	guint i;
 	guint len;
@@ -502,6 +503,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	const gchar *key;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 
 	len = g_strv_length (argv);
@@ -515,7 +517,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 
 	/* check we are not using a closing instance */
 	if (spawn->priv->is_sending_exit) {
-		egg_warning ("trying to use instance that is in the process of exiting");
+		g_set_error_literal (error, 1, 0, "trying to use instance that is in the process of exiting");
 		return FALSE;
 	}
 
@@ -567,7 +569,13 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 				 &spawn->priv->stdin_fd,
 				 &spawn->priv->stdout_fd,
 				 &spawn->priv->stderr_fd,
-				 NULL);
+				 &error_local);
+	/* we failed to invoke the helper */
+	if (!ret) {
+		g_set_error (error, 1, 0, "failed to spawn %s: %s", argv[0], error_local->message);
+		g_error_free (error_local);
+		return FALSE;
+	}
 
 	/* get the nice value and ensure we are in the valid range */
 	key = "BackendSpawnNiceValue";
@@ -592,12 +600,6 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 	if (idleio) {
 		egg_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (spawn->priv->child_pid);
-	}
-
-	/* we failed to invoke the helper */
-	if (!ret) {
-		egg_warning ("failed to spawn '%s'", argv[0]);
-		return FALSE;
 	}
 
 	/* save this so we can check the dispatcher name */
@@ -811,387 +813,4 @@ pk_spawn_new (void)
 	spawn = g_object_new (PK_TYPE_SPAWN, NULL);
 	return PK_SPAWN (spawn);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-guint stdout_count = 0;
-guint finished_count = 0;
-
-/**
- * pk_test_exit_cb:
- **/
-static void
-pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, EggTest *test)
-{
-	egg_debug ("spawn exit=%i", exit);
-	mexit = exit;
-	finished_count++;
-	egg_test_loop_quit (test);
-}
-
-/**
- * pk_test_stdout_cb:
- **/
-static void
-pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, EggTest *test)
-{
-	egg_debug ("stdout '%s'", line);
-	stdout_count++;
-}
-
-static gboolean
-cancel_cb (gpointer data)
-{
-	PkSpawn *spawn = PK_SPAWN(data);
-	pk_spawn_kill (spawn);
-	return FALSE;
-}
-
-static void
-new_spawn_object (EggTest *test, PkSpawn **pspawn)
-{
-	if (*pspawn != NULL)
-		g_object_unref (*pspawn);
-	*pspawn = pk_spawn_new ();
-	g_signal_connect (*pspawn, "exit",
-			  G_CALLBACK (pk_test_exit_cb), test);
-	g_signal_connect (*pspawn, "stdout",
-			  G_CALLBACK (pk_test_stdout_cb), test);
-	stdout_count = 0;
-}
-
-static gboolean
-idle_cb (gpointer data)
-{
-	EggTest *test = (EggTest*) data;
-
-	egg_test_title (test, "make sure dispatcher has closed when run idle add");
-	if (mexit == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "mexit was %i", mexit);
-
-	/* never repeat */
-	return FALSE;
-}
-
-void
-pk_spawn_test (EggTest *test)
-{
-	PkSpawn *spawn = NULL;
-	gboolean ret;
-	gchar *file;
-	gchar *path;
-	gchar **argv;
-	gchar **envp;
-	guint elapsed;
-
-	if (!egg_test_start (test, "PkSpawn"))
-		return;
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************
-	 **********           Generic tests               ***********
-	 ************************************************************/
-	egg_test_title (test, "make sure return error for missing file");
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_strfreev (argv);
-	if (!ret)
-		egg_test_success (test, "failed to run invalid file");
-	else
-		egg_test_failed (test, "ran incorrect file");
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished wasn't called");
-	if (mexit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "Called finish for bad file!");
-
-	/************************************************************/
-	egg_test_title (test, "make sure run correct helper");
-	mexit = -1;
-	path = egg_test_get_data_file ("pk-spawn-test.sh");
-	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_free (path);
-	g_strfreev (argv);
-	if (ret)
-		egg_test_success (test, "ran correct file");
-	else
-		egg_test_failed (test, "did not run helper");
-
-	/* wait for finished */
-	egg_test_loop_wait (test, 10000);
-	egg_test_loop_check (test);
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished okay");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SUCCESS)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish was okay!");
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished was called only once");
-	if (finished_count == 1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish was called %i times!", finished_count);
-
-	/************************************************************/
-	egg_test_title (test, "make sure we got the right stdout data");
-	if (stdout_count == 4+11)
-		egg_test_success (test, "correct stdout count");
-	else
-		egg_test_failed (test, "wrong stdout count %i", stdout_count);
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************
-	 **********            envp tests                 ***********
-	 ************************************************************/
-	egg_test_title (test, "make sure we set the proxy");
-	mexit = -1;
-	path = egg_test_get_data_file ("pk-spawn-proxy.sh");
-	argv = g_strsplit (path, " ", 0);
-	envp = g_strsplit ("http_proxy=username:password@server:port "
-			   "ftp_proxy=username:password@server:port", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, envp);
-	g_free (path);
-	g_strfreev (argv);
-	g_strfreev (envp);
-	if (ret)
-		egg_test_success (test, "ran correct file");
-	else
-		egg_test_failed (test, "did not run helper");
-
-	/* wait for finished */
-	egg_test_loop_wait (test, 10000);
-	egg_test_loop_check (test);
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************
-	 **********           Killing tests               ***********
-	 ************************************************************/
-	egg_test_title (test, "make sure run correct helper, and cancel it using SIGKILL");
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	path = egg_test_get_data_file ("pk-spawn-test.sh");
-	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_free (path);
-	g_strfreev (argv);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run helper");
-
-	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished */
-	egg_test_loop_wait (test, 5000);
-	egg_test_loop_check (test);
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGKILL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish %i!", mexit);
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************/
-	egg_test_title (test, "make sure dumb helper ignores SIGQUIT");
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	path = egg_test_get_data_file ("pk-spawn-test.sh");
-	argv = g_strsplit (path, " ", 0);
-	g_object_set (spawn,
-		      "allow-sigkill", FALSE,
-		      NULL);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_free (path);
-	g_strfreev (argv);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run helper");
-
-	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished */
-	egg_test_loop_wait (test, 10000);
-	egg_test_loop_check (test);
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish %i!", mexit);
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************/
-	egg_test_title (test, "make sure run correct helper, and SIGQUIT it");
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	path = egg_test_get_data_file ("pk-spawn-test-sigquit.sh");
-	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_free (path);
-	g_strfreev (argv);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run helper");
-
-	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished */
-	egg_test_loop_wait (test, 2000);
-	egg_test_loop_check (test);
-
-	/************************************************************/
-	egg_test_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_SPAWN_EXIT_TYPE_SIGQUIT)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish %i!", mexit);
-
-	/************************************************************/
-	egg_test_title (test, "run lots of data for profiling");
-	path = egg_test_get_data_file ("pk-spawn-test-profiling.sh");
-	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL);
-	g_free (path);
-	g_strfreev (argv);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run profiling helper");
-
-	/* get new object */
-	new_spawn_object (test, &spawn);
-
-	/************************************************************
-	 **********  Can we send commands to a dispatcher ***********
-	 ************************************************************/
-	egg_test_title (test, "run the dispatcher");
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	file = egg_test_get_data_file ("pk-spawn-dispatcher.py");
-	path = g_strdup_printf ("%s\tsearch-name\tnone\tpower manager", file);
-	argv = g_strsplit (path, "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, envp);
-	g_free (file);
-	g_free (path);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run dispatcher");
-
-	/************************************************************/
-	egg_test_title (test, "wait 2+2 seconds for the dispatcher");
-	/* wait 2 seconds, and make sure we are still running */
-	egg_test_loop_wait (test, 4000);
-	elapsed = egg_test_elapsed (test);
-	if (elapsed > 3900 && elapsed < 4100)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "dispatcher exited");
-
-	/************************************************************/
-	egg_test_title (test, "we got a package (+finished)?");
-	if (stdout_count == 2)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not get a package");
-
-	/************************************************************/
-	egg_test_title (test, "dispatcher still alive?");
-	if (spawn->priv->stdin_fd != -1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "dispatcher no longer alive");
-
-	/************************************************************/
-	egg_test_title (test, "run the dispatcher with new input");
-	ret = pk_spawn_argv (spawn, argv, envp);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not run dispatcher with new input");
-
-	/* this may take a while */
-	egg_test_loop_wait (test, 100);
-
-	/************************************************************/
-	egg_test_title (test, "we got another package (not finished after bugfix)?");
-	if (stdout_count == 3)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not get a package: count was %i", stdout_count);
-
-	/* see if pk_spawn_exit blocks (required) */
-	g_idle_add (idle_cb, test);
-
-	/************************************************************/
-	egg_test_title (test, "ask dispatcher to close");
-	ret = pk_spawn_exit (spawn);
-	if (ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "failed to close dispatcher");
-
-	/************************************************************/
-	egg_test_title (test, "ask dispatcher to close (again, should be closing)");
-	ret = pk_spawn_exit (spawn);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "attempted to close twice");
-
-	/* this may take a while */
-	egg_test_loop_wait (test, 100);
-
-	/************************************************************/
-	egg_test_title (test, "did dispatcher close?");
-	if (spawn->priv->stdin_fd == -1)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "dispatcher still running");
-
-	/************************************************************/
-	egg_test_title (test, "did we get the right exit code");
-	if (mexit == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "finish %i!", mexit);
-
-	/************************************************************/
-	egg_test_title (test, "ask dispatcher to close (again)");
-	ret = pk_spawn_exit (spawn);
-	if (!ret)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "dispatcher closed twice");
-
-	g_strfreev (argv);
-	g_strfreev (envp);
-	g_object_unref (spawn);
-
-	egg_test_end (test);
-}
-#endif
 

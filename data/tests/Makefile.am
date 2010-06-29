@@ -8,6 +8,7 @@ TEST_FILES =						\
 	pk-spawn-test.sh				\
 	pk-spawn-proxy.sh				\
 	pk-spawn-test-sigquit.sh			\
+	pk-spawn-test-sigquit.py			\
 	pk-spawn-test-profiling.sh			\
 	pk-spawn-dispatcher.py				\
 	$(NULL)

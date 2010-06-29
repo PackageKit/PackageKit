@@ -2036,8 +2036,8 @@ pk_transaction_strvalidate_char (gchar item)
  *
  * Return value: %TRUE if the string is valid
  **/
-static gboolean
-pk_transaction_strvalidate (const gchar *text)
+gboolean
+pk_transaction_strvalidate (const gchar *text, GError **error)
 {
 	guint i;
 	guint length;
@@ -2045,13 +2045,15 @@ pk_transaction_strvalidate (const gchar *text)
 	/* maximum size is 1024 */
 	length = egg_strlen (text, 1024);
 	if (length > 1024) {
-		egg_warning ("input too long: %u", length);
+		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid input passed to daemon: input too long: %u", length);
 		return FALSE;
 	}
 
 	for (i=0; i<length; i++) {
 		if (pk_transaction_strvalidate_char (text[i]) == FALSE) {
-			egg_warning ("invalid char '%c' in text!", text[i]);
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon: char '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
@@ -2095,12 +2097,9 @@ pk_transaction_search_check_item (const gchar *values, GError **error)
 				     "The search string length is too large");
 		return FALSE;
 	}
-	ret = pk_transaction_strvalidate (values);
-	if (!ret) {
-		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid search term");
+	ret = pk_transaction_strvalidate (values, error);
+	if (!ret)
 		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -2126,10 +2125,10 @@ out:
 /**
  * pk_transaction_filter_check:
  **/
-static gboolean
+gboolean
 pk_transaction_filter_check (const gchar *filter, GError **error)
 {
-	gchar **sections;
+	gchar **sections = NULL;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;
@@ -2140,16 +2139,13 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	if (egg_strzero (filter)) {
 		g_set_error_literal (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "filter zero length");
-		return FALSE;
+		goto out;
 	}
 
 	/* check for invalid input */
-	ret = pk_transaction_strvalidate (filter);
-	if (!ret) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-			     "Invalid filter term: %s", filter);
-		return FALSE;
-	}
+	ret = pk_transaction_strvalidate (filter, error);
+	if (!ret)
+		goto out;
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (filter, ";", 0);
@@ -2157,17 +2153,18 @@ pk_transaction_filter_check (const gchar *filter, GError **error)
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
 		if (egg_strzero (sections[i])) {
+			ret = FALSE;
 			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "Single empty section of filter: %s", filter);
+				     "Single empty section of filter: %s", filter);
 			goto out;
 		}
 		if (pk_filter_enum_from_string (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
+			ret = FALSE;
 			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "Unknown filter part: %s", sections[i]);
+				     "Unknown filter part: %s", sections[i]);
 			goto out;
 		}
 	}
-	ret = TRUE;
 out:
 	g_strfreev (sections);
 	return ret;
@@ -2509,10 +2506,8 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (eula_id);
+	ret = pk_transaction_strvalidate (eula_id, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -3815,10 +3810,8 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (key_id);
+	ret = pk_transaction_strvalidate (key_id, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -4013,10 +4006,8 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (repo_id);
+	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -4073,10 +4064,8 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (repo_id);
+	ret = pk_transaction_strvalidate (repo_id, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -4159,10 +4148,8 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* check each package for sanity */
 	for (i=0; i<length; i++) {
-		ret = pk_transaction_strvalidate (packages[i]);
+		ret = pk_transaction_strvalidate (packages[i], &error);
 		if (!ret) {
-			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "Invalid input passed to daemon");
 			pk_transaction_release_tid (transaction);
 			pk_transaction_dbus_return_error (context, error);
 			return;
@@ -4221,10 +4208,8 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (transaction_id);
+	ret = pk_transaction_strvalidate (transaction_id, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
@@ -5663,155 +5648,4 @@ pk_transaction_new (void)
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
 	return PK_TRANSACTION (transaction);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_transaction (EggTest *test)
-{
-	PkTransaction *transaction = NULL;
-	gboolean ret;
-	const gchar *temp;
-	GError *error = NULL;
-#ifdef USE_SECURITY_POLKIT
-	const gchar *action;
-#endif
-
-	if (!egg_test_start (test, "PkTransaction"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get PkTransaction object");
-	transaction = pk_transaction_new ();
-	egg_test_assert (test, transaction != NULL);
-
-	/************************************************************
-	 ****************         MAP ROLES        ******************
-	 ************************************************************/
-#ifdef USE_SECURITY_POLKIT
-	egg_test_title (test, "map valid role to action");
-	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (g_strcmp0 (action, "org.freedesktop.packagekit.system-update") == 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not get correct action '%s'", action);
-
-	/************************************************************/
-	egg_test_title (test, "map invalid role to action");
-	action = pk_transaction_role_to_action_only_trusted (PK_ROLE_ENUM_SEARCH_NAME);
-	if (action == NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "did not get correct action '%s'", action);
-#endif
-
-	/************************************************************
-	 ****************          FILTERS         ******************
-	 ************************************************************/
-	temp = NULL;
-	egg_test_title (test, "test a fail filter (null)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "";
-	egg_test_title (test, "test a fail filter ()");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = ";";
-	egg_test_title (test, "test a fail filter (;)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "moo";
-	egg_test_title (test, "test a fail filter (invalid)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "moo;foo";
-	egg_test_title (test, "test a fail filter (invalid, multiple)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "gui;;";
-	egg_test_title (test, "test a fail filter (valid then zero length)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, !ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "none";
-	egg_test_title (test, "test a pass filter (none)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "gui";
-	egg_test_title (test, "test a pass filter (single)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "devel;~gui";
-	egg_test_title (test, "test a pass filter (multiple)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, ret);
-	g_clear_error (&error);
-
-	/************************************************************/
-	temp = "~gui;~installed";
-	egg_test_title (test, "test a pass filter (multiple2)");
-	ret = pk_transaction_filter_check (temp, &error);
-	egg_test_assert (test, ret);
-	g_clear_error (&error);
-
-	/************************************************************
-	 ****************        validate text         **************
-	 ************************************************************/
-	egg_test_title (test, "validate correct char 1");
-	ret = pk_transaction_strvalidate_char ('a');
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "validate correct char 2");
-	ret = pk_transaction_strvalidate_char ('~');
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "validate incorrect char");
-	ret = pk_transaction_strvalidate_char ('$');
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "validate incorrect text");
-	ret = pk_transaction_strvalidate ("richard$hughes");
-	egg_test_assert (test, !ret);
-
-	/************************************************************/
-	egg_test_title (test, "validate correct text");
-	ret = pk_transaction_strvalidate ("richardhughes");
-	egg_test_assert (test, ret);
-
-	g_object_unref (transaction);
-
-	egg_test_end (test);
-}
-#endif
 

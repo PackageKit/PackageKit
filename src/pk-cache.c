@@ -174,31 +174,3 @@ pk_cache_new (void)
 	return PK_CACHE (pk_cache_object);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_cache (EggTest *test)
-{
-	PkCache *cache;
-
-	if (!egg_test_start (test, "PkCache"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	cache = pk_cache_new ();
-	if (cache != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	g_object_unref (cache);
-
-	egg_test_end (test);
-}
-#endif
-

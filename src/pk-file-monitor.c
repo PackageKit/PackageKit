@@ -176,27 +176,3 @@ pk_file_monitor_new (void)
 	return PK_FILE_MONITOR (file_monitor);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-pk_file_monitor_test (EggTest *test)
-{
-	PkFileMonitor *file_monitor;
-
-	if (!egg_test_start (test, "PkFileMonitor"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get a file_monitor");
-	file_monitor = pk_file_monitor_new ();
-	egg_test_assert (test, file_monitor != NULL);
-	g_object_unref (file_monitor);
-
-	egg_test_end (test);
-}
-#endif
-

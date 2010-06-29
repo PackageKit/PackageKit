@@ -1254,28 +1254,3 @@ pk_transaction_extra_new (void)
 	return PK_POST_TRANS (extra);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_extra_trans (EggTest *test)
-{
-	PkTransactionExtra *extra;
-
-	if (!egg_test_start (test, "PkTransactionExtra"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	extra = pk_transaction_extra_new ();
-	egg_test_assert (test, extra != NULL);
-
-	g_object_unref (extra);
-
-	egg_test_end (test);
-}
-#endif
-

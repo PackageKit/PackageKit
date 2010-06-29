@@ -16,6 +16,7 @@ INCLUDES = \
 	-DPK_COMPILATION					\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
+	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
@@ -192,19 +193,12 @@ check_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
-	$(libpackagekit_glib2_la_SOURCES)			\
-	egg-test.h						\
-	egg-test.c						\
-	pk-task-wrapper.c					\
-	pk-task-wrapper.h					\
-	pk-task-text.c						\
-	pk-task-text.h						\
-	pk-console-shared.c					\
-	pk-console-shared.h					\
 	pk-self-test.c						\
 	$(NULL)
 
 pk_self_test_LDADD =						\
+	libpackagekit-glib2.la					\
+	libpackagekitprivate.a					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(SELFTEST_LIBS)					\

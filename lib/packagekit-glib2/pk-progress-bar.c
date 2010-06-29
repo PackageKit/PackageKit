@@ -335,32 +335,3 @@ pk_progress_bar_new (void)
 	self = g_object_new (PK_TYPE_PROGRESS_BAR, NULL);
 	return PK_PROGRESS_BAR (self);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_progress_bar (EggTest *test)
-{
-	PkProgressBar *self;
-
-	if (!egg_test_start (test, "PkProgressBar"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	self = pk_progress_bar_new ();
-	if (self != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	g_object_unref (self);
-
-	egg_test_end (test);
-}
-#endif
-

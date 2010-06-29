@@ -290,28 +290,3 @@ pk_dbus_new (void)
 	return PK_DBUS (pk_dbus_object);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_dbus (EggTest *test)
-{
-	PkDbus *dbus;
-
-	if (!egg_test_start (test, "PkDbus"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	dbus = pk_dbus_new ();
-	egg_test_assert (test, dbus != NULL);
-
-	g_object_unref (dbus);
-
-	egg_test_end (test);
-}
-#endif
-

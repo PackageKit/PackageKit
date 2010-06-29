@@ -68,6 +68,7 @@ gboolean	 pk_backend_set_root			(PkBackend	*backend,
 							 const gchar	*root);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_backend_get_is_finished		(PkBackend	*backend);
 gchar		*pk_backend_get_description		(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_backend_get_author			(PkBackend	*backend)

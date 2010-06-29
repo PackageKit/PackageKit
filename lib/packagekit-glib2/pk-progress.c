@@ -674,30 +674,3 @@ pk_progress_new (void)
 	progress = g_object_new (PK_TYPE_PROGRESS, NULL);
 	return PK_PROGRESS (progress);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-pk_progress_test (gpointer user_data)
-{
-	EggTest *test = (EggTest *) user_data;
-	PkProgress *progress;
-
-	if (!egg_test_start (test, "PkProgress"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get progress");
-	progress = pk_progress_new ();
-	egg_test_assert (test, progress != NULL);
-
-	g_object_unref (progress);
-
-	egg_test_end (test);
-}
-#endif
-

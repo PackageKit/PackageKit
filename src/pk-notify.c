@@ -190,28 +190,3 @@ pk_notify_new (void)
 	return PK_NOTIFY (pk_notify_object);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_notify (EggTest *test)
-{
-	PkNotify *notify;
-
-	if (!egg_test_start (test, "PkNotify"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	notify = pk_notify_new ();
-	egg_test_assert (test, notify != NULL);
-
-	g_object_unref (notify);
-
-	egg_test_end (test);
-}
-#endif
-

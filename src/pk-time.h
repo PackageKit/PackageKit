@@ -51,15 +51,17 @@ typedef struct
 GType		 pk_time_get_type		  	(void);
 PkTime		*pk_time_new				(void);
 
-gboolean	 pk_time_add_data			(PkTime		*time,
+gboolean	 pk_time_add_data			(PkTime		*pktime,
 							 guint		 percentage);
-gboolean	 pk_time_reset				(PkTime		*time);
-guint		 pk_time_get_elapsed			(PkTime		*time);
-guint		 pk_time_get_remaining			(PkTime		*time);
-gboolean	 pk_time_set_average_limits		(PkTime		*time,
+void		 pk_time_advance_clock			(PkTime		*pktime,
+							 guint		 offset);
+gboolean	 pk_time_reset				(PkTime		*pktime);
+guint		 pk_time_get_elapsed			(PkTime		*pktime);
+guint		 pk_time_get_remaining			(PkTime		*pktime);
+gboolean	 pk_time_set_average_limits		(PkTime		*pktime,
 							 guint		 average_min,
 							 guint		 average_max);
-gboolean	 pk_time_set_value_limits		(PkTime		*time,
+gboolean	 pk_time_set_value_limits		(PkTime		*pktime,
 							 guint		 value_min,
 							 guint		 value_max);
 

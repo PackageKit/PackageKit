@@ -34,6 +34,12 @@ G_BEGIN_DECLS
 #define PK_IS_TRANSACTION_DB_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_DB))
 #define PK_TRANSACTION_DB_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbClass))
 
+#if PK_BUILD_LOCAL
+#define PK_TRANSACTION_DB_FILE			"./transactions.db"
+#else
+#define PK_TRANSACTION_DB_FILE			PK_DB_DIR "/transactions.db"
+#endif
+
 typedef struct PkTransactionDbPrivate PkTransactionDbPrivate;
 
 typedef struct

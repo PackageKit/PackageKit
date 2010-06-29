@@ -28,6 +28,7 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\"			\
+	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"	\
 	-DPK_COMPILATION				\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
 	-I$(top_srcdir)/lib				\
@@ -209,8 +210,6 @@ check_PROGRAMS =					\
 
 pk_self_test_SOURCES =					\
 	pk-self-test.c					\
-	egg-test.h					\
-	egg-test.c					\
 	$(shared_SOURCES)				\
 	$(NULL)
 

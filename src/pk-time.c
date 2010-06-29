@@ -79,28 +79,28 @@ G_DEFINE_TYPE (PkTime, pk_time, G_TYPE_OBJECT)
  * Return value: if we set the average limits correctly
  **/
 gboolean
-pk_time_set_average_limits (PkTime *self, guint average_min, guint average_max)
+pk_time_set_average_limits (PkTime *pktime, guint average_min, guint average_max)
 {
-	g_return_val_if_fail (PK_IS_TIME (self), FALSE);
-	self->priv->average_min = average_min;
-	self->priv->average_max = average_max;
+	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
+	pktime->priv->average_min = average_min;
+	pktime->priv->average_max = average_max;
 	return TRUE;
 }
 
 /**
  * pk_time_set_value_limits:
- * @self: This class instance
+ * @pktime: This class instance
  * @average_min: the smallest value that is acceptable for time (in seconds)
  * @average_max: the largest value that is acceptable for time (in seconds)
  *
  * Return value: if we set the value limits correctly
  **/
 gboolean
-pk_time_set_value_limits (PkTime *self, guint value_min, guint value_max)
+pk_time_set_value_limits (PkTime *pktime, guint value_min, guint value_max)
 {
-	g_return_val_if_fail (PK_IS_TIME (self), FALSE);
-	self->priv->value_min = value_min;
-	self->priv->value_max = value_max;
+	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
+	pktime->priv->value_min = value_min;
+	pktime->priv->value_max = value_max;
 	return TRUE;
 }
 
@@ -110,15 +110,15 @@ pk_time_set_value_limits (PkTime *self, guint value_min, guint value_max)
  * Returns time running in ms
  **/
 guint
-pk_time_get_elapsed (PkTime *self)
+pk_time_get_elapsed (PkTime *pktime)
 {
 	gdouble elapsed;
 
-	g_return_val_if_fail (PK_IS_TIME (self), 0);
+	g_return_val_if_fail (PK_IS_TIME (pktime), 0);
 
-	elapsed = g_timer_elapsed (self->priv->timer, NULL);
+	elapsed = g_timer_elapsed (pktime->priv->timer, NULL);
 	elapsed *= 1000;
-	elapsed += self->priv->time_offset;
+	elapsed += pktime->priv->time_offset;
 
 	return (guint) elapsed;
 }
@@ -142,7 +142,7 @@ pk_time_get_gradient (PkTimeItem *item1, PkTimeItem *item2)
  * Returns time in seconds
  **/
 guint
-pk_time_get_remaining (PkTime *self)
+pk_time_get_remaining (PkTime *pktime)
 {
 	guint i;
 	guint averaged = 0;
@@ -155,9 +155,9 @@ pk_time_get_remaining (PkTime *self)
 	PkTimeItem *item;
 	PkTimeItem *item_prev;
 
-	g_return_val_if_fail (PK_IS_TIME (self), 0);
+	g_return_val_if_fail (PK_IS_TIME (pktime), 0);
 
-	length = self->priv->array->len;
+	length = pktime->priv->array->len;
 	if (length < 2) {
 		egg_debug ("array too small");
 		return 0;
@@ -165,8 +165,8 @@ pk_time_get_remaining (PkTime *self)
 
 	/* get as many as we can */
 	for (i=length-1; i>0; i--) {
-		item_prev = g_ptr_array_index (self->priv->array, i-1);
-		item = g_ptr_array_index (self->priv->array, i);
+		item_prev = g_ptr_array_index (pktime->priv->array, i-1);
+		item = g_ptr_array_index (pktime->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
 //		egg_debug ("gradient between %i/%i=%f", i-1, i, grad);
 		if (grad < 0.00001 || grad > 100) {
@@ -174,14 +174,14 @@ pk_time_get_remaining (PkTime *self)
 		} else {
 			grad_ave += grad;
 			averaged++;
-			if (averaged > self->priv->average_max) {
+			if (averaged > pktime->priv->average_max) {
 				break;
 			}
 		}
 	}
 
 	egg_debug ("averaged %i points", averaged);
-	if (averaged < self->priv->average_min) {
+	if (averaged < pktime->priv->average_min) {
 		egg_debug ("not enough samples for accurate time: %i", averaged);
 		return 0;
 	}
@@ -191,11 +191,11 @@ pk_time_get_remaining (PkTime *self)
 	egg_debug ("grad_ave=%f", grad_ave);
 
 	/* just for debugging */
-	elapsed = pk_time_get_elapsed (self);
+	elapsed = pk_time_get_elapsed (pktime);
 	egg_debug ("elapsed=%i", elapsed);
 
 	/* 100 percent to be complete */
-	item = g_ptr_array_index (self->priv->array, length - 1);
+	item = g_ptr_array_index (pktime->priv->array, length - 1);
 	percentage_left = 100 - item->percentage;
 	egg_debug ("percentage_left=%i", percentage_left);
 	estimated = (gfloat) percentage_left / grad_ave;
@@ -204,9 +204,9 @@ pk_time_get_remaining (PkTime *self)
 	estimated /= 1000;
 	egg_debug ("estimated=%f seconds", estimated);
 
-	if (estimated < self->priv->value_min) {
+	if (estimated < pktime->priv->value_min) {
 		estimated = 0;
-	} else if (estimated > self->priv->value_max) {
+	} else if (estimated > pktime->priv->value_max) {
 		estimated = 0;
 	}
 	return (guint) estimated;
@@ -216,22 +216,22 @@ pk_time_get_remaining (PkTime *self)
  * pk_time_add_data:
  **/
 gboolean
-pk_time_add_data (PkTime *self, guint percentage)
+pk_time_add_data (PkTime *pktime, guint percentage)
 {
 	PkTimeItem *item;
 	guint elapsed;
 
-	g_return_val_if_fail (PK_IS_TIME (self), FALSE);
+	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
 
 	/* check we are going up */
-	if (percentage < self->priv->last_percentage) {
+	if (percentage < pktime->priv->last_percentage) {
 		egg_warning ("percentage cannot go down!");
 		return FALSE;
 	}
-	self->priv->last_percentage = percentage;
+	pktime->priv->last_percentage = percentage;
 
 	/* get runtime in ms */
-	elapsed = pk_time_get_elapsed (self);
+	elapsed = pk_time_get_elapsed (pktime);
 
 	egg_debug ("adding %i at %i (ms)", percentage, elapsed);
 
@@ -239,27 +239,38 @@ pk_time_add_data (PkTime *self, guint percentage)
 	item = g_new0 (PkTimeItem, 1);
 	item->time = elapsed;
 	item->percentage = percentage;
-	g_ptr_array_add (self->priv->array, item);
+	g_ptr_array_add (pktime->priv->array, item);
 
 	return TRUE;
+}
+
+/**
+ * pk_time_advance_clock:
+ *
+ * This function is only really useful for testing the PkTime functionality.
+ **/
+void
+pk_time_advance_clock (PkTime *pktime, guint offset)
+{
+	pktime->priv->time_offset += offset;
 }
 
 /**
  * pk_time_free_data:
  **/
 static gboolean
-pk_time_free_data (PkTime *self)
+pk_time_free_data (PkTime *pktime)
 {
 	guint i;
 	guint length;
 	gpointer mem;
 
-	g_return_val_if_fail (PK_IS_TIME (self), FALSE);
+	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
 
-	length = self->priv->array->len;
+	length = pktime->priv->array->len;
 	for (i=0; i<length; i++) {
-		mem = g_ptr_array_index (self->priv->array, 0);
-		g_ptr_array_remove_index (self->priv->array, 0);
+		mem = g_ptr_array_index (pktime->priv->array, 0);
+		g_ptr_array_remove_index (pktime->priv->array, 0);
 		g_free (mem);
 	}
 	return TRUE;
@@ -269,18 +280,18 @@ pk_time_free_data (PkTime *self)
  * pk_time_reset:
  **/
 gboolean
-pk_time_reset (PkTime *self)
+pk_time_reset (PkTime *pktime)
 {
-	g_return_val_if_fail (PK_IS_TIME (self), FALSE);
+	g_return_val_if_fail (PK_IS_TIME (pktime), FALSE);
 
-	self->priv->time_offset = 0;
-	self->priv->last_percentage = 0;
-	self->priv->average_min = PK_TIME_AVERAGE_DEFAULT_MIN;
-	self->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
-	self->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
-	self->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
-	g_timer_reset (self->priv->timer);
-	pk_time_free_data (self);
+	pktime->priv->time_offset = 0;
+	pktime->priv->last_percentage = 0;
+	pktime->priv->average_min = PK_TIME_AVERAGE_DEFAULT_MIN;
+	pktime->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
+	pktime->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
+	pktime->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
+	g_timer_reset (pktime->priv->timer);
+	pk_time_free_data (pktime);
 
 	return TRUE;
 }
@@ -302,12 +313,12 @@ pk_time_class_init (PkTimeClass *klass)
  * @time: This class instance
  **/
 static void
-pk_time_init (PkTime *self)
+pk_time_init (PkTime *pktime)
 {
-	self->priv = PK_TIME_GET_PRIVATE (self);
-	self->priv->array = g_ptr_array_new ();
-	self->priv->timer = g_timer_new ();
-	pk_time_reset (self);
+	pktime->priv = PK_TIME_GET_PRIVATE (pktime);
+	pktime->priv->array = g_ptr_array_new ();
+	pktime->priv->timer = g_timer_new ();
+	pk_time_reset (pktime);
 }
 
 /**
@@ -317,15 +328,15 @@ pk_time_init (PkTime *self)
 static void
 pk_time_finalize (GObject *object)
 {
-	PkTime *self;
+	PkTime *pktime;
 
 	g_return_if_fail (PK_IS_TIME (object));
 
-	self = PK_TIME (object);
-	g_return_if_fail (self->priv != NULL);
-	g_ptr_array_foreach (self->priv->array, (GFunc) g_free, NULL);
-	g_ptr_array_free (self->priv->array, TRUE);
-	g_timer_destroy (self->priv->timer);
+	pktime = PK_TIME (object);
+	g_return_if_fail (pktime->priv != NULL);
+	g_ptr_array_foreach (pktime->priv->array, (GFunc) g_free, NULL);
+	g_ptr_array_free (pktime->priv->array, TRUE);
+	g_timer_destroy (pktime->priv->timer);
 
 	G_OBJECT_CLASS (pk_time_parent_class)->finalize (object);
 }
@@ -338,108 +349,8 @@ pk_time_finalize (GObject *object)
 PkTime *
 pk_time_new (void)
 {
-	PkTime *self;
-	self = g_object_new (PK_TYPE_TIME, NULL);
-	return PK_TIME (self);
+	PkTime *pktime;
+	pktime = g_object_new (PK_TYPE_TIME, NULL);
+	return PK_TIME (pktime);
 }
-
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-pk_time_test (EggTest *test)
-{
-	PkTime *self = NULL;
-	gboolean ret;
-	guint value;
-
-	if (!egg_test_start (test, "PkTime"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get PkTime object");
-	self = pk_time_new ();
-	egg_test_assert (test, self != NULL);
-
-	/************************************************************/
-	egg_test_title (test, "get elapsed correctly at startup");
-	value = pk_time_get_elapsed (self);
-	if (value < 10)
-		egg_test_success (test, "elapsed at startup %i", value);
-	else
-		egg_test_failed (test, "elapsed at startup %i", value);
-
-	/************************************************************/
-	egg_test_title (test, "ignore remaining correctly");
-	value = pk_time_get_remaining (self);
-	if (value == 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got %i, not zero!", value);
-
-	/************************************************************/
-	g_usleep (1000*1000);
-
-	/************************************************************/
-	egg_test_title (test, "get elapsed correctly");
-	value = pk_time_get_elapsed (self);
-	if (value > 900 && value < 1100)
-		egg_test_success (test, "elapsed ~1000ms: %i", value);
-	else
-		egg_test_failed (test, "elapsed not ~1000ms: %i", value);
-
-	/************************************************************/
-	egg_test_title (test, "ignore remaining correctly when not enough entries");
-	value = pk_time_get_remaining (self);
-	if (value == 0)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got %i, not zero!", value);
-
-	/************************************************************/
-	egg_test_title (test, "make sure we can add data");
-	ret = pk_time_add_data (self, 10);
-	egg_test_assert (test, ret);
-
-	/************************************************************/
-	egg_test_title (test, "make sure we can get remaining correctly");
-	value = 20;
-	while (value < 60) {
-		self->priv->time_offset += 2000;
-		pk_time_add_data (self, value);
-		value += 10;
-	}
-	value = pk_time_get_remaining (self);
-	if (value > 9 && value < 11)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got %i", value);
-
-	/* reset */
-	g_object_unref (self);
-	self = pk_time_new ();
-
-	/************************************************************/
-	egg_test_title (test, "make sure we can do long times");
-	value = 10;
-	pk_time_add_data (self, 0);
-	while (value < 60) {
-		self->priv->time_offset += 4*60*1000;
-		pk_time_add_data (self, value);
-		value += 10;
-	}
-	value = pk_time_get_remaining (self);
-	if (value >= 1199 && value <= 1201)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, "got %i", value);
-
-	g_object_unref (self);
-
-	egg_test_end (test);
-}
-#endif
 

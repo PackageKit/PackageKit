@@ -127,31 +127,3 @@ pk_syslog_new (void)
 	return PK_SYSLOG (pk_syslog_object);
 }
 
-/***************************************************************************
- ***                          MAKE CHECK TESTS                           ***
- ***************************************************************************/
-#ifdef EGG_TEST
-#include "egg-test.h"
-
-void
-egg_test_syslog (EggTest *test)
-{
-	PkSyslog *self;
-
-	if (!egg_test_start (test, "PkSyslog"))
-		return;
-
-	/************************************************************/
-	egg_test_title (test, "get an instance");
-	self = pk_syslog_new ();
-	if (self != NULL)
-		egg_test_success (test, NULL);
-	else
-		egg_test_failed (test, NULL);
-
-	g_object_unref (self);
-
-	egg_test_end (test);
-}
-#endif
-
