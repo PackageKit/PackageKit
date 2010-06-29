@@ -2074,6 +2074,12 @@ pk_backend_finished (PkBackend *backend)
 	/* safe to check now */
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* no longer need to cancel */
+	if (backend->priv->cancel_id != 0) {
+		g_source_remove (backend->priv->cancel_id);
+		backend->priv->cancel_id = 0;
+	}
+
 	/* find out what we just did */
 	role_text = pk_role_enum_to_string (backend->priv->role);
 	egg_debug ("finished role %s", role_text);
