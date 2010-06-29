@@ -652,24 +652,24 @@ class PackageKitBaseBackend:
             self.resolve(filters, package_ids)
             self.finished()
         elif cmd == 'search-details':
-            options = args[0]
+            filters = args[0].split(';')
             values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
-            self.search_details(options, values)
+            self.search_details(filters, values)
             self.finished()
         elif cmd == 'search-file':
-            options = args[0]
+            filters = args[0].split(';')
             values = args[1].split(PACKAGE_IDS_DELIM)
-            self.search_file(options, values)
+            self.search_file(filters, values)
             self.finished()
         elif cmd == 'search-group':
-            options = args[0]
+            filters = args[0].split(';')
             values = args[1].split(PACKAGE_IDS_DELIM)
-            self.search_group(options, values)
+            self.search_group(filters, values)
             self.finished()
         elif cmd == 'search-name':
-            options = args[0]
+            filters = args[0].split(';')
             values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
-            self.search_name(options, values)
+            self.search_name(filters, values)
             self.finished()
         elif cmd == 'signature-install':
             package = args[0]
