@@ -1,3 +1,42 @@
+Version 0.6.6
+~~~~~~~~~~~~~
+Released: 2010-07-01
+
+Translations:
+ - Updates to Chinese translation (chenh)
+ - Updates to Japanese translation (khasida)
+ - Updates to Chinese (Taiwan) translation (zerng07)
+
+Libraries:
+ - glib: Explicitly mark the library as LGPLv2 by using the correct boilerplate code (Richard Hughes)
+
+Backends:
+ - apt: Adapt to split arguments from the Python backend (Sebastian Heinlein)
+ - apt: Adapt to an API change to allow OR searches (Sebastian Heinlein)
+ - apt: Fix group searching (Sebastian Heinlein)
+ - aptcc: Added distro upgrade support (Daniel Nicoletti)
+ - entropy: Implement forward compatibility support (Fabio Erculiani)
+ - pacman: Update for pacman-glib 3.4.0 (Jonathan Conder)
+ - ports: Use distfiles size, for uninstalled packages (Anders F Bjorklund)
+ - urpmi: Fix update-system command and only_trusted parameter (Aurelien Lefebvre)
+ - yum: Don't crash with an internal error if the .discinfo is malformed (Richard Hughes)
+ - zypp: Disable get_zypp in intialize (Michael Meeks)
+ - zypp: Fix FPE when there are no repos (Michael Meeks)
+ - zypp: Don't crash checking status of non-patches (Michael Meeks)
+
+New Features:
+ - Add a MaxSearchTime entry in CommandNotFound.conf and default to 2000ms (Richard Hughes)
+ - Assign names to our idle sources when using new versions of glib2 (Richard Hughes)
+ - Build the gtk-module for gtk-3.0 as well as gtk-2.0 if available (Richard Hughes)
+ - Port 'make check' to GTest rather than using our homegrown EggTest functionality (Richard Hughes)
+ - Get the control properties async when the user starts the pkmon tool (Richard Hughes)
+
+Bugfixes:
+ - Only set a cancelled error after we've given the backend a fighting chance to process the request (Richard Hughes)
+ - Move the packagekitd binary to libexec (Richard Hughes)
+ - Ensure we clear the cancel timer when we finish a PkBackend transaction (Richard Hughes)
+ - Ensure filters are properly split for spawned backends (Richard Hughes)
+
 Version 0.6.5
 ~~~~~~~~~~~~~
 Released: 2010-06-02
