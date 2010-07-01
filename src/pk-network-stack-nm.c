@@ -240,6 +240,7 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 		break;
 	case NM_DEVICE_TYPE_GSM:
 	case NM_DEVICE_TYPE_CDMA:
+	case NM_DEVICE_TYPE_BT:
 		ret = PK_NETWORK_ENUM_MOBILE;
 		break;
 	default:
