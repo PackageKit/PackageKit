@@ -11,8 +11,6 @@ License:   GPLv2+ and LGPLv2+
 URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 
-Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_glib_version}
 Requires: PackageKit-glib = %{version}-%{release}
 Requires: PackageKit-yum = %{version}-%{release}
 Requires: shared-mime-info
@@ -31,7 +29,7 @@ BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-devel
 BuildRequires: polkit-devel >= 0.92
 BuildRequires: libtool
-BuildRequires: gtk3
+BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
 BuildRequires: python-devel
