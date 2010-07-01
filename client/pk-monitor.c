@@ -79,7 +79,7 @@ static void
 pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
 	PkNetworkEnum state;
-	g_object_get (control, "network-status", &state, NULL);
+	g_object_get (control, "network-state", &state, NULL);
 	g_print ("network status=%s\n", pk_network_enum_to_string (state));
 }
 
@@ -337,6 +337,23 @@ pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *t
 }
 
 /**
+ * pk_control_properties_cb:
+ **/
+static void
+pk_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	/* get result */
+	ret = pk_control_get_properties_finish (control, res, &error);
+	if (!ret) {
+		g_print ("%s: %s", _("Failed to get properties"), error->message);
+		g_error_free (error);
+	}
+}
+
+/**
  * main:
  **/
 int
@@ -393,8 +410,10 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_notify_locked_cb), NULL);
 	g_signal_connect (control, "notify::connected",
 			  G_CALLBACK (pk_monitor_notify_connected_cb), NULL);
-	g_signal_connect (control, "notify::network-status",
+	g_signal_connect (control, "notify::network-state",
 			  G_CALLBACK (pk_monitor_notify_network_status_cb), NULL);
+	pk_control_get_properties_async (control, NULL,
+					 (GAsyncReadyCallback) pk_control_properties_cb, NULL);
 
 	tlist = pk_transaction_list_new ();
 	g_signal_connect (tlist, "added",
