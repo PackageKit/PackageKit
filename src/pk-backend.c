@@ -2001,6 +2001,7 @@ pk_backend_set_role_internal (PkBackend *backend, PkRoleEnum role)
 	egg_debug ("setting role to %s", pk_role_enum_to_string (role));
 	backend->priv->role = role;
 	backend->priv->status = PK_STATUS_ENUM_WAIT;
+	g_signal_emit (backend, signals[SIGNAL_STATUS_CHANGED], 0, backend->priv->status);
 	return TRUE;
 }
 
