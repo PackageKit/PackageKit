@@ -40,6 +40,8 @@ typedef struct {
 	GFileMonitor	*monitor;
 	GCancellable	*cancellable;
 	gboolean	 use_zif;
+	guint		 signal_finished;
+	guint		 signal_status;
 #ifdef HAVE_ZIF
 	ZifDownload	*download;
 	ZifConfig	*config;
@@ -620,6 +622,77 @@ out:
 	return TRUE;
 }
 
+#define PACKAGE_MEDIA_REPO_FILENAME	"/etc/yum.repos.d/packagekit-media.repo"
+
+/**
+ * backend_enable_media_repo:
+ */
+static void
+backend_enable_media_repo (gboolean enabled)
+{
+#ifdef HAVE_ZIF
+	ZifStoreRemote *repo = NULL;
+	gboolean ret;
+	GError *error = NULL;
+
+	/* find the right repo */
+	repo = zif_repos_get_store (priv->repos, "InstallMedia", priv->state, &error);
+	if (repo == NULL) {
+		egg_debug ("failed to find install-media repo: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set the state */
+	ret = zif_store_remote_set_enabled (repo, enabled, &error);
+	if (!ret) {
+		egg_debug ("failed to set enable: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	egg_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
+out:
+	if (repo != NULL)
+		g_object_unref (repo);
+#else
+	GKeyFile *keyfile;
+	gboolean ret;
+	gchar *data = NULL;
+	GError *error = NULL;
+
+	/* load */
+	keyfile = g_key_file_new ();
+	ret = g_key_file_load_from_file (keyfile, PACKAGE_MEDIA_REPO_FILENAME,
+					 G_KEY_FILE_KEEP_COMMENTS, &error);
+	if (!ret) {
+		egg_debug ("failed to open %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set data */
+	g_key_file_set_integer (keyfile, "InstallMedia", "enabled", enabled);
+	data = g_key_file_to_data (keyfile, NULL, &error);
+	if (data == NULL) {
+		egg_warning ("failed to get data: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* save */
+	ret = g_file_set_contents (PACKAGE_MEDIA_REPO_FILENAME, data, -1, &error);
+	if (!ret) {
+		egg_warning ("failed to save %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	egg_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
+out:
+	g_free (data);
+	g_key_file_free (keyfile);
+#endif
+}
+
 /**
  * backend_mount_add:
  */
@@ -639,11 +712,11 @@ backend_mount_add (GMount *mount, gpointer user_data)
 	root_path = g_file_get_path (root);
 	repo_path = g_build_filename (root_path, "media.repo", NULL);
 	repo = g_file_new_for_path (repo_path);
-	dest = g_file_new_for_path ("/etc/yum.repos.d/packagekit-media.repo");
+	dest = g_file_new_for_path (PACKAGE_MEDIA_REPO_FILENAME);
 
 	/* media.repo exists */
 	ret = g_file_query_exists (repo, NULL);
-	egg_warning ("checking for %s: %s", repo_path, ret ? "yes" : "no");
+	egg_debug ("checking for %s: %s", repo_path, ret ? "yes" : "no");
 	if (!ret)
 		goto out;
 
@@ -662,6 +735,29 @@ out:
 }
 
 /**
+ * backend_finished_cb:
+ **/
+static void
+backend_finished_cb (PkBackend *backend, PkExitEnum exit_enum, gpointer user_data)
+{
+	/* disable media repo */
+	backend_enable_media_repo (FALSE);
+}
+
+/**
+ * backend_status_changed_cb:
+ **/
+static void
+backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer user_data)
+{
+	if (status != PK_STATUS_ENUM_WAIT)
+		return;
+
+	/* enable media repo */
+	backend_enable_media_repo (TRUE);
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -677,6 +773,14 @@ backend_initialize (PkBackend *backend)
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
+
+	/* connect to finished, so we can clean up */
+	priv->signal_finished =
+		g_signal_connect (backend, "finished",
+				  G_CALLBACK (backend_finished_cb), NULL);
+	priv->signal_status =
+		g_signal_connect (backend, "status-changed",
+				  G_CALLBACK (backend_status_changed_cb), NULL);
 
 	egg_debug ("backend: initialize");
 	priv->spawn = pk_backend_spawn_new ();
@@ -805,6 +909,8 @@ backend_destroy (PkBackend *backend)
 	g_object_unref (priv->spawn);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
+	g_signal_handler_disconnect (backend, priv->signal_finished);
+	g_signal_handler_disconnect (backend, priv->signal_status);
 #ifdef HAVE_ZIF
 	if (priv->config != NULL)
 		g_object_unref (priv->config);
