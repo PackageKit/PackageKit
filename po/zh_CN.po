@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: pavucontrol.master-tx\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-06-14 19:32+0000\n"
-"PO-Revision-Date: 2010-07-02 22:02+0800\n"
+"PO-Revision-Date: 2010-07-03 18:31+0800\n"
 "Last-Translator: Huan Chen <chenhuan dot gt at gmail dot com>\n"
 "Language-Team: trans hyphen zh underline cn at lists dot fedoraproject dot "
 "com\n"
@@ -35,7 +35,7 @@ msgstr "系统时间"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: ../client/pk-console.c:180
 msgid "Succeeded"
-msgstr "成功与否"
+msgstr "结果"
 
 #: ../client/pk-console.c:180
 msgid "True"
@@ -173,7 +173,7 @@ msgstr "Bugzilla（缺陷终结者）"
 #. TRANSLATORS: details about the update, the CVE URLs
 #: ../client/pk-console.c:366
 msgid "CVE"
-msgstr "CVE（公共漏洞和暴露）"
+msgstr "公共漏洞和暴露（CVE）"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
 #: ../client/pk-console.c:370
@@ -366,7 +366,7 @@ msgstr "守护进程在事务中崩溃"
 #. TRANSLATORS: This is the header to the --help menu
 #: ../client/pk-console.c:1147
 msgid "PackageKit Console Interface"
-msgstr "软件包工具包（PackageKit）控制台界面"
+msgstr "PackageKit（软件包工具包）控制台界面"
 
 #. these are commands we can use with pkcon
 #: ../client/pk-console.c:1149
@@ -375,7 +375,6 @@ msgstr "子命令："
 
 #. TRANSLATORS: we keep a database updated with the time that an action was last executed
 #: ../client/pk-console.c:1228
-#, fuzzy
 msgid "Failed to get the time since this action was last completed"
 msgstr "获取此动作最后一次完成之后的时间失败。"
 
@@ -419,7 +418,7 @@ msgstr "只在屏幕上显示机器可读的输出，而不是用动画小工具
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1308
 msgid "Failed to contact PackageKit"
-msgstr "联系软件包工具包（PackageKit）失败"
+msgstr "联系 PackageKit 失败"
 
 #. TRANSLATORS: The user specified an incorrect filter
 #: ../client/pk-console.c:1369
@@ -510,7 +509,7 @@ msgstr "需要指定软件仓库名、参数和值"
 #. TRANSLATORS: The user didn't specify what action to use
 #: ../client/pk-console.c:1610
 msgid "An action, e.g. 'update-system' is required"
-msgstr "需要指定动作，例如“更新系统（update-system）”"
+msgstr "需要指定动作，例如“update-system（更新系统）”"
 
 #. TRANSLATORS: The user specified an invalid action
 #: ../client/pk-console.c:1617
@@ -592,7 +591,7 @@ msgstr "软件包管理器未能执行此类操作。"
 msgid ""
 "Service packs cannot be created as PackageKit was not built with libarchive "
 "support."
-msgstr "由于软件包工具包（PackageKit）编译时未支持 libarchive，服务包不能被创建。"
+msgstr "由于 PackageKit 编译时未支持 libarchive，服务包不能被创建。"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
 #: ../client/pk-generate-pack.c:377
@@ -654,7 +653,7 @@ msgstr "获取守护进程状态失败"
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:372
 msgid "PackageKit Monitor"
-msgstr "软件包工具包（PackageKit）监视器"
+msgstr "PackageKit 监视器"
 
 #. TRANSLATORS: when we are getting data from the daemon
 #: ../contrib/browser-plugin/pk-plugin-install.c:497
@@ -748,7 +747,7 @@ msgstr "安装软件包失败"
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/command-not-found/pk-command-not-found.c:701
 msgid "PackageKit Command Not Found"
-msgstr "软件包工具包（PackageKit）命令未找到"
+msgstr "PackageKit 命令未找到"
 
 #. TRANSLATORS: the prefix of all the output telling the user why it's not executing
 #: ../contrib/command-not-found/pk-command-not-found.c:727
@@ -834,7 +833,7 @@ msgstr "不显示信息或进度"
 #. TRANSLATORS: tool that gets called when the command is not found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:542
 msgid "PackageKit Debuginfo Installer"
-msgstr "软件包工具包（PackageKit）调试信息安装器"
+msgstr "PackageKit 调试信息安装器"
 
 #. TRANSLATORS: the use needs to specify a list of package names on the command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
@@ -1056,7 +1055,7 @@ msgstr "设备路径"
 #. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
-msgstr "软件包工具包（PackageKit）设备重新装入器"
+msgstr "PackageKit 设备重新装入器"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
 #: ../contrib/device-rebind/pk-device-rebind.c:323
@@ -1090,15 +1089,15 @@ msgstr "重新绑定设备失败"
 
 #: ../data/packagekit-catalog.xml.in.h:1
 msgid "PackageKit Catalog"
-msgstr "软件包工具包（PackageKit）类别"
+msgstr "PackageKit 类别"
 
 #: ../data/packagekit-package-list.xml.in.h:1
 msgid "PackageKit Package List"
-msgstr "软件包工具包（PackageKit）软件包列表"
+msgstr "PackageKit 软件包列表"
 
 #: ../data/packagekit-servicepack.xml.in.h:1
 msgid "PackageKit Service Pack"
-msgstr "软件包工具包（PackageKit）服务包"
+msgstr "PackageKit 服务包"
 
 #: ../lib/packagekit-glib2/pk-console-shared.c:65
 #, c-format
@@ -1942,7 +1941,7 @@ msgstr "引擎装入后退出"
 #. TRANSLATORS: describing the service that is running
 #: ../src/pk-main.c:230
 msgid "PackageKit service"
-msgstr "软件包工具包（PackageKit）服务"
+msgstr "PackageKit 服务"
 
 #. TRANSLATORS: fatal error, dbus is not running
 #: ../src/pk-main.c:267
