@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # vim:set shiftwidth=4 tabstop=4 expandtab:
 #
@@ -25,7 +25,7 @@ import traceback
 
 
 # packagekit imports
-from enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
+from packagekit.enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
     ERROR_INTERNAL_ERROR, ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, \
     ERROR_CANNOT_DISABLE_REPOSITORY, ERROR_PACKAGE_FAILED_TO_INSTALL, \
     ERROR_DEP_RESOLUTION_FAILED, ERROR_PACKAGE_FAILED_TO_CONFIGURE, \
@@ -44,14 +44,15 @@ from enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
     GROUP_UNKNOWN, INFO_IMPORTANT, INFO_NORMAL, INFO_DOWNLOADING, \
     INFO_INSTALLED, INFO_REMOVING, INFO_INSTALLING, INFO_SECURITY, \
     ERROR_INVALID_PACKAGE_FILE, ERROR_FILE_NOT_FOUND, \
-    INFO_AVAILABLE, get_package_id, split_package_id, MESSAGE_UNKNOWN, \
+    INFO_AVAILABLE, MESSAGE_UNKNOWN, \
     MESSAGE_AUTOREMOVE_IGNORED, MESSAGE_CONFIG_FILES_CHANGED, STATUS_INFO, \
     MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
     STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
     STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
     UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED
 
-from packagekit.backend import PackageKitBaseBackend
+from packagekit.backend import PackageKitBaseBackend, \
+    get_package_id, split_package_id
 from packagekit.progress import *
 from packagekit.package import PackagekitPackage
 
@@ -576,7 +577,7 @@ class PackageKitPortageMixin(object):
 
         return cpv_dict
 
-    def _filter_free(self, cpv_list, fltlist):
+    def _filter_free(self, cpv_list, filters):
         if not cpv_list:
             return cpv_list
 
@@ -584,11 +585,11 @@ class PackageKitPortageMixin(object):
             metadata = self._get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
             return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
-        if FILTER_FREE in fltlist or FILTER_NOT_FREE in fltlist:
+        if FILTER_FREE in filters or FILTER_NOT_FREE in filters:
             free_licenses = "@FSF-APPROVED"
-            if FILTER_FREE in fltlist:
+            if FILTER_FREE in filters:
                 licenses = "-* " + free_licenses
-            elif FILTER_NOT_FREE in fltlist:
+            elif FILTER_NOT_FREE in filters:
                 licenses = "* -" + free_licenses
             backup_license = self.pvar.settings["ACCEPT_LICENSE"]
 
@@ -606,14 +607,14 @@ class PackageKitPortageMixin(object):
 
         return cpv_list
 
-    def _filter_newest(self, cpv_list, fltlist):
+    def _filter_newest(self, cpv_list, filters):
         if len(cpv_list) == 0:
             return cpv_list
 
-        if FILTER_NEWEST not in fltlist:
+        if FILTER_NEWEST not in filters:
             return cpv_list
 
-        if FILTER_INSTALLED in fltlist:
+        if FILTER_INSTALLED in filters:
             # we have one package per slot, so it's the newest
             return cpv_list
 
@@ -628,7 +629,7 @@ class PackageKitPortageMixin(object):
 
         for k in slots:
             # if not_intalled on, no need to check for newest installed
-            if FILTER_NOT_INSTALLED not in fltlist:
+            if FILTER_NOT_INSTALLED not in filters:
                 newest_installed = self._get_newest_cpv(cpv_dict[k], True)
                 if newest_installed != "":
                     cpv_list.append(newest_installed)
@@ -638,7 +639,7 @@ class PackageKitPortageMixin(object):
 
         return cpv_list
 
-    def _get_all_cp(self, fltlist):
+    def _get_all_cp(self, filters):
         # NOTES:
         # returns a list of cp
         #
@@ -648,9 +649,9 @@ class PackageKitPortageMixin(object):
         # - newest: ok (should be finished with cpv)
         cp_list = []
 
-        if FILTER_INSTALLED in fltlist:
+        if FILTER_INSTALLED in filters:
             cp_list = self.pvar.vardb.cp_all()
-        elif FILTER_NOT_INSTALLED in fltlist:
+        elif FILTER_NOT_INSTALLED in filters:
             cp_list = self.pvar.portdb.cp_all()
         else:
             # need installed packages first
@@ -661,7 +662,7 @@ class PackageKitPortageMixin(object):
 
         return cp_list
 
-    def _get_all_cpv(self, cp, fltlist, filter_newest=True):
+    def _get_all_cpv(self, cp, filters, filter_newest=True):
         # NOTES:
         # returns a list of cpv
         #
@@ -673,9 +674,9 @@ class PackageKitPortageMixin(object):
         cpv_list = []
 
         # populate cpv_list taking care of installed filter
-        if FILTER_INSTALLED in fltlist:
+        if FILTER_INSTALLED in filters:
             cpv_list = self.pvar.vardb.match(cp)
-        elif FILTER_NOT_INSTALLED in fltlist:
+        elif FILTER_NOT_INSTALLED in filters:
             for cpv in self.pvar.portdb.match(cp):
                 if not self._is_installed(cpv):
                     cpv_list.append(cpv)
@@ -686,11 +687,11 @@ class PackageKitPortageMixin(object):
                     cpv_list.append(cpv)
 
         # free filter
-        cpv_list = self._filter_free(cpv_list, fltlist)
+        cpv_list = self._filter_free(cpv_list, filters)
 
         # newest filter
         if filter_newest:
-            cpv_list = self._filter_newest(cpv_list, fltlist)
+            cpv_list = self._filter_newest(cpv_list, filters)
 
         return cpv_list
 
@@ -882,8 +883,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        fltlist = filters.split(';')
-
         cpv_input = []
         cpv_list = []
 
@@ -943,9 +942,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cpv_list = filter(_filter_uninstall, cpv_list)
 
         # install filter
-        if FILTER_INSTALLED in fltlist:
+        if FILTER_INSTALLED in filters:
             cpv_list = filter(_filter_installed, cpv_list)
-        if FILTER_NOT_INSTALLED in fltlist:
+        if FILTER_NOT_INSTALLED in filters:
             cpv_list = filter(_filter_not_installed, cpv_list)
 
         # now we can change cpv_list to a real cpv list
@@ -956,7 +955,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         del tmp_list
 
         # free filter
-        cpv_list = self._filter_free(cpv_list, fltlist)
+        cpv_list = self._filter_free(cpv_list, filters)
 
         for cpv in cpv_list:
             # prevent showing input packages
@@ -1031,13 +1030,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self._get_all_cp(fltlist)
+        cp_list = self._get_all_cp(filters)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
 
-        for cp in self._get_all_cp(fltlist):
-            for cpv in self._get_all_cpv(cp, fltlist):
+        for cp in self._get_all_cp(filters):
+            for cpv in self._get_all_cpv(cp, filters):
                 self._package(cpv)
 
             cp_processed += 100.0
@@ -1054,8 +1052,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        fltlist = filters.split(';')
-
         # get installed and available dbs
         installed_layman_db = layman.db.DB(layman.config.Config())
         available_layman_db = layman.db.RemoteDB(layman.config.Config())
@@ -1063,7 +1059,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # 'gentoo' is a dummy repo
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
 
-        if FILTER_NOT_DEVELOPMENT not in fltlist:
+        if FILTER_NOT_DEVELOPMENT not in filters:
             for o in available_layman_db.overlays.keys():
                 if available_layman_db.overlays[o].is_official() \
                         and available_layman_db.overlays[o].is_supported():
@@ -1082,12 +1078,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        fltlist = filters.split(';')
-
         cpv_input = []
         cpv_list = []
 
-        if FILTER_NOT_INSTALLED in fltlist:
+        if FILTER_NOT_INSTALLED in filters:
             self.error(ERROR_CANNOT_GET_REQUIRES,
                     "get-requires returns only installed packages at the moment")
             return
@@ -1115,7 +1109,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         del packages_list
 
         # free filter
-        cpv_list = self._filter_free(cpv_list, fltlist)
+        cpv_list = self._filter_free(cpv_list, filters)
 
         for cpv in cpv_list:
             # prevent showing input packages
@@ -1177,8 +1171,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
 
-        fltlist = filters.split(';')
-
         update_candidates = []
         cpv_updates = {}
         cpv_downgra = {}
@@ -1233,12 +1225,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         else:
                             dict_down[s] = [tmp_list_avai.pop()]
 
-                cpv_list_updates = self._filter_free(cpv_list_updates, fltlist)
+                cpv_list_updates = self._filter_free(cpv_list_updates, filters)
 
                 if len(cpv_list_updates) == 0:
                     break
 
-                if FILTER_NEWEST in fltlist:
+                if FILTER_NEWEST in filters:
                     best_cpv = portage.versions.best(cpv_list_updates)
                     cpv_list_updates = [best_cpv]
 
@@ -1569,8 +1561,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self._get_all_cp(fltlist)
+        cp_list = self._get_all_cp(filters)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
 
@@ -1584,7 +1575,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         for cp in cp_list:
             if s.match(cp):
-                for cpv in self._get_all_cpv(cp, fltlist):
+                for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
             cp_processed += 100.0
@@ -1598,8 +1589,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self._get_all_cp(fltlist)
+        cp_list = self._get_all_cp(filters)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
         search_list = self._get_search_list(keys)
@@ -1612,7 +1602,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             # newest filter can't be executed now
             # because some cpv are going to be filtered by search conditions
             # and newest filter could be alterated
-            for cpv in self._get_all_cpv(cp, fltlist, filter_newest=False):
+            for cpv in self._get_all_cpv(cp, filters, filter_newest=False):
                 match = True
                 metadata =  self._get_metadata(cpv,
                         ["DESCRIPTION", "HOMEPAGE", "IUSE",
@@ -1633,7 +1623,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     cpv_list.append(cpv)
 
             # newest filter
-            cpv_list = self._filter_newest(cpv_list, fltlist)
+            cpv_list = self._filter_newest(cpv_list, filters)
 
             for cpv in cpv_list:
                 self._package(cpv)
@@ -1652,9 +1642,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-
-        if FILTER_NOT_INSTALLED in fltlist:
+        if FILTER_NOT_INSTALLED in filters:
             self.error(ERROR_CANNOT_GET_FILELIST,
                     "search-file isn't available with ~installed filter")
             return
@@ -1670,7 +1658,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             searchre = re.compile("/" + key + "$", re.IGNORECASE)
 
         # free filter
-        cpv_list = self._filter_free(cpv_list, fltlist)
+        cpv_list = self._filter_free(cpv_list, filters)
         nb_cpv = float(len(cpv_list))
 
         for cpv in cpv_list:
@@ -1691,15 +1679,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
 
-        fltlist = filters.split(';')
-        cp_list = self._get_all_cp(fltlist)
+        cp_list = self._get_all_cp(filters)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
 
         for cp in cp_list:
             for group in groups:
                 if self._get_pk_group(cp) == group:
-                    for cpv in self._get_all_cpv(cp, fltlist):
+                    for cpv in self._get_all_cpv(cp, filters):
                         self._package(cpv)
 
             cp_processed += 100.0
@@ -1737,8 +1724,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             k = re.escape(k)
             search_list.append(re.compile(k, re.IGNORECASE))
 
-        fltlist = filters.split(';')
-        cp_list = self._get_all_cp(fltlist)
+        cp_list = self._get_all_cp(filters)
         nb_cp = float(len(cp_list))
         cp_processed = 0.0
 
@@ -1757,7 +1743,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     found = False
                     break
             if found:
-                for cpv in self._get_all_cpv(cp, fltlist):
+                for cpv in self._get_all_cpv(cp, filters):
                     self._package(cpv)
 
             cp_processed += 100.0
