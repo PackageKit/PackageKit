@@ -61,6 +61,7 @@ from entropy.const import etpConst, const_convert_to_rawstring, \
 from entropy.client.interfaces import Client
 from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
+from entropy.cache import EntropyCacher
 from entropy.exceptions import SystemDatabaseError
 try:
     from entropy.exceptions import DependenciesNotRemovable
@@ -770,7 +771,11 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def destroy(self):
         if hasattr(self, "_entropy"):
-            self._entropy.shutdown()
+            try:
+                self._entropy.shutdown()
+            except NameError:
+                EntropyCacher().stop()
+                self._entropy.destroy()
 
     def __del__(self):
         self.destroy()
