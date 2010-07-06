@@ -33,7 +33,7 @@
 #define YUM_REPOS_DIRECTORY			"/etc/yum.repos.d"
 #define YUM_BACKEND_LOCKING_RETRIES		10
 #define YUM_BACKEND_LOCKING_DELAY		2 /* seconds */
-
+#define PACKAGE_MEDIA_REPO_FILENAME		"/etc/yum.repos.d/packagekit-media.repo"
 
 typedef struct {
 	PkBackendSpawn	*spawn;
@@ -88,7 +88,17 @@ backend_stdout_cb (PkBackend *backend, const gchar *output)
 static void
 backend_yum_repos_changed_cb (GFileMonitor *monitor_, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
 {
+	gchar *filename;
+
+	/* ignore the packagekit-media.repo file */
+	filename = g_file_get_path (file);
+	if (g_str_has_prefix (filename, PACKAGE_MEDIA_REPO_FILENAME))
+		goto out;
+
+	/* emit signal */
 	pk_backend_repo_list_changed (backend);
+out:
+	g_free (filename);
 }
 
 #ifdef HAVE_ZIF
@@ -621,8 +631,6 @@ out:
 #endif
 	return TRUE;
 }
-
-#define PACKAGE_MEDIA_REPO_FILENAME	"/etc/yum.repos.d/packagekit-media.repo"
 
 /**
  * backend_enable_media_repo:
