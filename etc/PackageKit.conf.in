@@ -103,7 +103,8 @@ UseSyslog=false
 # Proxy settings, uncomment as required
 #
 # NOTE: PackageKit does not use these settings, they are passed to backends.
-# Backends may ignore these values, or they may be updated from the session.
+# Backends may ignore these values. If either of ProxyHTTP or ProxyFTP
+# are set then the users proxy settings are ignored.
 #
 # They are in the format username:password@server:port
 #

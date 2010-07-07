@@ -72,6 +72,7 @@ struct PkEnginePrivate
 	GTimer			*timer;
 	gboolean		 notify_clients_of_upgrade;
 	gboolean		 shutdown_as_soon_as_possible;
+	gboolean		 using_hardcoded_proxy;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkCache			*cache;
@@ -787,6 +788,13 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "failed to obtain auth");
 		dbus_g_method_return_error (state->context, error);
+		goto out;
+	}
+
+	/* admin already set value, so silently refuse value */
+	if (priv->using_hardcoded_proxy) {
+		egg_debug ("cannot override admin set proxy");
+		dbus_g_method_return (state->context);
 		goto out;
 	}
 
@@ -1690,6 +1698,11 @@ pk_engine_init (PkEngine *engine)
 	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
 	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
 	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+
+	/* if either of these is set, we ignore the users proxy setting */
+	if (proxy_http != NULL || proxy_ftp != NULL)
+		engine->priv->using_hardcoded_proxy = TRUE;
+
 	g_free (proxy_http);
 	g_free (proxy_ftp);
 
