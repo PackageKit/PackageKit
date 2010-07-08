@@ -2846,7 +2846,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
                     # is older than what we have already?
                     if instpkg:
-                        evr = _getEVR(version[1])
+                        evr = ('0', '0', '0')
+                        try:
+                            evr = _getEVR(version[1])
+                        except Exception, e:
+                            pass
                         if evr == ('0', '0', '0'):
                             changelog += ";*Could not parse header:* '%s', *expected*: 'Firstname Lastname <email@account.com> - version-release';" % header
                         rc = rpmUtils.miscutils.compareEVR((instpkg.epoch, instpkg.version, instpkg.release.split('.')[0]), evr)
