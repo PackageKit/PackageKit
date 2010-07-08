@@ -319,7 +319,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files docs
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_datadir}/gtk-doc/html/PackageKit
 %dir %{_datadir}/PackageKit/website
 %{_datadir}/PackageKit/website/*.html
@@ -332,7 +331,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %if 0%{?rhel} == 0
 %files smart
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/packagekit-backend/libpk_backend_smart.so
 %dir %{_datadir}/PackageKit/helpers/smart
 %{_datadir}/PackageKit/helpers/smart/*
@@ -340,7 +338,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files yum
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %config(noreplace) %{_sysconfdir}/PackageKit/Yum.conf
 %{_libdir}/packagekit-backend/libpk_backend_yum.so
 %dir %{_datadir}/PackageKit/helpers/yum
@@ -348,66 +345,55 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files yum-plugin
 %defattr(-, root, root)
-%doc README AUTHORS NEWS COPYING
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
 /usr/lib/yum-plugins/refresh-packagekit.*
 
 %files glib
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-glib2.so.*
 %{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 
 %files qt
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/*packagekit-qt*.so.*
 
 %files cron
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
 %config(noreplace) %{_sysconfdir}/sysconfig/packagekit-background
 
 %files debug-install
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_bindir}/pk-debuginfo-install
 %{_datadir}/man/man1/pk-debuginfo-install.1.gz
 
 %files browser-plugin
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/mozilla/plugins/packagekit-plugin.so
 
 %files gstreamer-plugin
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libexecdir}/pk-gstreamer-install
 %{_libexecdir}/gst-install-plugins-helper
 
 %files gtk-module
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/gtk-?.0/modules/*.so
 
 %files command-not-found
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
 %config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
 
 %files device-rebind
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_sbindir}/pk-device-rebind
 %{_datadir}/man/man1/pk-device-rebind.1.gz
 
 %files glib-devel
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/libpackagekit-glib2.so
 %{_libdir}/pkgconfig/packagekit-glib2.pc
 %dir %{_includedir}/PackageKit
@@ -416,7 +402,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files qt-devel
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %{_libdir}/libpackagekit-qt*.so
 %{_libdir}/pkgconfig/packagekit-qt.pc
 %dir %{_includedir}/PackageKit
@@ -427,7 +412,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files backend-devel
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
 %dir %{_includedir}/PackageKit
 %dir %{_includedir}/PackageKit/backend
 %{_includedir}/PackageKit/backend/*.h
