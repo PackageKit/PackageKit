@@ -525,18 +525,14 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 			if (ptr == NULL && g_strcmp0 (section, "options") == 0) {
 				/* directives without settings, all in [options] */
-				if (g_strcmp0 (key, "NoPassiveFTP") == 0) {
-					alpm_option_set_nopassiveftp (1);
-					egg_debug ("config: nopassiveftp");
-				} else if (g_strcmp0 (key, "UseSyslog") == 0) {
+				if (g_strcmp0 (key, "UseSyslog") == 0) {
 					alpm_option_set_usesyslog (1);
 					egg_debug ("config: usesyslog");
 				} else if (g_strcmp0 (key, "UseDelta") == 0) {
 					alpm_option_set_usedelta (1);
 					egg_debug ("config: usedelta");
-				} else if (g_strcmp0 (key, "ILoveCandy") != 0 && g_strcmp0 (key, "ShowSize") != 0 && g_strcmp0 (key, "TotalDownload") != 0) {
-					egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-					return 1;
+				} else if (g_strcmp0 (key, "ILoveCandy") != 0 && g_strcmp0 (key, "ShowSize") != 0 && g_strcmp0 (key, "TotalDownload") != 0 && g_strcmp0 (key, "NoPassiveFTP") != 0) {
+					egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 				}
 			} else {
 				/* directives with settings */
@@ -572,8 +568,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 						alpm_option_set_logfile (ptr);
 						egg_debug ("config: logfile: %s", ptr);
 					} else if (g_strcmp0 (key, "XferCommand") != 0 && g_strcmp0 (key, "CleanMethod") != 0) {
-						egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-						return 1;
+						egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 					}
 				} else if (g_strcmp0 (key, "Server") == 0) {
 					/* let's attempt a replacement for the current repo */
@@ -587,8 +582,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 					}
 					free (server);
 				} else {
-					egg_error ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
-					return 1;
+					egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 				}
 			}
 		}
@@ -755,7 +749,7 @@ backend_download_packages_thread (PkBackend *backend)
 	alpm_option_add_cachedir (directory);
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NODEPS | PM_TRANS_FLAG_DOWNLOADONLY, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (PM_TRANS_FLAG_NODEPS | PM_TRANS_FLAG_DOWNLOADONLY, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
@@ -765,7 +759,7 @@ backend_download_packages_thread (PkBackend *backend)
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
 
-		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
+		if (alpm_sync_target (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
@@ -1206,7 +1200,7 @@ backend_install_files_thread (PkBackend *backend)
 	gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_UPGRADE, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1214,7 +1208,7 @@ backend_install_files_thread (PkBackend *backend)
 
 	/* add targets to the transaction */
 	for (iterator = 0; iterator < g_strv_length (full_paths); ++iterator) {
-		if (alpm_trans_addtarget (full_paths[iterator]) != 0) {
+		if (alpm_add_target (full_paths[iterator]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
@@ -1262,7 +1256,7 @@ backend_install_packages_thread (PkBackend *backend)
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1272,7 +1266,7 @@ backend_install_packages_thread (PkBackend *backend)
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
 
-		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
+		if (alpm_sync_target (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
@@ -1315,7 +1309,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 {
 	alpm_list_t *list_iterator;
 
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NOSCRIPTLET, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (PM_TRANS_FLAG_NOSCRIPTLET, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1376,7 +1370,7 @@ backend_remove_packages_thread (PkBackend *backend)
 		flags |= PM_TRANS_FLAG_RECURSE;
 
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1386,7 +1380,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
 		gchar **package_id_data = pk_package_id_split (package_ids[iterator]);
 
-		if (alpm_trans_addtarget (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
+		if (alpm_remove_target (package_id_data[PK_PACKAGE_ID_NAME]) != 0) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 			alpm_trans_release ();
 			pk_backend_finished (backend);
@@ -1405,7 +1399,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	}
 
 	/* search for HoldPkg's in target list */
-	for (list_iterator = alpm_trans_get_pkgs (); list_iterator; list_iterator = alpm_list_next (list_iterator)) {
+	for (list_iterator = alpm_trans_get_remove (); list_iterator; list_iterator = alpm_list_next (list_iterator)) {
 		pmpkg_t *pkg = alpm_list_getdata (list_iterator);
 		const gchar *pkgname = alpm_pkg_get_name (pkg);
 
@@ -1612,18 +1606,15 @@ backend_update_system_thread (PkBackend *backend)
 
 	/* FIXME: support only_trusted */
 
-	/* don't specify any flags for now */
-	pmtransflag_t flags = 0;
-
 	/* create a new transaction */
-	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
+	if (alpm_trans_init (0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return FALSE;
 	}
 
 	/* set action, prepare and commit transaction */
-	if (alpm_trans_sysupgrade (FALSE) != 0 || alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
+	if (alpm_sync_sysupgrade (FALSE) != 0 || alpm_trans_prepare (&data) != 0 || alpm_trans_commit (&data) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
 		pk_backend_finished (backend);
