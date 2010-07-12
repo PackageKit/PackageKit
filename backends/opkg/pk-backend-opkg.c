@@ -638,7 +638,7 @@ backend_get_updates_thread (PkBackend *backend)
 static void
 backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_get_updates_thread);
