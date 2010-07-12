@@ -270,16 +270,14 @@ class PackageKitEntropyMixin(object):
         """
         # we have INFO_IMPORTANT, INFO_SECURITY, INFO_NORMAL
         new_pkgs = set()
-        sys_pkg_map = {}
 
         for repo, pkg_id, c_repo in pkgs:
 
             pkg_type = None
             if important_check:
-                repo_sys_pkgs = sys_pkg_map.get(repo,
-                    c_repo.getSystemPackages())
-
-                if pkg_id in repo_sys_pkgs:
+                sys_pkg = self._entropy.validate_package_removal(pkg_id,
+                    repo_id = repo)
+                if sys_pkg:
                     pkg_type = INFO_IMPORTANT
                 else:
                     pkg_type = INFO_NORMAL
