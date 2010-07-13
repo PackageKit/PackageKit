@@ -850,6 +850,13 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         '''
         Implement the get-categories functionality
         '''
+        try:
+            self._check_init(lazy_cache=True)
+        except PkError, e:
+            self.error(e.code, e.details, exit=False)
+            return
+        self.yumbase.conf.cache = 0 # Allow new files
+        self.percentage(None)
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         cats = []
