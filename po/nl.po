@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: packagekit.master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-07 06:51+0000\n"
-"PO-Revision-Date: 2010-07-07 14:22+0200\n"
+"POT-Creation-Date: 2010-07-13 05:29+0000\n"
+"PO-Revision-Date: 2010-07-13 13:52+0200\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: Fedora\n"
 "Language: nl\n"
@@ -81,7 +81,7 @@ msgstr "Werkelijke naam"
 
 #: ../client/pk-console.c:212
 msgid "Affected packages:"
-msgstr "Betrokken pakketten"
+msgstr "Betrokken pakketten:"
 
 #: ../client/pk-console.c:214
 msgid "Affected packages: None"
@@ -131,7 +131,7 @@ msgstr "Icoon"
 #. TRANSLATORS: this is a header for the package that can be updated
 #: ../client/pk-console.c:341
 msgid "Details about the update:"
-msgstr "Details van de vernieuwing:"
+msgstr "Details over de vernieuwing:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -222,7 +222,7 @@ msgstr "Herstart systeem vereist door:"
 #. TRANSLATORS: a package requires the session to be restarted
 #: ../client/pk-console.c:464
 msgid "Session restart required:"
-msgstr "Het is vereist de sessie te herstarten:"
+msgstr "Herstart sessie vereist door:"
 
 #. TRANSLATORS: a package requires the system to be restarted due to a security update
 #: ../client/pk-console.c:467
@@ -242,7 +242,7 @@ msgstr "Herstart vereist door toepassing:"
 #. TRANSLATORS: This a list of details about the package
 #: ../client/pk-console.c:508
 msgid "Package description"
-msgstr "Pakket omschrijving"
+msgstr "Pakket beschrijving"
 
 #. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
 #: ../client/pk-console.c:539
@@ -298,12 +298,12 @@ msgstr "Er zijn op dit moment geen upgrades beschikbaar."
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:817
 msgid "Please restart the computer to complete the update."
-msgstr "Herstart a.u.b de computer om de vernieuwing af te maken."
+msgstr "Herstart de computer om de vernieuwing af te maken."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:820
 msgid "Please logout and login to complete the update."
-msgstr "Log a.u.b uit en weer in om de vernieuwing af te maken."
+msgstr "Log uit en weer in om de vernieuwing af te maken."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:823
@@ -311,7 +311,7 @@ msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
 msgstr ""
-"Herstart a.u.b de computer om de vernieuwing af te maken omdat belangrijke "
+"Herstart de computer om de vernieuwing af te maken omdat belangrijke "
 "beveiliging vernieuwingen geïnstalleerd zijn."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
@@ -320,7 +320,7 @@ msgid ""
 "Please logout and login to complete the update as important security updates "
 "have been installed."
 msgstr ""
-"Log a.u.b. uit en weer in om de vernieuwing af te maken omdat belangrijke "
+"Log uit en weer in om de vernieuwing af te maken omdat belangrijke "
 "beveiliging vernieuwingen geïnstalleerd zijn."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
@@ -330,7 +330,7 @@ msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s' "
 "instead."
 msgstr ""
-"Verwachtte pakketnaam, maar kreeg een bestand. Probeer in plaats daarvan "
+"Verwachtte pakket naam, maar kreeg een bestand. Probeer in plaats daarvan "
 "'pkcon install-local %s' te gebruiken."
 
 #. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
@@ -401,7 +401,7 @@ msgstr "Stel de installeer root in, b.v.  '/' of '/mnt/ltsp'"
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1277
 msgid "Exit without waiting for actions to complete"
-msgstr "Afsluiten zonder te wachten tot de transacties zijn afgerond"
+msgstr "Afsluiten zonder te wachten tot transacties zijn afgerond"
 
 #. command line argument, do we ask questions
 #: ../client/pk-console.c:1280
@@ -531,7 +531,7 @@ msgstr "Een correcte rol is vereist"
 #: ../client/pk-console.c:1651 ../client/pk-console.c:1671
 #: ../client/pk-console.c:1680 ../client/pk-generate-pack.c:316
 msgid "A package name is required"
-msgstr "Een pakke tnaam is vereist"
+msgstr "Een pakket naam is vereist"
 
 #. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1660
@@ -552,7 +552,8 @@ msgstr "Opdracht mislukt"
 #. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
 #: ../client/pk-generate-pack.c:255
 msgid "Set the file name of dependencies to be excluded"
-msgstr "Zet de bestandsnamen van afhankelijkheden die moeten worden uitgesloten"
+msgstr ""
+"Stel de bestandsnamen van afhankelijkheden in die moeten worden uitgesloten"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:258
@@ -610,7 +611,7 @@ msgstr ""
 #: ../client/pk-generate-pack.c:377
 msgid "If specifying a file, the service pack name must end with"
 msgstr ""
-"Bij het specificeren van een bestand moet de service pac knaam eindigen op"
+"Bij het specificeren van een bestand moet de service pack naam eindigen op"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:393
@@ -666,7 +667,7 @@ msgstr "Daemon status verkrijgen mislukte."
 
 #: ../client/pk-monitor.c:351
 msgid "Failed to get properties"
-msgstr "Eigenschappen ophalen niet gelukt"
+msgstr "Eigenschappen ophalen mislukte"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: ../client/pk-monitor.c:389
@@ -750,12 +751,12 @@ msgstr "Lijst van pakketten laden."
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: ../contrib/command-not-found/pk-command-not-found.c:445
 msgid "Failed to search for file"
-msgstr "Zoeken naar bestand niet gelukt"
+msgstr "Zoeken naar bestand mislukte"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:597
 msgid "Failed to launch:"
-msgstr "Opstarten mislukt:"
+msgstr "Opstarten mislukte:"
 
 #. TRANSLATORS: we failed to install the package
 #: ../contrib/command-not-found/pk-command-not-found.c:625
@@ -792,7 +793,7 @@ msgstr "Vergelijkbare commando's zijn:"
 #. TRANSLATORS: ask the user to choose a file to run
 #: ../contrib/command-not-found/pk-command-not-found.c:785
 msgid "Please choose a command to run"
-msgstr "Kies a.u.b. een commando om te draaien"
+msgstr "Kies een commando om te draaien"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: ../contrib/command-not-found/pk-command-not-found.c:803
@@ -819,18 +820,18 @@ msgstr "Geschikte pakketten zijn:"
 #. TRANSLATORS: ask the user to choose a file to install
 #: ../contrib/command-not-found/pk-command-not-found.c:851
 msgid "Please choose a package to install"
-msgstr "Kies a.u.b. een pakket om te installeren"
+msgstr "Kies een pakket om te installeren"
 
 #. TRANSLATORS: we are starting to install the packages
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:197
 msgid "Starting install"
-msgstr "Installeren starten"
+msgstr "Starten met installeren"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:409
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "Pakket %s vinden is mislukt, of is reeds geïnstalleerd: %s"
+msgstr "Pakket %s vinden misluktu, of is reeds geïnstalleerd: %s"
 
 #. command line argument, simulate what would be done, but don't actually do it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:518
@@ -997,7 +998,7 @@ msgstr "Pakketten installeren"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:875
 #, c-format
 msgid "Could not install packages: %s"
-msgstr "Kon pakketten %s  niet installeren."
+msgstr "Kon pakketten %s niet installeren."
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:907
@@ -1020,18 +1021,18 @@ msgstr "%i debug bronnen uitgezet."
 #. TRANSLATORS: couldn't open device to write
 #: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
-msgstr "Bestand openen niet gelukt"
+msgstr "Bestand openen mislukte"
 
 #. TRANSLATORS: could not write to the device
 #: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
-msgstr "Naar bestand schrijven niet gelukt"
+msgstr "Naar bestand schrijven mislukte"
 
 #. TRANSLATORS: we failed to release the current driver
 #: ../contrib/device-rebind/pk-device-rebind.c:111
 #: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
-msgstr "Naar schijf schrijven niet gelukt"
+msgstr "Naar schijf schrijven mislukte"
 
 #. TRANSLATORS: the device could not be found in sysfs
 #: ../contrib/device-rebind/pk-device-rebind.c:176
@@ -1134,7 +1135,7 @@ msgstr "Er zijn meerdere pakketten die matchen:"
 #. TRANSLATORS: This finds out which package in the list to use
 #: ../lib/packagekit-glib2/pk-console-shared.c:202
 msgid "Please choose the correct package: "
-msgstr "Kies a.u.b. het juiste pakket: "
+msgstr "Kies het juiste pakket: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: ../lib/packagekit-glib2/pk-console-shared.c:257
@@ -1154,7 +1155,7 @@ msgstr "Wachten in wachtrij"
 #. TRANSLATORS: transaction state, just started
 #: ../lib/packagekit-glib2/pk-console-shared.c:269
 msgid "Running"
-msgstr "Draaiende"
+msgstr "Draaiend"
 
 #. TRANSLATORS: transaction state, is querying data
 #: ../lib/packagekit-glib2/pk-console-shared.c:273
@@ -1625,7 +1626,7 @@ msgstr "Sleutel vingerafdruk"
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: ../lib/packagekit-glib2/pk-task-text.c:144
 msgid "Key Timestamp"
-msgstr "Sleutel tijdtempel"
+msgstr "Sleutel tijdstempel"
 
 #. TRANSLATORS: ask the user if they want to import
 #: ../lib/packagekit-glib2/pk-task-text.c:157
@@ -1680,7 +1681,7 @@ msgstr "Tekst"
 #. TRANSLATORS: ask the user to insert the media
 #: ../lib/packagekit-glib2/pk-task-text.c:282
 msgid "Please insert the correct media"
-msgstr "Breng a.u.b de juiste media in"
+msgstr "Breng de juiste media in"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: ../lib/packagekit-glib2/pk-task-text.c:287
@@ -1746,7 +1747,7 @@ msgstr ""
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr ""
-"Authenticatie wordt vereist om de parameters van de software bronnen te "
+"Authenticatie wordt vereist om parameters van de software bronnen te "
 "wijzigen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
@@ -1762,7 +1763,7 @@ msgid ""
 "trusted"
 msgstr ""
 "Authenticatie wordt vereist om een sleutel te overwegen die gebruikt wordt "
-"om een pakket als vertrouwt te ondertekenen "
+"om een pakket als vertrouwd te ondertekenen "
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1795,8 +1796,8 @@ msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "packages"
 msgstr ""
-"Authenticatie wordt vereist om de netwerk proxy die gebruikt wordt om "
-"pakketten te installeren in te stellen "
+"Authenticatie wordt vereist voor het instellen van de netwerk proxy die "
+"gebruikt wordt om pakketten te installeren"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -2052,7 +2053,7 @@ msgstr "Debug deze specifieke functies"
 #. TRANSLATORS: save to a log
 #: ../src/egg-debug.c:464
 msgid "Log debugging data to a file"
-msgstr "Log debug data naar een file"
+msgstr "Log debug data naar een bestand"
 
 #: ../src/egg-debug.c:468
 msgid "Debugging Options"
@@ -2060,7 +2061,7 @@ msgstr "Debug opties"
 
 #: ../src/egg-debug.c:468
 msgid "Show debugging options"
-msgstr "Toon debug opties"
+msgstr "Laat debug opties zien"
 
 #~ msgid "Malicious software can damage your computer or cause other harm."
 #~ msgstr ""
