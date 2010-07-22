@@ -66,6 +66,7 @@ pacman_package_make_replaces_ids (PacmanPackage *package)
 static gchar *
 pacman_package_make_vendor_url (PacmanPackage *package)
 {
+	GString *string = g_string_new ("");
 #ifdef PACMAN_PACKAGE_URL
 	const gchar *name, *arch, *repo, *url;
 #else
@@ -76,6 +77,9 @@ pacman_package_make_vendor_url (PacmanPackage *package)
 
 	/* grab the URL of the package... */
 	url = pacman_package_get_url (package);
+	if (url != NULL) {
+		g_string_append_printf (string, "%s;Package website;", url);
+	}
 
 #ifdef PACMAN_PACKAGE_URL
 	/* ... and construct the distro URL if possible */
@@ -83,10 +87,11 @@ pacman_package_make_vendor_url (PacmanPackage *package)
 	arch = pacman_package_get_arch (package);
 	repo = pacman_database_get_name (pacman_package_get_database (package));
 
-	return g_strdup_printf ("%s;Package website;" PACMAN_PACKAGE_URL ";Distribution website", url, repo, arch, name);
-#else
-	return g_strdup_printf ("%s;Package website", url);
+	g_string_append_printf (string, PACMAN_PACKAGE_URL ";Distribution website;", repo, arch, name);
 #endif
+
+	g_string_truncate (string, string->len - 1);
+	return g_string_free (string, FALSE);
 }
 
 static gint

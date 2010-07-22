@@ -502,9 +502,7 @@ backend_transaction_commit (PkBackend *backend, PacmanTransaction *transaction)
 {
 	GError *error = NULL;
 
-	if (backend_cancelled (backend)) {
-		return transaction;
-	} else if (transaction != NULL) {
+	if (transaction != NULL && !backend_cancelled (backend)) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
 
 		if (!pacman_transaction_commit (transaction, &error)) {
