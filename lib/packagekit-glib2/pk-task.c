@@ -49,11 +49,13 @@ struct _PkTaskPrivate
 {
 	GPtrArray			*array;
 	gboolean			 simulate;
+	gboolean			 interactive;
 };
 
 enum {
 	PROP_0,
 	PROP_SIMULATE,
+	PROP_INTERACTIVE,
 	PROP_LAST
 };
 
@@ -810,6 +812,13 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 	if (state->exit_enum == PK_EXIT_ENUM_NEED_UNTRUSTED) {
 		state->only_trusted = FALSE;
 
+		/* running non-interactive */
+		if (!state->task->priv->interactive) {
+			egg_debug ("working non-interactive, so calling accept");
+			pk_task_user_accepted (state->task, state->request);
+			goto out;
+		}
+
 		/* no support */
 		if (klass->untrusted_question == NULL) {
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
@@ -826,6 +835,14 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 	/* need key */
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
+
+		/* running non-interactive */
+		if (!state->task->priv->interactive) {
+			egg_debug ("working non-interactive, so calling accept");
+			pk_task_user_accepted (state->task, state->request);
+			goto out;
+		}
+
 		/* no support */
 		if (klass->key_question == NULL) {
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
@@ -842,6 +859,14 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 	/* need EULA */
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
+
+		/* running non-interactive */
+		if (!state->task->priv->interactive) {
+			egg_debug ("working non-interactive, so calling accept");
+			pk_task_user_accepted (state->task, state->request);
+			goto out;
+		}
+
 		/* no support */
 		if (klass->eula_question == NULL) {
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
@@ -858,6 +883,14 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 	/* need media change */
 	if (state->exit_enum == PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED) {
+
+		/* running non-interactive */
+		if (!state->task->priv->interactive) {
+			egg_debug ("working non-interactive, so calling accept");
+			pk_task_user_accepted (state->task, state->request);
+			goto out;
+		}
+
 		/* no support */
 		if (klass->media_change_question == NULL) {
 			error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED,
@@ -2171,6 +2204,9 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 	case PROP_SIMULATE:
 		g_value_set_boolean (value, priv->simulate);
 		break;
+	case PROP_INTERACTIVE:
+		g_value_set_boolean (value, priv->interactive);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2189,6 +2225,9 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 	switch (prop_id) {
 	case PROP_SIMULATE:
 		priv->simulate = g_value_get_boolean (value);
+		break;
+	case PROP_INTERACTIVE:
+		priv->interactive = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2218,6 +2257,16 @@ pk_task_class_init (PkTaskClass *klass)
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SIMULATE, pspec);
 
+	/**
+	 * PkTask:interactive:
+	 *
+	 * Since: 0.6.7
+	 */
+	pspec = g_param_spec_boolean ("interactive", NULL, NULL,
+				      TRUE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
 
@@ -2230,6 +2279,7 @@ pk_task_init (PkTask *task)
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->priv->array = g_ptr_array_new ();
 	task->priv->simulate = TRUE;
+	task->priv->interactive = TRUE;
 }
 
 /**

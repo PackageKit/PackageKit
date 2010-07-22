@@ -1356,6 +1356,7 @@ main (int argc, char *argv[])
 	g_object_set (task,
 		      "background", background,
 		      "simulate", !noninteractive,
+		      "interactive", !noninteractive,
 		      NULL);
 
 	/* set the proxy */
