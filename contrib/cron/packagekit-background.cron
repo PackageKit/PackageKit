@@ -13,7 +13,7 @@
 
 # are we disabled?
 if [ "$ENABLED" = "no" ]; then
-	exit 1
+	exit 0
 fi
 
 # set default for SYSTEM_NAME
