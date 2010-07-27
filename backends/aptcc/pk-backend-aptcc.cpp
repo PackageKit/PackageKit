@@ -34,9 +34,12 @@
 #include "rsources.h"
 
 #include <config.h>
+#include <pk-backend.h>
+#include <pk-backend-spawn.h>
 
 /* static bodges */
 static bool _cancel = false;
+static PkBackendSpawn *spawn;
 
 /**
  * backend_initialize:
@@ -46,15 +49,14 @@ backend_initialize (PkBackend *backend)
 {
 	egg_debug ("APTcc Initializing");
 
-	// make sure we do not get a graphical debconf
-	setenv("DEBIAN_FRONTEND", "noninteractive", 1);
-	setenv("APT_LISTCHANGES_FRONTEND", "none", 1);
-
 	if (pkgInitConfig(*_config) == false ||
 	    pkgInitSystem(*_config, _system) == false)
 	{
 		egg_debug ("ERROR initializing backend");
 	}
+
+	spawn = pk_backend_spawn_new ();
+	pk_backend_spawn_set_name (spawn, "aptcc");
 }
 
 /**
@@ -221,49 +223,13 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	pk_backend_thread_create (backend, backend_get_depends_or_requires_thread);
 }
 
-
-static gboolean
-backend_get_distro_upgrades_thread (PkBackend *backend)
-{
-	FILE *fpipe;
-	char releaseName[256];
-	char releaseVersion[256];
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	if (!(fpipe = (FILE*)popen("./get-distro-upgrade.py", "r"))) {
-	    goto out;
-	}
-
-	if (fgets(releaseName, sizeof releaseName, fpipe)) {
-	    goto out;
-	}
-
-	if (fgets(releaseVersion, sizeof releaseVersion, fpipe)) {
-	    goto out;
-	}
-	pclose(fpipe);
-
-	pk_backend_distro_upgrade (backend,
-				   PK_DISTRO_UPGRADE_ENUM_STABLE,
-				   g_strdup_printf("%s %s", releaseName, releaseVersion),
-				   "The latest stable release");
-
-	pk_backend_finished (backend);
-	return true;
-
-out:
-	pk_backend_finished (backend);
-	return false;
-}
-
 /**
  * backend_get_distro_upgrades:
  */
 static void
 backend_get_distro_upgrades (PkBackend *backend)
 {
-	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
+	pk_backend_spawn_helper (spawn, "get-distro-upgrade.py", "get-distro-upgrades", NULL);
 }
 
 static gboolean
@@ -775,9 +741,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 	AcqPackageKitStatus Stat(m_apt, backend, _cancel);
 
 	// do the work
-	if (_config->FindB("APT::Get::Download",true) == true) {
-		ListUpdate(Stat, *m_apt->packageSourceList);
-	}
+	ListUpdate(Stat, *m_apt->packageSourceList);
 
 	// Rebuild the cache.
 	pkgCacheFile Cache;
