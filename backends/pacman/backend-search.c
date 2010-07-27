@@ -187,15 +187,20 @@ backend_match_provides (PacmanPackage *package, gpointer pattern)
 {
 	/* TODO: implement GStreamer codecs, Pango fonts, etc. */
 	const PacmanList *provides;
-	const gchar *needle = (const gchar *) pattern;
 
 	g_return_val_if_fail (package != NULL, FALSE);
-	g_return_val_if_fail (needle != NULL, FALSE);
+	g_return_val_if_fail (pattern != NULL, FALSE);
 
 	/* match features provided by package */
 	for (provides = pacman_package_get_provides (package); provides != NULL; provides = pacman_list_next (provides)) {
-		const gchar *name = (const gchar *) pacman_list_get (provides);
-		if (g_strcmp0 (needle, name) == 0) {
+		const gchar *needle = (const gchar *) pattern, *name = (const gchar *) pacman_list_get (provides);
+
+		while (*needle == *name && *needle != '\0') {
+			++needle;
+			++name;
+		}
+
+		if (*needle == '\0' && (*name == '\0' || *name == '=')) {
 			return TRUE;
 		}
 	}
