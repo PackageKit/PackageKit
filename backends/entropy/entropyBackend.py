@@ -727,8 +727,7 @@ class PkUrlFetcher(UrlFetcher):
         self.__remotesize = total_size
         self.__datatransfer = data_transfer
 
-    def output(self):
-
+    def update(self):
         if PkUrlFetcher._pk_progress is None:
             return
 
@@ -737,8 +736,11 @@ class PkUrlFetcher(UrlFetcher):
             myavg = abs(int(round(float(self.__average), 1)))
             cur_prog = int(float(self.__average)/100)
             PkUrlFetcher._pk_progress(cur_prog)
-            PkUrlFetcher._last_t = time.time()
+            PkUrlFetcher._last_t = time.time()    
 
+    def output(self):
+        """ backward compatibility """
+        return self.update()
 
 class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
