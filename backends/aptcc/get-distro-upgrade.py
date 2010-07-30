@@ -21,6 +21,7 @@ __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 import locale
 import logging
 import optparse
+import time
 
 from packagekit.backend import *
 
@@ -71,9 +72,6 @@ class PackageKitAptccBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         if META_RELEASE_SUPPORT == False:
-            #self.distro_upgrade("stable",
-                                #"Maverick 10.10",
-                                #"The future stable release")
             return
 
         #FIXME Evil to start the download during init
@@ -83,7 +81,7 @@ class PackageKitAptccBackend(PackageKitBaseBackend):
             time.sleep(1)
         #FIXME: Add support for description
         if meta_release.new_dist != None:
-            self.distro_upgrade("stable",
+            self.distro_upgrade(DISTRO_UPGRADE_STABLE,
                                 "%s %s" % (meta_release.new_dist.name,
                                            meta_release.new_dist.version),
                                 "The latest stable release")
