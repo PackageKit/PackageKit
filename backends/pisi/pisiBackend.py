@@ -122,7 +122,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             version = "%s-%s" % (package.version, package.release)
         return version
 
-    def __get_package(self, package, filters = None):
+    def __get_package(self, package, filters=None):
         """ Returns package object suitable for other methods """
         if self.installdb.has_package(package):
             status = INFO_INSTALLED
@@ -135,15 +135,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         if filters:
             if "none" not in filters:
-                filterlist = filters.split(';')
-
-                if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
+                if FILTER_INSTALLED in filters and status != INFO_INSTALLED:
                     return
-                if FILTER_NOT_INSTALLED in filterlist and status == INFO_INSTALLED:
+                if FILTER_NOT_INSTALLED in filters and status == INFO_INSTALLED:
                     return
-                if FILTER_GUI in filterlist and "app:gui" not in pkg.isA:
+                if FILTER_GUI in filters and "app:gui" not in pkg.isA:
                     return
-                if FILTER_NOT_GUI in filterlist and "app:gui" in pkg.isA:
+                if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
                     return
 
         version = self.__get_package_version(pkg)
@@ -347,50 +345,54 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.__get_package(package[0], filters)
 
-    def search_details(self, filters, key):
+    def search_details(self, filters, values):
         """ Prints a detailed list of packages contains search term """
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
         # Internal FIXME: Use search_details instead of _package when API gains that ability :)
-        for pkg in pisi.api.search_package([key]):
+        for pkg in pisi.api.search_package(values):
             self.__get_package(pkg, filters)
 
-    def search_file(self, filters, key):
+    def search_file(self, filters, values):
         """ Prints the installed package which contains the specified file """
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        # Internal FIXME: Why it is needed?
-        key = key.lstrip("/")
+        for value in values:
+            # Internal FIXME: Why it is needed?
+            value = value.lstrip("/")
 
-        for pkg, files in pisi.api.search_file(key):
-            self.__get_package(pkg)
+            for pkg, files in pisi.api.search_file(value):
+                self.__get_package(pkg)
 
-    def search_group(self, filters, group):
+    def search_group(self, filters, values):
         """ Prints a list of packages belongs to searched group """
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        try:
-            for key in self.groups.keys():
-                if self.groups[key] == group:
-                    for pkg in self.componentdb.get_packages(key, walk = True):
-                        self.__get_package(pkg, filters)
-        except:
-            self.error(ERROR_GROUP_NOT_FOUND, "Component %s was not found" % group)
+        for value in values:
+            try:
+                packages = self.componentdb.get_packages(value, walk=True)
+            except:
+                self.error(ERROR_GROUP_NOT_FOUND,
+                           "Component %s was not found" % value)
 
-    def search_name(self, filters, package):
+            for pkg in packages:
+                self.__get_package(pkg, filters)
+
+    def search_name(self, filters, values):
         """ Prints a list of packages contains search term in its name """
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        for pkg in pisi.api.search_package([package]):
-            self.__get_package(pkg, filters)
+        for value in values:
+            for pkg in pisi.api.search_package([value]):
+                self.__get_package(pkg, filters)
 
     def update_packages(self, only_trusted, package_ids):
         """ Updates given package to its latest version """
