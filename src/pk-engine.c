@@ -601,7 +601,8 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	if (is_priority && engine->priv->timeout_normal_id != 0) {
 		/* clear normal, as we are about to schedule a priority */
 		g_source_remove (engine->priv->timeout_normal_id);
-		engine->priv->timeout_normal_id = 0;	}
+		engine->priv->timeout_normal_id = 0;
+	}
 
 	/* wait a little delay in case we get multiple requests */
 	if (is_priority) {
