@@ -365,7 +365,7 @@ class PackageKitEntropyMixin(object):
         """
         Return translated Entropy packages category description.
         """
-        cat_desc = _("No description")
+        cat_desc = "No description"
         cat_desc_data = self._entropy.get_category_description(category)
         if _LOCALE in cat_desc_data:
             cat_desc = cat_desc_data[_LOCALE]
@@ -1189,7 +1189,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 updated = self._convert_date_to_iso8601(
                     i_repo.retrieveCreationDate(c_id))
 
-            update_message = _("Update")
+            update_message = "Update"
             state = UPDATE_STATE_STABLE
             if repo_name != default_repo:
                 state = UPDATE_STATE_TESTING
