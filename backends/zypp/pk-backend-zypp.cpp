@@ -1609,11 +1609,11 @@ backend_update_packages_thread (PkBackend *backend)
 	}
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
-	pk_backend_finished (backend);
 
 	if (restart != PK_RESTART_ENUM_NONE)
 		pk_backend_require_restart (backend, restart, "A restart is needed");
 
+	pk_backend_finished (backend);
 	return retval;
 }
 

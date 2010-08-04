@@ -1025,7 +1025,6 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	{
 		// FIXME: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
-		pk_backend_finished (backend);
 		return FALSE;
 	}
 
