@@ -366,7 +366,7 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 		return ok;
 	}
 
-	virtual bool askUserToAccepUnknownDigest (const zypp::Pathname &file, const std::string &name)
+	virtual bool askUserToAcceptUnknownDigest (const zypp::Pathname &file, const std::string &name)
 	{
 		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
 		gboolean ok = zypp_signature_required(_backend, file.asString ());
