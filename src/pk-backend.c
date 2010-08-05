@@ -67,7 +67,7 @@
  * If backends do not do this, they will be Finished() manually,
  * and a Message() will be sent to warn the developer
  */
-#define PK_BACKEND_FINISHED_ERROR_TIMEOUT	500 /* ms */
+#define PK_BACKEND_FINISHED_ERROR_TIMEOUT	2000 /* ms */
 
 /**
  * PK_BACKEND_FINISHED_TIMEOUT_GRACE:
@@ -1822,7 +1822,10 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	item = pk_message_new ();
 	g_object_set (item,
 		      "type", PK_MESSAGE_ENUM_BACKEND_ERROR,
-		      "details", "ErrorCode() has to be followed with Finished()!",
+		      "details", "ErrorCode() has to be followed immediately with Finished()!\n"
+		      "Failure to do so, results in PK assuming the thread has hung, and desparately "
+		      " starting another backend thread to process future requests: be warned, "
+		      " your code is about to break in exotic ways.",
 		      NULL);
 
 	/* warn the backend developer that they've done something worng

@@ -100,13 +100,13 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	egg_debug ("zypp_backend_destroy");
-	EventDirector *eventDirector = _eventDirectors [backend];
-	if (eventDirector != NULL) {
-		delete (eventDirector);
-		_eventDirectors.erase (backend);
-	}
+
+	delete (_eventDirectors [backend]);
+	_eventDirectors.erase (backend);
 
 	delete (_signatures[backend]);
+	_signatures.erase (backend);
+
 	g_free (_repoName);
 }
 
