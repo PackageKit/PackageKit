@@ -1801,6 +1801,15 @@ pk_backend_get_is_finished (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_is_error_set:
+ **/
+gboolean
+pk_backend_get_is_error_set (PkBackend *backend)
+{
+	return backend->priv->set_error;
+}
+
+/**
  * pk_backend_error_timeout_delay_cb:
  *
  * We have to call Finished() within PK_BACKEND_FINISHED_ERROR_TIMEOUT of ErrorCode(), enforce this.
