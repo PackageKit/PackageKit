@@ -585,9 +585,20 @@ AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default secu
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
+	# polkit >= 0.97 uses polkit_authority_get_sync() rather than
+	# polkit_authority_get
 	PKG_CHECK_MODULES(POLKIT, \
 			  polkit-backend-1 \
-			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
+			  polkit-gobject-1 >= 0.97,
+			  has_new_polkit=yes,
+			  has_new_polkit=no)
+	if test x$has_new_polkit = xno; then
+		PKG_CHECK_MODULES(POLKIT, \
+				  polkit-backend-1 \
+				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
+	else
+		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use PolicyKit's new API])
+	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
