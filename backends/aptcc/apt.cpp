@@ -1375,11 +1375,10 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 		// failed to open cache, try checkDeps then..
 		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
 		if (WithLock == false || (timeout <= 0)) {
-			pk_backend_error_code(m_backend,
-					      PK_ERROR_ENUM_NO_CACHE,
-					      "Could not open package cache.");
+			show_errors(m_backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
 			return false;
 		} else {
+			_error->Discard();
 			pk_backend_set_status (m_backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
 			sleep(1);
 			timeout--;
