@@ -325,65 +325,6 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 };
 
-struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
-{
-	virtual zypp::KeyRingReport::KeyTrust askUserToAcceptKey (const zypp::PublicKey &key, const zypp::KeyContext &keycontext)
-	{
-		if (zypp_signature_required(_backend, key))
-			return KEY_TRUST_AND_IMPORT;
-		return KEY_DONT_TRUST;
-	}
-
-        virtual bool askUserToAcceptUnsignedFile (const std::string &file, const zypp::KeyContext &keycontext)
-        {
-                gboolean ok = zypp_signature_required(_backend, file);
-
-                return ok;
-        }
-
-        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id, const zypp::KeyContext &keycontext)
-        {
-                gboolean ok = zypp_signature_required(_backend, file, id);
-
-                return ok;
-        }
-
-	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key,  const zypp::KeyContext &keycontext)
-	{
-		gboolean ok = zypp_signature_required(_backend, key);
-
-		return ok;
-	}
-
-};
-
-struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestReport>, ZyppBackendReceiver
-{
-	virtual bool askUserToAcceptNoDigest (const zypp::Pathname &file)
-	{
-		gboolean ok = zypp_signature_required(_backend, file.asString ());
-
-		return ok;
-	}
-
-	virtual bool askUserToAccepUnknownDigest (const zypp::Pathname &file, const std::string &name)
-	{
-		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
-		gboolean ok = zypp_signature_required(_backend, file.asString ());
-
-		return ok;
-	}
-
-	virtual bool askUserToAcceptWrongDigest (const zypp::Pathname &file, const std::string &requested, const std::string &found)
-	{
-		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
-				file.c_str (), requested.c_str (), found.c_str ());
-		gboolean ok = zypp_signature_required(_backend, file.asString ());
-
-		return ok;
-	}
-};
-
 struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::media::MediaChangeReport>, ZyppBackendReceiver
 {
 	virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, const std::string &label, zypp::media::MediaChangeReport::Error error, const std::string &description, const std::vector<std::string> & devices, unsigned int &dev_current)
@@ -411,6 +352,56 @@ struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::Progr
         {
                 update_sub_percentage ((int)progress.val ());
         }
+};
+
+// These last two are called -only- from zypp_refresh_meta_and_cache
+// *if this is not true* - we will get un-caught Abort exceptions.
+
+struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
+{
+	virtual zypp::KeyRingReport::KeyTrust askUserToAcceptKey (const zypp::PublicKey &key, const zypp::KeyContext &keycontext)
+	{
+		if (zypp_signature_required(_backend, key))
+			return KEY_TRUST_AND_IMPORT;
+		return KEY_DONT_TRUST;
+	}
+
+        virtual bool askUserToAcceptUnsignedFile (const std::string &file, const zypp::KeyContext &keycontext)
+        {
+                return zypp_signature_required (_backend, file);
+        }
+
+        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id, const zypp::KeyContext &keycontext)
+        {
+                return zypp_signature_required(_backend, file, id);
+        }
+
+	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key,  const zypp::KeyContext &keycontext)
+	{
+		return zypp_signature_required(_backend, key);
+	}
+
+};
+
+struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestReport>, ZyppBackendReceiver
+{
+	virtual bool askUserToAcceptNoDigest (const zypp::Pathname &file)
+	{
+		return zypp_signature_required(_backend, file.asString ());
+	}
+
+	virtual bool askUserToAcceptUnknownDigest (const zypp::Pathname &file, const std::string &name)
+	{
+		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
+		return zypp_signature_required(_backend, file.asString ());
+	}
+
+	virtual bool askUserToAcceptWrongDigest (const zypp::Pathname &file, const std::string &requested, const std::string &found)
+	{
+		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
+				file.c_str (), requested.c_str (), found.c_str ());
+		return zypp_signature_required(_backend, file.asString ());
+	}
 };
 
 }; // namespace ZyppBackend

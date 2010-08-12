@@ -3,7 +3,7 @@ AC_PREREQ(2.63)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
-m4_define([pk_micro_version], [7])
+m4_define([pk_micro_version], [8])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -37,7 +37,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=14
-LT_REVISION=2
+LT_REVISION=3
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -585,9 +585,20 @@ AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default secu
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
+	# polkit >= 0.97 uses polkit_authority_get_sync() rather than
+	# polkit_authority_get
 	PKG_CHECK_MODULES(POLKIT, \
 			  polkit-backend-1 \
-			  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
+			  polkit-gobject-1 >= 0.97,
+			  has_new_polkit=yes,
+			  has_new_polkit=no)
+	if test x$has_new_polkit = xno; then
+		PKG_CHECK_MODULES(POLKIT, \
+				  polkit-backend-1 \
+				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
+	else
+		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use PolicyKit's new API])
+	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])

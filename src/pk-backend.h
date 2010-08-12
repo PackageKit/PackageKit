@@ -77,6 +77,7 @@ gboolean	 pk_backend_set_frontend_socket		(PkBackend	*backend,
 
 /* get the state */
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
+gboolean         pk_backend_get_is_error_set		(PkBackend	*backend);
 gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*percentage,
 							 guint		*subpercentage,

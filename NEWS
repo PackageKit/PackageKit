@@ -1,3 +1,50 @@
+Version 0.6.7
+~~~~~~~~~~~~~
+Released: 2010-08-04
+
+Translations:
+ - Updates to Chinese translation (chenh)
+ - Updates to Dutch translation (warrink)
+ - Updates to Japanese translation (makoto)
+ - Updates to Polish translation (raven)
+ - Updates to Spanish translation (logan)
+ - Updates to Ukrainian translation (yurchor)
+
+Libraries:
+ - glib: Add an 'interactive' property to PkTask so that we  can use it to do '-y' in pkcon properly (Richard Hughes)
+
+Backends:
+ - alpm: Do not fail on unrecognized config directives (Valeriy Lyasotskiy)
+ - alpm: fixed compilation with ALPM 5 (Valeriy Lyasotskiy)
+ - apt: Adapt latest Python backend API changes (Sebastian Heinlein)
+ - apt: Add a hook script that pokes packagekitd when cmd line tools are used (Daniel Nicoletti)
+ - apt: Added support for distro upgrades
+ - apt, aptcc: Fix apt errors when the the packagekit package is removed. (Daniel Nicoletti)
+ - apt, aptcc: start packagekitd before asking it to emit cache-update (Daniel Nicoletti)
+ - entropy: add forward compatibility with upcoming UrlFetcher changes (Fabio Erculiani)
+ - entropy: improve Entropy backward compatibility (Fabio Erculiani)
+ - opkg: fix status type in get_updates (Sebastian Krzyszkowiak)
+ - pacman: add support for versioned provides field (Jonathan Conder)
+ - pisi: Adapt backend for the recent API changes (Fatih Aşıcı)
+ - portage: port to new API, make backend working again (Fabio Erculiani)
+ - yum: add gnome-packagekit and kpackagekit to the list of infrastructure packages (Richard Hughes)
+ - yum: do not issue RepoListChanged when we disable or enable the media repo automatically (Richard Hughes)
+ - yum: ensure we call _check_init when we do GetCategories (Richard Hughes)
+ - yum: Ensure we disable the MediaRepo when the PackageKit backend has finished (Richard Hughes)
+ - yum: wrap _getEVR in a try,catch block to deal with invalid version numbers. Fixes rh#612360 (Richard Hughes)
+
+New Features:
+ - Add a long document explaining the media-repo functionality (Richard Hughes)
+ - If either of ProxyHTTP are set in PackageKit.conf then ignore the user proxy setting. Fixes rh#604317 (Richard Hughes)
+
+Bugfixes:
+ - Add 0install to the user list (Carlo Marcelo Arenas Belon)
+ - cron: Do not exit with 1 if the cron script is disabled in the config (Vincent Untz)
+ - Don't ship README AUTHORS NEWS COPYING in all subpackages. Fixes rh#612332 (Richard Hughes)
+ - Make the PkBackend always start with the WAIT state, but do not proxy this onto the bus (Richard Hughes)
+ - Recognise bluetooth connections as mobile networks. Fixes rh#609827 (Richard Hughes)
+ - Unbreak CNF after the daemon moved to libexec. Fixes rh#613514 (Richard Hughes)
+
 Version 0.6.6
 ~~~~~~~~~~~~~
 Released: 2010-07-01

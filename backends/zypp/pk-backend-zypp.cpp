@@ -100,13 +100,13 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	egg_debug ("zypp_backend_destroy");
-	EventDirector *eventDirector = _eventDirectors [backend];
-	if (eventDirector != NULL) {
-		delete (eventDirector);
-		_eventDirectors.erase (backend);
-	}
+
+	delete (_eventDirectors [backend]);
+	_eventDirectors.erase (backend);
 
 	delete (_signatures[backend]);
+	_signatures.erase (backend);
+
 	g_free (_repoName);
 }
 
@@ -187,12 +187,12 @@ backend_get_requires_thread (PkBackend *backend)
 		}
 
 		// look for packages which would be uninstalled
+		bool error = false;
 		for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
 				it != pool.byKindEnd (zypp::ResKind::package); it++) {
 
-			if (!zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
-				zypp_backend_pool_item_notify (backend, *it);
-			}
+			if (!error && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
+				error = !zypp_backend_pool_item_notify (backend, *it);
 
 			it->statusReset ();
 		}
@@ -741,8 +741,8 @@ backend_install_files_thread (PkBackend *backend)
 		zypp::RepoManager manager;
 		manager.addRepository (tmpRepo);
 
-		manager.refreshMetadata (tmpRepo);
-		manager.buildCache (tmpRepo);
+		if (!zypp_refresh_meta_and_cache (manager, tmpRepo))
+			return FALSE;
 
 	} catch (const zypp::url::UrlException &ex) {
 		return zypp_backend_finished_error (
@@ -752,6 +752,7 @@ backend_install_files_thread (PkBackend *backend)
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	}
 
+	bool error = false;
 	for (guint i = 0; full_paths[i]; i++) {
 
 		zypp::Pathname rpmPath (full_paths[i]);
@@ -772,11 +773,13 @@ backend_install_files_thread (PkBackend *backend)
 		}
 
 		if (!found) {
+			error = true;
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
-		} else {
+		} else if (!error) {
 			zypp::ResStatus status = item->status ().setToBeInstalled (zypp::ResStatus::USER);
 		}
-		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+		if (!error && !zypp_perform_execution (backend, INSTALL, FALSE)) {
+			error = true;
 			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 		}
 
@@ -785,7 +788,7 @@ backend_install_files_thread (PkBackend *backend)
 		delete (item);
 	}
 
-	//remove tmp-dir and the tmp-repo
+	// remove tmp-dir and the tmp-repo
 	try {
 		zypp::RepoManager manager;
 		manager.removeRepository (tmpRepo);
@@ -794,7 +797,7 @@ backend_install_files_thread (PkBackend *backend)
 	}
 
 	pk_backend_finished (backend);
-	return TRUE;
+	return !error;
 }
 
 /**
@@ -1609,11 +1612,11 @@ backend_update_packages_thread (PkBackend *backend)
 	}
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
-	pk_backend_finished (backend);
 
 	if (restart != PK_RESTART_ENUM_NONE)
 		pk_backend_require_restart (backend, restart, "A restart is needed");
 
+	pk_backend_finished (backend);
 	return retval;
 }
 

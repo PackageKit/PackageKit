@@ -601,7 +601,8 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	if (is_priority && engine->priv->timeout_normal_id != 0) {
 		/* clear normal, as we are about to schedule a priority */
 		g_source_remove (engine->priv->timeout_normal_id);
-		engine->priv->timeout_normal_id = 0;	}
+		engine->priv->timeout_normal_id = 0;
+	}
 
 	/* wait a little delay in case we get multiple requests */
 	if (is_priority) {
@@ -1595,6 +1596,9 @@ pk_engine_init (PkEngine *engine)
 	gchar *root;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
+#ifdef USE_SECURITY_POLKIT_NEW
+	GError *error = NULL;
+#endif
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->notify_clients_of_upgrade = FALSE;
@@ -1685,7 +1689,15 @@ pk_engine_init (PkEngine *engine)
 
 #ifdef USE_SECURITY_POLKIT
 	/* protect the session SetProxy with a PolicyKit action */
+#ifdef USE_SECURITY_POLKIT_NEW
+	engine->priv->authority = polkit_authority_get_sync (NULL, &error);
+	if (engine->priv->authority == NULL) {
+		g_error ("failed to get pokit authority: %s", error->message);
+		g_error_free (error);
+	}
+#else
 	engine->priv->authority = polkit_authority_get ();
+#endif
 #endif
 
 	/* monitor the binary file for changes */

@@ -5,6 +5,9 @@ progress reporting
 			+ but nothing more (?)
 		+ do we only notify on a 'sub' progress %age ?
 
+cancallation ...
+	+ lots of threading nasties here
+
 Root handling
 	+ get_zypp needs to handle multiple roots properly /
 	  more carefully.
