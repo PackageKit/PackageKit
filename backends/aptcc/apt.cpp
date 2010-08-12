@@ -380,8 +380,7 @@ void aptcc::emit_packages(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterat
 void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > &output,
 			 PkBitfield filters)
 {
-	// the default update info
-	PkInfoEnum state = PK_INFO_ENUM_NORMAL;
+	PkInfoEnum state;
 	// Sort so we can remove the duplicated entries
 	sort(output.begin(), output.end(), compare());
 	// Remove the duplicated entries
@@ -396,6 +395,9 @@ void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 		if (_cancel) {
 			break;
 		}
+
+		// the default update info
+		state = PK_INFO_ENUM_NORMAL;
 
 		// let find what kind of upgrade this is
 		pkgCache::VerFileIterator vf = i->second.FileList();
@@ -412,7 +414,8 @@ void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 			} else if (ends_with(archive, "-updates")) {
 				state = PK_INFO_ENUM_BUGFIX;
 			}
-		} else if (origin.compare("Backports.org archive") == 0) {
+		} else if (origin.compare("Backports.org archive") == 0 ||
+				   ends_with(origin, "-backports")) {
 			state = PK_INFO_ENUM_ENHANCEMENT;
 		}
 
@@ -491,7 +494,7 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 			}
 			g_free(itemreg);
 		} else {
-			egg_debug("Did not match: %", value);
+			egg_debug("Did not match: %s", value);
 		}
 	}
 	regfree(&pkre);
@@ -1247,7 +1250,10 @@ void aptcc::updateInterface(int fd, int writeFd)
 				pk_backend_message(m_backend,
 						   PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED,
 						   confmsg);
-				write(writeFd, "N\n", 2);
+				if (write(writeFd, "N\n", 2) != 2) {
+					// TODO we need a DPKG patch to use debconf
+					egg_debug("Failed to write");
+				}
 			} else if (strstr(status, "pmstatus") != NULL) {
 				// Let's start parsing the status:
 				if (starts_with(str, "Preparing")) {
@@ -1563,7 +1569,7 @@ bool aptcc::installPackages(pkgCacheFile &Cache)
 	{
  	    cout << DebBytes << ',' << Cache->DebSize() << endl;
 cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
-		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");
+/*		_error->Warning("How odd.. The sizes didn't match, email apt@packages.debian.org");*/
 	}
 
 	// Number of bytes
