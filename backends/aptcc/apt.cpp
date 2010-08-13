@@ -1260,28 +1260,35 @@ void aptcc::updateInterface(int fd, int writeFd)
 					// Preparing to Install/configure
 					cout << "Found Preparing! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
+					pk_backend_set_sub_percentage(m_backend, 0);
 				} else if (starts_with(str, "Unpacking")) {
 					cout << "Found Unpacking! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_DECOMPRESSING);
+					pk_backend_set_sub_percentage(m_backend, 25);
 				} else if (starts_with(str, "Configuring")) {
 					// Installing Package
 					cout << "Found Configuring! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
+					pk_backend_set_sub_percentage(m_backend, 50);
 				} else if (starts_with(str, "Running dpkg")) {
 					cout << "Found Running dpkg! " << line << endl;
 				} else if (starts_with(str, "Running")) {
 					cout << "Found Running! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_CLEANUP);
+					pk_backend_set_sub_percentage(m_backend, 75);
 				} else if (starts_with(str, "Installing")) {
 					cout << "Found Installing! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
+					pk_backend_set_sub_percentage(m_backend, 50);
 				} else if (starts_with(str, "Removing")) {
 					cout << "Found Removing! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
+					pk_backend_set_sub_percentage(m_backend, 50);
 				} else if (starts_with(str, "Installed") ||
 					   starts_with(str, "Removed")) {
 					cout << "Found FINISHED! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_FINISHED);
+					pk_backend_set_sub_percentage(m_backend, 100);
 				} else {
 					cout << ">>>Unmaped value<<< :" << line << endl;
 				}
