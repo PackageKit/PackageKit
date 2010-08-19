@@ -3,7 +3,7 @@
 // $Id: acqprogress.cc,v 1.24 2003/04/27 01:56:48 doogie Exp $
 /* ######################################################################
 
-   Acquire Progress - Command line progress meter 
+   Acquire Progress - Command line progress meter
 
    ##################################################################### */
 									/*}}}*/
@@ -39,7 +39,6 @@ AcqPackageKitStatus::AcqPackageKitStatus(aptcc *apt, PkBackend *backend, bool &c
 void AcqPackageKitStatus::Start()
 {
    pkgAcquireStatus::Start();
-   BlankLine[0] = 0;
    ID = 1;
 };
 									/*}}}*/
@@ -48,13 +47,6 @@ void AcqPackageKitStatus::Start()
 /* */
 void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
-//    if (Quiet <= 0)
-//       cout << '\r' << BlankLine << '\r';
-// 
-//    cout << /*_*/("Hit ") << Itm.Description;
-//    if (Itm.Owner->FileSize != 0)
-//       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
-//    cout << endl;
    Update = true;
 };
 									/*}}}*/
@@ -68,17 +60,6 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
       return;
 
    Itm.Owner->ID = ID++;
-
-//    if (Quiet > 1)
-//       return;
-// 
-//    if (Quiet <= 0)
-//       cout << '\r' << BlankLine << '\r';
-// 
-//    cout << /*_*/("Get:") << Itm.Owner->ID << ' ' << Itm.Description;
-//    if (Itm.Owner->FileSize != 0)
-//       cout << " [" << SizeToStr(Itm.Owner->FileSize) << "B]";
-//    cout << endl;
 };
 									/*}}}*/
 // AcqPackageKitStatus::Done - Completed a download				/*{{{*/
@@ -113,40 +94,20 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 
 	Update = true;
 };
-									/*}}}*/
-// AcqPackageKitStatus::Stop - Finished downloading				/*{{{*/
-// ---------------------------------------------------------------------
-/* This prints out the bytes downloaded and the overall average line
-   speed */
-void AcqPackageKitStatus::Stop()
-{
-   pkgAcquireStatus::Stop();
 
-   if (FetchedBytes != 0 && _error->PendingError() == false)
-      ioprintf(cout,/*_*/("Fetched %sB in %s (%sB/s)\n"),
-	       SizeToStr(FetchedBytes).c_str(),
-	       TimeToStr(ElapsedTime).c_str(),
-	       SizeToStr(CurrentCPS).c_str());
-}
 									/*}}}*/
 // AcqPackageKitStatus::Pulse - Regular event pulse				/*{{{*/
 // ---------------------------------------------------------------------
 /* This draws the current progress. Each line has an overall percent
-   meter and a per active item status meter along with an overall 
+   meter and a per active item status meter along with an overall
    bandwidth and ETA indicator. */
 bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 {
 	pkgAcquireStatus::Pulse(Owner);
 
-	enum {Long = 0,Medium,Short} Mode = Long;
-
-	char Buffer[sizeof(BlankLine)];
-	char *End = Buffer + sizeof(Buffer);
-	char *S = Buffer;
-
 	unsigned long percent_done;
 	percent_done = long(double((CurrentBytes + CurrentItems)*100.0)/double(TotalBytes+TotalItems));
-	
+
 	// Emit the percent done
 	if (last_percent != percent_done) {
 		if (last_percent < percent_done) {
@@ -158,6 +119,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 		last_percent = percent_done;
 	}
 
+	set<string> localCurrentPackages = currentPackages;;
 	for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
 		I = Owner->WorkerStep(I))
 	{
@@ -166,12 +128,14 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 		{
 			continue;
 		}
-		emit_package(I->CurrentItem->ShortDesc);
+		emit_package(I->CurrentItem->ShortDesc, false);
+		localCurrentPackages.erase(I->CurrentItem->ShortDesc);
 
 		// Add the total size and percent
 		if (I->TotalSize > 0 && I->CurrentItem->Owner->Complete == false)
 		{
 			unsigned long sub_percent;
+			// TODO PackageKit needs to emit package with progress.
 			sub_percent = long(double(I->CurrentSize*100.0)/double(I->TotalSize));
 			if (last_sub_percent != sub_percent) {
 				if (last_sub_percent < sub_percent) {
@@ -182,38 +146,27 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 				}
 				last_sub_percent = sub_percent;
 			}
-		} else {
-			if (last_sub_percent != PK_BACKEND_PERCENTAGE_INVALID) {
-				pk_backend_set_sub_percentage(m_backend,
-							      PK_BACKEND_PERCENTAGE_INVALID);
-				last_sub_percent = PK_BACKEND_PERCENTAGE_INVALID;
-			}
 		}
 	}
 
-	/* Put in the ETA and cps meter, block off signals to prevent strangeness
-	    during resizing */
-	sigset_t Sigs,OldSigs;
-	sigemptyset(&Sigs);
-	sigaddset(&Sigs,SIGWINCH);
-	sigprocmask(SIG_BLOCK,&Sigs,&OldSigs);
+	// the items that are still on the set are finished
+	for (set<string>::iterator it = localCurrentPackages.begin();
+	     it != localCurrentPackages.end();
+	     it++ )
+	{
+		emit_package(*it, true);
+	}
 
-// 	if (CurrentCPS != 0)
-// 	{
-// 		char Tmp[300];
-// 		unsigned long ETA = (unsigned long)((TotalBytes - CurrentBytes)/CurrentCPS);
-// 		sprintf(Tmp," %sB/s %s",SizeToStr(CurrentCPS).c_str(),TimeToStr(ETA).c_str());
-// 		unsigned int Len = strlen(Buffer);
-// 		unsigned int LenT = strlen(Tmp);
-// 	//       if (Len + LenT < ScreenWidth)
-// 	//       {
-// 	// 	 memset(Buffer + Len,' ',ScreenWidth - Len);
-// 	// 	 strcpy(Buffer + ScreenWidth - LenT,Tmp);
-// 	//       }
-// 	}
-	Buffer[/*ScreenWidth*/1024] = 0;
-	BlankLine[/*ScreenWidth*/1024] = 0;
-	sigprocmask(SIG_SETMASK,&OldSigs,0);
+	if (CurrentCPS != 0)
+	{
+		double ASize;
+		if (CurrentCPS >= 0) {
+			ASize = CurrentCPS;
+		} else {
+			ASize = -1 * CurrentCPS;
+		}
+		pk_backend_set_speed(m_backend, (int) ASize);
+	}
 
 	Update = false;
 
@@ -253,11 +206,11 @@ void AcqPackageKitStatus::addPackagePair(pair<pkgCache::PkgIterator, pkgCache::V
 	packages.push_back(packagePair);
 }
 
-void AcqPackageKitStatus::emit_package(const string &name)
+void AcqPackageKitStatus::emit_package(const string &name, bool finished)
 {
 	if (name.compare(last_package_name) != 0 && packages.size()) {
 		// find the package
-		for(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
+		for (vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> >::iterator it = packages.begin();
 			    it != packages.end(); ++it)
 		{
 			if (_cancelled) {
@@ -267,8 +220,16 @@ void AcqPackageKitStatus::emit_package(const string &name)
 			if (name.compare(it->first.Name()) == 0) {
 				m_apt->emit_package(it->first,
 						    it->second,
-						    PK_INFO_ENUM_UNKNOWN, PK_INFO_ENUM_DOWNLOADING);
+						    PK_INFO_ENUM_UNKNOWN,
+							finished ? PK_INFO_ENUM_FINISHED : PK_INFO_ENUM_DOWNLOADING);
 				last_package_name = name;
+
+				// Find the downloading item
+				if (finished) {
+					currentPackages.erase(name);
+				} else {
+					currentPackages.insert(name);
+				}
 				break;
 			}
 		}
