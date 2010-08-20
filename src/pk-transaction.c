@@ -5530,6 +5530,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
 	transaction->priv->elapsed_time = 0;
 	transaction->priv->remaining_time = 0;
+	transaction->priv->speed = 0;
 	transaction->priv->backend = pk_backend_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->conf = pk_conf_new ();

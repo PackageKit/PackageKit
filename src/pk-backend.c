@@ -171,6 +171,7 @@ enum {
 	PROP_STATUS,
 	PROP_ROLE,
 	PROP_TRANSACTION_ID,
+	PROP_SPEED,
 	PROP_LAST
 };
 
@@ -2476,6 +2477,9 @@ pk_backend_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_TRANSACTION_ID:
 		g_value_set_string (value, priv->transaction_id);
 		break;
+	case PROP_SPEED:
+		g_value_set_uint (value, priv->speed);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2508,6 +2512,9 @@ pk_backend_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		g_free (priv->transaction_id);
 		priv->transaction_id = g_value_dup_string (value);
 		egg_debug ("setting backend tid as %s", priv->transaction_id);
+		break;
+	case PROP_SPEED:
+		priv->speed = g_value_get_uint (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2600,6 +2607,14 @@ pk_backend_class_init (PkBackendClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
+
+	/**
+	 * PkBackend:speed:
+	 */
+	pspec = g_param_spec_uint ("speed", NULL, NULL,
+				   0, G_MAXUINT, PK_STATUS_ENUM_UNKNOWN,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SPEED, pspec);
 
 	/* properties */
 	signals[SIGNAL_STATUS_CHANGED] =
@@ -2744,6 +2759,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->speed = 0;
 	pk_store_reset (backend->priv->store);
 	pk_time_reset (backend->priv->time);
 
