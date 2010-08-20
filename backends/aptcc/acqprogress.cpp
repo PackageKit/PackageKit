@@ -96,6 +96,23 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 };
 
 									/*}}}*/
+// AcqTextStatus::Stop - Finished downloading				/*{{{*/
+// ---------------------------------------------------------------------
+/* This prints out the bytes downloaded and the overall average line
+   speed */
+void AcqPackageKitStatus::Stop()
+{
+	pkgAcquireStatus::Stop();
+	// the items that still on the set are finished
+	for (set<string>::iterator it = currentPackages.begin();
+	     it != currentPackages.end();
+	     it++ )
+	{
+		emit_package(*it, true);
+	}
+}
+
+									/*}}}*/
 // AcqPackageKitStatus::Pulse - Regular event pulse				/*{{{*/
 // ---------------------------------------------------------------------
 /* This draws the current progress. Each line has an overall percent
@@ -149,7 +166,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 		}
 	}
 
-	// the items that are still on the set are finished
+	// the items that still on the set are finished
 	for (set<string>::iterator it = localCurrentPackages.begin();
 	     it != localCurrentPackages.end();
 	     it++ )

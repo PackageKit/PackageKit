@@ -26,6 +26,7 @@ public:
 	virtual void Done(pkgAcquire::ItemDesc &Itm);
 	virtual void Fail(pkgAcquire::ItemDesc &Itm);
 	virtual void Start();
+	virtual void Stop();
 
 	bool Pulse(pkgAcquire *Owner);
 
