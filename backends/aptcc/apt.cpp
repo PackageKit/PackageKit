@@ -57,7 +57,8 @@ aptcc::aptcc(PkBackend *backend, bool &cancel)
 	Policy(0),
 	m_backend(backend),
 	_cancel(cancel),
-	m_terminalTimeout(120)
+	m_terminalTimeout(120),
+	m_lastSubProgress(0)
 {
 	_cancel = false;
 }
@@ -1199,11 +1200,11 @@ void aptcc::updateInterface(int fd, int writeFd)
 			}
 			//cout << "got line: " << line << endl;
 
-			gchar **split = g_strsplit(line, ":",5);
-			gchar *status = g_strstrip(split[0]);
-			gchar *pkg = g_strstrip(split[1]);
+			gchar **split  = g_strsplit(line, ":",5);
+			gchar *status  = g_strstrip(split[0]);
+			gchar *pkg     = g_strstrip(split[1]);
 			gchar *percent = g_strstrip(split[2]);
-			gchar *str = g_strdup(g_strstrip(split[3]));
+			gchar *str     = g_strdup(g_strstrip(split[3]));
 
 			// major problem here, we got unexpected input. should _never_ happen
 			if(!(pkg && status)) {
@@ -1255,42 +1256,107 @@ void aptcc::updateInterface(int fd, int writeFd)
 					egg_debug("Failed to write");
 				}
 			} else if (strstr(status, "pmstatus") != NULL) {
+				// INSTALL & UPDATE
+				// - Running dpkg
+				// loops ALL
+				// -  0 Installing pkg (sometimes this is skiped)
+				// - 25 Preparing pkg
+				// - 50 Unpacking pkg
+				// - 75 Preparing to configure pkg
+				//   ** Some pkgs have
+				//   - Running post-installation
+				//   - Running dpkg
+				// reloops all
+				// -   0 Configuring pkg
+				// - +25 Configuring pkg (SOMETIMES)
+				// - 100 Installed pkg
+				// after all
+				// - Running post-installation
+
+				// REMOVE
+				// - Running dpkg
+				// loops
+				// - 25  Removing pkg
+				// - 50  Preparing for removal of pkg
+				// - 75  Removing pkg
+				// - 100 Removed pkg
+				// after all
+				// - Running post-installation
+
 				// Let's start parsing the status:
-				if (starts_with(str, "Preparing")) {
+				if (starts_with(str, "Preparing to configure")) {
+					// Preparing to Install/configure
+					cout << "Found Preparing to configure! " << line << endl;
+					// The next item might be Configuring so better it be 100
+					m_lastSubProgress = 100;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
+					pk_backend_set_sub_percentage(m_backend, 75);
+				} else if (starts_with(str, "Preparing for removal")) {
+					// Preparing to Install/configure
+					cout << "Found Preparing for removal! " << line << endl;
+					m_lastSubProgress = 50;
+					emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
+					pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
+				} else if (starts_with(str, "Preparing")) {
 					// Preparing to Install/configure
 					cout << "Found Preparing! " << line << endl;
+					// if last package is different then finish it
+					if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
+						cout << "FINISH the last package: " << m_lastPackage << endl;
+						emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+					}
 					emitTransactionPackage(pkg, PK_INFO_ENUM_PREPARING);
-					pk_backend_set_sub_percentage(m_backend, 0);
+					pk_backend_set_sub_percentage(m_backend, 25);
 				} else if (starts_with(str, "Unpacking")) {
 					cout << "Found Unpacking! " << line << endl;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_DECOMPRESSING);
-					pk_backend_set_sub_percentage(m_backend, 25);
+					pk_backend_set_sub_percentage(m_backend, 50);
 				} else if (starts_with(str, "Configuring")) {
 					// Installing Package
 					cout << "Found Configuring! " << line << endl;
+					if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
+						cout << "FINISH the last package: " << m_lastPackage << endl;
+						emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+						m_lastSubProgress = 0;
+					}
 					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
-					pk_backend_set_sub_percentage(m_backend, 50);
+					pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
+					m_lastSubProgress += 25;
 				} else if (starts_with(str, "Running dpkg")) {
 					cout << "Found Running dpkg! " << line << endl;
 				} else if (starts_with(str, "Running")) {
 					cout << "Found Running! " << line << endl;
-					emitTransactionPackage(pkg, PK_INFO_ENUM_CLEANUP);
-					pk_backend_set_sub_percentage(m_backend, 75);
+					pk_backend_set_status (m_backend, PK_STATUS_ENUM_COMMIT);
 				} else if (starts_with(str, "Installing")) {
 					cout << "Found Installing! " << line << endl;
+					// FINISH the last package
+					if (!m_lastPackage.empty()) {
+						cout << "FINISH the last package: " << m_lastPackage << endl;
+						emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+					}
+					m_lastSubProgress = 0;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_INSTALLING);
-					pk_backend_set_sub_percentage(m_backend, 50);
+					pk_backend_set_sub_percentage(m_backend, 0);
 				} else if (starts_with(str, "Removing")) {
 					cout << "Found Removing! " << line << endl;
+					if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
+						cout << "FINISH the last package: " << m_lastPackage << endl;
+						emitTransactionPackage(m_lastPackage, PK_INFO_ENUM_FINISHED);
+					}
+					m_lastSubProgress += 25;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_REMOVING);
-					pk_backend_set_sub_percentage(m_backend, 50);
+					pk_backend_set_sub_percentage(m_backend, m_lastSubProgress);
 				} else if (starts_with(str, "Installed") ||
-					   starts_with(str, "Removed")) {
+					       starts_with(str, "Removed")) {
 					cout << "Found FINISHED! " << line << endl;
+					m_lastSubProgress = 100;
 					emitTransactionPackage(pkg, PK_INFO_ENUM_FINISHED);
-					pk_backend_set_sub_percentage(m_backend, 100);
 				} else {
 					cout << ">>>Unmaped value<<< :" << line << endl;
+				}
+
+				if (!starts_with(str, "Running")) {
+					m_lastPackage = pkg;
 				}
 				m_startCounting = true;
 			} else {

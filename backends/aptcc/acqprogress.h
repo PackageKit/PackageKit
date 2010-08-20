@@ -39,8 +39,9 @@ private:
 
 	unsigned long last_percent;
 	unsigned long last_sub_percent;
-	string last_package_name;
-	aptcc *m_apt;
+	double        last_CPS;
+	string        last_package_name;
+	aptcc         *m_apt;
 
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages;
 	set<string> currentPackages;

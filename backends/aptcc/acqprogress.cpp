@@ -174,15 +174,11 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 		emit_package(*it, true);
 	}
 
-	if (CurrentCPS != 0)
+	double localCPS = (CurrentCPS >= 0) ? CurrentCPS : -1 * CurrentCPS;
+	if (localCPS != last_CPS)
 	{
-		double ASize;
-		if (CurrentCPS >= 0) {
-			ASize = CurrentCPS;
-		} else {
-			ASize = -1 * CurrentCPS;
-		}
-		pk_backend_set_speed(m_backend, (int) ASize);
+		last_CPS = localCPS;
+		pk_backend_set_speed(m_backend, (int) last_CPS);
 	}
 
 	Update = false;

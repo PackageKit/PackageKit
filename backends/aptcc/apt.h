@@ -146,6 +146,7 @@ private:
 			  bool Remove,
 			  bool BrokenFix,
 			  unsigned int &ExpectedInst);
+
 	/**
 	 *  interprets dpkg status fd
 	*/
@@ -157,8 +158,11 @@ private:
 	vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > m_pkgs;
 	void populateInternalPackages(pkgCacheFile &Cache);
 	void emitTransactionPackage(string name, PkInfoEnum state);
-	time_t m_lastTermAction;
-	bool m_startCounting;
+	time_t     m_lastTermAction;
+	string     m_lastPackage;
+	uint       m_lastSubProgress;
+	PkInfoEnum m_state;
+	bool       m_startCounting;
 	// when the internal terminal timesout after no activity
 	int m_terminalTimeout;
 	pid_t m_child_pid;
