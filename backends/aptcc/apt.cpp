@@ -1708,6 +1708,9 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		return false;
 	}
 
+	// Right now it's not safe to cancel
+	pk_backend_set_allow_cancel (backend, false);
+
 	// TODO true or false?
 	if (_cancel) {
 		return true;
