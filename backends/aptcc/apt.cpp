@@ -1401,7 +1401,7 @@ void aptcc::updateInterface(int fd, int writeFd)
 /* Remove unused automatic packages */
 bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 {
-	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", true);
+	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
 	pkgDepCache::ActionGroup group(*Cache);
 
 	if (_config->FindB("APT::Get::Remove",true) == false &&
