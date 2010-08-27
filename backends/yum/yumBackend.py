@@ -2745,6 +2745,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             if desc:
                 desc = desc.replace("\t", " ")
 
+            # add link to bohdi if available
+            if notice['from'].find('updates@fedoraproject.org') != -1:
+                if notice['update_id']:
+                    releasever = self.yumbase.conf.yumvar['releasever']
+                    href = "https://admin.fedoraproject.org/updates/F%s/%s" % (releasever, notice['update_id'])
+                    title = "%s Update %s" % (notice['release'], notice['update_id'])
+                    urls['vendor'].append("%s;%s" % (href, title))
+
             # Update References (Bugzilla, CVE ...)
             refs = notice['references']
             if refs:
@@ -2761,13 +2769,6 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             urls[typ].append("%s;%s" % (href, title))
                         else:
                             urls['vendor'].append("%s;%s" % (href, title))
-
-            # add link to bohdi if available
-            if notice['update_id']:
-                releasever = self.yumbase.conf.yumvar['releasever']
-                href = "https://admin.fedoraproject.org/updates/F%s/%s" % (releasever, notice['update_id'])
-                title = "%s Update %s" % (notice['release'], notice['update_id'])
-                urls['vendor'].append("%s;%s" % (href, title))
 
             # other interesting data:
             changelog = ''
