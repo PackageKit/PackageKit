@@ -2774,6 +2774,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             state = notice['status'] or ''
             issued = notice['issued'] or ''
             updated = notice['updated'] or ''
+            if updated == issued:
+                updated = ''
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
