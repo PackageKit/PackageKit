@@ -111,7 +111,7 @@ class PackageKitEntropyMixin(object):
 
     def _encode_string_list(self, values):
         # values is a list of unencoded strings, we need UTF-8 strings here
-        values = [const_convert_to_unicode(x) for x in values]
+        return [const_convert_to_unicode(x) for x in values]
 
     def _is_repository_enabled(self, repo_name):
         """
