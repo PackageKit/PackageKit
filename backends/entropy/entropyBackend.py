@@ -109,6 +109,10 @@ class PackageKitEntropyMixin(object):
                 ' '.join([const_convert_to_unicode(x) for x in my_args]),)
             )
 
+    def _encode_string_list(self, values):
+        # values is a list of unencoded strings, we need UTF-8 strings here
+        values = [const_convert_to_unicode(x) for x in values]
+
     def _is_repository_enabled(self, repo_name):
         """
         Return whether given repository identifier is available and enabled.
@@ -1453,6 +1457,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def search_details(self, filters, values):
 
+        values = self._encode_string_list(values)
+
         self._log_message(__name__, "search_details: got %s and %s" % (
             filters, values,))
 
@@ -1489,6 +1495,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_file(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_file: got %s and %s" % (
             filters, values,))
@@ -1547,6 +1555,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_group(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_group: got %s and %s" % (
             filters, values,))
@@ -1610,6 +1620,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_name(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_name: got %s and %s" % (
             filters, values,))
