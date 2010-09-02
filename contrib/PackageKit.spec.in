@@ -29,6 +29,7 @@ BuildRequires: sqlite-devel
 BuildRequires: NetworkManager-devel
 BuildRequires: polkit-devel >= 0.92
 BuildRequires: libtool
+BuildRequires: gtk2-devel
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
