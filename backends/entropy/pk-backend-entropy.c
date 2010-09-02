@@ -130,7 +130,7 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_FILES,
 		PK_ROLE_ENUM_GET_REQUIRES,
 		PK_ROLE_ENUM_GET_PACKAGES,
-		//PK_ROLE_ENUM_WHAT_PROVIDES,
+		PK_ROLE_ENUM_WHAT_PROVIDES,
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
@@ -194,20 +194,17 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 
 /**
  * backend_what_provides:
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
-{
-    gchar *filters_text;
-    gchar *search;
-    const gchar *provides_text;
-    provides_text = pk_provides_enum_to_string (provides);
-    filters_text = pk_filter_bitfield_to_string (filters);
-    search = g_strjoinv ("&", values);
-    pk_backend_spawn_helper (spawn, BACKEND_FILE, "what-provides", filters_text, provides_text, search, NULL);
-    g_free (filters_text);
-    g_free (search);
-}
  */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, const gchar *search)
+{
+	gchar *filters_text;
+	const gchar *provides_text;
+	provides_text = pk_provides_enum_to_string (provides);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	pk_backend_spawn_helper (spawn, BACKEND_FILE, "what-provides", filters_text, provides_text, search, NULL);
+	g_free (filters_text);
+}
 
 /**
  * pk_backend_get_categories:
@@ -594,7 +591,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_names,				/* search_name */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL,								/* what_provides */
+	backend_what_provides,				/* what_provides */
 	backend_simulate_install_files,	    /* simulate_install_files */
 	backend_simulate_install_packages,  /* simulate_install_packages */
 	backend_simulate_remove_packages,   /* simulate_remove_packages */
