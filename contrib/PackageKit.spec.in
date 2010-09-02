@@ -197,7 +197,17 @@ Requires: pango
 Requires: PackageKit-glib = %{version}-%{release}
 
 %description gtk-module
-The PackageKit GTK+ module allows any Pango application to install
+The PackageKit GTK2+ module allows any Pango application to install
+fonts from configured repositories using PackageKit.
+
+%package gtk3-module
+Summary: Install fonts automatically using PackageKit
+Group: Development/Libraries
+Requires: pango
+Requires: PackageKit-glib = %{version}-%{release}
+
+%description gtk3-module
+The PackageKit GTK3+ module allows any Pango application to install
 fonts from configured repositories using PackageKit.
 
 %package command-not-found
@@ -379,7 +389,11 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 
 %files gtk-module
 %defattr(-,root,root,-)
-%{_libdir}/gtk-?.0/modules/*.so
+%{_libdir}/gtk-2.0/modules/*.so
+
+%files gtk3-module
+%defattr(-,root,root,-)
+%{_libdir}/gtk-3.0/modules/*.so
 
 %files command-not-found
 %defattr(-,root,root,-)
