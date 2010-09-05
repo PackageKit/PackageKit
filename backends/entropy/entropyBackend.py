@@ -47,7 +47,9 @@ from packagekit.enums import ERROR_PACKAGE_ID_INVALID, ERROR_REPO_NOT_FOUND, \
     MESSAGE_COULD_NOT_FIND_PACKAGE, MESSAGE_REPO_METADATA_DOWNLOAD_FAILED, \
     STATUS_QUERY, STATUS_DEP_RESOLVE, STATUS_REMOVE, STATUS_DOWNLOAD, \
     STATUS_INSTALL, STATUS_RUNNING, STATUS_REFRESH_CACHE, \
-    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED
+    UPDATE_STATE_TESTING, UPDATE_STATE_STABLE, EXIT_EULA_REQUIRED, \
+    PROVIDES_MIMETYPE, PROVIDES_HARDWARE_DRIVER, PROVIDES_FONT, \
+    PROVIDES_CODEC, ERROR_NOT_SUPPORTED
 
 from packagekit.backend import PackageKitBaseBackend, get_package_id, \
     split_package_id
@@ -108,6 +110,10 @@ class PackageKitEntropyMixin(object):
             self._entropy_log.write("%s: %s" % (source,
                 ' '.join([const_convert_to_unicode(x) for x in my_args]),)
             )
+
+    def _encode_string_list(self, values):
+        # values is a list of unencoded strings, we need UTF-8 strings here
+        return [const_convert_to_unicode(x) for x in values]
 
     def _is_repository_enabled(self, repo_name):
         """
@@ -1453,6 +1459,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
     def search_details(self, filters, values):
 
+        values = self._encode_string_list(values)
+
         self._log_message(__name__, "search_details: got %s and %s" % (
             filters, values,))
 
@@ -1489,6 +1497,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_file(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_file: got %s and %s" % (
             filters, values,))
@@ -1547,6 +1557,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_group(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_group: got %s and %s" % (
             filters, values,))
@@ -1610,6 +1622,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.percentage(100)
 
     def search_name(self, filters, values):
+
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "search_name: got %s and %s" % (
             filters, values,))
@@ -1695,22 +1709,72 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_install(pkgs, only_trusted)
 
+    def _what_provides_mime(self, filters, values):
+
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        self.percentage(0)
+
+        repos = self._get_all_repos()
+
+        pkgs = set()
+        count = 0
+        max_count = len(repos)
+        for repo_db, repo in repos:
+            count += 1
+            percent = PackageKitEntropyMixin.get_percentage(count, max_count)
+
+            self._log_message(__name__, "_what_provides_mime: done %s/100" % (
+                percent,))
+
+            self.percentage(percent)
+            for key in values:
+                pkg_ids = repo_db.searchProvidedMime(key)
+                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+        # now filter
+        pkgs = self._pk_filter_pkgs(pkgs, filters)
+        pkgs = self._pk_add_pkg_type(pkgs)
+        # now feed stdout
+        self._pk_feed_sorted_pkgs(pkgs)
+
+        self.percentage(100)
+
     def what_provides(self, filters, provides_type, values):
 
-        # FIXME: implement this
         """
         PROVIDES_ANY = "any"
-        PROVIDES_CODEC = "codec"
-        PROVIDES_FONT = "font"
-        PROVIDES_HARDWARE_DRIVER = "driver"
-        PROVIDES_MIMETYPE = "mimetype"
+        # PROVIDES_CODEC = "codec"
+        # PROVIDES_FONT = "font"
+        # PROVIDES_HARDWARE_DRIVER = "driver"
+        # PROVIDES_MIMETYPE = "mimetype"
         PROVIDES_MODALIAS = "modalias"
         PROVIDES_POSTSCRIPT_DRIVER = "postscript-driver"
         PROVIDES_UNKNOWN = "unknown"
         """
+        values = self._encode_string_list(values)
 
         self._log_message(__name__, "what_provides: got", filters,
             "and", provides_type, "and", values)
+
+        if provides_type == PROVIDES_MIMETYPE:
+            # search packages providing given mime-types
+            return self._what_provides_mime(filters, values)
+
+        #elif provides_type == PROVIDES_HARDWARE_DRIVER:
+        #    # search packages providing given hardware driver
+        #    pass
+
+        #elif provides_type == PROVIDES_FONT:
+        #    # search packages providing given system font
+        #    pass
+
+        #elif provides_type == PROVIDES_CODEC:
+        #    pass
+
+        else:
+            self.error(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
 
 def main():
     backend = PackageKitEntropyBackend("")

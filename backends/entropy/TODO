@@ -3,7 +3,7 @@ Entropy PackageKit backend developers' TODO:
     - add support for FILTER_NOT_VISIBLE, FILTER_NOT_DEVELOPMENT,
         FILTER_DEVELOPMENT, FILTER_VISIBLE
     - implement security filter (Client.get_security_updates())
-    - add what_provides, repo_set_data
+    - repo_set_data
     - bind get_distro_upgrades to branch hop?
     - sys-apps/entropy is a syspkg
     - messages? how push output to stdout?

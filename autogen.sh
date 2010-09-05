@@ -25,6 +25,12 @@ if ([ -z "$*" ] && [ "x$NOCONFIGURE" = "x" ]) ; then
   echo
 fi
 
+# check for gobject-introspection-devel
+(which g-ir-scanner &> /dev/null) || {
+    echo "**Error**: you don't have gobject-introspection installed"
+    exit 1
+}
+
 (cd $srcdir && gtkdocize) || exit 1
 (cd $srcdir && autoreconf --force --install) || exit 1
 (cd $srcdir && intltoolize) || exit 1

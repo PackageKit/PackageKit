@@ -1401,7 +1401,7 @@ void aptcc::updateInterface(int fd, int writeFd)
 /* Remove unused automatic packages */
 bool aptcc::DoAutomaticRemove(pkgCacheFile &Cache)
 {
-	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", true);
+	bool doAutoRemove = _config->FindB("APT::Get::AutomaticRemove", false);
 	pkgDepCache::ActionGroup group(*Cache);
 
 	if (_config->FindB("APT::Get::Remove",true) == false &&
@@ -1707,6 +1707,9 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		cout << "PendingError download" << endl;
 		return false;
 	}
+
+	// Right now it's not safe to cancel
+	pk_backend_set_allow_cancel (m_backend, false);
 
 	// TODO true or false?
 	if (_cancel) {
