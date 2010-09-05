@@ -41,6 +41,7 @@
 #define RUN_TRANSACTION(blurb) \
 		Q_D(Client);           \
 		CREATE_NEW_TRANSACTION \
+		t->setHints(d->hints); \
 		t->blurb;              \
 		return t;              \
 
