@@ -22,11 +22,11 @@
 #define PACKAGE_H
 
 #include <QtCore>
-#include "client.h"
 #include "enum.h"
 
 namespace PackageKit {
 
+class Client;
 /**
  * \class Package package.h Package
  * \author Adrien Bustany <madcat@mymadcat.com>
@@ -40,6 +40,7 @@ namespace PackageKit {
 class Package
 {
 public:
+    Package(const QString& packageId, Enum::Info info = Enum::UnknownInfo, const QString& summary = QString());
 	/**
 	 * Destructor
 	 */
@@ -162,11 +163,7 @@ public:
 	bool operator==(const Package *package) const;
 
 private:
-	friend class Transaction;
 	friend class TransactionPrivate;
-	friend class Details;
-	friend class Client;
-	Package(const QString& packageId, const QString& info = QString(), const QString& summary = QString());
 	void setDetails(Details* det);
 	void setInfoSummary(const QString& info, const QString& summary);
 	class Private;

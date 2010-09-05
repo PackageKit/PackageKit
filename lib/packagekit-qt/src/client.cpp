@@ -1,6 +1,7 @@
 /*
  * This file is part of the QPackageKit project
  * Copyright (C) 2008 Adrien Bustany <madcat@mymadcat.com>
+ * Copyright (C) 2010 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,29 +28,20 @@
 #include "daemonproxy.h"
 #include "transaction.h"
 #include "transactionprivate.h"
-#include "transactionproxy.h"
 #include "package.h"
 #include "util.h"
 
-#define CREATE_NEW_TRANSACTION                      \
-		Transaction* t = d->createNewTransaction(); \
-		if (t->tid ().isEmpty ()) {                                   \
-			setLastError (ErrorDaemonUnreachable);  \
-			setTransactionError (t, ErrorDaemonUnreachable); \
-			return t;                            \
-		}                                           \
-
-#define CHECK_TRANSACTION                                          \
-		if (r.isError ()) {                                       \
-			setTransactionError (t, daemonErrorFromDBusReply (r)); \
-		}                                                          \
+#define CREATE_NEW_TRANSACTION                             \
+		Transaction* t = new Transaction(QString(), this); \
+		if (t->tid().isEmpty()) {                          \
+			setLastError(ErrorDaemonUnreachable);          \
+			return t;                                      \
+		}                                                  \
 
 #define RUN_TRANSACTION(blurb) \
-		Q_D(Client);   \
+		Q_D(Client);           \
 		CREATE_NEW_TRANSACTION \
-		QDBusPendingReply<> r = t->d_ptr->p->blurb;        \
-		r.waitForFinished (); \
-		CHECK_TRANSACTION      \
+		t->blurb;              \
 		return t;              \
 
 #define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
@@ -190,6 +182,12 @@ Enum::Authorize Client::canAuthorize(const QString &actionId) const
 	return (Enum::Authorize) Util::enumFromString<Enum>(result, "Authorize", "Authorize");;
 }
 
+QString Client::getTid() const
+{
+    Q_D(const Client);
+    return d->daemon->GetTid();
+}
+
 uint Client::getTimeSinceAction(Enum::Role role) const
 {
 	Q_D(const Client);
@@ -197,12 +195,23 @@ uint Client::getTimeSinceAction(Enum::Role role) const
 	return d->daemon->GetTimeSinceAction(roleName);
 }
 
-QList<Transaction*> Client::getTransactions()
+QStringList Client::getTransactions() const
+{
+    Q_D(const Client);
+    return d->daemon->GetTransactionList();
+}
+
+QList<Transaction*> Client::getTransactions(QObject *parent)
 {
 	Q_D(Client);
 	QStringList tids = d->daemon->GetTransactionList();
 
-	return d->transactions(tids);
+	return d->transactions(tids, parent);
+}
+
+QList<Transaction*> Client::getTransactions()
+{
+    return getTransactions(this);
 }
 
 void Client::setHints(const QStringList& hints)
@@ -270,12 +279,12 @@ uint Client::versionMicro() const
 
 Transaction* Client::acceptEula(EulaInfo info)
 {
-	RUN_TRANSACTION(AcceptEula(info.id))
+	RUN_TRANSACTION(acceptEula(info))
 }
 
 Transaction* Client::downloadPackages(const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(DownloadPackages(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(downloadPackages(packages))
 }
 
 Transaction* Client::downloadPackages(QSharedPointer<Package> package)
@@ -285,7 +294,7 @@ Transaction* Client::downloadPackages(QSharedPointer<Package> package)
 
 Transaction* Client::getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive)
 {
-	RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
+	RUN_TRANSACTION(getDepends(packages, filters, recursive))
 }
 
 Transaction* Client::getDepends(QSharedPointer<Package> package, Enum::Filters filters, bool recursive)
@@ -293,21 +302,9 @@ Transaction* Client::getDepends(QSharedPointer<Package> package, Enum::Filters f
 	return getDepends(QList<QSharedPointer<Package> >() << package, filters, recursive);
 }
 
-Transaction* Client::getDetails(const QList<QSharedPointer<Package> >& packages)
+Transaction* Client::getDetails(const QList<QSharedPointer<Package> > &packages)
 {
-	Q_D(Client);
-	CREATE_NEW_TRANSACTION
-
-	foreach(QSharedPointer<Package> p, packages) {
-		t->d_ptr->packageMap.insert(p->id(), p);
-	}
-
-	QDBusPendingReply<> r = t->d_ptr->p->GetDetails(Util::packageListToPids(packages));
-	r.waitForFinished ();
-
-	CHECK_TRANSACTION
-
-	return t;
+    RUN_TRANSACTION(getDetails(packages))
 }
 
 Transaction* Client::getDetails(QSharedPointer<Package> package)
@@ -317,7 +314,7 @@ Transaction* Client::getDetails(QSharedPointer<Package> package)
 
 Transaction* Client::getFiles(const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(GetFiles(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(getFiles(packages))
 }
 
 Transaction* Client::getFiles(QSharedPointer<Package> package)
@@ -327,22 +324,22 @@ Transaction* Client::getFiles(QSharedPointer<Package> package)
 
 Transaction* Client::getOldTransactions(uint number)
 {
-	RUN_TRANSACTION(GetOldTransactions(number))
+	RUN_TRANSACTION(getOldTransactions(number))
 }
 
 Transaction* Client::getPackages(Enum::Filters filters)
 {
-	RUN_TRANSACTION(GetPackages(Util::filtersToString(filters)))
+	RUN_TRANSACTION(getPackages(filters))
 }
 
 Transaction* Client::getRepoList(Enum::Filters filters)
 {
-	RUN_TRANSACTION(GetRepoList(Util::filtersToString(filters)))
+	RUN_TRANSACTION(getRepoList(filters))
 }
 
 Transaction* Client::getRequires(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive)
 {
-	RUN_TRANSACTION(GetRequires(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
+	RUN_TRANSACTION(getRequires(packages, filters, recursive))
 }
 
 Transaction* Client::getRequires(QSharedPointer<Package> package, Enum::Filters filters, bool recursive)
@@ -352,7 +349,7 @@ Transaction* Client::getRequires(QSharedPointer<Package> package, Enum::Filters 
 
 Transaction* Client::getUpdateDetail(const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(GetUpdateDetail(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(getUpdateDetail(packages))
 }
 
 Transaction* Client::getUpdateDetail(QSharedPointer<Package> package)
@@ -362,17 +359,17 @@ Transaction* Client::getUpdateDetail(QSharedPointer<Package> package)
 
 Transaction* Client::getUpdates(Enum::Filters filters)
 {
-	RUN_TRANSACTION(GetUpdates(Util::filtersToString(filters)))
+	RUN_TRANSACTION(getUpdates(filters))
 }
 
 Transaction* Client::getDistroUpgrades()
 {
-	RUN_TRANSACTION(GetDistroUpgrades())
+	RUN_TRANSACTION(getDistroUpgrades())
 }
 
 Transaction* Client::installFiles(const QStringList& files, bool only_trusted)
 {
-	RUN_TRANSACTION(InstallFiles(only_trusted, files))
+	RUN_TRANSACTION(installFiles(files, only_trusted))
 }
 
 Transaction* Client::installFiles(const QString& file, bool only_trusted)
@@ -382,7 +379,7 @@ Transaction* Client::installFiles(const QString& file, bool only_trusted)
 
 Transaction* Client::installPackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(InstallPackages(only_trusted, Util::packageListToPids(packages)))
+	RUN_TRANSACTION(installPackages(only_trusted, packages))
 }
 
 Transaction* Client::installPackages(bool only_trusted, QSharedPointer<Package> p)
@@ -392,17 +389,17 @@ Transaction* Client::installPackages(bool only_trusted, QSharedPointer<Package> 
 
 Transaction* Client::installSignature(Enum::SigType type, const QString& key_id, QSharedPointer<Package> p)
 {
-	RUN_TRANSACTION(InstallSignature(Util::enumToString<Enum>(type, "SigType", "Signature"), key_id, p->id()))
+	RUN_TRANSACTION(installSignature(type, key_id, p))
 }
 
 Transaction* Client::refreshCache(bool force)
 {
-	RUN_TRANSACTION(RefreshCache(force))
+	RUN_TRANSACTION(refreshCache(force))
 }
 
 Transaction* Client::removePackages(const QList<QSharedPointer<Package> >& packages, bool allow_deps, bool autoremove)
 {
-	RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allow_deps, autoremove))
+	RUN_TRANSACTION(removePackages(packages, allow_deps, autoremove))
 }
 
 Transaction* Client::removePackages(QSharedPointer<Package> p, bool allow_deps, bool autoremove)
@@ -412,17 +409,17 @@ Transaction* Client::removePackages(QSharedPointer<Package> p, bool allow_deps, 
 
 Transaction* Client::repoEnable(const QString& repo_id, bool enable)
 {
-	RUN_TRANSACTION(RepoEnable(repo_id, enable))
+	RUN_TRANSACTION(repoEnable(repo_id, enable))
 }
 
-Transaction* Client::repoSetData(const QString& repo_id, const QString& parameter, const QString& value)
+Transaction* Client::repoSetData(const QString& repo_id, const QString &parameter, const QString& value)
 {
-	RUN_TRANSACTION(RepoSetData(repo_id, parameter, value))
+	RUN_TRANSACTION(repoSetData(repo_id, parameter, value))
 }
 
 Transaction* Client::resolve(const QStringList& packageNames, Enum::Filters filters)
 {
-	RUN_TRANSACTION(Resolve(Util::filtersToString(filters), packageNames))
+	RUN_TRANSACTION(resolve(packageNames, filters))
 }
 
 Transaction* Client::resolve(const QString& packageName, Enum::Filters filters)
@@ -432,12 +429,13 @@ Transaction* Client::resolve(const QString& packageName, Enum::Filters filters)
 
 Transaction* Client::rollback(Transaction* oldtrans)
 {
-	RUN_TRANSACTION(Rollback(oldtrans->tid()))
+    qWarning("NOT IMPLEMENTED");
+    return 0;
 }
 
 Transaction* Client::searchFiles(const QStringList& search, Enum::Filters filters)
 {
-	RUN_TRANSACTION(SearchFiles(Util::filtersToString(filters), search))
+	RUN_TRANSACTION(searchFiles(search, filters))
 }
 
 Transaction* Client::searchFiles(const QString& search, Enum::Filters filters)
@@ -447,7 +445,7 @@ Transaction* Client::searchFiles(const QString& search, Enum::Filters filters)
 
 Transaction* Client::searchDetails(const QStringList& search, Enum::Filters filters)
 {
-	RUN_TRANSACTION(SearchDetails(Util::filtersToString(filters), search))
+	RUN_TRANSACTION(searchDetails(search, filters))
 }
 
 Transaction* Client::searchDetails(const QString& search, Enum::Filters filters)
@@ -457,12 +455,7 @@ Transaction* Client::searchDetails(const QString& search, Enum::Filters filters)
 
 Transaction* Client::searchGroups(Enum::Groups groups, Enum::Filters filters)
 {
-	QStringList groupsSL;
-	foreach (const Enum::Group group, groups) {
-		groupsSL << Util::enumToString<Enum>(group, "Group", "Group");
-	}
-
-	RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groupsSL))
+	RUN_TRANSACTION(searchGroups(groups, filters))
 }
 
 Transaction* Client::searchGroups(Enum::Group group, Enum::Filters filters)
@@ -472,7 +465,7 @@ Transaction* Client::searchGroups(Enum::Group group, Enum::Filters filters)
 
 Transaction* Client::searchNames(const QStringList& search, Enum::Filters filters)
 {
-	RUN_TRANSACTION(SearchNames(Util::filtersToString(filters), search))
+	RUN_TRANSACTION(searchNames(search, filters))
 }
 
 Transaction* Client::searchNames(const QString& search, Enum::Filters filters)
@@ -504,7 +497,7 @@ QSharedPointer<Package> Client::searchFromDesktopFile(const QString& path)
 
 Transaction* Client::simulateInstallFiles(const QStringList& files)
 {
-	RUN_TRANSACTION(SimulateInstallFiles(files))
+	RUN_TRANSACTION(simulateInstallFiles(files))
 }
 
 Transaction* Client::simulateInstallFiles(const QString& file)
@@ -514,7 +507,7 @@ Transaction* Client::simulateInstallFiles(const QString& file)
 
 Transaction* Client::simulateInstallPackages(const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(simulateInstallPackages(packages))
 }
 
 Transaction* Client::simulateInstallPackages(QSharedPointer<Package> package)
@@ -524,7 +517,7 @@ Transaction* Client::simulateInstallPackages(QSharedPointer<Package> package)
 
 Transaction* Client::simulateRemovePackages(const QList<QSharedPointer<Package> >& packages, bool autoremove)
 {
-	RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages), autoremove))
+	RUN_TRANSACTION(simulateRemovePackages(packages, autoremove))
 }
 
 Transaction* Client::simulateRemovePackages(QSharedPointer<Package> package, bool autoremove)
@@ -534,7 +527,7 @@ Transaction* Client::simulateRemovePackages(QSharedPointer<Package> package, boo
 
 Transaction* Client::simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
+	RUN_TRANSACTION(simulateUpdatePackages(packages))
 }
 
 Transaction* Client::simulateUpdatePackages(QSharedPointer<Package> package)
@@ -544,7 +537,7 @@ Transaction* Client::simulateUpdatePackages(QSharedPointer<Package> package)
 
 Transaction* Client::updatePackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages)
 {
-	RUN_TRANSACTION(UpdatePackages(only_trusted, Util::packageListToPids(packages)))
+	RUN_TRANSACTION(updatePackages(only_trusted, packages))
 }
 
 Transaction* Client::updatePackages(bool only_trusted, QSharedPointer<Package> package)
@@ -554,12 +547,12 @@ Transaction* Client::updatePackages(bool only_trusted, QSharedPointer<Package> p
 
 Transaction* Client::updateSystem(bool only_trusted)
 {
-	RUN_TRANSACTION(UpdateSystem(only_trusted))
+	RUN_TRANSACTION(updateSystem(only_trusted))
 }
 
 Transaction* Client::whatProvides(Enum::Provides type, const QStringList& search, Enum::Filters filters)
 {
-	RUN_TRANSACTION(WhatProvides(Util::filtersToString(filters), Util::enumToString<Enum>(type, "Provides", "Provides"), search))
+	RUN_TRANSACTION(whatProvides(type, search, filters))
 }
 
 Transaction* Client::whatProvides(Enum::Provides type, const QString& search, Enum::Filters filters)
@@ -574,15 +567,10 @@ void Client::setLastError (DaemonError e)
 	emit error (e);
 }
 
-void Client::setTransactionError (Transaction* t, DaemonError e)
-{
-	t->d_ptr->error = e;
-}
-
 void Client::destroyTransaction(const QString &tid)
 {
 	Q_D(Client);
-	d->removeTransactionFromPool(tid);
+	d->destroyTransaction(tid);
 }
 
 #include "client.moc"

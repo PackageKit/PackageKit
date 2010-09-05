@@ -133,8 +133,24 @@ public:
 	 */
 	uint getTimeSinceAction(Enum::Role action) const;
 
+    /**
+     * Returns the list of current transactions
+     */
+    QStringList getTransactions() const;
+
+    /**
+     * Convenience function
+     * Returns the list of current transactions
+     * You must delete these yourself or pass a
+     * \p parent for these comming transactions
+     */
+    QList<Transaction*> getTransactions(QObject *parent = 0);
+
 	/**
+     * DEPRECATED
 	 * Returns the list of current transactions
+     * You must delete these yourself or pass a
+     * \p parent for these comming transactions
 	 */
 	QList<Transaction*> getTransactions();
 
@@ -579,6 +595,17 @@ Q_SIGNALS:
 	void updatesChanged();
 
 protected:
+    /**
+     * \brief creates a new transaction path
+     * This function register a new DBus path on PackageKit
+     * allowing a \c Transaction object to be created,
+     * unless you want to know the transaction id
+     * before creating the \c Transaction this function
+     * is not useful since passing a NULL string (QString())
+     * when contructing the \c Transaction object will
+     * automatically create this path.
+     */
+    QString getTid() const;
 	ClientPrivate * const d_ptr;
 
 private:
@@ -586,10 +613,9 @@ private:
 	Client(QObject* parent = 0);
 	static Client* m_instance;
 	friend class TransactionPrivate;
+    friend class Transaction;
 
-
-	void setLastError (DaemonError e);
-	void setTransactionError (Transaction* t, DaemonError e);
+	void setLastError(DaemonError e);
 
 	void destroyTransaction(const QString &tid);
 };

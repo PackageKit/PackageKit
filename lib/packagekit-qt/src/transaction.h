@@ -1,6 +1,7 @@
 /*
  * This file is part of the QPackageKit project
  * Copyright (C) 2008 Adrien Bustany <madcat@mymadcat.com>
+ * Copyright (C) 2010 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,7 +33,8 @@ class Package;
 
 /**
  * \class Transaction transaction.h Transaction
- * \author Adrien Bustany <madcat@mymadcat.com>
+ * \author Adrien Bustany \e <madcat@mymadcat.com>
+ * \author Daniel Nicoletti \e <dantti85-pk@yahoo.com.br>
  *
  * \brief A transaction represents an occurring action in PackageKit
  *
@@ -48,9 +50,21 @@ class Package;
 class TransactionPrivate;
 class Transaction : public QObject
 {
-	Q_OBJECT
-
+    Q_OBJECT
 public:
+    /**
+     * Create a transaction object with transaction id \p tid
+     * \note The if \p tid is a NULL string then it will automatically
+     * asks PackageKit for a tid
+     *
+     * The transaction object \b cannot be reused
+     * (i.e. simulateInstallPackages then installPackages)
+     *
+     * \warning after creating the transaction object be sure
+     * to verify if it doesn't have any \sa error()
+     */
+    Transaction(const QString &tid, QObject *parent = 0);
+
 	/**
 	 * Destructor
 	 */
@@ -69,13 +83,16 @@ public:
 	 * \brief Returns the error status of the Transaction
 	 *
 	 * \return A value from TransactionError describing the state of the transaction
+     * or 0 in case of not having an error
 	 */
 	Client::DaemonError error() const;
 
 	/**
 	 * Indicates weither you can cancel the transaction or not
+     * i.e. the backend forbids cancelling the transaction while
+     * it's installing packages
 	 *
-	 * \return true if you can cancel the transaction, false else
+	 * \return true if you are able cancel the transaction, false else
 	 */
 	bool allowCancel() const;
 
@@ -132,6 +149,7 @@ public:
 
 	/**
 	 * Returns information describing the transaction
+     * like InstallPackages, SearchName or GetUpdates
 	 * \return the current role of the transaction
 	 */
 	Enum::Role role() const;
@@ -154,8 +172,8 @@ public:
 	 *
 	 * \sa Client::setHints
 	 */
-	void setHints(const QString& hints);
-	void setHints(const QStringList& hints);
+	void setHints(const QString &hints);
+	void setHints(const QStringList &hints);
 
 	/**
 	 * Returns the current state of the transaction
@@ -205,6 +223,301 @@ public:
 	 */
 	QString cmdline() const;
 
+    /**
+     * \brief Accepts an EULA
+     *
+     * The EULA is identified by the EulaInfo structure \p info
+     *
+     * \note You need to restart the transaction which triggered the EULA manually
+     *
+     * \sa eulaRequired
+     */
+    void acceptEula(const Client::EulaInfo &info);
+
+    /**
+     * Download the given \p packages to a temp dir
+     */
+    void downloadPackages(const QList<QSharedPointer<Package> > &packages);
+
+    /**
+     * This is a convenience function
+     */
+    void downloadPackages(const QSharedPointer<Package> &package);
+
+    /**
+     * Returns the collection categories
+     *
+     * \sa category
+     */
+    void getCategories();
+
+    /**
+     * \brief Gets the list of dependencies for the given \p packages
+     *
+     * You can use the \p filters to limit the results to certain packages. The
+     * \p recursive flag indicates if the package manager should also fetch the
+     * dependencies's dependencies.
+     *
+     * \note This method emits \sa package()
+     */
+    void getDepends(const QList<QSharedPointer<Package> > &packages, Enum::Filters filters, bool recursive);
+    void getDepends(const QSharedPointer<Package> &package, Enum::Filters filters , bool recursive);
+
+    /**
+     * Gets more details about the given \p packages
+     *
+     * \sa Transaction::details
+     * \note This method emits \sa details()
+     */
+    void getDetails(const QList<QSharedPointer<Package> > &packages);
+    void getDetails(const QSharedPointer<Package> &package);
+
+    /**
+     * Gets the files contained in the given \p packages
+     *
+     * \note This method emits \sa files()
+     */
+    void getFiles(const QList<QSharedPointer<Package> > &packages);
+    void getFiles(const QSharedPointer<Package> &packages);
+
+    /**
+     * \brief Gets the last \p number finished transactions
+     *
+     * \note You must delete these transactions yourself
+     * \note This method emits \sa transaction()
+     */
+    void getOldTransactions(uint number);
+
+    /**
+     * Gets all the packages matching the given \p filters
+     *
+     * \note This method emits \sa package()
+     */
+    void getPackages(Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * Gets the list of software repositories matching the given \p filters
+     *
+     * \note This method emits \sa repository()
+     */
+    void getRepoList(Enum::Filters filter = Enum::NoFilter);
+
+    /**
+     * \brief Searches for the packages requiring the given \p packages
+     *
+     * The search can be limited using the \p filters parameter. The recursive flag is used to tell
+     * if the package manager should also search for the package requiring the resulting packages.
+     *
+     * \note This method emits \sa package()
+     */
+    void getRequires(const QList<QSharedPointer<Package> > &packages, Enum::Filters filters, bool recursive);
+    void getRequires(const QSharedPointer<Package> &package, Enum::Filters filters, bool recursive);
+
+    /**
+     * Retrieves more details about the update for the given \p packages
+     *
+     * \note This method emits \sa updateDetail()
+     */
+    void getUpdateDetail(const QList<QSharedPointer<Package> > &packages);
+    void getUpdateDetail(const QSharedPointer<Package> &package);
+
+    /**
+     * \p Gets the available updates
+     *
+     * The \p filters parameters can be used to restrict the updates returned
+     *
+     * \note This method emits \sa package()
+     */
+    void getUpdates(Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * Retrieves the available distribution upgrades
+     *
+     * \note This method emits \sa distroUpgrade()
+     */
+    void getDistroUpgrades();
+
+    /**
+     * \brief Installs the local packages \p files
+     *
+     * \p only_trusted indicate if the packages are signed by a trusted authority
+     *
+     * \note This method emits \sa package()
+     * and \sa changed()
+     */
+    void installFiles(const QStringList &files, bool only_trusted);
+    void installFiles(const QString &file, bool only_trusted);
+
+    /**
+     * Install the given \p packages
+     *
+     * \p only_trusted indicates if we should allow installation of untrusted packages (requires a different authorization)
+     *
+     * \note This method emits \sa package()
+     * and \sa changed()
+     */
+    void installPackages(bool only_trusted, const QList<QSharedPointer<Package> > &packages);
+    void installPackages(bool only_trusted, const QSharedPointer<Package> &package);
+
+    /**
+     * \brief Installs a signature
+     *
+     * \p type, \p keyId and \p package generally come from the Transaction::repoSignatureRequired
+     */
+    void installSignature(Enum::SigType type, const QString &keyId, const QSharedPointer<Package> &package);
+
+    /**
+     * Refreshes the package manager's cache
+     *
+     * \note This method emits \sa changed()
+     */
+    void refreshCache(bool force);
+
+    /**
+     * \brief Removes the given \p packages
+     *
+     * \p allow_deps if the package manager has the right to remove other packages which depend on the
+     * packages to be removed. \p autoremove tells the package manager to remove all the package which
+     * won't be needed anymore after the packages are uninstalled.
+     *
+     * \note This method emits \sa package()
+     * and \sa changed()
+     */
+    void removePackages(const QList<QSharedPointer<Package> >  &packages, bool allow_deps, bool autoremove);
+    void removePackages(const QSharedPointer<Package> &package, bool allow_deps, bool autoremove);
+
+    /**
+     * Activates or disables a repository
+     */
+    void repoEnable(const QString &repo_id, bool enable);
+
+    /**
+     * Sets a repository's parameter
+     */
+    void repoSetData(const QString &repo_id, const QString& parameter, const QString &value);
+
+    /**
+     * \brief Tries to create a Package object from the package's name
+     *
+     * The \p filters can be used to restrict the search
+     *
+     * \note This method emits \sa package()
+     */
+    void resolve(const QStringList &packageNames, Enum::Filters filters = Enum::NoFilter);
+    void resolve(const QString &packageName, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Search in the packages files
+     *
+     * \p filters can be used to restrict the returned packages
+     *
+     * \note This method emits \sa package()
+     */
+    void searchFiles(const QStringList &search, Enum::Filters filters = Enum::NoFilter);
+    void searchFiles(const QString &search, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Search in the packages details
+     *
+     * \p filters can be used to restrict the returned packages
+     *
+     * \note This method emits \sa package()
+     */
+    void searchDetails(const QStringList &search, Enum::Filters filters = Enum::NoFilter);
+    void searchDetails(const QString &search, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Lists all the packages in the given \p group
+     *
+     * \p filters can be used to restrict the returned packages
+     *
+     * \note This method emits \sa package()
+     */
+    void searchGroups(Enum::Groups group, Enum::Filters filters = Enum::NoFilter);
+    void searchGroups(Enum::Group group, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Search in the packages names
+     *
+     * \p filters can be used to restrict the returned packages
+     *
+     * \note This method emits \sa package()
+     */
+    void searchNames(const QStringList &search, Enum::Filters filters = Enum::NoFilter);
+    void searchNames(const QString &search, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Simulates an installation of \p files.
+     *
+     * You should call this method before installing \p files
+     * \note: This method might emit \sa package()
+     *   with INSTALLING, REMOVING, UPDATING,
+     *        REINSTALLING or OBSOLETING status.
+     */
+    void simulateInstallFiles(const QStringList &files);
+    void simulateInstallFiles(const QString &file);
+
+    /**
+     * \brief Simulates an installation of \p packages.
+     *
+     * You should call this method before installing \p packages
+     * \note: This method might emit \sa package()
+     *   with INSTALLING, REMOVING, UPDATING,
+     *        REINSTALLING or OBSOLETING status.
+     */
+    void simulateInstallPackages(const QList<QSharedPointer<Package> > &packages);
+    void simulateInstallPackages(const QSharedPointer<Package> &package);
+
+    /**
+     * \brief Simulates a removal of \p packages.
+     *
+     * You should call this method before removing \p packages
+     * \note: This method might emit \sa package()
+     *   with INSTALLING, REMOVING, UPDATING,
+     *        REINSTALLING or OBSOLETING status.
+     */
+    void simulateRemovePackages(const QList<QSharedPointer<Package> > &packages, bool autoremove);
+    void simulateRemovePackages(const QSharedPointer<Package> &package, bool autoremove);
+
+    /**
+     * \brief Simulates an update of \p packages.
+     *
+     * You should call this method before updating \p packages
+     * \note: This method might emit \sa package()
+     *   with INSTALLING, REMOVING, UPDATING,
+     *        REINSTALLING or OBSOLETING status.
+     */
+    void simulateUpdatePackages(const QList<QSharedPointer<Package> > &packages);
+    void simulateUpdatePackages(const QSharedPointer<Package> &package);
+
+    /**
+     * Update the given \p packages
+     *
+     * \note This method emits \sa package()
+     * and \sa changed()
+     */
+    void updatePackages(bool only_trusted, const QList<QSharedPointer<Package> > &packages);
+    void updatePackages(bool only_trusted, const QSharedPointer<Package> &package);
+
+    /**
+     * Updates the whole system
+     *
+     * \p only_trusted indicates if this transaction is only allowed to install trusted packages
+     *
+     * \note This method emits \sa package()
+     * and \sa changed()
+     */
+    void updateSystem(bool only_trusted);
+
+    /**
+     * Searchs for a package providing a file/a mimetype
+     *
+     * \note This method emits \sa package()
+     */
+    void whatProvides(Enum::Provides type, const QStringList &search, Enum::Filters filters = Enum::NoFilter);
+    void whatProvides(Enum::Provides type, const QString &search, Enum::Filters filters = Enum::NoFilter);
+
+
 public Q_SLOTS:
 	/**
 	 * Cancels the transaction
@@ -230,9 +543,9 @@ Q_SIGNALS:
 
 	/**
 	 * Sends additional details about the \p package
-	 * \sa Client::getDetails
+	 * \sa getDetails()
 	 */
-	void details(QSharedPointer<PackageKit::Package> package);
+	void details(const QSharedPointer<PackageKit::Package> &package);
 
 	/**
 	 * Sent when the transaction has been destroyed and is
@@ -243,7 +556,7 @@ Q_SIGNALS:
 
 	/**
 	 * Emitted when a distribution upgrade is available
-	 * \sa Client::getDistroUpgrades
+	 * \sa getDistroUpgrades()
 	 */
 	void distroUpgrade(PackageKit::Enum::DistroUpgrade type, const QString& name, const QString& description);
 
@@ -255,9 +568,9 @@ Q_SIGNALS:
 	/**
 	 * Emitted when an EULA agreement prevents the transaction from running
 	 * \note You will need to relaunch the transaction after accepting the EULA
-	 * \sa Client::acceptEula
+	 * \sa acceptEula()
 	 */
-	void eulaRequired(PackageKit::Client::EulaInfo info);
+	void eulaRequired(const PackageKit::Client::EulaInfo &info);
 
 	/**
 	 * Emitted when a different media is required in order to fetch packages
@@ -268,10 +581,10 @@ Q_SIGNALS:
 	void mediaChangeRequired(PackageKit::Enum::MediaType type, const QString& id, const QString& text);
 
 	/**
-	 * Sends the \p filenames contained in package \p p
+	 * Sends the \p filenames contained in package \p package
 	 * \sa Client::getFiles
 	 */
-	void files(QSharedPointer<PackageKit::Package> p, const QStringList& filenames);
+	void files(const QSharedPointer<PackageKit::Package> &package, const QStringList &filenames);
 
 	/**
 	 * Emitted when the transaction finishes
@@ -285,51 +598,57 @@ Q_SIGNALS:
 	 *
 	 * \p type is the type of the \p message
 	 */
-	void message(PackageKit::Enum::Message type, const QString& message);
+	void message(PackageKit::Enum::Message type, const QString &message);
 
 	/**
 	 * Emitted when the transaction sends a new package
 	 */
-	void package(QSharedPointer<PackageKit::Package> p);
+	void package(const QSharedPointer<PackageKit::Package> &package);
 
 	/**
 	 * Sends some additional details about a software repository
-	 * \sa Client::getRepoList
+	 * \sa getRepoList()
 	 */
 	void repoDetail(const QString& repoId, const QString& description, bool enabled);
 
 	/**
 	 * Emitted when the user has to validate a repository's signature
 	 */
-	void repoSignatureRequired(PackageKit::Client::SignatureInfo info);
+	void repoSignatureRequired(const PackageKit::Client::SignatureInfo &info);
 
 	/**
 	 * Indicates that a restart is required
 	 * \p package is the package who triggered the restart signal
 	 */
-	void requireRestart(PackageKit::Enum::Restart type, QSharedPointer<PackageKit::Package> p);
+	void requireRestart(PackageKit::Enum::Restart type, const QSharedPointer<PackageKit::Package> &package);
 
 	/**
 	 * Sends an old transaction
 	 * \sa Client::getOldTransactions
 	 */
-	void transaction(PackageKit::Transaction* t);
+	void transaction(PackageKit::Transaction *transaction);
 
 	/**
 	 * Sends additionnal details about an update
 	 * \sa Client::getUpdateDetail
 	 */
-	void updateDetail(PackageKit::Client::UpdateInfo info);
+	void updateDetail(const PackageKit::Client::UpdateInfo &info);
 
 protected:
 	TransactionPrivate * const d_ptr;
 
 private:
 	Q_DECLARE_PRIVATE(Transaction);
-	friend class Client;
 	friend class ClientPrivate;
-	Transaction(const QString& tid, Client* parent);
-	Transaction(const QString& tid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline, Client* parent);
+	Transaction(const QString &tid,
+                const QString &timespec,
+                bool succeeded,
+                const QString &role,
+                uint duration,
+                const QString &data,
+                uint uid,
+                const QString &cmdline,
+                QObject *parent);
 };
 
 } // End namespace PackageKit

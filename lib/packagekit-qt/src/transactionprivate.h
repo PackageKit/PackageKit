@@ -30,8 +30,6 @@ class TransactionProxy;
 namespace PackageKit {
 
 class Transaction;
-class Client;
-
 class TransactionPrivate : public QObject
 {
 	Q_OBJECT
@@ -39,7 +37,6 @@ class TransactionPrivate : public QObject
 public:
 	~TransactionPrivate();
 	QString tid;
-	Client* client;
 	::TransactionProxy* p;
 	Transaction* t;
 
@@ -52,6 +49,8 @@ public:
 	QString data;
 	uint uid;
 	QString cmdline;
+    // used for both old and destroyed transactions
+    bool destroyed;
 
 	// Used for getDetails
 	QHash<QString, QSharedPointer<Package> > packageMap;

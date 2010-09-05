@@ -19,14 +19,15 @@
  */
 
 #include "clientprivate.h"
-#include "daemonproxy.h"
 #include "transaction.h"
 #include "transactionprivate.h"
 #include "common.h"
 
 using namespace PackageKit;
 
-ClientPrivate::ClientPrivate(Client* parent) : QObject(parent), c(parent)
+ClientPrivate::ClientPrivate(Client* parent)
+ : QObject(parent),
+   c(parent)
 {
 }
 
@@ -34,24 +35,7 @@ ClientPrivate::~ClientPrivate()
 {
 }
 
-Transaction* ClientPrivate::createNewTransaction()
-{
-	Transaction* t = new Transaction(daemon->GetTid(), c);
-	if (t->tid().isEmpty()) {
-		qDebug() << "empty tid, the daemon is probably not here anymore";
-		return t;
-	}
-
-	if(!hints.isEmpty())
-		t->setHints(hints);
-
-// 	qDebug() << "creating a transaction : " << t->tid();
-	runningTransactions.insert(t->tid(), t);
-
-	return t;
-}
-
-QList<Transaction*> ClientPrivate::transactions(const QStringList& tids)
+QList<Transaction*> ClientPrivate::transactions(const QStringList& tids, QObject *parent)
 {
 // 	qDebug() << "entering transactionListChanged";
 	QList<Transaction*> trans;
@@ -61,7 +45,7 @@ QList<Transaction*> ClientPrivate::transactions(const QStringList& tids)
 			trans.append(runningTransactions.value(tid));
 		} else {
 //			qDebug() << "external transaction : " << tid;
-			Transaction* t = new Transaction(tid, c);
+			Transaction* t = new Transaction(tid, parent);
 			trans.append(t);
 			runningTransactions.insert(tid, t);
 		}
@@ -71,31 +55,38 @@ QList<Transaction*> ClientPrivate::transactions(const QStringList& tids)
 
 void ClientPrivate::transactionListChanged(const QStringList& tids)
 {
-	c->transactionListChanged(transactions(tids));
+	c->transactionListChanged(transactions(tids, Client::instance()));
 }
 
 void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& oldOnwer, const QString& newOwner)
 {
-	if (name != PK_NAME)
-		return;
-	if (!newOwner.isEmpty ())
-		return;
-	
-	error = Client::ErrorDaemonUnreachable;
-	c->error(error);
+    if (name != PK_NAME){
+        return;
+    }
 
-	foreach(Transaction *t, runningTransactions) {
-		t->finished (Enum::ExitFailed, 0);
-		t->d_ptr->destroy ();
-	}
+    // next time a transaction need to be created
+    // we start the Daemon, we have to find a way
+    // to avoid DBus error that sericeHasNoOwner
+    startDaemon = newOwner.isEmpty();
+
+    if (!newOwner.isEmpty()){
+        return;
+    }
+
+    error = Client::ErrorDaemonUnreachable;
+    c->error(error);
+
+    foreach (Transaction *t, runningTransactions) {
+        t->finished (Enum::ExitFailed, 0);
+        t->d_ptr->destroy ();
+    }
 }
 
-void ClientPrivate::removeTransactionFromPool(const QString &tid)
+void ClientPrivate::destroyTransaction(const QString &tid)
 {
 // 	qDebug() << "removing transaction from pool: " << tid;
-
-	runningTransactions[tid]->deleteLater();
-	runningTransactions.remove(tid);
+    runningTransactions[tid]->deleteLater();
+    runningTransactions.remove(tid);
 }
 
 #include "clientprivate.moc"

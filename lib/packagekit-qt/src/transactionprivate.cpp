@@ -25,7 +25,11 @@
 
 using namespace PackageKit;
 
-TransactionPrivate::TransactionPrivate(Transaction* parent) : QObject(parent), t(parent), p(0)
+TransactionPrivate::TransactionPrivate(Transaction* parent)
+ : QObject(parent),
+   t(parent),
+   p(0),
+   destroyed(false)
 {
 }
 
@@ -88,7 +92,7 @@ void TransactionPrivate::finished(const QString& exitCode, uint runtime)
 void TransactionPrivate::destroy()
 {
 	emit t->destroy();
-	client->destroyTransaction(tid);
+	Client::instance()->destroyTransaction(tid);
 }
 
 void TransactionPrivate::message(const QString& type, const QString& message)
@@ -98,7 +102,7 @@ void TransactionPrivate::message(const QString& type, const QString& message)
 
 void TransactionPrivate::package(const QString& info, const QString& pid, const QString& summary)
 {
-	t->package(QSharedPointer<Package> (new Package(pid, info, summary)));
+	t->package(QSharedPointer<Package> (new Package(pid, (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info"), summary)));
 }
 
 void TransactionPrivate::repoSignatureRequired(const QString& pid, const QString& repoName, const QString& keyUrl, const QString& keyUserid, const QString& keyId, const QString& keyFingerprint, const QString& keyTimestamp, const QString& type)
@@ -123,7 +127,7 @@ void TransactionPrivate::requireRestart(const QString& type, const QString& pid)
 
 void TransactionPrivate::transaction(const QString& oldTid, const QString& timespec, bool succeeded, const QString& role, uint duration, const QString& data, uint uid, const QString& cmdline)
 {
-	t->transaction(new Transaction(oldTid, timespec, succeeded, role, duration, data, uid, cmdline, client));
+	t->transaction(new Transaction(oldTid, timespec, succeeded, role, duration, data, uid, cmdline, t->parent()));
 }
 
 void TransactionPrivate::updateDetail(const QString& pid, const QString& updates, const QString& obsoletes, const QString& vendorUrl, const QString& bugzillaUrl, const QString& cveUrl, const QString& restart, const QString& updateText, const QString& changelog, const QString& state, const QString& issued, const QString& updated)

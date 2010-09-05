@@ -39,33 +39,21 @@ public:
 
 	::DaemonProxy* daemon;
 	Client* c;
-
 	QStringList hints;
-
 	QHash<QString, Transaction*> runningTransactions;
-
-	// Get a tid, creates a new transaction and sets it up (ie call SetHints)
-	Transaction* createNewTransaction();
-
 	Client::DaemonError error;
 
-	QSharedPointer<Package> packageFromCache(const QString& pid);
-	void removeTransactionFromPool(const QString &tid);
+    QList<Transaction*> transactions(const QStringList& tids, QObject *parent);
+	void destroyTransaction(const QString &tid);
 
 public Q_SLOTS:
-	// org.freedesktop.PackageKit
 	void transactionListChanged(const QStringList& tids);
-	QList<Transaction*> transactions(const QStringList& tids);
-	// restartScheduled
-	// repoListChanged
-	// updatesChanged
 	void serviceOwnerChanged(const QString&, const QString&, const QString&);
 
 private:
-	friend class Client;
-	ClientPrivate(Client* parent);
-
-	QHash<QString, QSharedPointer<Package> > retrievedPackages;
+    friend class Client;
+    bool startDaemon;
+    ClientPrivate(Client* parent);
 };
 
 } // End namespace PackageKit

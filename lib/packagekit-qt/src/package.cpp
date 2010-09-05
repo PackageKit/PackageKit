@@ -105,7 +105,7 @@ public:
 	QString iconPath;
 };
 
-Package::Package(const QString& packageId, const QString& info, const QString& summary)
+Package::Package(const QString& packageId, Enum::Info info, const QString& summary)
     : d(new Private)
 {
 	d->id = packageId;
@@ -119,7 +119,7 @@ Package::Package(const QString& packageId, const QString& info, const QString& s
 		d->data = tokens.at(3);
 	}
 
-	d->info = (Enum::Info)Util::enumFromString<Enum>(info, "Info", "Info");
+	d->info = info;
 	d->summary = summary;
 	d->details = NULL;
 	d->iconPath = QString ();
