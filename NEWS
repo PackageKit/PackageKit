@@ -1,3 +1,43 @@
+Version 0.6.8
+~~~~~~~~~~~~~
+Released: 2010-09-06
+
+Translations:
+ - Add Lithuanian translation (Žygimantas Beručka)
+ - Updates to Chinese (Taiwan) (zh_TW) translation (zerng07)
+ - Updates to Indonesian (id) translation (dapidc)
+ - Updates to Panjabi (Punjabi) (pa) translation (aalam)
+ - Updates to Swedish (sv) translation (yeager)
+
+Libraries:
+ - packagekit-qt: Fix compilation
+ - packagekit-qt: Fixed error on proxy creating, extended API (Daniel Nicoletti)
+ - packagekit-qt: Forgot to setHints()
+
+Backends:
+ - aptcc: Improved user experience by setting subprogress on package installation/remove/update (Daniel Nicoletti)
+ - aptcc: Disable auto remove by default (Daniel Nicoletti)
+ - aptcc: Fix how downloads are emitted (Daniel Nicoletti)
+ - aptcc: Forbid canceling while installing, the user might need to dpkg --configure -a on the cmd line (Daniel Nicoletti)
+ - aptcc: Improved how packages are emited (Daniel Nicoletti)
+ - aptcc: Improved logic for the updates category (Daniel Nicoletti)
+ - aptcc: make sure all downloaded packages emit FINISHED (Daniel Nicoletti)
+ - aptcc: Show apt error message when we could not get the cache lock (Daniel Nicoletti)
+ - entropy: encode input strings into UTF-8 before processing (Fabio Erculiani)
+ - entropy: implement what_provides feature for mimetypes (Fabio Erculiani)
+ - yum: Add selinux-policy to the list of infrastructure packages (Richard Hughes)
+ - yum: Fix update notices: not all yum repos are official fedora ones (Mark J Cox)
+ - yum: Redundant updated date gets displayed (Mark J Cox)
+ - zypp: Immediately abort transactions that set errors relating to signature interactions (Michael Meeks)
+ - zypp: Remove a double pk_backend_finish path, and an incorrect update_packages callback (Michael Meeks)
+
+Bugfixes:
+ - Add accessor to detect if an error is already set on a backend (Michael Meeks)
+ - Ensure gobject-introspection is installed before running configure. Fixes #29861 (Richard Hughes)
+ - Fix compile with the latest PolicyKit release (Richard Hughes)
+ - Increase timeout between an error message and assuming the thread is dead (Michael Meeks)
+ - Set allow_cancel default in init to match that in pk_transaction_set_running ie. FALSE (Michael Meeks)
+
 Version 0.6.7
 ~~~~~~~~~~~~~
 Released: 2010-08-04
