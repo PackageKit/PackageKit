@@ -196,23 +196,22 @@ uint Client::getTimeSinceAction(Enum::Role role) const
 	return d->daemon->GetTimeSinceAction(roleName);
 }
 
-QStringList Client::getTransactions() const
+QStringList Client::getTransactionList() const
 {
     Q_D(const Client);
     return d->daemon->GetTransactionList();
 }
 
-QList<Transaction*> Client::getTransactions(QObject *parent)
+QList<Transaction*> Client::getTransactionObjectList(QObject *parent)
 {
-	Q_D(Client);
-	QStringList tids = d->daemon->GetTransactionList();
-
-	return d->transactions(tids, parent);
+    Q_D(Client);
+    return d->transactions(getTransactionList(), parent);
 }
+
 
 QList<Transaction*> Client::getTransactions()
 {
-    return getTransactions(this);
+    return getTransactionObjectList(this);
 }
 
 void Client::setHints(const QStringList& hints)

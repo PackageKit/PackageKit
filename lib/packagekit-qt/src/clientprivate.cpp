@@ -85,7 +85,7 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
 void ClientPrivate::destroyTransaction(const QString &tid)
 {
 // 	qDebug() << "removing transaction from pool: " << tid;
-    runningTransactions[tid]->deleteLater();
+//     runningTransactions[tid]->deleteLater();
     runningTransactions.remove(tid);
 }
 

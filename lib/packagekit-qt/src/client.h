@@ -136,23 +136,24 @@ public:
     /**
      * Returns the list of current transactions
      */
-    QStringList getTransactions() const;
+    QStringList getTransactionList() const;
 
     /**
      * Convenience function
+     * Returns the list of current transactions objects
+     *
+     * You must delete these yourself or pass a
+     * \p parent for these comming transactions
+     */
+    QList<Transaction*> getTransactionObjectList(QObject *parent = 0);
+
+    /**
+     * DEPRECATED
      * Returns the list of current transactions
      * You must delete these yourself or pass a
      * \p parent for these comming transactions
      */
-    QList<Transaction*> getTransactions(QObject *parent = 0);
-
-	/**
-     * DEPRECATED
-	 * Returns the list of current transactions
-     * You must delete these yourself or pass a
-     * \p parent for these comming transactions
-	 */
-	QList<Transaction*> getTransactions();
+    QList<Transaction*> Q_DECL_DEPRECATED getTransactions();
 
 	/**
 	 * \brief Sets a global hints for all the transactions to be created
@@ -297,6 +298,7 @@ public:
 	// Transaction functions
 
 	/**
+     * DEPRECATED
 	 * \brief Accepts an EULA
 	 *
 	 * The EULA is identified by the EulaInfo structure \p info
@@ -305,26 +307,30 @@ public:
 	 *
 	 * \sa Transaction::eulaRequired
 	 */
-	Transaction* acceptEula(EulaInfo info);
+	Transaction* Q_DECL_DEPRECATED acceptEula(EulaInfo info);
 
 	/**
+     * DEPRECATED
 	 * Download the given \p packages to a temp dir
 	 */
-	Transaction* downloadPackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED downloadPackages(const QList<QSharedPointer<Package> >& packages);
 
 	/**
+     * DEPRECATED
 	 * This is a convenience function
 	 */
-	Transaction* downloadPackages(QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED downloadPackages(QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * Returns the collection categories
 	 *
 	 * \sa Transaction::category
 	 */
-	Transaction* getCategories();
+	Transaction* Q_DECL_DEPRECATED getCategories();
 
 	/**
+     * DEPRECATED
 	 * \brief Gets the list of dependencies for the given \p packages
 	 *
 	 * You can use the \p filters to limit the results to certain packages. The
@@ -334,165 +340,188 @@ public:
 	 * \sa Transaction::package
 	 *
 	 */
-	Transaction* getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
-	Transaction* getDepends(QSharedPointer<Package> package, Enum::Filters filters , bool recursive);
+	Transaction* Q_DECL_DEPRECATED getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
+	Transaction* Q_DECL_DEPRECATED getDepends(QSharedPointer<Package> package, Enum::Filters filters , bool recursive);
 
 	/**
+     * DEPRECATED
 	 * Gets more details about the given \p packages
 	 *
 	 * \sa Transaction::details
 	 */
-	Transaction* getDetails(const QList<QSharedPointer<Package> >& packages);
-	Transaction* getDetails(QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED getDetails(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED getDetails(QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * Gets the files contained in the given \p packages
 	 *
 	 * \sa Transaction::files
 	 */
-	Transaction* getFiles(const QList<QSharedPointer<Package> >& packages);
-	Transaction* getFiles(QSharedPointer<Package> packages);
+	Transaction* Q_DECL_DEPRECATED getFiles(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED getFiles(QSharedPointer<Package> packages);
 
 	/**
+     * DEPRECATED
 	 * \brief Gets the last \p number finished transactions
 	 *
 	 * \note You must delete these transactions yourself
 	 */
-	Transaction* getOldTransactions(uint number);
+	Transaction* Q_DECL_DEPRECATED getOldTransactions(uint number);
 
 	/**
+     * DEPRECATED
 	 * Gets all the packages matching the given \p filters
 	 *
 	 * \sa Transaction::package
 	 */
-	Transaction* getPackages(Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED getPackages(Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * Gets the list of software repositories matching the given \p filters
 	 */
-	Transaction* getRepoList(Enum::Filters filter = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED getRepoList(Enum::Filters filter = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * \brief Searches for the packages requiring the given \p packages
 	 *
 	 * The search can be limited using the \p filters parameter. The recursive flag is used to tell
 	 * if the package manager should also search for the package requiring the resulting packages.
 	 */
-	Transaction* getRequires(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
-	Transaction* getRequires(QSharedPointer<Package> package, Enum::Filters filters, bool recursive);
+	Transaction* Q_DECL_DEPRECATED getRequires(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive);
+	Transaction* Q_DECL_DEPRECATED getRequires(QSharedPointer<Package> package, Enum::Filters filters, bool recursive);
 
 	/**
+     * DEPRECATED
 	 * Retrieves more details about the update for the given \p packages
 	 */
-	Transaction* getUpdateDetail(const QList<QSharedPointer<Package> >& packages);
-	Transaction* getUpdateDetail(QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED getUpdateDetail(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED getUpdateDetail(QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * \p Gets the available updates
 	 *
 	 * The \p filters parameters can be used to restrict the updates returned
 	 */
-	Transaction* getUpdates(Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED getUpdates(Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * Retrieves the available distribution upgrades
 	 */
-	Transaction* getDistroUpgrades();
+	Transaction* Q_DECL_DEPRECATED getDistroUpgrades();
 
 	/**
+     * DEPRECATED
 	 * \brief Installs the local packages \p files
 	 *
 	 * \p only_trusted indicate if the packages are signed by a trusted authority
 	 */
-	Transaction* installFiles(const QStringList& files, bool only_trusted);
-	Transaction* installFiles(const QString& file, bool only_trusted);
+	Transaction* Q_DECL_DEPRECATED installFiles(const QStringList& files, bool only_trusted);
+	Transaction* Q_DECL_DEPRECATED installFiles(const QString& file, bool only_trusted);
 
 	/**
+     * DEPRECATED
 	 * Install the given \p packages
 	 *
 	 * \p only_trusted indicates if we should allow installation of untrusted packages (requires a different authorization)
 	 */
-	Transaction* installPackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
-	Transaction* installPackages(bool only_trusted, QSharedPointer<Package> p);
+	Transaction* Q_DECL_DEPRECATED installPackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED installPackages(bool only_trusted, QSharedPointer<Package> p);
 
 	/**
+     * DEPRECATED
 	 * \brief Installs a signature
 	 *
 	 * \p type, \p key_id and \p p generally come from the Transaction::repoSignatureRequired
 	 */
-	Transaction* installSignature(Enum::SigType type, const QString& key_id, QSharedPointer<Package> p);
+	Transaction* Q_DECL_DEPRECATED installSignature(Enum::SigType type, const QString& key_id, QSharedPointer<Package> p);
 
 	/**
+     * DEPRECATED
 	 * Refreshes the package manager's cache
 	 */
-	Transaction* refreshCache(bool force);
+	Transaction* Q_DECL_DEPRECATED refreshCache(bool force);
 
 	/**
+     * DEPRECATED
 	 * \brief Removes the given \p packages
 	 *
 	 * \p allow_deps if the package manager has the right to remove other packages which depend on the
 	 * packages to be removed. \p autoremove tells the package manager to remove all the package which
 	 * won't be needed anymore after the packages are uninstalled.
 	 */
-	Transaction* removePackages(const QList<QSharedPointer<Package> >& packages, bool allow_deps, bool autoremove);
-	Transaction* removePackages(QSharedPointer<Package> p, bool allow_deps, bool autoremove);
+	Transaction* Q_DECL_DEPRECATED removePackages(const QList<QSharedPointer<Package> >& packages, bool allow_deps, bool autoremove);
+	Transaction* Q_DECL_DEPRECATED removePackages(QSharedPointer<Package> p, bool allow_deps, bool autoremove);
 
 	/**
+     * DEPRECATED
 	 * Activates or disables a repository
 	 */
-	Transaction* repoEnable(const QString& repo_id, bool enable);
+	Transaction* Q_DECL_DEPRECATED repoEnable(const QString& repo_id, bool enable);
 
 	/**
+     * DEPRECATED
 	 * Sets a repository's parameter
 	 */
-	Transaction* repoSetData(const QString& repo_id, const QString& parameter, const QString& value);
+	Transaction* Q_DECL_DEPRECATED repoSetData(const QString& repo_id, const QString& parameter, const QString& value);
 
 	/**
+     * DEPRECATED
 	 * \brief Tries to create a Package object from the package's name
 	 *
 	 * The \p filters can be used to restrict the search
 	 */
-	Transaction* resolve(const QStringList& packageNames, Enum::Filters filters = Enum::NoFilter);
-	Transaction* resolve(const QString& packageName, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED resolve(const QStringList& packageNames, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED resolve(const QString& packageName, Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * Rolls back the given \p transactions
 	 */
-	Transaction* rollback(Transaction* oldtrans);
+	Transaction* Q_DECL_DEPRECATED rollback(Transaction* oldtrans);
 
 	/**
+     * DEPRECATED
 	 * \brief Search in the packages files
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchFiles(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
-	Transaction* searchFiles(const QString& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchFiles(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchFiles(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * \brief Search in the packages details
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchDetails(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
-	Transaction* searchDetails(const QString& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchDetails(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchDetails(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * \brief Lists all the packages in the given \p group
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchGroups(Enum::Groups group, Enum::Filters filters = Enum::NoFilter);
-	Transaction* searchGroups(Enum::Group group, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchGroups(Enum::Groups group, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchGroups(Enum::Group group, Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * \brief Search in the packages names
 	 *
 	 * \p filters can be used to restrict the returned packages
 	 */
-	Transaction* searchNames(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
-	Transaction* searchNames(const QString& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchNames(const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED searchNames(const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 	/**
+     * DEPRECATED
 	 * \brief Tries to find a package name from a desktop file
 	 *
 	 * This function looks into /var/lib/PackageKit/desktop-files.db and searches for the associated package name.
@@ -503,63 +532,70 @@ public:
 	QSharedPointer<Package> searchFromDesktopFile(const QString& path);
 
 	/**
+     * DEPRECATED
 	 * \brief Simulates an installation of \p files.
 	 *
 	 * You should call this method before installing \p files
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateInstallFiles(const QStringList& files);
-	Transaction* simulateInstallFiles(const QString& file);
+	Transaction* Q_DECL_DEPRECATED simulateInstallFiles(const QStringList& files);
+	Transaction* Q_DECL_DEPRECATED simulateInstallFiles(const QString& file);
 
 	/**
+     * DEPRECATED
 	 * \brief Simulates an installation of \p packages.
 	 *
 	 * You should call this method before installing \p packages
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateInstallPackages(const QList<QSharedPointer<Package> >& packages);
-	Transaction* simulateInstallPackages(QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED simulateInstallPackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED simulateInstallPackages(QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * \brief Simulates a removal of \p packages.
 	 *
 	 * You should call this method before removing \p packages
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateRemovePackages(const QList<QSharedPointer<Package> >& packages, bool autoremove);
-	Transaction* simulateRemovePackages(QSharedPointer<Package> package, bool autoremove);
+	Transaction* Q_DECL_DEPRECATED simulateRemovePackages(const QList<QSharedPointer<Package> >& packages, bool autoremove);
+	Transaction* Q_DECL_DEPRECATED simulateRemovePackages(QSharedPointer<Package> package, bool autoremove);
 
 	/**
+     * DEPRECATED
 	 * \brief Simulates an update of \p packages.
 	 *
 	 * You should call this method before updating \p packages
 	 * \note: This method might emit packages with INSTALLING, REMOVING, UPDATING,
 	 *        REINSTALLING or OBSOLETING status.
 	 */
-	Transaction* simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages);
-	Transaction* simulateUpdatePackages(QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED simulateUpdatePackages(const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED simulateUpdatePackages(QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * Update the given \p packages
 	 */
-	Transaction* updatePackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
-	Transaction* updatePackages(bool only_trusted, QSharedPointer<Package> package);
+	Transaction* Q_DECL_DEPRECATED updatePackages(bool only_trusted, const QList<QSharedPointer<Package> >& packages);
+	Transaction* Q_DECL_DEPRECATED updatePackages(bool only_trusted, QSharedPointer<Package> package);
 
 	/**
+     * DEPRECATED
 	 * Updates the whole system
 	 *
 	 * \p only_trusted indicates if this transaction is only allowed to install trusted packages
 	 */
-	Transaction* updateSystem(bool only_trusted);
+	Transaction* Q_DECL_DEPRECATED updateSystem(bool only_trusted);
 
 	/**
+     * DEPRECATED
 	 * Searchs for a package providing a file/a mimetype
 	 */
-	Transaction* whatProvides(Enum::Provides type, const QStringList& search, Enum::Filters filters = Enum::NoFilter);
-	Transaction* whatProvides(Enum::Provides type, const QString& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED whatProvides(Enum::Provides type, const QStringList& search, Enum::Filters filters = Enum::NoFilter);
+	Transaction* Q_DECL_DEPRECATED whatProvides(Enum::Provides type, const QString& search, Enum::Filters filters = Enum::NoFilter);
 
 Q_SIGNALS:
 	/**
