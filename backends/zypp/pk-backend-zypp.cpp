@@ -1218,15 +1218,22 @@ backend_resolve_thread (PkBackend *backend)
 	for (uint i = 0; package_ids[i]; i++) {
 		std::vector<zypp::sat::Solvable> *v;
 
-		/* Build a list of packages with this name */
+		/* build a list of packages with this name */
 		v = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::package, TRUE);
 
+		/* add source packages */
 		if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_SOURCE)) {
 			std::vector<zypp::sat::Solvable> *src;
 			src = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::srcpackage, TRUE);
 			v->insert (v->end (), src->begin (), src->end ());
 			delete (src);
 		}
+
+		/* include patches too */
+		std::vector<zypp::sat::Solvable> *v2;
+		v2 = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::patch, TRUE);
+		v->insert (v->end (), v2->begin (), v2->end ());
+		delete (v2);
 
 		zypp::sat::Solvable newest;
 		std::vector<zypp::sat::Solvable> pkgs;
