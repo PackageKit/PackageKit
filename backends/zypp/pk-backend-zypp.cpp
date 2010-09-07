@@ -498,13 +498,25 @@ backend_get_details_thread (PkBackend *backend)
 					(gulong)rpmHeader->tag_archivesize ());	// gulong size
 
 			} else {
+				gulong size = 0;
+
+				if (zypp::isKind<zypp::Patch>(package)) {
+					zypp::PoolItem item = zypp::ResPool::instance ().find (package);
+					zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
+
+					zypp::sat::SolvableSet content = patch->contents ();
+					for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++)
+						size += it->lookupNumAttribute (zypp::sat::SolvAttr::downloadsize);
+				} else
+					size = package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize);
+
 				pk_backend_details (backend,
-					package_ids[i],
-					package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
-					group,
-					package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
-					"TODO", //pkg->url ().c_str (),
-					((gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize) * 1024)); //pkg->size ());
+						    package_ids[i],
+						    package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (),
+						    group,
+						    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (),
+						    "TODO", // pkg->url ().c_str (),
+						    size * 1024);
 			}
 
 		} catch (const zypp::target::rpm::RpmException &ex) {
