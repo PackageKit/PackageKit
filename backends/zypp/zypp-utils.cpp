@@ -156,7 +156,7 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 	zypp::ZYpp::Ptr zypp = get_zypp (backend);
 
 	if (include_local) {
-		//FIXME have to wait for fix in zypp (repeated loading of target)
+		// FIXME have to wait for fix in zypp (repeated loading of target)
 		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
 		{
 			// Add local resolvables
@@ -391,8 +391,8 @@ zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
 	}
 
 	gchar **id_parts = pk_package_id_split(package_id);
-	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
+	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package);
+	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch);
 
 	v->insert (v->end (), v2->begin (), v2->end ());
 

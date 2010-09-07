@@ -457,9 +457,9 @@ backend_get_details_thread (PkBackend *backend)
 		std::vector<zypp::sat::Solvable> *v;
 		std::vector<zypp::sat::Solvable> *v2;
 		std::vector<zypp::sat::Solvable> *v3;
-		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, TRUE);
-		v3 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
+		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package);
+		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch);
+		v3 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage);
 
 		v->insert (v->end (), v2->begin (), v2->end ());
 		v->insert (v->end (), v3->begin (), v3->end ());
@@ -774,6 +774,7 @@ backend_install_files_thread (PkBackend *backend)
 		std::vector<zypp::sat::Solvable> *solvables = 0;
 		solvables = zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
 		zypp::PoolItem *item = NULL;
+
 		gboolean found = FALSE;
 
 		for (std::vector<zypp::sat::Solvable>::iterator it = solvables->begin (); it != solvables->end (); it ++) {
@@ -1219,19 +1220,19 @@ backend_resolve_thread (PkBackend *backend)
 		std::vector<zypp::sat::Solvable> *v;
 
 		/* build a list of packages with this name */
-		v = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::package, TRUE);
+		v = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::package);
 
 		/* add source packages */
 		if (!pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_SOURCE)) {
 			std::vector<zypp::sat::Solvable> *src;
-			src = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::srcpackage, TRUE);
+			src = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::srcpackage);
 			v->insert (v->end (), src->begin (), src->end ());
 			delete (src);
 		}
 
 		/* include patches too */
 		std::vector<zypp::sat::Solvable> *v2;
-		v2 = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::patch, TRUE);
+		v2 = zypp_get_packages_by_name (backend, package_ids[i], zypp::ResKind::patch);
 		v->insert (v->end (), v2->begin (), v2->end ());
 		delete (v2);
 
@@ -1515,8 +1516,8 @@ backend_get_files_thread (PkBackend *backend)
 
 		std::vector<zypp::sat::Solvable> *v;
 		std::vector<zypp::sat::Solvable> *v2;
-		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, TRUE);
-		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage, TRUE);
+		v = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package);
+		v2 = zypp_get_packages_by_name (backend, (const gchar *)id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::srcpackage);
 
 		v->insert (v->end (), v2->begin (), v2->end ());
 

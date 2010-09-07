@@ -115,7 +115,7 @@ PkGroupEnum get_enum_group (std::string group);
  * Returns a list of packages that match the specified package_name.
  */
 std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
-							      const zypp::ResKind kind, gboolean include_local);
+							      const zypp::ResKind kind, gboolean include_local = TRUE);
 
 /**
  * Returns a list of packages that owns the specified file.
