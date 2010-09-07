@@ -565,6 +565,17 @@ system_and_package_are_x86 (zypp::sat::Solvable item)
 			!strcmp (zypp::ZConfig::defaultSystemArchitecture ().asString().c_str(), "i686"));
 }
 
+static gboolean
+zypp_package_is_devel (const zypp::sat::Solvable &item)
+{
+	const std::string &name = item.name();
+	const char *cstr = name.c_str();
+
+	return ( g_str_has_suffix (cstr, "-debuginfo") ||
+		 g_str_has_suffix (cstr, "-debugsource") ||
+		 g_str_has_suffix (cstr, "-devel") );
+}
+
 /* should we filter out this package ? */
 gboolean
 zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
@@ -572,8 +583,6 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 	// iterate through the given filters
 	if (!filters)
 		return FALSE;
-
-	//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
 
 	for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		if ((filters & pk_bitfield_value (i)) == 0)
@@ -593,17 +602,18 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 			    system_and_package_are_x86 (item))
 				return TRUE;
 		}
-		if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(item))) {
+		if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(item)))
 			return TRUE;
-		}
-		if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(item)) {
+		if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(item))
 			return TRUE;
-		}
+		if (i == PK_FILTER_ENUM_DEVELOPMENT && !zypp_package_is_devel (item))
+			return TRUE;
+		if (i == PK_FILTER_ENUM_NOT_DEVELOPMENT && zypp_package_is_devel (item))
+			return TRUE;
 
-		// FIXME: add enums
-		// PK_FILTER_ENUM_DEVELOPMENT,
-		// PK_FILTER_ENUM_NOT_DEVELOPMENT,
-
+		// FIXME: add more enums - cf. libzif logic and pk-enum.h
+		// PK_FILTER_ENUM_SUPPORTED, 
+		// PK_FILTER_ENUM_NOT_SUPPORTED,
 	}
 
 	return FALSE;
