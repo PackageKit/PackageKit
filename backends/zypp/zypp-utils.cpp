@@ -812,22 +812,22 @@ zypp_get_updates (PkBackend *backend)
 	return candidates;
 }
 
-gboolean
-zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch)
+void
+zypp_check_restart (PkRestartEnum *restart, zypp::Patch::constPtr patch)
 {
-	if (patch == NULL)
-		return false;
+	if (patch == NULL || restart == NULL)
+		return;
 
 	// set the restart flag if a restart is needed
-	if (restart != PK_RESTART_ENUM_SYSTEM && (patch->reloginSuggested () ||
-						  patch->restartSuggested () ||
-						  patch->rebootSuggested ())) {
-			if (patch->reloginSuggested () || patch->restartSuggested ())
-				restart = PK_RESTART_ENUM_SESSION;
-			if (patch->rebootSuggested ())
-				restart = PK_RESTART_ENUM_SYSTEM;
+	if (*restart != PK_RESTART_ENUM_SYSTEM &&
+	    ( patch->reloginSuggested () ||
+	      patch->restartSuggested () ||
+	      patch->rebootSuggested ()) ) {
+		if (patch->reloginSuggested () || patch->restartSuggested ())
+			*restart = PK_RESTART_ENUM_SESSION;
+		if (patch->rebootSuggested ())
+			*restart = PK_RESTART_ENUM_SYSTEM;
 	}
-	return true;
 }
 
 gboolean

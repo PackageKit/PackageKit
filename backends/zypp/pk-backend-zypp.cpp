@@ -846,7 +846,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 		if (zypp::isKind<zypp::Patch>(solvable)) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
-			zypp_get_restart (restart, patch);
+			zypp_check_restart (&restart, patch);
 
 			// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
 			for (zypp::Patch::ReferenceIterator it = patch->referencesBegin (); it != patch->referencesEnd (); it ++) {
@@ -922,9 +922,8 @@ backend_update_system_thread (PkBackend *backend)
 
 	std::set<zypp::PoolItem> *candidates = zypp_get_updates (backend);
 
-	if (_updating_self) {
+	if (_updating_self)
 		_updating_self = FALSE;
-	}
 
 	pk_backend_set_percentage (backend, 80);
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
@@ -933,7 +932,7 @@ backend_update_system_thread (PkBackend *backend)
 		zypp::ResStatus &status = ci->status ();
 		status.setToBeInstalled (zypp::ResStatus::USER);
 		if (zypp::isKind<zypp::Patch>(ci->resolvable ())) {
-			zypp_get_restart (restart, zypp::asKind<zypp::Patch>(ci->resolvable ()));
+			zypp_check_restart (&restart, zypp::asKind<zypp::Patch>(ci->resolvable ()));
 		}
 	}
 
@@ -1600,7 +1599,7 @@ backend_update_packages_thread (PkBackend *backend)
 
 	if (_updating_self) {
 		egg_debug ("updating self and setting restart");
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
+		restart = PK_RESTART_ENUM_SESSION;
 		_updating_self = FALSE;
 	}
 	for (guint i = 0; package_ids[i]; i++) {
@@ -1608,7 +1607,7 @@ backend_update_packages_thread (PkBackend *backend)
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item.resolvable ());
-		zypp_get_restart (restart, patch);
+		zypp_check_restart (&restart, patch);
 	}
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);

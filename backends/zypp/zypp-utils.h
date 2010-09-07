@@ -169,7 +169,7 @@ std::set<zypp::PoolItem> * zypp_get_updates (PkBackend *backend);
 /**
   * Sets the restart flag of a patch
   */
-gboolean zypp_get_restart (PkRestartEnum &restart, zypp::Patch::constPtr patch);
+void zypp_check_restart (PkRestartEnum *restart, zypp::Patch::constPtr patch);
 
 /**
   * simulate, or perform changes in pool to the system
