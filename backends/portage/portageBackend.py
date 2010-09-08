@@ -340,6 +340,13 @@ class PackageKitPortageMixin(object):
         settings.setcpv(cpv, mydb=metadata)
         return settings
 
+    def _get_internal_package_set_class(self):
+        try:
+            from portage._sets.base import InternalPackageSet
+        except ImportError:
+            from portage.sets.base import InternalPackageSet
+        return InternalPackageSet
+
     def _is_installed(self, cpv):
         if self.pvar.vardb.cpv_exists(cpv):
             return True
@@ -1177,9 +1184,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         # get system and world packages
         for s in ["system", "world"]:
-            set = portage.sets.base.InternalPackageSet(
+            sets = self._get_internal_package_set_class()(
                     initial_atoms=self.pvar.root_config.setconfig.getSetAtoms(s))
-            for atom in set:
+            for atom in sets:
                 update_candidates.append(atom.cp)
 
         # check if a candidate can be updated
@@ -1242,7 +1249,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 cpv_downgra[cp] = dict_down
 
         # get security updates
-        for atom in portage.sets.base.InternalPackageSet(
+        for atom in self._get_internal_package_set_class()(
                 initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("security")):
             # send update message and remove atom from cpv_updates
             if atom.cp in cpv_updates:
@@ -1409,9 +1416,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         system_packages = []
 
         # get system packages
-        set = portage.sets.base.InternalPackageSet(
-                initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
-        for atom in set:
+        sets = self._get_internal_package_set_class()(
+            initial_atoms=self.pvar.root_config.setconfig.getSetAtoms("system"))
+        for atom in sets:
             system_packages.append(atom.cp)
 
         # create cpv_list
