@@ -568,7 +568,22 @@ backend_search_thread (PkBackend *backend)
 		} else if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 			array = zif_store_array_search_details (store_array, search, state_local, &error);
 		} else if (role == PK_ROLE_ENUM_SEARCH_GROUP) {
-			array = zif_store_array_search_category (store_array, search, state_local, &error);
+			gchar **search_stripped;
+			guint search_entries;
+			guint i;
+
+			/* if the search temp is prefixed with '@' then it is a
+			 * category search, and we have to strip it */
+			if (search[0][0] == '@') {
+				search_entries = g_strv_length (search);
+				search_stripped = g_new0 (gchar *, search_entries + 1);
+				for (i=0; i < search_entries; i++)
+					search_stripped[i] = g_strdup (&search[i][1]);
+				array = zif_store_array_search_category (store_array, search_stripped, state_local, &error);
+				g_strfreev (search_stripped);
+			} else {
+				array = zif_store_array_search_group (store_array, search, state_local, &error);
+			}
 		} else if (role == PK_ROLE_ENUM_SEARCH_FILE) {
 			array = zif_store_array_search_file (store_array, search, state_local, &error);
 		} else if (role == PK_ROLE_ENUM_RESOLVE) {
@@ -581,11 +596,6 @@ backend_search_thread (PkBackend *backend)
 			g_error_free (error);
 			goto out;
 		}
-
-//			/* strip off the prefix '@' */
-//			search_tmp = search[i];
-//			if (g_str_has_prefix (search_tmp, "@"))
-//				search_tmp = search_tmp+1;
 	}
 
 	/* this section done */
