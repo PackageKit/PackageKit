@@ -177,6 +177,8 @@ get_enum_group (string group)
 		return PK_GROUP_ENUM_ELECTRONICS;
 	} else if (group.compare ("embedded") == 0) {
 		return PK_GROUP_ENUM_SYSTEM;
+	} else if (group.compare ("fonts") == 0) {
+		return PK_GROUP_ENUM_FONTS;
 	} else if (group.compare ("games") == 0) {
 		return PK_GROUP_ENUM_GAMES;
 	} else if (group.compare ("gnome") == 0) {
