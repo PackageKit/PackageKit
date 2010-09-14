@@ -2299,7 +2299,6 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 	}
 
 	/* create a thread */
-	egg_warning ("using threads, so daemon may crash");
 	backend->priv->thread = g_thread_create ((GThreadFunc) func, backend, FALSE, NULL);
 	if (backend->priv->thread == NULL) {
 		egg_warning ("failed to create thread");
