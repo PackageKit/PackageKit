@@ -106,7 +106,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 
 	/* try to parse complete ISO8601 date */
 	ret = g_time_val_from_iso8601 (iso_date, &time_val);
-	if (ret) {
+	if (ret && time_val.tv_sec != 0) {
 		date = g_date_new ();
 		g_date_set_time_val (date, &time_val);
 		goto out;
