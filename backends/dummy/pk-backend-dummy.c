@@ -1236,6 +1236,35 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_transaction_start:
+ */
+static void
+backend_transaction_start (PkBackend *backend)
+{
+	/* here you would lock the backend */
+	pk_backend_message (backend, PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "backend is crap");
+
+	/* you can use pk_backend_error_code() here too */
+}
+
+/**
+ * backend_transaction_stop:
+ */
+static void
+backend_transaction_stop (PkBackend *backend)
+{
+	/* here you would unlock the backend */
+	pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "backend is crap");
+
+	/* you *cannot* use pk_backend_error_code() here,
+	 * unless pk_backend_get_is_error_set() returns FALSE, and
+	 * even then it's probably just best to clean up silently */
+
+	/* you cannot do pk_backend_finished() here as well as this is
+	 * needed to fire the transaction_stop() vfunc */
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -1276,6 +1305,8 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
-	NULL					/* simulate_update_packages */
+	NULL,					/* simulate_update_packages */
+	backend_transaction_start,		/* transaction_start */
+	backend_transaction_stop		/* transaction_stop */
 );
 

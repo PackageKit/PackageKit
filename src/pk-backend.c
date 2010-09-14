@@ -2059,6 +2059,87 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
 }
 
 /**
+ * pk_backend_transaction_start:
+ *
+ * This is called just before the threaded transaction method, and in
+ * the newly created thread context. e.g.
+ *
+ * >>> desc->transaction_start(backend)
+ *     (locked backend)
+ * >>> desc->backend_method_we_want_to_run(backend)
+ * <<< ::Package(PK_INFO_ENUM_INSTALLING,"hal;0.1.1;i386;fedora","Hardware Stuff")
+ * >>> desc->transaction_stop(backend)
+ *     (unlocked backend)
+ * <<< ::Finished()
+ *
+ * or in the case of backend_method_we_want_to_run() failure:
+ * >>> desc->transaction_start(backend)
+ *     (locked backend)
+ * >>> desc->backend_method_we_want_to_run(backend)
+ * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_FIND,"no package")
+ * >>> desc->transaction_stop(backend)
+ *     (unlocked backend)
+ * <<< ::Finished()
+ *
+ * or in the case of transaction_start() failure:
+ * >>> desc->transaction_start(backend)
+ *     (failed to lock backend)
+ * <<< ::ErrorCode(PK_ERROR_ENUM_FAILED_TO_LOCK,"no pid file")
+ * >>> desc->transaction_stop(backend)
+ * <<< ::Finished()
+ *
+ * It is *not* called for non-threaded backends, as multiple processes
+ * would be inherently racy.
+ *
+ * Return value: %TRUE for success.
+ */
+static gboolean
+pk_backend_transaction_start (PkBackend *backend)
+{
+	gboolean ret = TRUE;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* no transaction setup is perfectly fine */
+	if (backend->priv->desc->transaction_start == NULL) {
+		egg_debug ("no transaction start vfunc");
+		goto out;
+	}
+
+	/* run the transaction setup */
+	backend->priv->desc->transaction_start (backend);
+	ret = !pk_backend_has_set_error_code (backend);
+out:
+	return ret;
+}
+
+/**
+ * pk_backend_transaction_stop:
+ *
+ * Always run for each transaction, *even* when the transaction_start()
+ * vfunc fails.
+ *
+ * This method has no return value as the ErrorCode should have already
+ * been set.
+ */
+static void
+pk_backend_transaction_stop (PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	/* no transaction setup is perfectly fine */
+	if (backend->priv->desc->transaction_stop == NULL) {
+		egg_debug ("no transaction stop vfunc");
+		goto out;
+	}
+
+	/* run the transaction setup */
+	backend->priv->desc->transaction_stop (backend);
+out:
+	return;
+}
+
+/**
  * pk_backend_finished_delay:
  *
  * We can call into this function if we *know* it's safe.
@@ -2119,6 +2200,10 @@ pk_backend_finished (PkBackend *backend)
 		egg_warning ("already finished");
 		return FALSE;
 	}
+
+	/* ensure threaded backends get stop vfuncs fired */
+	if (backend->priv->thread != NULL)
+		pk_backend_transaction_stop (backend);
 
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
@@ -2275,6 +2360,39 @@ pk_backend_use_background (PkBackend *backend)
 	return FALSE;
 }
 
+/* simple helper to work around the GThread one pointer limit */
+typedef struct {
+	PkBackend		*backend;
+	PkBackendThreadFunc	 func;
+} PkBackendThreadHelper;
+
+/**
+ * pk_backend_thread_setup:
+ **/
+static gpointer
+pk_backend_thread_setup (gpointer thread_data)
+{
+	gboolean ret;
+	PkBackendThreadHelper *helper = (PkBackendThreadHelper *) thread_data;
+
+	/* call setup */
+	pk_backend_transaction_start (helper->backend);
+
+	/* run original function */
+	ret = helper->func (helper->backend);
+	if (!ret) {
+		egg_warning ("transaction setup failed, going straight to finished");
+		pk_backend_transaction_stop (backend);
+	}
+
+	/* destroy helper */
+	g_object_unref (helper->backend);
+	g_free (helper);
+
+	/* no return value */
+	return NULL;
+}
+
 /**
  * pk_backend_thread_create:
  **/
@@ -2282,6 +2400,7 @@ gboolean
 pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 {
 	gboolean ret = TRUE;
+	PkBackendThreadHelper *helper = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (func != NULL, FALSE);
@@ -2298,8 +2417,13 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
 		goto out;
 	}
 
+	/* create a helper object to allow us to call a _setup() function */
+	helper = g_new0 (PkBackendThreadHelper, 1);
+	helper->backend = g_object_ref (backend);
+	helper->func = func;
+
 	/* create a thread */
-	backend->priv->thread = g_thread_create ((GThreadFunc) func, backend, FALSE, NULL);
+	backend->priv->thread = g_thread_create (pk_backend_thread_setup, helper, FALSE, NULL);
 	if (backend->priv->thread == NULL) {
 		egg_warning ("failed to create thread");
 		ret = FALSE;
