@@ -1276,18 +1276,211 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 }
 
 /**
+ * backend_get_depends_thread:
+ */
+static gboolean
+backend_get_depends_thread (PkBackend *backend)
+{
+#ifdef HAVE_ZIF
+	gboolean ret;
+	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	GPtrArray *store_array = NULL;
+	ZifPackage *package;
+	ZifPackage *package_provide;
+	ZifState *state_local;
+	ZifState *state_loop;
+	ZifState *state_loop_inner;
+	const ZifDepend *require;
+	const gchar *id;
+	guint i, j, k;
+	guint len;
+	GError *error = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *result;
+	GPtrArray *requires;
+	GPtrArray *provides;
+	const gchar *to_array[] = { NULL, NULL };
+
+	/* get lock */
+	ret = backend_get_lock (backend);
+	if (!ret) {
+		egg_warning ("failed to get lock");
+		goto out;
+	}
+
+	/* set correct install root */
+	ret = backend_set_root (backend);
+	if (!ret) {
+		egg_warning ("failed to set root");
+		goto out;
+	}
+
+	/* set the network state */
+	backend_setup_network (backend);
+
+	len = g_strv_length (package_ids);
+
+	/* setup state */
+	zif_state_reset (priv->state);
+	zif_state_set_number_steps (priv->state, len + 3);
+
+	/* find all the packages */
+	state_local = zif_state_get_child (priv->state);
+	store_array = backend_get_default_store_array_for_filter (backend, 0, state_local, &error);
+	if (store_array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* new output array */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	for (i=0; package_ids[i] != NULL; i++) {
+		id = package_ids[i];
+
+		/* set up state */
+		state_local = zif_state_get_child (priv->state);
+		zif_state_set_number_steps (state_local, 2);
+
+		/* find package */
+		state_loop = zif_state_get_child (state_local);
+		package = zif_store_array_find_package (store_array, id, state_loop, &error);
+		if (package == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "failed to find %s: %s", package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		ret = zif_state_done (state_local, &error);
+		if (!ret) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* get requires */
+		state_loop = zif_state_get_child (state_local);
+		requires = zif_package_get_requires (package, state_loop, &error);
+		if (requires == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+					       "failed to get requires for %s: %s",
+					       package_ids[i], error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		ret = zif_state_done (state_local, &error);
+		if (!ret) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* match a package to each require */
+		state_loop = zif_state_get_child (state_local);
+		zif_state_set_number_steps (state_loop, requires->len);
+		for (k=0; k<requires->len; k++) {
+
+			/* setup deeper state */
+			state_loop_inner = zif_state_get_child (state_loop);
+
+			require = g_ptr_array_index (requires, k);
+
+			/* find the package providing the depend */
+			to_array[0] = require->name;
+			provides = zif_store_array_what_provides (store_array, (gchar**)to_array, state_loop_inner, &error);
+			if (provides == NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						       "failed to find provide for %s: %s",
+						       require->name, error->message);
+				g_error_free (error);
+				goto out;
+			}
+
+			/* print all of them */
+			for (j=0;j<provides->len;j++) {
+				package_provide = g_ptr_array_index (provides, j);
+				g_ptr_array_add (array, g_object_ref (package_provide));
+			}
+			g_ptr_array_unref (provides);
+
+			/* this section done */
+			ret = zif_state_done (state_loop, &error);
+			if (!ret)
+				goto out;
+		}
+
+		/* free */
+		g_object_unref (package);
+	}
+
+	/* filter */
+	result = backend_filter_package_array (array, filters);
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* done */
+	pk_backend_set_percentage (backend, 100);
+
+	/* emit */
+	state_local = zif_state_get_child (priv->state);
+	backend_emit_package_array (backend, result, state_local);
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	backend_unlock (backend);
+	pk_backend_finished (backend);
+	if (store_array != NULL)
+		g_ptr_array_unref (store_array);
+#endif
+	return TRUE;
+}
+
+/**
  * backend_get_depends:
  */
 static void
 backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
-	gchar *filters_text;
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
-	g_free (filters_text);
-	g_free (package_ids_temp);
+	/* it seems some people are not ready for the awesomeness */
+	if (!priv->use_zif) {
+		gchar *filters_text;
+		gchar *package_ids_temp;
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		filters_text = pk_filter_bitfield_to_string (filters);
+		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-depends", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+		g_free (filters_text);
+		g_free (package_ids_temp);
+		return;
+	}
+	pk_backend_thread_create (backend, backend_get_depends_thread);
 }
 
 /**
