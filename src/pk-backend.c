@@ -1138,17 +1138,13 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* check the issued dates are valid */
 	if (issued_text != NULL) {
 		ret = g_time_val_from_iso8601 (issued_text, &timeval);
-		if (!ret) {
-			egg_warning ("failed to parse '%s'", issued_text);
-			goto out;
-		}
+		if (!ret)
+			egg_warning ("failed to parse issued '%s'", issued_text);
 	}
 	if (updated_text != NULL) {
 		ret = g_time_val_from_iso8601 (updated_text, &timeval);
-		if (!ret) {
-			egg_warning ("failed to parse '%s'", updated_text);
-			goto out;
-		}
+		if (!ret)
+			egg_warning ("failed to parse updated '%s'", updated_text);
 	}
 
 	/* replace unsafe chars */
