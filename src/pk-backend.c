@@ -2382,7 +2382,7 @@ pk_backend_thread_setup (gpointer thread_data)
 	ret = helper->func (helper->backend);
 	if (!ret) {
 		egg_warning ("transaction setup failed, going straight to finished");
-		pk_backend_transaction_stop (backend);
+		pk_backend_transaction_stop (helper->backend);
 	}
 
 	/* destroy helper */
