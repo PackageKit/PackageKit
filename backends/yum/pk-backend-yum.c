@@ -116,34 +116,6 @@ backend_state_subpercentage_changed_cb (ZifState *state, guint subpercentage, Pk
 }
 
 /**
- * backend_set_root:
- */
-static gboolean
-backend_set_root (PkBackend *backend)
-{
-	gboolean ret = FALSE;
-	GError *error = NULL;
-	const gchar *root;
-
-	/* this backend does not support a relocatable root... yet */
-	root = pk_backend_get_root (backend);
-	if (g_strcmp0 (root, "/") != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID, "backend does not support this root: '%s'", root);
-		goto out;
-	}
-
-	/* try to set, or re-set root */
-	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-out:
-	return ret;
-}
-
-/**
  * backend_profile:
  */
 static void
@@ -158,70 +130,6 @@ backend_profile (const gchar *title)
 	g_print ("PROFILE: %ims\t%s\n", (guint) (elapsed * 1000.0f), title);
 out:
 	g_timer_reset (priv->timer);
-}
-
-/**
- * backend_setup_network:
- */
-static void
-backend_setup_network (PkBackend *backend)
-{
-	gboolean ret;
-	gchar *http_proxy = NULL;
-
-	/* get network state */
-	ret = pk_backend_is_online (backend);
-	if (!ret) {
-		zif_config_set_local (priv->config, "network", "false", NULL);
-		goto out;
-	}
-
-	/* tell ZifConfig it's okay to contact the network */
-	zif_config_set_local (priv->config, "network", "true", NULL);
-
-	/* set the proxy */
-	http_proxy = pk_backend_get_proxy_http (backend);
-	zif_download_set_proxy (priv->download, http_proxy, NULL);
-out:
-	g_free (http_proxy);
-}
-
-/**
- * backend_get_lock:
- */
-static gboolean
-backend_get_lock (PkBackend *backend)
-{
-	guint i;
-	guint pid;
-	gboolean ret = FALSE;
-	GError *error = NULL;
-
-	/* quit the spawned backend rather than waiting for it to time out */
-	pk_backend_spawn_exit (priv->spawn);
-
-	for (i=0; i<YUM_BACKEND_LOCKING_RETRIES; i++) {
-
-		/* try to lock */
-		ret = zif_lock_set_locked (priv->lock, &pid, &error);
-		if (ret)
-			break;
-
-		/* we're now waiting */
-		pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
-
-		/* now wait */
-		egg_debug ("Failed to lock on try %i of %i, already locked by PID %i (sleeping for %i seconds): %s\n",
-			   i+1, YUM_BACKEND_LOCKING_RETRIES, pid, YUM_BACKEND_LOCKING_DELAY, error->message);
-		g_clear_error (&error);
-		g_usleep (YUM_BACKEND_LOCKING_DELAY * G_USEC_PER_SEC);
-	}
-
-	/* we failed */
-	if (!ret)
-		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "failed to get lock, held by PID: %i", pid);
-
-	return ret;
 }
 
 /**
@@ -244,11 +152,90 @@ backend_is_all_installed (gchar **package_ids)
 }
 
 /**
- * backend_unlock:
+ * backend_transaction_start:
  */
-static gboolean
-backend_unlock (PkBackend *backend)
+static void
+backend_transaction_start (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
+	gboolean ret = FALSE;
+	GError *error = NULL;
+	const gchar *root;
+	guint i;
+	guint pid;
+	gchar *http_proxy = NULL;
+
+	/* quit the spawned backend rather than waiting for it to time out */
+	pk_backend_spawn_exit (priv->spawn);
+
+	/* only try a finite number of times */
+	for (i=0; i<YUM_BACKEND_LOCKING_RETRIES; i++) {
+
+		/* try to lock */
+		ret = zif_lock_set_locked (priv->lock, &pid, &error);
+		if (ret)
+			break;
+
+		/* we're now waiting */
+		pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+
+		/* now wait */
+		egg_debug ("Failed to lock on try %i of %i, already locked by PID %i (sleeping for %i seconds): %s\n",
+			   i+1, YUM_BACKEND_LOCKING_RETRIES, pid, YUM_BACKEND_LOCKING_DELAY, error->message);
+		g_clear_error (&error);
+		g_usleep (YUM_BACKEND_LOCKING_DELAY * G_USEC_PER_SEC);
+	}
+
+	/* we failed to lock */
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_GET_LOCK, "failed to get lock, held by PID: %i", pid);
+		goto out;
+	}
+
+	/* this backend does not support a relocatable root... yet */
+	root = pk_backend_get_root (backend);
+	if (g_strcmp0 (root, "/") != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID, "backend does not support this root: '%s'", root);
+		goto out;
+	}
+
+	/* try to set, or re-set install root */
+	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* get network state */
+	ret = pk_backend_is_online (backend);
+	if (!ret) {
+		zif_config_set_local (priv->config, "network", "false", NULL);
+		goto out;
+	}
+
+	/* tell ZifConfig it's okay to contact the network */
+	zif_config_set_local (priv->config, "network", "true", NULL);
+
+	/* set the proxy */
+	http_proxy = pk_backend_get_proxy_http (backend);
+	zif_download_set_proxy (priv->download, http_proxy, NULL);
+
+	/* setup state */
+	zif_state_reset (priv->state);
+out:
+	g_free (http_proxy);
+#endif
+	return;
+}
+
+/**
+ * backend_transaction_stop:
+ */
+static void
+backend_transaction_stop (PkBackend *backend)
+{
+#ifdef HAVE_ZIF
 	gboolean ret;
 	GError *error = NULL;
 
@@ -257,8 +244,11 @@ backend_unlock (PkBackend *backend)
 	if (!ret) {
 		egg_warning ("failed to unlock: %s", error->message);
 		g_error_free (error);
+		goto out;
 	}
-	return ret;
+out:
+#endif
+	return;
 }
 
 /**
@@ -500,28 +490,9 @@ backend_search_thread (PkBackend *backend)
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	role = pk_backend_get_role (backend);
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 4);
 
 	/* get default store_array */
@@ -636,7 +607,6 @@ out:
 		g_ptr_array_unref (store_array);
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 #endif
 	return TRUE;
@@ -1126,25 +1096,6 @@ backend_download_packages_thread (PkBackend *backend)
 	gchar *basename;
 	gchar *path;
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* setup state */
-	zif_state_reset (priv->state);
 	len = g_strv_length (package_ids);
 	zif_state_set_number_steps (priv->state, (len * 4) + 1);
 
@@ -1246,7 +1197,6 @@ backend_download_packages_thread (PkBackend *backend)
 		}
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
@@ -1302,27 +1252,8 @@ backend_get_depends_thread (PkBackend *backend)
 	GPtrArray *provides;
 	const gchar *to_array[] = { NULL, NULL };
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
 	len = g_strv_length (package_ids);
 
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, len + 3);
 
 	/* find all the packages */
@@ -1455,7 +1386,6 @@ backend_get_depends_thread (PkBackend *backend)
 out:
 	if (array != NULL)
 		g_ptr_array_unref (array);
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
@@ -1508,27 +1438,8 @@ backend_get_details_thread (PkBackend *backend)
 	guint64 size;
 	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
 	len = g_strv_length (package_ids);
 
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, len + 1);
 
 	/* find all the packages */
@@ -1663,7 +1574,6 @@ backend_get_details_thread (PkBackend *backend)
 		g_object_unref (package);
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
@@ -1845,30 +1755,8 @@ backend_get_files_thread (PkBackend *backend)
 	/* reset */
 	backend_profile (NULL);
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* profile */
-	backend_profile ("get lock");
-
 	len = g_strv_length (package_ids);
 
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, (len * 2) + 1);
 
 	/* find all the packages */
@@ -1949,7 +1837,6 @@ backend_get_files_thread (PkBackend *backend)
 		g_object_unref (package);
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
@@ -2018,28 +1905,6 @@ backend_get_updates_thread (PkBackend *backend)
 	/* reset */
 	backend_profile (NULL);
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* profile */
-	backend_profile ("get lock");
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 5);
 
 	/* get a store_array of remote stores */
@@ -2185,7 +2050,6 @@ backend_get_updates_thread (PkBackend *backend)
 	backend_profile ("filter and emit");
 
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (packages != NULL)
 		g_ptr_array_unref (packages);
@@ -2252,31 +2116,9 @@ backend_get_update_detail_thread (PkBackend *backend)
 	/* reset */
 	backend_profile (NULL);
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
 	/* get the data */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
-	/* profile */
-	backend_profile ("get lock");
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, g_strv_length (package_ids));
 
 	/* get the update info */
@@ -2349,7 +2191,6 @@ backend_get_update_detail_thread (PkBackend *backend)
 		}
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 #endif
 	return TRUE;
@@ -2468,25 +2309,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 	ZifState *state_local;
 	gboolean force = pk_backend_get_bool (backend, "force");
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 2);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -2526,7 +2348,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 		goto out;
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
@@ -2712,28 +2533,9 @@ backend_get_repo_list_thread (PkBackend *backend)
 	gboolean devel;
 	GError *error = NULL;
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 2);
 
 	state_local = zif_state_get_child (priv->state);
@@ -2796,7 +2598,6 @@ skip:
 		goto out;
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (array != NULL)
 		g_ptr_array_unref (array);
@@ -2836,23 +2637,6 @@ backend_repo_enable_thread (PkBackend *backend)
 	gboolean enabled = pk_backend_get_bool (backend, "enabled");
 	const gchar *repo_id = pk_backend_get_string (backend, "repo_id");
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -2885,7 +2669,6 @@ backend_repo_enable_thread (PkBackend *backend)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_REPO_FOR_DEVELOPERS_ONLY, warning);
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	g_free (warning);
 	if (repo != NULL)
@@ -2998,25 +2781,6 @@ backend_get_categories_thread (PkBackend *backend)
 	ZifState *state_local;
 	GError *error = NULL;
 
-	/* get lock */
-	ret = backend_get_lock (backend);
-	if (!ret) {
-		egg_warning ("failed to get lock");
-		goto out;
-	}
-
-	/* set correct install root */
-	ret = backend_set_root (backend);
-	if (!ret) {
-		egg_warning ("failed to set root");
-		goto out;
-	}
-
-	/* set the network state */
-	backend_setup_network (backend);
-
-	/* setup state */
-	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 3);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -3082,7 +2846,6 @@ backend_get_categories_thread (PkBackend *backend)
 		goto out;
 	}
 out:
-	backend_unlock (backend);
 	pk_backend_finished (backend);
 	if (array != NULL)
 		g_ptr_array_unref (array);
@@ -3122,7 +2885,8 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
-	"Tim Lauridsen <timlau@fedoraproject.org>, Richard Hughes <richard@hughsie.com>",	/* author */
+	"Tim Lauridsen <timlau@fedoraproject.org>, "
+	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
@@ -3161,7 +2925,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	backend_simulate_update_packages,	/* simulate_update_packages */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
+	backend_transaction_start,		/* transaction_start */
+	backend_transaction_stop		/* transaction_stop */
 );
 
