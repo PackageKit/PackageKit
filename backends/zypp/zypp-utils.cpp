@@ -455,12 +455,21 @@ gboolean
 zypp_refresh_meta_and_cache (zypp::RepoManager &manager, zypp::RepoInfo &repo, bool force)
 {
 	try {
+		if (manager.checkIfToRefreshMetadata (repo, repo.url(), 
+					zypp::RepoManager::RefreshIfNeededIgnoreDelay)
+					!= zypp::RepoManager::REFRESH_NEEDED)
+			return TRUE;
+
+		zypp::sat::Pool pool = zypp::sat::Pool::instance ();
+		// Erase old solv file
+		pool.reposErase (repo.alias ());
 		manager.refreshMetadata (repo, force ?
 					 zypp::RepoManager::RefreshForced :
-					 zypp::RepoManager::RefreshIfNeeded);
+					 zypp::RepoManager::RefreshIfNeededIgnoreDelay);
 		manager.buildCache (repo, force ?
 				    zypp::RepoManager::BuildForced :
 				    zypp::RepoManager::BuildIfNeeded);
+		manager.loadFromCache (repo);
 		return TRUE;
 	} catch (const AbortTransactionException &ex) {
 		return FALSE;
