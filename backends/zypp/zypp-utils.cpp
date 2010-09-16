@@ -1054,7 +1054,12 @@ gboolean
 zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
 	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
-	get_zypp (backend);
+	zypp::ZYpp::Ptr zypp = get_zypp (backend);
+	zypp::filesystem::Pathname pathname(pk_backend_get_root (backend));
+	// This call is needed to refresh system rpmdb status while refresh cache
+	zypp->finishTarget ();
+	zypp->initializeTarget (pathname);
+
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		return FALSE;
