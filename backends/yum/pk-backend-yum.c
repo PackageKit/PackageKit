@@ -150,6 +150,7 @@ backend_is_all_installed (gchar **package_ids)
 	}
 	return ret;
 }
+#endif
 
 /**
  * backend_transaction_start:
@@ -251,6 +252,7 @@ out:
 	return;
 }
 
+#ifdef HAVE_ZIF
 /**
  * backend_filter_package_array_newest:
  *
@@ -2097,6 +2099,41 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
+#ifdef HAVE_ZIF
+/**
+ * backend_get_changelog_text:
+ */
+static gchar *
+backend_get_changelog_text (GPtrArray *changesets)
+{
+	guint i;
+	ZifChangeset *changeset;
+	GString *text;
+	gchar date_str[128];
+	GDate *date;
+
+	/* create output string */
+	text = g_string_new ("");
+	date = g_date_new ();
+
+	/* go through each one */
+	for (i=0; i<changesets->len; i++) {
+		changeset = g_ptr_array_index (changesets, i);
+
+		/* format the indervidual changeset */
+		g_date_set_time_t (date, zif_changeset_get_date (changeset));
+		g_date_strftime (date_str, 128, "%F", date);
+		g_string_append_printf (text, "**%s** %s - %s\n%s\n\n",
+					date_str,
+					zif_changeset_get_author (changeset),
+					zif_changeset_get_version (changeset),
+					zif_changeset_get_description (changeset));
+	}
+	g_date_free (date);
+	return g_string_free (text, FALSE);
+}
+#endif
+
 /**
  * backend_get_update_detail_thread:
  */
@@ -2118,7 +2155,6 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 	/* get the data */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
-
 	zif_state_set_number_steps (priv->state, g_strv_length (package_ids));
 
 	/* get the update info */
@@ -2139,7 +2175,9 @@ backend_get_update_detail_thread (PkBackend *backend)
 			egg_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
 		} else {
+			gchar *changelog_text = NULL;
 			GPtrArray *array;
+			GPtrArray *changesets;
 			GString *string_cve;
 			GString *string_bugzilla;
 			ZifUpdateInfo *info;
@@ -2163,6 +2201,11 @@ backend_get_update_detail_thread (PkBackend *backend)
 					break;
 				}
 			}
+
+			/* format changelog */
+			changesets = zif_update_get_changelog (update);
+			if (changesets != NULL)
+				changelog_text = backend_get_changelog_text (changesets);
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
@@ -2171,13 +2214,16 @@ backend_get_update_detail_thread (PkBackend *backend)
 						  string_cve->str,
 						  PK_RESTART_ENUM_NONE,
 						  zif_update_get_description (update),
-						  NULL, //changelog,
+						  changelog_text,
 						  zif_update_get_state (update),
 						  zif_update_get_issued (update),
 						  NULL);
+			if (changesets != NULL)
+				g_ptr_array_unref (changesets);
 			g_ptr_array_unref (array);
 			g_string_free (string_cve, TRUE);
 			g_string_free (string_bugzilla, TRUE);
+			g_free (changelog_text);
 		}
 
 		g_object_unref (package);
