@@ -905,7 +905,9 @@ pk_service_pack_create_for_package_ids_async (PkServicePack *pack, const gchar *
 	state->type = PK_SERVICE_PACK_TYPE_INSTALL;
 
 	/* get deps */
-	pk_client_get_depends_async (pack->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), state->package_ids, TRUE,
+	pk_client_get_depends_async (pack->priv->client,
+				     pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
+				     state->package_ids, TRUE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 
@@ -952,7 +954,9 @@ pk_service_pack_get_updates_ready_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* get deps, TODO: use NEWEST? */
-	pk_client_get_depends_async (state->pack->priv->client, PK_FILTER_ENUM_NONE, state->package_ids, TRUE,
+	pk_client_get_depends_async (state->pack->priv->client,
+				     pk_bitfield_value (PK_FILTER_ENUM_NONE),
+				     state->package_ids, TRUE,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_depends_ready_cb, state);
 out:
@@ -1007,7 +1011,7 @@ pk_service_pack_create_for_updates_async (PkServicePack *pack, const gchar *file
 	state->package_ids_exclude = g_strdupv (package_ids_exclude);
 
 	/* get deps, TODO: use NEWEST? */
-	pk_client_get_updates_async (pack->priv->client, PK_FILTER_ENUM_NONE,
+	pk_client_get_updates_async (pack->priv->client, pk_bitfield_value (PK_FILTER_ENUM_NONE),
 				     state->cancellable, state->progress_callback, state->progress_user_data,
 				     (GAsyncReadyCallback) pk_service_pack_get_updates_ready_cb, state);
 

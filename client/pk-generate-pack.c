@@ -428,7 +428,7 @@ main (int argc, char *argv[])
 	if (!updates) {
 		/* TRANSLATORS: The package name is being matched up to available packages */
 		g_print ("%s\n", _("Finding package name."));
-		package_id = pk_console_resolve_package (client, PK_FILTER_ENUM_NONE, package, &error);
+		package_id = pk_console_resolve_package (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package, &error);
 		if (package_id == NULL) {
 			/* TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows */
 			g_print (_("Failed to find package '%s': %s"), package, error->message);
