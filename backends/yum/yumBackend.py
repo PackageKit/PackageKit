@@ -969,37 +969,37 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.message(MESSAGE_COULD_NOT_FIND_PACKAGE, "Could not find a match for package %s" % package_id)
                 continue
 
-            # should have only one...
-            for pkg_download in packs:
-                self._show_package(pkg_download, INFO_DOWNLOADING)
-                try:
-                    repo = self.yumbase.repos.getRepo(pkg_download.repoid)
-                except exceptions.IOError, e:
-                    self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
-                except Exception, e:
-                    self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
-                remote = pkg_download.returnSimple('relativepath')
-                local = os.path.basename(remote)
-                if not os.path.exists(directory):
-                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
-                    return
-                local = os.path.join(directory, local)
-                if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
-                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists", exit=False)
-                    return
-                # Disable cache otherwise things won't download
-                repo.cache = 0
-                pkg_download.localpath = local #Hack:To set the localpath we want
-                try:
-                    path = repo.getPackage(pkg_download)
+            # choose the first entry, as the same NEVRA package in multiple repos is fine
+            pkg_download = packs[0]
+            self._show_package(pkg_download, INFO_DOWNLOADING)
+            try:
+                repo = self.yumbase.repos.getRepo(pkg_download.repoid)
+            except exceptions.IOError, e:
+                self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+            except Exception, e:
+                self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            remote = pkg_download.returnSimple('relativepath')
+            local = os.path.basename(remote)
+            if not os.path.exists(directory):
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
+                return
+            local = os.path.join(directory, local)
+            if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists as %s" % local, exit=False)
+                return
+            # Disable cache otherwise things won't download
+            repo.cache = 0
+            pkg_download.localpath = local #Hack:To set the localpath we want
+            try:
+                path = repo.getPackage(pkg_download)
 
-                    # emit the file we downloaded
-                    package_id_tmp = self._pkg_to_id(pkg_download)
-                    self.files(package_id_tmp, path)
+                # emit the file we downloaded
+                package_id_tmp = self._pkg_to_id(pkg_download)
+                self.files(package_id_tmp, path)
 
-                except IOError, e:
-                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
-                    return
+            except IOError, e:
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Cannot write to file", exit=False)
+                return
             percentage += bump
 
         # in case we don't sum to 100
