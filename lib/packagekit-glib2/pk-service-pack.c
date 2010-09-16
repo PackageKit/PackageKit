@@ -49,7 +49,6 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
-#include <packagekit-glib2/pk-control-sync.h>
 
 #include "egg-debug.h"
 #include "egg-string.h"
@@ -147,7 +146,6 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 	gchar *type = NULL;
 	gchar *distro_id = NULL;
 	gchar *distro_id_us = NULL;
-	PkControl *control = NULL;
 
 	/* load the file */
 	file = g_key_file_new ();
@@ -183,28 +181,13 @@ pk_service_pack_check_metadata_file (const gchar *full_path, GError **error)
 		goto out;
 	}
 
-	/* get this system id */
-	control = pk_control_new ();
-	ret = pk_control_get_properties (control, NULL, &error_local);
-	if (!ret) {
-		egg_error ("Failed to contact PackageKit: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	/* get data */
-	g_object_get (control,
-		      "distro-id", &distro_id_us,
-		      NULL);
-
 	/* do we match? */
+	distro_id_us = pk_get_distro_id ();
 	ret = (g_strcmp0 (distro_id_us, distro_id) == 0);
 	if (!ret)
 		g_set_error (error, 1, 0, "distro id did not match %s == %s", distro_id_us, distro_id);
 
 out:
-	if (control != NULL)
-		g_object_unref (control);
 	g_key_file_free (file);
 	g_free (type);
 	g_free (distro_id);
@@ -467,8 +450,6 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 	GError *error = NULL;
 	GKeyFile *file = NULL;
 	gchar *data = NULL;
-	PkControl *control;
-	GError *error_local = NULL;
 
 	g_return_val_if_fail (state->filename != NULL, FALSE);
 	g_return_val_if_fail (state->type != PK_SERVICE_PACK_TYPE_UNKNOWN, FALSE);
@@ -476,18 +457,7 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 	file = g_key_file_new ();
 
 	/* get this system id */
-	control = pk_control_new ();
-	ret = pk_control_get_properties (control, NULL, &error_local);
-	if (!ret) {
-		egg_error ("Failed to contact PackageKit: %s", error_local->message);
-		g_error_free (error_local);
-		goto out;
-	}
-
-	/* get needed data */
-	g_object_get (control,
-		      "distro-id", &distro_id,
-		      NULL);
+	distro_id = pk_get_distro_id ();
 	if (distro_id == NULL)
 		goto out;
 	iso_time = pk_iso8601_present ();
@@ -518,7 +488,6 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 		goto out;
 	}
 out:
-	g_object_unref (control);
 	g_key_file_free (file);
 	g_free (data);
 	g_free (distro_id);

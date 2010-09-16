@@ -81,6 +81,7 @@ gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_iso8601_from_date			(const GDate	*date);
 GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
+gchar		*pk_get_distro_id			(void);
 
 G_END_DECLS
 

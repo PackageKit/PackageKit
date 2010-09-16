@@ -32,6 +32,7 @@
 #include <stdio.h>
 
 #include <string.h>
+#include <sys/utsname.h>
 
 #include <glib.h>
 #include <packagekit-glib2/pk-common.h>
@@ -162,4 +163,202 @@ pk_ptr_array_to_strv (GPtrArray *array)
 	}
 
 	return value;
+}
+
+/**
+ * pk_get_os_release:
+ *
+ * Return value: The current OS release, e.g. "7.2-RELEASE"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_get_distro_id_os_release (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0)
+		return g_strdup ("unknown");
+	return g_strdup (buf.release);
+}
+
+/**
+ * pk_get_machine_type:
+ *
+ * Return value: The current machine ID, e.g. "i386"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_get_distro_id_machine_type (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0)
+		return g_strdup ("unknown");
+	return g_strdup (buf.machine);
+}
+
+/**
+ * pk_get_distro_id:
+ *
+ * Return value: the distro-id, typically "distro;version;arch"
+ **/
+gchar *
+pk_get_distro_id (void)
+{
+	guint i;
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *arch = NULL;
+	gchar *version = NULL;
+	gchar **split = NULL;
+	gchar *distro = NULL;
+	gchar *distro_id = NULL;
+
+	/* The distro id property should have the
+	   format "distro;version;arch" as this is
+	   used to determine if a specific package
+	   can be installed on a certain machine.
+	   For instance, x86_64 packages cannot be
+	   installed on a i386 machine.
+	*/
+
+	/* we can't get arch from /etc */
+	arch = pk_get_distro_id_machine_type ();
+
+	/* check for fedora */
+	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Fedora release 8.92 (Rawhide) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("fedora;%s;%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for suse */
+	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
+	if (ret) {
+		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
+		g_strdelimit (contents, "()\n", ' ');
+
+		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("suse;%s-%s;%s", split[1], split[3], arch);
+		goto out;
+	}
+
+	/* check for meego */
+	ret = g_file_get_contents ("/etc/meego-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Meego release 1.0 (MeeGo) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("meego;%s;%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for foresight or foresight derivatives */
+	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Foresight Linux 2 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("foresight;%s;%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for PLD */
+	ret = g_file_get_contents ("/etc/pld-release", &contents, NULL, NULL);
+	if (ret) {
+		/* 2.99 PLD Linux (Th) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("pld;%s;%s", split[0], arch);
+		goto out;
+	}
+
+	/* check for Arch */
+	ret = g_file_test ("/etc/arch-release", G_FILE_TEST_EXISTS);
+	if (ret) {
+		/* complete! */
+		distro_id = g_strdup_printf ("arch;current;%s", arch);
+		goto out;
+	}
+
+	/* check for LSB */
+	ret = g_file_get_contents ("/etc/lsb-release", &contents, NULL, NULL);
+	if (ret) {
+		/* split by lines */
+		split = g_strsplit (contents, "\n", -1);
+		for (i=0; split[i] != NULL; i++) {
+			if (g_str_has_prefix (split[i], "DISTRIB_ID="))
+				distro = g_ascii_strdown (&split[i][11], -1);
+			if (g_str_has_prefix (split[i], "DISTRIB_RELEASE="))
+				version = g_ascii_strdown (&split[i][16], -1);
+		}
+
+		/* complete! */
+		distro_id = g_strdup_printf ("%s;%s;%s", distro, version, arch);
+		goto out;
+	}
+
+	/* check for Debian or Debian derivatives */
+	ret = g_file_get_contents ("/etc/debian_version", &contents, NULL, NULL);
+	if (ret) {
+		/* remove "\n": "squeeze/sid\n" */
+		g_strdelimit (contents, "\n", '\0');
+		/* removes leading and trailing whitespace */
+		g_strstrip (contents);
+
+		/* complete! */
+		distro_id = g_strdup_printf ("debian;%s;%s", contents, arch);
+		goto out;
+	}
+
+#ifdef __FreeBSD__
+	ret = TRUE;
+#endif
+	/* FreeBSD */
+	if (ret) {
+		/* we can't get version from /etc */
+		version = pk_get_distro_id_os_release ();
+		if (version == NULL)
+			goto out;
+
+		/* 7.2-RELEASE */
+		split = g_strsplit (version, "-", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("freebsd;%s;%s", split[0], arch);
+		goto out;
+	}
+out:
+	g_strfreev (split);
+	g_free (version);
+	g_free (distro);
+	g_free (arch);
+	g_free (contents);
+	return distro_id;
 }
