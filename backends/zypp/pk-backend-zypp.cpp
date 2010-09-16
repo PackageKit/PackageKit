@@ -546,6 +546,12 @@ backend_get_distro_upgrades_thread(PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
+	// refresh the repos before checking for updates
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	std::vector<zypp::parser::ProductFileData> result;
 	if (!zypp::parser::ProductFileReader::scanDir (zypp::functor::getAll (std::back_inserter (result)), "/etc/products.d")) {
 		return zypp_backend_finished_error (
@@ -977,6 +983,12 @@ static gboolean
 backend_install_packages_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+
+	// refresh the repos before installing packages
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
