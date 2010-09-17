@@ -87,6 +87,7 @@ Transaction::Transaction(const QString &tid, QObject *parent)
     } else {
         d->error = Client::NoError;
         Client::instance()->d_ptr->runningTransactions.insert(d->tid, this);
+        setHints(Client::instance()->d_ptr->hints);
     }
 
     connect(d->p, SIGNAL(Changed()),
