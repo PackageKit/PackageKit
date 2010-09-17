@@ -22,6 +22,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <pk-backend.h>
+#include <pk-backend-spawn.h>
 #include <unistd.h>
 #include <egg-debug.h>
 #include <string>
@@ -1878,6 +1879,47 @@ backend_get_mime_types (PkBackend *backend)
 	return g_strdup ("application/x-rpm");
 }
 
+/**
+ * backend_transaction_start:
+ */
+static void
+backend_transaction_start (PkBackend *backend)
+{
+	gchar *proxy_http;
+	gchar *proxy_ftp;
+	gchar *uri;
+
+	/* http_proxy */
+	proxy_http = pk_backend_get_proxy_http (backend);
+	if (!egg_strzero (proxy_http)) {
+		uri = pk_backend_spawn_convert_uri (proxy_http);
+		g_setenv ("http_proxy", uri, TRUE);
+		g_free (uri);
+	}
+
+	/* ftp_proxy */
+	proxy_ftp = pk_backend_get_proxy_ftp (backend);
+	if (!egg_strzero (proxy_ftp)) {
+		uri = pk_backend_spawn_convert_uri (proxy_ftp);
+		g_setenv ("ftp_proxy", uri, TRUE);
+		g_free (uri);
+	}
+
+	g_free (proxy_http);
+	g_free (proxy_ftp);
+}
+
+/**
+ * backend_transaction_stop:
+ */
+static void
+backend_transaction_stop (PkBackend *backend)
+{
+	/* unset proxy info for this transaction */
+	g_unsetenv ("http_proxy");
+	g_unsetenv ("ftp_proxy");
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, "
@@ -1921,7 +1963,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	backend_simulate_update_packages,	/* simulate_update_packages */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
+	backend_transaction_start,		/* transaction_start */
+	backend_transaction_stop		/* transaction_stop */
 );
 
