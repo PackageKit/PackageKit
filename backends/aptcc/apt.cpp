@@ -1450,7 +1450,7 @@ bool aptcc::runTransaction(vector<pair<pkgCache::PkgIterator, pkgCache::VerItera
 	OpTextProgress Prog(*_config);
 	int timeout = 10;
 	// TODO test this
-	while (Cache.Open(Prog, WithLock) == false) {
+	while (Cache.Open(&Prog, WithLock) == false) {
 		// failed to open cache, try checkDeps then..
 		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
 		if (WithLock == false || (timeout <= 0)) {
@@ -1601,7 +1601,8 @@ bool aptcc::installPackages(pkgCacheFile &Cache)
 	AcqPackageKitStatus Stat(this, m_backend, _cancel);
 
 	// get a fetcher
-	pkgAcquire fetcher(&Stat);
+	pkgAcquire fetcher;
+	fetcher.Setup(&Stat);
 
 	// Create the package manager and prepare to download
 	SPtr<pkgPackageManager> PM= _system->CreatePM(Cache);

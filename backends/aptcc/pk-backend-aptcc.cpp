@@ -402,7 +402,7 @@ backend_get_or_update_system_thread (PkBackend *backend)
 	OpTextProgress Prog(*_config);
 	int timeout = 10;
 	// TODO test this
-	while (Cache.Open(Prog, !getUpdates) == false) {
+	while (Cache.Open(&Prog, !getUpdates) == false) {
 		// failed to open cache, try checkDeps then..
 		// || Cache.CheckDeps(CmdL.FileSize() != 1) == false
 		if (getUpdates == true || (timeout <= 0)) {
@@ -607,7 +607,8 @@ backend_download_packages_thread (PkBackend *backend)
 	AcqPackageKitStatus Stat(m_apt, backend, _cancel);
 
 	// get a fetcher
-	pkgAcquire fetcher(&Stat);
+	pkgAcquire fetcher;
+	fetcher.Setup(&Stat);
 	string filelist;
 	gchar *pi;
 
@@ -747,7 +748,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 	// Rebuild the cache.
 	pkgCacheFile Cache;
 	OpTextProgress Prog(*_config);
-	if (Cache.BuildCaches(Prog, true) == false) {
+	if (Cache.BuildCaches(&Prog, true) == false) {
 		if (_error->PendingError() == true) {
 			show_errors(backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
 		}
