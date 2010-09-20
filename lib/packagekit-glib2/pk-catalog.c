@@ -530,12 +530,10 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	if (state->array_packages->len > 0) {
 		pk_catalog_do_resolve (state);
 		goto out;
-	}
-	if (state->array_files->len > 0) {
+	} else if (state->array_files->len > 0) {
 		pk_catalog_do_search_files (state);
 		goto out;
-	}
-	if (state->array_provides->len > 0) {
+	} else if (state->array_provides->len > 0) {
 		pk_catalog_do_what_provides (state);
 		goto out;
 	}
