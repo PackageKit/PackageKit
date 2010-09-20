@@ -2951,6 +2951,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _check_init(self, lazy_cache=False):
         '''Just does the caching tweaks'''
 
+        # this entire section can be cancelled
+        self.allow_cancel(True)
+
         # clear previous transaction data
         self.yumbase._tsInfo = None
 
