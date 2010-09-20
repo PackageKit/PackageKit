@@ -3351,7 +3351,7 @@ class PackageKitYumBase(yum.YumBase):
 
         # we have to send a message to the client
         if not root:
-            name = kwargs["name"]
+            name = "%s Volume #%s" %(kwargs["name"], kwargs["discnum"])
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,
