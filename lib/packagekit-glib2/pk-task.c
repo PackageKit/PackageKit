@@ -304,7 +304,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
-	PkError *error_code;
 	guint idx = 0;
 	guint i;
 	GPtrArray *array = NULL;
@@ -343,13 +342,11 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get exit code */
 	state->exit_enum = pk_results_get_exit_code (state->results);
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error_code = pk_results_get_error_code (state->results);
-		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
-				     "could not do simulate: %s", pk_error_get_details (error_code));
-		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		g_object_unref (error_code);
+		/* we 'fail' with success so the appication gets a
+		 * chance to process the PackageKit-specific
+		 * ErrorCode enumerated value and detail. */
+		state->ret = TRUE;
+		pk_task_generic_state_finish (state, NULL);
 		goto out;
 	}
 
