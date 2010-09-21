@@ -49,27 +49,27 @@ static gboolean _use_distro_upgrade = FALSE;
 static PkBitfield _filters = 0;
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	_progress_percentage = 0;
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
-static PkBitfield
-backend_get_groups (PkBackend *backend)
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY,
 		PK_GROUP_ENUM_GAMES,
@@ -78,10 +78,10 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
@@ -90,19 +90,19 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_mime_types:
+ * pk_backend_get_mime_types:
  */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup ("application/x-rpm;application/x-deb");
 }
 
 /**
- * backend_cancel_timeout:
+ * pk_backend_cancel_timeout:
  */
 static gboolean
-backend_cancel_timeout (gpointer data)
+pk_backend_cancel_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
@@ -117,25 +117,25 @@ backend_cancel_timeout (gpointer data)
 }
 
 /**
- * backend_cancel:
+ * pk_backend_cancel:
  */
-static void
-backend_cancel (PkBackend *backend)
+void
+pk_backend_cancel (PkBackend *backend)
 {
 	/* cancel the timeout */
 	if (_signal_timeout != 0) {
 		g_source_remove (_signal_timeout);
 
 		/* emulate that it takes us a few ms to cancel */
-		g_timeout_add (1500, backend_cancel_timeout, backend);
+		g_timeout_add (1500, pk_backend_cancel_timeout, backend);
 	}
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -152,10 +152,10 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	guint i;
 	guint len;
@@ -210,10 +210,10 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_distro_upgrades:
+ * pk_backend_get_distro_upgrades:
  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	if (!_use_distro_upgrade)
@@ -227,10 +227,10 @@ out:
 }
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	guint i;
 	guint len;
@@ -254,10 +254,10 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -268,10 +268,10 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_get_update_detail_timeout:
+ * pk_backend_get_update_detail_timeout:
  **/
 static gboolean
-backend_get_update_detail_timeout (gpointer data)
+pk_backend_get_update_detail_timeout (gpointer data)
 {
 	guint i;
 	guint len;
@@ -354,21 +354,21 @@ backend_get_update_detail_timeout (gpointer data)
 }
 
 /**
- * backend_get_update_detail:
+ * pk_backend_get_update_detail:
  */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	_package_ids = package_ids;
-	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
+	_signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, backend);
 }
 
 /**
- * backend_get_updates_timeout:
+ * pk_backend_get_updates_timeout:
  **/
 static gboolean
-backend_get_updates_timeout (gpointer data)
+pk_backend_get_updates_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 
@@ -400,10 +400,10 @@ backend_get_updates_timeout (gpointer data)
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
@@ -413,11 +413,11 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 		pk_backend_finished (backend);
 		return;
 	}
-	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
+	_signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, backend);
 }
 
 static gboolean
-backend_install_timeout (gpointer data)
+pk_backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	guint sub_percent;
@@ -454,10 +454,10 @@ backend_install_timeout (gpointer data)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	const gchar *license_agreement;
 	const gchar *eula_id;
@@ -528,14 +528,14 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	_signal_timeout = g_timeout_add (100, backend_install_timeout, backend);
+	_signal_timeout = g_timeout_add (100, pk_backend_install_timeout, backend);
 }
 
 /**
- * backend_install_signature:
+ * pk_backend_install_signature:
  */
-static void
-backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+void
+pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
@@ -553,10 +553,10 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
- * backend_refresh_cache_timeout:
+ * pk_backend_refresh_cache_timeout:
  */
 static gboolean
-backend_install_files_timeout (gpointer data)
+pk_backend_install_files_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	pk_backend_finished (backend);
@@ -564,21 +564,21 @@ backend_install_files_timeout (gpointer data)
 }
 
 /**
- * backend_install_files:
+ * pk_backend_install_files:
  */
-static void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	pk_backend_set_percentage (backend, 101);
-	_signal_timeout = g_timeout_add (2000, backend_install_files_timeout, backend);
+	_signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, backend);
 }
 
 /**
- * backend_refresh_cache_timeout:
+ * pk_backend_refresh_cache_timeout:
  */
 static gboolean
-backend_refresh_cache_timeout (gpointer data)
+pk_backend_refresh_cache_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
@@ -593,10 +593,10 @@ backend_refresh_cache_timeout (gpointer data)
 }
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	_progress_percentage = 0;
 
@@ -607,14 +607,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
+	_signal_timeout = g_timeout_add (500, pk_backend_refresh_cache_timeout, backend);
 }
 
 /**
- * backend_resolve_timeout:
+ * pk_backend_resolve_timeout:
  */
 static gboolean
-backend_resolve_timeout (gpointer data)
+pk_backend_resolve_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	guint i;
@@ -655,21 +655,21 @@ backend_resolve_timeout (gpointer data)
 }
 
 /**
- * backend_resolve:
+ * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	_filters = filters;
 	_package_ids = packages;
-	_signal_timeout = g_timeout_add (20, backend_resolve_timeout, backend);
+	_signal_timeout = g_timeout_add (20, pk_backend_resolve_timeout, backend);
 }
 
 /**
- * backend_rollback_timeout:
+ * pk_backend_rollback_timeout:
  */
 static gboolean
-backend_rollback_timeout (gpointer data)
+pk_backend_rollback_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 0) {
@@ -691,10 +691,10 @@ backend_rollback_timeout (gpointer data)
 
 
 /**
- * backend_rollback:
+ * pk_backend_rollback:
  */
-static void
-backend_rollback (PkBackend *backend, const gchar *transaction_id)
+void
+pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
 	/* allow testing error condition */
 	if (g_strcmp0 (transaction_id, "/397_eeecadad_data") == 0) {
@@ -706,14 +706,14 @@ backend_rollback (PkBackend *backend, const gchar *transaction_id)
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_signal_timeout = g_timeout_add (2000, backend_rollback_timeout, backend);
+	_signal_timeout = g_timeout_add (2000, pk_backend_rollback_timeout, backend);
 }
 
 /**
- * backend_remove_packages:
+ * pk_backend_remove_packages:
  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
@@ -721,10 +721,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
- * backend_search_details:
+ * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -735,10 +735,10 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_files:
+ * pk_backend_search_files:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -754,10 +754,10 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_groups:
+ * pk_backend_search_groups:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -771,10 +771,10 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_name_timeout:
+ * pk_backend_search_name_timeout:
  **/
 static gboolean
-backend_search_name_timeout (gpointer data)
+pk_backend_search_name_timeout (gpointer data)
 {
 	gchar *locale;
 	PkBackend *backend = (PkBackend *) data;
@@ -804,22 +804,22 @@ backend_search_name_timeout (gpointer data)
 }
 
 /**
- * backend_search_names:
+ * pk_backend_search_names:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	_signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
+	_signal_timeout = g_timeout_add (2000, pk_backend_search_name_timeout, backend);
 }
 
 /**
- * backend_update_packages_download_timeout:
+ * pk_backend_update_packages_download_timeout:
  **/
 static gboolean
-backend_update_packages_download_timeout (gpointer data)
+pk_backend_update_packages_download_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	guint sub;
@@ -897,10 +897,10 @@ backend_update_packages_download_timeout (gpointer data)
 }
 
 /**
- * backend_update_packages:
+ * pk_backend_update_packages:
  */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	const gchar *eula_id;
 	const gchar *license_agreement;
@@ -955,11 +955,11 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	_signal_timeout = g_timeout_add (200, backend_update_packages_download_timeout, backend);
+	_signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, backend);
 }
 
 static gboolean
-backend_update_system_timeout (gpointer data)
+pk_backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
@@ -1020,10 +1020,10 @@ backend_update_system_timeout (gpointer data)
 }
 
 /**
- * backend_update_system:
+ * pk_backend_update_system:
  */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -1032,14 +1032,14 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 	/* FIXME: support only_trusted */
 
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
-	_signal_timeout = g_timeout_add (100, backend_update_system_timeout, backend);
+	_signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, backend);
 }
 
 /**
- * backend_get_repo_list:
+ * pk_backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_repo_detail (backend, "fedora",
@@ -1054,10 +1054,10 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_repo_enable:
+ * pk_backend_repo_enable:
  */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
@@ -1080,10 +1080,10 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 }
 
 /**
- * backend_repo_set_data:
+ * pk_backend_repo_set_data:
  */
-static void
-backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+void
+pk_backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
@@ -1106,10 +1106,10 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 }
 
 /**
- * backend_what_provides_timeout:
+ * pk_backend_what_provides_timeout:
  */
 static gboolean
-backend_what_provides_timeout (gpointer data)
+pk_backend_what_provides_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
@@ -1145,14 +1145,14 @@ backend_what_provides_timeout (gpointer data)
 }
 
 /**
- * backend_what_provides:
+ * pk_backend_what_provides:
  */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	_progress_percentage = 0;
 	_values = values;
-	_signal_timeout = g_timeout_add (200, backend_what_provides_timeout, backend);
+	_signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, backend);
 	_filters = filters;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_set_allow_cancel (backend, TRUE);
@@ -1160,10 +1160,10 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 }
 
 /**
- * backend_get_packages:
+ * pk_backend_get_packages:
  */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -1173,10 +1173,10 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_download_packages:
+ * pk_backend_download_packages:
  */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	gchar *filename;
 
@@ -1202,10 +1202,10 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 }
 
 /**
- * backend_simulate_install_packages:
+ * pk_backend_simulate_install_packages:
  */
-static void
-backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -1237,10 +1237,10 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_transaction_start:
+ * pk_backend_transaction_start:
  */
-static void
-backend_transaction_start (PkBackend *backend)
+void
+pk_backend_transaction_start (PkBackend *backend)
 {
 	/* here you would lock the backend */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_AUTOREMOVE_IGNORED, "backend is crap");
@@ -1249,10 +1249,10 @@ backend_transaction_start (PkBackend *backend)
 }
 
 /**
- * backend_transaction_stop:
+ * pk_backend_transaction_stop:
  */
-static void
-backend_transaction_stop (PkBackend *backend)
+void
+pk_backend_transaction_stop (PkBackend *backend)
 {
 	/* here you would unlock the backend */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_CONFIG_FILES_CHANGED, "backend is crap");
@@ -1265,48 +1265,20 @@ backend_transaction_stop (PkBackend *backend)
 	 * needed to fire the transaction_stop() vfunc */
 }
 
-PK_BACKEND_OPTIONS (
-	"Dummy",				/* description */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
-	backend_get_mime_types,			/* get_mime_types */
-	backend_cancel,				/* cancel */
-	backend_download_packages,		/* download_packages */
-	NULL,					/* get_categories */
-	backend_get_depends,			/* get_depends */
-	backend_get_details,			/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
-	backend_get_files,			/* get_files */
-	backend_get_packages,			/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_files,			/* install_files */
-	backend_install_packages,		/* install_packages */
-	backend_install_signature,		/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_resolve,			/* resolve */
-	backend_rollback,			/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_files,			/* search_files */
-	backend_search_groups,			/* search_groups */
-	backend_search_names,			/* search_names */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	backend_what_provides,			/* what_provides */
-	NULL,					/* simulate_install_files */
-	backend_simulate_install_packages,	/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	backend_transaction_start,		/* transaction_start */
-	backend_transaction_stop		/* transaction_stop */
-);
+/**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Dummy");
+}
 
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return g_strdup ("Richard Hughes <richard@hughsie.com>");
+}
