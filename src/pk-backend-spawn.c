@@ -589,10 +589,11 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
-		egg_warning ("script exited without doing finished");
+		egg_debug ("script exited without doing finished, tidying up");
 		ret = pk_backend_has_set_error_code (backend_spawn->priv->backend);
 		if (!ret) {
-			pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			pk_backend_error_code (backend_spawn->priv->backend,
+					       PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "The backend exited unexpectedly. "
 					       "This is a serious error as the spawned backend did not complete the pending transaction.");
 		}
@@ -937,6 +938,11 @@ gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* set an error as the script will just exit without doing finished */
+	pk_backend_error_code (backend_spawn->priv->backend,
+			       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+			       "the script was killed as the action was cancelled");
 	pk_spawn_kill (backend_spawn->priv->spawn);
 	return TRUE;
 }
