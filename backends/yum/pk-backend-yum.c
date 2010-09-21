@@ -1069,9 +1069,10 @@ backend_get_mime_types (PkBackend *backend)
 static void
 backend_cancel (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	/* try to cancel the thread first */
 	g_cancellable_cancel (priv->cancellable);
-
+#endif
 	/* this feels bad... */
 	pk_backend_spawn_kill (priv->spawn);
 }
