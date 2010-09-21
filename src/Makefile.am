@@ -62,7 +62,6 @@ shared_SOURCES =					\
 	pk-transaction-extra.h				\
 	pk-backend.c					\
 	pk-backend.h					\
-	pk-backend-internal.h				\
 	pk-network.c					\
 	pk-network.h					\
 	pk-shared.c					\

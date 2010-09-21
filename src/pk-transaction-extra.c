@@ -41,7 +41,7 @@
 #include "pk-transaction-extra.h"
 #include "pk-shared.h"
 #include "pk-marshal.h"
-#include "pk-backend-internal.h"
+#include "pk-backend.h"
 #include "pk-lsof.h"
 #include "pk-proc.h"
 #include "pk-conf.h"

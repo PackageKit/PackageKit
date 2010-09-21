@@ -39,7 +39,7 @@
 #include "pk-engine.h"
 #include "pk-syslog.h"
 #include "pk-transaction.h"
-#include "pk-backend-internal.h"
+#include "pk-backend.h"
 #include "org.freedesktop.PackageKit.h"
 
 static guint exit_idle_time;

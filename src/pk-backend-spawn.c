@@ -45,7 +45,7 @@
 #include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-backend-internal.h"
+#include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-marshal.h"
 #include "pk-spawn.h"

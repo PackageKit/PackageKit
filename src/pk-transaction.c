@@ -60,7 +60,6 @@
 #include "pk-transaction-db.h"
 #include "pk-marshal.h"
 #include "pk-backend.h"
-#include "pk-backend-internal.h"
 #include "pk-inhibit.h"
 #include "pk-conf.h"
 #include "pk-shared.h"

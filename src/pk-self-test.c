@@ -26,7 +26,6 @@
 #include <glib/gstdio.h>
 
 #include "pk-backend.h"
-#include "pk-backend-internal.h"
 #include "pk-backend-spawn.h"
 #include "pk-cache.h"
 #include "pk-conf.h"

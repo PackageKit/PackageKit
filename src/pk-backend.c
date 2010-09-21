@@ -41,7 +41,6 @@
 #include "pk-conf.h"
 #include "pk-network.h"
 #include "pk-marshal.h"
-#include "pk-backend-internal.h"
 #include "pk-backend.h"
 #include "pk-conf.h"
 #include "pk-store.h"
@@ -89,7 +88,7 @@
  */
 #define PK_BACKEND_CANCEL_ACTION_TIMEOUT	2000 /* ms */
 
-struct _PkBackendPrivate
+struct PkBackendPrivate
 {
 	gboolean		 during_initialize;
 	gboolean		 finished;

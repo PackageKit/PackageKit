@@ -51,7 +51,6 @@
 #include "pk-cache.h"
 #include "pk-shared.h"
 #include "pk-backend.h"
-#include "pk-backend-internal.h"
 #include "pk-engine.h"
 #include "pk-transaction.h"
 #include "pk-transaction-db.h"
