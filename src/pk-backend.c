@@ -501,6 +501,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	GModule *handle;
 	gchar *path = NULL;
 	gboolean ret = TRUE;
+	gpointer func = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend_name != NULL, FALSE);
@@ -522,8 +523,72 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 		goto out;
 	}
 
-	/* is is correctly formed? */
-	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->priv->desc)) {
+	/* first check for the table of vfuncs */
+	ret = g_module_symbol (handle, "pk_backend_desc", (gpointer) &func);
+	if (ret) {
+		egg_warning ("using table-of-vfuncs compatibility mode");
+		backend->priv->desc = func;
+	} else {
+		/* then check for the new style exported functions */
+		ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&func);
+		if (ret) {
+			PkBackendDesc *desc;
+			PkBackendGetCompatStringFunc backend_vfunc;
+			desc = g_new0 (PkBackendDesc, 1);
+
+			/* connect up exported methods */
+			g_module_symbol (handle, "pk_backend_cancel", (gpointer *)&desc->cancel);
+			g_module_symbol (handle, "pk_backend_destroy", (gpointer *)&desc->destroy);
+			g_module_symbol (handle, "pk_backend_download_packages", (gpointer *)&desc->download_packages);
+			g_module_symbol (handle, "pk_backend_get_categories", (gpointer *)&desc->get_categories);
+			g_module_symbol (handle, "pk_backend_get_depends", (gpointer *)&desc->get_depends);
+			g_module_symbol (handle, "pk_backend_get_details", (gpointer *)&desc->get_details);
+			g_module_symbol (handle, "pk_backend_get_distro_upgrades", (gpointer *)&desc->get_distro_upgrades);
+			g_module_symbol (handle, "pk_backend_get_files", (gpointer *)&desc->get_files);
+			g_module_symbol (handle, "pk_backend_get_filters", (gpointer *)&desc->get_filters);
+			g_module_symbol (handle, "pk_backend_get_groups", (gpointer *)&desc->get_groups);
+			g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *)&desc->get_mime_types);
+			g_module_symbol (handle, "pk_backend_get_packages", (gpointer *)&desc->get_packages);
+			g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *)&desc->get_repo_list);
+			g_module_symbol (handle, "pk_backend_get_requires", (gpointer *)&desc->get_requires);
+			g_module_symbol (handle, "pk_backend_get_roles", (gpointer *)&desc->get_roles);
+			g_module_symbol (handle, "pk_backend_get_update_detail", (gpointer *)&desc->get_update_detail);
+			g_module_symbol (handle, "pk_backend_get_updates", (gpointer *)&desc->get_updates);
+			g_module_symbol (handle, "pk_backend_initialize", (gpointer *)&desc->initialize);
+			g_module_symbol (handle, "pk_backend_install_files", (gpointer *)&desc->install_files);
+			g_module_symbol (handle, "pk_backend_install_packages", (gpointer *)&desc->install_packages);
+			g_module_symbol (handle, "pk_backend_install_signature", (gpointer *)&desc->install_signature);
+			g_module_symbol (handle, "pk_backend_refresh_cache", (gpointer *)&desc->refresh_cache);
+			g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
+			g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
+			g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
+			g_module_symbol (handle, "pk_backend_resolve", (gpointer *)&desc->resolve);
+			g_module_symbol (handle, "pk_backend_rollback", (gpointer *)&desc->rollback);
+			g_module_symbol (handle, "pk_backend_search_details", (gpointer *)&desc->search_details);
+			g_module_symbol (handle, "pk_backend_search_files", (gpointer *)&desc->search_files);
+			g_module_symbol (handle, "pk_backend_search_groups", (gpointer *)&desc->search_groups);
+			g_module_symbol (handle, "pk_backend_search_names", (gpointer *)&desc->search_names);
+			g_module_symbol (handle, "pk_backend_simulate_install_files", (gpointer *)&desc->simulate_install_files);
+			g_module_symbol (handle, "pk_backend_simulate_install_packages", (gpointer *)&desc->simulate_install_packages);
+			g_module_symbol (handle, "pk_backend_simulate_remove_packages", (gpointer *)&desc->simulate_remove_packages);
+			g_module_symbol (handle, "pk_backend_simulate_update_packages", (gpointer *)&desc->simulate_update_packages);
+			g_module_symbol (handle, "pk_backend_transaction_start", (gpointer *)&desc->transaction_start);
+			g_module_symbol (handle, "pk_backend_transaction_stop", (gpointer *)&desc->transaction_stop);
+			g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
+			g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
+			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
+
+			/* get old static string data */
+			g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
+			desc->author = backend_vfunc (backend);
+			g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&backend_vfunc);
+			desc->description = backend_vfunc (backend);
+
+			/* make available */
+			backend->priv->desc = desc;
+		}
+	}
+	if (!ret) {
 		g_module_close (handle);
 		egg_warning ("could not find description in plugin %s, not loading", backend_name);
 		ret = FALSE;
@@ -2085,27 +2150,20 @@ pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit_enum)
  *
  * It is *not* called for non-threaded backends, as multiple processes
  * would be inherently racy.
- *
- * Return value: %TRUE for success.
  */
-static gboolean
+void
 pk_backend_transaction_start (PkBackend *backend)
 {
-	gboolean ret = TRUE;
-
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_if_fail (PK_IS_BACKEND (backend));
 
 	/* no transaction setup is perfectly fine */
 	if (backend->priv->desc->transaction_start == NULL) {
 		egg_debug ("no transaction start vfunc");
-		goto out;
+		return;
 	}
 
 	/* run the transaction setup */
 	backend->priv->desc->transaction_start (backend);
-	ret = !pk_backend_has_set_error_code (backend);
-out:
-	return ret;
 }
 
 /**
@@ -2117,7 +2175,7 @@ out:
  * This method has no return value as the ErrorCode should have already
  * been set.
  */
-static void
+void
 pk_backend_transaction_stop (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
@@ -2435,7 +2493,6 @@ gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->desc != NULL, NULL);
 	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return g_strdup (backend->priv->name);
 }

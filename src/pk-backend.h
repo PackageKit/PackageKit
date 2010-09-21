@@ -91,6 +91,7 @@ gchar		*pk_backend_get_description		(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_backend_get_author			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
+typedef gchar	*(*PkBackendGetCompatStringFunc)	(PkBackend	*backend);
 PkBitfield	 pk_backend_get_groups			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_filters			(PkBackend	*backend);
 PkBitfield	 pk_backend_get_roles			(PkBackend	*backend);
@@ -103,6 +104,10 @@ void		pk_backend_cancel			(PkBackend	*backend);
 void		pk_backend_download_packages		(PkBackend	*backend,
 							 gchar		**package_ids,
 							 const gchar	*directory);
+void		pk_backend_initialize			(PkBackend	*backend);
+void		pk_backend_destroy			(PkBackend	*backend);
+void		pk_backend_transaction_start		(PkBackend	*backend);
+void		pk_backend_transaction_stop		(PkBackend	*backend);
 void		pk_backend_get_categories		(PkBackend	*backend);
 void		pk_backend_get_depends			(PkBackend	*backend,
 							 PkBitfield	 filters,
@@ -455,6 +460,7 @@ typedef struct {
 	gpointer	padding[8];
 } PkBackendDesc;
 
+/* this is deprecated */
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_groups, get_filters, get_roles, \
 			   get_mime_types, cancel, download_packages, get_categories, get_depends,	\
 			   get_details, get_distro_upgrades, get_files, get_packages, get_repo_list,	\
