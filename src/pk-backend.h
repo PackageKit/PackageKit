@@ -24,6 +24,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gmodule.h>
 
 /* these include the includes the backends should be using */
 #include <packagekit-glib2/pk-enum.h>
