@@ -938,6 +938,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -992,6 +993,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_packages_async);
 
@@ -1049,6 +1051,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_remove_packages_async);
 
@@ -1104,6 +1107,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_files_async);
 
@@ -1160,6 +1164,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_system_async);
 
@@ -1209,6 +1214,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1261,6 +1267,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1313,6 +1320,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1365,6 +1373,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1417,6 +1426,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1468,6 +1478,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1518,6 +1529,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1569,6 +1581,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1620,6 +1633,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1672,6 +1686,7 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1724,6 +1739,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1776,6 +1792,7 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1830,6 +1847,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1882,6 +1900,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1931,6 +1950,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1980,6 +2000,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2030,6 +2051,7 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2080,6 +2102,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2131,6 +2154,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 

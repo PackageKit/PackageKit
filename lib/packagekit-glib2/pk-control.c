@@ -277,6 +277,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_tid_async);
 
@@ -422,6 +423,7 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_suggest_daemon_quit_async);
 
@@ -571,6 +573,7 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_daemon_state_async);
 
@@ -719,6 +722,7 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_proxy_async);
 
@@ -868,6 +872,7 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_root_async);
 
@@ -1018,6 +1023,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_transaction_list_async);
 
@@ -1175,6 +1181,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_time_since_action_async);
 
@@ -1334,6 +1341,7 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_can_authorize_async);
 
@@ -1740,6 +1748,7 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_properties_async);
 
