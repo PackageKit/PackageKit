@@ -680,6 +680,109 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 }
 
 /**
+ * pk_transaction_process_script:
+ **/
+static void
+pk_transaction_process_script (PkTransaction *transaction, const gchar *filename)
+{
+	GFile *file = NULL;
+	GFileInfo *info = NULL;
+	guint file_uid;
+	gchar *command;
+	gint exit_status = 0;
+	gboolean ret;
+	GError *error = NULL;
+
+	/* get content type for file */
+	file = g_file_new_for_path (filename);
+	info = g_file_query_info (file,
+				  G_FILE_ATTRIBUTE_UNIX_UID ","
+				  G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE,
+				  G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
+	if (info == NULL) {
+		egg_warning ("failed to get info: %s", error->message);
+		goto out;
+	}
+
+	/* check is executable */
+	ret = g_file_info_get_attribute_boolean (info, G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE);
+	if (!ret) {
+		egg_warning ("%s is not executable", filename);
+		goto out;
+	}
+
+	/* check is owned by the correct user */
+	file_uid = g_file_info_get_attribute_uint32 (info, G_FILE_ATTRIBUTE_UNIX_UID);
+	if (file_uid != 0) {
+		egg_warning ("%s is not owned by the root user", filename);
+		goto out;
+	}
+
+	/* format the argument list */
+	command = g_strdup_printf ("%s %s NOTAPISTABLE",
+				   filename,
+				   pk_role_enum_to_string (transaction->priv->role));
+
+	/* run the command, but don't exit if fails */
+	ret = g_spawn_command_line_sync (command, NULL, NULL, &exit_status, &error);
+	if (!ret) {
+		egg_warning ("failed to spawn %s [%i]: %s", command, exit_status, error->message);
+		g_error_free (error);
+	} else {
+		egg_debug ("ran %s", command);
+	}
+
+out:
+	g_free (command);
+	if (info != NULL)
+		g_object_unref (info);
+	if (file != NULL)
+		g_object_unref (file);
+}
+
+/**
+ * pk_transaction_process_scripts:
+ *
+ * Run all scripts in a given directory
+ **/
+static void
+pk_transaction_process_scripts (PkTransaction *transaction, const gchar *location)
+{
+	GError *error = NULL;
+	gchar *filename;
+	gchar *dirname;
+	const gchar *file;
+	GDir *dir;
+
+	/* get location to search */
+	dirname = g_build_filename (SYSCONFDIR, "PackageKit", "events", location, NULL);
+	dir = g_dir_open (dirname, 0, &error);
+	if (dir == NULL) {
+		egg_warning ("Failed to open %s: %s", dirname, error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* run scripts */
+	file = g_dir_read_name (dir);
+	while (file != NULL) {
+		filename = g_build_filename (dirname, file, NULL);
+
+		/* we put this here */
+		if (g_strcmp0 (file, "README") != 0) {
+			pk_transaction_process_script (transaction, filename);
+		}
+
+		g_free (filename);
+		file = g_dir_read_name (dir);
+	}
+out:
+	if (dir != NULL)
+		g_dir_close (dir);
+	g_free (dirname);
+}
+
+/**
  * pk_transaction_finished_cb:
  **/
 static void
@@ -844,6 +947,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 		/* clear the firmware requests directory */
 		pk_transaction_extra_clear_firmware_requests (transaction->priv->transaction_extra);
 	}
+
+	/* do the post-transaction.d scripts */
+	pk_transaction_process_scripts (transaction, "post-transaction.d");
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
@@ -1860,6 +1966,9 @@ pk_transaction_run (PkTransaction *transaction)
 	gboolean ret;
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* do the pre-transaction.d scripts */
+	pk_transaction_process_scripts (transaction, "pre-transaction.d");
 
 	ret = pk_transaction_set_running (transaction);
 	return ret;
