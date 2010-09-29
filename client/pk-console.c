@@ -689,20 +689,28 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		goto out;
 	}
 
+	/* get the role */
+	g_object_get (G_OBJECT(results), "role", &role, NULL);
+
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+
+		/* print an error */
+		if (role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
+		    pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE) {
+			/* TRANSLATORS: the user asked to update everything, but there is nothing that can be updated */
+			g_print ("%s\n", _("There are no packages to update."));
+		} else {
+			/* TRANSLATORS: the transaction failed in a way we could not expect */
+			g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		}
 
 		/* special case */
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE)
 			retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		goto out;
 	}
-
-	/* get the role */
-	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* get the sack */
 	sack = pk_results_get_package_sack (results);
