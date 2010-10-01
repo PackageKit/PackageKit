@@ -1638,7 +1638,6 @@ pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 	gchar *filename = NULL;
 	gchar **groups = NULL;
 	gchar *name = NULL;
-	gchar *proxy = NULL;
 	gchar **split = NULL;
 	guint i;
 	guint last_version = 0;
@@ -1651,15 +1650,6 @@ pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 	/* download, then parse */
 	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 2);
-
-	/* set proxy */
-	proxy = pk_backend_get_proxy_http (backend);
-	ret = zif_download_set_proxy (priv->download, proxy, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "failed to set proxy: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
 
 	/* download new file */
 	filename = g_build_filename ("/var/cache/PackageKit", "releases.txt", NULL);
@@ -1735,7 +1725,6 @@ out:
 	g_free (distro_id);
 	g_free (filename);
 	g_free (name);
-	g_free (proxy);
 	if (file != NULL)
 		g_key_file_free (file);
 	g_strfreev (groups);
