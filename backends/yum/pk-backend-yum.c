@@ -518,7 +518,7 @@ pk_backend_search_thread (PkBackend *backend)
 
 	/* get default store_array */
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -532,7 +532,7 @@ pk_backend_search_thread (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 
 	/* do get action */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
@@ -599,7 +599,7 @@ pk_backend_search_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1124,7 +1124,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	/* find all the packages */
 	packages = g_ptr_array_new ();
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1280,7 +1280,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, 0, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, 0, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1381,7 +1381,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1466,9 +1466,9 @@ pk_backend_get_details_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	if (backend_is_all_installed (package_ids))
+	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1783,9 +1783,9 @@ pk_backend_get_files_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	if (backend_is_all_installed (package_ids))
+	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1987,7 +1987,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 
 	/* get updates */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	array = zif_store_array_get_updates (store_array, packages, state_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get updates: %s\n", error->message);
@@ -2059,7 +2059,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 	pk_backend_profile ("get updateinfo");
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* done */
 	pk_backend_set_percentage (backend, 100);
@@ -2225,7 +2225,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			/* format changelog */
 			changesets = zif_update_get_changelog (update);
 			if (changesets != NULL)
-				changelog_text = backend_get_changelog_text (changesets);
+				changelog_text = pk_backend_get_changelog_text (changesets);
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
@@ -2406,7 +2406,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 
 	/* clean all the repos */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	ret = zif_store_array_clean (store_array, state_local, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to clean: %s\n", error->message);
@@ -2871,7 +2871,7 @@ pk_backend_get_categories_thread (PkBackend *backend)
 
 	/* get sorted list of unique categories */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	array = zif_store_array_get_categories (stores, state_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_LIST_INVALID, "failed to add get categories: %s", error->message);
