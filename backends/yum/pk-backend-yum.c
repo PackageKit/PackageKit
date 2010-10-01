@@ -2755,16 +2755,6 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabl
 }
 
 /**
- * pk_backend_repo_set_data:
- */
-void
-pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
-{
-	/* no operation */
-	pk_backend_finished (backend);
-}
-
-/**
  * pk_backend_what_provides:
  */
 void
