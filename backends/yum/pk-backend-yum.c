@@ -964,7 +964,7 @@ pk_backend_get_groups (PkBackend *backend)
 	PkBitfield groups = 0;
 
 	/* it seems some people are not ready for the awesomeness */
-	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
+	if (!pk_bitfield_contain (priv->use_zif, PK_ROLE_ENUM_GET_CATEGORIES)) {
 		groups = pk_bitfield_from_enums (
 			PK_GROUP_ENUM_COLLECTIONS,
 			PK_GROUP_ENUM_NEWEST,
