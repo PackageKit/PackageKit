@@ -1869,16 +1869,14 @@ pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-	/* check if we can use zif */
-	if (priv->use_zif) {
-		pk_backend_thread_create (backend, pk_backend_get_files_thread);
+	/* it seems some people are not ready for the awesomeness */
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
+		g_free (package_ids_temp);
 		return;
 	}
-
-	/* fall back to spawning */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
-	g_free (package_ids_temp);
+	pk_backend_thread_create (backend, pk_backend_get_files_thread);
 }
 
 /**
@@ -2264,7 +2262,7 @@ void
 pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (TRUE || !pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *package_ids_temp;
 		package_ids_temp = pk_package_ids_to_string (package_ids);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
