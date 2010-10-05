@@ -440,7 +440,7 @@ AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module
 if test x$enable_gtk_module = xyes; then
 	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK2, gtk+-2.0 >= 2.14.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module_gtk2=yes, build_gtk_module_gtk2=no)
-	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK3, gtk+-3.0 pangoft2 fontconfig dbus-glib-1,
+	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK3, gtk+-3.0 >= 2.91.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module_gtk3=yes, build_gtk_module_gtk3=no)
 	# if either are true, visit the gtk-module directory
 	if test $build_gtk_module_gtk2 = "yes" -o $build_gtk_module_gtk3 = "yes"; then
