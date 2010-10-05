@@ -3,7 +3,7 @@ AC_PREREQ(2.63)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
-m4_define([pk_micro_version], [9])
+m4_define([pk_micro_version], [10])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -37,7 +37,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=14
-LT_REVISION=3
+LT_REVISION=4
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -666,7 +666,7 @@ if test x$enable_yum = xyes; then
 	AC_ARG_ENABLE(zif, AS_HELP_STRING([--enable-zif],[Build ZIF experimental code]),
 		      enable_zif=$enableval,enable_zif=yes)
 	if test x$enable_zif = xyes; then
-		PKG_CHECK_MODULES(ZIF, zif,
+		PKG_CHECK_MODULES(ZIF, zif >= 0.1.1,
 			          build_zif=yes, build_zif=no)
 	fi
 	if test "x$build_zif" = "xyes"; then

@@ -39,7 +39,7 @@ typedef struct {
 	PkBackendSpawn	*spawn;
 	GFileMonitor	*monitor;
 	GCancellable	*cancellable;
-	gboolean	 use_zif;
+	PkBitfield	 use_zif;
 	guint		 signal_finished;
 	guint		 signal_status;
 #ifdef HAVE_ZIF
@@ -58,10 +58,29 @@ typedef struct {
 static PkBackendYumPrivate *priv;
 
 /**
- * backend_stderr_cb:
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("YUM (and optionally ZIF)");
+}
+
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return g_strdup ("Tim Lauridsen <timlau@fedoraproject.org>, "
+			 "Richard Hughes <richard@hughsie.com>");
+}
+
+/**
+ * pk_backend_stderr_cb:
  */
 static gboolean
-backend_stderr_cb (PkBackend *backend, const gchar *output)
+pk_backend_stderr_cb (PkBackend *backend, const gchar *output)
 {
 	/* unsigned rpm, this will be picked up by yum and and exception will be thrown */
 	if (strstr (output, "NOKEY") != NULL)
@@ -74,19 +93,19 @@ backend_stderr_cb (PkBackend *backend, const gchar *output)
 }
 
 /**
- * backend_stdout_cb:
+ * pk_backend_stdout_cb:
  */
 static gboolean
-backend_stdout_cb (PkBackend *backend, const gchar *output)
+pk_backend_stdout_cb (PkBackend *backend, const gchar *output)
 {
 	return TRUE;
 }
 
 /**
- * backend_yum_repos_changed_cb:
+ * pk_backend_yum_repos_changed_cb:
  **/
 static void
-backend_yum_repos_changed_cb (GFileMonitor *monitor_, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
+pk_backend_yum_repos_changed_cb (GFileMonitor *monitor_, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
 {
 	gchar *filename;
 
@@ -104,22 +123,22 @@ out:
 #ifdef HAVE_ZIF
 
 static void
-backend_state_percentage_changed_cb (ZifState *state, guint percentage, PkBackend *backend)
+pk_backend_state_percentage_changed_cb (ZifState *state, guint percentage, PkBackend *backend)
 {
 	pk_backend_set_percentage (backend, percentage);
 }
 
 static void
-backend_state_subpercentage_changed_cb (ZifState *state, guint subpercentage, PkBackend *backend)
+pk_backend_state_subpercentage_changed_cb (ZifState *state, guint subpercentage, PkBackend *backend)
 {
 	pk_backend_set_sub_percentage (backend, subpercentage);
 }
 
 /**
- * backend_profile:
+ * pk_backend_profile:
  */
 static void
-backend_profile (const gchar *title)
+pk_backend_profile (const gchar *title)
 {
 	gdouble elapsed;
 
@@ -133,10 +152,10 @@ out:
 }
 
 /**
- * backend_is_all_installed:
+ * pk_backend_is_all_installed:
  */
 static gboolean
-backend_is_all_installed (gchar **package_ids)
+pk_backend_is_all_installed (gchar **package_ids)
 {
 	guint i;
 	gboolean ret = TRUE;
@@ -153,10 +172,10 @@ backend_is_all_installed (gchar **package_ids)
 #endif
 
 /**
- * backend_transaction_start:
+ * pk_backend_transaction_start:
  */
-static void
-backend_transaction_start (PkBackend *backend)
+void
+pk_backend_transaction_start (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret = FALSE;
@@ -231,10 +250,10 @@ out:
 }
 
 /**
- * backend_transaction_stop:
+ * pk_backend_transaction_stop:
  */
-static void
-backend_transaction_stop (PkBackend *backend)
+void
+pk_backend_transaction_stop (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -254,14 +273,14 @@ out:
 
 #ifdef HAVE_ZIF
 /**
- * backend_filter_package_array_newest:
+ * pk_backend_filter_package_array_newest:
  *
  * This function needs to scale well, and be fast to process 50,000 packages in
  * less than one second. If it looks overcomplicated, it's because it needs to
  * be O(n) not O(n*n).
  **/
 static gboolean
-backend_filter_package_array_newest (GPtrArray *array)
+pk_backend_filter_package_array_newest (GPtrArray *array)
 {
 	gchar **split;
 	const gchar *package_id;
@@ -315,10 +334,10 @@ backend_filter_package_array_newest (GPtrArray *array)
 }
 
 /**
- * backend_filter_package_array:
+ * pk_backend_filter_package_array:
  **/
 static GPtrArray *
-backend_filter_package_array (GPtrArray *array, PkBitfield filters)
+pk_backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 {
 	guint i;
 	ZifPackage *package;
@@ -381,16 +400,16 @@ backend_filter_package_array (GPtrArray *array, PkBitfield filters)
 
 	/* do newest filtering */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NEWEST))
-		backend_filter_package_array_newest (result);
+		pk_backend_filter_package_array_newest (result);
 
 	return result;
 }
 
 /**
- * backend_emit_package_array:
+ * pk_backend_emit_package_array:
  **/
 static gboolean
-backend_emit_package_array (PkBackend *backend, GPtrArray *array, ZifState *state)
+pk_backend_emit_package_array (PkBackend *backend, GPtrArray *array, ZifState *state)
 {
 	guint i;
 	gboolean installed;
@@ -425,10 +444,10 @@ backend_emit_package_array (PkBackend *backend, GPtrArray *array, ZifState *stat
 }
 
 /**
- * backend_error_handler_cb:
+ * pk_backend_error_handler_cb:
  */
 static gboolean
-backend_error_handler_cb (const GError *error, PkBackend *backend)
+pk_backend_error_handler_cb (const GError *error, PkBackend *backend)
 {
 	/* emit a warning, this isn't fatal */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "%s", error->message);
@@ -436,10 +455,10 @@ backend_error_handler_cb (const GError *error, PkBackend *backend)
 }
 
 /**
- * backend_get_default_store_array_for_filter:
+ * pk_backend_get_default_store_array_for_filter:
  */
 static GPtrArray *
-backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield filters, ZifState *state, GError **error)
+pk_backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield filters, ZifState *state, GError **error)
 {
 	GPtrArray *store_array;
 	ZifStore *store;
@@ -474,10 +493,10 @@ out:
 #endif
 
 /**
- * backend_search_thread:
+ * pk_backend_search_thread:
  */
 static gboolean
-backend_search_thread (PkBackend *backend)
+pk_backend_search_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -499,7 +518,7 @@ backend_search_thread (PkBackend *backend)
 
 	/* get default store_array */
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -513,7 +532,7 @@ backend_search_thread (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 
 	/* do get action */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES) {
@@ -580,7 +599,7 @@ backend_search_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -595,7 +614,7 @@ backend_search_thread (PkBackend *backend)
 
 	/* emit */
 	state_local = zif_state_get_child (priv->state);
-	backend_emit_package_array (backend, result, state_local);
+	pk_backend_emit_package_array (backend, result, state_local);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -615,10 +634,10 @@ out:
 }
 
 /**
- * backend_enable_media_repo:
+ * pk_backend_enable_media_repo:
  */
 static void
-backend_enable_media_repo (gboolean enabled)
+pk_backend_enable_media_repo (gboolean enabled)
 {
 #ifdef HAVE_ZIF
 	ZifStoreRemote *repo = NULL;
@@ -684,10 +703,10 @@ out:
 }
 
 /**
- * backend_mount_add:
+ * pk_backend_mount_add:
  */
 static void
-backend_mount_add (GMount *mount, gpointer user_data)
+pk_backend_mount_add (GMount *mount, gpointer user_data)
 {
 	GFile *root;
 	GFile *repo;
@@ -725,34 +744,34 @@ out:
 }
 
 /**
- * backend_finished_cb:
+ * pk_backend_finished_cb:
  **/
 static void
-backend_finished_cb (PkBackend *backend, PkExitEnum exit_enum, gpointer user_data)
+pk_backend_finished_cb (PkBackend *backend, PkExitEnum exit_enum, gpointer user_data)
 {
 	/* disable media repo */
-	backend_enable_media_repo (FALSE);
+	pk_backend_enable_media_repo (FALSE);
 }
 
 /**
- * backend_status_changed_cb:
+ * pk_backend_status_changed_cb:
  **/
 static void
-backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer user_data)
+pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer user_data)
 {
 	if (status != PK_STATUS_ENUM_WAIT)
 		return;
 
 	/* enable media repo */
-	backend_enable_media_repo (TRUE);
+	pk_backend_enable_media_repo (TRUE);
 }
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	gboolean ret;
 	GFile *file = NULL;
@@ -760,6 +779,7 @@ backend_initialize (PkBackend *backend)
 	GKeyFile *key_file = NULL;
 	gchar *config_file = NULL;
 	GList *mounts;
+	gchar *use_zif = NULL;
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);
@@ -767,22 +787,22 @@ backend_initialize (PkBackend *backend)
 	/* connect to finished, so we can clean up */
 	priv->signal_finished =
 		g_signal_connect (backend, "finished",
-				  G_CALLBACK (backend_finished_cb), NULL);
+				  G_CALLBACK (pk_backend_finished_cb), NULL);
 	priv->signal_status =
 		g_signal_connect (backend, "status-changed",
-				  G_CALLBACK (backend_status_changed_cb), NULL);
+				  G_CALLBACK (pk_backend_status_changed_cb), NULL);
 
 	egg_debug ("backend: initialize");
 	priv->spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_filter_stderr (priv->spawn, backend_stderr_cb);
-	pk_backend_spawn_set_filter_stdout (priv->spawn, backend_stdout_cb);
+	pk_backend_spawn_set_filter_stderr (priv->spawn, pk_backend_stderr_cb);
+	pk_backend_spawn_set_filter_stdout (priv->spawn, pk_backend_stdout_cb);
 	pk_backend_spawn_set_name (priv->spawn, "yum");
 	pk_backend_spawn_set_allow_sigkill (priv->spawn, FALSE);
 
 	/* coldplug the mounts */
 	priv->volume_monitor = g_volume_monitor_get ();
 	mounts = g_volume_monitor_get_mounts (priv->volume_monitor);
-	g_list_foreach (mounts, (GFunc) backend_mount_add, NULL);
+	g_list_foreach (mounts, (GFunc) pk_backend_mount_add, NULL);
 	g_list_foreach (mounts, (GFunc) g_object_unref, NULL);
 	g_list_free (mounts);
 
@@ -790,7 +810,7 @@ backend_initialize (PkBackend *backend)
 	file = g_file_new_for_path (YUM_REPOS_DIRECTORY);
 	priv->monitor = g_file_monitor_directory (file, G_FILE_MONITOR_NONE, NULL, &error);
 	if (priv->monitor != NULL) {
-		g_signal_connect (priv->monitor, "changed", G_CALLBACK (backend_yum_repos_changed_cb), backend);
+		g_signal_connect (priv->monitor, "changed", G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 	} else {
 		egg_warning ("failed to setup monitor: %s", error->message);
 		g_error_free (error);
@@ -807,11 +827,15 @@ backend_initialize (PkBackend *backend)
 		goto out;
 	}
 
-#ifdef HAVE_ZIF
+	#ifdef HAVE_ZIF
 	/* it seems some people are not ready for the awesomeness */
-	priv->use_zif = g_key_file_get_boolean (key_file, "Backend", "UseZif", NULL);
-	if (!priv->use_zif)
-		goto out;
+	use_zif = g_key_file_get_string (key_file, "Backend", "UseZif", NULL);
+	if (use_zif != NULL) {
+		priv->use_zif = pk_role_bitfield_from_string (use_zif);
+		if (priv->use_zif == 0)
+			egg_warning ("failed to parse UseZif '%s'", use_zif);
+	}
+	egg_debug ("UseZif=%s (%i)", use_zif, (gint)priv->use_zif);
 
 	/* use a timer for profiling */
 	priv->timer = g_timer_new ();
@@ -820,15 +844,15 @@ backend_initialize (PkBackend *backend)
 	zif_init ();
 
 	/* profile */
-	backend_profile ("zif init");
+	pk_backend_profile ("zif init");
 
 	/* TODO: hook up errors */
 	priv->cancellable = g_cancellable_new ();
 
 	/* ZifState */
 	priv->state = zif_state_new ();
-	g_signal_connect (priv->state, "percentage-changed", G_CALLBACK (backend_state_percentage_changed_cb), backend);
-	g_signal_connect (priv->state, "subpercentage-changed", G_CALLBACK (backend_state_subpercentage_changed_cb), backend);
+	g_signal_connect (priv->state, "percentage-changed", G_CALLBACK (pk_backend_state_percentage_changed_cb), backend);
+	g_signal_connect (priv->state, "subpercentage-changed", G_CALLBACK (pk_backend_state_subpercentage_changed_cb), backend);
 
 	/* ZifConfig */
 	priv->config = zif_config_new ();
@@ -840,7 +864,7 @@ backend_initialize (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("read config_file");
+	pk_backend_profile ("read config_file");
 
 	/* ZifDownload */
 	priv->download = zif_download_new ();
@@ -852,7 +876,7 @@ backend_initialize (PkBackend *backend)
 	priv->store_local = zif_store_local_new ();
 
 	/* profile */
-	backend_profile ("read local store");
+	pk_backend_profile ("read local store");
 
 	/* ZifRepos */
 	priv->repos = zif_repos_new ();
@@ -864,7 +888,7 @@ backend_initialize (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("read repos");
+	pk_backend_profile ("read repos");
 
 	/* ZifGroups */
 	priv->groups = zif_groups_new ();
@@ -876,11 +900,12 @@ backend_initialize (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("read groups");
+	pk_backend_profile ("read groups");
 #else
 	priv->use_zif = FALSE;
 #endif
 out:
+	g_free (use_zif);
 	g_free (config_file);
 	if (key_file != NULL)
 		g_key_file_free (key_file);
@@ -889,11 +914,11 @@ out:
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 	egg_debug ("backend: destroy");
 	g_object_unref (priv->spawn);
@@ -925,10 +950,10 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
-static PkBitfield
-backend_get_groups (PkBackend *backend)
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	GError *error = NULL;
@@ -939,7 +964,7 @@ backend_get_groups (PkBackend *backend)
 	PkBitfield groups = 0;
 
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, PK_ROLE_ENUM_GET_CATEGORIES)) {
 		groups = pk_bitfield_from_enums (
 			PK_GROUP_ENUM_COLLECTIONS,
 			PK_GROUP_ENUM_NEWEST,
@@ -991,10 +1016,10 @@ out:
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_GUI,
@@ -1008,10 +1033,10 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_roles:
+ * pk_backend_get_roles:
  */
-static PkBitfield
-backend_get_roles (PkBackend *backend)
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
 {
 	PkBitfield roles;
 	roles = pk_bitfield_from_enums (
@@ -1055,10 +1080,10 @@ backend_get_roles (PkBackend *backend)
 }
 
 /**
- * backend_get_mime_types:
+ * pk_backend_get_mime_types:
  */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup ("application/x-rpm;application/x-servicepack");
 }
@@ -1066,21 +1091,22 @@ backend_get_mime_types (PkBackend *backend)
 /**
  * pk_backend_cancel:
  */
-static void
-backend_cancel (PkBackend *backend)
+void
+pk_backend_cancel (PkBackend *backend)
 {
+#ifdef HAVE_ZIF
 	/* try to cancel the thread first */
 	g_cancellable_cancel (priv->cancellable);
-
+#endif
 	/* this feels bad... */
 	pk_backend_spawn_kill (priv->spawn);
 }
 
 /**
- * backend_download_packages_thread:
+ * pk_backend_download_packages_thread:
  */
 static gboolean
-backend_download_packages_thread (PkBackend *backend)
+pk_backend_download_packages_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -1104,7 +1130,7 @@ backend_download_packages_thread (PkBackend *backend)
 	/* find all the packages */
 	packages = g_ptr_array_new ();
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, pk_bitfield_value (PK_FILTER_ENUM_NOT_INSTALLED), state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1209,13 +1235,13 @@ out:
 }
 
 /**
- * backend_download_packages:
+ * pk_backend_download_packages:
  */
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *package_ids_temp;
 
 		/* send the complete list as stdin */
@@ -1224,14 +1250,14 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 		g_free (package_ids_temp);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_download_packages_thread);
+	pk_backend_thread_create (backend, pk_backend_download_packages_thread);
 }
 
 /**
- * backend_get_depends_thread:
+ * pk_backend_get_depends_thread:
  */
 static gboolean
-backend_get_depends_thread (PkBackend *backend)
+pk_backend_get_depends_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -1260,7 +1286,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	store_array = backend_get_default_store_array_for_filter (backend, 0, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, 0, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1361,7 +1387,7 @@ backend_get_depends_thread (PkBackend *backend)
 	}
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1376,7 +1402,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 	/* emit */
 	state_local = zif_state_get_child (priv->state);
-	backend_emit_package_array (backend, result, state_local);
+	pk_backend_emit_package_array (backend, result, state_local);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1396,13 +1422,13 @@ out:
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *package_ids_temp;
 		package_ids_temp = pk_package_ids_to_string (package_ids);
@@ -1412,14 +1438,14 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 		g_free (package_ids_temp);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_get_depends_thread);
+	pk_backend_thread_create (backend, pk_backend_get_depends_thread);
 }
 
 /**
- * backend_get_details_thread:
+ * pk_backend_get_details_thread:
  */
 static gboolean
-backend_get_details_thread (PkBackend *backend)
+pk_backend_get_details_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -1446,9 +1472,9 @@ backend_get_details_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	if (backend_is_all_installed (package_ids))
+	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1584,27 +1610,27 @@ out:
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	/* check if we can use zif */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *package_ids_temp;
 		package_ids_temp = pk_package_ids_to_string (package_ids);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-details", package_ids_temp, NULL);
 		g_free (package_ids_temp);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_get_details_thread);
+	pk_backend_thread_create (backend, pk_backend_get_details_thread);
 }
 
 /**
-  * backend_get_distro_upgrades_thread:
+  * pk_backend_get_distro_upgrades_thread:
   */
 static gboolean
-backend_get_distro_upgrades_thread (PkBackend *backend)
+pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -1612,7 +1638,6 @@ backend_get_distro_upgrades_thread (PkBackend *backend)
 	gchar *filename = NULL;
 	gchar **groups = NULL;
 	gchar *name = NULL;
-	gchar *proxy = NULL;
 	gchar **split = NULL;
 	guint i;
 	guint last_version = 0;
@@ -1625,15 +1650,6 @@ backend_get_distro_upgrades_thread (PkBackend *backend)
 	/* download, then parse */
 	zif_state_reset (priv->state);
 	zif_state_set_number_steps (priv->state, 2);
-
-	/* set proxy */
-	proxy = pk_backend_get_proxy_http (backend);
-	ret = zif_download_set_proxy (priv->download, proxy, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "failed to set proxy: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
 
 	/* download new file */
 	filename = g_build_filename ("/var/cache/PackageKit", "releases.txt", NULL);
@@ -1709,7 +1725,6 @@ out:
 	g_free (distro_id);
 	g_free (filename);
 	g_free (name);
-	g_free (proxy);
 	if (file != NULL)
 		g_key_file_free (file);
 	g_strfreev (groups);
@@ -1719,25 +1734,25 @@ out:
 }
 
 /**
- * backend_get_distro_upgrades:
+ * pk_backend_get_distro_upgrades:
  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-distro-upgrades", NULL);
 		return;
 	}
 
-	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
+	pk_backend_thread_create (backend, pk_backend_get_distro_upgrades_thread);
 }
 
 /**
- * backend_get_files_thread:
+ * pk_backend_get_files_thread:
  */
 static gboolean
-backend_get_files_thread (PkBackend *backend)
+pk_backend_get_files_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -1755,7 +1770,7 @@ backend_get_files_thread (PkBackend *backend)
 	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 
 	/* reset */
-	backend_profile (NULL);
+	pk_backend_profile (NULL);
 
 	len = g_strv_length (package_ids);
 
@@ -1763,9 +1778,9 @@ backend_get_files_thread (PkBackend *backend)
 
 	/* find all the packages */
 	state_local = zif_state_get_child (priv->state);
-	if (backend_is_all_installed (package_ids))
+	if (pk_backend_is_all_installed (package_ids))
 		pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-	store_array = backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
+	store_array = pk_backend_get_default_store_array_for_filter (backend, filters, state_local, &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get stores: %s", error->message);
 		g_error_free (error);
@@ -1773,7 +1788,7 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("add local");
+	pk_backend_profile ("add local");
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -1795,7 +1810,7 @@ backend_get_files_thread (PkBackend *backend)
 		}
 
 		/* profile */
-		backend_profile ("find package");
+		pk_backend_profile ("find package");
 
 		/* this section done */
 		ret = zif_state_done (priv->state, &error);
@@ -1815,7 +1830,7 @@ backend_get_files_thread (PkBackend *backend)
 		}
 
 		/* profile */
-		backend_profile ("get files");
+		pk_backend_profile ("get files");
 
 		files_str = g_string_new ("");
 		for (j=0; j<files->len; j++) {
@@ -1825,7 +1840,7 @@ backend_get_files_thread (PkBackend *backend)
 		pk_backend_files (backend, package_ids[i], files_str->str);
 
 		/* profile */
-		backend_profile ("emit files");
+		pk_backend_profile ("emit files");
 
 		/* this section done */
 		ret = zif_state_done (priv->state, &error);
@@ -1847,30 +1862,28 @@ out:
 }
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
-	/* check if we can use zif */
-	if (priv->use_zif) {
-		pk_backend_thread_create (backend, backend_get_files_thread);
+	/* it seems some people are not ready for the awesomeness */
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
+		package_ids_temp = pk_package_ids_to_string (package_ids);
+		pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
+		g_free (package_ids_temp);
 		return;
 	}
-
-	/* fall back to spawning */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-files", package_ids_temp, NULL);
-	g_free (package_ids_temp);
+	pk_backend_thread_create (backend, pk_backend_get_files_thread);
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
-static void
-backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	gchar *package_ids_temp;
 	gchar *filters_text;
@@ -1882,10 +1895,10 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_get_updates_thread:
+ * pk_backend_get_updates_thread:
  */
 static gboolean
-backend_get_updates_thread (PkBackend *backend)
+pk_backend_get_updates_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
@@ -1905,7 +1918,7 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* reset */
-	backend_profile (NULL);
+	pk_backend_profile (NULL);
 
 	zif_state_set_number_steps (priv->state, 5);
 
@@ -1928,7 +1941,7 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("get remote stores");
+	pk_backend_profile ("get remote stores");
 
 	/* get all the installed packages */
 	state_local = zif_state_get_child (priv->state);
@@ -1949,7 +1962,7 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("get installed packages");
+	pk_backend_profile ("get installed packages");
 
 	/* remove any packages that are not newest (think kernel) */
 	zif_package_array_filter_newest (packages);
@@ -1963,11 +1976,11 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("filter installed newest");
+	pk_backend_profile ("filter installed newest");
 
 	/* get updates */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	array = zif_store_array_get_updates (store_array, packages, state_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get updates: %s\n", error->message);
@@ -1984,7 +1997,7 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("get updates of packages");
+	pk_backend_profile ("get updates of packages");
 
 	/* setup steps on updatinfo state */
 	state_local = zif_state_get_child (priv->state);
@@ -2036,20 +2049,20 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	/* profile */
-	backend_profile ("get updateinfo");
+	pk_backend_profile ("get updateinfo");
 
 	/* filter */
-	result = backend_filter_package_array (array, filters);
+	result = pk_backend_filter_package_array (array, filters);
 
 	/* done */
 	pk_backend_set_percentage (backend, 100);
 
 	/* emit */
 	state_local = zif_state_get_child (priv->state);
-	backend_emit_package_array (backend, result, state_local);
+	pk_backend_emit_package_array (backend, result, state_local);
 
 	/* profile */
-	backend_profile ("filter and emit");
+	pk_backend_profile ("filter and emit");
 
 out:
 	pk_backend_finished (backend);
@@ -2066,45 +2079,45 @@ out:
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn,  "yumBackend.py", "get-updates", filters_text, NULL);
 		g_free (filters_text);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_get_updates_thread);
+	pk_backend_thread_create (backend, pk_backend_get_updates_thread);
 }
 
 /**
- * backend_get_packages:
+ * pk_backend_get_packages:
  */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-packages", filters_text, NULL);
 		g_free (filters_text);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 #ifdef HAVE_ZIF
 /**
- * backend_get_changelog_text:
+ * pk_backend_get_changelog_text:
  */
 static gchar *
-backend_get_changelog_text (GPtrArray *changesets)
+pk_backend_get_changelog_text (GPtrArray *changesets)
 {
 	guint i;
 	ZifChangeset *changeset;
@@ -2135,10 +2148,10 @@ backend_get_changelog_text (GPtrArray *changesets)
 #endif
 
 /**
- * backend_get_update_detail_thread:
+ * pk_backend_get_update_detail_thread:
  */
 static gboolean
-backend_get_update_detail_thread (PkBackend *backend)
+pk_backend_get_update_detail_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gchar **package_ids;
@@ -2151,7 +2164,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 	GError *error = NULL;
 
 	/* reset */
-	backend_profile (NULL);
+	pk_backend_profile (NULL);
 
 	/* get the data */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -2205,7 +2218,7 @@ backend_get_update_detail_thread (PkBackend *backend)
 			/* format changelog */
 			changesets = zif_update_get_changelog (update);
 			if (changesets != NULL)
-				changelog_text = backend_get_changelog_text (changesets);
+				changelog_text = pk_backend_get_changelog_text (changesets);
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
@@ -2243,27 +2256,27 @@ out:
 }
 
 /**
- * backend_get_update_detail:
+ * pk_backend_get_update_detail:
  */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (TRUE || !priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *package_ids_temp;
 		package_ids_temp = pk_package_ids_to_string (package_ids);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-update-detail", package_ids_temp, NULL);
 		g_free (package_ids_temp);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_get_update_detail_thread);
+	pk_backend_thread_create (backend, pk_backend_get_update_detail_thread);
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -2274,10 +2287,10 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 }
 
 /**
- * backend_simulate_remove_packages:
+ * pk_backend_simulate_remove_packages:
  */
-static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
@@ -2288,10 +2301,10 @@ backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gbool
 }
 
 /**
- * backend_simulate_update_packages:
+ * pk_backend_simulate_update_packages:
  */
-static void
-backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -2302,10 +2315,10 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_simulate_install_packages:
+ * pk_backend_simulate_install_packages:
  */
-static void
-backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -2316,10 +2329,10 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_install_files:
+ * pk_backend_install_files:
  */
-static void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 
@@ -2330,10 +2343,10 @@ backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_p
 }
 
 /**
- * backend_install_signature:
+ * pk_backend_install_signature:
  */
-static void
-backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+void
+pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	const gchar *type_text;
@@ -2343,10 +2356,10 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
- * backend_refresh_cache_thread:
+ * pk_backend_refresh_cache_thread:
  */
 static gboolean
-backend_refresh_cache_thread (PkBackend *backend)
+pk_backend_refresh_cache_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	GPtrArray *store_array = NULL;
@@ -2386,7 +2399,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 
 	/* clean all the repos */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	ret = zif_store_array_clean (store_array, state_local, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to clean: %s\n", error->message);
@@ -2402,10 +2415,10 @@ out:
 }
 
 /**
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -2415,18 +2428,18 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	}
 
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+	pk_backend_thread_create (backend, pk_backend_refresh_cache_thread);
 }
 
 /**
  * pk_backend_remove_packages:
  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gchar *package_ids_temp;
 
@@ -2439,11 +2452,11 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 /**
  * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -2453,17 +2466,17 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 		g_free (search);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 /**
  * pk_backend_search_files:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -2473,17 +2486,17 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 		g_free (search);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 /**
  * pk_backend_search_groups:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -2493,17 +2506,17 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 		g_free (search);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 /**
  * pk_backend_search_names:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *search;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -2513,14 +2526,14 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 		g_free (search);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 /**
  * pk_backend_update_packages:
  */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
@@ -2533,8 +2546,8 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 /**
  * pk_backend_update_system:
  */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
@@ -2542,11 +2555,11 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 /**
  * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		gchar *package_ids_temp;
 		filters_text = pk_filter_bitfield_to_string (filters);
@@ -2557,14 +2570,14 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 		return;
 	}
 	pk_backend_set_strv (backend, "search", packages);
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 }
 
 /**
- * backend_get_repo_list_thread:
+ * pk_backend_get_repo_list_thread:
  */
 static gboolean
-backend_get_repo_list_thread (PkBackend *backend)
+pk_backend_get_repo_list_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -2654,11 +2667,11 @@ out:
 /**
  * pk_backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		filters_text = pk_filter_bitfield_to_string (filters);
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-repo-list", filters_text, NULL);
@@ -2666,14 +2679,14 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 		return;
 	}
 
-	pk_backend_thread_create (backend, backend_get_repo_list_thread);
+	pk_backend_thread_create (backend, pk_backend_get_repo_list_thread);
 }
 
 /**
- * backend_repo_enable_thread:
+ * pk_backend_repo_enable_thread:
  */
 static gboolean
-backend_repo_enable_thread (PkBackend *backend)
+pk_backend_repo_enable_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	ZifStoreRemote *repo = NULL;
@@ -2726,11 +2739,11 @@ out:
 /**
  * pk_backend_repo_enable:
  */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		if (enabled == TRUE) {
 			pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "repo-enable", repo_id, "true", NULL);
 		} else {
@@ -2738,24 +2751,14 @@ backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 		}
 		return;
 	}
-	pk_backend_thread_create (backend, backend_repo_enable_thread);
+	pk_backend_thread_create (backend, pk_backend_repo_enable_thread);
 }
 
 /**
- * pk_backend_repo_set_data:
+ * pk_backend_what_provides:
  */
-static void
-backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
-{
-	/* no operation */
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_what_provides:
- */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	guint i;
 	guint len;
@@ -2764,7 +2767,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	gchar *search_tmp;
 
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		gchar *filters_text;
 		const gchar *provides_text;
 		provides_text = pk_provides_enum_to_string (provides);
@@ -2805,16 +2808,16 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	/* set the search terms and run */
 	search = pk_ptr_array_to_strv (array);
 	pk_backend_set_strv (backend, "search", search);
-	pk_backend_thread_create (backend, backend_search_thread);
+	pk_backend_thread_create (backend, pk_backend_search_thread);
 	g_strfreev (search);
 	g_ptr_array_unref (array);
 }
 
 /**
- * backend_get_categories_thread:
+ * pk_backend_get_categories_thread:
  */
 static gboolean
-backend_get_categories_thread (PkBackend *backend)
+pk_backend_get_categories_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
 	gboolean ret;
@@ -2851,7 +2854,7 @@ backend_get_categories_thread (PkBackend *backend)
 
 	/* get sorted list of unique categories */
 	state_local = zif_state_get_child (priv->state);
-	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) backend_error_handler_cb, backend);
+	zif_state_set_error_handler (priv->state, (ZifStateErrorHandlerCb) pk_backend_error_handler_cb, backend);
 	array = zif_store_array_get_categories (stores, state_local, &error);
 	if (array == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_LIST_INVALID, "failed to add get categories: %s", error->message);
@@ -2904,22 +2907,22 @@ out:
 /**
  * pk_backend_get_categories:
  */
-static void
-backend_get_categories (PkBackend *backend)
+void
+pk_backend_get_categories (PkBackend *backend)
 {
 	/* it seems some people are not ready for the awesomeness */
-	if (!priv->use_zif) {
+	if (!pk_bitfield_contain (priv->use_zif, pk_backend_get_role (backend))) {
 		pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "get-categories", NULL);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_get_categories_thread);
+	pk_backend_thread_create (backend, pk_backend_get_categories_thread);
 }
 
 /**
- * backend_simulate_install_files:
+ * pk_backend_simulate_install_files:
  */
-static void
-backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+void
+pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 {
 	gchar *package_ids_temp;
 
@@ -2928,50 +2931,3 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-install-files", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
-
-PK_BACKEND_OPTIONS (
-	"YUM",					/* description */
-	"Tim Lauridsen <timlau@fedoraproject.org>, "
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	backend_get_roles,			/* get_roles */
-	backend_get_mime_types,			/* get_mime_types */
-	backend_cancel,				/* cancel */
-	backend_download_packages,		/* download_packages */
-	backend_get_categories,			/* get_categories */
-	backend_get_depends,			/* get_depends */
-	backend_get_details,			/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
-	backend_get_files,			/* get_files */
-	backend_get_packages,			/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_files,			/* install_files */
-	backend_install_packages,		/* install_packages */
-	backend_install_signature,		/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_resolve,			/* resolve */
-	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_files,			/* search_files */
-	backend_search_groups,			/* search_groups */
-	backend_search_names,			/* search_names */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	backend_what_provides,			/* what_provides */
-	backend_simulate_install_files,		/* simulate_install_files */
-	backend_simulate_install_packages,	/* simulate_install_packages */
-	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	backend_simulate_update_packages,	/* simulate_update_packages */
-	backend_transaction_start,		/* transaction_start */
-	backend_transaction_stop		/* transaction_stop */
-);
-

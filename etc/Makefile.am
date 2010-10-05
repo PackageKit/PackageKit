@@ -10,9 +10,16 @@ $(conf_DATA): $(conf_in_files) Makefile
 vendordir = $(PK_CONF_DIR)
 vendor_DATA = Vendor.conf
 
+eventspostransdir = $(PK_CONF_DIR)/events/post-transaction.d
+eventspostrans_DATA = README
+
+eventspretransdir = $(PK_CONF_DIR)/events/pre-transaction.d
+eventspretrans_DATA = README
+
 EXTRA_DIST =						\
 	$(conf_in_files)				\
 	$(vendor_DATA)					\
+	$(eventspostrans_DATA)				\
 	$(NULL)
 
 DISTCLEANFILES =					\

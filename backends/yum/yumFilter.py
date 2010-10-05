@@ -103,11 +103,16 @@ class YumFilter(PackagekitFilter):
             # we've already come across this package
             if key in newest:
 
-                # the current package is older (or the same) than the one we have stored
-                if pkg <= newest[key][0]:
+                # the current package is older version than the one we have stored
+                if pkg.verCMP(newest[key][0]) < 0:
                     continue
 
-                # the current package is newer than what we have stored, so nuke the old package
+                # the current package is the same version, but the repository has a lower priority
+                if pkg.verCMP(newest[key][0]) == 0 and \
+                   pkg.repo >= newest[key][0].repo:
+                    continue
+
+                # the current package is newer than what we have stored or the repository has a higher priority, so nuke the old package
                 del newest[key]
 
             newest[key] = (pkg, state)

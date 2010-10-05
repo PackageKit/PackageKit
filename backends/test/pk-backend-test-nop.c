@@ -23,48 +23,11 @@
 #include <glib.h>
 #include <pk-backend.h>
 
-PK_BACKEND_OPTIONS (
-	"Test NOP",				/* description */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	NULL,					/* initialize */
-	NULL,					/* destroy */
-	NULL,					/* get_groups */
-	NULL,					/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	NULL,					/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	NULL,					/* get_depends */
-	NULL,					/* get_details */
-	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
-	NULL,					/* get_packages */
-	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
-	NULL,					/* install_files */
-	NULL,					/* install_packages */
-	NULL,					/* install_signature */
-	NULL,					/* refresh_cache */
-	NULL,					/* remove_packages */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
-	NULL,					/* rollback */
-	NULL,					/* search_details */
-	NULL,					/* search_files */
-	NULL,					/* search_groups */
-	NULL,					/* search_names */
-	NULL,					/* update_package */
-	NULL,					/* update_system */
-	NULL,					/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
-
+/**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Test NOP");
+}

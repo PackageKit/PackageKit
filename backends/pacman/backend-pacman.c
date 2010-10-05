@@ -250,5 +250,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_files,		/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	backend_simulate_update_packages	/* simulate_update_packages */
+	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* transaction_start */
+	NULL					/* transaction_stop */
 );

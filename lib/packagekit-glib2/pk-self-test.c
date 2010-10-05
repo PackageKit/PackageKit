@@ -420,6 +420,18 @@ pk_test_client_search_name_cb (GObject *object, GAsyncResult *res, gpointer user
 	_g_test_loop_quit ();
 }
 
+static void
+pk_test_client_search_name_cancellable_cancelled_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	results = pk_client_generic_finish (client, res, &error);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_CANCELLED);
+	g_assert (results == NULL);
+	_g_test_loop_quit ();
+}
+
 static guint _progress_cb = 0;
 static guint _status_cb = 0;
 static guint _package_cb = 0;
@@ -652,7 +664,15 @@ pk_test_client_func (void)
 	_g_test_loop_run_with_timeout (15000);
 	egg_debug ("cancelled in %f", g_test_timer_elapsed ());
 
+	/* ensure we abort with error if we cancel */
+	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
+		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
+		     (GAsyncReadyCallback) pk_test_client_search_name_cancellable_cancelled_cb, NULL);
+	_g_test_loop_run_with_timeout (15000);
+
 	g_strfreev (values);
+
+	/* okay now */
 	g_cancellable_reset (cancellable);
 
 	/* do downloads */

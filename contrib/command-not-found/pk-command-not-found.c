@@ -450,9 +450,22 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_printerr ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
-		goto out;
+		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_TRANSACTION_CANCELLED) {
+			/* TRANSLATORS: the transaction took too long to process */
+			g_printerr ("%s\n", _("The search was cancelled as it was taking too long to complete."));
+
+			/* TRANSLATORS: tell the user what to do --
+			 * the first %s is the keyname, e.g. "MaxSearchTime"
+			 * the second %s is the config file location, e.g. "/etc/PackageKit/CommandNotFound.conf" */
+			g_printerr (_("You can increase the value of '%s' in %s to change the timeout."),
+				    "MaxSearchTime", SYSCONFDIR "/PackageKit/CommandNotFound.conf");
+		} else {
+			/* TRANSLATORS: the transaction failed in a way we could not expect */
+			g_printerr ("%s: %s, %s\n", _("The transaction failed"),
+				    pk_error_enum_to_string (pk_error_get_code (error_code)),
+				    pk_error_get_details (error_code));
+			goto out;
+		}
 	}
 
 	/* get the packages returned */

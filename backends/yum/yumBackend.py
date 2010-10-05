@@ -2951,6 +2951,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _check_init(self, lazy_cache=False):
         '''Just does the caching tweaks'''
 
+        # this entire section can be cancelled
+        self.allow_cancel(True)
+
         # clear previous transaction data
         self.yumbase._tsInfo = None
 
@@ -3292,7 +3295,7 @@ class PackageKitYumBase(yum.YumBase):
             else:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def _media_find_root(self, media_id, disc_number=1):
+    def _media_find_root(self, media_id, disc_number=-1):
         """ returns the root "/media/Fedora Extras" or None """
 
         # search all the disks
@@ -3322,13 +3325,14 @@ class PackageKitYumBase(yum.YumBase):
                 continue
 
             # disc number can be random things like 'ALL'
-            disc_number_tmp = 1
-            try:
-                disc_number_tmp = int(lines[3].strip())
-            except ValueError, e:
-                pass
-            if disc_number_tmp != disc_number:
-                continue
+            if disc_number != -1:
+                disc_number_tmp = 1
+                try:
+                    disc_number_tmp = int(lines[3].strip())
+                except ValueError, e:
+                    pass
+                if disc_number_tmp != disc_number:
+                    continue
             return root
 
         # nothing remaining
@@ -3351,7 +3355,7 @@ class PackageKitYumBase(yum.YumBase):
 
         # we have to send a message to the client
         if not root:
-            name = kwargs["name"]
+            name = "%s Volume #%s" %(kwargs["name"], kwargs["discnum"])
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,

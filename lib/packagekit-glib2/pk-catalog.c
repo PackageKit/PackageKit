@@ -455,7 +455,10 @@ pk_catalog_do_resolve (PkCatalogState *state)
 	data = pk_ptr_array_to_strv (state->array_packages);
 	dbg = g_strjoinv ("&", data);
 	egg_debug ("searching for %s", dbg);
-	pk_client_resolve_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), data,
+	pk_client_resolve_async (state->catalog->priv->client,
+				 pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH,
+							 PK_FILTER_ENUM_NOT_INSTALLED,
+							 PK_FILTER_ENUM_NEWEST, -1), data,
 				 state->cancellable, state->progress_callback, state->progress_user_data,
 				 (GAsyncReadyCallback) pk_catalog_resolve_ready_cb, state);
 	g_free (dbg);
@@ -530,12 +533,10 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	if (state->array_packages->len > 0) {
 		pk_catalog_do_resolve (state);
 		goto out;
-	}
-	if (state->array_files->len > 0) {
+	} else if (state->array_files->len > 0) {
 		pk_catalog_do_search_files (state);
 		goto out;
-	}
-	if (state->array_provides->len > 0) {
+	} else if (state->array_provides->len > 0) {
 		pk_catalog_do_what_provides (state);
 		goto out;
 	}

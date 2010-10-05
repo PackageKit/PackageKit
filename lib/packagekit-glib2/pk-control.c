@@ -274,9 +274,11 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_tid_async);
 
@@ -289,6 +291,13 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
 
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_get_tid_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTid",
 					       (DBusGProxyCallNotify) pk_control_get_tid_cb, state,
@@ -299,7 +308,7 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -419,9 +428,11 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_suggest_daemon_quit_async);
 
@@ -434,6 +445,13 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
 
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_suggest_daemon_quit_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "SuggestDaemonQuit",
 					       (DBusGProxyCallNotify) pk_control_suggest_daemon_quit_cb, state,
@@ -444,7 +462,7 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -568,9 +586,11 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_daemon_state_async);
 
@@ -583,6 +603,13 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
 
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_get_daemon_state_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* call D-Bus method async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetDaemonState",
 					       (DBusGProxyCallNotify) pk_control_get_daemon_state_cb, state,
@@ -593,7 +620,7 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -716,9 +743,11 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_proxy_async);
 
@@ -729,6 +758,13 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_set_proxy_state_finish (state, error);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* call D-Bus set_proxy async */
@@ -743,7 +779,7 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -865,9 +901,11 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_set_root_async);
 
@@ -878,6 +916,13 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_set_root_state_finish (state, error);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* call D-Bus set_root async */
@@ -891,7 +936,7 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -1015,9 +1060,11 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_transaction_list_async);
 
@@ -1030,6 +1077,13 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
 	}
 
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_get_transaction_list_state_finish (state, error);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* call D-Bus get_transaction_list async */
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "GetTransactionList",
 					       (DBusGProxyCallNotify) pk_control_get_transaction_list_cb, state,
@@ -1040,7 +1094,7 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -1171,10 +1225,12 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 	const gchar *role_text;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_time_since_action_async);
 
@@ -1185,6 +1241,13 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_get_time_since_action_state_finish (state, error);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* call D-Bus get_time_since_action async */
@@ -1199,7 +1262,7 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -1331,9 +1394,11 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_can_authorize_async);
 
@@ -1344,6 +1409,13 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_can_authorize_state_finish (state, error);
+		g_error_free (error);
+		goto out;
 	}
 	state->authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
 
@@ -1358,7 +1430,7 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 
@@ -1737,9 +1809,11 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
+	GError *error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (control), callback, user_data, pk_control_get_properties_async);
 
@@ -1750,6 +1824,13 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 	if (cancellable != NULL) {
 		state->cancellable = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_control_cancellable_cancel_cb), state, NULL);
+	}
+
+	/* check not already cancelled */
+	if (cancellable != NULL && g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_control_get_properties_state_finish (state, error);
+		g_error_free (error);
+		goto out;
 	}
 
 	/* call D-Bus get_properties async */
@@ -1763,7 +1844,7 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
 	egg_debug ("state array add %p (%p)", state, state->call);
-
+out:
 	g_object_unref (res);
 }
 

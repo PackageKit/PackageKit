@@ -179,7 +179,7 @@ static void
 pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 					GValue *value, gpointer user_data)
 {
-	gboolean ret;
+	PkNetworkEnum network_state;
 	PkNetworkStackConnman *nstack_connman = (PkNetworkStackConnman *) user_data;
 
 	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
@@ -189,12 +189,11 @@ pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 
 		state = g_value_dup_string (value);
 		if (g_str_equal (state, "online") == TRUE)
-			ret = TRUE;
+			network_state = PK_NETWORK_ENUM_ONLINE;
 		else
-			ret = FALSE;
-		/* TODO: this is a PkNetworkState, not a gboolean */
-		egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (ret));
-		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", ret);
+			network_state = PK_NETWORK_ENUM_OFFLINE;
+		egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (network_state));
+		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", network_state);
 	}
 
 }

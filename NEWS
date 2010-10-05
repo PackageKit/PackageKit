@@ -1,3 +1,60 @@
+Version 0.6.9
+~~~~~~~~~~~~~
+Released: 2010-10-04
+
+Libraries:
+ - glib: Check the GCancellable is not already cancelled at startup in PkClient and PkControl (Richard Hughes)
+ - glib: Do not crash the client if a catalog file has both file and package sections (Richard Hughes)
+ - glib: Do not return simulation failures as critical errors (Richard Hughes)
+ - glib: Only return packages for catalogs that are _not_ installed (Richard Hughes)
+ - qt: Use setHints() on new constructor (Daniel Nicoletti)
+
+Backends:
+ - aptcc: Added Fonts group (Daniel Nicoletti)
+ - aptcc: Updated calls not to use deprecated apt code (Daniel Nicoletti)
+ - dummy: Remove the table-of-vfuncs from the dummy backend (Richard Hughes)
+ - entropy: Add forward compatibility, use EntropyRepositoryBase.listPackageIdsInCategory() if available. (Fabio Erculiani)
+ - portage: Add compatibility with latest Portage 2.2 rc snapshots (Fabio Erculiani)
+ - test: Remove the table-of-vfuncs from the test backends (Richard Hughes)
+ - yum: Allow SearchFiles and GetUpdateDetail to be processed using zif (Richard Hughes)
+ - yum: Change the configuration value UseZif to a bitfield of roles (Richard Hughes)
+ - yum: Don't assume yb.pkgSack.searchNevra() only returns one result to fix service pack generation (Richard Hughes)
+ - yum: Fix the split media handling in PackageKit yum backend (Hedayat Vatankhah)
+ - yum: For some reason yum needs to download the packagelists at init, so mark the download as cancellable. Fixes fd#30276 (Richard Hughes)
+ - yum: Get the changelog text using zif if it is available (Richard Hughes)
+ - yum: Only cancel the GCancellable if we are using ZIF (Richard Hughes)
+ - yum: Remove RepoSetData, it's a NOOP (Richard Hughes)
+ - yum: Remove the set-proxy from get_distro_upgrades(), it's already done in transaction_start() (Richard Hughes)
+ - yum: Remove the table-of-vfuncs from the yum backend (Richard Hughes)
+ - yum: Select the repository with the higher priority when a package exists in serveral repositories (Hedayat Vatankhah)
+ - yum: Switch to using transaction_start() and transaction_stop() to reduce backend complexity (Richard Hughes)
+ - yum: Use GetCategories also for using a zif GetGroups, as GetGroups does not have a role enum (Richard Hughes)
+ - yum: When prompting for media, include the disc number (Hedayat Vatankhah)
+ - zypp: Add development package support to filtering (Michael Meeks)
+ - zypp: Calculate sizes for patches correctly: bmo#2281, bnc#559802 (Michael Meeks)
+ - zypp: Enable proxy for zypp backend (Zhang Qiang)
+ - zypp: Include patches in 'resolve' results. bmc#2059 (Michael Meeks)
+ - zypp: Refresh cache and sat solv pool data if necessary (Zhang Qiang)
+ - zypp: Refresh cache before geting upgrade and installing (Zhang Qiang)
+ - zypp: Refresh system rpmdb while refresh cache (Zhang Qiang)
+ - zypp: Remove premature require_restart emission in update_packages_thread (Michael Meeks)
+
+New Features:
+ - Add transaction_start() and transaction_stop() vfuncs to make backends simpler (Richard Hughes)
+ - Add a feature that allows external scripts to be run after certain transactions (Richard Hughes)
+ - Allow backends to omit the table-of-vfuncs and use GModule functionality to resolve backend functions (Richard Hughes)
+
+Bugfixes:
+ - Add a nicer translated error when UpdatePackages has no packages to update. Fixes fd#30459 (Richard Hughes)
+ - browser-plugin: Do not query PkDesktop by default (Richard Hughes)
+ - browser-plugin: Fix up 2 small memory leaks in error paths (Richard Hughes)
+ - cnf: Add a proper error message when the transaction was cancelled (Richard Hughes)
+ - Don't call back into the daemon (from the daemon) when checking service packs. Fixes rh#634628 (Richard Hughes)
+ - Ensure we set an error if the spawned backend gets cancelled (Richard Hughes)
+ - Fix build with newer gobject-introspection (Matthias Clasen)
+ - Fix generating an updates service pack using pkgenpack (Richard Hughes)
+ - Use the correct network state for connman (Zhang Qiang)
+
 Version 0.6.8
 ~~~~~~~~~~~~~
 Released: 2010-09-06

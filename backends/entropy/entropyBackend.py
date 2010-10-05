@@ -1598,20 +1598,36 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             self.percentage(percent)
             repo_all_cats = repo_db.listAllCategories()
-            if selected_categories:
-                etp_cat_ids = set([cat_id for cat_id, cat_name in \
-                    repo_all_cats if cat_name in selected_categories])
-            else:
-                # get all etp category ids excluding all_matched_categories
-                etp_cat_ids = set([cat_id for cat_id, cat_name in \
-                     repo_all_cats if cat_name not in all_matched_categories])
 
-            for cat_id in etp_cat_ids:
-                try:
-                    pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
-                except AttributeError:
-                    pkg_ids = repo_db.listPackageIdsInCategoryId(cat_id)
-                pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+            if hasattr(repo_db, "listPackageIdsInCategory"):
+                if selected_categories:
+                    etp_cats = set((x for x in repo_all_cats \
+                         if x in selected_categories))
+                else:
+                    # get all etp categories excluding all_matched_categories
+                    etp_cats = set((x for x in repo_all_cats \
+                         if x not in all_matched_categories))
+
+                for category in etp_cats:
+                    pkg_ids = repo_db.listPackageIdsInCategory(category)
+                    pkgs.update((repo, x, repo_db,) for x in pkg_ids)
+
+            else:
+                # backward compatibility
+                if selected_categories:
+                    etp_cat_ids = set([cat_id for cat_id, cat_name in \
+                        repo_all_cats if cat_name in selected_categories])
+                else:
+                    # get all etp category ids excluding all_matched_categories
+                    etp_cat_ids = set([cat_id for cat_id, cat_name in \
+                        repo_all_cats if cat_name not in all_matched_categories])
+
+                for cat_id in etp_cat_ids:
+                    try:
+                        pkg_ids = repo_db.listIdPackagesInIdcategory(cat_id)
+                    except AttributeError:
+                        pkg_ids = repo_db.listPackageIdsInCategoryId(cat_id)
+                    pkgs.update((repo, x, repo_db,) for x in pkg_ids)
 
         # now filter
         pkgs = self._pk_filter_pkgs(pkgs, filters)
