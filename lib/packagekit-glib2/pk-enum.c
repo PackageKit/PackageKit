@@ -1147,7 +1147,7 @@ pk_media_type_enum_to_string (PkMediaTypeEnum media_type)
  *
  * Converts a text enumerated type to its unsigned integer representation
  *
- * Return value: the enumerated constant value, e.g. PK_AUTHORIZE_ENUM_YES
+ * Return value: the enumerated constant value, e.g. %PK_AUTHORIZE_ENUM_YES
  *
  * Since: 0.5.0
  **/

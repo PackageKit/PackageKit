@@ -113,7 +113,7 @@ pk_control_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkCon
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: The list of transaction id's, or %NULL, free with g_strfreev()
+ * Return value: (transfer full): The list of transaction id's, or %NULL, free with g_strfreev()
  *
  * Since: 0.5.3
  **/

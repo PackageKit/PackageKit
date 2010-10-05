@@ -471,7 +471,7 @@ pk_catalog_do_resolve (PkCatalogState *state)
  * @filename: the filename of the catalog to install
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *
@@ -555,7 +555,7 @@ out:
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
+ * Return value: (transfer full): the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/

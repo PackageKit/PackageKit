@@ -41,7 +41,7 @@
  * Form a composite string array of package_id's from
  * a single package_id
  *
- * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ * Return value: (transfer full): the string array, or %NULL if invalid, free with g_strfreev()
  *
  * Since: 0.5.2
  **/
@@ -59,7 +59,7 @@ pk_package_ids_from_id (const gchar *package_id)
  * Form a composite string array of package_id's from
  * a delimited string
  *
- * Return value: the string array, or %NULL if invalid, free with g_strfreev()
+ * Return value: (transfer full): the string array, or %NULL if invalid, free with g_strfreev()
  *
  * Since: 0.5.2
  **/
@@ -155,7 +155,7 @@ pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
  *
  * Adds a package_id to an existing list.
  *
- * Return value: the new list, free g_strfreev()
+ * Return value: (transfer full): the new list, free g_strfreev()
  *
  * Since: 0.5.2
  **/
@@ -186,7 +186,7 @@ pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
  *
  * Adds a package_id to an existing list.
  *
- * Return value: the new list, free g_strfreev()
+ * Return value: (transfer full): the new list, free g_strfreev()
  *
  * Since: 0.5.2
  **/
@@ -220,7 +220,7 @@ pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
  *
  * Removes a package ID from the the list.
  *
- * Return value: the new list, free g_strfreev()
+ * Return value: (transfer full): the new list, free g_strfreev()
  *
  * Since: 0.5.2
  **/

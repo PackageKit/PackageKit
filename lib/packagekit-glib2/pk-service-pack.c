@@ -838,7 +838,7 @@ out:
  * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *
@@ -945,7 +945,7 @@ out:
  * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *

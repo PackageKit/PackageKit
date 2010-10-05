@@ -142,7 +142,7 @@ out:
  * Form a composite string array of strings.
  * The data in the GPtrArray is copied.
  *
- * Return value: the string array, or %NULL if invalid
+ * Return value: (transfer full): the string array, or %NULL if invalid
  *
  * Since: 0.5.2
  **/

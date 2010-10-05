@@ -721,26 +721,26 @@ const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
 PkSigTypeEnum	 pk_sig_type_enum_from_string		(const gchar	*sig_type);
 const gchar	*pk_sig_type_enum_to_string		(PkSigTypeEnum	 sig_type);
 
-PkInfoEnum	 pk_info_enum_from_string			(const gchar	*info);
+PkInfoEnum	 pk_info_enum_from_string		(const gchar	*info);
 const gchar	*pk_info_enum_to_string			(PkInfoEnum	 info);
 
 PkUpdateStateEnum  pk_update_state_enum_from_string	(const gchar	*update_state);
 const gchar	*pk_update_state_enum_to_string		(PkUpdateStateEnum update_state);
 
-PkExitEnum	 pk_exit_enum_from_string			(const gchar	*exit);
+PkExitEnum	 pk_exit_enum_from_string		(const gchar	*exit);
 const gchar	*pk_exit_enum_to_string			(PkExitEnum	 exit);
 
 PkNetworkEnum	 pk_network_enum_from_string		(const gchar	*network);
 const gchar	*pk_network_enum_to_string		(PkNetworkEnum	 network);
 
 PkStatusEnum	 pk_status_enum_from_string		(const gchar	*status);
-const gchar	*pk_status_enum_to_string			(PkStatusEnum	 status);
+const gchar	*pk_status_enum_to_string		(PkStatusEnum	 status);
 
-PkRoleEnum	 pk_role_enum_from_string			(const gchar	*role);
+PkRoleEnum	 pk_role_enum_from_string		(const gchar	*role);
 const gchar	*pk_role_enum_to_string			(PkRoleEnum	 role);
 
 PkErrorEnum	 pk_error_enum_from_string		(const gchar	*code);
-const gchar	*pk_error_enum_to_string			(PkErrorEnum code);
+const gchar	*pk_error_enum_to_string		(PkErrorEnum code);
 
 PkRestartEnum	 pk_restart_enum_from_string		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_string		(PkRestartEnum	 restart);
@@ -749,10 +749,10 @@ PkMessageEnum	 pk_message_enum_from_string		(const gchar	*message);
 const gchar	*pk_message_enum_to_string		(PkMessageEnum	 message);
 
 PkGroupEnum	 pk_group_enum_from_string		(const gchar	*group);
-const gchar	*pk_group_enum_to_string			(PkGroupEnum	 group);
+const gchar	*pk_group_enum_to_string		(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_string		(const gchar	*filter);
-const gchar	*pk_filter_enum_to_string			(PkFilterEnum	 filter);
+const gchar	*pk_filter_enum_to_string		(PkFilterEnum	 filter);
 
 PkProvidesEnum	 pk_provides_enum_from_string		(const gchar	*provides);
 const gchar	*pk_provides_enum_to_string		(PkProvidesEnum	 provides);
@@ -761,13 +761,13 @@ PkLicenseEnum	 pk_license_enum_from_string		(const gchar	*license);
 const gchar	*pk_license_enum_to_string		(PkLicenseEnum	 license);
 
 PkDistroUpgradeEnum pk_distro_upgrade_enum_from_string	(const gchar	*upgrade);
-const gchar	*pk_distro_upgrade_enum_to_string		(PkDistroUpgradeEnum upgrade);
+const gchar	*pk_distro_upgrade_enum_to_string	(PkDistroUpgradeEnum upgrade);
 
 PkMediaTypeEnum  pk_media_type_enum_from_string		(const gchar	*media_type);
 const gchar	*pk_media_type_enum_to_string		(PkMediaTypeEnum media_type);
 
-PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*auth_type);
-const gchar	*pk_authorize_type_enum_to_string		(PkAuthorizeEnum auth_type);
+PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*authorize_type);
+const gchar	*pk_authorize_type_enum_to_string	(PkAuthorizeEnum authorize_type);
 
 G_END_DECLS
 

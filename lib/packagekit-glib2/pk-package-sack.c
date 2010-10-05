@@ -103,7 +103,7 @@ pk_package_sack_get_size (PkPackageSack *sack)
  *
  * Returns all the Package IDs in the sack
  *
- * Return value: the number of packages in the sack, free with g_strfreev()
+ * Return value: (transfer full): the number of packages in the sack, free with g_strfreev()
  *
  * Since: 0.5.3
  **/
@@ -132,7 +132,7 @@ pk_package_sack_get_ids (PkPackageSack *sack)
  *
  * Gets the package array from the sack
  *
- * Return value: a #GPtrArray, free with g_ptr_array_unref()
+ * Return value: (transfer full): a #GPtrArray, free with g_ptr_array_unref()
  *
  * Since: 0.6.1
  **/
@@ -151,7 +151,7 @@ pk_package_sack_get_array (PkPackageSack *sack)
  * Returns a new package sack which only matches packages that match the
  * specified info enum value.
  *
- * Return value: a new #PkPackageSack, free with g_object_unref()
+ * Return value: (transfer full): a new #PkPackageSack, free with g_object_unref()
  *
  * Since: 0.6.2
  **/
@@ -183,13 +183,13 @@ pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
 /**
  * pk_package_sack_filter:
  * @sack: a valid #PkPackageSack instance
- * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to add
+ * @filter_cb: (scope call): a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to add
  * @user_data: user data to pass to @filter_cb
  *
  * Returns a new package sack which only matches packages that return %TRUE
  * from the filter function.
  *
- * Return value: a new #PkPackageSack, free with g_object_unref()
+ * Return value: (transfer full): a new #PkPackageSack, free with g_object_unref()
  *
  * Since: 0.6.3
  **/
@@ -340,7 +340,7 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
 /**
  * pk_package_sack_remove_by_filter:
  * @sack: a valid #PkPackageSack instance
- * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to retain
+ * @filter_cb: (scope call): a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to retain
  * @user_data: user data to pass to @filter_cb
  *
  * Removes from the package sack any packages that return %FALSE from the filter
@@ -383,7 +383,7 @@ pk_package_sack_remove_by_filter (PkPackageSack *sack, PkPackageSackFilterFunc f
  * Finds a package in a sack from reference. As soon as one package is found
  * the search is stopped.
  *
- * Return value: the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
+ * Return value: (transfer full): the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
  *
  * Since: 0.5.2
  **/
@@ -669,7 +669,7 @@ out:
  * pk_package_sack_resolve_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -831,7 +831,7 @@ out:
  * pk_package_sack_get_details_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -986,7 +986,7 @@ out:
  * pk_package_sack_get_update_detail_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback

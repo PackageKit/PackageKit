@@ -1106,7 +1106,7 @@ out:
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: A GStrv list of transaction ID's, free with g_strfreev()
+ * Return value: (transfer full): A GStrv list of transaction ID's, free with g_strfreev()
  *
  * Since: 0.5.2
  **/
@@ -2459,6 +2459,7 @@ pk_control_class_init (PkControlClass *klass)
 	/**
 	 * PkControl::transaction-list-changed:
 	 * @control: the #PkControl instance that emitted the signal
+	 * @transaction_ids: an #GStrv array of transaction ID's
 	 *
 	 * The ::transaction-list-changed signal is emitted when the list
 	 * of transactions handled by the daemon is changed.

@@ -92,7 +92,7 @@ void		 pk_task_install_packages_async		(PkTask			*task,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
-							 GAsyncReadyCallback	 callback,
+							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 void		 pk_task_update_packages_async		(PkTask			*task,
 							 gchar			**package_ids,

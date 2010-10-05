@@ -39,7 +39,7 @@
  * Splits a PackageID into the correct number of parts, checking the correct
  * number of delimiters are present.
  *
- * Return value: a GStrv or %NULL if invalid, use g_strfreev() to free
+ * Return value: (transfer full): a GStrv or %NULL if invalid, use g_strfreev() to free
  *
  * Since: 0.5.3
  **/

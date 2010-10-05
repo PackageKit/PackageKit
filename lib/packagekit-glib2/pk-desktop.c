@@ -102,7 +102,7 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
  * Return all desktop files owned by a package, regardless if they are shown
  * in the main menu or not.
  *
- * Return value: string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer full): string array of results, free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/
@@ -145,7 +145,7 @@ out:
  * Return all desktop files owned by a package that would be shown in a menu,
  * i.e are an application
  *
- * Return value: string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer full): string array of results, free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/

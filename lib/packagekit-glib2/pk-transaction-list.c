@@ -189,7 +189,7 @@ pk_transaction_list_notify_connected_cb (PkControl *control, GParamSpec *pspec, 
  *
  * Gets the string lists of transaction IDs recognised as pending, running or finished by the daemon.
  *
- * Return value: the array of strings, free with g_strfreev()
+ * Return value: (transfer full): the array of strings, free with g_strfreev()
  *
  * Since: 0.5.3
  **/

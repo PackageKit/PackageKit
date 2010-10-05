@@ -918,9 +918,9 @@ out:
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Merges in details about packages using resolve.
@@ -973,7 +973,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1029,7 +1029,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1086,7 +1086,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
  * @task: a valid #PkTask instance
  * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1140,7 +1140,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * pk_task_update_system_async:
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1195,9 +1195,9 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
  * @filters: a bitfield of filters that can be used to limit the results
  * @packages: package names to find
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Resolves a package name to a package-id.
@@ -1248,9 +1248,9 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for a package name.
@@ -1301,9 +1301,9 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for some package details.
@@ -1354,9 +1354,9 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches the group lists.
@@ -1407,9 +1407,9 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for specific files.
@@ -1459,9 +1459,9 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets details about packages.
@@ -1510,9 +1510,9 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets details about updates.
@@ -1562,9 +1562,9 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the destination directory
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Downloads packages
@@ -1614,9 +1614,9 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets the update lists.
@@ -1667,9 +1667,9 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: if we should recurse to packages that depend on other packages
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the list of dependant packages.
@@ -1720,9 +1720,9 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets the list of packages.
@@ -1773,9 +1773,9 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: if we should return packages that depend on the ones we do
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the packages this package requires.
@@ -1828,9 +1828,9 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
  * @provides: a #PkProvidesEnum type
  * @values: values to search for
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Find the package that provides some resource.
@@ -1881,9 +1881,9 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the files in a package.
@@ -1931,9 +1931,9 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
  * pk_task_get_categories_async:
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the categories available.
@@ -1981,9 +1981,9 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
  * @task: a valid #PkTask instance
  * @force: if the metadata should be deleted and re-downloaded even if it is correct
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Refresh the package cache.
@@ -2032,9 +2032,9 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
  * @task: a valid #PkTask instance
  * @transaction_id: The transaction ID of the old transaction
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Rollback to a previous package state.
@@ -2083,9 +2083,9 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the list of available repositories.
@@ -2135,9 +2135,9 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
  * @repo_id: The software source ID
  * @enabled: %TRUE or %FALSE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Enable or disable a specific repo.
@@ -2190,7 +2190,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: %TRUE for success
+ * Return value: (transfer full): The #PkResults of the transaction.
  *
  * Since: 0.5.2
  **/
