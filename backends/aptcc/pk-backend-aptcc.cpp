@@ -321,6 +321,12 @@ backend_get_details_thread (PkBackend *backend)
 		return false;
 	}
 
+    if (updateDetail) {
+        // this is needed to compare the changelog verstion to
+        // current package using DoCmpVersion()
+        pkgInitSystem(*_config, _system);
+    }
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	for (uint i = 0; i < g_strv_length(package_ids); i++) {
 		pi = package_ids[i];

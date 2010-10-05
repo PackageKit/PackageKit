@@ -104,6 +104,21 @@ string get_long_description_parsed(const pkgCache::VerIterator &ver,
 PkGroupEnum get_enum_group(string group);
 
 /**
+  * Return the changelog filename fetched
+  */
+string getChangelogFile(const string &name, const string &uri, pkgAcquire *fetcher);
+
+/**
+  * Returns a list of links pairs url;description for CVEs
+  */
+string getCVEUrls(const string &changelog);
+
+/**
+  * Returns a list of links pairs url;description for Debian and Ubuntu bugs
+  */
+string getBugzillaUrls(const string &changelog);
+
+/**
   * Return if the given vector contain a package
   */
 bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
@@ -118,5 +133,17 @@ bool ends_with(const string &str, const char *end);
   * Return if the given string starts with the other
   */
 bool starts_with(const string &str, const char *end);
+
+GDateTime* dateFromString(const gchar *tz,
+                          const gchar *year,
+                          const gchar *month,
+                          const gchar *day,
+                          const gchar *hour,
+                          const gchar *minute,
+                          const gchar *seconds);
+/**
+  * Return an utf8 string
+  */
+const char *utf8(const char *str);
 
 #endif
