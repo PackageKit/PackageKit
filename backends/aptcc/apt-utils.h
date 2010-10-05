@@ -106,7 +106,12 @@ PkGroupEnum get_enum_group(string group);
 /**
   * Return the changelog filename fetched
   */
-string getChangelogFile(const string &name, const string &uri, pkgAcquire *fetcher);
+string getChangelogFile(const string &name,
+                        const string &origin,
+                        const string &verstr,
+                        const string &srcPkg,
+                        const string &uri,
+                        pkgAcquire *fetcher);
 
 /**
   * Returns a list of links pairs url;description for CVEs

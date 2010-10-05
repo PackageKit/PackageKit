@@ -607,6 +607,7 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
     // Build the changelogURI
     char uri[512];
     string srcpkg;
+    string verstr;
 
     if (rec.SourcePkg().empty()) {
         srcpkg = pkg.Name();
@@ -623,18 +624,17 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
             src_section = "main";
         }
 
-        prefix+=srcpkg[0];
+        prefix += srcpkg[0];
         if(srcpkg.size() > 3 && srcpkg[0] == 'l' && srcpkg[1] == 'i' && srcpkg[2] == 'b') {
             prefix = string("lib") + srcpkg[3];
         }
 
-        string verstr;
         if(candver.VerStr() != NULL) {
             verstr = candver.VerStr();
         }
 
         if(verstr.find(':') != verstr.npos) {
-            verstr=string(verstr, verstr.find(':') + 1);
+            verstr = string(verstr, verstr.find(':') + 1);
         }
 
         if (origin.compare("Debian") == 0) {
@@ -685,7 +685,8 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
     fetcher.Setup(&Stat);
 
     // fetch the changelog
-    string filename = getChangelogFile(pkg.Name(), uri, &fetcher);
+    pk_backend_set_status(m_backend, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
+    string filename = getChangelogFile(pkg.Name(), origin, verstr, srcpkg, uri, &fetcher);
 
     string changelog;
     string update_text;

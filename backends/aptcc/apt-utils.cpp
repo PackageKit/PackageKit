@@ -244,7 +244,12 @@ get_enum_group (string group)
 	}
 }
 
-string getChangelogFile(const string &name, const string &uri, pkgAcquire *fetcher)
+string getChangelogFile(const string &name,
+                        const string &origin,
+                        const string &verstr,
+                        const string &srcPkg,
+                        const string &uri,
+                        pkgAcquire *fetcher)
 {
    string descr("Changelog for ");
    descr += name;
@@ -253,9 +258,6 @@ string getChangelogFile(const string &name, const string &uri, pkgAcquire *fetch
    string filename = "/tmp/aptcc_changelog";
 
    new pkgAcqFileSane(fetcher, uri, descr, name, filename);
-   //cerr << "**DEBUG** origin: " << origin() << endl;
-   //cerr << "**DEBUG** uri: " << uri << endl;
-   //cerr << "**DEBUG** filename: " << filename << endl;
 
    ofstream out(filename.c_str());
    if(fetcher->Run() == pkgAcquire::Failed) {
@@ -263,14 +265,23 @@ string getChangelogFile(const string &name, const string &uri, pkgAcquire *fetch
       out << "Please check your Internet connection." << endl;
       // FIXME: Need to dequeue the item
    } else {
-      struct stat filestatus;
-      stat(filename.c_str(), &filestatus );
-      if (filestatus.st_size == 0) {
-         out << "This change is not coming from a source that supports changelogs.\n" << endl;
-         out << "Failed to fetch the changelog for " << name << endl;
-         out << "URI was: " << uri << endl;
-      }
-   };
+        struct stat filestatus;
+        stat(filename.c_str(), &filestatus );
+
+        if (filestatus.st_size == 0) {
+            // FIXME: Use supportedOrigins
+            if (origin.compare("Ubuntu") == 0) {
+                out << "The list of changes is not available yet.\n" << endl;
+                out << "Please use http://launchpad.net/ubuntu/+source/"<< srcPkg <<
+                        "/" << verstr << "/+changelog" << endl;
+                out << "until the changes become available or try again later." << endl;
+            } else {
+                out << "This change is not coming from a source that supports changelogs.\n" << endl;
+                out << "Failed to fetch the changelog for " << name << endl;
+                out << "URI was: " << uri << endl;
+            }
+        }
+   }
    out.close();
 
    return filename;
