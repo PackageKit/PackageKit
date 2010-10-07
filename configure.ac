@@ -698,10 +698,9 @@ if test x$enable_opkg = xyes; then
 fi
 
 if test x$enable_alpm = xyes; then
-	with_default_backend=dummy
 	AC_CHECK_HEADER([alpm.h],
-			[with_default_backend=alpm],
-			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
+			[],
+			[AC_MSG_ERROR([No ALPM headers found])])
 fi
 
 if test x$enable_pacman = xyes; then
