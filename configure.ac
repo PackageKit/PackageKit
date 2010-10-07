@@ -873,6 +873,7 @@ echo "
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module (GTK2):       ${build_gtk_module_gtk2}
         Pango module (GTK3):       ${build_gtk_module_gtk3}
+        gobject-introspection:     ${found_introspection}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
