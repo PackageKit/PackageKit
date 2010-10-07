@@ -1,9 +1,11 @@
 NULL =
 
+if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+endif
 
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
