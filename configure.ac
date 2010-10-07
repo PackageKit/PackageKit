@@ -195,32 +195,6 @@ fi
 AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
 
 dnl ---------------------------------------------------------------------------
-dnl - Build packageKit-sharp
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
-	      enable_managed=$enableval,enable_managed=false)
-if test x$enable_managed = xyes; then
-	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
-
-	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
-	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
-
-	AC_PATH_PROG(MCS, mcs)
-	CS="C#"
-	if test ! -x "$MCS"; then
-		AC_PATH_PROG(MCS, gmcs)
-		if test ! -x "$MCS"; then
-			AC_MSG_ERROR([No $CS compiler found])
-		fi
-	fi
-
-	build_managed=yes
-else
-	build_managed=no
-fi
-AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
-
-dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(service-packs, AS_HELP_STRING([--disable-service-packs],[Disable Service Packs support]), enable_servicepacks=$enableval)
@@ -843,8 +817,6 @@ lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
 lib/packagekit-qt/packagekit-qt.pc
-lib/packagekit-sharp/Makefile
-lib/packagekit-sharp/samples/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
@@ -879,7 +851,6 @@ echo "
         device-rebind:             ${build_device_rebind}
         pm-utils scripts:          ${build_pm_utils}
         QT library:                ${build_qt}
-        Managed bindings:          ${build_managed}
 
         Backends:
         ALPM backend:              ${enable_alpm}
