@@ -1812,12 +1812,10 @@ backend_what_provides_thread (PkBackend *backend)
 	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	zypp::Capability cap (search);
-	zypp::sat::WhatProvides prov (cap);
+	zypp::ResPool pool = zypp_build_pool (backend, true);
 
 	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 		// solver run
-		zypp::ResPool pool = zypp_build_pool (backend, true);
 		zypp::Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
 
@@ -1851,6 +1849,9 @@ backend_what_provides_thread (PkBackend *backend)
 		}
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	} else {
+		zypp::Capability cap (search);
+		zypp::sat::WhatProvides prov (cap);
+
 		for (zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
 			if (zypp_filter_solvable (_filters, *it))
 				continue;
