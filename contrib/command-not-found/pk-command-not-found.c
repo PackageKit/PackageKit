@@ -431,7 +431,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 				   (GSourceFunc) pk_cnf_cancel_cb,
 				   cancellable);
 #if GLIB_CHECK_VERSION(2,25,8)
-	g_source_set_name_by_id (cancel_id, "[PkCommandNotFount] cancel");
+	g_source_set_name_by_id (cancel_id, "[PkCommandNotFound] cancel");
 #endif
 
 	/* do search */
@@ -439,7 +439,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 					  PK_FILTER_ENUM_NEWEST,
 					  PK_FILTER_ENUM_ARCH, -1);
 	results = pk_client_search_files (PK_CLIENT(task), filters, values, cancellable,
-					 (PkProgressCallback) pk_cnf_progress_cb, NULL, &error);
+					  NULL, NULL, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to find the package, this shouldn't happen */
 		g_printerr ("%s: %s\n", _("Failed to search for file"), error->message);
@@ -451,17 +451,10 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_TRANSACTION_CANCELLED) {
-			/* TRANSLATORS: the transaction took too long to process */
-			g_printerr ("%s\n", _("The search was cancelled as it was taking too long to complete."));
-
-			/* TRANSLATORS: tell the user what to do --
-			 * the first %s is the keyname, e.g. "MaxSearchTime"
-			 * the second %s is the config file location, e.g. "/etc/PackageKit/CommandNotFound.conf" */
-			g_printerr (_("You can increase the value of '%s' in %s to change the timeout."),
-				    "MaxSearchTime", SYSCONFDIR "/PackageKit/CommandNotFound.conf");
+			egg_debug ("The search was cancelled as it was taking too long");
 		} else {
 			/* TRANSLATORS: the transaction failed in a way we could not expect */
-			g_printerr ("%s: %s, %s\n", _("The transaction failed"),
+			g_printerr ("%s: %s, %s\n", _("Getting the list of files failed"),
 				    pk_error_enum_to_string (pk_error_get_code (error_code)),
 				    pk_error_get_details (error_code));
 			goto out;
@@ -736,8 +729,10 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
-	/* TRANSLATORS: the prefix of all the output telling the user why it's not executing */
-	g_printerr ("%s ", _("Command not found."));
+	/* TRANSLATORS: the prefix of all the output telling the user
+	 * why it's not executing. NOTE: this is lowercase to mimic
+	 * the style of bash itself -- apologies */
+	g_printerr ("bash: %s: %s...\n", argv[1], _("command not found"));
 
 	/* user is not allowing CNF to do anything useful */
 	if (!config->software_source_search &&
@@ -757,13 +752,17 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: tell the user what we think the command is */
 			g_printerr ("%s '%s'\n", _("Similar command is:"), possible);
 			retval = EXIT_COMMAND_NOT_FOUND;
+			goto out;
+		}
 
 		/* run */
-		} else if (config->single_match == PK_CNF_POLICY_RUN) {
+		if (config->single_match == PK_CNF_POLICY_RUN) {
 			retval = pk_cnf_spawn_command (possible, &argv[2]);
+			goto out;
+		}
 
 		/* ask */
-		} else if (config->single_match == PK_CNF_POLICY_ASK) {
+		if (config->single_match == PK_CNF_POLICY_ASK) {
 			/* TRANSLATORS: Ask the user if we should run the similar command */
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
@@ -814,9 +813,11 @@ main (int argc, char *argv[])
 			if (config->single_install == PK_CNF_POLICY_WARN) {
 				/* TRANSLATORS: tell the user what package provides the command */
 				g_printerr ("%s '%s'\n", _("The package providing this file is:"), parts[PK_PACKAGE_ID_NAME]);
+				goto out;
+			}
 
 			/* ask */
-			} else if (config->single_install == PK_CNF_POLICY_ASK) {
+			if (config->single_install == PK_CNF_POLICY_ASK) {
 				/* TRANSLATORS: as the user if we want to install a package to provide the command */
 				text = g_strdup_printf (_("Install package '%s' to provide command '%s'?"), parts[PK_PACKAGE_ID_NAME], argv[1]);
 				ret = pk_console_get_prompt (text, FALSE);
@@ -828,9 +829,12 @@ main (int argc, char *argv[])
 					else
 						retval = EXIT_COMMAND_NOT_FOUND;
 				}
+				g_print ("\n");
+				goto out;
+			}
 
 			/* install */
-			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
+			if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
 					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
@@ -873,9 +877,6 @@ main (int argc, char *argv[])
 			goto out;
 		}
 	}
-
-	g_printerr ("\n");
-
 out:
 	g_strfreev (package_ids);
 	if (task != NULL)
