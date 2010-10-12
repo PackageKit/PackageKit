@@ -77,7 +77,6 @@ EXTRA_DIST =						\
 
 DISTCHECK_CONFIGURE_FLAGS = 				\
 	--enable-gtk-doc				\
-	--enable-introspection				\
 	--with-security-framework=dummy			\
 	--disable-tests					\
 	$(NULL)
