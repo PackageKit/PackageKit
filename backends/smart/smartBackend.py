@@ -1330,5 +1330,8 @@ def main():
     backend = PackageKitSmartBackend('')
     backend.dispatcher(sys.argv[1:])
 
+# Required for daemon mode
+os.putenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+
 if __name__ == "__main__":
     main()
