@@ -28,6 +28,7 @@ from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
 import sys
+import os
 import codecs
 import locale
 
@@ -938,7 +939,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     systemchannel = None # unfortunately package strings depend on system
 
     def _machine(self):
-        import os
         machine = os.uname()[-1]
         if machine == "Power Macintosh": #<sigh>
             machine = "ppc"
