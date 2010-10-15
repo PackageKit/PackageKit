@@ -1331,7 +1331,10 @@ def main():
     backend.dispatcher(sys.argv[1:])
 
 # Required for daemon mode
-os.putenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+if sys.platform.startswith("linux"):
+    os.putenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+elif sys.platform.startswith("freebsd"):
+    os.putenv("PATH", "/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin")
 
 if __name__ == "__main__":
     main()
