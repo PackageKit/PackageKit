@@ -40,8 +40,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
-
 static void     pk_package_sack_finalize	(GObject     *object);
 
 #define PK_PACKAGE_SACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PACKAGE_SACK, PkPackageSackPrivate))
@@ -610,7 +608,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to resolve: %s", error->message);
+		g_warning ("failed to resolve: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -619,7 +617,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	/* get the packages */
 	packages = pk_results_get_package_array (results);
 	if (packages->len == 0) {
-		egg_warning ("%i", state->ret);
+		g_warning ("%i", state->ret);
 		error = g_error_new (1, 0, "no packages found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
@@ -638,7 +636,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 
@@ -764,7 +762,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to details: %s", error->message);
+		g_warning ("failed to details: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -795,7 +793,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 
@@ -902,7 +900,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to update_detail: %s", error->message);
+		g_warning ("failed to update_detail: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -938,7 +936,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 

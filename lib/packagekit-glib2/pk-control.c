@@ -38,8 +38,6 @@
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-version.h>
 
-#include "egg-debug.h"
-
 static void     pk_control_finalize	(GObject     *object);
 
 #define PK_CONTROL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONTROL, PkControlPrivate))
@@ -172,7 +170,7 @@ pk_control_cancellable_cancel_cb (GCancellable *cancellable, PkControlState *sta
 	if (state->call != NULL) {
 		dbus_g_proxy_cancel_call (state->control->priv->proxy, state->call);
 		dbus_g_proxy_cancel_call (state->control->priv->proxy_props, state->call);
-		egg_debug ("cancelling, ended DBus call: %p (%p)", state, state->call);
+		g_debug ("cancelling, ended DBus call: %p (%p)", state, state->call);
 		state->call = NULL;
 	}
 }
@@ -195,9 +193,9 @@ pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -233,7 +231,7 @@ pk_control_get_tid_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState *
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
+		g_warning ("failed: %s", error->message);
 		pk_control_get_tid_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -255,7 +253,7 @@ static void
 pk_control_call_destroy_cb (PkControlState *state)
 {
 	if (state->call != NULL)
-		egg_warning ("%p was destroyed before it was cleared", state->call);
+		g_warning ("%p was destroyed before it was cleared", state->call);
 }
 
 /**
@@ -303,11 +301,11 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 					       (DBusGProxyCallNotify) pk_control_get_tid_cb, state,
 					       (GDestroyNotify) pk_control_call_destroy_cb, G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -363,9 +361,9 @@ pk_control_suggest_daemon_quit_state_finish (PkControlState *state, const GError
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -397,7 +395,7 @@ pk_control_suggest_daemon_quit_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCo
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to suggest quit: %s", error->message);
+		g_warning ("failed to suggest quit: %s", error->message);
 		pk_control_suggest_daemon_quit_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -457,11 +455,11 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 					       (DBusGProxyCallNotify) pk_control_suggest_daemon_quit_cb, state,
 					       NULL, G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -517,9 +515,9 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *e
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -555,7 +553,7 @@ pk_control_get_daemon_state_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkContr
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
+		g_warning ("failed: %s", error->message);
 		pk_control_get_daemon_state_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -615,11 +613,11 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 					       (DBusGProxyCallNotify) pk_control_get_daemon_state_cb, state,
 					       NULL, G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -675,9 +673,9 @@ pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -709,7 +707,7 @@ pk_control_set_proxy_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlState
 	ret = dbus_g_proxy_end_call (proxy, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to set proxy: %s", error->message);
+		g_warning ("failed to set proxy: %s", error->message);
 		pk_control_set_proxy_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -774,11 +772,11 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 					       G_TYPE_STRING, proxy_ftp,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -834,9 +832,9 @@ pk_control_set_root_state_finish (PkControlState *state, const GError *error)
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -868,7 +866,7 @@ pk_control_set_root_cb (DBusGProxy *root, DBusGProxyCall *call, PkControlState *
 	ret = dbus_g_proxy_end_call (root, call, &error,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to set root: %s", error->message);
+		g_warning ("failed to set root: %s", error->message);
 		pk_control_set_root_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -931,11 +929,11 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 					       G_TYPE_STRING, root,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -991,9 +989,9 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, const GErro
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1029,7 +1027,7 @@ pk_control_get_transaction_list_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkC
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
+		g_warning ("failed: %s", error->message);
 		pk_control_get_transaction_list_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -1089,11 +1087,11 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 					       (DBusGProxyCallNotify) pk_control_get_transaction_list_cb, state,
 					       NULL, G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1149,9 +1147,9 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, const GErr
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1186,7 +1184,7 @@ pk_control_get_time_since_action_cb (DBusGProxy *proxy, DBusGProxyCall *call, Pk
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
+		g_warning ("failed: %s", error->message);
 		pk_control_get_time_since_action_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -1257,11 +1255,11 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 					       G_TYPE_STRING, role_text,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1317,9 +1315,9 @@ pk_control_can_authorize_state_finish (PkControlState *state, const GError *erro
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1354,7 +1352,7 @@ pk_control_can_authorize_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControlS
 	if (!ret) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		egg_warning ("failed: %s", error->message);
+		g_warning ("failed: %s", error->message);
 		pk_control_can_authorize_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -1425,11 +1423,11 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 					       G_TYPE_STRING, action_id,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1484,9 +1482,9 @@ pk_control_get_properties_state_finish (PkControlState *state, const GError *err
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
 	if (state->call != NULL)
-		egg_warning ("state array remove %p (%p)", state, state->call);
+		g_warning ("state array remove %p (%p)", state, state->call);
 	else
-		egg_debug ("state array remove %p", state);
+		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1513,7 +1511,7 @@ pk_control_set_version_major (PkControl *control, guint version_major)
 	control->priv->version_major = version_major;
 
 	/* notify we're changed */
-	egg_debug ("notify::version-major");
+	g_debug ("notify::version-major");
 	g_object_notify (G_OBJECT(control), "version-major");
 }
 
@@ -1529,7 +1527,7 @@ pk_control_set_version_minor (PkControl *control, guint version_minor)
 	control->priv->version_minor = version_minor;
 
 	/* notify we're changed */
-	egg_debug ("notify::version-minor");
+	g_debug ("notify::version-minor");
 	g_object_notify (G_OBJECT(control), "version-minor");
 }
 
@@ -1545,7 +1543,7 @@ pk_control_set_version_micro (PkControl *control, guint version_micro)
 	control->priv->version_micro = version_micro;
 
 	/* notify we're changed */
-	egg_debug ("notify::version-micro");
+	g_debug ("notify::version-micro");
 	g_object_notify (G_OBJECT(control), "version-micro");
 }
 
@@ -1561,7 +1559,7 @@ pk_control_set_locked (PkControl *control, gboolean locked)
 	control->priv->locked = locked;
 
 	/* notify we're changed */
-	egg_debug ("notify::locked");
+	g_debug ("notify::locked");
 	g_object_notify (G_OBJECT(control), "locked");
 }
 
@@ -1578,7 +1576,7 @@ pk_control_set_backend_name (PkControl *control, const gchar *backend_name)
 	control->priv->backend_name = g_strdup (backend_name);
 
 	/* notify we're changed */
-	egg_debug ("notify::backend-name");
+	g_debug ("notify::backend-name");
 	g_object_notify (G_OBJECT(control), "backend-name");
 }
 
@@ -1595,7 +1593,7 @@ pk_control_set_backend_author (PkControl *control, const gchar *backend_author)
 	control->priv->backend_author = g_strdup (backend_author);
 
 	/* notify we're changed */
-	egg_debug ("notify::backend-author");
+	g_debug ("notify::backend-author");
 	g_object_notify (G_OBJECT(control), "backend-author");
 }
 
@@ -1612,7 +1610,7 @@ pk_control_set_backend_description (PkControl *control, const gchar *backend_des
 	control->priv->backend_description = g_strdup (backend_description);
 
 	/* notify we're changed */
-	egg_debug ("notify::backend-description");
+	g_debug ("notify::backend-description");
 	g_object_notify (G_OBJECT(control), "backend-description");
 }
 
@@ -1629,7 +1627,7 @@ pk_control_set_mime_types (PkControl *control, const gchar *mime_types)
 	control->priv->mime_types = g_strdup (mime_types);
 
 	/* notify we're changed */
-	egg_debug ("notify::mime-types");
+	g_debug ("notify::mime-types");
 	g_object_notify (G_OBJECT(control), "mime-types");
 }
 
@@ -1645,7 +1643,7 @@ pk_control_set_roles (PkControl *control, PkBitfield roles)
 	control->priv->roles = roles;
 
 	/* notify we're changed */
-	egg_debug ("notify::roles");
+	g_debug ("notify::roles");
 	g_object_notify (G_OBJECT(control), "roles");
 }
 
@@ -1661,7 +1659,7 @@ pk_control_set_groups (PkControl *control, PkBitfield groups)
 	control->priv->groups = groups;
 
 	/* notify we're changed */
-	egg_debug ("notify::groups");
+	g_debug ("notify::groups");
 	g_object_notify (G_OBJECT(control), "groups");
 }
 
@@ -1677,7 +1675,7 @@ pk_control_set_filters (PkControl *control, PkBitfield filters)
 	control->priv->filters = filters;
 
 	/* notify we're changed */
-	egg_debug ("notify::filters");
+	g_debug ("notify::filters");
 	g_object_notify (G_OBJECT(control), "filters");
 }
 
@@ -1693,7 +1691,7 @@ pk_control_set_network_state (PkControl *control, PkNetworkEnum network_state)
 	control->priv->network_state = network_state;
 
 	/* notify we're changed */
-	egg_debug ("notify::network-state");
+	g_debug ("notify::network-state");
 	g_object_notify (G_OBJECT(control), "network-state");
 }
 
@@ -1710,7 +1708,7 @@ pk_control_set_distro_id (PkControl *control, const gchar *distro_id)
 	control->priv->distro_id = g_strdup (distro_id);
 
 	/* notify we're changed */
-	egg_debug ("notify::distro-id");
+	g_debug ("notify::distro-id");
 	g_object_notify (G_OBJECT(control), "distro-id");
 }
 
@@ -1747,7 +1745,7 @@ pk_control_get_properties_collect_cb (const char *key, const GValue *value, PkCo
 	} else if (g_strcmp0 (key, "DistroId") == 0) {
 		pk_control_set_distro_id (control, g_value_get_string (value));
 	} else {
-		egg_warning ("unhandled property '%s'", key);
+		g_warning ("unhandled property '%s'", key);
 	}
 }
 
@@ -1769,7 +1767,7 @@ pk_control_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkControl
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to get properties: %s", error->message);
+		g_warning ("failed to get properties: %s", error->message);
 		pk_control_get_properties_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -1839,11 +1837,11 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 					       G_TYPE_STRING, "org.freedesktop.PackageKit",
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	egg_debug ("state array add %p (%p)", state, state->call);
+	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1905,7 +1903,7 @@ pk_control_idle_signal_store_free (PkIdleSignalStore *store)
 static gboolean
 pk_control_transaction_list_changed_idle_cb (PkIdleSignalStore *store)
 {
-	egg_debug ("emit transaction-list-changed");
+	g_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, store->transaction_ids);
 	store->control->priv->transaction_list_changed_id = 0;
 	pk_control_idle_signal_store_free (store);
@@ -1924,7 +1922,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 
 	/* already pending */
 	if (control->priv->transaction_list_changed_id != 0) {
-		egg_debug ("already pending, so ignoring");
+		g_debug ("already pending, so ignoring");
 		return;
 	}
 
@@ -1934,7 +1932,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 	store->transaction_ids = g_strdupv (transaction_ids);
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
-	egg_debug ("emit transaction-list-changed (when idle)");
+	g_debug ("emit transaction-list-changed (when idle)");
 	control->priv->transaction_list_changed_id =
 		g_idle_add ((GSourceFunc) pk_control_transaction_list_changed_idle_cb, store);
 #if GLIB_CHECK_VERSION(2,25,8)
@@ -1949,7 +1947,7 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 static gboolean
 pk_control_restart_schedule_idle_cb (PkIdleSignalStore *store)
 {
-	egg_debug ("emit transaction-list-changed");
+	g_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_RESTART_SCHEDULE], 0);
 	store->control->priv->restart_schedule_id = 0;
 	pk_control_idle_signal_store_free (store);
@@ -1968,7 +1966,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* already pending */
 	if (control->priv->restart_schedule_id != 0) {
-		egg_debug ("already pending, so ignoring");
+		g_debug ("already pending, so ignoring");
 		return;
 	}
 
@@ -1977,7 +1975,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 	store->control = g_object_ref (control);
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
-	egg_debug ("emit restart-schedule (when idle)");
+	g_debug ("emit restart-schedule (when idle)");
 	store->control->priv->restart_schedule_id =
 		g_idle_add ((GSourceFunc) pk_control_restart_schedule_idle_cb, store);
 #if GLIB_CHECK_VERSION(2,25,8)
@@ -1992,7 +1990,7 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 static gboolean
 pk_control_updates_changed_idle_cb (PkIdleSignalStore *store)
 {
-	egg_debug ("emit transaction-list-changed");
+	g_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_UPDATES_CHANGED], 0);
 	store->control->priv->updates_changed_id = 0;
 	pk_control_idle_signal_store_free (store);
@@ -2011,7 +2009,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* already pending */
 	if (control->priv->updates_changed_id != 0) {
-		egg_debug ("already pending, so ignoring");
+		g_debug ("already pending, so ignoring");
 		return;
 	}
 
@@ -2020,7 +2018,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 	store->control = g_object_ref (control);
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
-	egg_debug ("emit updates-changed (when idle)");
+	g_debug ("emit updates-changed (when idle)");
 	control->priv->updates_changed_id =
 		g_idle_add ((GSourceFunc) pk_control_updates_changed_idle_cb, store);
 #if GLIB_CHECK_VERSION(2,25,8)
@@ -2035,7 +2033,7 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 static gboolean
 pk_control_repo_list_changed_idle_cb (PkIdleSignalStore *store)
 {
-	egg_debug ("emit transaction-list-changed");
+	g_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 	store->control->priv->repo_list_changed_id = 0;
 	pk_control_idle_signal_store_free (store);
@@ -2054,7 +2052,7 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 
 	/* already pending */
 	if (control->priv->repo_list_changed_id != 0) {
-		egg_debug ("already pending, so ignoring");
+		g_debug ("already pending, so ignoring");
 		return;
 	}
 
@@ -2063,7 +2061,7 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 	store->control = g_object_ref (control);
 
 	/* we have to do this idle as the transaction list will change when not yet finished */
-	egg_debug ("emit repo-list-changed (when idle)");
+	g_debug ("emit repo-list-changed (when idle)");
 	control->priv->repo_list_changed_id =
 		g_idle_add ((GSourceFunc) pk_control_repo_list_changed_idle_cb, store);
 #if GLIB_CHECK_VERSION(2,25,8)
@@ -2090,7 +2088,7 @@ pk_control_changed_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, P
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to get properties: %s", error->message);
+		g_warning ("failed to get properties: %s", error->message);
 		goto out;
 	}
 
@@ -2113,12 +2111,12 @@ pk_control_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	/* already getting properties */
 	if (control->priv->call_get_properties != NULL) {
-		egg_warning ("already getting properties, will ignore");
+		g_warning ("already getting properties, will ignore");
 		return;
 	}
 
 	/* call D-Bus get_properties async */
-	egg_debug ("properties changed, so getting new list");
+	g_debug ("properties changed, so getting new list");
 
 	/* TODO: idle? */
 	control->priv->call_get_properties =
@@ -2144,7 +2142,7 @@ pk_control_cancel_all_dbus_methods (PkControl *control)
 		state = g_ptr_array_index (array, i);
 		if (state->call == NULL)
 			continue;
-		egg_debug ("cancel in flight call: %p (%p)", state, state->call);
+		g_debug ("cancel in flight call: %p (%p)", state, state->call);
 		dbus_g_proxy_cancel_call (control->priv->proxy, state->call);
 	}
 
@@ -2177,7 +2175,7 @@ pk_control_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name, const gc
 	/* something --> nothing */
 	if (prev_len != 0 && new_len == 0) {
 		control->priv->connected = FALSE;
-		egg_debug ("notify::connected");
+		g_debug ("notify::connected");
 		g_object_notify (G_OBJECT(control), "connected");
 		return;
 	}
@@ -2185,7 +2183,7 @@ pk_control_name_owner_changed_cb (DBusGProxy *proxy, const gchar *name, const gc
 	/* nothing --> something */
 	if (prev_len == 0 && new_len != 0) {
 		control->priv->connected = TRUE;
-		egg_debug ("notify::connected");
+		g_debug ("notify::connected");
 		g_object_notify (G_OBJECT(control), "connected");
 		return;
 	}
@@ -2501,7 +2499,7 @@ pk_control_init (PkControl *control)
 	/* check dbus connections, exit if not valid */
 	control->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		egg_warning ("%s", error->message);
+		g_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
@@ -2516,21 +2514,21 @@ pk_control_init (PkControl *control)
 							  PK_DBUS_SERVICE, PK_DBUS_PATH,
 							  PK_DBUS_INTERFACE);
 	if (control->priv->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit.");
+		g_error ("Cannot connect to PackageKit.");
 
 	/* get a connection to collect properties */
 	control->priv->proxy_props = dbus_g_proxy_new_for_name (control->priv->connection,
 								PK_DBUS_SERVICE, PK_DBUS_PATH,
 								"org.freedesktop.DBus.Properties");
 	if (control->priv->proxy_props == NULL)
-		egg_error ("Cannot connect to PackageKit.");
+		g_error ("Cannot connect to PackageKit.");
 
 	/* get a connection to watch NameOwnerChanged */
 	control->priv->proxy_dbus = dbus_g_proxy_new_for_name_owner (control->priv->connection,
 								     DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
 								     DBUS_INTERFACE_DBUS, &error);
 	if (control->priv->proxy_dbus == NULL) {
-		egg_error ("Cannot connect to DBUS: %s", error->message);
+		g_error ("Cannot connect to DBUS: %s", error->message);
 		g_error_free (error);
 	}
 

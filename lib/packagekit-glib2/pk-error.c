@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-error.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_error_finalize	(GObject     *object);
 
 #define PK_ERROR_CODE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ERROR_CODE, PkErrorPrivate))

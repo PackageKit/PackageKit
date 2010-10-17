@@ -33,8 +33,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
-#include "egg-debug.h"
-
 static PkProgressBar *progressbar = NULL;
 static GCancellable *cancellable = NULL;
 
@@ -54,7 +52,7 @@ pk_generate_pack_get_filename (const gchar *name, const gchar *directory)
 	control = pk_control_new ();
 	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
-		egg_error ("Failed to contact PackageKit: %s", error->message);
+		g_error ("Failed to contact PackageKit: %s", error->message);
 		g_error_free (error);
 		return NULL;
 	}
@@ -130,7 +128,7 @@ pk_generate_pack_progress_cb (PkProgress *progress, PkProgressType type, gpointe
 static void
 pk_generate_pack_sigint_cb (int sig)
 {
-	egg_debug ("Handling SIGINT");
+	g_debug ("Handling SIGINT");
 
 	/* restore default */
 	signal (SIGINT, SIG_DFL);
@@ -139,7 +137,7 @@ pk_generate_pack_sigint_cb (int sig)
 	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
+	g_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -281,7 +279,7 @@ main (int argc, char *argv[])
 
 	context = g_option_context_new ("PackageKit Pack Generator");
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);

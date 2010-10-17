@@ -44,7 +44,6 @@
 #include <polkit/polkit.h>
 #endif
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-network.h"
@@ -182,7 +181,7 @@ pk_engine_error_get_type (void)
 static void
 pk_engine_reset_timer (PkEngine *engine)
 {
-	egg_debug ("reset timer");
+	g_debug ("reset timer");
 	g_timer_reset (engine->priv->timer);
 }
 
@@ -198,7 +197,7 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
-	egg_debug ("emitting transaction-list-changed");
+	g_debug ("emitting transaction-list-changed");
 	g_signal_emit (engine, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
 
@@ -220,7 +219,7 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 	engine->priv->locked = is_locked;
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -231,7 +230,7 @@ static void
 pk_engine_notify_repo_list_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("emitting repo-list-changed");
+	g_debug ("emitting repo-list-changed");
 	g_signal_emit (engine, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 }
 
@@ -242,7 +241,7 @@ static void
 pk_engine_notify_updates_changed_cb (PkNotify *notify, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("emitting updates-changed");
+	g_debug ("emitting updates-changed");
 	g_signal_emit (engine, signals[SIGNAL_UPDATES_CHANGED], 0);
 }
 
@@ -272,7 +271,7 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	egg_debug ("GetTid method called");
+	g_debug ("GetTid method called");
 	sender = dbus_g_method_get_sender (context);
 	new_tid = pk_transaction_db_generate_id (engine->priv->transaction_db);
 
@@ -284,7 +283,7 @@ pk_engine_get_tid (PkEngine *engine, DBusGMethodInvocation *context)
 		goto out;
 	}
 
-	egg_debug ("sending tid: '%s'", new_tid);
+	g_debug ("sending tid: '%s'", new_tid);
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -322,7 +321,7 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	egg_debug ("GetTransactionList method called");
+	g_debug ("GetTransactionList method called");
 	if (transaction_list != NULL)
 		*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
@@ -352,7 +351,7 @@ pk_engine_state_changed_cb (gpointer data)
 		return TRUE;
 	}
 
-	egg_debug ("unreffing updates cache as state may have changed");
+	g_debug ("unreffing updates cache as state may have changed");
 	pk_cache_invalidate (engine->priv->cache);
 
 	pk_notify_updates_changed (engine->priv->notify);
@@ -382,7 +381,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 
 	/* have we already scheduled priority? */
 	if (engine->priv->timeout_priority_id != 0) {
-		egg_warning ("Already asked to refresh priority state less than %i seconds ago",
+		g_warning ("Already asked to refresh priority state less than %i seconds ago",
 			     engine->priv->timeout_priority);
 		goto out;
 	}
@@ -393,7 +392,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 
 	/* are we normal, and already scheduled normal? */
 	if (!is_priority && engine->priv->timeout_normal_id != 0) {
-		egg_warning ("Already asked to refresh normal state less than %i seconds ago",
+		g_warning ("Already asked to refresh normal state less than %i seconds ago",
 			     engine->priv->timeout_normal);
 		goto out;
 	}
@@ -462,20 +461,20 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	 * give sufficient percentage updates to not be marked as idle */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size != 0) {
-		egg_debug ("engine idle zero as %i transactions in progress", size);
+		g_debug ("engine idle zero as %i transactions in progress", size);
 		return 0;
 	}
 
 	/* have we been updated? */
 	if (engine->priv->notify_clients_of_upgrade) {
-		egg_debug ("emitting restart-schedule because of binary change");
+		g_debug ("emitting restart-schedule because of binary change");
 		g_signal_emit (engine, signals[SIGNAL_RESTART_SCHEDULE], 0);
 		return G_MAXUINT;
 	}
 
 	/* do we need to shutdown quickly */
 	if (engine->priv->shutdown_as_soon_as_possible) {
-		egg_debug ("need to restart daemon asap");
+		g_debug ("need to restart daemon asap");
 		return G_MAXUINT;
 	}
 
@@ -496,7 +495,7 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	/* can we exit straight away */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size == 0) {
-		egg_debug ("emitting quit");
+		g_debug ("emitting quit");
 		g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
 		return TRUE;
 	}
@@ -521,28 +520,28 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender, const gchar
 	/* try to set the new proxy */
 	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
 	if (!ret) {
-		egg_warning ("setting the proxy failed");
+		g_warning ("setting the proxy failed");
 		goto out;
 	}
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		egg_warning ("failed to get the uid");
+		g_warning ("failed to get the uid");
 		goto out;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		egg_warning ("failed to get the session");
+		g_warning ("failed to get the session");
 		goto out;
 	}
 
 	/* save to database */
 	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db, uid, session, proxy_http, proxy_ftp);
 	if (!ret) {
-		egg_warning ("failed to save the proxy in the database");
+		g_warning ("failed to save the proxy in the database");
 		goto out;
 	}
 out:
@@ -595,7 +594,7 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 
 	/* admin already set value, so silently refuse value */
 	if (priv->using_hardcoded_proxy) {
-		egg_debug ("cannot override admin set proxy");
+		g_debug ("cannot override admin set proxy");
 		dbus_g_method_return (state->context);
 		goto out;
 	}
@@ -610,8 +609,8 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 	}
 
 	/* only set after the auth success */
-	egg_debug ("changing http proxy to %s for %s", state->value1, state->sender);
-	egg_debug ("changing ftp proxy to %s for %s", state->value2, state->sender);
+	g_debug ("changing http proxy to %s for %s", state->value1, state->sender);
+	g_debug ("changing ftp proxy to %s for %s", state->value2, state->sender);
 
 	/* all okay */
 	dbus_g_method_return (state->context);
@@ -643,14 +642,14 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender, const gchar
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		egg_warning ("failed to get the uid for %s", sender);
+		g_warning ("failed to get the uid for %s", sender);
 		goto out;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		egg_warning ("failed to get the session for %s", sender);
+		g_warning ("failed to get the session for %s", sender);
 		goto out;
 	}
 
@@ -693,7 +692,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	if (proxy_ftp != NULL && proxy_ftp[0] == '\0')
 		proxy_ftp = NULL;
 
-	egg_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
+	g_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
 
 	/* check length of http */
 	len = egg_strlen (proxy_http, 1024);
@@ -717,7 +716,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* is exactly the same proxy? */
 	ret = pk_engine_is_proxy_unchanged (engine, sender, proxy_http, proxy_ftp);
 	if (ret) {
-		egg_debug ("not changing proxy as the same as before");
+		g_debug ("not changing proxy as the same as before");
 		dbus_g_method_return (context);
 		goto out;
 	}
@@ -750,7 +749,7 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check_authorization ref's this */
 	g_object_unref (details);
 #else
-	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new proxy and save to database */
 	ret = pk_engine_set_proxy_internal (engine, sender, proxy_http, proxy_ftp);
@@ -787,28 +786,28 @@ pk_engine_set_root_internal (PkEngine *engine, const gchar *root, const gchar *s
 	/* try to set the new root */
 	ret = pk_backend_set_root (engine->priv->backend, root);
 	if (!ret) {
-		egg_warning ("setting the root failed");
+		g_warning ("setting the root failed");
 		goto out;
 	}
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		egg_warning ("failed to get the uid");
+		g_warning ("failed to get the uid");
 		goto out;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		egg_warning ("failed to get the session");
+		g_warning ("failed to get the session");
 		goto out;
 	}
 
 	/* save to database */
 	ret = pk_transaction_db_set_root (engine->priv->transaction_db, uid, session, root);
 	if (!ret) {
-		egg_warning ("failed to save the root in the database");
+		g_warning ("failed to save the root in the database");
 		goto out;
 	}
 out:
@@ -859,7 +858,7 @@ pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authori
 	}
 
 	/* save these so we can set them after the auth success */
-	egg_debug ("changing root to %s for %s", state->value1, state->sender);
+	g_debug ("changing root to %s for %s", state->value1, state->sender);
 
 	/* all okay */
 	dbus_g_method_return (state->context);
@@ -890,14 +889,14 @@ pk_engine_is_root_unchanged (PkEngine *engine, const gchar *sender, const gchar 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
-		egg_warning ("failed to get the uid for %s", sender);
+		g_warning ("failed to get the uid for %s", sender);
 		goto out;
 	}
 
 	/* get session */
 	session = pk_dbus_get_session (engine->priv->dbus, sender);
 	if (session == NULL) {
-		egg_warning ("failed to get the session for %s", sender);
+		g_warning ("failed to get the session for %s", sender);
 		goto out;
 	}
 
@@ -937,7 +936,7 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	    root[0] == '\0')
 		root = "/";
 
-	egg_debug ("SetRoot method called: %s", root);
+	g_debug ("SetRoot method called: %s", root);
 
 	/* check length of root */
 	len = egg_strlen (root, 1024);
@@ -960,7 +959,7 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	/* is exactly the same root? */
 	ret = pk_engine_is_root_unchanged (engine, sender, root);
 	if (ret) {
-		egg_debug ("not changing root as the same as before");
+		g_debug ("not changing root as the same as before");
 		dbus_g_method_return (context);
 		goto out;
 	}
@@ -969,7 +968,7 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	if (g_strcmp0 (root, "/") == 0) {
 		ret = pk_engine_set_root_internal (engine, root, sender);
 		if (ret) {
-			egg_debug ("using default root, so no need to authenticate");
+			g_debug ("using default root, so no need to authenticate");
 			dbus_g_method_return (context);
 		} else {
 			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_ROOT, "%s", "setting the root failed");
@@ -1005,7 +1004,7 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	/* check_authorization ref's this */
 	g_object_unref (details);
 #else
-	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new root and save to database */
 	ret = pk_engine_set_root_internal (engine, root, sender);
@@ -1351,7 +1350,7 @@ static void
 pk_engine_conf_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("setting shutdown_as_soon_as_possible TRUE");
+	g_debug ("setting shutdown_as_soon_as_possible TRUE");
 	engine->priv->shutdown_as_soon_as_possible = TRUE;
 }
 
@@ -1362,7 +1361,7 @@ static void
 pk_engine_binary_file_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	egg_debug ("setting notify_clients_of_upgrade TRUE");
+	g_debug ("setting notify_clients_of_upgrade TRUE");
 	engine->priv->notify_clients_of_upgrade = TRUE;
 }
 
@@ -1381,7 +1380,7 @@ pk_engine_network_state_changed_cb (PkNetwork *network, PkNetworkEnum network_st
 	engine->priv->network_state = network_state;
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (engine, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -1416,7 +1415,7 @@ pk_engine_init (PkEngine *engine)
 
 	/* clear the download cache */
 	filename = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-	egg_debug ("clearing download cache at %s", filename);
+	g_debug ("clearing download cache at %s", filename);
 	pk_directory_remove_contents (filename);
 	g_free (filename);
 
@@ -1428,7 +1427,7 @@ pk_engine_init (PkEngine *engine)
 	/* lock database */
 	ret = pk_backend_lock (engine->priv->backend);
 	if (!ret)
-		egg_error ("could not lock backend, you need to restart the daemon");
+		g_error ("could not lock backend, you need to restart the daemon");
 
 	/* proxy the network state */
 	engine->priv->network = pk_network_new ();
@@ -1471,7 +1470,7 @@ pk_engine_init (PkEngine *engine)
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
 	if (connection == NULL)
-		egg_error ("no connection");
+		g_error ("no connection");
 
 	/* add the interface */
 	engine->priv->notify = pk_notify_new ();
@@ -1560,7 +1559,7 @@ pk_engine_finalize (GObject *object)
 	/* unlock if we locked this */
 	ret = pk_backend_unlock (engine->priv->backend);
 	if (!ret)
-		egg_warning ("couldn't unlock the backend");
+		g_warning ("couldn't unlock the backend");
 
 	/* if we set an state changed notifier, clear */
 	if (engine->priv->timeout_priority_id != 0) {

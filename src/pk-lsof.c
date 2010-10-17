@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-lsof.h"
@@ -155,7 +154,7 @@ pk_lsof_refresh (PkLsof *lsof)
 	/* run lsof to get all data */
 	ret = g_spawn_command_line_sync ("/usr/sbin/lsof -Fpfn", &stdout, &stderr, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to get pids: %s", error->message);
+		g_warning ("failed to get pids: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -179,7 +178,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			/* parse PID */
 			ret = egg_strtoint (value, &pid);
 			if (!ret) {
-				egg_warning ("failed to parse pid: '%s'", value);
+				g_warning ("failed to parse pid: '%s'", value);
 				pid = -1;
 				goto out;
 			}
@@ -209,7 +208,7 @@ pk_lsof_refresh (PkLsof *lsof)
 			}
 			break;
 		default:
-			egg_debug ("ignoring %c=%s (type=%s)", mode, value, pk_lsof_type_to_string (type));
+			g_debug ("ignoring %c=%s (type=%s)", mode, value, pk_lsof_type_to_string (type));
 			break;
 		}
 	}
@@ -241,7 +240,7 @@ pk_lsof_get_pids_for_filenames (PkLsof *lsof, gchar **filenames)
 	if (list_data->len == 0) {
 		ret = pk_lsof_refresh (lsof);
 		if (!ret) {
-			egg_warning ("failed to refresh");
+			g_warning ("failed to refresh");
 			goto out;
 		}
 	}
@@ -251,7 +250,7 @@ pk_lsof_get_pids_for_filenames (PkLsof *lsof, gchar **filenames)
 	for (i=0; filenames[i] != NULL; i++) {
 		for (j=0; j < list_data->len; j++) {
 			data = g_ptr_array_index (list_data, j);
-			egg_debug ("got %s", data->filename);
+			g_debug ("got %s", data->filename);
 			if (g_strcmp0 (filenames[i], data->filename) == 0) {
 				pk_lsof_add_pid (pids, data->pid);
 			}

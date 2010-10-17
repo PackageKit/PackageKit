@@ -23,7 +23,6 @@
 
 #include <glib-object.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-catalog.h"
@@ -258,7 +257,7 @@ pk_test_catalog_lookup_cb (GObject *object, GAsyncResult *res, gpointer user_dat
 	/* list for shits and giggles */
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		egg_debug ("%i\t%s", i, pk_package_get_id (package));
+		g_debug ("%i\t%s", i, pk_package_get_id (package));
 	}
 	g_ptr_array_unref (array);
 	_g_test_loop_quit ();
@@ -272,7 +271,7 @@ pk_test_catalog_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -289,7 +288,7 @@ pk_test_catalog_func (void)
 				 (PkProgressCallback) pk_test_catalog_progress_cb, NULL,
 				 (GAsyncReadyCallback) pk_test_catalog_lookup_cb, NULL);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("resolvd, searched, etc. in %f", g_test_timer_elapsed ());
+	g_debug ("resolvd, searched, etc. in %f", g_test_timer_elapsed ());
 
 	g_object_unref (catalog);
 }
@@ -322,7 +321,7 @@ pk_test_client_resolve_cb (GObject *object, GAsyncResult *res, gpointer user_dat
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -351,7 +350,7 @@ pk_test_client_get_details_cb (GObject *object, GAsyncResult *res, gpointer user
 
 	g_ptr_array_unref (details);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -384,7 +383,7 @@ pk_test_client_get_updates_cb (GObject *object, GAsyncResult *res, gpointer user
 
 	g_object_unref (sack);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -463,7 +462,7 @@ pk_test_client_progress_cb (PkProgress *progress, PkProgressType type, gpointer 
 static gboolean
 pk_test_client_cancel_cb (GCancellable *cancellable)
 {
-	egg_warning ("cancelling method");
+	g_warning ("cancelling method");
 	g_cancellable_cancel (cancellable);
 	return FALSE;
 }
@@ -525,7 +524,7 @@ pk_test_client_notify_idle_cb (PkClient *client, GParamSpec *pspec, gpointer use
 {
 	gboolean idle;
 	g_object_get (client, "idle", &idle, NULL);
-	egg_debug ("idle=%i", idle);
+	g_debug ("idle=%i", idle);
 }
 
 static void
@@ -591,7 +590,7 @@ pk_test_client_func (void)
 		 (GAsyncReadyCallback) pk_test_client_resolve_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* check idle */
 	g_object_get (client, "idle", &ret, NULL);
@@ -607,7 +606,7 @@ pk_test_client_func (void)
 	g_assert_cmpstr (tid, ==, _tid);
 	g_assert_cmpint (role, ==, PK_ROLE_ENUM_RESOLVE);
 	g_assert_cmpint (status, ==, PK_STATUS_ENUM_FINISHED);
-	egg_debug ("got progress in %f", g_test_timer_elapsed ());
+	g_debug ("got progress in %f", g_test_timer_elapsed ());
 	g_object_unref (progress);
 	g_free (tid);
 	g_free (_tid);
@@ -628,7 +627,7 @@ pk_test_client_func (void)
 		     (GAsyncReadyCallback) pk_test_client_get_details_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* got updates */
 	g_assert_cmpint (_progress_cb, >, 0);
@@ -644,7 +643,7 @@ pk_test_client_func (void)
 		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
 		     (GAsyncReadyCallback) pk_test_client_get_updates_cb, NULL);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("got updates in %f", g_test_timer_elapsed ());
+	g_debug ("got updates in %f", g_test_timer_elapsed ());
 
 	/* it takes more than 50ms to get the progress of the transaction, and if
 	 * getting updates from internal cache, then it'll take a shed load less
@@ -662,7 +661,7 @@ pk_test_client_func (void)
 		     (GAsyncReadyCallback) pk_test_client_search_name_cb, NULL);
 	g_timeout_add (1000, (GSourceFunc) pk_test_client_cancel_cb, cancellable);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("cancelled in %f", g_test_timer_elapsed ());
+	g_debug ("cancelled in %f", g_test_timer_elapsed ());
 
 	/* ensure we abort with error if we cancel */
 	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
@@ -682,7 +681,7 @@ pk_test_client_func (void)
 		   (GAsyncReadyCallback) pk_test_client_download_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("downloaded and copied in %f", g_test_timer_elapsed ());
+	g_debug ("downloaded and copied in %f", g_test_timer_elapsed ());
 
 	/* test recursive signal handling */
 #if 0
@@ -772,7 +771,7 @@ pk_test_control_get_tid_cb (GObject *object, GAsyncResult *res, gpointer user_da
 	g_assert_no_error (error);
 	g_assert (tid != NULL);
 
-	egg_debug ("tid = %s", tid);
+	g_debug ("tid = %s", tid);
 	g_free (tid);
 	if (--_refcount == 0)
 		_g_test_loop_quit ();
@@ -824,7 +823,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	/* check groups */
 	text = pk_group_bitfield_to_string (groups);
 	g_assert_cmpstr (text, ==, "accessibility;games;system");
-	egg_debug ("groups = %s", text);
+	g_debug ("groups = %s", text);
 
 	g_free (text);
 
@@ -882,51 +881,51 @@ pk_test_control_func (void)
 	_refcount = 1;
 	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got tid in %f", g_test_timer_elapsed ());
+	g_debug ("got tid in %f", g_test_timer_elapsed ());
 
 	/* get multiple TIDs async */
 	_refcount = LOOP_SIZE;
 	for (i=0; i<_refcount; i++) {
-		egg_debug ("getting #%i", i+1);
+		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got %i tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
+	g_debug ("got %i tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get properties async */
 	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got properties types in %f", g_test_timer_elapsed ());
+	g_debug ("got properties types in %f", g_test_timer_elapsed ());
 
 	/* get properties async (again, to test caching) */
 	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got properties in %f", g_test_timer_elapsed ());
+	g_debug ("got properties in %f", g_test_timer_elapsed ());
 
 	/* do multiple requests async */
 	_refcount = LOOP_SIZE * 4;
 	for (i=0; i<_refcount; i++) {
-		egg_debug ("getting #%i", i+1);
+		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got %i 2*properties and 2*tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
+	g_debug ("got %i 2*properties and 2*tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get time since async */
 	pk_control_get_time_since_action_async (control, PK_ROLE_ENUM_GET_UPDATES, NULL, (GAsyncReadyCallback) pk_test_control_get_time_since_action_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got get time since in %f", g_test_timer_elapsed ());
+	g_debug ("got get time since in %f", g_test_timer_elapsed ());
 
 	/* get auth state async */
 	pk_control_can_authorize_async (control, "org.freedesktop.packagekit.system-update", NULL,
 		(GAsyncReadyCallback) pk_test_control_can_authorize_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("get auth state in %f", g_test_timer_elapsed ());
+	g_debug ("get auth state in %f", g_test_timer_elapsed ());
 
 	/* version major */
 	g_object_get (control, "version-major", &version, NULL);
@@ -982,7 +981,7 @@ pk_test_desktop_func (void)
 	/* file does not exist */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
-		egg_warning ("skipping checks as database does not exist");
+		g_warning ("skipping checks as database does not exist");
 		goto out;
 	}
 
@@ -996,7 +995,7 @@ pk_test_desktop_func (void)
 
 	/* dummy, not yum */
 	if (g_strcmp0 (package, "vips-doc") == 0); {
-		egg_debug ("created db with dummy, skipping remaining tests");
+		g_debug ("created db with dummy, skipping remaining tests");
 		goto out;
 	}
 	g_assert_cmpstr (package, ==, "gnome-packagekit");
@@ -1350,7 +1349,7 @@ pk_test_package_sack_func (void)
 	/* merge resolve results */
 	pk_package_sack_resolve_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_resolve_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1372,7 +1371,7 @@ pk_test_package_sack_func (void)
 	/* merge details results */
 	pk_package_sack_get_details_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_details_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got details in %f", g_test_timer_elapsed ());
+	g_debug ("got details in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1389,7 +1388,7 @@ pk_test_package_sack_func (void)
 	/* merge update detail results */
 	pk_package_sack_get_update_detail_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_update_detail_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got update detail in %f", g_test_timer_elapsed ());
+	g_debug ("got update detail in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1557,7 +1556,7 @@ pk_test_service_pack_progress_cb (PkProgress *progress, PkProgressType type, gpo
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1577,7 +1576,7 @@ pk_test_service_pack_func (void)
 		        (GAsyncReadyCallback) pk_test_service_pack_create_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (pack);
 }
@@ -1608,7 +1607,7 @@ pk_test_task_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1628,7 +1627,7 @@ pk_test_task_func (void)
 		        (GAsyncReadyCallback) pk_test_task_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1656,7 +1655,7 @@ pk_test_task_text_install_packages_cb (GObject *object, GAsyncResult *res, gpoin
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	if (results != NULL)
 		g_object_unref (results);
@@ -1671,7 +1670,7 @@ pk_test_task_text_progress_cb (PkProgress *progress, PkProgressType type, gpoint
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1697,7 +1696,7 @@ pk_test_task_text_func (void)
 		        (GAsyncReadyCallback) pk_test_task_text_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1725,7 +1724,7 @@ pk_test_task_wrapper_install_packages_cb (GObject *object, GAsyncResult *res, gp
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	if (results != NULL)
 		g_object_unref (results);
@@ -1740,7 +1739,7 @@ pk_test_task_wrapper_progress_cb (PkProgress *progress, PkProgressType type, gpo
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1760,7 +1759,7 @@ pk_test_task_wrapper_func (void)
 		        (GAsyncReadyCallback) pk_test_task_wrapper_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1794,14 +1793,14 @@ pk_test_transaction_list_resolve_cb (GObject *object, GAsyncResult *res, gpointe
 static void
 pk_test_transaction_list_added_cb (PkTransactionList *tlist, const gchar *tid, gpointer user_data)
 {
-	egg_debug ("added %s", tid);
+	g_debug ("added %s", tid);
 	_added++;
 }
 
 static void
 pk_test_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *tid, gpointer user_data)
 {
-	egg_debug ("removed %s", tid);
+	g_debug ("removed %s", tid);
 	_removed++;
 }
 
@@ -1840,12 +1839,12 @@ pk_test_transaction_list_func (void)
 		 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* wait for remove */
 	g_timeout_add (100, (GSourceFunc) pk_transaction_list_delay_cb, NULL);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* correct number of added signals */
 	g_assert_cmpint (_added, ==, 2);
@@ -1911,7 +1910,7 @@ main (int argc, char **argv)
 {
 	g_type_init ();
 
-	egg_debug_init (&argc, &argv);
+	g_debug_init (&argc, &argv);
 	g_test_init (&argc, &argv, NULL);
 
 	/* tests go here */

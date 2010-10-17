@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-transaction-past.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_transaction_past_finalize	(GObject     *object);
 
 #define PK_TRANSACTION_PAST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_PAST, PkTransactionPastPrivate))

@@ -32,7 +32,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #define PK_MAX_PATH_LEN 1023
@@ -394,7 +393,7 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 static gboolean
 pk_cnf_cancel_cb (GCancellable *_cancellable)
 {
-	egg_warning ("Cancelling request");
+	g_warning ("Cancelling request");
 	g_cancellable_cancel (cancellable);
 	return FALSE;
 }
@@ -451,7 +450,7 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_TRANSACTION_CANCELLED) {
-			egg_debug ("The search was cancelled as it was taking too long");
+			g_debug ("The search was cancelled as it was taking too long");
 		} else {
 			/* TRANSLATORS: the transaction failed in a way we could not expect */
 			g_printerr ("%s: %s, %s\n", _("Getting the list of files failed"),
@@ -511,7 +510,7 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 	/* get from file */
 	policy_text = g_key_file_get_string (file, "CommandNotFound", key, &error);
 	if (policy_text == NULL) {
-		egg_warning ("failed to get key %s: %s", key, error->message);
+		g_warning ("failed to get key %s: %s", key, error->message);
 		g_error_free (error);
 	}
 
@@ -550,7 +549,7 @@ pk_cnf_get_config (void)
 	path = g_build_filename (SYSCONFDIR, "PackageKit", "CommandNotFound.conf", NULL);
 	ret = g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error);
 	if (!ret) {
-		egg_warning ("failed to open policy: %s", error->message);
+		g_warning ("failed to open policy: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -567,11 +566,11 @@ pk_cnf_get_config (void)
 
 	/* fallback */
 	if (config->locations == NULL) {
-		egg_warning ("not found SearchLocations, using fallback");
+		g_warning ("not found SearchLocations, using fallback");
 		config->locations = g_strsplit ("/usr/bin;/usr/sbin", ";", -1);
 	}
 	if (config->max_search_time == 0) {
-		egg_warning ("not found MaxSearchTime, using fallback");
+		g_warning ("not found MaxSearchTime, using fallback");
 		config->max_search_time = 2000;
 	}
 out:
@@ -657,7 +656,7 @@ out:
 static void
 pk_cnf_sigint_handler (int sig)
 {
-	egg_debug ("Handling SIGINT");
+	g_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancel might hang */
 	signal (SIGINT, SIG_DFL);
@@ -666,7 +665,7 @@ pk_cnf_sigint_handler (int sig)
 	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
+	g_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -706,7 +705,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: tool that gets called when the command is not found */
 	g_option_context_set_summary (context, _("PackageKit Command Not Found"));
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 

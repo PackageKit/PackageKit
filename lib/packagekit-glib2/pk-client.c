@@ -45,8 +45,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 
-#include "egg-debug.h"
-
 static void     pk_client_finalize	(GObject     *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
@@ -207,7 +205,7 @@ pk_client_fixup_dbus_error (GError *error)
 
 	/* old style PolicyKit failure */
 	if (g_str_has_prefix (error->message, "org.freedesktop.packagekit.")) {
-		egg_debug ("fixing up code for Policykit auth failure");
+		g_debug ("fixing up code for Policykit auth failure");
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
 		g_free (error->message);
 		error->message = g_strdup ("PolicyKit authorization failure");
@@ -253,7 +251,7 @@ pk_client_fixup_dbus_error (GError *error)
 			error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
 			goto out;
 		}
-		egg_warning ("couldn't parse execption '%s', please report", name);
+		g_warning ("couldn't parse execption '%s', please report", name);
 	}
 
 out:
@@ -500,7 +498,7 @@ pk_client_get_properties_collect_cb (const char *key, const GValue *value, PkCli
 		return;
 	}
 
-	egg_warning ("unhandled property '%s'", key);
+	g_warning ("unhandled property '%s'", key);
 }
 
 /**
@@ -517,12 +515,12 @@ pk_client_cancel_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 				     G_TYPE_INVALID);
 	if (!ret) {
 		/* there's not really a lot we can do here */
-		egg_warning ("failed to cancel: %s", error->message);
+		g_warning ("failed to cancel: %s", error->message);
 		g_error_free (error);
 	}
 
 	/* finished this call */
-	egg_debug ("cancelled %s, ended DBus call: %p", state->tid, state->call);
+	g_debug ("cancelled %s, ended DBus call: %p", state->tid, state->call);
 	state->call = NULL;
 }
 
@@ -534,20 +532,20 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 {
 	/* dbus method has not yet fired */
 	if (state->proxy == NULL) {
-		egg_warning ("Cancelled, but no proxy, not sure what to do here");
+		g_warning ("Cancelled, but no proxy, not sure what to do here");
 		return;
 	}
 
 	/* dbus method is pending now, just cancel */
 	if (state->call != NULL) {
 		dbus_g_proxy_cancel_call (state->proxy, state->call);
-		egg_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call);
+		g_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call);
 		state->call = NULL;
 		return;
 	}
 	if (state->call_interface_changed != NULL) {
 		dbus_g_proxy_cancel_call (state->proxy, state->call_interface_changed);
-		egg_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call_interface_changed);
+		g_debug ("cancelling %s, ended DBus call: %p", state->tid, state->call_interface_changed);
 		state->call_interface_changed = NULL;
 	}
 
@@ -556,8 +554,8 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 					       (DBusGProxyCallNotify) pk_client_cancel_cb, state,
 					       NULL, G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("cancelling %s (%p)", state->tid, state->call);
+		g_error ("failed to setup call, maybe OOM or no connection");
+	g_debug ("cancelling %s (%p)", state->tid, state->call);
 }
 
 /**
@@ -568,7 +566,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 {
 	gboolean is_idle;
 	g_ptr_array_remove (client->priv->calls, state);
-	egg_debug ("state array remove %p", state);
+	g_debug ("state array remove %p", state);
 
 	/* has the idle state changed? */
 	is_idle = (client->priv->calls->len == 0);
@@ -587,7 +585,7 @@ pk_client_state_add (PkClient *client, PkClientState *state)
 	gboolean is_idle;
 
 	g_ptr_array_add (client->priv->calls, state);
-	egg_debug ("state array add %p", state);
+	g_debug ("state array add %p", state);
 
 	/* has the idle state changed? */
 	is_idle = (client->priv->calls->len == 0);
@@ -675,7 +673,7 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
 	if (array == NULL) {
-		egg_warning ("internal error, no files in array");
+		g_warning ("internal error, no files in array");
 		goto out;
 	}
 
@@ -708,7 +706,7 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 
 	/* debug */
 	path = g_file_get_path (file);
-	egg_debug ("finished copy of %s", path);
+	g_debug ("finished copy of %s", path);
 
 	/* get the result */
 	ret = g_file_copy_finish (file, res, &error);
@@ -769,7 +767,7 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	path = g_build_filename (state->directory, basename, NULL);
 
 	/* copy async */
-	egg_debug ("copy %s to %s", source_file, path);
+	g_debug ("copy %s to %s", source_file, path);
 	source = g_file_new_for_path (source_file);
 	destination = g_file_new_for_path (path);
 	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, state->cancellable,
@@ -818,7 +816,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	/* get data */
 	array = pk_results_get_files_array (state->results);
 	if (array == NULL) {
-		egg_warning ("internal error, no files in array");
+		g_warning ("internal error, no files in array");
 		goto out;
 	}
 
@@ -831,7 +829,7 @@ pk_client_copy_downloaded (PkClientState *state)
 		state->refcount += g_strv_length (files);
 		g_strfreev (files);
 	}
-	egg_debug ("%i files to copy", state->refcount);
+	g_debug ("%i files to copy", state->refcount);
 
 	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
 	len = array->len;
@@ -868,7 +866,7 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	PkExitEnum exit_enum;
 	PkError *error_code = NULL;
 
-	egg_debug ("exit_text=%s", exit_text);
+	g_debug ("exit_text=%s", exit_text);
 
 	/* yay */
 	exit_enum = pk_exit_enum_from_string (exit_text);
@@ -913,7 +911,7 @@ pk_client_method_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *sta
 	GError *error = NULL;
 
 	/* finished this call */
-	egg_debug ("got reply to request, ended DBus call: %p (%p)", state, state->call);
+	g_debug ("got reply to request, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* get the result */
@@ -985,7 +983,7 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 	GHashTable *hash;
 	gboolean ret;
 
-	egg_debug ("got properties, ended DBus call: %p (%p)", state, state->call_interface_changed);
+	g_debug ("got properties, ended DBus call: %p (%p)", state, state->call_interface_changed);
 	state->call_interface_changed = NULL;
 
 	/* get the result */
@@ -993,7 +991,7 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 				     dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE), &hash,
 				     G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to get properties: %s", error->message);
+		g_warning ("failed to get properties: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -1006,7 +1004,7 @@ pk_client_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientSt
 
 out:
 	/* finished this call */
-	egg_debug ("got property results, ended DBus call: %p (%p)", state, state->call);
+	g_debug ("got property results, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 }
 
@@ -1018,7 +1016,7 @@ pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 {
 	/* successive quick Changed events */
 	if (state->call_interface_changed != NULL) {
-		egg_debug ("already processing request %p, so ignoring", state->call_interface_changed);
+		g_debug ("already processing request %p, so ignoring", state->call_interface_changed);
 		return;
 	}
 
@@ -1029,13 +1027,12 @@ pk_client_changed_cb (DBusGProxy *proxy, PkClientState *state)
 				         G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 				         G_TYPE_INVALID);
 	if (state->call_interface_changed == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call_interface_changed);
+		g_error ("failed to setup call, maybe OOM or no connection");
+	g_debug ("changed so checking properties, started DBus call: %p (%p)", state, state->call_interface_changed);
 
 	/* we've sent this async */
-	egg_debug ("interface changed, started DBus call: %p (%p)", state, state->call_interface_changed);
+	g_debug ("interface changed, started DBus call: %p (%p)", state, state->call_interface_changed);
 }
-
 
 /**
  * pk_client_details_cb:
@@ -1379,7 +1376,7 @@ pk_client_connect_proxy (DBusGProxy *proxy, PkClientState *state)
 {
 	/* sanity check */
 	if (state->signals_connected) {
-		egg_warning ("not connecting as already connected");
+		g_warning ("not connecting as already connected");
 		return;
 	}
 
@@ -1467,7 +1464,7 @@ pk_client_disconnect_proxy (DBusGProxy *proxy, PkClientState *state)
 {
 	/* sanity check */
 	if (!state->signals_connected) {
-		egg_debug ("not disconnecting as never connected");
+		g_debug ("not disconnecting as never connected");
 		return;
 	}
 
@@ -1540,7 +1537,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 	}
 
 	/* finished this call */
-	egg_debug ("set hints, ended DBus call: %p (%p)", state, state->call);
+	g_debug ("set hints, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* we'll have results from now on */
@@ -1772,10 +1769,10 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 
 	/* check we called okay */
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
+		g_error ("failed to setup call, maybe OOM or no connection");
 
 	/* we've sent this async */
-	egg_debug ("new method '%s', started DBus call: %p (%p)", pk_role_enum_to_string (state->role), state, state->call);
+	g_debug ("new method '%s', started DBus call: %p (%p)", pk_role_enum_to_string (state->role), state, state->call);
 
 out:
 	g_free (filters_text);
@@ -1812,14 +1809,14 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 		return;
 	}
 
-	egg_debug ("tid = %s", state->tid);
+	g_debug ("tid = %s", state->tid);
 	pk_progress_set_transaction_id (state->progress, state->tid);
 
 	/* get a connection to the transaction interface */
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
 						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
 	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
@@ -1829,7 +1826,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 							PK_DBUS_SERVICE, state->tid,
 							"org.freedesktop.DBus.Properties");
 	if (state->proxy_props == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* get hints */
 	array = g_ptr_array_new_with_free_func (g_free);
@@ -1855,12 +1852,12 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 					       G_TYPE_STRV, hints,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("sent locale request, started DBus call: %p (%p)", state, state->call);
+		g_error ("failed to setup call, maybe OOM or no connection");
+	g_debug ("sent locale request, started DBus call: %p (%p)", state, state->call);
 
 	/* track state */
 	g_ptr_array_add (state->client->priv->calls, state);
-	egg_debug ("state array add %p", state);
+	g_debug ("state array add %p", state);
 
 	/* we've sent this async */
 	g_ptr_array_unref (array);
@@ -3313,7 +3310,6 @@ out:
 	g_object_unref (res);
 }
 
-
 /**
  * pk_client_copy_native_finished_cb:
  */
@@ -3326,7 +3322,7 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, PkClientState
 
 	/* debug */
 	path = g_file_get_path (file);
-	egg_debug ("finished copy of %s", path);
+	g_debug ("finished copy of %s", path);
 
 	/* get the result */
 	ret = g_file_copy_finish (file, res, &error);
@@ -3362,7 +3358,7 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 
 	/* get a temp dir accessible by the daemon */
 	user_temp = pk_client_get_user_temp ("native-cache", &error);
-	egg_debug ("using temp dir %s", user_temp);
+	g_debug ("using temp dir %s", user_temp);
 
 	/* save percentage */
 	ret = pk_progress_set_percentage (state->progress, -1);
@@ -3372,12 +3368,12 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 	/* copy each file that is non-native */
 	for (i=0; state->files[i] != NULL; i++) {
 		ret = pk_client_is_file_native (state->files[i]);
-		egg_debug ("%s native=%i", state->files[i], ret);
+		g_debug ("%s native=%i", state->files[i], ret);
 		if (!ret) {
 			/* generate the destination location */
 			basename = g_path_get_basename (state->files[i]);
 			path = g_build_filename (user_temp, basename, NULL);
-			egg_debug ("copy from %s to %s", state->files[i], path);
+			g_debug ("copy from %s to %s", state->files[i], path);
 			source = g_file_new_for_path (state->files[i]);
 			destination = g_file_new_for_path (path);
 
@@ -4075,7 +4071,7 @@ pk_client_adopt_get_properties_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkCl
 	}
 
 	/* finished this call */
-	egg_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
+	g_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* setup the proxies ready for use */
@@ -4159,7 +4155,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
 						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
 	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
@@ -4169,7 +4165,7 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 							PK_DBUS_SERVICE, state->tid,
 							"org.freedesktop.DBus.Properties");
 	if (state->proxy_props == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* call D-Bus get_properties async */
 	state->call = dbus_g_proxy_begin_call (state->proxy_props, "GetAll",
@@ -4177,8 +4173,8 @@ pk_client_adopt_async (PkClient *client, const gchar *transaction_id, GCancellab
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("coldplug adoptee, started DBus call: %p (%p)", state, state->call);
+		g_error ("failed to setup call, maybe OOM or no connection");
+	g_debug ("coldplug adoptee, started DBus call: %p (%p)", state, state->call);
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -4282,7 +4278,7 @@ pk_client_get_progress_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientStat
 	}
 
 	/* finished this call */
-	egg_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
+	g_debug ("coldplugged properties, ended DBus call: %p (%p)", state, state->call);
 	state->call = NULL;
 
 	/* process results */
@@ -4346,7 +4342,7 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 	state->proxy = dbus_g_proxy_new_for_name (state->client->priv->connection,
 						  PK_DBUS_SERVICE, state->tid, PK_DBUS_INTERFACE_TRANSACTION);
 	if (state->proxy == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* don't timeout, as dbus-glib sets the timeout ~25 seconds */
 	dbus_g_proxy_set_default_timeout (state->proxy, INT_MAX);
@@ -4356,7 +4352,7 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 							PK_DBUS_SERVICE, state->tid,
 							"org.freedesktop.DBus.Properties");
 	if (state->proxy_props == NULL)
-		egg_error ("Cannot connect to PackageKit on %s", state->tid);
+		g_error ("Cannot connect to PackageKit on %s", state->tid);
 
 	/* timeout if we fail to get properties */
 	dbus_g_proxy_set_default_timeout (state->proxy_props, PK_CLIENT_DBUS_METHOD_TIMEOUT);
@@ -4367,8 +4363,8 @@ pk_client_get_progress_async (PkClient *client, const gchar *transaction_id, GCa
 					       G_TYPE_STRING, "org.freedesktop.PackageKit.Transaction",
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
-		egg_error ("failed to setup call, maybe OOM or no connection");
-	egg_debug ("getting progress on %s, started DBus call: %p", state->tid, state->call);
+		g_error ("failed to setup call, maybe OOM or no connection");
+	g_debug ("getting progress on %s, started DBus call: %p", state->tid, state->call);
 
 	/* track state */
 	pk_client_state_add (client, state);
@@ -4394,7 +4390,7 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 		state = g_ptr_array_index (array, i);
 		if (state->call == NULL)
 			continue;
-		egg_debug ("cancel in flight call: %p (%p)", state, state->call);
+		g_debug ("cancel in flight call: %p (%p)", state, state->call);
 		dbus_g_proxy_cancel_call (state->proxy, state->call);
 	}
 

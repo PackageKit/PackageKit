@@ -37,7 +37,6 @@
 #include "pk-store.h"
 #include "pk-backend.h"
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 G_BEGIN_DECLS

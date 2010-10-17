@@ -42,7 +42,6 @@
 
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 /**
@@ -183,7 +182,7 @@ egg_strvequal (gchar **id1, gchar **id2)
 		return TRUE;
 
 	if (id1 == NULL || id2 == NULL) {
-		egg_debug ("GStrv compare invalid '%p' and '%p'", id1, id2);
+		g_debug ("GStrv compare invalid '%p' and '%p'", id1, id2);
 		return FALSE;
 	}
 

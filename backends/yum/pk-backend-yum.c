@@ -200,7 +200,7 @@ pk_backend_transaction_start (PkBackend *backend)
 		pk_backend_set_status (backend, PK_STATUS_ENUM_WAITING_FOR_LOCK);
 
 		/* now wait */
-		egg_debug ("Failed to lock on try %i of %i, already locked by PID %i (sleeping for %i seconds): %s\n",
+		g_debug ("Failed to lock on try %i of %i, already locked by PID %i (sleeping for %i seconds): %s\n",
 			   i+1, YUM_BACKEND_LOCKING_RETRIES, pid, YUM_BACKEND_LOCKING_DELAY, error->message);
 		g_clear_error (&error);
 		g_usleep (YUM_BACKEND_LOCKING_DELAY * G_USEC_PER_SEC);
@@ -262,7 +262,7 @@ pk_backend_transaction_stop (PkBackend *backend)
 	/* try to unlock */
 	ret = zif_lock_set_unlocked (priv->lock, &error);
 	if (!ret) {
-		egg_warning ("failed to unlock: %s", error->message);
+		g_warning ("failed to unlock: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -647,7 +647,7 @@ pk_backend_enable_media_repo (gboolean enabled)
 	/* find the right repo */
 	repo = zif_repos_get_store (priv->repos, "InstallMedia", priv->state, &error);
 	if (repo == NULL) {
-		egg_debug ("failed to find install-media repo: %s", error->message);
+		g_debug ("failed to find install-media repo: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -655,11 +655,11 @@ pk_backend_enable_media_repo (gboolean enabled)
 	/* set the state */
 	ret = zif_store_remote_set_enabled (repo, enabled, &error);
 	if (!ret) {
-		egg_debug ("failed to set enable: %s", error->message);
+		g_debug ("failed to set enable: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
-	egg_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
+	g_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
 out:
 	if (repo != NULL)
 		g_object_unref (repo);
@@ -674,7 +674,7 @@ out:
 	ret = g_key_file_load_from_file (keyfile, PACKAGE_MEDIA_REPO_FILENAME,
 					 G_KEY_FILE_KEEP_COMMENTS, &error);
 	if (!ret) {
-		egg_debug ("failed to open %s", error->message);
+		g_debug ("failed to open %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -683,7 +683,7 @@ out:
 	g_key_file_set_integer (keyfile, "InstallMedia", "enabled", enabled);
 	data = g_key_file_to_data (keyfile, NULL, &error);
 	if (data == NULL) {
-		egg_warning ("failed to get data: %s", error->message);
+		g_warning ("failed to get data: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -691,11 +691,11 @@ out:
 	/* save */
 	ret = g_file_set_contents (PACKAGE_MEDIA_REPO_FILENAME, data, -1, &error);
 	if (!ret) {
-		egg_warning ("failed to save %s", error->message);
+		g_warning ("failed to save %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
-	egg_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
+	g_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
 out:
 	g_free (data);
 	g_key_file_free (keyfile);
@@ -725,14 +725,14 @@ pk_backend_mount_add (GMount *mount, gpointer user_data)
 
 	/* media.repo exists */
 	ret = g_file_query_exists (repo, NULL);
-	egg_debug ("checking for %s: %s", repo_path, ret ? "yes" : "no");
+	g_debug ("checking for %s: %s", repo_path, ret ? "yes" : "no");
 	if (!ret)
 		goto out;
 
 	/* copy to the system repo dir */
 	ret = g_file_copy (repo, dest, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to copy: %s", error->message);
+		g_warning ("failed to copy: %s", error->message);
 		g_error_free (error);
 	}
 out:
@@ -792,7 +792,7 @@ pk_backend_initialize (PkBackend *backend)
 		g_signal_connect (backend, "status-changed",
 				  G_CALLBACK (pk_backend_status_changed_cb), NULL);
 
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 	priv->spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_filter_stderr (priv->spawn, pk_backend_stderr_cb);
 	pk_backend_spawn_set_filter_stdout (priv->spawn, pk_backend_stdout_cb);
@@ -812,14 +812,14 @@ pk_backend_initialize (PkBackend *backend)
 	if (priv->monitor != NULL) {
 		g_signal_connect (priv->monitor, "changed", G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 	} else {
-		egg_warning ("failed to setup monitor: %s", error->message);
+		g_warning ("failed to setup monitor: %s", error->message);
 		g_error_free (error);
 	}
 
 	/* read the config file */
 	key_file = g_key_file_new ();
 	config_file = g_build_filename (SYSCONFDIR, "PackageKit", "Yum.conf", NULL);
-	egg_debug ("loading configuration from %s", config_file);
+	g_debug ("loading configuration from %s", config_file);
 	ret = g_key_file_load_from_file (key_file, config_file, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "failed to load Yum.conf: %s", error->message);
@@ -833,9 +833,9 @@ pk_backend_initialize (PkBackend *backend)
 	if (use_zif != NULL) {
 		priv->use_zif = pk_role_bitfield_from_string (use_zif);
 		if (priv->use_zif == 0)
-			egg_warning ("failed to parse UseZif '%s'", use_zif);
+			g_warning ("failed to parse UseZif '%s'", use_zif);
 	}
-	egg_debug ("UseZif=%s (%i)", use_zif, (gint)priv->use_zif);
+	g_debug ("UseZif=%s (%i)", use_zif, (gint)priv->use_zif);
 
 	/* use a timer for profiling */
 	priv->timer = g_timer_new ();
@@ -920,7 +920,7 @@ out:
 void
 pk_backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 	g_object_unref (priv->spawn);
 	if (priv->monitor != NULL)
 		g_object_unref (priv->monitor);
@@ -1532,7 +1532,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 
 		/* not being in a group is non-fatal */
 		if (group_str == NULL) {
-			egg_warning ("failed to get group: %s", error->message);
+			g_warning ("failed to get group: %s", error->message);
 			g_clear_error (&error);
 		}
 		group = pk_group_enum_from_text (group_str);
@@ -1683,7 +1683,7 @@ pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 		if (!g_key_file_get_boolean (file, groups[i], "stable", NULL))
 			goto out;
 		version = g_key_file_get_integer (file, groups[i], "version", NULL);
-		egg_debug ("%s is update to version %i", groups[i], version);
+		g_debug ("%s is update to version %i", groups[i], version);
 		if (version > last_version) {
 			newest = i;
 			last_version = version;
@@ -1951,7 +1951,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
-	egg_debug ("searching for updates with %i packages", packages->len);
+	g_debug ("searching for updates with %i packages", packages->len);
 
 	/* this section done */
 	ret = zif_state_done (priv->state, &error);
@@ -2014,7 +2014,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 
 		update = zif_package_get_update_detail (package, state_loop, &error);
 		if (update == NULL) {
-			egg_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
+			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
 			ret = zif_state_finished (state_loop, NULL);
 		} else {
@@ -2185,7 +2185,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 		state_local = zif_state_get_child (priv->state);
 		update = zif_package_get_update_detail (package, state_local, &error);
 		if (update == NULL) {
-			egg_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
+			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
 		} else {
 			gchar *changelog_text = NULL;
@@ -2375,7 +2375,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 
 	/* don't nuke the metadata */
 	if (!force) {
-		egg_debug ("not supported yet");
+		g_debug ("not supported yet");
 		goto out;
 	}
 

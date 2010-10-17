@@ -34,8 +34,6 @@
 
 #include <packagekit-glib2/pk-files.h>
 
-#include "egg-debug.h"
-
 static void     pk_files_finalize	(GObject     *object);
 
 #define PK_FILES_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_FILES, PkFilesPrivate))

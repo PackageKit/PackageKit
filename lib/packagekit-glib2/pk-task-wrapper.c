@@ -25,8 +25,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
-
 #include "pk-task-wrapper.h"
 
 static void     pk_task_wrapper_finalize	(GObject     *object);

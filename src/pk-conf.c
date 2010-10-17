@@ -32,7 +32,6 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "pk-conf.h"
 
 #define PK_CONF_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONF, PkConfPrivate))
@@ -61,7 +60,7 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_STRING_MISSING;
-		egg_debug ("%s read error: %s", key, error->message);
+		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -83,7 +82,7 @@ pk_conf_get_strv (PkConf *conf, const gchar *key)
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_STRING_MISSING;
-		egg_debug ("%s read error: %s", key, error->message);
+		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -105,7 +104,7 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 	if (error != NULL) {
 		/* set to missing value */
 		value = PK_CONF_VALUE_INT_MISSING;
-		egg_debug ("%s read error: %s", key, error->message);
+		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -125,7 +124,7 @@ pk_conf_get_bool (PkConf *conf, const gchar *key)
 
 	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
-		egg_debug ("%s read error: %s", key, error->message);
+		g_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
 	return value;
@@ -171,7 +170,7 @@ pk_conf_get_filename (void)
 	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
 		goto out;
 	}
-	egg_debug ("local config file not found '%s'", path);
+	g_debug ("local config file not found '%s'", path);
 	g_free (path);
 #endif
 	/* check the prefix path */
@@ -181,7 +180,7 @@ pk_conf_get_filename (void)
 	}
 
 	/* none found! */
-	egg_warning ("config file not found '%s'", path);
+	g_warning ("config file not found '%s'", path);
 	g_free (path);
 	path = NULL;
 out:
@@ -204,14 +203,14 @@ pk_conf_init (PkConf *conf)
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
 	path = pk_conf_get_filename ();
 	if (path == NULL)
-		egg_error ("config file not found");
-	egg_debug ("using config file '%s'", path);
+		g_error ("config file not found");
+	g_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();
 	ret = g_key_file_load_from_file (conf->priv->keyfile, path,
 					 G_KEY_FILE_NONE, NULL);
 	g_free (path);
 	if (!ret)
-		egg_error ("failed to parse config file!");
+		g_error ("failed to parse config file!");
 }
 
 /**

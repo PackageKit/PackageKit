@@ -51,7 +51,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "test");
 }
@@ -63,6 +63,6 @@ pk_backend_initialize (PkBackend *backend)
 void
 pk_backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }

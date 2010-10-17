@@ -42,7 +42,6 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-backend.h"
@@ -117,7 +116,7 @@ pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 	/* only try to close if running */
 	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
 	if (ret) {
-		egg_debug ("closing dispatcher as running and is idle");
+		g_debug ("closing dispatcher as running and is idle");
 		pk_spawn_exit (backend_spawn->priv->spawn);
 	}
 	return FALSE;
@@ -134,7 +133,7 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 
 	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
 	priv->finished = TRUE;
-	egg_debug ("backend marked as finished, so starting kill timer");
+	g_debug ("backend marked as finished, so starting kill timer");
 
 	if (priv->kill_id > 0)
 		g_source_remove (priv->kill_id);
@@ -142,7 +141,7 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 	/* get policy timeout */
 	timeout = pk_conf_get_int (priv->conf, "BackendShutdownTimeout");
 	if (timeout == PK_CONF_VALUE_INT_MISSING) {
-		egg_warning ("using built in default value");
+		g_warning ("using built in default value");
 		timeout = 5;
 	}
 
@@ -194,12 +193,12 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 	if (g_strcmp0 (command, "package") == 0) {
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		if (pk_package_id_check (sections[2]) == FALSE) {
-			egg_warning ("invalid package_id");
+			g_warning ("invalid package_id");
 			ret = FALSE;
 			goto out;
 		}
@@ -213,7 +212,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		pk_backend_package (priv->backend, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 7) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -222,7 +221,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		/* ITS4: ignore, checked for overflow */
 		package_size = atol (sections[6]);
 		if (package_size > 1073741824) {
-			egg_warning ("package size cannot be larger than one Gb");
+			g_warning ("package size cannot be larger than one Gb");
 			ret = FALSE;
 			goto out;
 		}
@@ -234,7 +233,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -245,14 +244,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 	} else if (g_strcmp0 (command, "files") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_files (priv->backend, sections[1], sections[2]);
 	} else if (g_strcmp0 (command, "repo-detail") == 0) {
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -261,13 +260,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		} else if (g_strcmp0 (sections[3], "false") == 0) {
 			pk_backend_repo_detail (priv->backend, sections[1], sections[2], FALSE);
 		} else {
-			egg_warning ("invalid qualifier '%s'", sections[3]);
+			g_warning ("invalid qualifier '%s'", sections[3]);
 			ret = FALSE;
 			goto out;
 		}
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
 		if (size != 13) {
-			egg_warning ("invalid command '%s', size %i", command, size);
+			g_warning ("invalid command '%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -289,37 +288,37 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 					  sections[11], sections[12]);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		ret = egg_strtoint (sections[1], &percentage);
 		if (!ret) {
-			egg_warning ("invalid percentage value %s", sections[1]);
+			g_warning ("invalid percentage value %s", sections[1]);
 		} else if (percentage < 0 || percentage > 100) {
-			egg_warning ("invalid percentage value %i", percentage);
+			g_warning ("invalid percentage value %i", percentage);
 			ret = FALSE;
 		} else {
 			pk_backend_set_percentage (priv->backend, percentage);
 		}
 	} else if (g_strcmp0 (command, "subpercentage") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		ret = egg_strtoint (sections[1], &percentage);
 		if (!ret) {
-			egg_warning ("invalid subpercentage value %s", sections[1]);
+			g_warning ("invalid subpercentage value %s", sections[1]);
 		} else if (percentage < 0 || percentage > 100) {
-			egg_warning ("invalid subpercentage value %i", percentage);
+			g_warning ("invalid subpercentage value %i", percentage);
 			ret = FALSE;
 		} else {
 			pk_backend_set_sub_percentage (priv->backend, percentage);
 		}
 	} else if (g_strcmp0 (command, "error") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -343,7 +342,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -355,14 +354,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 		if (!pk_package_id_check (sections[2])) {
-			egg_warning ("invalid package_id");
+			g_warning ("invalid package_id");
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_require_restart (priv->backend, restart_enum, sections[2]);
 	} else if (g_strcmp0 (command, "message") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -380,14 +379,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "change-transaction-data") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_set_transaction_data (priv->backend, sections[1]);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -401,7 +400,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		pk_backend_set_status (priv->backend, status_enum);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -410,13 +409,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		} else if (g_strcmp0 (sections[1], "false") == 0) {
 			pk_backend_set_allow_cancel (priv->backend, FALSE);
 		} else {
-			egg_warning ("invalid section '%s'", sections[1]);
+			g_warning ("invalid section '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 	} else if (g_strcmp0 (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -424,7 +423,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "repo-signature-required") == 0) {
 
 		if (size != 9) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -458,7 +457,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "eula-required") == 0) {
 
 		if (size != 5) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -490,7 +489,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
 
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -508,7 +507,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -526,7 +525,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "category") == 0) {
 
 		if (size != 6) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_warning ("invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -558,7 +557,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		ret = pk_backend_category (priv->backend, sections[1], sections[2], sections[3], sections[4], sections[5]);
 		goto out;
 	} else {
-		egg_warning ("invalid command '%s'", command);
+		g_warning ("invalid command '%s'", command);
 	}
 out:
 	g_strfreev (sections);
@@ -583,13 +582,13 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT ||
 	    exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
-		egg_debug ("dispatcher exited, nothing to see here");
+		g_debug ("dispatcher exited, nothing to see here");
 		return;
 	}
 
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
-		egg_debug ("script exited without doing finished, tidying up");
+		g_debug ("script exited without doing finished, tidying up");
 		ret = pk_backend_has_set_error_code (backend_spawn->priv->backend);
 		if (!ret) {
 			pk_backend_error_code (backend_spawn->priv->backend,
@@ -629,7 +628,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	gboolean ret;
 	ret = pk_backend_spawn_inject_data (backend_spawn, line);
 	if (!ret)
-		egg_debug ("failed to parse: %s", line);
+		g_debug ("failed to parse: %s", line);
 }
 
 /**
@@ -649,7 +648,7 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	}
 
 	/* send warning up to session, this is never going to be pretty... */
-	egg_warning ("STDERR: %s", line);
+	g_warning ("STDERR: %s", line);
 	pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "%s", line);
 }
 
@@ -775,7 +774,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	for (i=0; i<array->len; i++) {
 		line = g_ptr_array_index (array, i);
 		g_strdelimit (line, "\\;{}[]()*?%\n\r\t", '_');
-		egg_debug ("setting evp '%s'", line);
+		g_debug ("setting evp '%s'", line);
 	}
 
 	envp = pk_ptr_array_to_strv (array);
@@ -852,7 +851,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	/* convert to a argv */
 	argv = pk_backend_spawn_va_list_to_argv (executable, args);
 	if (argv == NULL) {
-		egg_warning ("argv NULL");
+		g_warning ("argv NULL");
 		return FALSE;
 	}
 
@@ -864,19 +863,19 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 
 	filename = g_build_filename ("..", "backends", directory, "helpers", argv[0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		egg_debug ("local helper not found '%s'", filename);
+		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename ("..", "backends", directory, argv[0], NULL);
 	}
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		egg_debug ("local helper not found '%s'", filename);
+		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
 	}
 #else
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
 #endif
-	egg_debug ("using spawn filename %s", filename);
+	g_debug ("using spawn filename %s", filename);
 
 	/* replace the filename with the full path */
 	g_free (argv[0]);
@@ -999,7 +998,7 @@ pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allo
 
 	/* have we banned this in the config ile */
 	if (!backend_spawn->priv->allow_sigkill && allow_sigkill) {
-		egg_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
+		g_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
 		ret = FALSE;
 		goto out;
 	}

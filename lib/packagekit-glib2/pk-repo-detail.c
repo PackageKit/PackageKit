@@ -34,8 +34,6 @@
 
 #include <packagekit-glib2/pk-repo-detail.h>
 
-#include "egg-debug.h"
-
 static void     pk_repo_detail_finalize	(GObject     *object);
 
 #define PK_REPO_DETAIL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REPO_DETAIL, PkRepoDetailPrivate))

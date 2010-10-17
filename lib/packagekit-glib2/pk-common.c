@@ -38,7 +38,6 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 /**
@@ -118,14 +117,14 @@ pk_iso8601_to_date (const gchar *iso_date)
 	 * time value - try and parse this case */
 	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
 	if (retval != 3) {
-		egg_warning ("could not parse date '%s'", iso_date);
+		g_warning ("could not parse date '%s'", iso_date);
 		goto out;
 	}
 
 	/* check it's valid */
 	ret = g_date_valid_dmy (d, m, y);
 	if (!ret) {
-		egg_warning ("invalid date %i/%i/%i from '%s'", y, m, d, iso_date);
+		g_warning ("invalid date %i/%i/%i from '%s'", y, m, d, iso_date);
 		goto out;
 	}
 

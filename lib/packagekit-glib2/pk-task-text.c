@@ -29,8 +29,6 @@
 #include <packagekit-glib2/pk-repo-signature-required.h>
 #include <packagekit-glib2/pk-task.h>
 
-#include "egg-debug.h"
-
 #include "pk-task-text.h"
 #include "pk-console-shared.h"
 
@@ -366,7 +364,7 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 			title = pk_task_text_simulate_question_type_to_string (info);
 			if (title == NULL) {
 				title = pk_info_enum_to_string (info);
-				egg_warning ("cannot translate '%s', please report!", title);
+				g_warning ("cannot translate '%s', please report!", title);
 			}
 			g_print ("%s\n", title);
 			info_last = info;

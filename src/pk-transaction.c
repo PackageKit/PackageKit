@@ -51,7 +51,6 @@
 #include <polkit/polkit.h>
 #endif
 
-#include "egg-debug.h"
 #include "egg-string.h"
 #include "egg-dbus-monitor.h"
 
@@ -307,7 +306,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 		      "transaction-id", &transaction_id,
 		      NULL);
 	if (transaction_id == NULL) {
-		egg_warning ("could not get current tid from backend");
+		g_warning ("could not get current tid from backend");
 		return FALSE;
 	}
 
@@ -323,7 +322,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 
 		/* the cached list is no longer valid */
-		egg_debug ("invalidating caches");
+		g_debug ("invalidating caches");
 		pk_cache_invalidate (priv->cache);
 
 		/* this needs to be done after a small delay */
@@ -349,7 +348,7 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction, guint percenta
 	transaction->priv->remaining_time = remaining;
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -374,7 +373,7 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 		pk_inhibit_add (transaction->priv->inhibit, transaction);
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -394,7 +393,7 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 	transaction->priv->status = status;
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -406,7 +405,7 @@ pk_transaction_finished_emit (PkTransaction *transaction, PkExitEnum exit_enum, 
 {
 	const gchar *exit_text;
 	exit_text = pk_exit_enum_to_string (exit_enum);
-	egg_debug ("emitting finished '%s', %i", exit_text, time_ms);
+	g_debug ("emitting finished '%s', %i", exit_text, time_ms);
 	g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0, exit_text, time_ms);
 }
 
@@ -418,7 +417,7 @@ pk_transaction_error_code_emit (PkTransaction *transaction, PkErrorEnum error_en
 {
 	const gchar *text;
 	text = pk_error_enum_to_string (error_enum);
-	egg_debug ("emitting error-code %s, '%s'", text, details);
+	g_debug ("emitting error-code %s, '%s'", text, details);
 	g_signal_emit (transaction, signals[SIGNAL_ERROR_CODE], 0, text, details);
 }
 
@@ -431,7 +430,7 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("emitting allow-cancel %i", allow_cancel);
+	g_debug ("emitting allow-cancel %i", allow_cancel);
 	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
 }
 
@@ -452,7 +451,7 @@ pk_transaction_caller_active_changed_cb (EggDbusMonitor *egg_dbus_monitor, gbool
 	transaction->priv->caller_active = caller_active;
 
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -488,7 +487,7 @@ pk_transaction_details_cb (PkBackend *backend, PkDetails *item, PkTransaction *t
 
 	/* emit */
 	group_text = pk_group_enum_to_string (group);
-	egg_debug ("emitting details");
+	g_debug ("emitting details");
 	g_signal_emit (transaction, signals[SIGNAL_DETAILS], 0, package_id,
 		       license, group_text, description, url, size);
 
@@ -567,7 +566,7 @@ pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *trans
 
 	/* emit */
 	filelist = g_strjoinv (";", files);
-	egg_debug ("emitting files %s, %s", package_id, filelist);
+	g_debug ("emitting files %s, %s", package_id, filelist);
 	g_signal_emit (transaction, signals[SIGNAL_FILES], 0, package_id, filelist);
 	g_free (filelist);
 	g_free (package_id);
@@ -602,7 +601,7 @@ pk_transaction_category_cb (PkBackend *backend, PkCategory *item, PkTransaction 
 		      NULL);
 
 	/* emit */
-	egg_debug ("emitting category %s, %s, %s, %s, %s ", parent_id, cat_id, name, summary, icon);
+	g_debug ("emitting category %s, %s, %s, %s, %s ", parent_id, cat_id, name, summary, icon);
 	g_signal_emit (transaction, signals[SIGNAL_CATEGORY], 0, parent_id, cat_id, name, summary, icon);
 
 	g_free (parent_id);
@@ -638,7 +637,7 @@ pk_transaction_distro_upgrade_cb (PkBackend *backend, PkDistroUpgrade *item, PkT
 
 	/* emit */
 	type_text = pk_distro_upgrade_enum_to_string (state);
-	egg_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
+	g_debug ("emitting distro-upgrade %s, %s, %s", type_text, name, summary);
 	g_signal_emit (transaction, signals[SIGNAL_DISTRO_UPGRADE], 0, type_text, name, summary);
 
 	g_free (name);
@@ -700,21 +699,21 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 				  G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE,
 				  G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
 	if (info == NULL) {
-		egg_warning ("failed to get info: %s", error->message);
+		g_warning ("failed to get info: %s", error->message);
 		goto out;
 	}
 
 	/* check is executable */
 	ret = g_file_info_get_attribute_boolean (info, G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE);
 	if (!ret) {
-		egg_warning ("%s is not executable", filename);
+		g_warning ("%s is not executable", filename);
 		goto out;
 	}
 
 	/* check is owned by the correct user */
 	file_uid = g_file_info_get_attribute_uint32 (info, G_FILE_ATTRIBUTE_UNIX_UID);
 	if (file_uid != 0) {
-		egg_warning ("%s is not owned by the root user", filename);
+		g_warning ("%s is not owned by the root user", filename);
 		goto out;
 	}
 
@@ -726,10 +725,10 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 	/* run the command, but don't exit if fails */
 	ret = g_spawn_command_line_sync (command, NULL, NULL, &exit_status, &error);
 	if (!ret) {
-		egg_warning ("failed to spawn %s [%i]: %s", command, exit_status, error->message);
+		g_warning ("failed to spawn %s [%i]: %s", command, exit_status, error->message);
 		g_error_free (error);
 	} else {
-		egg_debug ("ran %s", command);
+		g_debug ("ran %s", command);
 	}
 
 out:
@@ -758,7 +757,7 @@ pk_transaction_process_scripts (PkTransaction *transaction, const gchar *locatio
 	dirname = g_build_filename (SYSCONFDIR, "PackageKit", "events", location, NULL);
 	dir = g_dir_open (dirname, 0, &error);
 	if (dir == NULL) {
-		egg_warning ("Failed to open %s: %s", dirname, error->message);
+		g_warning ("Failed to open %s: %s", dirname, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -806,7 +805,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		egg_warning ("Already finished");
+		g_warning ("Already finished");
 		return;
 	}
 
@@ -902,7 +901,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 				g_free (package_id);
 			}
 
-			egg_debug ("processing %i packags for desktop files", list->len);
+			g_debug ("processing %i packags for desktop files", list->len);
 			/* process file lists on these packages */
 			if (list->len > 0) {
 				package_ids = pk_ptr_array_to_strv (list);
@@ -978,7 +977,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 
 	/* find the length of time we have been running */
 	time_ms = pk_transaction_get_runtime (transaction);
-	egg_debug ("backend was running for %i ms", time_ms);
+	g_debug ("backend was running for %i ms", time_ms);
 
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -1071,7 +1070,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
 	if (!developer_mode &&
 	    (type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
 	     type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
-		egg_warning ("ignoring message: %s", details);
+		g_warning ("ignoring message: %s", details);
 		return;
 	}
 
@@ -1080,7 +1079,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
 
 	/* emit */
 	message_text = pk_message_enum_to_string (type);
-	egg_debug ("emitting message %s, '%s'", message_text, details);
+	g_debug ("emitting message %s, '%s'", message_text, details);
 	g_signal_emit (transaction, signals[SIGNAL_MESSAGE], 0, message_text, details);
 
 	g_free (details);
@@ -1103,7 +1102,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		egg_warning ("Already finished");
+		g_warning ("Already finished");
 		return;
 	}
 
@@ -1155,7 +1154,7 @@ pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *t
 	g_free (transaction->priv->last_package_id);
 	transaction->priv->last_package_id = g_strdup (package_id);
 	info_text = pk_info_enum_to_string (info);
-	egg_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	g_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	g_signal_emit (transaction, signals[SIGNAL_PACKAGE], 0, info_text, package_id, summary);
 	g_free (package_id);
 	g_free (summary);
@@ -1198,7 +1197,7 @@ pk_transaction_repo_detail_cb (PkBackend *backend, PkRepoDetail *item, PkTransac
 		      NULL);
 
 	/* emit */
-	egg_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
+	g_debug ("emitting repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (transaction, signals[SIGNAL_REPO_DETAIL], 0, repo_id, description, enabled);
 
 	g_free (repo_id);
@@ -1241,7 +1240,7 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, PkRepoSignatureRe
 
 	/* emit */
 	type_text = pk_sig_type_enum_to_string (type);
-	egg_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+	g_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
 		   package_id, repository_name, key_url, key_userid, key_id,
 		   key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (transaction, signals[SIGNAL_REPO_SIGNATURE_REQUIRED], 0,
@@ -1286,7 +1285,7 @@ pk_transaction_eula_required_cb (PkBackend *backend, PkEulaRequired *item, PkTra
 		      NULL);
 
 	/* emit */
-	egg_debug ("emitting eula-required %s, %s, %s, %s",
+	g_debug ("emitting eula-required %s, %s, %s, %s",
 		   eula_id, package_id, vendor_name, license_agreement);
 	g_signal_emit (transaction, signals[SIGNAL_EULA_REQUIRED], 0,
 		       eula_id, package_id, vendor_name, license_agreement);
@@ -1326,7 +1325,7 @@ pk_transaction_media_change_required_cb (PkBackend *backend, PkMediaChangeRequir
 
 	/* emit */
 	media_type_text = pk_media_type_enum_to_string (media_type);
-	egg_debug ("emitting media-change-required %s, %s, %s",
+	g_debug ("emitting media-change-required %s, %s, %s",
 		   media_type_text, media_id, media_text);
 	g_signal_emit (transaction, signals[SIGNAL_MEDIA_CHANGE_REQUIRED], 0,
 		       media_type_text, media_id, media_text);
@@ -1381,7 +1380,7 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, P
 	/* ignore */
 	restart_text = pk_restart_enum_to_string (restart);
 	if (found) {
-		egg_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
+		g_debug ("ignoring %s (%s) as already sent", restart_text, package_id);
 		return;
 	}
 
@@ -1389,7 +1388,7 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRequireRestart *item, P
 	pk_results_add_require_restart (transaction->priv->results, item);
 
 	/* emit */
-	egg_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
+	g_debug ("emitting require-restart %s, '%s'", restart_text, package_id);
 	g_signal_emit (transaction, signals[SIGNAL_REQUIRE_RESTART], 0, restart_text, package_id);
 
 	g_free (package_id);
@@ -1410,7 +1409,7 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		egg_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_string (status));
+		g_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_string (status));
 		return;
 	}
 
@@ -1453,7 +1452,7 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, PkTransactionPast *item, Pk
 
 	/* emit */
 	role_text = pk_role_enum_to_string (role);
-	egg_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
+	g_debug ("emitting transaction %s, %s, %i, %s, %i, %s, %i, %s",
 		   tid, timespec, succeeded, role_text,
 		   duration, data, uid, cmdline);
 	g_signal_emit (transaction, signals[SIGNAL_TRANSACTION], 0,
@@ -1510,7 +1509,7 @@ pk_transaction_update_detail_cb (PkBackend *backend, PkUpdateDetail *item, PkTra
 		      NULL);
 
 	/* emit */
-	egg_debug ("emitting update-detail");
+	g_debug ("emitting update-detail");
 	restart_text = pk_restart_enum_to_string (restart);
 	state_text = pk_update_state_enum_to_string (state);
 	g_signal_emit (transaction, signals[SIGNAL_UPDATE_DETAIL], 0,
@@ -1561,7 +1560,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* check we have anything to process */
 	if (package_ids == NULL) {
-		egg_debug ("no package_ids for %s", pk_role_enum_to_string (priv->role));
+		g_debug ("no package_ids for %s", pk_role_enum_to_string (priv->role));
 		goto out;
 	}
 
@@ -1569,21 +1568,21 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	if (priv->role != PK_ROLE_ENUM_UPDATE_SYSTEM &&
 	    priv->role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
 	    priv->role != PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		egg_debug ("doing nothing, as not update or install");
+		g_debug ("doing nothing, as not update or install");
 		goto out;
 	}
 
 	/* do we want to enable this codepath? */
 	ret = pk_conf_get_bool (priv->conf, "CheckSharedLibrariesInUse");
 	if (!ret) {
-		egg_warning ("not checking for library restarts");
+		g_warning ("not checking for library restarts");
 		goto out;
 	}
 
 	/* do we have a cache */
 	results = pk_cache_get_results (priv->cache, PK_ROLE_ENUM_GET_UPDATES);
 	if (results == NULL) {
-		egg_warning ("no updates cache");
+		g_warning ("no updates cache");
 		goto out;
 	}
 
@@ -1596,7 +1595,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 			      "package-id", &package_id,
 			      NULL);
 		if (info == PK_INFO_ENUM_SECURITY) {
-			egg_debug ("security update: %s", package_id);
+			g_debug ("security update: %s", package_id);
 			length++;
 		}
 		g_free (package_id);
@@ -1604,7 +1603,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 	/* nothing to scan for */
 	if (length == 0) {
-		egg_debug ("no security updates");
+		g_debug ("no security updates");
 		goto out;
 	}
 
@@ -1620,7 +1619,6 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 			package_ids_security[j++] = g_strdup (package_id);
 		g_free (package_id);
 	}
-
 
 	/* is a security update we are installing */
 	if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
@@ -1638,7 +1636,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 
 		/* nothing matched */
 		if (!ret) {
-			egg_debug ("not installing a security update package");
+			g_debug ("not installing a security update package");
 			goto out;
 		}
 	}
@@ -1646,7 +1644,7 @@ pk_transaction_pre_transaction_checks (PkTransaction *transaction, gchar **packa
 	/* find files in security updates */
 	ret = pk_transaction_extra_check_library_restart_pre (priv->transaction_extra, package_ids_security);
 	if (!ret) {
-		egg_debug ("could not check the library list");
+		g_debug ("could not check the library list");
 		goto out;
 	}
 out:
@@ -1703,7 +1701,7 @@ pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 		g_set_error_literal (error, 1, 0, "failed to set the root");
 		goto out;
 	}
-	egg_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
+	g_debug ("using http_proxy=%s, ftp_proxy=%s, root=%s for %i:%s",
 		   proxy_http, proxy_ftp, root, priv->uid, session);
 out:
 	g_free (proxy_http);
@@ -1722,7 +1720,7 @@ pk_transaction_speed_cb (GObject *object, GParamSpec *pspec, PkTransaction *tran
 		      "speed", &transaction->priv->speed,
 		      NULL);
 	/* emit */
-	egg_debug ("emitting changed");
+	g_debug ("emitting changed");
 	g_signal_emit (transaction, signals[SIGNAL_CHANGED], 0);
 }
 
@@ -1765,7 +1763,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
-		egg_warning ("failed to set the session state: %s", error->message);
+		g_warning ("failed to set the session state: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -1793,7 +1791,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the role */
 	pk_backend_set_role (priv->backend, priv->role);
-	egg_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
+	g_debug ("setting role for %s to %s", priv->tid, pk_role_enum_to_string (priv->role));
 
 	/* connect up the signals */
 	priv->signal_allow_cancel =
@@ -1921,7 +1919,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES)) {
 			pk_backend_simulate_install_packages (priv->backend, priv->cached_package_ids);
 		} else {
-			egg_warning ("falling back to get depends as simulate install packages isn't implemented");
+			g_warning ("falling back to get depends as simulate install packages isn't implemented");
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_INSTALLING, priv->cached_package_ids[i], "");
@@ -1933,7 +1931,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES)) {
 			pk_backend_simulate_remove_packages (priv->backend, priv->cached_package_ids, priv->cached_autoremove);
 		} else {
-			egg_warning ("falling back to get requires as simulate remove packages isn't implemented");
+			g_warning ("falling back to get requires as simulate remove packages isn't implemented");
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			pk_backend_get_requires (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
@@ -1942,7 +1940,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 		if (pk_backend_is_implemented (priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES)) {
 			pk_backend_simulate_update_packages (priv->backend, priv->cached_package_ids);
 		} else {
-			egg_warning ("falling back to get depends as simulate update packages isn't implemented");
+			g_warning ("falling back to get depends as simulate update packages isn't implemented");
 			/* we need to emit the original packages before we fall back */
 			for (i=0; priv->cached_package_ids[i] != NULL; i++)
 				pk_backend_package (priv->backend, PK_INFO_ENUM_UPDATING, priv->cached_package_ids[i], "");
@@ -1950,7 +1948,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else {
-		egg_error ("failed to run as role not assigned");
+		g_error ("failed to run as role not assigned");
 		ret = FALSE;
 	}
 out:
@@ -1997,7 +1995,7 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 	g_return_val_if_fail (transaction->priv->tid == NULL, FALSE);
 
 	if (transaction->priv->tid != NULL) {
-		egg_warning ("changing a tid -- why?");
+		g_warning ("changing a tid -- why?");
 		return FALSE;
 	}
 	g_free (transaction->priv->tid);
@@ -2015,7 +2013,7 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	g_return_val_if_fail (sender != NULL, FALSE);
 	g_return_val_if_fail (transaction->priv->sender == NULL, FALSE);
 
-	egg_debug ("setting sender to %s", sender);
+	g_debug ("setting sender to %s", sender);
 	transaction->priv->sender = g_strdup (sender);
 	egg_dbus_monitor_assign (transaction->priv->monitor, EGG_DBUS_MONITOR_SYSTEM, sender);
 
@@ -2068,7 +2066,7 @@ pk_transaction_commit (PkTransaction *transaction)
 					  priv->tid);
 	if (!ret) {
 		pk_transaction_release_tid (transaction);
-		egg_warning ("failed to commit (job not run?)");
+		g_warning ("failed to commit (job not run?)");
 		return FALSE;
 	}
 
@@ -2109,7 +2107,6 @@ pk_transaction_finished_idle_cb (PkTransaction *transaction)
 	pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
 	return FALSE;
 }
-
 
 /**
  * pk_transaction_strvalidate_char:
@@ -2311,7 +2308,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 
 	/* failed, maybe polkit is messed up? */
 	if (result == NULL) {
-		egg_warning ("failed to check for auth: %s", error->message);
+		g_warning ("failed to check for auth: %s", error->message);
 
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
@@ -2339,7 +2336,7 @@ pk_transaction_action_obtain_authorization_finished_cb (GObject *source_object, 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		egg_warning ("Could not commit to a transaction object");
+		g_warning ("Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		goto out;
 	}
@@ -2514,12 +2511,12 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 {
 	gboolean ret;
 
-	egg_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
+	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
 	if (!ret) {
-		egg_warning ("Could not commit to a transaction object");
+		g_warning ("Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 	}
 
@@ -2575,7 +2572,7 @@ pk_transaction_dbus_return_error (DBusGMethodInvocation *context, GError *error)
 {
 	/* not set inside the test suite */
 	if (context == NULL) {
-		egg_warning ("context null, and error: %s", error->message);
+		g_warning ("context null, and error: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -2633,7 +2630,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 		return;
 	}
 
-	egg_debug ("AcceptEula method called: %s", eula_id);
+	g_debug ("AcceptEula method called: %s", eula_id);
 	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
 	if (!ret) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
@@ -2667,7 +2664,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("Cancel method called on %s", transaction->priv->tid);
+	g_debug ("Cancel method called on %s", transaction->priv->tid);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
@@ -2679,7 +2676,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* if it's finished, cancelling will have no action regardless of uid */
 	if (transaction->priv->finished) {
-		egg_debug ("No point trying to cancel a finished transaction, ignoring");
+		g_debug ("No point trying to cancel a finished transaction, ignoring");
 
 		/* return from async with success */
 		pk_transaction_dbus_return (context);
@@ -2707,7 +2704,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 	sender = dbus_g_method_get_sender (context);
 	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
 	if (ret) {
-		egg_debug ("same sender, no need to check uid");
+		g_debug ("same sender, no need to check uid");
 		goto skip_uid;
 	}
 
@@ -2729,7 +2726,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 	/* check the caller uid with the originator uid */
 	if (transaction->priv->uid != uid) {
-		egg_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
+		g_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
 		ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_CANCEL, &error);
 		if (!ret) {
 			pk_transaction_dbus_return_error (context, error);
@@ -2786,7 +2783,7 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("DownloadPackages method called: %s", package_ids[0]);
+	g_debug ("DownloadPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES)) {
@@ -2872,7 +2869,7 @@ pk_transaction_get_categories (PkTransaction *transaction, DBusGMethodInvocation
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("GetCategories method called");
+	g_debug ("GetCategories method called");
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_CATEGORIES)) {
@@ -2932,7 +2929,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, gch
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("GetDepends method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3019,7 +3016,7 @@ pk_transaction_get_details (PkTransaction *transaction, gchar **package_ids, DBu
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("GetDetails method called: %s", package_ids_temp);
+	g_debug ("GetDetails method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3092,7 +3089,7 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction, DBusGMethodInvoc
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("GetDistroUpgrades method called");
+	g_debug ("GetDistroUpgrades method called");
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
@@ -3146,7 +3143,7 @@ pk_transaction_get_files (PkTransaction *transaction, gchar **package_ids, DBusG
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("GetFiles method called: %s", package_ids_temp);
+	g_debug ("GetFiles method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3219,7 +3216,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("GetPackages method called: %s", filter);
+	g_debug ("GetPackages method called: %s", filter);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
@@ -3275,7 +3272,7 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	egg_debug ("GetOldTransactions method called");
+	g_debug ("GetOldTransactions method called");
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	pk_transaction_db_get_list (transaction->priv->transaction_db, number);
@@ -3299,7 +3296,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("GetRepoList method called");
+	g_debug ("GetRepoList method called");
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_REPO_LIST)) {
@@ -3361,7 +3358,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, gc
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("GetRequires method called: %s (recursive %i)", package_ids_temp, recursive);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3449,7 +3446,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction, gchar **package_id
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("GetUpdateDetail method called: %s", package_ids_temp);
+	g_debug ("GetUpdateDetail method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3534,11 +3531,11 @@ pk_transaction_try_emit_cache (PkTransaction *transaction)
 	/* failed last time */
 	exit_enum = pk_results_get_exit_code (results);
 	if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		egg_warning ("failed last time with: %s", pk_exit_enum_to_string (exit_enum));
+		g_warning ("failed last time with: %s", pk_exit_enum_to_string (exit_enum));
 		goto out;
 	}
 
-	egg_debug ("we have cached data we should use");
+	g_debug ("we have cached data we should use");
 
 	/* packages */
 	package_array = pk_results_get_package_array (results);
@@ -3591,7 +3588,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("GetUpdates method called");
+	g_debug ("GetUpdates method called");
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_GET_UPDATES)) {
@@ -3722,7 +3719,7 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean only_trusted,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	full_paths_temp = pk_package_ids_to_string (full_paths);
-	egg_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
+	g_debug ("InstallFiles method called: %s (only_trusted %i)", full_paths_temp, only_trusted);
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
@@ -3828,7 +3825,7 @@ pk_transaction_install_packages (PkTransaction *transaction, gboolean only_trust
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("InstallPackages method called: %s", package_ids_temp);
+	g_debug ("InstallPackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -3902,7 +3899,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("InstallSignature method called: %s, %s", key_id, package_id);
+	g_debug ("InstallSignature method called: %s, %s", key_id, package_id);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
@@ -3968,7 +3965,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("RefreshCache method called: %i", force);
+	g_debug ("RefreshCache method called: %i", force);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REFRESH_CACHE)) {
@@ -4024,7 +4021,7 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
+	g_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -4098,7 +4095,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
+	g_debug ("RepoEnable method called: %s, %i", repo_id, enabled);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_ENABLE)) {
@@ -4156,7 +4153,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
+	g_debug ("RepoSetData method called: %s, %s, %s", repo_id, parameter, value);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_REPO_SET_DATA)) {
@@ -4219,7 +4216,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	packages_temp = pk_package_ids_to_string (packages);
-	egg_debug ("Resolve method called: %s, %s", filter, packages_temp);
+	g_debug ("Resolve method called: %s, %s", filter, packages_temp);
 	g_free (packages_temp);
 
 	/* not implemented yet */
@@ -4300,7 +4297,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("Rollback method called: %s", transaction_id);
+	g_debug ("Rollback method called: %s", transaction_id);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_ROLLBACK)) {
@@ -4356,7 +4353,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchDetails method called: %s, %s", filter, values[0]);
+	g_debug ("SearchDetails method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_DETAILS)) {
@@ -4424,7 +4421,7 @@ pk_transaction_search_files (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchFiles method called: %s, %s", filter, values[0]);
+	g_debug ("SearchFiles method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
@@ -4503,7 +4500,7 @@ pk_transaction_search_groups (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchGroups method called: %s, %s", filter, values[0]);
+	g_debug ("SearchGroups method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_GROUP)) {
@@ -4581,7 +4578,7 @@ pk_transaction_search_names (PkTransaction *transaction, const gchar *filter,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SearchNames method called: %s, %s", filter, values[0]);
+	g_debug ("SearchNames method called: %s, %s", filter, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SEARCH_NAME)) {
@@ -4727,7 +4724,7 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 	}
 
 	/* to preserve forwards and backwards compatibility, we ignore extra options here */
-	egg_warning ("unknown option: %s with value %s", key, value);
+	g_warning ("unknown option: %s with value %s", key, value);
 out:
 	return ret;
 }
@@ -4748,7 +4745,7 @@ pk_transaction_set_hints (PkTransaction *transaction, gchar **hints, DBusGMethod
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	dbg = g_strjoinv (", ", hints);
-	egg_debug ("SetHints method called: %s", dbg);
+	g_debug ("SetHints method called: %s", dbg);
 	g_free (dbg);
 
 	/* check if the sender is the same */
@@ -4805,7 +4802,7 @@ pk_transaction_simulate_install_files (PkTransaction *transaction, gchar **full_
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	full_paths_temp = pk_package_ids_to_string (full_paths);
-	egg_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
+	g_debug ("SimulateInstallFiles method called: %s", full_paths_temp);
 	g_free (full_paths_temp);
 
 	/* not implemented yet */
@@ -4908,7 +4905,7 @@ pk_transaction_simulate_install_packages (PkTransaction *transaction, gchar **pa
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
+	g_debug ("SimulateInstallPackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES) &&
@@ -4984,7 +4981,7 @@ pk_transaction_simulate_remove_packages (PkTransaction *transaction, gchar **pac
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SimulateRemovePackages method called: %s", package_ids[0]);
+	g_debug ("SimulateRemovePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES) &&
@@ -5061,7 +5058,7 @@ pk_transaction_simulate_update_packages (PkTransaction *transaction, gchar **pac
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
+	g_debug ("SimulateUpdatePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES) &&
@@ -5138,7 +5135,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gboolean only_truste
 	g_return_if_fail (transaction->priv->tid != NULL);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	egg_debug ("UpdatePackages method called: %s", package_ids_temp);
+	g_debug ("UpdatePackages method called: %s", package_ids_temp);
 	g_free (package_ids_temp);
 
 	/* not implemented yet */
@@ -5210,7 +5207,7 @@ pk_transaction_update_system (PkTransaction *transaction, gboolean only_trusted,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("UpdateSystem method called");
+	g_debug ("UpdateSystem method called");
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
@@ -5267,7 +5264,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	egg_debug ("WhatProvides method called: %s, %s", type, values[0]);
+	g_debug ("WhatProvides method called: %s, %s", type, values[0]);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_WHAT_PROVIDES)) {
@@ -5702,7 +5699,7 @@ pk_transaction_dispose (GObject *object)
 	}
 
 	/* send signal to clients that we are about to be destroyed */
-	egg_debug ("emitting destroy %s", transaction->priv->tid);
+	g_debug ("emitting destroy %s", transaction->priv->tid);
 	g_signal_emit (transaction, signals[SIGNAL_DESTROY], 0);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);

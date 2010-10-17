@@ -27,8 +27,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-sack.h>
 
-#include "egg-debug.h"
-
 #include "pk-package-sack-sync.h"
 
 /* tiny helper to help us do the async operation */

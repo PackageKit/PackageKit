@@ -33,8 +33,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-progress.h>
 
-#include "egg-debug.h"
-
 static void     pk_progress_finalize	(GObject     *object);
 
 #define PK_PROGRESS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PROGRESS, PkProgressPrivate))
@@ -152,14 +150,14 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 
 	/* valid? */
 	if (!pk_package_id_check (package_id)) {
-		egg_warning ("invalid package_id %s", package_id);
+		g_warning ("invalid package_id %s", package_id);
 		return FALSE;
 	}
 
 	/* new value */
 	g_free (progress->priv->package_id);
 	progress->priv->package_id = g_strdup (package_id);
-	egg_debug ("package_id now %s", package_id);
+	g_debug ("package_id now %s", package_id);
 	g_object_notify (G_OBJECT(progress), "package-id");
 
 	return TRUE;
@@ -183,7 +181,7 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
 	/* new value */
 	g_free (progress->priv->transaction_id);
 	progress->priv->transaction_id = g_strdup (transaction_id);
-	egg_debug ("transaction_id now %s", transaction_id);
+	g_debug ("transaction_id now %s", transaction_id);
 	g_object_notify (G_OBJECT(progress), "transaction-id");
 
 	return TRUE;
@@ -205,7 +203,7 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
 
 	/* new value */
 	progress->priv->percentage = percentage;
-	egg_debug ("percentage now %i", percentage);
+	g_debug ("percentage now %i", percentage);
 	g_object_notify (G_OBJECT(progress), "percentage");
 
 	return TRUE;
@@ -227,7 +225,7 @@ pk_progress_set_subpercentage (PkProgress *progress, gint subpercentage)
 
 	/* new value */
 	progress->priv->subpercentage = subpercentage;
-	egg_debug ("subpercentage now %i", subpercentage);
+	g_debug ("subpercentage now %i", subpercentage);
 	g_object_notify (G_OBJECT(progress), "subpercentage");
 
 	return TRUE;
@@ -249,7 +247,7 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 
 	/* new value */
 	progress->priv->status = status;
-	egg_debug ("status now %s", pk_status_enum_to_string (status));
+	g_debug ("status now %s", pk_status_enum_to_string (status));
 	g_object_notify (G_OBJECT(progress), "status");
 
 	return TRUE;
@@ -271,7 +269,7 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 
 	/* new value */
 	progress->priv->role = role;
-	egg_debug ("role now %s", pk_role_enum_to_string (role));
+	g_debug ("role now %s", pk_role_enum_to_string (role));
 	g_object_notify (G_OBJECT(progress), "role");
 
 	return TRUE;
@@ -293,7 +291,7 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 
 	/* new value */
 	progress->priv->allow_cancel = allow_cancel;
-	egg_debug ("allow-cancel now %i", allow_cancel);
+	g_debug ("allow-cancel now %i", allow_cancel);
 	g_object_notify (G_OBJECT(progress), "allow-cancel");
 
 	return TRUE;
@@ -315,7 +313,7 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 
 	/* new value */
 	progress->priv->caller_active = caller_active;
-	egg_debug ("caller-active now %i", caller_active);
+	g_debug ("caller-active now %i", caller_active);
 	g_object_notify (G_OBJECT(progress), "caller-active");
 
 	return TRUE;
@@ -337,7 +335,7 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
 
 	/* new value */
 	progress->priv->elapsed_time = elapsed_time;
-	egg_debug ("elapsed time now %i", elapsed_time);
+	g_debug ("elapsed time now %i", elapsed_time);
 	g_object_notify (G_OBJECT(progress), "elapsed-time");
 
 	return TRUE;
@@ -359,7 +357,7 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 
 	/* new value */
 	progress->priv->remaining_time = remaining_time;
-	egg_debug ("remaining time now %i", remaining_time);
+	g_debug ("remaining time now %i", remaining_time);
 	g_object_notify (G_OBJECT(progress), "remaining-time");
 
 	return TRUE;
@@ -381,7 +379,7 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 
 	/* new value */
 	progress->priv->speed = speed;
-	egg_debug ("speed now %i", speed);
+	g_debug ("speed now %i", speed);
 	g_object_notify (G_OBJECT(progress), "speed");
 
 	return TRUE;
@@ -403,7 +401,7 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
 
 	/* new value */
 	progress->priv->uid = uid;
-	egg_debug ("uid now %i", uid);
+	g_debug ("uid now %i", uid);
 	g_object_notify (G_OBJECT(progress), "uid");
 
 	return TRUE;
@@ -427,7 +425,7 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
 	if (progress->priv->package != NULL)
 		g_object_unref (progress->priv->package);
 	progress->priv->package = g_object_ref (package);
-	egg_debug ("package now %p", package);
+	g_debug ("package now %p", package);
 	g_object_notify (G_OBJECT(progress), "package");
 
 	return TRUE;

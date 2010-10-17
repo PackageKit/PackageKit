@@ -28,7 +28,6 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "pk-cache.h"
 #include "pk-conf.h"
 
@@ -54,13 +53,13 @@ pk_cache_get_results (PkCache *cache, PkRoleEnum role)
 
 	/* do not use */
 	if (!cache->priv->use_cache) {
-		egg_debug ("not using cache");
+		g_debug ("not using cache");
 		return NULL;
 	}
 
 	/* only support GetUpdates */
 	if (role != PK_ROLE_ENUM_GET_UPDATES) {
-		egg_debug ("only caching update lists");
+		g_debug ("only caching update lists");
 		return FALSE;
 	}
 
@@ -81,20 +80,20 @@ pk_cache_set_results (PkCache *cache, PkRoleEnum role, PkResults *results)
 
 	/* do not use */
 	if (!cache->priv->use_cache) {
-		egg_debug ("not using cache");
+		g_debug ("not using cache");
 		return FALSE;
 	}
 
 	/* only support GetUpdates */
 	if (role != PK_ROLE_ENUM_GET_UPDATES) {
-		egg_debug ("only caching update lists");
+		g_debug ("only caching update lists");
 		return FALSE;
 	}
 
 	/* do this in case we have old data */
 	pk_cache_invalidate (cache);
 
-	egg_debug ("reffing updates cache");
+	g_debug ("reffing updates cache");
 	cache->priv->get_updates = g_object_ref (results);
 	return TRUE;
 }
@@ -107,7 +106,7 @@ pk_cache_invalidate (PkCache *cache)
 {
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 
-	egg_debug ("unreffing updates cache");
+	g_debug ("unreffing updates cache");
 	if (cache->priv->get_updates != NULL) {
 		g_object_unref (cache->priv->get_updates);
 		cache->priv->get_updates = NULL;

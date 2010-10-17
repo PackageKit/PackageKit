@@ -41,7 +41,7 @@ group_map_new (GError **error)
 	gchar *key, *value;
 	GError *e = NULL;
 
-	egg_debug ("pacman: reading groups from %s", PACMAN_GROUP_LIST);
+	g_debug ("pacman: reading groups from %s", PACMAN_GROUP_LIST);
 	file = g_file_new_for_path (PACMAN_GROUP_LIST);
 	file_stream = g_file_read (file, NULL, &e);
 

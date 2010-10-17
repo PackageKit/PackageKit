@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#include "egg-debug.h"
-
 #include <glib.h>
 
 #include <packagekit-glib2/pk-package-id.h>
@@ -85,7 +83,7 @@ pk_package_id_check (const gchar *package_id)
 	/* UTF8 */
 	ret = g_utf8_validate (package_id, -1, NULL);
 	if (!ret) {
-		egg_warning ("invalid UTF8!");
+		g_warning ("invalid UTF8!");
 		return FALSE;
 	}
 

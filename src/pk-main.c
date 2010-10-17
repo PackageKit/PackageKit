@@ -31,8 +31,8 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <packagekit-glib2/pk-debug.h>
 
-#include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 
 #include "pk-conf.h"
@@ -80,7 +80,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 
 	/* abort as the DBUS method failed */
 	if (!ret) {
-		egg_warning ("RequestName failed!");
+		g_warning ("RequestName failed!");
 		g_clear_error (error);
 		message = g_strdup_printf ("%s\n%s\n* %s\n* %s '%s'\n",
 					   /* TRANSLATORS: failed due to DBus security */
@@ -136,9 +136,9 @@ pk_main_timeout_check_cb (PkEngine *engine)
 {
 	guint idle;
 	idle = pk_engine_get_seconds_idle (engine);
-	egg_debug ("idle is %i", idle);
+	g_debug ("idle is %i", idle);
 	if (idle > exit_idle_time) {
-		egg_warning ("exit!!");
+		g_warning ("exit!!");
 		g_main_loop_quit (loop);
 		return FALSE;
 	}
@@ -151,7 +151,7 @@ pk_main_timeout_check_cb (PkEngine *engine)
 static void
 pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 {
-	egg_debug ("engine quit");
+	g_debug ("engine quit");
 	g_main_loop_quit (mainloop);
 }
 
@@ -161,7 +161,7 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 static void
 pk_main_sigint_handler (int sig)
 {
-	egg_debug ("Handling SIGINT");
+	g_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
@@ -229,7 +229,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: describing the service that is running */
 	context = g_option_context_new (_("PackageKit service"));
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
@@ -284,17 +284,15 @@ main (int argc, char *argv[])
 
 	/* do we log? */
 	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
-	egg_debug ("Log all transactions: %i", do_logging);
-	if (do_logging)
-		egg_debug_set_log_filename ("/var/log/PackageKit");
+	g_debug ("Log all transactions: %i", do_logging);
 
 	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
-	egg_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	if (backend_name == NULL) {
 		backend_name = pk_conf_get_string (conf, "DefaultBackend");
-		egg_debug ("using default backend %s", backend_name);
+		g_debug ("using default backend %s", backend_name);
 	}
 
 	/* load our chosen backend */
@@ -304,7 +302,7 @@ main (int argc, char *argv[])
 
 	/* all okay? */
 	if (!ret)
-		egg_error ("cannot continue, backend invalid");
+		g_error ("cannot continue, backend invalid");
 
 	loop = g_main_loop_new (NULL, FALSE);
 

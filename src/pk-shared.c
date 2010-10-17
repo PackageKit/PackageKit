@@ -31,7 +31,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#include "egg-debug.h"
 #include "pk-shared.h"
 
 /**
@@ -52,7 +51,7 @@ pk_directory_remove_contents (const gchar *directory)
 	/* try to open */
 	dir = g_dir_open (directory, 0, &error);
 	if (dir == NULL) {
-		egg_warning ("cannot open directory: %s", error->message);
+		g_warning ("cannot open directory: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -62,17 +61,17 @@ pk_directory_remove_contents (const gchar *directory)
 		src = g_build_filename (directory, filename, NULL);
 		ret = g_file_test (src, G_FILE_TEST_IS_DIR);
 		if (ret) {
-			egg_debug ("directory %s found in %s, deleting", filename, directory);
+			g_debug ("directory %s found in %s, deleting", filename, directory);
 			/* recurse, but should be only 1 level deep */
 			pk_directory_remove_contents (src);
 			retval = g_remove (src);
 			if (retval != 0)
-				egg_warning ("failed to delete %s", src);
+				g_warning ("failed to delete %s", src);
 		} else {
-			egg_debug ("file found in %s, deleting", directory);
+			g_debug ("file found in %s, deleting", directory);
 			retval = g_unlink (src);
 			if (retval != 0)
-				egg_warning ("failed to delete %s", src);
+				g_warning ("failed to delete %s", src);
 		}
 		g_free (src);
 	}

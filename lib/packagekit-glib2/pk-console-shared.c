@@ -32,8 +32,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
-
 #include "pk-client-sync.h"
 #include "pk-console-shared.h"
 
@@ -80,7 +78,7 @@ pk_console_getchar_unbuffered (void)
 	/* store old settings */
 	res = tcgetattr (STDIN_FILENO, &org_opts);
 	if (res != 0)
-		egg_warning ("failed to set terminal");
+		g_warning ("failed to set terminal");
 
 	/* set new terminal parms */
 	memcpy (&new_opts, &org_opts, sizeof(new_opts));
@@ -91,7 +89,7 @@ pk_console_getchar_unbuffered (void)
 	/* restore old settings */
 	res = tcsetattr (STDIN_FILENO, TCSANOW, &org_opts);
 	if (res != 0)
-		egg_warning ("failed to set terminal");
+		g_warning ("failed to set terminal");
 	return c;
 }
 
@@ -226,7 +224,7 @@ pk_console_resolve_packages (PkClient *client, PkBitfield filter, gchar **packag
 
 	/* get length */
 	len = g_strv_length (packages);
-	egg_debug ("resolving %i packages", len);
+	g_debug ("resolving %i packages", len);
 
 	/* create output array*/
 	package_ids = g_new0 (gchar *, len+1);
@@ -401,7 +399,7 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		text = _("Copying files");
 		break;
 	default:
-		egg_warning ("status unrecognised: %s", pk_status_enum_to_string (status));
+		g_warning ("status unrecognised: %s", pk_status_enum_to_string (status));
 	}
 	return text;
 }
@@ -453,7 +451,7 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		text = _("Available");
 		break;
 	default:
-		egg_warning ("info unrecognised: %s", pk_info_enum_to_string (info));
+		g_warning ("info unrecognised: %s", pk_info_enum_to_string (info));
 	}
 	return text;
 }
@@ -691,7 +689,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		text = _("Simulating update");
 		break;
 	default:
-		egg_warning ("role unrecognised: %s", pk_role_enum_to_string (role));
+		g_warning ("role unrecognised: %s", pk_role_enum_to_string (role));
 	}
 	return text;
 }

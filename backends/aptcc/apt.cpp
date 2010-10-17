@@ -145,25 +145,25 @@ aptcc::~aptcc()
 {
 	if (packageRecords)
 	{
-		egg_debug ("~apt_init packageRecords");
+		g_debug ("~apt_init packageRecords");
 		delete packageRecords;
 	}
 
 	if (packageCache)
 	{
-		egg_debug ("~apt_init packageCache");
+		g_debug ("~apt_init packageCache");
 		delete packageCache;
 	}
 
 	if (packageDepCache)
 	{
-		egg_debug ("~apt_init packageDepCache");
+		g_debug ("~apt_init packageDepCache");
 		delete packageDepCache;
 	}
 
 	if (Policy)
 	{
-		egg_debug ("~apt_init Policy");
+		g_debug ("~apt_init Policy");
 		delete Policy;
 	}
 
@@ -444,7 +444,7 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 			    "\\((.*)\\)\\?";
 
 	if(regcomp(&pkre, pkreg, 0) != 0) {
-		egg_debug("Regex compilation error: ", pkreg);
+		g_debug("Regex compilation error: ", pkreg);
 		return;
 	}
 
@@ -493,11 +493,11 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 			if(regcomp(&sre, itemreg, REG_NEWLINE | REG_NOSUB) == 0) {
 				search.push_back(pair<string, regex_t>(version, sre));
 			} else {
-				egg_debug("Search regex compilation error: ", itemreg);
+				g_debug("Search regex compilation error: ", itemreg);
 			}
 			g_free(itemreg);
 		} else {
-			egg_debug("Did not match: %s", value);
+			g_debug("Did not match: %s", value);
 		}
 	}
 	regfree(&pkre);
@@ -922,7 +922,7 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 				 values_str);
 	g_free(values_str);
 	if(regcomp(&re, search, REG_NOSUB) != 0) {
-		egg_debug("Regex compilation error");
+		g_debug("Regex compilation error");
 		g_free(search);
 		return vector<string>();
 	}
@@ -931,7 +931,7 @@ vector<string> search_files (PkBackend *backend, gchar **values, bool &_cancel)
 	DIR *dp;
 	struct dirent *dirp;
 	if (!(dp = opendir("/var/lib/dpkg/info/"))) {
-		egg_debug ("Error opening /var/lib/dpkg/info/\n");
+		g_debug ("Error opening /var/lib/dpkg/info/\n");
 		regfree(&re);
 		return vector<string>();
 	}
@@ -976,7 +976,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 	g_free(values_str);
 
 	if(regcomp(&re, value, REG_NOSUB) != 0) {
-		egg_debug("Regex compilation error");
+		g_debug("Regex compilation error");
 		g_free(value);
 		return vector<string>();
 	}
@@ -985,7 +985,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 	DIR *dp;
 	struct dirent *dirp;
 	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
-		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
+		g_debug ("Error opening /usr/share/app-install/desktop/\n");
 		regfree(&re);
 		error = true;
 		return vector<string>();
@@ -1041,7 +1041,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 // 	g_free(values_str);
 //
 // 	if(regcomp(&re, value, REG_NOSUB) != 0) {
-// 		egg_debug("Regex compilation error");
+// 		g_debug("Regex compilation error");
 // 		g_free(value);
 // 		return vector<string>();
 // 	}
@@ -1050,7 +1050,7 @@ vector<string> searchMimeType (PkBackend *backend, gchar **values, bool &error, 
 // 	DIR *dp;
 // 	struct dirent *dirp;
 // 	if (!(dp = opendir("/usr/share/app-install/desktop/"))) {
-// 		egg_debug ("Error opening /usr/share/app-install/desktop/\n");
+// 		g_debug ("Error opening /usr/share/app-install/desktop/\n");
 // 		regfree(&re);
 // 		error = true;
 // 		return vector<string>();
@@ -1147,7 +1147,7 @@ static bool checkTrusted(pkgAcquire &fetcher, PkBackend *backend)
 	if (pk_backend_get_bool(backend, "only_trusted") == false ||
 	    _config->FindB("APT::Get::AllowUnauthenticated", false) == true)
 	{
-		egg_debug ("Authentication warning overridden.\n");
+		g_debug ("Authentication warning overridden.\n");
 		return true;
 	}
 
@@ -1467,7 +1467,7 @@ void aptcc::updateInterface(int fd, int writeFd)
 						   confmsg);
 				if (write(writeFd, "N\n", 2) != 2) {
 					// TODO we need a DPKG patch to use debconf
-					egg_debug("Failed to write");
+					g_debug("Failed to write");
 				}
 			} else if (strstr(status, "pmstatus") != NULL) {
 				// INSTALL & UPDATE
@@ -1944,7 +1944,7 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	pkgPackageManager::OrderResult res;
 	res = PM->DoInstallPreFork();
 	if (res == pkgPackageManager::Failed) {
-		egg_warning ("Failed to prepare installation");
+		g_warning ("Failed to prepare installation");
 		show_errors(m_backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
 		return false;
 	}

@@ -119,7 +119,7 @@ static guint number_packages = 0;
 static void
 pk_test_backend_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *details, gpointer data)
 {
-	egg_debug ("details=%s", details);
+	g_debug ("details=%s", details);
 	number_messages++;
 }
 
@@ -165,7 +165,7 @@ pk_test_backend_func_immediate_false (PkBackend *backend)
 static void
 pk_test_backend_package_cb (PkBackend *backend, PkPackage *package, gpointer user_data)
 {
-	egg_debug ("package:%s", pk_package_get_id (package));
+	g_debug ("package:%s", pk_package_get_id (package));
 	number_packages++;
 }
 
@@ -878,7 +878,7 @@ guint finished_count = 0;
 static void
 pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, gpointer user_data)
 {
-	egg_debug ("spawn exit=%i", exit);
+	g_debug ("spawn exit=%i", exit);
 	mexit = exit;
 	finished_count++;
 	_g_test_loop_quit ();
@@ -890,7 +890,7 @@ pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, gpointer user_data)
 static void
 pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, gpointer user_data)
 {
-	egg_debug ("stdout '%s'", line);
+	g_debug ("stdout '%s'", line);
 	stdout_count++;
 }
 
@@ -1351,7 +1351,7 @@ pk_test_transaction_db_func (void)
 	ret = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* remove old local database */
-		egg_warning ("Removing %s", PK_TRANSACTION_DB_FILE);
+		g_warning ("Removing %s", PK_TRANSACTION_DB_FILE);
 		value = g_unlink (PK_TRANSACTION_DB_FILE);
 		g_assert (value == 0);
 	}
@@ -1514,7 +1514,7 @@ pk_test_transaction_list_func (void)
 	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* remove old local database */
-		egg_warning ("Removing %s", "./transactions.db");
+		g_warning ("Removing %s", "./transactions.db");
 		size = g_unlink ("./transactions.db");
 		g_assert (size == 0);
 	}
@@ -1848,7 +1848,7 @@ main (int argc, char **argv)
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
 	g_type_init ();
-	egg_debug_init (&argc, &argv);
+	g_debug_init (&argc, &argv);
 	g_test_init (&argc, &argv, NULL);
 
 	/* components */

@@ -61,6 +61,10 @@
 #include <packagekit-glib2/pk-update-detail.h>
 #include <packagekit-glib2/pk-version.h>
 
+#ifdef PK_COMPILATION
+#include <packagekit-glib2/pk-debug.h>
+#endif
+
 #undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_H__ */

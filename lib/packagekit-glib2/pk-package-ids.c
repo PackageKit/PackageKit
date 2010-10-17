@@ -32,8 +32,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 
-#include "egg-debug.h"
-
 /**
  * pk_package_ids_from_id:
  * @package_id: A single package_id

@@ -33,8 +33,6 @@
 #include <pwd.h>
 #include <locale.h>
 
-#include "egg-debug.h"
-
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
@@ -1129,7 +1127,7 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 static void
 pk_console_sigint_cb (int sig)
 {
-	egg_debug ("Handling SIGINT");
+	g_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
 	signal (SIGINT, SIG_DFL);
@@ -1138,7 +1136,7 @@ pk_console_sigint_cb (int sig)
 	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
+	g_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -1332,7 +1330,7 @@ main (int argc, char *argv[])
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
@@ -1404,7 +1402,7 @@ main (int argc, char *argv[])
 			goto out;
 		}
 	}
-	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
+	g_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
 	if (argc > 2)
@@ -1493,7 +1491,6 @@ main (int argc, char *argv[])
 		pk_task_install_files_async (PK_TASK(task), argv+2, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
-
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1643,7 +1640,6 @@ main (int argc, char *argv[])
 		pk_client_get_distro_upgrades_async (PK_CLIENT(task), cancellable,
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
-
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {

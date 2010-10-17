@@ -34,8 +34,6 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
-#include "egg-debug.h"
-
 static void     pk_task_finalize	(GObject     *object);
 
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
@@ -148,7 +146,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* remove from list */
-	egg_debug ("remove state %p", state);
+	g_debug ("remove state %p", state);
 	g_ptr_array_remove (state->task->priv->array, state);
 
 	/* deallocate */
@@ -360,7 +358,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 				      "type", &message_type,
 				      NULL);
 			if (message_type == PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE) {
-				egg_debug ("we got an untrusted message, so skipping only-trusted");
+				g_debug ("we got an untrusted message, so skipping only-trusted");
 				state->only_trusted = FALSE;
 				break;
 			}
@@ -393,7 +391,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 			/* remove all the cleanup and finished packages */
 			if (info == PK_INFO_ENUM_CLEANUP ||
 			    info == PK_INFO_ENUM_FINISHED) {
-				egg_debug ("removing %s", package_id);
+				g_debug ("removing %s", package_id);
 				g_ptr_array_remove (array, item);
 				continue;
 			}
@@ -403,7 +401,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 			length = g_strv_length (state->package_ids);
 			for (i=0; i<length; i++) {
 				if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
-					egg_debug ("removing %s", package_id);
+					g_debug ("removing %s", package_id);
 					g_ptr_array_remove (array, item);
 					ret = TRUE;
 					break;
@@ -452,25 +450,25 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		/* simulate install async */
-		egg_debug ("doing install");
+		g_debug ("doing install");
 		pk_client_simulate_install_packages_async (PK_CLIENT(state->task), state->package_ids,
 							   state->cancellable, state->progress_callback, state->progress_user_data,
 							   (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* simulate update async */
-		egg_debug ("doing update");
+		g_debug ("doing update");
 		pk_client_simulate_update_packages_async (PK_CLIENT(state->task), state->package_ids,
 							  state->cancellable, state->progress_callback, state->progress_user_data,
 							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		/* simulate remove async */
-		egg_debug ("doing remove");
+		g_debug ("doing remove");
 		pk_client_simulate_remove_packages_async (PK_CLIENT(state->task), state->package_ids, state->autoremove,
 							  state->cancellable, state->progress_callback, state->progress_user_data,
 							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
 		/* simulate install async */
-		egg_debug ("doing install files");
+		g_debug ("doing install files");
 		pk_client_simulate_install_files_async (PK_CLIENT(state->task), state->files,
 						        state->cancellable, state->progress_callback, state->progress_user_data,
 						        (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
@@ -678,20 +676,20 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 {
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
-		egg_debug ("need to do install-sig");
+		g_debug ("need to do install-sig");
 		pk_task_install_signatures (state);
 		goto out;
 	}
 
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
-		egg_debug ("need to do accept-eula");
+		g_debug ("need to do accept-eula");
 		pk_task_accept_eulas (state);
 		goto out;
 	}
 
 	/* doing task */
-	egg_debug ("continuing with request %i", state->request);
+	g_debug ("continuing with request %i", state->request);
 	pk_task_do_async_action (state);
 
 out:
@@ -713,7 +711,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
 	if (state == NULL) {
-		egg_warning ("request %i not found", request);
+		g_warning ("request %i not found", request);
 		return FALSE;
 	}
 
@@ -741,7 +739,7 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 	}
 
 	/* doing task */
-	egg_debug ("declined request %i", state->request);
+	g_debug ("declined request %i", state->request);
 	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
 	g_error_free (error);
@@ -765,7 +763,7 @@ pk_task_user_declined (PkTask *task, guint request)
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
 	if (state == NULL) {
-		egg_warning ("request %i not found", request);
+		g_warning ("request %i not found", request);
 		return FALSE;
 	}
 
@@ -811,7 +809,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -835,7 +833,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -859,7 +857,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -883,7 +881,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -956,7 +954,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1010,7 +1008,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1069,7 +1067,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1124,7 +1122,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1180,7 +1178,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1233,7 +1231,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 	state->packages = g_strdupv (packages);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1286,7 +1284,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1339,7 +1337,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1392,7 +1390,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1445,7 +1443,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1496,7 +1494,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1547,7 +1545,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1600,7 +1598,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 	state->directory = g_strdup (directory);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1651,7 +1649,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1706,7 +1704,7 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
 	state->recursive = recursive;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1757,7 +1755,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1812,7 +1810,7 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
 	state->recursive = recursive;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1867,7 +1865,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1918,7 +1916,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1967,7 +1965,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 	state->only_trusted = TRUE;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2018,7 +2016,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 	state->force = force;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2069,7 +2067,7 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
 	state->transaction_id = g_strdup (transaction_id);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2120,7 +2118,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2173,7 +2171,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 	state->enabled = enabled;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2210,7 +2208,6 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 
 	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
-
 
 /**
  * pk_task_get_property:

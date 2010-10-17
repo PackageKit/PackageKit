@@ -38,7 +38,6 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
-#include <egg-debug.h>
 
 #include <alpm.h>
 #include <alpm_list.h>
@@ -166,7 +165,7 @@ emit_package (PkBackend *backend, pmpkg_t *pkg, const gchar *repo, PkInfoEnum in
 {
 	gchar *package_id_str;
 
-	egg_debug ("alpm: emitting package with name %s", alpm_pkg_get_name (pkg));
+	g_debug ("alpm: emitting package with name %s", alpm_pkg_get_name (pkg));
 
 	package_id_str = pkg_to_package_id_str (pkg, repo);
 	pk_backend_package (backend, info, package_id_str, alpm_pkg_get_desc (pkg));
@@ -203,7 +202,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 				/* search for package in package_ids */
 				gchar *package_id_needle = pkg_to_package_id_str (data1, "");
 
-				egg_debug ("needle is %s", package_id_needle);
+				g_debug ("needle is %s", package_id_needle);
 				for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator)
 					if (strstr (package_ids[iterator], package_id_needle) != NULL) {
 						pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_ids[iterator], alpm_pkg_get_desc (data1));
@@ -224,7 +223,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 
 			emit_package (backend_instance, data1, ALPM_LOCAL_DB_ALIAS, PK_INFO_ENUM_UPDATING);
 			break;
-		default: egg_debug ("alpm: event %i happened", event);
+		default: g_debug ("alpm: event %i happened", event);
 	}
 }
 
@@ -244,7 +243,7 @@ cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int ho
 		if (event == PM_TRANS_PROGRESS_ADD_START || event == PM_TRANS_PROGRESS_UPGRADE_START || event == PM_TRANS_PROGRESS_REMOVE_START) {
 			int trans_percent;
 
-			egg_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
+			g_debug ("alpm: transaction percentage for %s is %i", pkgname, percent);
 			trans_percent = (int) ((float) ((current - 1) * 100 + percent)) / ((float) (howmany * 100)) * 100;
 			pk_backend_set_sub_percentage ((PkBackend *) backend_instance, percent);
 			pk_backend_set_percentage ((PkBackend *) backend_instance, trans_percent);
@@ -279,7 +278,7 @@ cb_dl_progress (const char *filename, off_t file_xfered, off_t file_total)
 					/* compare package information with file name */
 					gchar *needle = g_strjoin ("-", alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), NULL);
 					if (needle != NULL && strcmp (needle, "") != 0)
-						egg_debug ("matching %s with %s", filename, needle);
+						g_debug ("matching %s with %s", filename, needle);
 					if (g_str_has_prefix (filename, needle)) {
 						current_pkg = pkg;
 						repo_name = alpm_db_get_name (db);
@@ -411,12 +410,12 @@ set_repeating_option (const char *ptr, const char *option, void (*optionfunc) (c
 	while ((q = strchr (p, ' '))) {
 		*q = '\0';
 		(*optionfunc) (p);
-		egg_debug ("config: %s: %s", option, p);
+		g_debug ("config: %s: %s", option, p);
 		p = q;
 		p++;
 	}
 	(*optionfunc) (p);
-	egg_debug ("config: %s: %s", option, p);
+	g_debug ("config: %s: %s", option, p);
 }
 
 /**
@@ -464,7 +463,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 	fp = fopen (file, "r");
 	if (fp == NULL) {
-		egg_error ("config file %s could not be read", file);
+		g_error ("config file %s could not be read", file);
 		return 1;
 	}
 
@@ -495,9 +494,9 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 			section = strdup (ptr);
 			section[strlen (section) - 1] = '\0';
-			egg_debug ("config: new section '%s'", section);
+			g_debug ("config: new section '%s'", section);
 			if (!strlen (section)) {
-				egg_debug ("config file %s, line %d: bad section name", file, linenum);
+				g_debug ("config file %s, line %d: bad section name", file, linenum);
 				return 1;
 			}
 
@@ -515,11 +514,11 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 			strtrim (ptr);
 
 			if (key == NULL) {
-				egg_error ("config file %s, line %d: syntax error in config file - missing key.", file, linenum);
+				g_error ("config file %s, line %d: syntax error in config file - missing key.", file, linenum);
 				return 1;
 			}
 			if (section == NULL) {
-				egg_error ("config file %s, line %d: all directives must belong to a section.", file, linenum);
+				g_error ("config file %s, line %d: all directives must belong to a section.", file, linenum);
 				return 1;
 			}
 
@@ -527,17 +526,17 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 				/* directives without settings, all in [options] */
 				if (g_strcmp0 (key, "UseSyslog") == 0) {
 					alpm_option_set_usesyslog (1);
-					egg_debug ("config: usesyslog");
+					g_debug ("config: usesyslog");
 				} else if (g_strcmp0 (key, "UseDelta") == 0) {
 					alpm_option_set_usedelta (1);
-					egg_debug ("config: usedelta");
+					g_debug ("config: usedelta");
 				} else if (g_strcmp0 (key, "ILoveCandy") != 0 && g_strcmp0 (key, "ShowSize") != 0 && g_strcmp0 (key, "TotalDownload") != 0 && g_strcmp0 (key, "NoPassiveFTP") != 0) {
-					egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
+					g_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 				}
 			} else {
 				/* directives with settings */
 				if (g_strcmp0 (key, "Include") == 0) {
-					egg_debug ("config: including %s", ptr);
+					g_debug ("config: including %s", ptr);
 					parse_config (ptr, section, db);
 					/* Ignore include failures... assume non-critical */
 				} else if (g_strcmp0 (section, "options") == 0) {
@@ -557,18 +556,18 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 						alpm_option_set_dbpath (ptr);
 					} else if (g_strcmp0 (key, "CacheDir") == 0) {
 						if (alpm_option_add_cachedir (ptr) != 0) {
-							egg_error ("problem adding cachedir '%s' (%s)", ptr, alpm_strerrorlast ());
+							g_error ("problem adding cachedir '%s' (%s)", ptr, alpm_strerrorlast ());
 							return 1;
 						}
-						egg_debug ("config: cachedir: %s", ptr);
+						g_debug ("config: cachedir: %s", ptr);
 					} else if (g_strcmp0 (key, "RootDir") == 0) {
 						alpm_option_set_root (ptr);
-						egg_debug ("config: rootdir: %s", ptr);
+						g_debug ("config: rootdir: %s", ptr);
 					} else if (g_strcmp0 (key, "LogFile") == 0) {
 						alpm_option_set_logfile (ptr);
-						egg_debug ("config: logfile: %s", ptr);
+						g_debug ("config: logfile: %s", ptr);
 					} else if (g_strcmp0 (key, "XferCommand") != 0 && g_strcmp0 (key, "CleanMethod") != 0) {
-						egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
+						g_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 					}
 				} else if (g_strcmp0 (key, "Server") == 0) {
 					/* let's attempt a replacement for the current repo */
@@ -576,13 +575,13 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 
 					if (alpm_db_setserver (db, server) != 0) {
 						/* pm_errno is set by alpm_db_setserver */
-						egg_error ("config file %s, line %d: could not add server URL to database (%s).", file, linenum, alpm_strerrorlast ());
+						g_error ("config file %s, line %d: could not add server URL to database (%s).", file, linenum, alpm_strerrorlast ());
 						free (server);
 						return 1;
 					}
 					free (server);
 				} else {
-					egg_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
+					g_warning ("config file %s, line %d: directive '%s' not recognized.", file, linenum, key);
 				}
 			}
 		}
@@ -592,7 +591,7 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 	if (section)
 		free (section);
 
-	egg_debug ("config: finished parsing %s", file);
+	g_debug ("config: finished parsing %s", file);
 	return 0;
 }
 
@@ -605,11 +604,11 @@ backend_initialize (PkBackend *backend)
 	/* initialize backend_instance for use in callback functions */
 	backend_instance = backend;
 
-	egg_debug ("alpm: initializing backend");
+	g_debug ("alpm: initializing backend");
 
 	if (alpm_initialize () == -1) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_INITIALIZATION, "Failed to initialize package manager");
-		egg_debug ("alpm: %s", alpm_strerror (pm_errno));
+		g_debug ("alpm: %s", alpm_strerror (pm_errno));
 		return;
 	}
 
@@ -622,7 +621,7 @@ backend_initialize (PkBackend *backend)
 
 	if (alpm_db_register_local () == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, "Failed to load local database");
-		egg_debug ("alpm: %s", alpm_strerror (pm_errno));
+		g_debug ("alpm: %s", alpm_strerror (pm_errno));
 		alpm_release ();
 		return;
 	}
@@ -663,7 +662,7 @@ backend_initialize (PkBackend *backend)
 	g_hash_table_insert (group_map, (gchar *) "texlive-most-svn", (gchar *) "publishing");
 	g_hash_table_insert (group_map, (gchar *) "base", (gchar *) "system");
 
-	egg_debug ("alpm: ready to go");
+	g_debug ("alpm: ready to go");
 }
 
 /**
@@ -676,7 +675,7 @@ backend_destroy (PkBackend *backend)
 
 	if (alpm_release () == -1) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_FINALISE, "Failed to release package manager");
-		egg_debug ("alpm: %s", alpm_strerror (pm_errno));
+		g_debug ("alpm: %s", alpm_strerror (pm_errno));
 	}
 }
 
@@ -739,7 +738,7 @@ backend_download_packages_thread (PkBackend *backend)
 	alpm_list_t *cachedirs = NULL;
 	alpm_list_t *data = NULL;
 
-	egg_debug ("alpm: downloading packages to %s", directory);
+	g_debug ("alpm: downloading packages to %s", directory);
 
 	/* old cachedirs list automatically gets freed in alpm, so make a copy */
 	for (list_iterator = alpm_option_get_cachedirs (); list_iterator; list_iterator = alpm_list_next (list_iterator))
@@ -790,7 +789,7 @@ backend_download_packages_thread (PkBackend *backend)
 			gchar *needle = g_strjoin ("-", package_id_data[PK_PACKAGE_ID_NAME], package_id_data[PK_PACKAGE_ID_VERSION], NULL);
 
 			if (needle != NULL && strcmp (needle, "") != 0)
-				egg_debug ("matching %s with %s", (char *) alpm_list_getdata (list_iterator), needle);
+				g_debug ("matching %s with %s", (char *) alpm_list_getdata (list_iterator), needle);
 			if (g_str_has_prefix ((char *) alpm_list_getdata (list_iterator), needle))
 				package_id = package_ids[iterator];
 
@@ -858,7 +857,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 				for (db_iterator = alpm_option_get_syncdbs (); found == FALSE && db_iterator; db_iterator = alpm_list_next (db_iterator)) {
 					pmdb_t *syncdb = alpm_list_getdata (db_iterator);
 
-					egg_debug ("alpm: searching for %s in %s", alpm_dep_get_name (dep), alpm_db_get_name (syncdb));
+					g_debug ("alpm: searching for %s in %s", alpm_dep_get_name (dep), alpm_db_get_name (syncdb));
 
 					dep_pkg = alpm_db_get_pkg (syncdb, alpm_dep_get_name (dep));
 					if (dep_pkg && alpm_depcmp (dep_pkg, dep) && pkg_cmp (dep_pkg, alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep))) != 0) {
@@ -869,7 +868,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 			}
 
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-				egg_debug ("alpm: searching for %s in local db", alpm_dep_get_name (dep));
+				g_debug ("alpm: searching for %s in local db", alpm_dep_get_name (dep));
 
 				/* search in local db */
 				dep_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep));
@@ -1214,7 +1213,7 @@ backend_install_files_thread (PkBackend *backend)
 			pk_backend_finished (backend);
 			return FALSE;
 		} else
-			egg_debug ("alpm: %s added to transaction queue", full_paths[iterator]);
+			g_debug ("alpm: %s added to transaction queue", full_paths[iterator]);
 	}
 
 	/* prepare and commit transaction */

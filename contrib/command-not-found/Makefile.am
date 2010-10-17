@@ -6,6 +6,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
+	-DPK_COMPILATION				\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
 	-I$(top_srcdir)/lib
@@ -18,8 +19,6 @@ PK_GLIB2_LIBS =						\
 	$(NULL)
 
 pk_command_not_found_SOURCES =				\
-	egg-debug.c					\
-	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
 	pk-command-not-found.c				\

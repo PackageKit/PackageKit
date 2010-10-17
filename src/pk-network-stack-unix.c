@@ -36,7 +36,6 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-network-stack-unix.h"
@@ -74,7 +73,7 @@ pk_network_stack_unix_is_valid (const gchar *line)
 	/* tab delimited */
 	sections = g_strsplit (line, "\t", 0);
 	if (sections == NULL) {
-		egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+		g_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
 		goto out;
 	}
 
@@ -89,20 +88,20 @@ pk_network_stack_unix_is_valid (const gchar *line)
 	/* is correct parameters? */
 	number_sections = g_strv_length (sections);
 	if (number_sections != 11) {
-		egg_warning ("invalid line '%s' (%i)", line, number_sections);
+		g_warning ("invalid line '%s' (%i)", line, number_sections);
 		goto out;
 	}
 
 	/* is destination zero (default route)? */
 	if (g_strcmp0 (sections[1], "00000000") == 0) {
-		egg_debug ("destination %s is valid", sections[0]);
+		g_debug ("destination %s is valid", sections[0]);
 		online = TRUE;
 		goto out;
 	}
 
 	/* is gateway nonzero? */
 	if (g_strcmp0 (sections[2], "00000000") != 0) {
-		egg_debug ("interface %s is valid", sections[0]);
+		g_debug ("interface %s is valid", sections[0]);
 		online = TRUE;
 		goto out;
 	}
@@ -129,7 +128,7 @@ pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 	/* hack, because netlink is teh suck */
 	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
 	if (!ret) {
-		egg_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
+		g_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
 		g_error_free (error);
 		/* no idea whatsoever! */
 		goto out;
@@ -137,14 +136,14 @@ pk_network_stack_unix_get_state (PkNetworkStack *nstack)
 
 	/* something insane */
 	if (contents == NULL) {
-		egg_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
+		g_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
 		goto out;
 	}
 
 	/* one line per interface */
 	lines = g_strsplit (contents, "\n", 0);
 	if (lines == NULL) {
-		egg_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+		g_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
 		goto out;
 	}
 
@@ -177,20 +176,20 @@ pk_network_stack_unix_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkNe
 
 	/* do not use */
 	if (!nstack_unix->priv->is_enabled) {
-		egg_debug ("not enabled, so ignoring");
+		g_debug ("not enabled, so ignoring");
 		return;
 	}
 
 	/* same state? */
 	state = pk_network_stack_unix_get_state (PK_NETWORK_STACK (nstack_unix));
 	if (state == nstack_unix->priv->state_old) {
-		egg_debug ("same state");
+		g_debug ("same state");
 		return;
 	}
 
 	/* new state */
 	nstack_unix->priv->state_old = state;
-	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
+	g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
 	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_unix), "state-changed", state);
 }
 

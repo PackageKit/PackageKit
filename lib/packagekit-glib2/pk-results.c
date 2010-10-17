@@ -36,8 +36,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_results_finalize	(GObject     *object);
 
 #define PK_RESULTS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESULTS, PkResultsPrivate))
@@ -178,7 +176,7 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 		      "info", &info,
 		      NULL);
 	if (info == PK_INFO_ENUM_FINISHED) {
-		egg_warning ("internal error: finished packages cannot be added to a PkResults object");
+		g_warning ("internal error: finished packages cannot be added to a PkResults object");
 		return FALSE;
 	}
 
@@ -525,7 +523,7 @@ pk_results_get_error_code (PkResults *results)
 
 	/* failed, but no exit code? */
 	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_string (results->priv->exit_enum));
+		g_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_string (results->priv->exit_enum));
 
 	if (results->priv->error_code == NULL)
 		return NULL;

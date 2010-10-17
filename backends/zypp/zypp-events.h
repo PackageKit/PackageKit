@@ -180,7 +180,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		gchar* summary = g_strdup(resolvable->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
-		//egg_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
+		//g_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
 			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, summary);
@@ -191,7 +191,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		//egg_debug ("InstallResolvableReportReceiver::progress(), %s:%d", _package_id == NULL ? "unknown" : _package_id, value);
+		//g_debug ("InstallResolvableReportReceiver::progress(), %s:%d", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL)
 			update_sub_percentage (value);
 		return true;
@@ -199,13 +199,13 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level)
 	{
-		//egg_debug ("InstallResolvableReportReceiver::problem()");
+		//g_debug ("InstallResolvableReportReceiver::problem()");
 		return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level)
 	{
-		//egg_debug ("InstallResolvableReportReceiver::finish(): %s", _package_id == NULL ? "unknown" : _package_id);
+		//g_debug ("InstallResolvableReportReceiver::finish(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			//pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
 			clear_package_id ();
@@ -254,7 +254,7 @@ struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::P
 {
 	virtual void start (const zypp::ProgressData &data)
 	{
-		egg_debug ("_____________- RepoProgressReportReceiver::start()___________________");
+		g_debug ("_____________- RepoProgressReportReceiver::start()___________________");
 		reset_sub_percentage ();
 	}
 
@@ -275,7 +275,7 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 {
 	virtual void start (const zypp::ProgressData &data, const zypp::RepoInfo)
 	{
-		egg_debug ("______________________ RepoReportReceiver::start()________________________");
+		g_debug ("______________________ RepoReportReceiver::start()________________________");
 		reset_sub_percentage ();
 	}
 
@@ -299,7 +299,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = build_package_id_from_url (&file);
 
-		//egg_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
+		//g_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
 		//		g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
 		if (_package_id != NULL) {
 			gchar* summary = g_strdup (file.asString().c_str());

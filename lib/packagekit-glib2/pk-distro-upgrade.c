@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-distro-upgrade.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_distro_upgrade_finalize	(GObject     *object);
 
 #define PK_DISTRO_UPGRADE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DISTRO_UPGRADE, PkDistroUpgradePrivate))

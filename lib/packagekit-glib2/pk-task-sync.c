@@ -28,8 +28,6 @@
 #include <packagekit-glib2/pk-task.h>
 #include <packagekit-glib2/pk-progress.h>
 
-#include "egg-debug.h"
-
 #include "pk-task-sync.h"
 
 /* tiny helper to help us do the async operation */

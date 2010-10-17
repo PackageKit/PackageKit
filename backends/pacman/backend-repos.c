@@ -40,7 +40,7 @@ disabled_repos_new (GError **error)
 	gchar *line;
 	GError *e = NULL;
 
-	egg_debug ("pacman: reading disabled repos from %s", PACMAN_REPO_LIST);
+	g_debug ("pacman: reading disabled repos from %s", PACMAN_REPO_LIST);
 	file = g_file_new_for_path (PACMAN_REPO_LIST);
 	file_stream = g_file_read (file, NULL, &e);
 
@@ -85,7 +85,7 @@ disabled_repos_configure (GHashTable *disabled, GError **error)
 
 	g_return_val_if_fail (pacman != NULL, FALSE);
 
-	egg_debug ("pacman: reading config from %s", PACMAN_CONFIG_FILE);
+	g_debug ("pacman: reading config from %s", PACMAN_CONFIG_FILE);
 
 	/* read configuration from pacman config file */
 	if (!pacman_manager_configure (pacman, PACMAN_CONFIG_FILE, error)) {
@@ -125,7 +125,7 @@ disabled_repos_free (GHashTable *disabled)
 
 	g_return_if_fail (disabled != NULL);
 
-	egg_debug ("pacman: storing disabled repos in %s", PACMAN_REPO_LIST);
+	g_debug ("pacman: storing disabled repos in %s", PACMAN_REPO_LIST);
 	file = g_file_new_for_path (PACMAN_REPO_LIST);
 	file_stream = g_file_replace (file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL);
 

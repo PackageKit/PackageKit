@@ -26,7 +26,6 @@
 #include <dbus/dbus-glib.h>
 #include <NetworkManager.h>
 
-#include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 
 #include "pk-network-stack-nm.h"
@@ -88,7 +87,7 @@ pk_network_stack_nm_get_active_connection_type_for_device (PkNetworkStackNm *nst
 		goto out;
 	}
 	type = g_value_get_uint (&value);
-	egg_debug ("type: %i", type);
+	g_debug ("type: %i", type);
 out:
 	g_object_unref (proxy);
 	return type;
@@ -112,7 +111,6 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 	NMDeviceType type_tmp;
 	NMDeviceType type = NM_DEVICE_TYPE_UNKNOWN;
 
-
 	/* get if the device is default */
 	proxy = dbus_g_proxy_new_for_name (nstack_nm->priv->bus, "org.freedesktop.NetworkManager",
 					   active_connection, "org.freedesktop.DBus.Properties");
@@ -128,9 +126,9 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 		goto out;
 	}
 	is_default = g_value_get_boolean (&value_default);
-	egg_debug ("is_default: %i", is_default);
+	g_debug ("is_default: %i", is_default);
 	if (!is_default) {
-		egg_debug ("not default, skipping");
+		g_debug ("not default, skipping");
 		goto out;
 	}
 
@@ -148,7 +146,7 @@ pk_network_stack_nm_get_active_connection_type_for_connection (PkNetworkStackNm 
 	}
 
 	devices = g_value_get_boxed (&value_devices);
-	egg_debug ("number of devices: %i", devices->len);
+	g_debug ("number of devices: %i", devices->len);
 	if (devices->len == 0)
 		goto out;
 
@@ -197,7 +195,7 @@ pk_network_stack_nm_get_active_connection_type (PkNetworkStackNm *nstack_nm)
 	}
 
 	active_connections = g_value_get_boxed (&value);
-	egg_debug ("active connections: %i", active_connections->len);
+	g_debug ("active connections: %i", active_connections->len);
 	if (active_connections->len == 0)
 		goto out;
 
@@ -247,7 +245,7 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 		ret = PK_NETWORK_ENUM_ONLINE;
 	}
 
-	egg_debug ("network state is %s", pk_network_enum_to_string (ret));
+	g_debug ("network state is %s", pk_network_enum_to_string (ret));
 	return ret;
 }
 
@@ -263,12 +261,12 @@ pk_network_stack_nm_status_changed_cb (DBusGProxy *proxy, guint status, PkNetwor
 
 	/* do not use */
 	if (!nstack_nm->priv->is_enabled) {
-		egg_debug ("not enabled, so ignoring");
+		g_debug ("not enabled, so ignoring");
 		return;
 	}
 
 	state = pk_network_stack_nm_get_state (PK_NETWORK_STACK (nstack_nm));
-	egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
+	g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (state));
 	g_signal_emit_by_name (PK_NETWORK_STACK (nstack_nm), "state-changed", state);
 }
 
@@ -302,7 +300,7 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 	/* get system connection */
 	nstack_nm->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (nstack_nm->priv->bus == NULL) {
-		egg_warning ("Couldn't connect to system bus: %s", error->message);
+		g_warning ("Couldn't connect to system bus: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -322,7 +320,7 @@ pk_network_stack_nm_init (PkNetworkStackNm *nstack_nm)
 
 	/* NetworkManager isn't up, so we can't use it */
 	if (nstack_nm->priv->is_enabled && !service_alive) {
-		egg_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
+		g_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
 		nstack_nm->priv->is_enabled = FALSE;
 	}
 }

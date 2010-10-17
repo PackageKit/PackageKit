@@ -17,6 +17,7 @@ INCLUDES = \
 	-I.							\
 	-DPK_COMPILATION					\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
+	-DG_LOG_DOMAIN=\"PackageKit\"				\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
@@ -72,8 +73,6 @@ libpackagekit_glib2_include_HEADERS =				\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
-	egg-debug.c						\
-	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
 	packagekit.h						\
@@ -93,6 +92,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-control.h						\
 	pk-control-sync.c					\
 	pk-control-sync.h					\
+	pk-debug.c						\
+	pk-debug.h						\
 	pk-desktop.c						\
 	pk-desktop.h						\
 	pk-details.c						\
@@ -169,8 +170,6 @@ libpackagekit_glib2_la_CFLAGS =					\
 
 noinst_LIBRARIES = libpackagekitprivate.a
 libpackagekitprivate_a_SOURCES =				\
-	egg-debug.c						\
-	egg-debug.h						\
 	egg-string.c						\
 	egg-string.h						\
 	packagekit-private.h					\

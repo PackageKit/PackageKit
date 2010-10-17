@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-details.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_details_finalize	(GObject     *object);
 
 #define PK_DETAILS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DETAILS, PkDetailsPrivate))

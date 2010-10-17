@@ -29,8 +29,6 @@
 
 #include "pk-dbus.h"
 
-#include "egg-debug.h"
-
 #define PK_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DBUS, PkDbusPrivate))
 
 struct PkDbusPrivate
@@ -67,7 +65,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	con = dbus_g_connection_get_connection (dbus->priv->connection);
 	uid = dbus_bus_get_unix_user (con, sender, &error);
 	if (dbus_error_is_set (&error)) {
-		egg_warning ("Could not get uid for connection: %s %s", error.name, error.message);
+		g_warning ("Could not get uid for connection: %s %s", error.name, error.message);
 		uid = G_MAXUINT;
 		goto out;
 	}
@@ -106,7 +104,7 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 				 G_TYPE_UINT, &pid,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to get pid: %s", error->message);
+		g_warning ("failed to get pid: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -138,7 +136,7 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
-		egg_warning ("failed to get PID");
+		g_warning ("failed to get PID");
 		goto out;
 	}
 
@@ -146,7 +144,7 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
 	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to get cmdline: %s", error->message);
+		g_warning ("failed to get cmdline: %s", error->message);
 		g_error_free (error);
 	}
 out:
@@ -176,14 +174,14 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 
 	/* no ConsoleKit? */
 	if (dbus->priv->proxy_session == NULL) {
-		egg_warning ("no ConsoleKit, so cannot get session");
+		g_warning ("no ConsoleKit, so cannot get session");
 		goto out;
 	}
 
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
-		egg_warning ("failed to get PID");
+		g_warning ("failed to get PID");
 		goto out;
 	}
 
@@ -195,7 +193,7 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 				 DBUS_TYPE_G_OBJECT_PATH, &session,
 				 G_TYPE_INVALID);
 	if (!ret) {
-		egg_warning ("failed to get session for %i: %s", pid, error->message);
+		g_warning ("failed to get session for %i: %s", pid, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -258,7 +256,7 @@ pk_dbus_init (PkDbus *dbus)
 						 "/org/freedesktop/DBus/Bus",
 						 "org.freedesktop.DBus", &error);
 	if (dbus->priv->proxy_pid == NULL) {
-		egg_warning ("cannot connect to DBus: %s", error->message);
+		g_warning ("cannot connect to DBus: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -269,7 +267,7 @@ pk_dbus_init (PkDbus *dbus)
 						 "/org/freedesktop/ConsoleKit/Manager",
 						 "org.freedesktop.ConsoleKit.Manager", &error);
 	if (dbus->priv->proxy_session == NULL) {
-		egg_warning ("cannot connect to DBus: %s", error->message);
+		g_warning ("cannot connect to DBus: %s", error->message);
 		g_error_free (error);
 	}
 }

@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
-#include <egg-debug.h>
 
 #include <stdio.h>
 #include <libopkg/opkg.h>
@@ -176,7 +175,6 @@ backend_destroy (PkBackend *backend)
 	opkg_free ();
 }
 
-
 static void
 pk_opkg_progress_cb (const opkg_progress_data_t *pdata, void *data)
 {
@@ -245,7 +243,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
-
 
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
@@ -352,7 +349,6 @@ backend_search_name (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	SearchParams *params;
 
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
@@ -374,7 +370,6 @@ backend_search_description (PkBackend *backend, PkBitfield filters, gchar **sear
 {
 	SearchParams *params;
 
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
@@ -393,7 +388,6 @@ backend_search_group (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	SearchParams *params;
 
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
@@ -406,7 +400,6 @@ backend_search_group (PkBackend *backend, PkBitfield filters, gchar **search)
 	pk_backend_set_pointer (backend, "search-params", params);
 	pk_backend_thread_create (backend, backend_search_thread);
 }
-
 
 static gboolean
 backend_install_packages_thread (PkBackend *backend)
@@ -533,7 +526,6 @@ backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-
 static gboolean
 backend_update_system_thread (PkBackend *backend)
 {
@@ -583,7 +575,6 @@ backend_update_package_thread (PkBackend *backend)
 	err = opkg_upgrade_package (parts[PK_PACKAGE_ID_NAME], pk_opkg_progress_cb, backend);
 	if (err)
 		handle_install_error (backend, err);
-
 
 	g_strfreev (parts);
 	pk_backend_finished (backend);
@@ -677,14 +668,12 @@ backend_get_details_thread (PkBackend *backend)
         package_ids = pk_backend_get_strv(backend, "package_ids");
 	parts = pk_package_id_split (package_ids[0]);
 
-
 	if (!parts)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-
 
 	pkg = opkg_find_package (parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_VERSION], parts[PK_PACKAGE_ID_ARCH], parts[PK_PACKAGE_ID_DATA]);
 	g_strfreev (parts);

@@ -33,7 +33,7 @@ static gboolean is_cancelled = FALSE;
  void
 pk_backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 }
 
 /**
@@ -43,7 +43,7 @@ pk_backend_initialize (PkBackend *backend)
 void
 pk_backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 }
 
 /**
@@ -88,7 +88,7 @@ pk_backend_search_names_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 
 	filters_text = pk_filter_bitfield_to_string (filters);
-	egg_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
+	g_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
 	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
@@ -107,7 +107,7 @@ pk_backend_search_names_thread (PkBackend *backend)
 	} while (percentage < 100);
 	g_timer_destroy (timer);
 	pk_backend_set_percentage (backend, 100);
-	egg_debug ("exited task (%p)", backend);
+	g_debug ("exited task (%p)", backend);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -132,6 +132,6 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_cancel (PkBackend *backend)
 {
-	egg_debug ("cancelling %p", backend);
+	g_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
 }

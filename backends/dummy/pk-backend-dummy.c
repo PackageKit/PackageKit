@@ -542,7 +542,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    /* egg_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") && */
 	    g_strcmp0 (key_id, "BB7576AC") == 0) {
-		egg_debug ("installed signature %s for %s", key_id, package_id);
+		g_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
@@ -780,7 +780,7 @@ pk_backend_search_name_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 	locale = pk_backend_get_locale (backend);
 
-	egg_debug ("locale is %s", locale);
+	g_debug ("locale is %s", locale);
 	if (g_strcmp0 (locale, "en_GB.utf8") != 0) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 				    "evince;0.9.3-5.fc8;i386;installed",
@@ -1062,19 +1062,19 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
 	if (g_strcmp0 (rid, "local") == 0) {
-		egg_debug ("local repo: %i", enabled);
+		g_debug ("local repo: %i", enabled);
 		_repo_enabled_local = enabled;
 	} else if (g_strcmp0 (rid, "development") == 0) {
-		egg_debug ("devel repo: %i", enabled);
+		g_debug ("devel repo: %i", enabled);
 		_repo_enabled_devel = enabled;
 	} else if (g_strcmp0 (rid, "fedora") == 0) {
-		egg_debug ("fedora repo: %i", enabled);
+		g_debug ("fedora repo: %i", enabled);
 		_repo_enabled_fedora = enabled;
 	} else if (g_strcmp0 (rid, "livna-development") == 0) {
-		egg_debug ("livna repo: %i", enabled);
+		g_debug ("livna repo: %i", enabled);
 		_repo_enabled_livna = enabled;
 	} else {
-		egg_warning ("unknown repo: %s", rid);
+		g_warning ("unknown repo: %s", rid);
 	}
 	pk_backend_finished (backend);
 }
@@ -1086,7 +1086,7 @@ void
 pk_backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	egg_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+	g_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 
 	if (g_strcmp0 (parameter, "use-blocked") == 0)
 		_use_blocked = atoi (value);

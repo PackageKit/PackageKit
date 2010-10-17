@@ -31,7 +31,6 @@
 #include <string.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include <packagekit-glib2/pk-common.h>

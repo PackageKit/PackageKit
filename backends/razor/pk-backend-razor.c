@@ -24,7 +24,6 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
-#include <egg-debug.h>
 
 #include <razor/razor.h>
 

@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-repo-signature-required.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_repo_signature_required_finalize	(GObject     *object);
 
 #define PK_REPO_SIGNATURE_REQUIRED_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequiredPrivate))
