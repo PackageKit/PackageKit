@@ -146,7 +146,7 @@ pk_backend_profile (const gchar *title)
 	if (title == NULL)
 		goto out;
 	elapsed = g_timer_elapsed (priv->timer, NULL);
-	g_print ("PROFILE: %ims\t%s\n", (guint) (elapsed * 1000.0f), title);
+	g_debug ("PROFILE: %ims\t%s", (guint) (elapsed * 1000.0f), title);
 out:
 	g_timer_reset (priv->timer);
 }
