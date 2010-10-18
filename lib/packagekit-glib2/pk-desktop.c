@@ -33,8 +33,6 @@
 #include <sqlite3.h>
 #include <packagekit-glib2/pk-desktop.h>
 
-#include "egg-string.h"
-
 static void     pk_desktop_finalize	(GObject        *object);
 
 #define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))

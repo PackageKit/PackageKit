@@ -31,8 +31,6 @@
 #include <string.h>
 #include <glib.h>
 
-#include "egg-string.h"
-
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 

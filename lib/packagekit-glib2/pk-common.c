@@ -38,8 +38,6 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-string.h"
-
 /**
  * pk_iso8601_present:
  *
@@ -101,7 +99,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 	GTimeVal time_val;
 	GDate *date = NULL;
 
-	if (egg_strzero (iso_date))
+	if (iso_date == NULL || iso_date[0] == '\0')
 		goto out;
 
 	/* try to parse complete ISO8601 date */

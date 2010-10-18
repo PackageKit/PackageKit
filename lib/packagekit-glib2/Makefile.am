@@ -73,8 +73,6 @@ libpackagekit_glib2_include_HEADERS =				\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
-	egg-string.c						\
-	egg-string.h						\
 	packagekit.h						\
 	pk-bitfield.c						\
 	pk-bitfield.h						\
@@ -170,8 +168,6 @@ libpackagekit_glib2_la_CFLAGS =					\
 
 noinst_LIBRARIES = libpackagekitprivate.a
 libpackagekitprivate_a_SOURCES =				\
-	egg-string.c						\
-	egg-string.h						\
 	packagekit-private.h					\
 	pk-console-shared.c					\
 	pk-console-shared.h					\

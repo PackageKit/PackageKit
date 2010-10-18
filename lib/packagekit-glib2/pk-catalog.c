@@ -30,10 +30,7 @@
 #  include "config.h"
 #endif
 
-//#include <fcntl.h>
-
 #include <glib.h>
-//#include <glib/gstdio.h>
 #include <gio/gio.h>
 
 #include <packagekit-glib2/pk-catalog.h>
@@ -44,8 +41,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-control-sync.h>
-
-#include "egg-string.h"
 
 #define PK_CATALOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CATALOG, PkCatalogPrivate))
 

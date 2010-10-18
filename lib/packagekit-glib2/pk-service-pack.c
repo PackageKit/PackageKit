@@ -37,6 +37,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #endif /* HAVE_ARCHIVE_H */
+#include <string.h>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -49,8 +50,6 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
-
-#include "egg-string.h"
 
 #define PK_SERVICE_PACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SERVICE_PACK, PkServicePackPrivate))
 
@@ -299,7 +298,7 @@ pk_service_pack_get_random (const gchar *prefix, guint length)
 	guint prefix_len;
 
 	/* make a string to hold both parts */
-	prefix_len = egg_strlen (prefix, 28);
+	prefix_len = strlen (prefix);
 	str = g_strnfill (length + prefix_len, 'X');
 
 	/* copy over prefix */
