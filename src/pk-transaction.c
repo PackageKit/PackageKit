@@ -5601,7 +5601,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->running = FALSE;
 	transaction->priv->has_been_run = FALSE;
 	transaction->priv->waiting_for_auth = FALSE;
-	transaction->priv->allow_cancel = FALSE;
+	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->emit_media_change_required = FALSE;
