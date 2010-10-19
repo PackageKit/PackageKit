@@ -128,7 +128,8 @@ pk_debug_setup (gboolean enabled)
 				   pk_debug_handler_cb, NULL);
 	} else {
 		/* hide all debugging */
-		g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+		g_log_set_handler (G_LOG_DOMAIN,
+				   G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
 				   pk_debug_ignore_cb, NULL);
 	}
 }
