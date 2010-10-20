@@ -643,9 +643,12 @@ pk_backend_enable_media_repo (gboolean enabled)
 	ZifStoreRemote *repo = NULL;
 	gboolean ret;
 	GError *error = NULL;
+	ZifState *state;
 
 	/* find the right repo */
-	repo = zif_repos_get_store (priv->repos, "InstallMedia", priv->state, &error);
+	state = zif_state_new ();
+	zif_state_set_cancellable (state, zif_state_get_cancellable (priv->state));
+	repo = zif_repos_get_store (priv->repos, "InstallMedia", state, &error);
 	if (repo == NULL) {
 		g_debug ("failed to find install-media repo: %s", error->message);
 		g_error_free (error);
@@ -661,6 +664,7 @@ pk_backend_enable_media_repo (gboolean enabled)
 	}
 	g_debug ("%s InstallMedia", enabled ? "enabled" : "disabled");
 out:
+	g_object_unref (state);
 	if (repo != NULL)
 		g_object_unref (repo);
 #else
@@ -2586,6 +2590,8 @@ pk_backend_get_repo_list_thread (PkBackend *backend)
 	GPtrArray *array = NULL;
 	ZifStoreRemote *store;
 	ZifState *state_local;
+	ZifState *state_loop;
+	ZifState *state_tmp;
 	const gchar *repo_id;
 	const gchar *name;
 	gboolean enabled;
@@ -2626,17 +2632,55 @@ pk_backend_get_repo_list_thread (PkBackend *backend)
 	/* looks at each store */
 	for (i=0; i<array->len; i++) {
 		store = g_ptr_array_index (array, i);
+
+		/* allow filtering on devel */
+		state_loop = zif_state_get_child (state_local);
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-			/* TODO: state */
-			devel = zif_store_remote_is_devel (store, NULL, NULL);
+
+			/* devel, name, enabled */
+			zif_state_set_number_steps (state_loop, 3);
+
+			state_tmp = zif_state_get_child (state_loop);
+			devel = zif_store_remote_is_devel (store, state_tmp, NULL);
 			if (devel)
 				goto skip;
+
+			/* this section done */
+			ret = zif_state_done (state_loop, &error);
+			if (!ret) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+				g_error_free (error);
+				goto out;
+			}
+		} else {
+			/* name, enabled */
+			zif_state_set_number_steps (state_loop, 2);
 		}
 
-		/* TODO: state */
-		name = zif_store_remote_get_name (store, NULL, NULL);
-		/* TODO: state */
-		enabled = zif_store_remote_get_enabled (store, NULL, NULL);
+		/* get name */
+		state_tmp = zif_state_get_child (state_loop);
+		name = zif_store_remote_get_name (store, state_tmp, NULL);
+
+		/* this section done */
+		ret = zif_state_done (state_loop, &error);
+		if (!ret) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* get state */
+		state_tmp = zif_state_get_child (state_loop);
+		enabled = zif_store_remote_get_enabled (store, state_tmp, NULL);
+
+		/* this section done */
+		ret = zif_state_done (state_loop, &error);
+		if (!ret) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+
 		repo_id = zif_store_get_id (ZIF_STORE (store));
 		pk_backend_repo_detail (backend, repo_id, name, enabled);
 skip:
