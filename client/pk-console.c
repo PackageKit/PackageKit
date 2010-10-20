@@ -1306,21 +1306,6 @@ main (int argc, char *argv[])
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
 
-	/* we need the roles early, as we only show the user only what they can do */
-	control = pk_control_new ();
-	ret = pk_control_get_properties (control, NULL, &error);
-	if (!ret) {
-		/* TRANSLATORS: we failed to contact the daemon */
-		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
-		g_error_free (error);
-		goto out_last;
-	}
-
-	/* get data */
-	g_object_get (control,
-		      "roles", &roles,
-		      NULL);
-
 	summary = pk_console_get_summary ();
 	progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (progressbar, 25);
@@ -1335,6 +1320,21 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
+
+	/* we need the roles early, as we only show the user only what they can do */
+	control = pk_control_new ();
+	ret = pk_control_get_properties (control, NULL, &error);
+	if (!ret) {
+		/* TRANSLATORS: we failed to contact the daemon */
+		g_print ("%s: %s\n", _("Failed to contact PackageKit"), error->message);
+		g_error_free (error);
+		goto out_last;
+	}
+
+	/* get data */
+	g_object_get (control,
+		      "roles", &roles,
+		      NULL);
 
 	/* check if we are on console */
 	if (!plain && isatty (fileno (stdout)) == 1)
