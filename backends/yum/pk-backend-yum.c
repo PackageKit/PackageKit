@@ -771,6 +771,47 @@ pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer 
 }
 
 /**
+ * pk_backend_state_action_changed_cb:
+ **/
+static void
+pk_backend_state_action_changed_cb (ZifState *state, ZifStateAction action, const gchar *action_hint, PkBackend *backend)
+{
+	PkStatusEnum status = PK_STATUS_ENUM_UNKNOWN;
+
+	/* ignore this */
+	if (action == ZIF_STATE_ACTION_UNKNOWN)
+		goto out;
+
+	/* try to map the ZifStateAction to a PkStatusEnum */
+	if (action == ZIF_STATE_ACTION_DOWNLOADING) {
+		if (g_strrstr (action_hint, "repomd") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_REPOSITORY;
+		else if (g_strrstr (action_hint, "primary") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST;
+		else if (g_strrstr (action_hint, "filelist") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_FILELIST;
+		else if (g_strrstr (action_hint, "changelog") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_CHANGELOG;
+		else if (g_strrstr (action_hint, "comps") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_GROUP;
+		else if (g_strrstr (action_hint, "updatinfo") != NULL)
+			status = PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO;
+		goto out;
+	}
+
+	/* general cache loading */
+	if (action == ZIF_STATE_ACTION_CHECKING ||
+	    action == ZIF_STATE_ACTION_LOADING_REPOS ||
+	    action == ZIF_STATE_ACTION_DECOMPRESSING) {
+		status = PK_STATUS_ENUM_LOADING_CACHE;
+		goto out;
+	}
+out:
+	if (status != PK_STATUS_ENUM_UNKNOWN)
+		pk_backend_set_status (backend, status);
+}
+
+/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -857,6 +898,7 @@ pk_backend_initialize (PkBackend *backend)
 	priv->state = zif_state_new ();
 	g_signal_connect (priv->state, "percentage-changed", G_CALLBACK (pk_backend_state_percentage_changed_cb), backend);
 	g_signal_connect (priv->state, "subpercentage-changed", G_CALLBACK (pk_backend_state_subpercentage_changed_cb), backend);
+	g_signal_connect (priv->state, "action-changed", G_CALLBACK (pk_backend_state_action_changed_cb), backend);
 
 	/* ZifConfig */
 	priv->config = zif_config_new ();
