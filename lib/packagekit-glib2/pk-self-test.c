@@ -23,8 +23,6 @@
 
 #include <glib-object.h>
 
-#include "egg-string.h"
-
 #include "pk-catalog.h"
 #include "pk-client.h"
 #include "pk-common.h"
@@ -462,7 +460,7 @@ pk_test_client_progress_cb (PkProgress *progress, PkProgressType type, gpointer 
 static gboolean
 pk_test_client_cancel_cb (GCancellable *cancellable)
 {
-	g_warning ("cancelling method");
+	g_debug ("cancelling method");
 	g_cancellable_cancel (cancellable);
 	return FALSE;
 }
@@ -1910,7 +1908,6 @@ main (int argc, char **argv)
 {
 	g_type_init ();
 
-	g_debug_init (&argc, &argv);
 	g_test_init (&argc, &argv, NULL);
 
 	/* tests go here */

@@ -82,10 +82,8 @@ pk_package_id_check (const gchar *package_id)
 
 	/* UTF8 */
 	ret = g_utf8_validate (package_id, -1, NULL);
-	if (!ret) {
-		g_warning ("invalid UTF8!");
+	if (!ret)
 		return FALSE;
-	}
 
 	/* correct number of sections */
 	sections = pk_package_id_split (package_id);

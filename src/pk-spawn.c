@@ -302,7 +302,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		g_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		return FALSE;
 	}
 
@@ -359,7 +359,7 @@ pk_spawn_kill (PkSpawn *spawn)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		g_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		return FALSE;
 	}
 
@@ -404,7 +404,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		g_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		ret = FALSE;
 		goto out;
 	}
@@ -458,7 +458,7 @@ pk_spawn_exit (PkSpawn *spawn)
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
 	if (!ret) {
-		g_warning ("failed to send exit");
+		g_debug ("failed to send exit");
 		goto out;
 	}
 
@@ -783,7 +783,7 @@ pk_spawn_finalize (GObject *object)
 
 	/* still running? */
 	if (spawn->priv->stdin_fd != -1) {
-		g_warning ("killing as still running");
+		g_debug ("killing as still running in finalize");
 		pk_spawn_kill (spawn);
 		/* just hope the script responded to SIGQUIT */
 		if (spawn->priv->kill_id != 0)

@@ -532,7 +532,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 {
 	/* dbus method has not yet fired */
 	if (state->proxy == NULL) {
-		g_warning ("Cancelled, but no proxy, not sure what to do here");
+		g_debug ("Cancelled, but no proxy, not sure what to do here");
 		return;
 	}
 

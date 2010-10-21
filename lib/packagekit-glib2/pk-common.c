@@ -114,17 +114,13 @@ pk_iso8601_to_date (const gchar *iso_date)
 	 * accept a valid ISO8601 formatted date without a
 	 * time value - try and parse this case */
 	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
-	if (retval != 3) {
-		g_warning ("could not parse date '%s'", iso_date);
+	if (retval != 3)
 		goto out;
-	}
 
 	/* check it's valid */
 	ret = g_date_valid_dmy (d, m, y);
-	if (!ret) {
-		g_warning ("invalid date %i/%i/%i from '%s'", y, m, d, iso_date);
+	if (!ret)
 		goto out;
-	}
 
 	/* create valid object */
 	date = g_date_new_dmy (d, m, y);

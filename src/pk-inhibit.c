@@ -80,11 +80,11 @@ pk_inhibit_lock (PkInhibit *inhibit)
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		g_warning ("not connected to HAL");
+		g_debug ("not connected to HAL");
 		return FALSE;
 	}
 	if (inhibit->priv->is_locked) {
-		g_warning ("already inhibited, not trying again");
+		g_debug ("already inhibited, not trying again");
 		return FALSE;
 	}
 
@@ -119,11 +119,11 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		g_warning ("not connected to HAL");
+		g_debug ("not connected to HAL");
 		return FALSE;
 	}
 	if (inhibit->priv->is_locked == FALSE) {
-		g_warning ("not inhibited, not trying to unlock");
+		g_debug ("not inhibited, not trying to unlock");
 		return FALSE;
 	}
 
@@ -264,7 +264,7 @@ pk_inhibit_init (PkInhibit *inhibit)
 				  HAL_DBUS_SERVICE, HAL_DBUS_PATH_COMPUTER,
 				  HAL_DBUS_INTERFACE_DEVICE, &error);
 	if (error != NULL) {
-		g_warning ("Cannot connect to HAL: %s", error->message);
+		g_debug ("Cannot connect to HAL: %s", error->message);
 		g_error_free (error);
 	}
 

@@ -141,7 +141,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	} else {
 		cmdline_full = pk_proc_refresh_find_file (cmdline);
 		if (cmdline_full == NULL) {
-			g_warning ("cannot find in any bin dir: %s", cmdline);
+			g_debug ("cannot find in any bin dir: %s", cmdline);
 			ret = FALSE;
 			goto out;
 		}
@@ -150,7 +150,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	/* check if path exists */
 	ret = g_file_test (cmdline_full, G_FILE_TEST_IS_REGULAR);
 	if (!ret) {
-		g_warning ("cmdline does not exist: %s", cmdline_full);
+		g_debug ("cmdline does not exist: %s", cmdline_full);
 		goto out;
 	}
 
