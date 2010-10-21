@@ -61,6 +61,13 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		uid = 500;
+		goto out;
+	}
+
 	dbus_error_init (&error);
 	con = dbus_g_connection_get_connection (dbus->priv->connection);
 	uid = dbus_bus_get_unix_user (con, sender, &error);
@@ -91,6 +98,13 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
+
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		pid = G_MAXUINT - 1;
+		goto out;
+	}
 
 	/* no connection to DBus */
 	if (dbus->priv->proxy_pid == NULL)
@@ -133,6 +147,13 @@ pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
 
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		cmdline = g_strdup ("/usr/sbin/packagekit");
+		goto out;
+	}
+
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
@@ -171,6 +192,13 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 
 	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
 	g_return_val_if_fail (sender != NULL, NULL);
+
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		session = g_strdup ("xxx");
+		goto out;
+	}
 
 	/* no ConsoleKit? */
 	if (dbus->priv->proxy_session == NULL) {
