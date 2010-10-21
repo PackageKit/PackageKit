@@ -54,19 +54,33 @@ pk_debug_is_verbose (void)
  **/
 static void
 pk_debug_ignore_cb (const gchar *log_domain, GLogLevelFlags log_level,
-		     const gchar *message, gpointer user_data)
+		    const gchar *message, gpointer user_data)
 {
 }
+
+#define CONSOLE_RESET		0
+#define CONSOLE_BLACK		30
+#define CONSOLE_RED		31
+#define CONSOLE_GREEN		32
+#define CONSOLE_YELLOW		33
+#define CONSOLE_BLUE		34
+#define CONSOLE_MAGENTA		35
+#define CONSOLE_CYAN		36
+#define CONSOLE_WHITE		37
+
+#define PK_DEBUG_LOG_DOMAIN_LENGTH	20
 
 /**
  * pk_debug_handler_cb:
  **/
 static void
 pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
-		      const gchar *message, gpointer user_data)
+		     const gchar *message, gpointer user_data)
 {
 	gchar str_time[255];
 	time_t the_time;
+	guint len;
+	guint i;
 
 	/* time header */
 	time (&the_time);
@@ -75,22 +89,34 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 	/* no color please, we're British */
 	if (!_console) {
 		if (log_level == G_LOG_LEVEL_DEBUG) {
-			g_print ("%s\t%s\n", str_time, message);
+			g_print ("%s\t%s\t%s\n", str_time, log_domain, message);
 		} else {
-			g_print ("***\n%s\t%s\n***\n", str_time, message);
+			g_print ("***\n%s\t%s\t%s\n***\n", str_time, log_domain, message);
 		}
 		return;
 	}
 
+	/* time in green */
+	g_print ("%c[%dm%s\t", 0x1B, CONSOLE_GREEN, str_time);
+
+	/* log domain in either blue */
+	if (g_strcmp0 (log_domain, G_LOG_DOMAIN) == 0)
+		g_print ("%c[%dm%s%c[%dm", 0x1B, CONSOLE_BLUE, log_domain, 0x1B, CONSOLE_RESET);
+	else
+		g_print ("%c[%dm%s%c[%dm", 0x1B, CONSOLE_CYAN, log_domain, 0x1B, CONSOLE_RESET);
+
+	/* pad with spaces */
+	len = strlen (log_domain);
+	for (i=len; i<PK_DEBUG_LOG_DOMAIN_LENGTH; i++)
+		g_print (" ");
+
 	/* critical is also in red */
 	if (log_level == G_LOG_LEVEL_CRITICAL ||
 	    log_level == G_LOG_LEVEL_ERROR) {
-		g_print ("%c[%dm%s\t", 0x1B, 32, str_time);
-		g_print ("%c[%dm%s\n%c[%dm", 0x1B, 31, message, 0x1B, 0);
+		g_print ("%c[%dm%s\n%c[%dm", 0x1B, CONSOLE_RED, message, 0x1B, CONSOLE_RESET);
 	} else {
 		/* debug in blue */
-		g_print ("%c[%dm%s\t", 0x1B, 32, str_time);
-		g_print ("%c[%dm%s\n%c[%dm", 0x1B, 34, message, 0x1B, 0);
+		g_print ("%c[%dm%s\n%c[%dm", 0x1B, CONSOLE_BLUE, message, 0x1B, CONSOLE_RESET);
 	}
 }
 
@@ -113,14 +139,14 @@ pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer 
 }
 
 /**
- * pk_debug_setup:
+ * pk_debug_add_log_domain:
  */
 void
-pk_debug_setup (gboolean enabled)
+pk_debug_add_log_domain (const gchar *log_domain)
 {
-	if (enabled) {
-		g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
-		g_log_set_handler (G_LOG_DOMAIN,
+	if (_verbose) {
+		g_log_set_fatal_mask (log_domain, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
+		g_log_set_handler (log_domain,
 				   G_LOG_LEVEL_ERROR |
 				   G_LOG_LEVEL_CRITICAL |
 				   G_LOG_LEVEL_DEBUG |
@@ -128,7 +154,7 @@ pk_debug_setup (gboolean enabled)
 				   pk_debug_handler_cb, NULL);
 	} else {
 		/* hide all debugging */
-		g_log_set_handler (G_LOG_DOMAIN,
+		g_log_set_handler (log_domain,
 				   G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
 				   pk_debug_ignore_cb, NULL);
 	}
@@ -141,7 +167,7 @@ static gboolean
 pk_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer data, GError **error)
 {
 	/* verbose? */
-	pk_debug_setup (_verbose);
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
 	_console = (isatty (fileno (stdout)) == 1);
 	g_debug ("Verbose debugging %s (on console %i)", _verbose ? "enabled" : "disabled", _console);
 	return TRUE;

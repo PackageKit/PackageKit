@@ -24,6 +24,7 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <string.h>
+#include <packagekit-glib2/pk-debug.h>
 
 #ifdef HAVE_ZIF
 #include <zif.h>
@@ -825,6 +826,10 @@ pk_backend_initialize (PkBackend *backend)
 	gchar *config_file = NULL;
 	GList *mounts;
 	gchar *use_zif = NULL;
+
+	/* use logging */
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
+	pk_debug_add_log_domain ("Zif");
 
 	/* create private area */
 	priv = g_new0 (PkBackendYumPrivate, 1);

@@ -30,6 +30,6 @@
 
 gboolean	 pk_debug_is_verbose		(void);
 GOptionGroup	*pk_debug_get_option_group	(void);
-void		 pk_debug_setup		(gboolean	 enabled);
+void		 pk_debug_add_log_domain	(const gchar	*log_domain);
 
 #endif /* __PK_DEBUG_H__ */
