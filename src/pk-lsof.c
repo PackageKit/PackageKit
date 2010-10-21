@@ -141,6 +141,8 @@ pk_lsof_refresh (PkLsof *lsof)
 	GError *error = NULL;
 	gchar *stdout = NULL;
 	gchar *stderr = NULL;
+	const gchar *lsof_name;
+	gchar *lsof_cmd = NULL;
 	PkLsofData *data;
 	gchar **lines = NULL;
 	guint i;
@@ -151,8 +153,21 @@ pk_lsof_refresh (PkLsof *lsof)
 
 	g_return_val_if_fail (PK_IS_LSOF (lsof), FALSE);
 
+	/* try to find lsof */
+	lsof_name = "/usr/sbin/lsof";
+	ret = g_file_test (lsof_name, G_FILE_TEST_EXISTS);
+	if (!ret) {
+		lsof_name = "/usr/bin/lsof";
+		ret = g_file_test (lsof_name, G_FILE_TEST_EXISTS);
+		if (!ret) {
+			g_warning ("lsof not found, cannot continue");
+			goto out;
+		}
+	}
+
 	/* run lsof to get all data */
-	ret = g_spawn_command_line_sync ("/usr/sbin/lsof -Fpfn", &stdout, &stderr, NULL, &error);
+	lsof_cmd = g_strconcat (lsof_name, " ", "-Fpfn", NULL);
+	ret = g_spawn_command_line_sync (lsof_cmd, &stdout, &stderr, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to get pids: %s", error->message);
 		g_error_free (error);
@@ -215,6 +230,7 @@ pk_lsof_refresh (PkLsof *lsof)
 	ret = TRUE;
 out:
 	g_strfreev (lines);
+	g_free (lsof_cmd);
 	g_free (stdout);
 	g_free (stderr);
 	return ret;
