@@ -923,14 +923,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 		return FALSE;
 	}
 
-	/* sanity check */
-	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
-		g_warning ("backend tried to SETUP, but should be in WAIT");
-		pk_backend_message (backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-				    "%s to SETUP when not in WAIT", pk_role_enum_to_string (backend->priv->role));
-		return FALSE;
-	}
-
 	/* do we have to enumate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
@@ -2057,7 +2049,8 @@ static gboolean
 pk_backend_set_role_internal (PkBackend *backend, PkRoleEnum role)
 {
 	/* Should only be called once... */
-	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
+	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN &&
+	    backend->priv->role != role) {
 		g_warning ("cannot set role to %s, already %s",
 			     pk_role_enum_to_string (role),
 			     pk_role_enum_to_string (backend->priv->role));
