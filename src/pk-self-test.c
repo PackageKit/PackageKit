@@ -393,59 +393,59 @@ pk_test_backend_spawn_func (void)
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t0");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t0", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\tbrian");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\tbrian", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage3 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t12345");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t12345", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage4 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage\t", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage5 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "percentage", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Subpercentage */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "subpercentage\t17");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "subpercentage\t17", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data NoPercentageUpdates");
-	ret = pk_backend_spawn_inject_data (backend_spawn, "no-percentage-updates");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "no-percentage-updates", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data failure */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "error\tnot-present-woohoo\tdescription text");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "error\tnot-present-woohoo\tdescription text", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data Status */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "status\tquery");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "status\tquery", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tdetails about the restart");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "requirerestart\tsystem\tdetails about the restart", NULL);
 	g_assert (!ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\ttrue");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\ttrue", NULL);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\tbrian");
+	ret = pk_backend_spawn_inject_data (backend_spawn, "allow-cancel\tbrian", NULL);
 	g_assert (!ret);
 
 	/* convert proxy uri (bare) */
@@ -465,7 +465,7 @@ pk_test_backend_spawn_func (void)
 
 	/* test pk_backend_spawn_parse_common_out Package */
 	ret = pk_backend_spawn_inject_data (backend_spawn,
-		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
 	g_assert (ret);
 
 	/* manually unlock as we have no engine */
