@@ -491,6 +491,40 @@ pk_backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield fi
 out:
 	return store_array;
 }
+
+/**
+ * pk_backend_search_newest:
+ */
+static GPtrArray *
+pk_backend_search_newest (GPtrArray *store_array, ZifState *state, guint recent, GError **error)
+{
+	GPtrArray *array = NULL;
+	GPtrArray *array_tmp;
+	GTimeVal timeval_now;
+	guint diff_secs = recent * 24 * 60 * 60;
+	guint i;
+	ZifPackage *package;
+
+	/* get all the packages */
+	array_tmp = zif_store_array_get_packages (store_array, state, error);
+	if (array_tmp == NULL)
+		goto out;
+
+	/* only add elements to the array that are new enough */
+	g_get_current_time (&timeval_now);
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	for (i=0; i<array_tmp->len; i++) {
+		package = g_ptr_array_index (array_tmp, i);
+		if (timeval_now.tv_sec - zif_package_get_time_file (package) < diff_secs)
+			g_ptr_array_add (array, g_object_ref (package));
+	}
+	g_debug ("added %i newest packages", array->len);
+out:
+	if (array_tmp != NULL)
+		g_ptr_array_unref (array_tmp);
+	return array;
+}
+
 #endif
 
 /**
@@ -509,6 +543,7 @@ pk_backend_search_thread (PkBackend *backend)
 	ZifState *state_local;
 	GError *error = NULL;
 	gchar **search;
+	guint recent;
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	role = pk_backend_get_role (backend);
 
@@ -574,6 +609,14 @@ pk_backend_search_thread (PkBackend *backend)
 					search_stripped[i] = g_strdup (&search[i][1]);
 				array = zif_store_array_search_category (store_array, search_stripped, state_local, &error);
 				g_strfreev (search_stripped);
+			} else if (g_strcmp0 (search[0], "newest") == 0) {
+				recent = zif_config_get_uint (priv->config, "recent", &error);
+				array = pk_backend_search_newest (store_array, state_local, recent, &error);
+				if (array == NULL) {
+					pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
+					g_error_free (error);
+					goto out;
+				}
 			} else {
 				array = zif_store_array_search_group (store_array, search, state_local, &error);
 			}
