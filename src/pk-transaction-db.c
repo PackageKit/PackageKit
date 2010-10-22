@@ -242,7 +242,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 		return G_MAXUINT;
 	}
 	if (timespec == NULL) {
-		g_warning ("no response, assume maximum value");
+		g_debug ("no response, assume maximum value");
 		return G_MAXUINT;
 	}
 
@@ -650,12 +650,12 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 		goto out;
 	}
 
+	/* success, even if we got no data */
+	ret = TRUE;
+
 	/* copy data */
 	*proxy_http = g_strdup (item->proxy_http);
 	*proxy_ftp = g_strdup (item->proxy_ftp);
-
-	/* success, even if we got no data */
-	ret = TRUE;
 out:
 	pk_transaction_db_proxy_item_free (item);
 	g_free (statement);
