@@ -494,11 +494,11 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
  * pk_backend_set_name:
  **/
 gboolean
-pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
+pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **error)
 {
 	GModule *handle;
 	gchar *path = NULL;
-	gboolean ret = TRUE;
+	gboolean ret = FALSE;
 	gpointer func = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -506,8 +506,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 
 	/* have we already been set? */
 	if (backend->priv->name != NULL) {
-		g_warning ("pk_backend_set_name called multiple times");
-		ret = FALSE;
+		g_set_error (error, 1, 0, "already set name to %s", backend->priv->name);
 		goto out;
 	}
 
@@ -516,8 +515,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
-		g_warning ("opening module %s failed : %s", backend_name, g_module_error ());
-		ret = FALSE;
+		g_set_error (error, 1, 0, "opening module %s failed : %s", backend_name, g_module_error ());
 		goto out;
 	}
 
@@ -588,8 +586,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	}
 	if (!ret) {
 		g_module_close (handle);
-		g_warning ("could not find description in plugin %s, not loading", backend_name);
-		ret = FALSE;
+		g_set_error (error, 1, 0, "could not find description in plugin %s, not loading", backend_name);
 		goto out;
 	}
 
@@ -687,7 +684,7 @@ pk_backend_lock (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->desc != NULL, FALSE);
 
 	if (backend->priv->locked) {
-		g_warning ("already locked");
+		g_debug ("already locked (nonfatal)");
 		/* we don't return FALSE here, as the action didn't fail */
 		return TRUE;
 	}
@@ -715,7 +712,7 @@ pk_backend_unlock (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	if (backend->priv->locked == FALSE) {
-		g_warning ("already unlocked");
+		g_debug ("already unlocked (nonfatal)");
 		/* we don't return FALSE here, as the action didn't fail */
 		return TRUE;
 	}
@@ -2423,7 +2420,7 @@ pk_backend_thread_setup (gpointer thread_data)
 	/* run original function */
 	ret = helper->func (helper->backend);
 	if (!ret) {
-		g_warning ("transaction setup failed, going straight to finished");
+		g_debug ("transaction setup failed, going straight to finished");
 		pk_backend_transaction_stop (helper->backend);
 	}
 

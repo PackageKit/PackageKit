@@ -76,7 +76,8 @@ gboolean	 pk_backend_unlock			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_reset			(PkBackend	*backend);
 gboolean	 pk_backend_set_name			(PkBackend	*backend,
-							 const gchar	*name)
+							 const gchar	*name,
+							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_http,

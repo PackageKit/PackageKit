@@ -228,15 +228,15 @@ pk_test_backend_func (void)
 	g_assert (!ret);
 
 	/* load an invalid backend */
-	ret = pk_backend_set_name (backend, "invalid");
+	ret = pk_backend_set_name (backend, "invalid", NULL);
 	g_assert (!ret);
 
 	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_set_name (backend, "dummy", NULL);
 	g_assert (ret);
 
 	/* load an valid backend again */
-	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_set_name (backend, "dummy", NULL);
 	g_assert (!ret);
 
 	/* lock an valid backend */
@@ -387,7 +387,7 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpstr (text, ==, "test_spawn");
 
 	/* needed to avoid an error */
-	ret = pk_backend_set_name (backend, "test_spawn");
+	ret = pk_backend_set_name (backend, "test_spawn", NULL);
 	g_assert (ret);
 	ret = pk_backend_lock (backend);
 	g_assert (ret);
@@ -672,7 +672,7 @@ pk_test_engine_func (void)
 
 	/* set the type, as we have no pk-main doing this for us */
 	/* set the backend name */
-	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_set_name (backend, "dummy", NULL);
 	g_assert (ret);
 
 	/* get an engine instance */
@@ -1576,7 +1576,7 @@ pk_test_transaction_list_func (void)
 	PkBackend *backend;
 	backend = pk_backend_new ();
 	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_set_name (backend, "dummy", NULL);
 	g_assert (ret);
 
 	/* lock an valid backend */
