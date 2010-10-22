@@ -25,6 +25,15 @@
 #include <pk-backend.h>
 
 /**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Test-Succeed");
+}
+
+/**
  * pk_backend_initialize:
  */
 void

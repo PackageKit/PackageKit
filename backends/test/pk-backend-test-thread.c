@@ -27,10 +27,19 @@
 static gboolean is_cancelled = FALSE;
 
 /**
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Test-Thread");
+}
+
+/**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
- void
+void
 pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend: initialize");
