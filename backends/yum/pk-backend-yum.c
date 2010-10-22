@@ -525,6 +525,63 @@ out:
 	return array;
 }
 
+/**
+ * pk_backend_search_collections:
+ */
+static GPtrArray *
+pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError **error)
+{
+	gboolean ret;
+	gchar *package_id;
+	GPtrArray *array = NULL;
+	GPtrArray *array_tmp;
+	GError *error_local = NULL;
+	guint i;
+	ZifCategory *cat;
+	ZifPackage *package;
+	ZifString *string;
+
+	/* get sorted list of unique categories */
+	array_tmp = zif_store_array_get_categories (store_array, state, error);
+	if (array_tmp == NULL)
+		goto out;
+
+	/* generate fake packages */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	for (i=0; i<array_tmp->len; i++) {
+		cat = g_ptr_array_index (array_tmp, i);
+
+		/* ignore top level categories */
+		if (zif_category_get_parent_id (cat) == NULL)
+			continue;
+
+		/* fake something here */
+		package_id = g_strdup_printf ("%s;;;meta",
+					      zif_category_get_id (cat));
+		package = zif_package_new ();
+		ret = zif_package_set_id (package, package_id, NULL);
+		if (ret) {
+			/* TODO: get the installed state of the group */
+			zif_package_set_installed (package, FALSE);
+			string = zif_string_new (zif_category_get_name (cat));
+			zif_package_set_summary (package, string);
+			zif_string_unref (string);
+			g_ptr_array_add (array, g_object_ref (package));
+			/* TODO: make a proper property */
+			g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (PK_INFO_ENUM_COLLECTION_AVAILABLE));
+		} else {
+			g_warning ("failed to add id %s: %s", package_id, error_local->message);
+			g_clear_error (&error_local);
+		}
+		g_free (package_id);
+		g_object_unref (package);
+	}
+out:
+	if (array_tmp != NULL)
+		g_ptr_array_unref (array_tmp);
+	return array;
+}
+
 #endif
 
 /**
@@ -612,6 +669,13 @@ pk_backend_search_thread (PkBackend *backend)
 			} else if (g_strcmp0 (search[0], "newest") == 0) {
 				recent = zif_config_get_uint (priv->config, "recent", &error);
 				array = pk_backend_search_newest (store_array, state_local, recent, &error);
+				if (array == NULL) {
+					pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
+					g_error_free (error);
+					goto out;
+				}
+			} else if (g_strcmp0 (search[0], "collections") == 0) {
+				array = pk_backend_search_collections (store_array, state_local, &error);
 				if (array == NULL) {
 					pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to get packages: %s", error->message);
 					g_error_free (error);
