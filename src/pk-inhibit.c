@@ -75,13 +75,13 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_lock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
-	gboolean ret;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
 		g_debug ("not connected to HAL");
-		return FALSE;
+		goto skip_hal;
 	}
 	if (inhibit->priv->is_locked) {
 		g_debug ("already inhibited, not trying again");
@@ -98,6 +98,7 @@ pk_inhibit_lock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
+skip_hal:
 	if (ret) {
 		inhibit->priv->is_locked = TRUE;
 		g_debug ("emit lock %i", inhibit->priv->is_locked);
@@ -114,13 +115,13 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_unlock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
-	gboolean ret;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
 		g_debug ("not connected to HAL");
-		return FALSE;
+		goto skip_hal;
 	}
 	if (inhibit->priv->is_locked == FALSE) {
 		g_debug ("not inhibited, not trying to unlock");
@@ -137,6 +138,7 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
+skip_hal:
 	if (ret) {
 		inhibit->priv->is_locked = FALSE;
 		g_debug ("emit lock %i", inhibit->priv->is_locked);
