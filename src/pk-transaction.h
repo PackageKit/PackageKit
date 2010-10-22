@@ -77,6 +77,15 @@ typedef enum
 	PK_TRANSACTION_ERROR_LAST
 } PkTransactionError;
 
+/* these have to be kept in order */
+typedef enum {
+	PK_TRANSACTION_STATE_NEW,
+	PK_TRANSACTION_STATE_COMMITTED,
+	PK_TRANSACTION_STATE_RUNNING,
+	PK_TRANSACTION_STATE_FINISHED,
+	PK_TRANSACTION_STATE_UNKNOWN
+} PkTransactionState;
+
 GQuark		 pk_transaction_error_quark			(void);
 GType		 pk_transaction_error_get_type			(void);
 GType		 pk_transaction_get_type			(void);
@@ -87,6 +96,10 @@ gboolean	 pk_transaction_run				(PkTransaction      *transaction)
 								 G_GNUC_WARN_UNUSED_RESULT;
 /* internal status */
 PkRoleEnum	 pk_transaction_priv_get_role			(PkTransaction	*transaction);
+PkTransactionState pk_transaction_get_state			(PkTransaction	*transaction);
+gboolean	 pk_transaction_set_state			(PkTransaction	*transaction,
+								 PkTransactionState state);
+const gchar	*pk_transaction_state_to_string			(PkTransactionState state);
 
 /* set and retrieve tid */
 const gchar	*pk_transaction_get_tid				(PkTransaction	*transaction);

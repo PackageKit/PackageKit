@@ -84,6 +84,7 @@ struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
+	PkTransactionState	 state;
 	guint			 percentage;
 	guint			 subpercentage;
 	guint			 elapsed_time;
@@ -779,6 +780,63 @@ out:
 	if (dir != NULL)
 		g_dir_close (dir);
 	g_free (dirname);
+}
+
+/**
+ * pk_transaction_state_to_string:
+ **/
+const gchar *
+pk_transaction_state_to_string (PkTransactionState state)
+{
+	if (state == PK_TRANSACTION_STATE_NEW)
+		return "new";
+	if (state == PK_TRANSACTION_STATE_COMMITTED)
+		return "committed";
+	if (state == PK_TRANSACTION_STATE_RUNNING)
+		return "running";
+	if (state == PK_TRANSACTION_STATE_FINISHED)
+		return "finished";
+	return NULL;
+}
+
+/**
+ * pk_transaction_set_state:
+ *
+ * A transaction can have only one state at any time as it is processed.
+ * Typically, these states will be:
+ *
+ * 1. 'new'
+ * 2. 'committed'
+ * 3. 'running'    <--- this is where PkBackend gets used
+ * 4. 'finished'
+ *
+ * TODO: we want to split running up in to multiple states so we can do
+ * some pre and post-running stuff without the PkBackend lock.
+ **/
+gboolean
+pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
+{
+	/* check we're not going backwards */
+	if (transaction->priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
+	    transaction->priv->state > state) {
+		g_warning ("cannot set %s, as already %s",
+			   pk_transaction_state_to_string (state),
+			   pk_transaction_state_to_string (transaction->priv->state));
+		return FALSE;
+	}
+
+	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
+	transaction->priv->state = state;
+	return TRUE;
+}
+
+/**
+ * pk_transaction_get_state:
+ **/
+PkTransactionState
+pk_transaction_get_state (PkTransaction *transaction)
+{
+	return transaction->priv->state;
 }
 
 /**
@@ -1763,7 +1821,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
-		g_warning ("failed to set the session state: %s", error->message);
+		g_debug ("failed to set the session state (non-fatal): %s", error->message);
 		g_error_free (error);
 	}
 
@@ -5633,6 +5691,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	transaction->priv->background = PK_HINT_ENUM_UNSET;
+	transaction->priv->state = PK_TRANSACTION_STATE_UNKNOWN;
 	transaction->priv->elapsed_time = 0;
 	transaction->priv->remaining_time = 0;
 	transaction->priv->speed = 0;

@@ -1489,7 +1489,7 @@ pk_test_transaction_list_create_transaction (PkTransactionList *tlist)
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create PkTransaction instance */
-	pk_transaction_list_create (tlist, tid, ":", NULL);
+	pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
 
 	return tid;
 }
@@ -1507,7 +1507,6 @@ pk_test_transaction_list_func (void)
 	gchar *tid_item1;
 	gchar *tid_item2;
 	gchar *tid_item3;
-	gboolean running, committed, finished;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1537,11 +1536,9 @@ pk_test_transaction_list_func (void)
 	g_assert (ret);
 
 	/* make sure we get the right object back */
-	transaction = pk_transaction_list_get_transaction (tlist, tid, &running, &committed, &finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid);
 	g_assert (transaction != NULL);
-	g_assert (!running);
-	g_assert (!committed);
-	g_assert (!finished);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_NEW);
 
 	/* get size one we have in queue */
 	size = pk_transaction_list_get_size (tlist);
@@ -1584,7 +1581,7 @@ pk_test_transaction_list_func (void)
 	g_assert (ret);
 
 	/* get from db */
-	transaction = pk_transaction_list_get_transaction (tlist, tid, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid);
 	g_assert (transaction != NULL);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
@@ -1593,10 +1590,8 @@ pk_test_transaction_list_func (void)
 	pk_transaction_get_updates (transaction, "none", NULL);
 
 	/* make sure transaction has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid, &running, &committed, &finished);
-	g_assert (running);
-	g_assert (committed);
-	g_assert (!finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_RUNNING);
 
 	/* get present role */
 	ret = pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_GET_UPDATES);
@@ -1643,7 +1638,7 @@ pk_test_transaction_list_func (void)
 	g_free (tid);
 
 	tid = pk_test_transaction_list_create_transaction (tlist);
-	transaction = pk_transaction_list_get_transaction (tlist, tid, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
 
@@ -1653,10 +1648,7 @@ pk_test_transaction_list_func (void)
 	_g_test_loop_run_with_timeout (1000);
 
 	/* make sure transaction has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* get transactions (committed, not finished) in progress (none, as cached) */
 	array = pk_transaction_list_get_array (tlist);
@@ -1696,31 +1688,31 @@ pk_test_transaction_list_func (void)
 	g_assert_cmpint (size, ==, 0);
 	g_strfreev (array);
 
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item1, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item2, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item3, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
 
 	/* this starts one action */
 	array = g_strsplit ("dave", " ", -1);
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item1, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
 	pk_transaction_search_details (transaction, "none", array, NULL);
 	g_strfreev (array);
 
 	/* this should be chained after the first action completes */
 	array = g_strsplit ("power", " ", -1);
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item2, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
 	pk_transaction_search_names (transaction, "none", array, NULL);
 	g_strfreev (array);
 
 	/* this starts be chained after the second action completes */
 	array = g_strsplit ("paul", " ", -1);
-	transaction = pk_transaction_list_get_transaction (tlist, tid_item3, NULL, NULL, NULL);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
 	pk_transaction_search_details (transaction, "none", array, NULL);
 	g_strfreev (array);
 
@@ -1744,22 +1736,16 @@ pk_test_transaction_list_func (void)
 	g_strfreev (array);
 
 	/* make sure transaction1 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item1, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction2 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item2, &running, &committed, &finished);
-	g_assert (running);
-	g_assert (committed);
-	g_assert (!finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_RUNNING);
 
 	/* make sure transaction3 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item3, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (!finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_COMMITTED);
 
 	/* wait for second action */
 	_g_test_loop_run_with_timeout (10000);
@@ -1775,22 +1761,16 @@ pk_test_transaction_list_func (void)
 	g_strfreev (array);
 
 	/* make sure transaction1 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item1, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction2 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item2, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction3 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item3, &running, &committed, &finished);
-	g_assert (running);
-	g_assert (committed);
-	g_assert (!finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_RUNNING);
 
 	/* wait for third action */
 	_g_test_loop_run_with_timeout (10000);
@@ -1806,29 +1786,23 @@ pk_test_transaction_list_func (void)
 	g_strfreev (array);
 
 	/* make sure transaction1 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item1, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item1);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction2 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item2, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item2);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction3 has correct flags */
-	pk_transaction_list_get_transaction (tlist, tid_item3, &running, &committed, &finished);
-	g_assert (!running);
-	g_assert (committed);
-	g_assert (finished);
+	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* wait for Cleanup */
 	_g_test_loop_wait (5000);
 
-	/* get both transactions in queue */
+	/* get transactions in queue */
 	size = pk_transaction_list_get_size (tlist);
-	g_assert_cmpint (size, ==, 0);
+	g_assert_cmpint (size, <, 3); /* at least one should have timed out */
 
 	/* get transactions (committed, not finished) in progress (neither - again) */
 	array = pk_transaction_list_get_array (tlist);
@@ -1861,7 +1835,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/conf", pk_test_conf_func);
 	g_test_add_func ("/packagekit/cache", pk_test_conf_func);
 	g_test_add_func ("/packagekit/store", pk_test_store_func);
-if(0)	g_test_add_func ("/packagekit/inhibit", pk_test_inhibit_func);
+	g_test_add_func ("/packagekit/inhibit", pk_test_inhibit_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/transaction-list", pk_test_transaction_list_func);
