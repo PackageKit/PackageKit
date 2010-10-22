@@ -930,6 +930,7 @@ pk_backend_status_changed_cb (PkBackend *backend, PkStatusEnum status, gpointer 
 	pk_backend_enable_media_repo (TRUE);
 }
 
+#ifdef HAVE_ZIF
 /**
  * pk_backend_state_action_changed_cb:
  **/
@@ -970,6 +971,7 @@ out:
 	if (status != PK_STATUS_ENUM_UNKNOWN)
 		pk_backend_set_status (backend, status);
 }
+#endif
 
 /**
  * pk_backend_initialize:
