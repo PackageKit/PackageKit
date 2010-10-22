@@ -535,16 +535,35 @@ pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError *
 	gchar *package_id;
 	GPtrArray *array = NULL;
 	GPtrArray *array_tmp;
+	GPtrArray *array_packages;
 	GError *error_local = NULL;
-	guint i;
+	guint i, j;
+	PkInfoEnum info;
 	ZifCategory *cat;
 	ZifPackage *package;
+	ZifPackage *package_tmp;
+	ZifState *state_local;
+	ZifState *state_loop;
 	ZifString *string;
+	const gchar *to_array[] = { NULL, NULL };
+
+	/* set steps */
+	zif_state_set_number_steps (state, 2);
 
 	/* get sorted list of unique categories */
-	array_tmp = zif_store_array_get_categories (store_array, state, error);
+	state_local = zif_state_get_child (state);
+	array_tmp = zif_store_array_get_categories (store_array, state_local, error);
 	if (array_tmp == NULL)
 		goto out;
+
+	/* done */
+	ret = zif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* set steps */
+	state_local = zif_state_get_child (state);
+	zif_state_set_number_steps (state_local, array_tmp->len);
 
 	/* generate fake packages */
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -561,21 +580,54 @@ pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError *
 		package = zif_package_new ();
 		ret = zif_package_set_id (package, package_id, NULL);
 		if (ret) {
-			/* TODO: get the installed state of the group */
-			zif_package_set_installed (package, FALSE);
+			/* are all the packages in this group installed? */
+			state_loop = zif_state_get_child (state_local);
+			to_array[0] = zif_category_get_id (cat);
+			array_packages = zif_store_array_search_category (store_array, (gchar**)to_array, state_loop, error);
+			if (array_packages == NULL)
+				goto out;
+
+			/* if any are not installed, then this is not installed */
+			info = PK_INFO_ENUM_COLLECTION_INSTALLED;
+			for (j=0; j<array_packages->len; j++) {
+				package_tmp = g_ptr_array_index (array_packages, j);
+				if (!zif_package_is_installed (package_tmp)) {
+					info = PK_INFO_ENUM_COLLECTION_AVAILABLE;
+					g_debug ("%s is not installed, so marking as not installed %s collection",
+						 zif_package_get_id (package_tmp),
+						 zif_category_get_id (cat));
+					break;
+				}
+			}
+
+			/* map to simple binary installed value */
+			zif_package_set_installed (package, (info == PK_INFO_ENUM_COLLECTION_INSTALLED));
 			string = zif_string_new (zif_category_get_name (cat));
 			zif_package_set_summary (package, string);
 			zif_string_unref (string);
+
+			/* add to results */
 			g_ptr_array_add (array, g_object_ref (package));
 			/* TODO: make a proper property */
-			g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (PK_INFO_ENUM_COLLECTION_AVAILABLE));
+			g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (info));
 		} else {
 			g_warning ("failed to add id %s: %s", package_id, error_local->message);
 			g_clear_error (&error_local);
 		}
+
+		/* done */
+		ret = zif_state_done (state_local, error);
+		if (!ret)
+			goto out;
+
 		g_free (package_id);
 		g_object_unref (package);
 	}
+
+	/* done */
+	ret = zif_state_done (state, error);
+	if (!ret)
+		goto out;
 out:
 	if (array_tmp != NULL)
 		g_ptr_array_unref (array_tmp);
