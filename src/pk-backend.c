@@ -575,10 +575,12 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
 
 			/* get old static string data */
-			g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
-			desc->author = backend_vfunc (backend);
-			g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&backend_vfunc);
-			desc->description = backend_vfunc (backend);
+			ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
+			if (ret)
+				desc->author = backend_vfunc (backend);
+			ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *)&backend_vfunc);
+			if (ret)
+				desc->description = backend_vfunc (backend);
 
 			/* make available */
 			backend->priv->desc = desc;
