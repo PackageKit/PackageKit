@@ -1745,7 +1745,7 @@ pk_test_transaction_list_func (void)
 
 	/* make sure transaction3 has correct flags */
 	transaction = pk_transaction_list_get_transaction (tlist, tid_item3);
-	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_COMMITTED);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_READY);
 
 	/* wait for second action */
 	_g_test_loop_run_with_timeout (10000);

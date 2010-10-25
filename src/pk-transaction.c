@@ -792,6 +792,8 @@ pk_transaction_state_to_string (PkTransactionState state)
 		return "new";
 	if (state == PK_TRANSACTION_STATE_COMMITTED)
 		return "committed";
+	if (state == PK_TRANSACTION_STATE_READY)
+		return "ready";
 	if (state == PK_TRANSACTION_STATE_RUNNING)
 		return "running";
 	if (state == PK_TRANSACTION_STATE_FINISHED)
@@ -806,28 +808,37 @@ pk_transaction_state_to_string (PkTransactionState state)
  * Typically, these states will be:
  *
  * 1. 'new'
- * 2. 'committed'
- * 3. 'running'    <--- this is where PkBackend gets used
- * 4. 'finished'
+ * 2. 'committed'  <--- when the client sets the role
+ * 3. 'ready'      <--- when the transaction is ready to be run
+ * 4. 'running'    <--- where PkBackend gets used
+ * 5. 'finished'
  *
- * TODO: we want to split running up in to multiple states so we can do
- * some pre and post-running stuff without the PkBackend lock.
  **/
 gboolean
 pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 {
+	gboolean ret = TRUE;
+
 	/* check we're not going backwards */
 	if (transaction->priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
 	    transaction->priv->state > state) {
 		g_warning ("cannot set %s, as already %s",
 			   pk_transaction_state_to_string (state),
 			   pk_transaction_state_to_string (transaction->priv->state));
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
 	transaction->priv->state = state;
-	return TRUE;
+
+	/* we have no actions to perform here, so go straight to running */
+	if (state == PK_TRANSACTION_STATE_COMMITTED) {
+		/* TODO: do some things before we change states */
+		ret = pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+	}
+out:
+	return ret;
 }
 
 /**

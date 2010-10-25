@@ -326,7 +326,7 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 	/* first try the waiting non-background transactions */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_COMMITTED &&
+		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_READY &&
 		    !item->background)
 			goto out;
 	}
@@ -334,7 +334,7 @@ pk_transaction_list_get_next_item (PkTransactionList *tlist)
 	/* then try the other waiting transactions (background tasks) */
 	for (i=0; i<array->len; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (array, i);
-		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_COMMITTED)
+		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_READY)
 			goto out;
 	}
 
@@ -634,6 +634,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 		/* only return in the list if its committed and not finished */
 		state = pk_transaction_get_state (item->transaction);
 		if (state == PK_TRANSACTION_STATE_COMMITTED ||
+		    state == PK_TRANSACTION_STATE_READY ||
 		    state == PK_TRANSACTION_STATE_RUNNING)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
@@ -682,6 +683,8 @@ pk_transaction_list_get_state (PkTransactionList *tlist)
 		if (state == PK_TRANSACTION_STATE_RUNNING)
 			running++;
 		if (state == PK_TRANSACTION_STATE_COMMITTED)
+			waiting++;
+		if (state == PK_TRANSACTION_STATE_READY)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
@@ -750,6 +753,8 @@ pk_transaction_list_is_consistent (PkTransactionList *tlist)
 		if (state == PK_TRANSACTION_STATE_RUNNING)
 			running++;
 		if (state == PK_TRANSACTION_STATE_COMMITTED)
+			waiting++;
+		if (state == PK_TRANSACTION_STATE_READY)
 			waiting++;
 		if (state == PK_TRANSACTION_STATE_NEW)
 			no_commit++;
