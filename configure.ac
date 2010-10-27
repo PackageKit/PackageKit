@@ -185,7 +185,7 @@ if test x$enable_qt = xyes; then
 	if test ! -x "$MOC"; then
 		AC_PATH_PROG(MOC, moc)
 		if test ! -x "$MOC"; then
-			AC_MSG_ERROR([MOC hasn't been found])
+			AC_MSG_ERROR([MOC has not been found])
 		fi
 	fi
 	build_qt=yes
@@ -287,7 +287,7 @@ if test x$enable_man_pages != xno; then
 	AC_PATH_PROG(XSLTPROC, xsltproc, no)
 	if test x$enable_man_pages = xyes; then
 		if test "$XSLTPROC" = "no" ; then
-			AC_MSG_ERROR([xsltproc not found, it's needod to build man pages])
+			AC_MSG_ERROR([xsltproc not found, it is needed to build man pages])
 		fi
 	fi
 else
@@ -571,7 +571,7 @@ if test x$with_security_framework = xpolkit; then
 				  polkit-backend-1 \
 				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	else
-		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use PolicyKit's new API])
+		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use the new PolicyKit API])
 	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
