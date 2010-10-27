@@ -40,7 +40,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
-from yum.packages import YumLocalPackage, parsePackages
+from yum.packages import YumLocalPackage, parsePackages, PackageObject
 from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
@@ -125,10 +125,13 @@ def _to_unicode(txt, encoding='utf-8'):
 
 def _get_package_ver(po):
     ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
+    ver = ''
     if po.epoch != '0':
         ver = "%s:%s-%s" % (po.epoch, po.version, po.release)
-    else:
+    elif po.release:
         ver = "%s-%s" % (po.version, po.release)
+    elif po.version:
+        ver = po.version
     return ver
 
 def _format_package_id(package_id):
@@ -581,9 +584,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
-            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" %_to_unicode(e))
+            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" % _to_unicode(e))
         except yum.Errors.GroupsError, e:
-            raise PkError(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
+            raise PkError(ERROR_GROUP_NOT_FOUND, "failed to find group '%s': %s" % (package_id, _to_unicode(e)))
         except exceptions.IOError, e:
             raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
@@ -1012,6 +1015,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             (name, idver, a, repo) = self.get_package_from_id(package_id)
             isGroup = False
             if repo == 'meta':
+                if name[0] == '@':
+                    name == name[1:]
                 try:
                     grp = self.yumbase.comps.return_group(name)
                 except exceptions.IOError, e:
@@ -1028,7 +1033,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             if isGroup and not grp:
-                self.error(ERROR_GROUP_NOT_FOUND, "The Group %s dont exist" % name)
+                self.error(ERROR_GROUP_NOT_FOUND, "group %s does not exist (searched for %s)" % (name, _format_package_id (package_id)))
+                return
         return grp
 
     def _findPackage(self, package_id):
@@ -1745,6 +1751,39 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
                     pkgfilter.add_available(pkgs)
+
+        # is this a metapackage (a group)
+        for package_id in packages:
+            if package_id[0] == '@':
+                grps = self.comps.get_meta_packages()
+                for grpid in grps:
+                    if grpid == package_id[1:]:
+
+                        # create virtual package
+                        pkg = yum.packages.PackageObject()
+                        pkg.name = package_id[1:]
+                        pkg.version = ''
+                        pkg.release = ''
+                        pkg.arch = ''
+                        pkg.epoch = '0'
+                        pkg.repo = 'meta'
+
+                        # get the name and the installed status
+                        try:
+                            grp = self.yumbase.comps.return_group(grpid)
+                        except yum.Errors.RepoError, e:
+                            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" % _to_unicode(e))
+                        except yum.Errors.GroupsError, e:
+                            raise PkError(ERROR_GROUP_NOT_FOUND, "failed to find group '%s': %s" % (package_id, _to_unicode(e)))
+                        except exceptions.IOError, e:
+                            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+                        except Exception, e:
+                            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                        pkg.summary = grp.name
+                        if grp.installed:
+                            pkgfilter.add_installed([pkg])
+                        else:
+                            pkgfilter.add_available([pkg])
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()

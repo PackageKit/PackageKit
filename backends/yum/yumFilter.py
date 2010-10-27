@@ -145,7 +145,9 @@ class YumFilter(PackagekitFilter):
         '''
         Return if the package is installed.
         '''
-        return pkg.repo.id == 'installed'
+        if type(pkg.repo) != str:
+            return pkg.repo.id == 'installed'
+        return False
 
     def _pkg_is_devel(self, pkg):
         '''

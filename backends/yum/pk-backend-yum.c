@@ -450,6 +450,12 @@ pk_backend_emit_package_array (PkBackend *backend, GPtrArray *array, ZifState *s
 static gboolean
 pk_backend_error_handler_cb (const GError *error, PkBackend *backend)
 {
+	/* if we try to do a comps search on a local store */
+	if (error->domain == ZIF_STORE_ERROR &&
+	    error->code == ZIF_STORE_ERROR_NO_SUPPORT) {
+		g_debug ("ignoring operation on PkStoreLocal: %s", error->message);
+		return TRUE;
+	}
 	/* emit a warning, this isn't fatal */
 	pk_backend_message (backend, PK_MESSAGE_ENUM_BROKEN_MIRROR, "%s", error->message);
 	return TRUE;
@@ -526,6 +532,69 @@ out:
 }
 
 /**
+ * pk_backend_create_meta_package_for_category:
+ */
+static ZifPackage *
+pk_backend_create_meta_package_for_category (GPtrArray *store_array, ZifCategory *cat, ZifState *state, GError **error)
+{
+	ZifPackage *package = NULL;
+	ZifPackage *package_tmp;
+	GPtrArray *array_packages;
+	gchar *package_id = NULL;
+	gboolean ret;
+	ZifString *string;
+	guint j;
+	const gchar *to_array[] = { NULL, NULL };
+	PkInfoEnum info = PK_INFO_ENUM_COLLECTION_INSTALLED;
+
+	/* are all the packages in this group installed? */
+	to_array[0] = zif_category_get_id (cat);
+	array_packages = zif_store_array_search_category (store_array, (gchar**)to_array, state, error);
+	if (array_packages == NULL)
+		goto out;
+
+	/* if any are not installed, then this is not installed */
+	for (j=0; j<array_packages->len; j++) {
+		package_tmp = g_ptr_array_index (array_packages, j);
+		if (!zif_package_is_installed (package_tmp)) {
+			info = PK_INFO_ENUM_COLLECTION_AVAILABLE;
+			g_debug ("%s is not installed, so marking as not installed %s collection",
+				 zif_package_get_id (package_tmp),
+				 zif_category_get_id (cat));
+			break;
+		}
+	}
+
+	/* fake something */
+	package_id = g_strdup_printf ("%s;;;meta",
+				      zif_category_get_id (cat));
+	package = zif_package_new ();
+	ret = zif_package_set_id (package, package_id, NULL);
+	if (!ret) {
+		g_object_unref (package);
+		package = NULL;
+		goto out;
+	}
+
+	/* set summary */
+	string = zif_string_new (zif_category_get_name (cat));
+	zif_package_set_summary (package, string);
+	zif_string_unref (string);
+
+	/* map to simple binary installed value */
+	zif_package_set_installed (package, (info == PK_INFO_ENUM_COLLECTION_INSTALLED));
+
+	/* add to results */
+	/* TODO: make a proper property */
+	g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (info));
+out:
+	if (array_packages != NULL)
+		g_ptr_array_unref (array_packages);
+	g_free (package_id);
+	return package;
+}
+
+/**
  * pk_backend_search_collections:
  */
 static GPtrArray *
@@ -535,17 +604,12 @@ pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError *
 	gchar *package_id;
 	GPtrArray *array = NULL;
 	GPtrArray *array_tmp;
-	GPtrArray *array_packages;
 	GError *error_local = NULL;
-	guint i, j;
-	PkInfoEnum info;
 	ZifCategory *cat;
+	guint i;
 	ZifPackage *package;
-	ZifPackage *package_tmp;
 	ZifState *state_local;
 	ZifState *state_loop;
-	ZifString *string;
-	const gchar *to_array[] = { NULL, NULL };
 
 	/* set steps */
 	zif_state_set_number_steps (state, 2);
@@ -575,41 +639,10 @@ pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError *
 			continue;
 
 		/* fake something here */
-		package_id = g_strdup_printf ("%s;;;meta",
-					      zif_category_get_id (cat));
-		package = zif_package_new ();
-		ret = zif_package_set_id (package, package_id, NULL);
-		if (ret) {
-			/* are all the packages in this group installed? */
-			state_loop = zif_state_get_child (state_local);
-			to_array[0] = zif_category_get_id (cat);
-			array_packages = zif_store_array_search_category (store_array, (gchar**)to_array, state_loop, error);
-			if (array_packages == NULL)
-				goto out;
-
-			/* if any are not installed, then this is not installed */
-			info = PK_INFO_ENUM_COLLECTION_INSTALLED;
-			for (j=0; j<array_packages->len; j++) {
-				package_tmp = g_ptr_array_index (array_packages, j);
-				if (!zif_package_is_installed (package_tmp)) {
-					info = PK_INFO_ENUM_COLLECTION_AVAILABLE;
-					g_debug ("%s is not installed, so marking as not installed %s collection",
-						 zif_package_get_id (package_tmp),
-						 zif_category_get_id (cat));
-					break;
-				}
-			}
-
-			/* map to simple binary installed value */
-			zif_package_set_installed (package, (info == PK_INFO_ENUM_COLLECTION_INSTALLED));
-			string = zif_string_new (zif_category_get_name (cat));
-			zif_package_set_summary (package, string);
-			zif_string_unref (string);
-
-			/* add to results */
+		state_loop = zif_state_get_child (state_local);
+		package = pk_backend_create_meta_package_for_category (store_array, cat, state_loop, &error_local);
+		if (package != NULL) {
 			g_ptr_array_add (array, g_object_ref (package));
-			/* TODO: make a proper property */
-			g_object_set_data (G_OBJECT(package), "kind", (gpointer)pk_info_enum_to_string (info));
 		} else {
 			g_warning ("failed to add id %s: %s", package_id, error_local->message);
 			g_clear_error (&error_local);
@@ -620,7 +653,6 @@ pk_backend_search_collections (GPtrArray *store_array, ZifState *state, GError *
 		if (!ret)
 			goto out;
 
-		g_free (package_id);
 		g_object_unref (package);
 	}
 
@@ -635,6 +667,117 @@ out:
 }
 
 #endif
+
+/**
+ * pk_backend_get_cat_for_id:
+ */
+static ZifCategory *
+pk_backend_get_cat_for_id (GPtrArray *store_array, const gchar *id, ZifState *state, GError **error)
+{
+	GPtrArray *array = NULL;
+	ZifCategory *cat = NULL;
+	ZifCategory *cat_tmp;
+	guint i;
+
+	/* get all cats */
+	array = zif_store_array_get_categories (store_array, state, error);
+	if (array == NULL)
+		goto out;
+
+	/* find one that matches */
+	for (i=0; i<array->len; i++) {
+		cat_tmp = g_ptr_array_index (array, i);
+		if (g_strcmp0 (zif_category_get_id (cat_tmp), id) == 0) {
+			cat = g_object_ref (cat_tmp);
+			break;
+		}
+	}
+
+	/* nothing found, so set error */
+	if (cat == NULL)
+		g_set_error (error, 1, 0, "no category %s found", id);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return cat;
+}
+
+/**
+ * pk_backend_resolve_groups:
+ */
+static GPtrArray *
+pk_backend_resolve_groups (GPtrArray *store_array, gchar **search, ZifState *state, GError **error)
+{
+	gboolean ret;
+	GError *error_local = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *array_retval = NULL;
+	guint i;
+	ZifCategory *cat;
+	ZifPackage *package;
+	ZifState *state_local;
+	ZifState *state_loop;
+
+	/* set steps */
+	zif_state_set_number_steps (state, g_strv_length (search));
+
+	/* resolve all the groups */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	for (i=0; search[i] != NULL; i++) {
+		state_local = zif_state_get_child (state);
+
+		/* set steps */
+		zif_state_set_number_steps (state_local, 2);
+
+		/* get the category */
+		state_loop = zif_state_get_child (state_local);
+		cat = pk_backend_get_cat_for_id (store_array, search[i]+1, state_loop, &error_local);
+		if (cat == NULL) {
+			g_debug ("group %s not found: %s", search[i], error_local->message);
+			g_clear_error (&error_local);
+
+			/* this part done */
+			ret = zif_state_finished (state_loop, error);
+			if (!ret)
+				goto out;
+			ret = zif_state_done (state_local, error);
+			if (!ret)
+				goto out;
+		} else {
+			ret = zif_state_done (state_local, error);
+			if (!ret)
+				goto out;
+
+			/* fake something here */
+			state_loop = zif_state_get_child (state_local);
+			package = pk_backend_create_meta_package_for_category (store_array, cat, state_loop, &error_local);
+			if (package != NULL) {
+				g_ptr_array_add (array, package);
+			} else {
+				g_warning ("failed to add id %s: %s",
+					   zif_category_get_id (cat),
+					   error_local->message);
+				g_clear_error (&error_local);
+				ret = zif_state_finished (state_loop, error);
+			}
+		}
+
+		/* this part done */
+		ret = zif_state_done (state_local, error);
+		if (!ret)
+			goto out;
+		ret = zif_state_done (state, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* success */
+	array_retval = g_ptr_array_ref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return array_retval;
+}
 
 /**
  * pk_backend_search_thread:
@@ -653,6 +796,8 @@ pk_backend_search_thread (PkBackend *backend)
 	GError *error = NULL;
 	gchar **search;
 	guint recent;
+	guint i;
+
 	filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	role = pk_backend_get_role (backend);
 
@@ -707,7 +852,6 @@ pk_backend_search_thread (PkBackend *backend)
 		} else if (role == PK_ROLE_ENUM_SEARCH_GROUP) {
 			gchar **search_stripped;
 			guint search_entries;
-			guint i;
 
 			/* if the search temp is prefixed with '@' then it is a
 			 * category search, and we have to strip it */
@@ -739,7 +883,12 @@ pk_backend_search_thread (PkBackend *backend)
 		} else if (role == PK_ROLE_ENUM_SEARCH_FILE) {
 			array = zif_store_array_search_file (store_array, search, state_local, &error);
 		} else if (role == PK_ROLE_ENUM_RESOLVE) {
-			array = zif_store_array_resolve (store_array, search, state_local, &error);
+			if (search[0][0] == '@') {
+				/* this is a group */
+				array = pk_backend_resolve_groups (store_array, search, state_local, &error);
+			} else {
+				array = zif_store_array_resolve (store_array, search, state_local, &error);
+			}
 		} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 			array = zif_store_array_what_provides (store_array, search, state_local, &error);
 		}
@@ -838,7 +987,9 @@ out:
 	ret = g_key_file_load_from_file (keyfile, PACKAGE_MEDIA_REPO_FILENAME,
 					 G_KEY_FILE_KEEP_COMMENTS, &error);
 	if (!ret) {
-		g_debug ("failed to open %s", error->message);
+		g_debug ("failed to load %s: %s",
+			 PACKAGE_MEDIA_REPO_FILENAME,
+			 error->message);
 		g_error_free (error);
 		goto out;
 	}
