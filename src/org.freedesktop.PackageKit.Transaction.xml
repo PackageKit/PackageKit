@@ -1164,8 +1164,13 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An enumerated group_type, or <doc:tt>unknown</doc:tt>. The search
-              can't contain spaces. It must contains only one group_type.
+              An enumerated group type, or <doc:tt>unknown</doc:tt>. The search
+              cannot contain spaces.
+            </doc:para>
+            <doc:para>
+              If the values strings are prefixed with <doc:tt>@</doc:tt> then
+              this is treated as a category, for example:
+              <doc:tt>@web-development</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
