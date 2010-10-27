@@ -975,6 +975,15 @@
               The package names are case sensitive, so for instance:
               <doc:tt>Resolve('Packagekit')</doc:tt> would not match <doc:tt>PackageKit</doc:tt>.
             </doc:para>
+            <doc:para>
+              As a special case, if <doc:tt>Resolve()</doc:tt>doc:tt> is called
+              with a name prefixed with <doc:tt>@</doc:tt> then
+              this should be treated as a category, for example:
+              <doc:tt>@web-development</doc:tt>.
+              In this instance, a meta-package should be emitted, for example:
+              <doc:tt>web-development;;;meta</doc:tt> with the correct
+              installed status and summary for the category.
+            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
