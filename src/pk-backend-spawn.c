@@ -545,6 +545,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 		ret = pk_backend_category (priv->backend, sections[1], sections[2], sections[3], sections[4], sections[5]);
 		goto out;
 	} else {
+		ret = FALSE;
 		g_set_error (error, 1, 0, "invalid command '%s'", command);
 	}
 out:
@@ -620,7 +621,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 		pk_backend_message (backend_spawn->priv->backend,
 				    PK_MESSAGE_ENUM_BACKEND_ERROR,
 				    "Failed to parse output: %s", error->message);
-		g_debug ("failed to parse: %s: %s", line, error->message);
+		g_warning ("failed to parse: %s: %s", line, error->message);
 		g_error_free (error);
 	}
 }

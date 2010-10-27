@@ -1143,7 +1143,10 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 
 	/* emit */
 	g_signal_emit (backend, signals[SIGNAL_PACKAGE], 0, item);
-	pk_results_add_package (backend->priv->results, item);
+
+	/* add to results if meaningful */
+	if (info != PK_INFO_ENUM_FINISHED)
+		pk_results_add_package (backend->priv->results, item);
 
 	/* success */
 	ret = TRUE;

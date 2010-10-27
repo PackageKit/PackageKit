@@ -1139,7 +1139,7 @@ pk_transaction_message_cb (PkBackend *backend, PkMessage *item, PkTransaction *t
 	if (!developer_mode &&
 	    (type == PK_MESSAGE_ENUM_BACKEND_ERROR ||
 	     type == PK_MESSAGE_ENUM_DAEMON_ERROR)) {
-		g_warning ("ignoring message: %s", details);
+		g_debug ("ignoring message (turn on DeveloperMode): %s", details);
 		return;
 	}
 
