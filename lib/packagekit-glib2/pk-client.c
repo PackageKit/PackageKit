@@ -41,6 +41,7 @@
 #include <packagekit-glib2/pk-client-helper.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
+#include <packagekit-glib2/pk-debug.h>
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-marshal.h>
 #include <packagekit-glib2/pk-package-id.h>
@@ -1814,18 +1815,31 @@ pk_client_create_helper_socket (PkClientState *state)
 	gchar *socket_id = NULL;
 	GError *error = NULL;
 	gboolean ret;
-	const gchar *argv[2] = { NULL, NULL };
-	const gchar *envp[5] = { NULL, NULL, NULL, NULL, NULL };
+	gchar **argv = NULL;
+	gchar **envp = NULL;
+	guint argvi = 0;
+	guint envpi = 0;
+	const gchar *display;
 
 	/* do we have any supported clients */
 	if (g_file_test ("/usr/bin/debconf-communicate", G_FILE_TEST_EXISTS)) {
-		argv[0] = "/usr/bin/debconf-communicate";
-		envp[0] = "DEBCONF_DB_REPLACE=configdb";
-		envp[1] = "DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}";
-		envp[2] = "DEBIAN_FRONTEND=gnome";
-		envp[3] = "DEBCONF_DEBUG=.";
+		argv = g_new0 (gchar *, 2);
+		argv[argvi++] = g_strdup ("/usr/bin/debconf-communicate");
+		envp = g_new0 (gchar *, 7);
+		envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
+		envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
+		if (pk_debug_is_verbose ())
+			envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
+		display = g_getenv ("DISPLAY");
+		if (display != NULL) {
+			envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
+			envp[envpi++] = g_strdup ("DEBIAN_FRONTEND=gnome");
+		} else {
+			envp[envpi++] = g_strdup ("DEBIAN_FRONTEND=dialog");
+		}
 	} else if (g_file_test (TESTDATADIR "/pk-client-helper-test.py", G_FILE_TEST_EXISTS)) {
-		argv[0] = TESTDATADIR "/pk-client-helper-test.py";
+		argv = g_new0 (gchar *, 2);
+		argv[argvi++] = g_build_filename (TESTDATADIR, "pk-client-helper-test.py", NULL);
 	} else {
 		g_debug ("no supported frontends available");
 		goto out;
@@ -1839,7 +1853,7 @@ pk_client_create_helper_socket (PkClientState *state)
 	socket_filename = g_build_filename (g_get_tmp_dir (), socket_id, NULL);
 
 	/* start the helper process */
-	ret = pk_client_helper_start (state->client_helper, socket_filename, (gchar**)argv, (gchar**)envp, &error);
+	ret = pk_client_helper_start (state->client_helper, socket_filename, argv, envp, &error);
 	if (!ret) {
 		g_warning ("failed to open debconf socket: %s", error->message);
 		g_error_free (error);
@@ -1851,6 +1865,8 @@ pk_client_create_helper_socket (PkClientState *state)
 out:
 	g_free (socket_id);
 	g_free (socket_filename);
+	g_strfreev (argv);
+	g_strfreev (envp);
 	return hint;
 }
 
