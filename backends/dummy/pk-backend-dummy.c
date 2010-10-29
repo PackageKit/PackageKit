@@ -958,11 +958,21 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	_signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, backend);
 }
 
+static GIOChannel *_io_channel = NULL;
+static guint _io_channel_listen_id = 0;
+
 static gboolean
 pk_backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (_progress_percentage == 100) {
+
+		/* cleanup socket stuff */
+		if (_io_channel != NULL)
+			g_io_channel_unref (_io_channel);
+		if (_io_channel_listen_id != 0)
+			g_source_remove (_io_channel_listen_id);
+
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -1019,20 +1029,147 @@ pk_backend_update_system_timeout (gpointer data)
 	return TRUE;
 }
 
+
+/**
+ * pk_backend_socket_has_data_cb:
+ **/
+static gboolean
+pk_backend_socket_has_data_cb (GIOChannel *source, GIOCondition condition, PkBackend *backend)
+{
+	gchar data[1024];
+	GError *error = NULL;
+	gsize len = 0;
+	GIOStatus status;
+	gsize written = 0;
+	gboolean ret = FALSE;
+
+	/* read any response from the client */
+	status = g_io_channel_read_chars (_io_channel, data, 1024, &len, &error);
+	if (status == G_IO_STATUS_EOF) {
+		ret = TRUE;
+		goto out;
+	}
+	if (status != G_IO_STATUS_NORMAL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to read: %s", error->message);
+		pk_backend_finished (backend);
+		g_error_free (error);
+		goto out;
+	}
+	if (len == 0)
+		goto out;
+
+	data[len] = '\0';
+	g_debug ("there is data: '%s'", data);
+
+	if (g_strcmp0 (data, "pong\n") == 0) {
+		/* send a message so we can verify in the self checks */
+		pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, data);
+
+		/* verify we can write into the written channel */
+		status = g_io_channel_write_chars (_io_channel, "invalid\n", -1, &written, &error);
+		if (status != G_IO_STATUS_NORMAL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to write to channel: %s", error->message);
+			pk_backend_finished (backend);
+			g_error_free (error);
+			goto out;
+		}
+		if (written != 8) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+					       "failed to write, only %i bytes", written);
+			pk_backend_finished (backend);
+			goto out;
+		}
+	} else if (g_strcmp0 (data, "you said to me: invalid\n") == 0) {
+		g_debug ("ignoring invalid data (one is good)");
+	} else {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "unexpected data: %s", data);
+		g_source_remove (_signal_timeout);
+		pk_backend_finished (backend);
+		goto out;
+	}
+
+	/* success */
+	ret = TRUE;
+out:
+	return ret;
+}
+
 /**
  * pk_backend_update_system:
  */
 void
 pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
+	gchar *frontend_socket = NULL;
+	GIOStatus status;
+	GError *error = NULL;
+	gsize written = 0;
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
+
+	_io_channel = NULL;
+	_io_channel_listen_id = 0;
+
+	/* make sure we can contact the frontend */
+	frontend_socket = pk_backend_get_frontend_socket (backend);
+	if (frontend_socket == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to get frontend socket");
+		pk_backend_finished (backend);
+		goto out;
+	}
+
+	/* open the socket */
+	_io_channel = g_io_channel_new_file (frontend_socket, "r+", &error);
+	if (_io_channel == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to open io channel: %s", error->message);
+		pk_backend_finished (backend);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* watch for any response */
+	_io_channel_listen_id = g_io_add_watch_full (_io_channel, G_PRIORITY_HIGH_IDLE, G_IO_IN,
+						     (GIOFunc) pk_backend_socket_has_data_cb, backend, NULL);
+
+	/* write "ping" */
+	status = g_io_channel_set_encoding (_io_channel, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to set encoding: %s", error->message);
+		pk_backend_finished (backend);
+		g_error_free (error);
+		goto out;
+	}
+	g_io_channel_set_buffered (_io_channel, FALSE);
+
+	status = g_io_channel_write_chars (_io_channel, "ping\n", -1, &written, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to write to channel: %s", error->message);
+		pk_backend_finished (backend);
+		g_error_free (error);
+		goto out;
+	}
+	if (written != 5) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to write, only %i bytes", written);
+		pk_backend_finished (backend);
+		goto out;
+	}
 
 	/* FIXME: support only_trusted */
 
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	_signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, backend);
+out:
+	g_free (frontend_socket);
 }
 
 /**

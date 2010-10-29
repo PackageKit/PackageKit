@@ -639,6 +639,28 @@ pk_test_client_notify_idle_cb (PkClient *client, GParamSpec *pspec, gpointer use
 }
 
 static void
+pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	GPtrArray *messages;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+
+	/* make sure we handled the ping/pong frontend-socket thing, which is 5 + 1 */
+	messages = pk_results_get_message_array (results);
+	g_assert_cmpint (messages->len, ==, 6);
+	g_ptr_array_unref (messages);
+
+	g_object_unref (results);
+	_g_test_loop_quit ();
+}
+
+static void
 pk_test_client_func (void)
 {
 	PkClient *client;
@@ -784,6 +806,12 @@ pk_test_client_func (void)
 
 	/* okay now */
 	g_cancellable_reset (cancellable);
+
+	/* do the update-system role to trigger the fake pipe stuff */
+	pk_client_update_system_async (client, TRUE, NULL,
+				       (PkProgressCallback) pk_test_client_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb, NULL);
+	_g_test_loop_run_with_timeout (15000);
 
 	/* do downloads */
 	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
