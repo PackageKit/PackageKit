@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Dummy\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_dummy.la
 libpk_backend_dummy_la_SOURCES = pk-backend-dummy.c

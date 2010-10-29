@@ -44,6 +44,7 @@
 #include "pk-client-sync.h"
 #include "pk-progress-bar.h"
 #include "pk-service-pack.h"
+#include "pk-debug.h"
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
@@ -1909,6 +1910,9 @@ main (int argc, char **argv)
 	g_type_init ();
 
 	g_test_init (&argc, &argv, NULL);
+
+	pk_debug_set_verbose (TRUE);
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);

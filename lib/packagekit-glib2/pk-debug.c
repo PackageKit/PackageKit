@@ -162,6 +162,16 @@ pk_debug_add_log_domain (const gchar *log_domain)
 }
 
 /**
+ * pk_debug_set_verbose:
+ */
+void
+pk_debug_set_verbose (gboolean verbose)
+{
+	_verbose = verbose;
+	_console = (isatty (fileno (stdout)) == 1);
+}
+
+/**
  * pk_debug_post_parse_hook:
  */
 static gboolean
