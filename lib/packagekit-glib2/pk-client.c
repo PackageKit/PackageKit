@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 #include <packagekit-glib2/pk-client.h>
+#include <packagekit-glib2/pk-client-helper.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -118,6 +119,7 @@ typedef struct {
 	PkSigTypeEnum			 type;
 	guint				 refcount;
 	gboolean			 signals_connected;
+	PkClientHelper			*client_helper;
 } PkClientState;
 
 static void pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClientState *state);
@@ -602,6 +604,7 @@ static void
 pk_client_state_finish (PkClientState *state, const GError *error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	/* force finished (if not already set) so clients can update the UI's */
 	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
@@ -625,6 +628,16 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		g_simple_async_result_set_op_res_gpointer (state->res, g_object_ref (state->results), g_object_unref);
 	} else {
 		g_simple_async_result_set_from_error (state->res, error);
+	}
+
+	/* remove any socket file */
+	if (state->client_helper != NULL) {
+		ret = pk_client_helper_stop (state->client_helper, &error_local);
+		if (!ret) {
+			g_warning ("failed to stop the client helper: %s", error_local->message);
+			g_error_free (error_local);
+		}
+		g_object_unref (state->client_helper);
 	}
 
 	/* remove from list */
@@ -1791,6 +1804,57 @@ pk_client_bool_to_string (gboolean value)
 }
 
 /**
+ * pk_client_create_helper_socket:
+ **/
+static gchar *
+pk_client_create_helper_socket (PkClientState *state)
+{
+	gchar *hint = NULL;
+	gchar *socket_filename = NULL;
+	gchar *socket_id = NULL;
+	GError *error = NULL;
+	gboolean ret;
+	const gchar *argv[2] = { NULL, NULL };
+	const gchar *envp[5] = { NULL, NULL, NULL, NULL, NULL };
+
+	/* do we have any supported clients */
+	if (g_file_test ("/usr/bin/debconf-communicate", G_FILE_TEST_EXISTS)) {
+		argv[0] = "/usr/bin/debconf-communicate";
+		envp[0] = "DEBCONF_DB_REPLACE=configdb";
+		envp[1] = "DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}";
+		envp[2] = "DEBIAN_FRONTEND=gnome";
+		envp[3] = "DEBCONF_DEBUG=.";
+	} else if (g_file_test (TESTDATADIR "/pk-client-helper-test.py", G_FILE_TEST_EXISTS)) {
+		argv[0] = TESTDATADIR "/pk-client-helper-test.py";
+	} else {
+		g_debug ("no supported frontends available");
+		goto out;
+	}
+
+	/* create object */
+	state->client_helper = pk_client_helper_new ();
+
+	/* create socket to read from /tmp */
+	socket_id = g_strdup_printf ("gpk-%s.socket", &state->tid[1]);
+	socket_filename = g_build_filename (g_get_tmp_dir (), socket_id, NULL);
+
+	/* start the helper process */
+	ret = pk_client_helper_start (state->client_helper, socket_filename, (gchar**)argv, (gchar**)envp, &error);
+	if (!ret) {
+		g_warning ("failed to open debconf socket: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* success */
+	hint = g_strdup_printf ("frontend-socket=%s", socket_filename);
+out:
+	g_free (socket_id);
+	g_free (socket_filename);
+	return hint;
+}
+
+/**
  * pk_client_get_tid_cb:
  **/
 static void
@@ -1844,6 +1908,17 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	/* interactive */
 	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_string (state->client->priv->interactive));
 	g_ptr_array_add (array, hint);
+
+	/* create socket for roles that need interaction */
+	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
+	    state->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    state->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		hint = pk_client_create_helper_socket (state);
+		if (hint != NULL)
+			g_ptr_array_add (array, hint);
+	}
 
 	/* set hints */
 	hints = pk_ptr_array_to_strv (array);
