@@ -40,6 +40,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-catalog.h						\
 	pk-category.h						\
 	pk-client.h						\
+	pk-client-helper.h					\
 	pk-client-sync.h					\
 	pk-common.h						\
 	pk-control.h						\
@@ -82,6 +83,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-category.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-client-helper.c					\
+	pk-client-helper.h					\
 	pk-client-sync.c					\
 	pk-client-sync.h					\
 	pk-common.c						\

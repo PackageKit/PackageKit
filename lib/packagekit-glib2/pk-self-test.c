@@ -22,9 +22,11 @@
 #include "config.h"
 
 #include <glib-object.h>
+#include <glib/gstdio.h>
 
 #include "pk-catalog.h"
 #include "pk-client.h"
+#include "pk-client-helper.h"
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-console-shared.h"
@@ -290,6 +292,116 @@ pk_test_catalog_func (void)
 	g_debug ("resolvd, searched, etc. in %f", g_test_timer_elapsed ());
 
 	g_object_unref (catalog);
+}
+
+/**
+ * pk_test_client_helper_output_cb:
+ **/
+static gboolean
+pk_test_client_helper_output_cb (GIOChannel *source, GIOCondition condition, gpointer user_data)
+{
+	gchar data[6];
+	GError *error = NULL;
+	gsize len = 0;
+	GIOStatus status;
+	gboolean ret = TRUE;
+
+	/* read data */
+	status = g_io_channel_read_chars (source, data, 6, &len, &error);
+	if (status == G_IO_STATUS_EOF)
+		goto out;
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to read: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	if (len == 0)
+		goto out;
+	data[len] = '\0';
+
+	/* good for us */
+	if (g_strcmp0 (data, "pong\n") == 0) {
+		_g_test_loop_quit ();
+		goto out;
+	}
+
+	/* bad */
+	g_warning ("child returned unexpected data: %s", data);
+out:
+	return ret;
+}
+
+static void
+pk_test_client_helper_func (void)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *filename;
+	PkClientHelper *client_helper;
+	GIOStatus status;
+	gsize written;
+	const gchar *argv[] = { TESTDATADIR "/pk-client-helper-test.py", NULL };
+	const gchar *envp[] = { "DAVE=1", NULL };
+	GIOChannel *io_channel;
+
+	client_helper = pk_client_helper_new ();
+	g_assert (client_helper != NULL);
+
+	/* unref without using */
+	g_object_unref (client_helper);
+
+	/* new object */
+	client_helper = pk_client_helper_new ();
+	g_assert (client_helper != NULL);
+
+	/* create a socket filename */
+	filename = g_build_filename (g_get_tmp_dir (), "pk-self-test.socket", NULL);
+
+	/* ensure previous sockets are deleted */
+	g_unlink (filename);
+
+	/* start a demo program */
+	ret = pk_client_helper_start (client_helper, filename, (gchar**) argv, (gchar**) envp, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
+
+	/* open the socket */
+	io_channel = g_io_channel_new_file (filename, "r+", &error);
+	g_assert_no_error (error);
+	g_assert (io_channel != NULL);
+
+	/* get reply */
+	g_io_add_watch_full (io_channel, G_PRIORITY_HIGH_IDLE,
+			     G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+			     (GIOFunc) pk_test_client_helper_output_cb,
+			     NULL, NULL);
+
+	/* set no buffering */
+	status = g_io_channel_set_encoding (io_channel, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (status == G_IO_STATUS_NORMAL);
+	g_io_channel_set_buffered (io_channel, FALSE);
+
+	/* expect a response back */
+	status = g_io_channel_write_chars (io_channel, "ping\n", -1, &written, &error);
+	g_assert_no_error (error);
+	g_assert (status == G_IO_STATUS_NORMAL);
+	g_assert_cmpint (written, ==, 5);
+
+	/* run for a few seconds */
+	_g_test_loop_run_with_timeout (3000);
+
+	/* stop the demo program */
+	ret = pk_client_helper_stop (client_helper, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* delete socket */
+	g_unlink (filename);
+
+	g_free (filename);
+	g_object_unref (client_helper);
 }
 
 static void
@@ -1926,6 +2038,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
 	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
+	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
 	g_test_add_func ("/packagekit-glib2/client", pk_test_client_func);
 	g_test_add_func ("/packagekit-glib2/catalog", pk_test_catalog_func);
 	g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);
