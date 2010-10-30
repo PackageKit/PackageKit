@@ -10,6 +10,7 @@ endif
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
+	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/lib					\
@@ -187,6 +188,11 @@ libpackagekitprivate_a_SOURCES =				\
 libpackagekitprivate_a_CFLAGS =					\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)
+
+noinst_PROGRAMS = pk-socket-example
+pk_socket_example_SOURCES = pk-socket-example.c
+pk_socket_example_LDADD = $(GIO_LIBS) $(GLIB_LIBS)
+pk_socket_example_CFLAGS = $(WARNINGFLAGS_C)
 
 if EGG_BUILD_TESTS
 check_PROGRAMS =						\

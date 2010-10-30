@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
+#include <gio/gio.h>
+#include <gio/gunixsocketaddress.h>
 
 #include <pk-backend.h>
 
@@ -47,6 +49,8 @@ static gboolean _use_gpg = FALSE;
 static gboolean _use_trusted = TRUE;
 static gboolean _use_distro_upgrade = FALSE;
 static PkBitfield _filters = 0;
+static GSocket *_socket = NULL;
+static guint _socket_listen_id = 0;
 
 /**
  * pk_backend_initialize:
@@ -958,9 +962,6 @@ pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **p
 	_signal_timeout = g_timeout_add (200, pk_backend_update_packages_download_timeout, backend);
 }
 
-static GIOChannel *_io_channel = NULL;
-static guint _io_channel_listen_id = 0;
-
 static gboolean
 pk_backend_update_system_timeout (gpointer data)
 {
@@ -968,10 +969,10 @@ pk_backend_update_system_timeout (gpointer data)
 	if (_progress_percentage == 100) {
 
 		/* cleanup socket stuff */
-		if (_io_channel != NULL)
-			g_io_channel_unref (_io_channel);
-		if (_io_channel_listen_id != 0)
-			g_source_remove (_io_channel_listen_id);
+		if (_socket != NULL)
+			g_object_unref (_socket);
+		if (_socket_listen_id != 0)
+			g_source_remove (_socket_listen_id);
 
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1034,65 +1035,66 @@ pk_backend_update_system_timeout (gpointer data)
  * pk_backend_socket_has_data_cb:
  **/
 static gboolean
-pk_backend_socket_has_data_cb (GIOChannel *source, GIOCondition condition, PkBackend *backend)
+pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBackend *backend)
 {
-	gchar data[1024];
 	GError *error = NULL;
-	gsize len = 0;
-	GIOStatus status;
-	gsize written = 0;
-	gboolean ret = FALSE;
+	gsize len;
+	gchar buffer[1024];
+	gboolean ret = TRUE;
+	gint wrote = 0;
 
-	/* read any response from the client */
-	status = g_io_channel_read_chars (_io_channel, data, 1024, &len, &error);
-	if (status == G_IO_STATUS_EOF) {
-		ret = TRUE;
-		goto out;
-	}
-	if (status != G_IO_STATUS_NORMAL) {
+	/* the helper process exited */
+	if ((condition & G_IO_HUP) > 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to read: %s", error->message);
+				       "socket was disconnected: %s", error->message);
 		pk_backend_finished (backend);
-		g_error_free (error);
+		ret = FALSE;
 		goto out;
 	}
-	if (len == 0)
-		goto out;
 
-	data[len] = '\0';
-	g_debug ("there is data: '%s'", data);
-
-	if (g_strcmp0 (data, "pong\n") == 0) {
-		/* send a message so we can verify in the self checks */
-		pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, data);
-
-		/* verify we can write into the written channel */
-		status = g_io_channel_write_chars (_io_channel, "invalid\n", -1, &written, &error);
-		if (status != G_IO_STATUS_NORMAL) {
+	/* there is data */
+	if ((condition & G_IO_IN) > 0) {
+		len = g_socket_receive (socket, buffer, 1024, NULL, &error);
+		if (error != NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to write to channel: %s", error->message);
+					       "failed to read: %s", error->message);
 			pk_backend_finished (backend);
 			g_error_free (error);
+			ret = FALSE;
 			goto out;
 		}
-		if (written != 8) {
+		if (len == 0)
+			goto out;
+		buffer[len] = '\0';
+		if (g_strcmp0 (buffer, "pong\n") == 0) {
+			/* send a message so we can verify in the self checks */
+			pk_backend_message (backend, PK_MESSAGE_ENUM_PARAMETER_INVALID, buffer);
+
+			/* verify we can write into the socket */
+			wrote = g_socket_send (_socket, "invalid\n", 8, NULL, &error);
+			if (error != NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+						       "failed to write to socket: %s", error->message);
+				pk_backend_finished (backend);
+				g_error_free (error);
+				goto out;
+			}
+			if (wrote != 8) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+						       "failed to write, only %i bytes", wrote);
+				pk_backend_finished (backend);
+				goto out;
+			}
+		} else if (g_strcmp0 (buffer, "you said to me: invalid\n") == 0) {
+			g_debug ("ignoring invalid data (one is good)");
+		} else {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-					       "failed to write, only %i bytes", written);
+					       "unexpected data: %s", buffer);
+			g_source_remove (_signal_timeout);
 			pk_backend_finished (backend);
 			goto out;
 		}
-	} else if (g_strcmp0 (data, "you said to me: invalid\n") == 0) {
-		g_debug ("ignoring invalid data (one is good)");
-	} else {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "unexpected data: %s", data);
-		g_source_remove (_signal_timeout);
-		pk_backend_finished (backend);
-		goto out;
 	}
-
-	/* success */
-	ret = TRUE;
 out:
 	return ret;
 }
@@ -1104,16 +1106,18 @@ void
 pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	gchar *frontend_socket = NULL;
-	GIOStatus status;
 	GError *error = NULL;
-	gsize written = 0;
+	gboolean ret;
+	GSocketAddress *address = NULL;
+	gsize wrote;
+	GSource *source;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
 
-	_io_channel = NULL;
-	_io_channel_listen_id = 0;
+	_socket = NULL;
+	_socket_listen_id = 0;
 
 	/* make sure we can contact the frontend */
 	frontend_socket = pk_backend_get_frontend_socket (backend);
@@ -1124,51 +1128,49 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 		goto out;
 	}
 
-	/* open the socket */
-	_io_channel = g_io_channel_new_file (frontend_socket, "r+", &error);
-	if (_io_channel == NULL) {
+	/* create socket */
+	_socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
+	if (_socket == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to open io channel: %s", error->message);
+				       "failed to create socket: %s", error->message);
+		pk_backend_finished (backend);
+		g_error_free (error);
+		goto out;
+	}
+	g_socket_set_blocking (_socket, FALSE);
+	g_socket_set_keepalive (_socket, TRUE);
+
+	/* connect to it */
+	address = g_unix_socket_address_new_with_type (frontend_socket, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	ret = g_socket_connect (_socket, address, NULL, &error);
+	if (!ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "failed to open socket: %s", error->message);
 		pk_backend_finished (backend);
 		g_error_free (error);
 		goto out;
 	}
 
-	/* watch for any response */
-	_io_channel_listen_id = g_io_add_watch_full (_io_channel, G_PRIORITY_HIGH_IDLE, G_IO_IN,
-						     (GIOFunc) pk_backend_socket_has_data_cb, backend, NULL);
+	/* socket has data */
+	source = g_socket_create_source (_socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
+	g_source_set_callback (source, (GSourceFunc) pk_backend_socket_has_data_cb, backend, NULL);
+	_socket_listen_id = g_source_attach (source, NULL);
 
-	/* write "ping" */
-	status = g_io_channel_set_encoding (_io_channel, NULL, &error);
-	if (status != G_IO_STATUS_NORMAL) {
+	/* send some data */
+	wrote = g_socket_send (_socket, "ping\n", 5, NULL, &error);
+	if (wrote != 5) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to set encoding: %s", error->message);
-		pk_backend_finished (backend);
-		g_error_free (error);
-		goto out;
-	}
-	g_io_channel_set_buffered (_io_channel, FALSE);
-
-	status = g_io_channel_write_chars (_io_channel, "ping\n", -1, &written, &error);
-	if (status != G_IO_STATUS_NORMAL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to write to channel: %s", error->message);
-		pk_backend_finished (backend);
-		g_error_free (error);
-		goto out;
-	}
-	if (written != 5) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "failed to write, only %i bytes", written);
+				       "failed to write, only %i bytes", wrote);
 		pk_backend_finished (backend);
 		goto out;
 	}
 
 	/* FIXME: support only_trusted */
-
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	_signal_timeout = g_timeout_add (100, pk_backend_update_system_timeout, backend);
 out:
+	if (address != NULL)
+		g_object_unref (address);
 	g_free (frontend_socket);
 }
 

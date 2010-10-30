@@ -23,6 +23,7 @@
 
 #include <glib-object.h>
 #include <glib/gstdio.h>
+#include <gio/gunixsocketaddress.h>
 
 #include "pk-catalog.h"
 #include "pk-client.h"
@@ -298,35 +299,34 @@ pk_test_catalog_func (void)
  * pk_test_client_helper_output_cb:
  **/
 static gboolean
-pk_test_client_helper_output_cb (GIOChannel *source, GIOCondition condition, gpointer user_data)
+pk_test_client_helper_output_cb (GSocket *socket, GIOCondition condition, gpointer user_data)
 {
-	gchar data[6];
 	GError *error = NULL;
-	gsize len = 0;
-	GIOStatus status;
+	gsize len;
+	gchar buffer[6];
 	gboolean ret = TRUE;
 
-	/* read data */
-	status = g_io_channel_read_chars (source, data, 6, &len, &error);
-	if (status == G_IO_STATUS_EOF)
-		goto out;
-	if (status != G_IO_STATUS_NORMAL) {
-		g_warning ("failed to read: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-	if (len == 0)
-		goto out;
-	data[len] = '\0';
-
-	/* good for us */
-	if (g_strcmp0 (data, "pong\n") == 0) {
-		_g_test_loop_quit ();
+	/* the helper process exited */
+	if ((condition & G_IO_HUP) > 0) {
+		g_warning ("socket was disconnected");
+		ret = FALSE;
 		goto out;
 	}
 
-	/* bad */
-	g_warning ("child returned unexpected data: %s", data);
+	/* there is data */
+	if ((condition & G_IO_IN) > 0) {
+		len = g_socket_receive (socket, buffer, 6, NULL, &error);
+		g_assert_no_error (error);
+		g_assert_cmpint (len, >, 0);
+
+		/* good for us */
+		if (g_strcmp0 (buffer, "pong\n") == 0) {
+			_g_test_loop_quit ();
+			goto out;
+		}
+		/* bad */
+		g_warning ("child returned unexpected data: %s", buffer);
+	}
 out:
 	return ret;
 }
@@ -338,11 +338,12 @@ pk_test_client_helper_func (void)
 	GError *error = NULL;
 	gchar *filename;
 	PkClientHelper *client_helper;
-	GIOStatus status;
-	gsize written;
 	const gchar *argv[] = { TESTDATADIR "/pk-client-helper-test.py", NULL };
 	const gchar *envp[] = { "DAVE=1", NULL };
-	GIOChannel *io_channel;
+	GSocket *socket = NULL;
+	GSocketAddress *address = NULL;
+	gsize wrote;
+	GSource *source;
 
 	client_helper = pk_client_helper_new ();
 	g_assert (client_helper != NULL);
@@ -366,31 +367,31 @@ pk_test_client_helper_func (void)
 	g_assert (ret);
 	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
 
-	/* open the socket */
-	io_channel = g_io_channel_new_file (filename, "r+", &error);
+	/* create socket */
+	socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
 	g_assert_no_error (error);
-	g_assert (io_channel != NULL);
+	g_assert (socket != NULL);
+	g_socket_set_blocking (socket, FALSE);
+	g_socket_set_keepalive (socket, TRUE);
 
-	/* get reply */
-	g_io_add_watch_full (io_channel, G_PRIORITY_HIGH_IDLE,
-			     G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
-			     (GIOFunc) pk_test_client_helper_output_cb,
-			     NULL, NULL);
-
-	/* set no buffering */
-	status = g_io_channel_set_encoding (io_channel, NULL, &error);
+	/* connect to it */
+	address = g_unix_socket_address_new_with_type (filename, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	ret = g_socket_connect (socket, address, NULL, &error);
 	g_assert_no_error (error);
-	g_assert (status == G_IO_STATUS_NORMAL);
-	g_io_channel_set_buffered (io_channel, FALSE);
+	g_assert (ret);
 
-	/* expect a response back */
-	status = g_io_channel_write_chars (io_channel, "ping\n", -1, &written, &error);
+	/* socket has data */
+	source = g_socket_create_source (socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
+	g_source_set_callback (source, (GSourceFunc) pk_test_client_helper_output_cb, NULL, NULL);
+	g_source_attach (source, NULL);
+
+	/* send some data */
+	wrote = g_socket_send (socket, "ping\n", 5, NULL, &error);
 	g_assert_no_error (error);
-	g_assert (status == G_IO_STATUS_NORMAL);
-	g_assert_cmpint (written, ==, 5);
+	g_assert_cmpint (wrote, ==, 5);
 
 	/* run for a few seconds */
-	_g_test_loop_run_with_timeout (3000);
+	_g_test_loop_run_with_timeout (1000);
 
 	/* stop the demo program */
 	ret = pk_client_helper_stop (client_helper, &error);
@@ -401,6 +402,8 @@ pk_test_client_helper_func (void)
 	g_unlink (filename);
 
 	g_free (filename);
+	g_object_unref (socket);
+	g_object_unref (address);
 	g_object_unref (client_helper);
 }
 
