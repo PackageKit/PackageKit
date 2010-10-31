@@ -274,6 +274,14 @@ gboolean	 pk_task_user_accepted			(PkTask			*task,
 gboolean	 pk_task_user_declined			(PkTask			*task,
 							 guint			 request);
 
+/* getters and setters */
+void		 pk_task_set_simulate			(PkTask			*task,
+							 gboolean		 simulate);
+gboolean	 pk_task_get_simulate			(PkTask			*task);
+void		 pk_task_set_interactive		(PkTask			*task,
+							 gboolean		 interactive);
+gboolean	 pk_task_get_interactive		(PkTask			*task);
+
 G_END_DECLS
 
 #endif /* __PK_TASK_H */

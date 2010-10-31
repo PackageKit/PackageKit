@@ -411,6 +411,21 @@ void		 pk_client_get_progress_async 		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+/* getters and setters */
+void		 pk_client_set_locale			(PkClient		*client,
+							 const gchar		*locale);
+const gchar	*pk_client_get_locale			(PkClient		*client);
+void		 pk_client_set_background		(PkClient		*client,
+							 gboolean		 background);
+gboolean	 pk_client_get_background		(PkClient		*client);
+void		 pk_client_set_interactive		(PkClient		*client,
+							 gboolean		 interactive);
+gboolean	 pk_client_get_interactive		(PkClient		*client);
+gboolean	 pk_client_get_idle			(PkClient		*client);
+void		 pk_client_set_cache_age		(PkClient		*client,
+							 guint			 cache_age);
+guint		 pk_client_get_cache_age		(PkClient		*client);
+
 G_END_DECLS
 
 #endif /* __PK_CLIENT_H */

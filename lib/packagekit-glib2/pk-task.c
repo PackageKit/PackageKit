@@ -2210,6 +2210,76 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 }
 
 /**
+ * pk_task_set_simulate:
+ * @task: a valid #PkTask instance
+ * @simulate: the simulate mode
+ *
+ * If the simulate step should be run without the actual transaction.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_task_set_simulate (PkTask *task, gboolean simulate)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->simulate = simulate;
+	g_object_notify (G_OBJECT (task), "simulate");
+}
+
+/**
+ * pk_task_get_simulate:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we are simulating.
+ *
+ * Return value: %TRUE if we are simulating
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_task_get_simulate (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->simulate;
+}
+
+
+/**
+ * pk_task_set_interactive:
+ * @task: a valid #PkTask instance
+ * @interactive: if we are interactive
+ *
+ * Sets the interactive mode, i.e. if the user is allowed to ask
+ * questions.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_task_set_interactive (PkTask *task, gboolean interactive)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->interactive = interactive;
+	g_object_notify (G_OBJECT (task), "interactive");
+}
+
+/**
+ * pk_task_get_interactive:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if the transaction is interactive.
+ *
+ * Return value: %TRUE for an interactive transaction.
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_task_get_interactive (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->interactive;
+}
+
+/**
  * pk_task_get_property:
  **/
 static void

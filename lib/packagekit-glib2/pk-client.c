@@ -4503,6 +4503,163 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 }
 
 /**
+ * pk_client_set_locale:
+ * @client: a valid #PkClient instance
+ * @locale: the locale to set, e.g. "en_GB.UTF-8"
+ *
+ * Sets the locale to be used for the client. This may affect returned
+ * results.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_client_set_locale (PkClient *client, const gchar *locale)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	client->priv->locale = g_strdup (locale);
+	g_object_notify (G_OBJECT (client), "locale");
+}
+
+/**
+ * pk_client_get_locale:
+ * @client: a valid #PkClient instance
+ *
+ * Gets the locale used for this transaction.
+ *
+ * Return value: The locale.
+ *
+ * Since: 0.6.10
+ **/
+const gchar *
+pk_client_get_locale (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	return client->priv->locale;
+}
+
+/**
+ * pk_client_set_background:
+ * @client: a valid #PkClient instance
+ * @background: if the transaction is a background transaction
+ *
+ * Sets the background value for the client. A background transaction
+ * is usually scheduled at a lower priority and is usually given less
+ * network and disk performance.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_client_set_background (PkClient *client, gboolean background)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	client->priv->background = background;
+	g_object_notify (G_OBJECT (client), "background");
+}
+
+/**
+ * pk_client_get_background:
+ * @client: a valid #PkClient instance
+ *
+ * Gets the background value.
+ *
+ * Return value: The background status.
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_client_get_background (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	return client->priv->background;
+}
+
+/**
+ * pk_client_set_interactive:
+ * @client: a valid #PkClient instance
+ * @interactive: the value to set
+ *
+ * Sets the interactive value for the client. Interactive transactions
+ * are usally allowed to ask the user questions.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_client_set_interactive (PkClient *client, gboolean interactive)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	client->priv->interactive = interactive;
+	g_object_notify (G_OBJECT (client), "interactive");
+}
+
+/**
+ * pk_client_get_interactive:
+ * @client: a valid #PkClient instance
+ *
+ * Gets the client interactive value.
+ *
+ * Return value: if the transaction is due to run interactivly.
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_client_get_interactive (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	return client->priv->interactive;
+}
+
+/**
+ * pk_client_get_idle:
+ * @client: a valid #PkClient instance
+ *
+ * Gets if the transaction client idle value.
+ *
+ * Return value: if this client is idle.
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_client_get_idle (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	return client->priv->idle;
+}
+
+/**
+ * pk_client_set_cache_age:
+ * @client: a valid #PkClient instance
+ * @cache_age: the cache age to set
+ *
+ * Sets the maximum cache age value for the client.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_client_set_cache_age (PkClient *client, guint cache_age)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	client->priv->cache_age = cache_age;
+	g_object_notify (G_OBJECT (client), "cache-age");
+}
+
+/**
+ * pk_client_get_cache_age:
+ * @client: a valid #PkClient instance
+ *
+ * Gets the maximum cache age value.
+ *
+ * Return value: The cache age in seconds
+ *
+ * Since: 0.6.10
+ **/
+guint
+pk_client_get_cache_age (PkClient *client)
+{
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	return client->priv->cache_age;
+}
+
+/**
  * pk_client_class_init:
  **/
 static void
