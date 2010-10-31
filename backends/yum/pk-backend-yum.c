@@ -184,6 +184,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	const gchar *root;
 	guint i;
 	guint pid;
+	guint cache_age;
 	gchar *http_proxy = NULL;
 
 	/* quit the spawned backend rather than waiting for it to time out */
@@ -231,12 +232,17 @@ pk_backend_transaction_start (PkBackend *backend)
 	/* get network state */
 	ret = pk_backend_is_online (backend);
 	if (!ret) {
-		zif_config_set_local (priv->config, "network", "false", NULL);
+		zif_config_set_boolean (priv->config, "network", FALSE, NULL);
 		goto out;
 	}
 
 	/* tell ZifConfig it's okay to contact the network */
-	zif_config_set_local (priv->config, "network", "true", NULL);
+	zif_config_set_boolean (priv->config, "network", TRUE, NULL);
+
+	/* set cache age */
+	cache_age = pk_backend_get_cache_age (backend);
+	if (cache_age > 0)
+		zif_config_set_uint (priv->config, "max-age", cache_age, NULL);
 
 	/* set the proxy */
 	http_proxy = pk_backend_get_proxy_http (backend);

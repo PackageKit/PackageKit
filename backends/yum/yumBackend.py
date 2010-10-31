@@ -3004,21 +3004,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.metadata_expire = -1  # never refresh
             self.yumbase.conf.cache = 1
 
-        # we don't care about freshest data
-        elif lazy_cache:
-            for repo in self.yumbase.repos.listEnabled():
-                # is physical media
-                if repo.mediaid:
-                    continue
-                repo.metadata_expire = 60 * 60 * 24  # 24 hours
-
-        # default
-        else:
-            for repo in self.yumbase.repos.listEnabled():
-                # is physical media
-                if repo.mediaid:
-                    continue
-                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
+        # choose a good default if the client didn't specify a timeout
+        if self.cache_age == 0:
+            self.cache_age = 60 * 60 * 24  # 24 hours
+        for repo in self.yumbase.repos.listEnabled():
+            # is physical media
+            if repo.mediaid:
+                continue
+            repo.metadata_expire = self.cache_age
 
         # disable repos that are not contactable
         for repo in self.yumbase.repos.listEnabled():

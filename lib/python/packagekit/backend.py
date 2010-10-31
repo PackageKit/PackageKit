@@ -90,7 +90,7 @@ class PackageKitBaseBackend:
 
         # try to get CACHE_AGE state
         try:
-            self.cache_age = int(os.environ['CACHE_AGE']):
+            self.cache_age = int(os.environ['CACHE_AGE'])
         except KeyError, e:
             pass
 
