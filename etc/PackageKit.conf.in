@@ -152,11 +152,12 @@ CheckTestingRepos=true
 
 # Use update cache when possible to avoid using the backend
 #
-# NOTE: Don't disable this unless you're trying to find bugs in packagekitd
-# and you want your backend to service every request.
+# NOTE: Enabling this reduces calls to the backend, although using the
+# SetHints(cache-age) parameter will return unpredicable results for
+# transactions.
 #
-# default=true
-UseUpdateCache=true
+# default=false
+UseUpdateCache=false
 
 # Use strict developer checking in the daemon
 #
