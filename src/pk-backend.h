@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -218,6 +218,8 @@ gboolean	 pk_backend_set_locale			(PkBackend	*backend,
 							 const gchar	*code);
 gboolean	 pk_backend_set_frontend_socket		(PkBackend	*backend,
 							 const gchar	*frontend_socket);
+void		 pk_backend_set_cache_age		(PkBackend	*backend,
+							 guint		 cache_age);
 
 /* get the state */
 gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
@@ -233,6 +235,7 @@ gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 const gchar	*pk_backend_get_root			(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);
 gchar		*pk_backend_get_frontend_socket		(PkBackend	*backend);
+guint		 pk_backend_get_cache_age		(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);

@@ -137,6 +137,9 @@
             method can be sent, although some backends may only use the values
             that were set before the transaction was started.
           </doc:para>
+          <doc:para>
+            Each parameter value is optional.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="as" name="hints" direction="in">
@@ -144,7 +147,7 @@
           <doc:summary>
             <doc:para>
               The values as an array of strings, for example
-              <doc:tt>['locale=en_GB.utf8','idle=true','interactive=false']</doc:tt>.
+              <doc:tt>['locale=en_GB.utf8','idle=true','interactive=false','cache-age=3600']</doc:tt>.
             </doc:para>
             <doc:para>
               The following parameter values are understood:
@@ -172,6 +175,20 @@
                   If the method can ask interactive questions whilst running,
                   valid values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
                   and other values will result in an error.
+                </doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>cache-age</doc:term>
+                <doc:definition>
+                  This allows the frontend to set how fresh it needs the
+                  metadata used in the transaction.
+                  This allows fine control of the age of the returned results,
+                  but means the frontend probably has to query the updates
+                  check value and pass it this value for <doc:tt>GetUpdates</doc:tt>,
+                  and choose something sane otherwise.
+                  Most interactive clients will set this to <doc:tt>intmax</doc:tt>doc:tt>
+                  which means "never download new metadata, unless required to return results".
+                  Most transactions will not have this value set.
                 </doc:definition>
               </doc:item>
             </doc:list>

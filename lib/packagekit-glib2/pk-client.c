@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -67,6 +67,7 @@ struct _PkClientPrivate
 	gboolean		 background;
 	gboolean		 interactive;
 	gboolean		 idle;
+	guint			 cache_age;
 };
 
 enum {
@@ -75,6 +76,7 @@ enum {
 	PROP_BACKGROUND,
 	PROP_INTERACTIVE,
 	PROP_IDLE,
+	PROP_CACHE_AGE,
 	PROP_LAST
 };
 
@@ -164,6 +166,9 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_IDLE:
 		g_value_set_boolean (value, priv->idle);
 		break;
+	case PROP_CACHE_AGE:
+		g_value_set_uint (value, priv->cache_age);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -189,6 +194,9 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 		break;
 	case PROP_INTERACTIVE:
 		priv->interactive = g_value_get_boolean (value);
+		break;
+	case PROP_CACHE_AGE:
+		priv->cache_age = g_value_get_uint (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1924,6 +1932,12 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 	/* interactive */
 	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_string (state->client->priv->interactive));
 	g_ptr_array_add (array, hint);
+
+	/* cache-age */
+	if (state->client->priv->cache_age > 0) {
+		hint = g_strdup_printf ("cache-age=%i", state->client->priv->cache_age);
+		g_ptr_array_add (array, hint);
+	}
 
 	/* create socket for roles that need interaction */
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
@@ -4541,6 +4555,16 @@ pk_client_class_init (PkClientClass *klass)
 	g_object_class_install_property (object_class, PROP_IDLE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
+
+	/**
+	 * PkClient:cache-age:
+	 *
+	 * Since: 0.6.10
+	 */
+	pspec = g_param_spec_uint ("cache-age", NULL, NULL,
+				   0, G_MAXUINT, 0,
+				   G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_CACHE_AGE, pspec);
 }
 
 /**
@@ -4555,6 +4579,7 @@ pk_client_init (PkClient *client)
 	client->priv->background = FALSE;
 	client->priv->interactive = TRUE;
 	client->priv->idle = TRUE;
+	client->priv->cache_age = 0;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);

@@ -1251,6 +1251,7 @@ main (int argc, char *argv[])
 	GError *error_local = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
+	guint cache_age = 0;
 	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
@@ -1290,6 +1291,9 @@ main (int argc, char *argv[])
 		{ "plain", 'p', 0, G_OPTION_ARG_NONE, &plain,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
 			_("Print to screen a machine readable output, rather than using animated widgets"), NULL},
+		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
+			/* TRANSLATORS: command line argument, just output without fancy formatting */
+			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
 		{ NULL}
 	};
 
@@ -1363,6 +1367,7 @@ main (int argc, char *argv[])
 		      "background", background,
 		      "simulate", !noninteractive,
 		      "interactive", !noninteractive,
+		      "cache-age", cache_age,
 		      NULL);
 
 	/* set the proxy */

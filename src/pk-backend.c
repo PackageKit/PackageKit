@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -101,6 +101,7 @@ struct PkBackendPrivate
 	gchar			*transaction_id;
 	gchar			*locale;
 	gchar			*frontend_socket;
+	guint			 cache_age;
 	gchar			*name;
 	gchar			*proxy_ftp;
 	gchar			*proxy_http;
@@ -1435,6 +1436,33 @@ pk_backend_set_frontend_socket (PkBackend *backend, const gchar *frontend_socket
 	backend->priv->frontend_socket = g_strdup (frontend_socket);
 
 	return TRUE;
+}
+
+/**
+ * pk_backend_get_cache_age:
+ *
+ * Gets the maximum cache age in seconds.
+ *
+ * Return value: the cache age in seconds, or 0 for unset or %G_MAXUINT for 'infinity'
+ **/
+guint
+pk_backend_get_cache_age (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
+	return backend->priv->cache_age;
+}
+
+/**
+ * pk_backend_set_cache_age:
+ **/
+void
+pk_backend_set_cache_age (PkBackend *backend, guint cache_age)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->locked != FALSE);
+
+	g_debug ("cache-age changed to %i", cache_age);
+	backend->priv->cache_age = cache_age;
 }
 
 /**
@@ -3386,6 +3414,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->name = NULL;
 	backend->priv->locale = NULL;
 	backend->priv->frontend_socket = NULL;
+	backend->priv->cache_age = 0;
 	backend->priv->transaction_id = NULL;
 	backend->priv->proxy_http = NULL;
 	backend->priv->proxy_ftp = NULL;

@@ -719,6 +719,11 @@ main (int argc, char *argv[])
 	/* get policy config */
 	config = pk_cnf_get_config ();
 	task = PK_TASK(pk_task_text_new ());
+	g_object_set (task,
+		      "cache-age", G_MAXUINT,
+		      "interactive", FALSE,
+		      "background", FALSE,
+		      NULL);
 	cancellable = g_cancellable_new ();
 
 	/* get length */

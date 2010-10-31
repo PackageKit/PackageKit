@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -103,6 +103,7 @@ struct PkTransactionPrivate
 	PkHintEnum		 interactive;
 	gchar			*locale;
 	gchar			*frontend_socket;
+	guint			 cache_age;
 	guint			 uid;
 	EggDbusMonitor		*monitor;
 	PkBackend		*backend;
@@ -1828,6 +1829,10 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* set the frontend socket if it exists */
 	pk_backend_set_frontend_socket (priv->backend, priv->frontend_socket);
+
+	/* set the cache-age */
+	if (priv->cache_age > 0)
+		pk_backend_set_cache_age (priv->backend, priv->cache_age);
 
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
@@ -4792,6 +4797,25 @@ pk_transaction_set_hint (PkTransaction *transaction, const gchar *key, const gch
 		goto out;
 	}
 
+	/* cache-age=<time-in-seconds> */
+	if (g_strcmp0 (key, "cache-age") == 0) {
+		ret = egg_strtouint (value, &priv->cache_age);
+		if (!ret) {
+			priv->cache_age = G_MAXUINT;
+			g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "cannot parse cache age value %s", value);
+			ret = FALSE;
+		}
+		if (priv->cache_age == 0) {
+			priv->cache_age = G_MAXUINT;
+			g_set_error_literal (error, PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     "cannot set a cache age of zero");
+			ret = FALSE;
+		}
+		goto out;
+	}
+
 	/* to preserve forwards and backwards compatibility, we ignore extra options here */
 	g_warning ("unknown option: %s with value %s", key, value);
 out:
@@ -5692,6 +5716,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->sender = NULL;
 	transaction->priv->locale = NULL;
 	transaction->priv->frontend_socket = NULL;
+	transaction->priv->cache_age = 0;
 #ifdef USE_SECURITY_POLKIT
 	transaction->priv->subject = NULL;
 #endif

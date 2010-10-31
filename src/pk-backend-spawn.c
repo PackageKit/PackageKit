@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -692,6 +692,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *transaction_id = NULL;
 	const gchar *value;
 	guint i;
+	guint cache_age;
 	GPtrArray *array;
 	gboolean ret;
 	PkHintEnum interactive;
@@ -764,6 +765,13 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		      NULL);
 	line = g_strdup_printf ("%s=%s", "INTERACTIVE", interactive ? "TRUE" : "FALSE");
 	g_ptr_array_add (array, line);
+
+	/* CACHE_AGE */
+	cache_age = pk_backend_get_cache_age (priv->backend);
+	if (cache_age > 0) {
+		line = g_strdup_printf ("%s=%i", "CACHE_AGE", cache_age);
+		g_ptr_array_add (array, line);
+	}
 
 	/* ensure the malicious user can't inject anthing from the session */
 	for (i=0; i<array->len; i++) {

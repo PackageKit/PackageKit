@@ -21,11 +21,13 @@
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
 #    Robin Norwood <rnorwood@redhat.com>
+#
+# Copyright (C) 2007-2010
 #    Richard Hughes <richard@hughsie.com>
 #
-#    MediaGrabber:
-#    Based on the logic of pirut by Jeremy Katz <katzj@redhat.com>
-#    Rewritten by Muayyad Alsadi <alsadi@ojuba.org>
+# Copyright (C) 2009
+#    MediaGrabber, based on the logic of pirut by Jeremy Katz <katzj@redhat.com>
+#    Muayyad Alsadi <alsadi@ojuba.org>
 
 # imports
 from packagekit.backend import *
