@@ -70,9 +70,11 @@ struct _PkClientHelperPrivate
 	GIOChannel			*io_channel_socket;
 	GIOChannel			*io_channel_child_stdin;
 	GIOChannel			*io_channel_child_stdout;
+	GIOChannel			*io_channel_child_stderr;
 	guint				 io_channel_socket_listen_id;
 	guint				 io_channel_child_stdin_listen_id;
 	guint				 io_channel_child_stdout_listen_id;
+	guint				 io_channel_child_stderr_listen_id;
 	gchar				**argv;
 	gchar				**envp;
 	GSocket				*socket;
@@ -117,6 +119,8 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 		g_source_remove (priv->io_channel_socket_listen_id);
 	if (priv->io_channel_child_stdout_listen_id > 0)
 		g_source_remove (priv->io_channel_child_stdout_listen_id);
+	if (priv->io_channel_child_stderr_listen_id > 0)
+		g_source_remove (priv->io_channel_child_stderr_listen_id);
 	if (priv->io_channel_child_stdin_listen_id > 0)
 		g_source_remove (priv->io_channel_child_stdin_listen_id);
 
@@ -166,6 +170,13 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 			ret = FALSE;
 			goto out;
 		}
+		status = g_io_channel_shutdown (priv->io_channel_child_stderr, FALSE, &error);
+		if (status != G_IO_STATUS_NORMAL) {
+			g_warning ("failed to shutdown channel: %s", error->message);
+			g_error_free (error);
+			ret = FALSE;
+			goto out;
+		}
 		if (priv->active_conn != NULL) {
 			ret = g_socket_close (priv->active_conn, &error);
 			if (!ret) {
@@ -208,6 +219,37 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 		}
 		g_debug ("wrote %" G_GSIZE_FORMAT " bytes to socket", written);
 	}
+out:
+	return ret;
+}
+
+/**
+ * pk_client_helper_echo_stderr_cb:
+ **/
+static gboolean
+pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
+{
+	gchar data[1024];
+	gsize len = 0;
+	GIOStatus status;
+	gboolean ret = TRUE;
+
+	/* there is data to read */
+	if ((condition & G_IO_IN) == 0)
+		goto out;
+
+	/* read data */
+	status = g_io_channel_read_chars (source, data, 1024, &len, NULL);
+	if (status == G_IO_STATUS_EOF) {
+		ret = FALSE;
+		goto out;
+	}
+	if (len == 0)
+		goto out;
+
+	/* write to socket */
+	data[len] = '\0';
+	g_debug ("child has error: %s", data);
 out:
 	return ret;
 }
@@ -283,6 +325,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	PkClientHelperPrivate *priv = client_helper->priv;
 	gint standard_input = 0;
 	gint standard_output = 0;
+	gint standard_error = 0;
 	gint fd;
 	GError *error = NULL;
 	gboolean ret = TRUE;
@@ -305,7 +348,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	/* spawn helper executable */
 	ret = g_spawn_async_with_pipes (NULL, priv->argv, priv->envp, 0, NULL, NULL, &priv->child_pid,
-					&standard_input, &standard_output, NULL, &error);
+					&standard_input, &standard_output, &standard_error, &error);
 	if (!ret) {
 		g_warning ("failed to spawn: %s", error->message);
 		g_error_free (error);
@@ -316,6 +359,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	/* connect up */
 	priv->io_channel_child_stdin = g_io_channel_unix_new (standard_input);
 	priv->io_channel_child_stdout = g_io_channel_unix_new (standard_output);
+	priv->io_channel_child_stderr = g_io_channel_unix_new (standard_error);
 
 	/* binary data */
 	status = g_io_channel_set_encoding (priv->io_channel_child_stdin, NULL, &error);
@@ -334,6 +378,15 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 		goto out;
 	}
 	g_io_channel_set_buffered (priv->io_channel_child_stdout, FALSE);
+
+	/* binary data */
+	status = g_io_channel_set_encoding (priv->io_channel_child_stderr, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to set encoding: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	g_io_channel_set_buffered (priv->io_channel_child_stderr, FALSE);
 
 	/* socket has data */
 	fd = g_socket_get_fd (priv->active_conn);
@@ -356,6 +409,9 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 		g_io_add_watch_full (priv->io_channel_child_stdout, G_PRIORITY_HIGH_IDLE,
 				     G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
 				     (GIOFunc) pk_client_helper_copy_stdout_cb, client_helper, NULL);
+	priv->io_channel_child_stderr_listen_id =
+		g_io_add_watch_full (priv->io_channel_child_stderr, G_PRIORITY_HIGH_IDLE, G_IO_IN,
+				     (GIOFunc) pk_client_helper_echo_stderr_cb, client_helper, NULL);
 out:
 	return TRUE;
 }
@@ -477,6 +533,8 @@ pk_client_helper_finalize (GObject *object)
 		g_io_channel_unref (priv->io_channel_child_stdin);
 	if (priv->io_channel_child_stdout != NULL)
 		g_io_channel_unref (priv->io_channel_child_stdout);
+	if (priv->io_channel_child_stderr != NULL)
+		g_io_channel_unref (priv->io_channel_child_stderr);
 	g_strfreev (priv->argv);
 	g_strfreev (priv->envp);
 
