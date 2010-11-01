@@ -672,8 +672,6 @@ out:
 	return array;
 }
 
-#endif
-
 /**
  * pk_backend_get_cat_for_id:
  */
@@ -784,6 +782,8 @@ out:
 		g_ptr_array_unref (array);
 	return array_retval;
 }
+
+#endif
 
 /**
  * pk_backend_search_thread:
