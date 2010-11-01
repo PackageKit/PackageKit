@@ -50,7 +50,7 @@ pk_socket_example_accept_connection_cb (GSocket *socket, GIOCondition condition,
 		}
 		if (len == 0)
 			goto out;
-		g_debug ("got data: %s : %i", buffer, len);
+		g_debug ("got data: %s : %" G_GSIZE_FORMAT, buffer, len);
 	}
 out:
 	return ret;
