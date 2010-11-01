@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Portage\"
+
 helperdir = $(datadir)/PackageKit/helpers/portage
 dist_helper_DATA = portageBackend.py
 

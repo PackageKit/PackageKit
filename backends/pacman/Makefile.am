@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Pacman\"
+
 PACMAN_CONFIG_FILE = $(confdir)/pacman.conf
 PACMAN_GROUP_LIST = $(confdir)/groups.list
 PACMAN_REPO_LIST = $(confdir)/repos.list

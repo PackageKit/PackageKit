@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Conary\"
+
 helperdir = $(datadir)/PackageKit/helpers/conary
 dist_helper_DATA = 			\
 	conaryBackend.py		\

@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Entropy\"
+
 helperdir = $(datadir)/PackageKit/helpers/entropy
 dist_helper_DATA = entropyBackend.py
 

@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Ports\"
+
 SUBDIRS=ruby_packagekit
 
 helperdir = $(datadir)/PackageKit/helpers/ports
