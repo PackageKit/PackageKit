@@ -206,7 +206,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
 			goto out;
 		}
-		g_debug ("wrote %i bytes to socket", written);
+		g_debug ("wrote %" G_GSIZE_FORMAT " bytes to socket", written);
 	}
 out:
 	return ret;
@@ -268,7 +268,7 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
 			goto out;
 		}
-		g_debug ("wrote %i bytes to stdin of %s", written, priv->argv[0]);
+		g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, priv->argv[0]);
 	}
 out:
 	return ret;
