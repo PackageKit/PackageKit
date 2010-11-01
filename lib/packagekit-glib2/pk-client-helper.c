@@ -161,8 +161,9 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 		g_debug ("helper process exited");
 		status = g_io_channel_shutdown (priv->io_channel_child_stdout, FALSE, &error);
 		if (status != G_IO_STATUS_NORMAL) {
-			g_error ("failed to shutdown channel: %s", error->message);
+			g_warning ("failed to shutdown channel: %s", error->message);
 			g_error_free (error);
+			ret = FALSE;
 			goto out;
 		}
 		if (priv->active_conn != NULL) {
@@ -188,19 +189,12 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 			ret = FALSE;
 			goto out;
 		}
-		if (status != G_IO_STATUS_NORMAL) {
-			g_error ("failed to read: %s", error->message);
-			g_error_free (error);
-			goto out;
-		}
 		if (len == 0)
 			goto out;
-		data[len] = '\0';
-		g_debug ("child has input to push to the socket: %s", data);
 
 		/* write to socket */
 		data[len] = '\0';
-		g_debug ("socket has data to push to child: '%s'", data);
+		g_debug ("child has input to push to the socket: %s", data);
 		status = g_io_channel_write_chars (priv->io_channel_socket, data, len, &written, &error);
 		if (status != G_IO_STATUS_NORMAL) {
 			g_warning ("failed to write to socket: %s", error->message);
@@ -208,7 +202,8 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 			goto out;
 		}
 		if (written != len) {
-			g_warning ("failed to write %i bytes, only wrote %i bytes", len, written);
+			g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
+				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
 			goto out;
 		}
 		g_debug ("wrote %i bytes to socket", written);
@@ -250,8 +245,6 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 		status = g_io_channel_read_chars (source, data, 1024, &len, &error);
 		if (status == G_IO_STATUS_EOF)
 			goto out;
-		if (status != G_IO_STATUS_NORMAL)
-			g_error ("status = %i (%i,%i,%i,%i)", status, G_IO_STATUS_NORMAL, G_IO_STATUS_AGAIN, G_IO_STATUS_EOF, G_IO_STATUS_ERROR);
 		if (error != NULL) {
 			ret = FALSE;
 			g_warning ("failed to read: %s", error->message);
@@ -271,7 +264,8 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 			goto out;
 		}
 		if (written != len) {
-			g_warning ("failed to write %i bytes, only wrote %i bytes", len, written);
+			g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
+				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
 			goto out;
 		}
 		g_debug ("wrote %i bytes to stdin of %s", written, priv->argv[0]);
