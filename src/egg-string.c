@@ -106,7 +106,7 @@ egg_strtouint (const gchar *text, guint *value)
 		return FALSE;
 
 	/* out of range */
-	if (value_raw > G_MAXINT)
+	if (value_raw > G_MAXUINT)
 		return FALSE;
 
 	/* cast back down to value */

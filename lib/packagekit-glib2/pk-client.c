@@ -1957,7 +1957,7 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, PkClientState *state)
 
 	/* cache-age */
 	if (state->client->priv->cache_age > 0) {
-		hint = g_strdup_printf ("cache-age=%i", state->client->priv->cache_age);
+		hint = g_strdup_printf ("cache-age=%u", state->client->priv->cache_age);
 		g_ptr_array_add (array, hint);
 	}
 
