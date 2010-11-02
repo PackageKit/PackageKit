@@ -140,7 +140,7 @@ pk_role_bitfield_to_string (PkBitfield roles)
 
 /**
  * pk_role_bitfield_from_string:
- * @roles: the enumerated constant value, e.g. "available;~gui"
+ * @roles: the enumerated constant value, e.g. "search-file;update-system"
  *
  * Converts text representation to its enumerated type bitfield
  *
@@ -166,11 +166,8 @@ pk_role_bitfield_from_string (const gchar *roles)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		role = pk_role_enum_from_string (split[i]);
-		if (role == PK_ROLE_ENUM_UNKNOWN) {
-			roles_enum = 0;
-			break;
-		}
-		roles_enum += pk_bitfield_value (role);
+		if (role != PK_ROLE_ENUM_UNKNOWN)
+			roles_enum += pk_bitfield_value (role);
 	}
 out:
 	g_strfreev (split);
@@ -238,11 +235,8 @@ pk_group_bitfield_from_string (const gchar *groups)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		group = pk_group_enum_from_string (split[i]);
-		if (group == PK_GROUP_ENUM_UNKNOWN) {
-			groups_enum = 0;
-			break;
-		}
-		groups_enum += pk_bitfield_value (group);
+		if (group != PK_GROUP_ENUM_UNKNOWN)
+			groups_enum += pk_bitfield_value (group);
 	}
 out:
 	g_strfreev (split);
@@ -314,11 +308,8 @@ pk_filter_bitfield_from_string (const gchar *filters)
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		filter = pk_filter_enum_from_string (split[i]);
-		if (filter == PK_FILTER_ENUM_UNKNOWN) {
-			filters_enum = 0;
-			break;
-		}
-		filters_enum += pk_bitfield_value (filter);
+		if (filter != PK_FILTER_ENUM_UNKNOWN)
+			filters_enum += pk_bitfield_value (filter);
 	}
 out:
 	g_strfreev (split);
