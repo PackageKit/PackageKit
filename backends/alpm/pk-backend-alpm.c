@@ -1649,6 +1649,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 	pk_backend_thread_create (backend, backend_search_thread);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
 	"Valeriy Lyasotskiy <onestep@ukr.net>",		/* author */
@@ -1690,6 +1691,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* simulate_install_packages */
 	NULL,						/* simulate_remove_packages */
 	NULL,						/* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,						/* transaction_start */
 	NULL						/* transaction_stop */
 );

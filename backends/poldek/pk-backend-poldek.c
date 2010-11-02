@@ -3397,6 +3397,7 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_thread_create (backend, do_simulate_packages);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"poldek",					/* description */
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
@@ -3438,6 +3439,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,		/* simulate_install_packages */
 	backend_simulate_remove_packages,		/* simulate_remove_packages */
 	backend_simulate_update_packages,		/* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,						/* transaction_start */
 	NULL						/* transaction_stop */
 );

@@ -709,6 +709,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
@@ -750,6 +751,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

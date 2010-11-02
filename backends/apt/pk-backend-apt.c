@@ -536,7 +536,7 @@ backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
 	"Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
@@ -590,6 +590,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

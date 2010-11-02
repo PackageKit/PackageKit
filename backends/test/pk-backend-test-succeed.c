@@ -387,3 +387,12 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_finished (backend);
 }
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+{
+	pk_backend_finished (backend);
+}

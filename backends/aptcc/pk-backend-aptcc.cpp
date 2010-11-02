@@ -1467,6 +1467,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filter)
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 extern "C" PK_BACKEND_OPTIONS (
 	"APTcc",					/* description */
 	"Daniel Nicoletti <dantti85-pk@yahoo.com.br>",	/* author */
@@ -1508,6 +1509,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_simulate_install_update_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,		/* simulate_remove_packages */
 	backend_simulate_install_update_packages,	/* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,						/* transaction_start */
 	NULL						/* transaction_stop */
 );

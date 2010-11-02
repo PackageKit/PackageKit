@@ -255,3 +255,14 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_finished (backend);
 }
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+{
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
+			       "Cannot find boot partition");
+	pk_backend_finished (backend);
+}

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1372,6 +1372,19 @@ pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 
+	pk_backend_finished (backend);
+}
+
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+{
+	pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+			    "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
+	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed");
 	pk_backend_finished (backend);
 }
 

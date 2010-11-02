@@ -359,7 +359,7 @@ backend_get_distro_upgrades (PkBackend *backend)
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-distro-upgrades", NULL);
 }
 
-
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
 	"Aurelien Lefebvre <alkh@mandriva.org>",	/* author */
@@ -401,6 +401,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

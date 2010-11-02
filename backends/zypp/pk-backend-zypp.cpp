@@ -1919,6 +1919,7 @@ backend_transaction_stop (PkBackend *backend)
 	g_unsetenv ("ftp_proxy");
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, "
@@ -1962,6 +1963,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	backend_transaction_start,		/* transaction_start */
 	backend_transaction_stop		/* transaction_stop */
 );

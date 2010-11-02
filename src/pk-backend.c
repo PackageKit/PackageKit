@@ -318,6 +318,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
 	if (desc->simulate_update_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
+	if (desc->upgrade_system != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	backend->priv->roles = roles;
 out:
 	return backend->priv->roles;
@@ -574,6 +576,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 			g_module_symbol (handle, "pk_backend_update_packages", (gpointer *)&desc->update_packages);
 			g_module_symbol (handle, "pk_backend_update_system", (gpointer *)&desc->update_system);
 			g_module_symbol (handle, "pk_backend_what_provides", (gpointer *)&desc->what_provides);
+			g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
 
 			/* get old static string data */
 			ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
@@ -3399,6 +3402,18 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
 	backend->priv->desc->simulate_update_packages (backend, package_ids);
+}
+
+/**
+ * pk_backend_upgrade_system:
+ */
+void
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
+	backend->priv->desc->upgrade_system (backend, distro_id);
 }
 
 /**

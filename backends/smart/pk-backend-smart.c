@@ -441,6 +441,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "repo-set-data", rid, parameter, value, NULL);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
@@ -482,6 +483,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* simulate_install_packages */
 	NULL,						/* simulate_remove_packages */
 	NULL,						/* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,						/* transaction_start */
 	NULL						/* transaction_stop */
 );

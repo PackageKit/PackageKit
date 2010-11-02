@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -1668,6 +1668,58 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
 	/* run async method */
 	pk_client_simulate_update_packages_async (client, package_ids, cancellable, progress_callback, progress_user_data,
 						  (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
+
+	g_main_loop_run (helper->loop);
+
+	results = helper->results;
+
+	/* free temp object */
+	g_main_loop_unref (helper->loop);
+	g_free (helper);
+
+	return results;
+}
+
+
+/**
+ * pk_client_upgrade_system:
+ * @distro_id: a distro ID such as "fedora-14"
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * This transaction will upgrade the distro to the next version, which may
+ * involve just downloading the installer and setting up the boot device,
+ * or may involve doing an on-line upgrade.
+ *
+ * The backend will decide what is best to do.
+ *
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: (transfer full): a %PkResults object, or NULL for error
+ *
+ * Since: 0.6.11
+ **/
+PkResults *
+pk_client_upgrade_system (PkClient *client, const gchar *distro_id, GCancellable *cancellable,
+		          PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+{
+	PkClientHelper *helper;
+	PkResults *results;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* create temp object */
+	helper = g_new0 (PkClientHelper, 1);
+	helper->loop = g_main_loop_new (NULL, FALSE);
+	helper->error = error;
+
+	/* run async method */
+	pk_client_upgrade_system_async (client, distro_id, cancellable, progress_callback, progress_user_data,
+				        (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);
 

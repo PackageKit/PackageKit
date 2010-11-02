@@ -954,7 +954,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages");
+		     "simulate-remove-packages;simulate-update-packages;upgrade-system");
 	g_free (text);
 
 	/* check filters */
@@ -1098,7 +1098,7 @@ pk_test_control_func (void)
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages");
+		     "simulate-remove-packages;simulate-update-packages;upgrade-system");
 	g_free (text);
 
 	g_object_unref (control);

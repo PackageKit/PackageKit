@@ -2021,6 +2021,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 			filters = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_INSTALLED, PK_FILTER_ENUM_NEWEST, -1);
 			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
+	} else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
+		pk_backend_upgrade_system (priv->backend, priv->cached_value);
 	} else {
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
@@ -5407,6 +5409,55 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	transaction->priv->cached_values = g_strdupv (values);
 	transaction->priv->cached_provides = provides;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_WHAT_PROVIDES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* return from async with success */
+	pk_transaction_dbus_return (context);
+}
+
+/**
+ * pk_transaction_upgrade_system:
+ **/
+void
+pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_id, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_debug ("UpgradeSystem method called: %s", distro_id);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "UpgradeSystem not yet supported by backend");
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* check if the sender is the same */
+	ret = pk_transaction_verify_sender (transaction, context, &error);
+	if (!ret) {
+		/* don't release tid */
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_value = g_strdup (distro_id);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);

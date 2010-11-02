@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -120,6 +120,7 @@ typedef enum {
 	PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
 	PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 	PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 0.6.11 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 

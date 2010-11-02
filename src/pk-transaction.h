@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -235,6 +235,9 @@ void		 pk_transaction_what_provides			(PkTransaction	*transaction,
 								 const gchar	*filter,
 								 const gchar	*type,
 								 gchar		**values,
+								 DBusGMethodInvocation *context);
+void		 pk_transaction_upgrade_system			(PkTransaction	*transaction,
+								 const gchar	*distro_id,
 								 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_filter_check			(const gchar	*filter,
 								 GError		**error);

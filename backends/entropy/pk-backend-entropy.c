@@ -555,6 +555,7 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
     g_free (package_ids_temp);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Entropy",				/* description */
 	"Fabio Erculiani (lxnay) <lxnay@sabayon.org>",	/* author */
@@ -596,6 +597,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,  /* simulate_install_packages */
 	backend_simulate_remove_packages,   /* simulate_remove_packages */
 	backend_simulate_update_packages,   /* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

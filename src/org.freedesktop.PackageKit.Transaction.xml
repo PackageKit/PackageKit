@@ -1529,6 +1529,35 @@
     </method>
 
     <!--*****************************************************************************************-->
+    <method name="UpgradeSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method perfoms a distribution upgrade to the specified
+            version.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="s" name="distro_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The distro ID to upgrade to, e.g. <doc:tt>fedora-14</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*****************************************************************************************-->
     <signal name="Category">
       <doc:doc>
         <doc:description>
