@@ -18,7 +18,7 @@
 
 __pkcon_commandlist="
     accept-eula
-    get-actions
+    get-roles
     get-depends
     get-details
     get-distro-upgrades
@@ -33,9 +33,6 @@ __pkcon_commandlist="
     get-update-detail
     get-updates
     get-categories
-    list-create
-    list-diff
-    list-install
     install
     install-local
     refresh
