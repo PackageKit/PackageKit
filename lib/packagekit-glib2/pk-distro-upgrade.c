@@ -46,7 +46,7 @@ static void     pk_distro_upgrade_finalize	(GObject     *object);
  **/
 struct _PkDistroUpgradePrivate
 {
-	PkUpdateStateEnum		 state;
+	PkDistroUpgradeEnum		 state;
 	gchar				*name;
 	gchar				*summary;
 };
@@ -54,12 +54,65 @@ struct _PkDistroUpgradePrivate
 enum {
 	PROP_0,
 	PROP_STATE,
-	PROP_NAME,
+	PROP_NAME,	/* FIXME: should be "ID" */
 	PROP_SUMMARY,
 	PROP_LAST
 };
 
 G_DEFINE_TYPE (PkDistroUpgrade, pk_distro_upgrade, PK_TYPE_SOURCE)
+
+/**
+ * pk_distro_upgrade_get_id:
+ * @distro_upgrade: a valid #PkDistroUpgrade object.
+ *
+ * Gets the distribution identifier.
+ * You use this value to call UpgradeSystem.
+ *
+ * Return value: the distro-id, e.g. "fedora-14"
+ *
+ * Since: 0.6.11
+ **/
+const gchar *
+pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
+{
+	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
+	return distro_upgrade->priv->name;
+}
+
+/**
+ * pk_distro_upgrade_get_summary:
+ * @distro_upgrade: a valid #PkDistroUpgrade object.
+ *
+ * Gets the description of the distribution upgrade.
+ *
+ * Return value: the printable name, e.g. "Fedora 14"
+ *
+ * Since: 0.6.11
+ **/
+const gchar *
+pk_distro_upgrade_get_summary (PkDistroUpgrade *distro_upgrade)
+{
+	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
+	return distro_upgrade->priv->summary;
+}
+
+/**
+ * pk_distro_upgrade_get_state:
+ * @distro_upgrade: a valid #PkDistroUpgrade object.
+ *
+ * Gets the status of the distribution upgrade.
+ *
+ * Return value: the printable name, e.g. %PK_DISTRO_UPGRADE_ENUM_UNSTABLE
+ *
+ * Since: 0.6.11
+ **/
+PkDistroUpgradeEnum
+pk_distro_upgrade_get_state (PkDistroUpgrade *distro_upgrade)
+{
+	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
+	return distro_upgrade->priv->state;
+}
+
 
 /**
  * pk_distro_upgrade_get_property:

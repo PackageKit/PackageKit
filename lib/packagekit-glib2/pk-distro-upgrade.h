@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include <packagekit-glib2/pk-source.h>
+#include <packagekit-glib2/pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -62,6 +63,12 @@ struct _PkDistroUpgradeClass
 
 GType		 pk_distro_upgrade_get_type	 	(void);
 PkDistroUpgrade	*pk_distro_upgrade_new			(void);
+
+/* accessors */
+const gchar	*pk_distro_upgrade_get_id		(PkDistroUpgrade	*distro_upgrade);
+const gchar	*pk_distro_upgrade_get_summary		(PkDistroUpgrade	*distro_upgrade);
+PkDistroUpgradeEnum pk_distro_upgrade_get_state		(PkDistroUpgrade	*distro_upgrade);
+
 
 G_END_DECLS
 
