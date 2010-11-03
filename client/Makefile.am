@@ -42,6 +42,8 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
+	-DPK_COMPILATION				\
+	-DG_LOG_DOMAIN=\"PackageKit\"			\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
@@ -57,8 +59,6 @@ PK_GLIB2_LIBS =						\
 	$(NULL)
 
 pkcon_SOURCES =						\
-	egg-debug.c					\
-	egg-debug.h					\
 	pk-console.c					\
 	$(NULL)
 
@@ -74,8 +74,6 @@ pkcon_CFLAGS =						\
 	$(NULL)
 
 pkmon_SOURCES =						\
-	egg-debug.c					\
-	egg-debug.h					\
 	pk-monitor.c					\
 	$(NULL)
 

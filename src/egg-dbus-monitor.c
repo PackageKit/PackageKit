@@ -29,7 +29,6 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus.h>
 
-#include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 
 static void     egg_dbus_monitor_finalize	(GObject		*object);
@@ -121,7 +120,7 @@ egg_dbus_monitor_assign (EggDbusMonitor *monitor, EggDbusMonitorType bus_type, c
 	g_return_val_if_fail (service != NULL, FALSE);
 
 	if (monitor->priv->proxy != NULL) {
-		egg_warning ("already assigned!");
+		g_warning ("already assigned!");
 		return FALSE;
 	}
 
@@ -134,7 +133,7 @@ egg_dbus_monitor_assign (EggDbusMonitor *monitor, EggDbusMonitorType bus_type, c
 	else
 		monitor->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		egg_warning ("Cannot connect to bus: %s", error->message);
+		g_warning ("Cannot connect to bus: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -144,7 +143,7 @@ egg_dbus_monitor_assign (EggDbusMonitor *monitor, EggDbusMonitorType bus_type, c
 						 		DBUS_INTERFACE_DBUS,
 								&error);
 	if (error != NULL) {
-		egg_warning ("Cannot connect to DBUS: %s", error->message);
+		g_warning ("Cannot connect to DBUS: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -183,7 +182,7 @@ egg_dbus_monitor_is_connected (EggDbusMonitor *monitor)
 	dbus_error_init (&error);
 	ret = dbus_bus_name_has_owner (conn, monitor->priv->service, &error);
 	if (dbus_error_is_set (&error)) {
-		egg_debug ("error: %s", error.message);
+		g_debug ("error: %s", error.message);
 		dbus_error_free (&error);
 	}
 
@@ -200,7 +199,7 @@ egg_dbus_monitor_reset (EggDbusMonitor *monitor)
 {
 	g_return_val_if_fail (EGG_IS_DBUS_MONITOR (monitor), FALSE);
 	if (monitor->priv->proxy != NULL) {
-		egg_debug ("not already assigned!");
+		g_debug ("not already assigned!");
 		return FALSE;
 	}
 	if (monitor->priv->proxy != NULL) {

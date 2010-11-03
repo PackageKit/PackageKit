@@ -38,9 +38,6 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-#include "egg-string.h"
-
 /**
  * pk_iso8601_present:
  *
@@ -102,7 +99,7 @@ pk_iso8601_to_date (const gchar *iso_date)
 	GTimeVal time_val;
 	GDate *date = NULL;
 
-	if (egg_strzero (iso_date))
+	if (iso_date == NULL || iso_date[0] == '\0')
 		goto out;
 
 	/* try to parse complete ISO8601 date */
@@ -117,17 +114,13 @@ pk_iso8601_to_date (const gchar *iso_date)
 	 * accept a valid ISO8601 formatted date without a
 	 * time value - try and parse this case */
 	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
-	if (retval != 3) {
-		egg_warning ("could not parse date '%s'", iso_date);
+	if (retval != 3)
 		goto out;
-	}
 
 	/* check it's valid */
 	ret = g_date_valid_dmy (d, m, y);
-	if (!ret) {
-		egg_warning ("invalid date %i/%i/%i from '%s'", y, m, d, iso_date);
+	if (!ret)
 		goto out;
-	}
 
 	/* create valid object */
 	date = g_date_new_dmy (d, m, y);
@@ -142,7 +135,7 @@ out:
  * Form a composite string array of strings.
  * The data in the GPtrArray is copied.
  *
- * Return value: the string array, or %NULL if invalid
+ * Return value: (transfer full): the string array, or %NULL if invalid
  *
  * Since: 0.5.2
  **/

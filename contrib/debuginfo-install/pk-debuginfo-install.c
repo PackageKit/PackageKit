@@ -29,8 +29,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 
-#include "egg-debug.h"
-
 /* Reserved exit codes:
  * 1		miscellaneous errors, such as "divide by zero"
  * 2		misuse of shell builtins
@@ -146,7 +144,7 @@ pk_debuginfo_install_enable_repos (PkDebuginfoInstallPrivate *priv, GPtrArray *a
 			goto out;
 		}
 
-		egg_debug ("setting %s: %i", repo_id, enable);
+		g_debug ("setting %s: %i", repo_id, enable);
 		g_object_unref (results);
 	}
 out:
@@ -171,7 +169,7 @@ pk_debuginfo_install_progress_cb (PkProgress *progress, PkProgressType type, PkD
 	}
 	if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
 		g_object_get (progress, "package-id", &package_id, NULL);
-		egg_debug ("now downloading %s", package_id);
+		g_debug ("now downloading %s", package_id);
 		goto out;
 	}
 out:
@@ -402,7 +400,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 		g_strfreev (split);
 
 		/* resolve name */
-		egg_debug ("resolving: %s", name_debuginfo);
+		g_debug ("resolving: %s", name_debuginfo);
 		package_id = pk_debuginfo_install_resolve_name_to_id (priv, name_debuginfo, &error_local);
 		if (package_id == NULL) {
 			/* TRANSLATORS: we couldn't find the package name, non-fatal */
@@ -415,7 +413,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 
 		/* add to array to install */
 		if (package_id != NULL && !g_str_has_suffix (package_id, "installed")) {
-			egg_debug ("going to try to install (for deps): %s", package_id);
+			g_debug ("going to try to install (for deps): %s", package_id);
 			g_ptr_array_add (packages_results, g_strdup (package_id));
 		}
 
@@ -541,7 +539,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: tool that gets called when the command is not found */
 	g_option_context_set_summary (context, _("PackageKit Debuginfo Installer"));
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
@@ -634,7 +632,7 @@ main (int argc, char *argv[])
 		/* is already a -debuginfo */
 		repo_id = g_ptr_array_index (priv->enabled, i);
 		if (g_str_has_suffix (repo_id, "-debuginfo")) {
-			egg_debug ("already enabled: %s", repo_id);
+			g_debug ("already enabled: %s", repo_id);
 			continue;
 		}
 
@@ -645,7 +643,7 @@ main (int argc, char *argv[])
 			/* add to list to change back at the end */
 			g_ptr_array_add (added_repos, g_strdup (repo_id_debuginfo));
 		} else {
-			egg_debug ("no debuginfo repo for %s", repo_id_debuginfo);
+			g_debug ("no debuginfo repo for %s", repo_id_debuginfo);
 		}
 
 		g_free (repo_id_debuginfo);
@@ -720,7 +718,7 @@ main (int argc, char *argv[])
 
 		/* add to array to install */
 		if (package_id != NULL) {
-			egg_debug ("going to try to install: %s", package_id);
+			g_debug ("going to try to install: %s", package_id);
 			g_ptr_array_add (package_ids_recognised, package_id);
 		} else {
 			goto not_found;
@@ -728,7 +726,7 @@ main (int argc, char *argv[])
 
 		/* convert into basename */
 		name_debuginfo = pk_debuginfo_install_name_to_debuginfo (name);
-		egg_debug ("install %s [%s]", argv[i], name_debuginfo);
+		g_debug ("install %s [%s]", argv[i], name_debuginfo);
 
 		/* resolve name */
 		package_id = pk_debuginfo_install_resolve_name_to_id (priv, name_debuginfo, &error);
@@ -743,7 +741,7 @@ main (int argc, char *argv[])
 
 		/* add to array to install */
 		if (package_id != NULL && !g_str_has_suffix (package_id, "installed")) {
-			egg_debug ("going to try to install: %s", package_id);
+			g_debug ("going to try to install: %s", package_id);
 			g_ptr_array_add (package_ids_to_install, g_strdup (package_id));
 		}
 

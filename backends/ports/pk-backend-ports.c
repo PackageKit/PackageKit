@@ -32,7 +32,7 @@ static const gchar* BACKEND_FILE = "portsBackend.rb";
 static void
 backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "ports");
 	/* allowing sigkill as long as no one complain */
@@ -46,7 +46,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
@@ -409,6 +409,7 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 	pk_backend_spawn_helper (spawn, BACKEND_FILE, "update-system", pk_backend_bool_to_string (only_trusted), NULL);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Ports",				/* description */
 	"Anders F Björklund <afb@users.sourceforge.net>",	/* author */
@@ -450,6 +451,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

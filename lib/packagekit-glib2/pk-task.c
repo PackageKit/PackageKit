@@ -34,8 +34,6 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-results.h>
 
-#include "egg-debug.h"
-
 static void     pk_task_finalize	(GObject     *object);
 
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
@@ -148,7 +146,7 @@ pk_task_generic_state_finish (PkTaskState *state, const GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* remove from list */
-	egg_debug ("remove state %p", state);
+	g_debug ("remove state %p", state);
 	g_ptr_array_remove (state->task->priv->array, state);
 
 	/* deallocate */
@@ -304,7 +302,6 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	PkResults *results;
 	PkPackageSack *sack = NULL;
 	guint length;
-	PkError *error_code;
 	guint idx = 0;
 	guint i;
 	GPtrArray *array = NULL;
@@ -343,13 +340,11 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 	/* get exit code */
 	state->exit_enum = pk_results_get_exit_code (state->results);
 	if (state->exit_enum != PK_EXIT_ENUM_SUCCESS) {
-		error_code = pk_results_get_error_code (state->results);
-		/* TODO: convert the PkErrorEnum to a PK_CLIENT_ERROR_* enum */
-		error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
-				     "could not do simulate: %s", pk_error_get_details (error_code));
-		pk_task_generic_state_finish (state, error);
-		g_error_free (error);
-		g_object_unref (error_code);
+		/* we 'fail' with success so the appication gets a
+		 * chance to process the PackageKit-specific
+		 * ErrorCode enumerated value and detail. */
+		state->ret = TRUE;
+		pk_task_generic_state_finish (state, NULL);
 		goto out;
 	}
 
@@ -363,7 +358,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 				      "type", &message_type,
 				      NULL);
 			if (message_type == PK_MESSAGE_ENUM_UNTRUSTED_PACKAGE) {
-				egg_debug ("we got an untrusted message, so skipping only-trusted");
+				g_debug ("we got an untrusted message, so skipping only-trusted");
 				state->only_trusted = FALSE;
 				break;
 			}
@@ -396,7 +391,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 			/* remove all the cleanup and finished packages */
 			if (info == PK_INFO_ENUM_CLEANUP ||
 			    info == PK_INFO_ENUM_FINISHED) {
-				egg_debug ("removing %s", package_id);
+				g_debug ("removing %s", package_id);
 				g_ptr_array_remove (array, item);
 				continue;
 			}
@@ -406,7 +401,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskStat
 			length = g_strv_length (state->package_ids);
 			for (i=0; i<length; i++) {
 				if (g_strcmp0 (package_id, state->package_ids[i]) == 0) {
-					egg_debug ("removing %s", package_id);
+					g_debug ("removing %s", package_id);
 					g_ptr_array_remove (array, item);
 					ret = TRUE;
 					break;
@@ -455,25 +450,25 @@ pk_task_do_async_simulate_action (PkTaskState *state)
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		/* simulate install async */
-		egg_debug ("doing install");
+		g_debug ("doing install");
 		pk_client_simulate_install_packages_async (PK_CLIENT(state->task), state->package_ids,
 							   state->cancellable, state->progress_callback, state->progress_user_data,
 							   (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* simulate update async */
-		egg_debug ("doing update");
+		g_debug ("doing update");
 		pk_client_simulate_update_packages_async (PK_CLIENT(state->task), state->package_ids,
 							  state->cancellable, state->progress_callback, state->progress_user_data,
 							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		/* simulate remove async */
-		egg_debug ("doing remove");
+		g_debug ("doing remove");
 		pk_client_simulate_remove_packages_async (PK_CLIENT(state->task), state->package_ids, state->autoremove,
 							  state->cancellable, state->progress_callback, state->progress_user_data,
 							  (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
 		/* simulate install async */
-		egg_debug ("doing install files");
+		g_debug ("doing install files");
 		pk_client_simulate_install_files_async (PK_CLIENT(state->task), state->files,
 						        state->cancellable, state->progress_callback, state->progress_user_data,
 						        (GAsyncReadyCallback) pk_task_simulate_ready_cb, state);
@@ -681,20 +676,20 @@ pk_task_user_accepted_idle_cb (PkTaskState *state)
 {
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
-		egg_debug ("need to do install-sig");
+		g_debug ("need to do install-sig");
 		pk_task_install_signatures (state);
 		goto out;
 	}
 
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
-		egg_debug ("need to do accept-eula");
+		g_debug ("need to do accept-eula");
 		pk_task_accept_eulas (state);
 		goto out;
 	}
 
 	/* doing task */
-	egg_debug ("continuing with request %i", state->request);
+	g_debug ("continuing with request %i", state->request);
 	pk_task_do_async_action (state);
 
 out:
@@ -716,7 +711,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
 	if (state == NULL) {
-		egg_warning ("request %i not found", request);
+		g_warning ("request %i not found", request);
 		return FALSE;
 	}
 
@@ -744,7 +739,7 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 	}
 
 	/* doing task */
-	egg_debug ("declined request %i", state->request);
+	g_debug ("declined request %i", state->request);
 	error = g_error_new (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
 	g_error_free (error);
@@ -768,7 +763,7 @@ pk_task_user_declined (PkTask *task, guint request)
 	/* get the not-yet-completed request */
 	state = pk_task_find_by_request (task, request);
 	if (state == NULL) {
-		egg_warning ("request %i not found", request);
+		g_warning ("request %i not found", request);
 		return FALSE;
 	}
 
@@ -814,7 +809,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -838,7 +833,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -862,7 +857,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -886,7 +881,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 
 		/* running non-interactive */
 		if (!state->task->priv->interactive) {
-			egg_debug ("working non-interactive, so calling accept");
+			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (state->task, state->request);
 			goto out;
 		}
@@ -921,9 +916,9 @@ out:
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Merges in details about packages using resolve.
@@ -941,6 +936,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -958,7 +954,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -975,7 +971,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -995,6 +991,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_packages_async);
 
@@ -1011,7 +1008,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1030,7 +1027,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1052,6 +1049,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_remove_packages_async);
 
@@ -1069,7 +1067,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1086,7 +1084,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
  * @task: a valid #PkTask instance
  * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1107,6 +1105,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_files_async);
 
@@ -1123,7 +1122,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1139,7 +1138,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * pk_task_update_system_async:
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
@@ -1163,6 +1162,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 
 	g_return_if_fail (PK_IS_CLIENT (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_update_system_async);
 
@@ -1178,7 +1178,7 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* start trusted install async */
@@ -1193,9 +1193,9 @@ pk_task_update_system_async (PkTask *task, GCancellable *cancellable,
  * @filters: a bitfield of filters that can be used to limit the results
  * @packages: package names to find
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Resolves a package name to a package-id.
@@ -1212,6 +1212,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1230,7 +1231,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 	state->packages = g_strdupv (packages);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1245,9 +1246,9 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for a package name.
@@ -1264,6 +1265,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1282,7 +1284,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1297,9 +1299,9 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for some package details.
@@ -1316,6 +1318,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1334,7 +1337,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1349,9 +1352,9 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches the group lists.
@@ -1368,6 +1371,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1386,7 +1390,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1401,9 +1405,9 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: search values
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Searches for specific files.
@@ -1420,6 +1424,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1438,7 +1443,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1452,9 +1457,9 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets details about packages.
@@ -1471,6 +1476,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1488,7 +1494,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1502,9 +1508,9 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets details about updates.
@@ -1521,6 +1527,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1538,7 +1545,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1553,9 +1560,9 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the destination directory
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Downloads packages
@@ -1572,6 +1579,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1590,7 +1598,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 	state->directory = g_strdup (directory);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1604,9 +1612,9 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets the update lists.
@@ -1623,6 +1631,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1640,7 +1649,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1656,9 +1665,9 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: if we should recurse to packages that depend on other packages
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the list of dependant packages.
@@ -1675,6 +1684,7 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1694,7 +1704,7 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
 	state->recursive = recursive;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1708,9 +1718,9 @@ pk_task_get_depends_async (PkTask *task, PkBitfield filters, gchar **package_ids
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Gets the list of packages.
@@ -1727,6 +1737,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1744,7 +1755,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1760,9 +1771,9 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @recursive: if we should return packages that depend on the ones we do
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the packages this package requires.
@@ -1779,6 +1790,7 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1798,7 +1810,7 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
 	state->recursive = recursive;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1814,9 +1826,9 @@ pk_task_get_requires_async (PkTask *task, PkBitfield filters, gchar **package_id
  * @provides: a #PkProvidesEnum type
  * @values: values to search for
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Find the package that provides some resource.
@@ -1833,6 +1845,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1852,7 +1865,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
 	state->values = g_strdupv (values);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1866,9 +1879,9 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters, PkProvidesEnum pr
  * @task: a valid #PkTask instance
  * @package_ids: a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the files in a package.
@@ -1885,6 +1898,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1902,7 +1916,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 	state->package_ids = g_strdupv (package_ids);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1915,9 +1929,9 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
  * pk_task_get_categories_async:
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the categories available.
@@ -1934,6 +1948,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -1950,7 +1965,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 	state->only_trusted = TRUE;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -1964,9 +1979,9 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
  * @task: a valid #PkTask instance
  * @force: if the metadata should be deleted and re-downloaded even if it is correct
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Refresh the package cache.
@@ -1983,6 +1998,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2000,7 +2016,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 	state->force = force;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2014,9 +2030,9 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
  * @task: a valid #PkTask instance
  * @transaction_id: The transaction ID of the old transaction
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Rollback to a previous package state.
@@ -2033,6 +2049,7 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2050,7 +2067,7 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
 	state->transaction_id = g_strdup (transaction_id);
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2064,9 +2081,9 @@ pk_task_rollback_async (PkTask *task, const gchar *transaction_id, GCancellable 
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Get the list of available repositories.
@@ -2083,6 +2100,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2100,7 +2118,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 	state->filters = filters;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2115,9 +2133,9 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
  * @repo_id: The software source ID
  * @enabled: %TRUE or %FALSE
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
- * @callback: the function to run on completion
+ * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Enable or disable a specific repo.
@@ -2134,6 +2152,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 
 	g_return_if_fail (PK_IS_TASK (task));
 	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
 	res = g_simple_async_result_new (G_OBJECT (task), callback_ready, user_data, pk_task_install_packages_async);
 
@@ -2152,7 +2171,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 	state->enabled = enabled;
 	state->request = pk_task_generate_request_id ();
 
-	egg_debug ("adding state %p", state);
+	g_debug ("adding state %p", state);
 	g_ptr_array_add (task->priv->array, state);
 
 	/* run task with callbacks */
@@ -2169,7 +2188,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: %TRUE for success
+ * Return value: (transfer full): The #PkResults of the transaction.
  *
  * Since: 0.5.2
  **/
@@ -2190,6 +2209,75 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 	return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
 }
 
+/**
+ * pk_task_set_simulate:
+ * @task: a valid #PkTask instance
+ * @simulate: the simulate mode
+ *
+ * If the simulate step should be run without the actual transaction.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_task_set_simulate (PkTask *task, gboolean simulate)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->simulate = simulate;
+	g_object_notify (G_OBJECT (task), "simulate");
+}
+
+/**
+ * pk_task_get_simulate:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if we are simulating.
+ *
+ * Return value: %TRUE if we are simulating
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_task_get_simulate (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->simulate;
+}
+
+
+/**
+ * pk_task_set_interactive:
+ * @task: a valid #PkTask instance
+ * @interactive: if we are interactive
+ *
+ * Sets the interactive mode, i.e. if the user is allowed to ask
+ * questions.
+ *
+ * Since: 0.6.10
+ **/
+void
+pk_task_set_interactive (PkTask *task, gboolean interactive)
+{
+	g_return_if_fail (PK_IS_TASK (task));
+	task->priv->interactive = interactive;
+	g_object_notify (G_OBJECT (task), "interactive");
+}
+
+/**
+ * pk_task_get_interactive:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if the transaction is interactive.
+ *
+ * Return value: %TRUE for an interactive transaction.
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_task_get_interactive (PkTask *task)
+{
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	return task->priv->interactive;
+}
 
 /**
  * pk_task_get_property:

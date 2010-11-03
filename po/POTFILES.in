@@ -12,9 +12,8 @@ data/packagekit-catalog.xml.in
 data/packagekit-package-list.xml.in
 data/packagekit-servicepack.xml.in
 lib/packagekit-glib2/pk-console-shared.c
+lib/packagekit-glib2/pk-debug.c
 lib/packagekit-glib2/pk-task-text.c
 policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
 src/pk-polkit-action-lookup.c
-src/egg-debug.c
-

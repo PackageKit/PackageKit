@@ -8,6 +8,8 @@ dist_helper_DATA = 			\
 
 INCLUDES = \
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
+	-DG_LOG_DOMAIN=\"PackageKit-Yum\"			\
+	-DPK_COMPILATION					\
 	$(ZIF_CFLAGS)						\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 

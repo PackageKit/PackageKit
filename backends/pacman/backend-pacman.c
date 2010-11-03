@@ -46,17 +46,17 @@ pacman_message_cb (const gchar *domain, GLogLevelFlags level, const gchar *messa
 	switch (level) {
 		case G_LOG_LEVEL_WARNING:
 		case G_LOG_LEVEL_MESSAGE:
-			egg_warning ("pacman: %s", message);
+			g_warning ("pacman: %s", message);
 			backend_message ((PkBackend *) user_data, message);
 			break;
 
 		case G_LOG_LEVEL_INFO:
 		case G_LOG_LEVEL_DEBUG:
-			egg_debug ("pacman: %s", message);
+			g_debug ("pacman: %s", message);
 			break;
 
 		default:
-			egg_warning ("pacman: %s", message);
+			g_warning ("pacman: %s", message);
 			break;
 	}
 }
@@ -78,33 +78,33 @@ backend_initialize (PkBackend *backend)
 	/* PATH needs to be set for install scriptlets */
 	g_setenv ("PATH", PACMAN_DEFAULT_PATH, FALSE);
 
-	egg_debug ("pacman: initializing");
+	g_debug ("pacman: initializing");
 
 	/* initialize pacman-glib */
 	pacman = pacman_manager_get (&error);
 	if (pacman == NULL) {
-		egg_error ("pacman: %s", error->message);
+		g_error ("pacman: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
 	/* configure and disable the relevant databases */
 	if (!backend_initialize_databases (backend, &error)) {
-		egg_error ("pacman: %s", error->message);
+		g_error ("pacman: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
 	/* read the group mapping from a config file */
 	if (!backend_initialize_groups (backend, &error)) {
-		egg_error ("pacman: %s", error->message);
+		g_error ("pacman: %s", error->message);
 		g_error_free (error);
 		return;
 	}
 
 	/* setup better download progress reporting */
 	if (!backend_initialize_downloads (backend, &error)) {
-		egg_error ("pacman: %s", error->message);
+		g_error ("pacman: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -118,7 +118,7 @@ backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
-	egg_debug ("pacman: cleaning up");
+	g_debug ("pacman: cleaning up");
 
 	backend_destroy_downloads (backend);
 	backend_destroy_groups (backend);
@@ -159,7 +159,7 @@ backend_run (PkBackend *backend, PkStatusEnum status, PkBackendThreadFunc func)
 	g_return_if_fail (func != NULL);
 
 	if (cancellable != NULL) {
-		egg_warning ("pacman: cancellable was not NULL");
+		g_warning ("pacman: cancellable was not NULL");
 		g_object_unref (cancellable);
 	}
 	cancellable = g_cancellable_new ();
@@ -250,5 +250,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_files,		/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	backend_simulate_update_packages	/* simulate_update_packages */
+	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* transaction_start */
+	NULL					/* transaction_stop */
 );

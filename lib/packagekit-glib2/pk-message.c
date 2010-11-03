@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-message.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_message_finalize	(GObject     *object);
 
 #define PK_MESSAGE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_MESSAGE, PkMessagePrivate))

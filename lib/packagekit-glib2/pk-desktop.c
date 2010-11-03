@@ -33,9 +33,6 @@
 #include <sqlite3.h>
 #include <packagekit-glib2/pk-desktop.h>
 
-#include "egg-debug.h"
-#include "egg-string.h"
-
 static void     pk_desktop_finalize	(GObject        *object);
 
 #define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))
@@ -102,7 +99,7 @@ pk_desktop_sqlite_package_cb (void *data, gint argc, gchar **argv, gchar **col_n
  * Return all desktop files owned by a package, regardless if they are shown
  * in the main menu or not.
  *
- * Return value: string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer full): string array of results, free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/
@@ -129,7 +126,7 @@ pk_desktop_get_files_for_package (PkDesktop *desktop, const gchar *package, GErr
 	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
 out:
@@ -145,7 +142,7 @@ out:
  * Return all desktop files owned by a package that would be shown in a menu,
  * i.e are an application
  *
- * Return value: string array of results, free with g_ptr_array_unref()
+ * Return value: (transfer full): string array of results, free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/
@@ -172,7 +169,7 @@ pk_desktop_get_shown_for_package (PkDesktop *desktop, const gchar *package, GErr
 	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_filename_cb, array, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
 out:
@@ -213,7 +210,7 @@ pk_desktop_get_package_for_file (PkDesktop *desktop, const gchar *filename, GErr
 	rc = sqlite3_exec (desktop->priv->db, statement, pk_desktop_sqlite_package_cb, &package, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
 
@@ -253,10 +250,10 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 		return FALSE;
 	}
 
-	egg_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
+	g_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
 	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &desktop->priv->db);
 	if (rc != 0) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (desktop->priv->db));
+		g_warning ("Can't open database: %s\n", sqlite3_errmsg (desktop->priv->db));
 		g_set_error (error, 1, 0, "can't open database: %s", sqlite3_errmsg (desktop->priv->db));
 		sqlite3_close (desktop->priv->db);
 		desktop->priv->db = NULL;

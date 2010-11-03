@@ -21,11 +21,13 @@
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
 #    Robin Norwood <rnorwood@redhat.com>
+#
+# Copyright (C) 2007-2010
 #    Richard Hughes <richard@hughsie.com>
 #
-#    MediaGrabber:
-#    Based on the logic of pirut by Jeremy Katz <katzj@redhat.com>
-#    Rewritten by Muayyad Alsadi <alsadi@ojuba.org>
+# Copyright (C) 2009
+#    MediaGrabber, based on the logic of pirut by Jeremy Katz <katzj@redhat.com>
+#    Muayyad Alsadi <alsadi@ojuba.org>
 
 # imports
 from packagekit.backend import *
@@ -40,7 +42,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
-from yum.packages import YumLocalPackage, parsePackages
+from yum.packages import YumLocalPackage, parsePackages, PackageObject
 from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
@@ -125,10 +127,13 @@ def _to_unicode(txt, encoding='utf-8'):
 
 def _get_package_ver(po):
     ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
+    ver = ''
     if po.epoch != '0':
         ver = "%s:%s-%s" % (po.epoch, po.version, po.release)
-    else:
+    elif po.release:
         ver = "%s-%s" % (po.version, po.release)
+    elif po.version:
+        ver = po.version
     return ver
 
 def _format_package_id(package_id):
@@ -581,9 +586,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         try:
             grp = self.yumbase.comps.return_group(grpid)
         except yum.Errors.RepoError, e:
-            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" %_to_unicode(e))
+            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" % _to_unicode(e))
         except yum.Errors.GroupsError, e:
-            raise PkError(ERROR_GROUP_NOT_FOUND, _to_unicode(e))
+            raise PkError(ERROR_GROUP_NOT_FOUND, "failed to find group '%s': %s" % (package_id, _to_unicode(e)))
         except exceptions.IOError, e:
             raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
@@ -1012,6 +1017,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             (name, idver, a, repo) = self.get_package_from_id(package_id)
             isGroup = False
             if repo == 'meta':
+                if name[0] == '@':
+                    name == name[1:]
                 try:
                     grp = self.yumbase.comps.return_group(name)
                 except exceptions.IOError, e:
@@ -1028,7 +1035,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 isGroup = True
             if isGroup and not grp:
-                self.error(ERROR_GROUP_NOT_FOUND, "The Group %s dont exist" % name)
+                self.error(ERROR_GROUP_NOT_FOUND, "group %s does not exist (searched for %s)" % (name, _format_package_id (package_id)))
+                return
         return grp
 
     def _findPackage(self, package_id):
@@ -1745,6 +1753,39 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
                 else:
                     pkgfilter.add_available(pkgs)
+
+        # is this a metapackage (a group)
+        for package_id in packages:
+            if package_id[0] == '@':
+                grps = self.comps.get_meta_packages()
+                for grpid in grps:
+                    if grpid == package_id[1:]:
+
+                        # create virtual package
+                        pkg = yum.packages.PackageObject()
+                        pkg.name = package_id[1:]
+                        pkg.version = ''
+                        pkg.release = ''
+                        pkg.arch = ''
+                        pkg.epoch = '0'
+                        pkg.repo = 'meta'
+
+                        # get the name and the installed status
+                        try:
+                            grp = self.yumbase.comps.return_group(grpid)
+                        except yum.Errors.RepoError, e:
+                            raise PkError(ERROR_NO_CACHE, "failed to get groups from comps: %s" % _to_unicode(e))
+                        except yum.Errors.GroupsError, e:
+                            raise PkError(ERROR_GROUP_NOT_FOUND, "failed to find group '%s': %s" % (package_id, _to_unicode(e)))
+                        except exceptions.IOError, e:
+                            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+                        except Exception, e:
+                            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+                        pkg.summary = grp.name
+                        if grp.installed:
+                            pkgfilter.add_installed([pkg])
+                        else:
+                            pkgfilter.add_available([pkg])
 
         # we couldn't do this when generating the list
         package_list = pkgfilter.post_process()
@@ -2951,6 +2992,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
     def _check_init(self, lazy_cache=False):
         '''Just does the caching tweaks'''
 
+        # this entire section can be cancelled
+        self.allow_cancel(True)
+
         # clear previous transaction data
         self.yumbase._tsInfo = None
 
@@ -2960,21 +3004,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo.metadata_expire = -1  # never refresh
             self.yumbase.conf.cache = 1
 
-        # we don't care about freshest data
-        elif lazy_cache:
-            for repo in self.yumbase.repos.listEnabled():
-                # is physical media
-                if repo.mediaid:
-                    continue
-                repo.metadata_expire = 60 * 60 * 24  # 24 hours
-
-        # default
-        else:
-            for repo in self.yumbase.repos.listEnabled():
-                # is physical media
-                if repo.mediaid:
-                    continue
-                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
+        # choose a good default if the client didn't specify a timeout
+        if self.cache_age == 0:
+            self.cache_age = 60 * 60 * 24  # 24 hours
+        for repo in self.yumbase.repos.listEnabled():
+            # is physical media
+            if repo.mediaid:
+                continue
+            repo.metadata_expire = self.cache_age
 
         # disable repos that are not contactable
         for repo in self.yumbase.repos.listEnabled():
@@ -3292,7 +3329,7 @@ class PackageKitYumBase(yum.YumBase):
             else:
                 raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def _media_find_root(self, media_id, disc_number=1):
+    def _media_find_root(self, media_id, disc_number=-1):
         """ returns the root "/media/Fedora Extras" or None """
 
         # search all the disks
@@ -3322,13 +3359,14 @@ class PackageKitYumBase(yum.YumBase):
                 continue
 
             # disc number can be random things like 'ALL'
-            disc_number_tmp = 1
-            try:
-                disc_number_tmp = int(lines[3].strip())
-            except ValueError, e:
-                pass
-            if disc_number_tmp != disc_number:
-                continue
+            if disc_number != -1:
+                disc_number_tmp = 1
+                try:
+                    disc_number_tmp = int(lines[3].strip())
+                except ValueError, e:
+                    pass
+                if disc_number_tmp != disc_number:
+                    continue
             return root
 
         # nothing remaining
@@ -3351,7 +3389,7 @@ class PackageKitYumBase(yum.YumBase):
 
         # we have to send a message to the client
         if not root:
-            name = kwargs["name"]
+            name = "%s Volume #%s" %(kwargs["name"], kwargs["discnum"])
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,

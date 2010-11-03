@@ -188,7 +188,7 @@ transaction_download_cb (PacmanTransaction *transaction, const gchar *filename, 
 			}
 
 			if (complete == 0) {
-				egg_debug ("pacman: downloading database %s", filename);
+				g_debug ("pacman: downloading database %s", filename);
 				pk_backend_set_status ((PkBackend *) user_data, PK_STATUS_ENUM_REFRESH_CACHE);
 			}
 
@@ -202,7 +202,7 @@ transaction_download_cb (PacmanTransaction *transaction, const gchar *filename, 
 			}
 
 			if (complete == 0) {
-				egg_debug ("pacman: downloading package %s", filename);
+				g_debug ("pacman: downloading package %s", filename);
 				pk_backend_set_status ((PkBackend *) user_data, PK_STATUS_ENUM_DOWNLOAD);
 				transaction_download_start (transaction, download, filename, (PkBackend *) user_data);
 			}
@@ -235,13 +235,13 @@ transaction_progress_cb (PacmanTransaction *transaction, PacmanTransactionProgre
 		case PACMAN_TRANSACTION_PROGRESS_REMOVE:
 		case PACMAN_TRANSACTION_PROGRESS_FILE_CONFLICT_CHECK:
 		{
-			egg_debug ("pacman: progress for %s (%u of %u) is %u%%", target, current, targets, percent);
+			g_debug ("pacman: progress for %s (%u of %u) is %u%%", target, current, targets, percent);
 			pk_backend_set_sub_percentage ((PkBackend *) user_data, percent);
 			pk_backend_set_percentage ((PkBackend *) user_data, (percent + (current - 1) * 100) / targets);
 			break;
 		}
 		default:
-			egg_debug ("pacman: progress of type %d (%u of %u) is %u%%", type, current, targets, percent);
+			g_debug ("pacman: progress of type %d (%u of %u) is %u%%", type, current, targets, percent);
 			break;
 	}
 }
@@ -261,7 +261,7 @@ transaction_question_cb (PacmanTransaction *transaction, PacmanTransactionQuesti
 				gchar *warning = g_strdup_printf ("The following packages were marked as ignored:\n%s\n", packages);
 
 				/* ignored packages are blocked in updates, can be explicitly installed */
-				egg_warning ("pacman: %s", warning);
+				g_warning ("pacman: %s", warning);
 				backend_message ((PkBackend *) user_data, warning);
 
 				g_free (warning);
@@ -277,7 +277,7 @@ transaction_question_cb (PacmanTransaction *transaction, PacmanTransactionQuesti
 		case PACMAN_TRANSACTION_QUESTION_REMOVE_HOLD_PACKAGES:
 		case PACMAN_TRANSACTION_QUESTION_SYNC_FIRST:
 			/* none of these actions are safe */
-			egg_warning ("pacman: ignoring question '%s'", message);
+			g_warning ("pacman: ignoring question '%s'", message);
 			return FALSE;
 
 		case PACMAN_TRANSACTION_QUESTION_REPLACE_PACKAGE:
@@ -285,11 +285,11 @@ transaction_question_cb (PacmanTransaction *transaction, PacmanTransactionQuesti
 		case PACMAN_TRANSACTION_QUESTION_INSTALL_OLDER_PACKAGE:
 		case PACMAN_TRANSACTION_QUESTION_DELETE_CORRUPTED_PACKAGE:
 			/* these actions are mostly harmless */
-			egg_warning ("pacman: confirming question '%s'", message);
+			g_warning ("pacman: confirming question '%s'", message);
 			return TRUE;
 
 		default:
-			egg_warning ("pacman: unrecognised question '%s'", message);
+			g_warning ("pacman: unrecognised question '%s'", message);
 			return FALSE;
 	}
 }
@@ -349,7 +349,7 @@ transaction_status_cb (PacmanTransaction *transaction, PacmanTransactionStatus s
 		default:
 			state = PK_STATUS_ENUM_UNKNOWN;
 			info = PK_INFO_ENUM_UNKNOWN;
-			egg_debug ("pacman: %s", message);
+			g_debug ("pacman: %s", message);
 			break;
 	}
 

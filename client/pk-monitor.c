@@ -28,8 +28,6 @@
 #include <packagekit-glib2/packagekit.h>
 #include <dbus/dbus-glib.h>
 
-#include "egg-debug.h"
-
 static PkClient *client = NULL;
 
 /**
@@ -143,7 +141,7 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to adopt: %s", error->message);
+		g_warning ("failed to adopt: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -309,7 +307,7 @@ static void
 pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
 {
 	/* only print state when verbose */
-	if (egg_debug_is_verbose ())
+	if (pk_debug_is_verbose ())
 		pk_monitor_get_daemon_state (control);
 }
 
@@ -319,7 +317,7 @@ pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_
 static void
 pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
 {
-	egg_debug ("added: %s", transaction_id);
+	g_debug ("added: %s", transaction_id);
 	pk_client_adopt_async (client, transaction_id, NULL,
 			       (PkProgressCallback) pk_monitor_progress_cb, user_data,
 			       (GAsyncReadyCallback) pk_monitor_adopt_cb, user_data);
@@ -332,7 +330,7 @@ pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *tra
 static void
 pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
 {
-	egg_debug ("removed: %s", transaction_id);
+	g_debug ("removed: %s", transaction_id);
 	pk_monitor_list_print (tlist);
 }
 
@@ -388,7 +386,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: this is a program that monitors PackageKit */
 	g_option_context_set_summary (context, _("PackageKit Monitor"));
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
+	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
 
@@ -426,13 +424,13 @@ main (int argc, char *argv[])
 	/* coldplug, but shouldn't be needed yet */
 	transaction_ids = pk_transaction_list_get_ids (tlist);
 	for (i=0; transaction_ids[i] != NULL; i++) {
-		egg_warning ("need to coldplug %s", transaction_ids[i]);
+		g_warning ("need to coldplug %s", transaction_ids[i]);
 	}
 	g_strfreev (transaction_ids);
 	pk_monitor_list_print (tlist);
 
 	/* only print state when verbose */
-	if (egg_debug_is_verbose ())
+	if (pk_debug_is_verbose ())
 		pk_monitor_get_daemon_state (control);
 
 	/* spin */

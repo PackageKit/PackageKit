@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -120,6 +120,7 @@ typedef enum {
 	PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
 	PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 	PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
+	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 0.6.11 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -503,6 +504,7 @@ typedef enum {
 	PK_LICENSE_ENUM_AFL,
 	PK_LICENSE_ENUM_AGPLV1,
 	PK_LICENSE_ENUM_AMDPLPA,
+	PK_LICENSE_ENUM_AML,
 	PK_LICENSE_ENUM_AMPAS_BSD,
 	PK_LICENSE_ENUM_APSL_2_DOT_0,
 	PK_LICENSE_ENUM_ARL,
@@ -513,6 +515,7 @@ typedef enum {
 	PK_LICENSE_ENUM_ASL_1_DOT_1,
 	PK_LICENSE_ENUM_ASL_2_DOT_0,
 	PK_LICENSE_ENUM_BAEKMUK,
+	PK_LICENSE_ENUM_BEOPEN,
 	PK_LICENSE_ENUM_BITTORRENT,
 	PK_LICENSE_ENUM_BOOST,
 	PK_LICENSE_ENUM_BSD,
@@ -585,6 +588,7 @@ typedef enum {
 	PK_LICENSE_ENUM_JPYTHON,
 	PK_LICENSE_ENUM_KNUTH,
 	PK_LICENSE_ENUM_LBNL_BSD,
+	PK_LICENSE_ENUM_LDPL,
 	PK_LICENSE_ENUM_LGPLV2,
 	PK_LICENSE_ENUM_LGPLV2_PLUS,
 	PK_LICENSE_ENUM_LGPLV2_PLUS_OR_ARTISTIC,
@@ -610,6 +614,7 @@ typedef enum {
 	PK_LICENSE_ENUM_MPLV1_DOT_0,
 	PK_LICENSE_ENUM_MPLV1_DOT_1,
 	PK_LICENSE_ENUM_MS_PL,
+	PK_LICENSE_ENUM_MS_RL,
 	PK_LICENSE_ENUM_NAUMEN,
 	PK_LICENSE_ENUM_NCSA,
 	PK_LICENSE_ENUM_NETCDF,
@@ -622,6 +627,7 @@ typedef enum {
 	PK_LICENSE_ENUM_OAL,
 	PK_LICENSE_ENUM_OFL,
 	PK_LICENSE_ENUM_OFSFDL,
+	PK_LICENSE_ENUM_OML,
 	PK_LICENSE_ENUM_OPENLDAP,
 	PK_LICENSE_ENUM_OPENPBS,
 	PK_LICENSE_ENUM_OPENSSL,
@@ -634,6 +640,7 @@ typedef enum {
 	PK_LICENSE_ENUM_PHORUM,
 	PK_LICENSE_ENUM_PHP,
 	PK_LICENSE_ENUM_PLEXUS,
+	PK_LICENSE_ENUM_POSTGRESQL,
 	PK_LICENSE_ENUM_PSUTILS,
 	PK_LICENSE_ENUM_PTFL,
 	PK_LICENSE_ENUM_PUBLIC_DOMAIN,
@@ -643,6 +650,7 @@ typedef enum {
 	PK_LICENSE_ENUM_QPL,
 	PK_LICENSE_ENUM_RDISC,
 	PK_LICENSE_ENUM_RICEBSD,
+	PK_LICENSE_ENUM_ROMIO,
 	PK_LICENSE_ENUM_RPSL,
 	PK_LICENSE_ENUM_RUBY,
 	PK_LICENSE_ENUM_SAXPATH,
@@ -656,6 +664,7 @@ typedef enum {
 	PK_LICENSE_ENUM_SPL,
 	PK_LICENSE_ENUM_STIX,
 	PK_LICENSE_ENUM_TCL,
+	PK_LICENSE_ENUM_TEEWORLDS,
 	PK_LICENSE_ENUM_TMATE,
 	PK_LICENSE_ENUM_TOSL,
 	PK_LICENSE_ENUM_TPL,
@@ -721,26 +730,26 @@ const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
 PkSigTypeEnum	 pk_sig_type_enum_from_string		(const gchar	*sig_type);
 const gchar	*pk_sig_type_enum_to_string		(PkSigTypeEnum	 sig_type);
 
-PkInfoEnum	 pk_info_enum_from_string			(const gchar	*info);
+PkInfoEnum	 pk_info_enum_from_string		(const gchar	*info);
 const gchar	*pk_info_enum_to_string			(PkInfoEnum	 info);
 
 PkUpdateStateEnum  pk_update_state_enum_from_string	(const gchar	*update_state);
 const gchar	*pk_update_state_enum_to_string		(PkUpdateStateEnum update_state);
 
-PkExitEnum	 pk_exit_enum_from_string			(const gchar	*exit);
+PkExitEnum	 pk_exit_enum_from_string		(const gchar	*exit);
 const gchar	*pk_exit_enum_to_string			(PkExitEnum	 exit);
 
 PkNetworkEnum	 pk_network_enum_from_string		(const gchar	*network);
 const gchar	*pk_network_enum_to_string		(PkNetworkEnum	 network);
 
 PkStatusEnum	 pk_status_enum_from_string		(const gchar	*status);
-const gchar	*pk_status_enum_to_string			(PkStatusEnum	 status);
+const gchar	*pk_status_enum_to_string		(PkStatusEnum	 status);
 
-PkRoleEnum	 pk_role_enum_from_string			(const gchar	*role);
+PkRoleEnum	 pk_role_enum_from_string		(const gchar	*role);
 const gchar	*pk_role_enum_to_string			(PkRoleEnum	 role);
 
 PkErrorEnum	 pk_error_enum_from_string		(const gchar	*code);
-const gchar	*pk_error_enum_to_string			(PkErrorEnum code);
+const gchar	*pk_error_enum_to_string		(PkErrorEnum code);
 
 PkRestartEnum	 pk_restart_enum_from_string		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_string		(PkRestartEnum	 restart);
@@ -749,10 +758,10 @@ PkMessageEnum	 pk_message_enum_from_string		(const gchar	*message);
 const gchar	*pk_message_enum_to_string		(PkMessageEnum	 message);
 
 PkGroupEnum	 pk_group_enum_from_string		(const gchar	*group);
-const gchar	*pk_group_enum_to_string			(PkGroupEnum	 group);
+const gchar	*pk_group_enum_to_string		(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_string		(const gchar	*filter);
-const gchar	*pk_filter_enum_to_string			(PkFilterEnum	 filter);
+const gchar	*pk_filter_enum_to_string		(PkFilterEnum	 filter);
 
 PkProvidesEnum	 pk_provides_enum_from_string		(const gchar	*provides);
 const gchar	*pk_provides_enum_to_string		(PkProvidesEnum	 provides);
@@ -761,13 +770,13 @@ PkLicenseEnum	 pk_license_enum_from_string		(const gchar	*license);
 const gchar	*pk_license_enum_to_string		(PkLicenseEnum	 license);
 
 PkDistroUpgradeEnum pk_distro_upgrade_enum_from_string	(const gchar	*upgrade);
-const gchar	*pk_distro_upgrade_enum_to_string		(PkDistroUpgradeEnum upgrade);
+const gchar	*pk_distro_upgrade_enum_to_string	(PkDistroUpgradeEnum upgrade);
 
 PkMediaTypeEnum  pk_media_type_enum_from_string		(const gchar	*media_type);
 const gchar	*pk_media_type_enum_to_string		(PkMediaTypeEnum media_type);
 
-PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*auth_type);
-const gchar	*pk_authorize_type_enum_to_string		(PkAuthorizeEnum auth_type);
+PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*authorize_type);
+const gchar	*pk_authorize_type_enum_to_string	(PkAuthorizeEnum authorize_type);
 
 G_END_DECLS
 

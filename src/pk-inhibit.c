@@ -33,7 +33,6 @@
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 
-#include "egg-debug.h"
 #include "pk-inhibit.h"
 
 #define PK_INHIBIT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_INHIBIT, PkInhibitPrivate))
@@ -41,7 +40,6 @@
 #define HAL_DBUS_PATH_COMPUTER		"/org/freedesktop/Hal/devices/computer"
 #define HAL_DBUS_INTERFACE_DEVICE	"org.freedesktop.Hal.Device"
 #define HAL_DBUS_INTERFACE_PM		"org.freedesktop.Hal.Device.SystemPowerManagement"
-
 
 struct PkInhibitPrivate
 {
@@ -77,16 +75,16 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_lock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
-	gboolean ret;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		egg_warning ("not connected to HAL");
-		return FALSE;
+		g_debug ("not connected to HAL");
+		goto skip_hal;
 	}
 	if (inhibit->priv->is_locked) {
-		egg_warning ("already inhibited, not trying again");
+		g_debug ("already inhibited, not trying again");
 		return FALSE;
 	}
 
@@ -100,9 +98,10 @@ pk_inhibit_lock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
+skip_hal:
 	if (ret) {
 		inhibit->priv->is_locked = TRUE;
-		egg_debug ("emit lock %i", inhibit->priv->is_locked);
+		g_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
@@ -116,16 +115,16 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_unlock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
-	gboolean ret;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	if (inhibit->priv->proxy == NULL) {
-		egg_warning ("not connected to HAL");
-		return FALSE;
+		g_debug ("not connected to HAL");
+		goto skip_hal;
 	}
 	if (inhibit->priv->is_locked == FALSE) {
-		egg_warning ("not inhibited, not trying to unlock");
+		g_debug ("not inhibited, not trying to unlock");
 		return FALSE;
 	}
 
@@ -139,9 +138,10 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
+skip_hal:
 	if (ret) {
 		inhibit->priv->is_locked = FALSE;
-		egg_debug ("emit lock %i", inhibit->priv->is_locked);
+		g_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
@@ -161,7 +161,7 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 
 	for (i=0; i<inhibit->priv->array->len; i++) {
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
-			egg_debug ("trying to add item %p already in array", data);
+			g_debug ("trying to add item %p already in array", data);
 			return FALSE;
 		}
 	}
@@ -191,7 +191,7 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 			return ret;
 		}
 	}
-	egg_debug ("cannot find item %p", data);
+	g_debug ("cannot find item %p", data);
 	return FALSE;
 }
 
@@ -211,7 +211,7 @@ pk_inhibit_finalize (GObject *object)
 	if (inhibit->priv->is_locked) {
 		ret = pk_inhibit_unlock (inhibit);
 		if (!ret)
-			egg_warning ("failed to unock on finalise!");
+			g_warning ("failed to unock on finalise!");
 	}
 	/* no need to free the data in the array */
 	g_ptr_array_free (inhibit->priv->array, TRUE);
@@ -256,7 +256,7 @@ pk_inhibit_init (PkInhibit *inhibit)
 	/* connect to system bus */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error != NULL) {
-		egg_warning ("Cannot connect to system bus: %s", error->message);
+		g_warning ("Cannot connect to system bus: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -266,7 +266,7 @@ pk_inhibit_init (PkInhibit *inhibit)
 				  HAL_DBUS_SERVICE, HAL_DBUS_PATH_COMPUTER,
 				  HAL_DBUS_INTERFACE_DEVICE, &error);
 	if (error != NULL) {
-		egg_warning ("Cannot connect to HAL: %s", error->message);
+		g_debug ("Cannot connect to HAL: %s", error->message);
 		g_error_free (error);
 	}
 

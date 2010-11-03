@@ -26,7 +26,6 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 
-#include "egg-debug.h"
 #include "egg-dbus-monitor.h"
 
 #include "pk-network-stack-connman.h"
@@ -132,7 +131,7 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 	for (list = services_list; list; list = list->next) {
 		gchar *path = list->data;
 
-		egg_debug ("service path is %s", path);
+		g_debug ("service path is %s", path);
 
 		proxy_service = dbus_g_proxy_new_for_name (connection,
 							   CONNMAN_DBUS_NAME,
@@ -167,7 +166,7 @@ pk_network_stack_connman_get_state (PkNetworkStack *nstack)
 	value = g_hash_table_lookup (hash_service, "Type");
 	type = pk_network_stack_connman_get_connection_type (value);
 
-	egg_debug ("network type is %s", pk_network_enum_to_string (type));
+	g_debug ("network type is %s", pk_network_enum_to_string (type));
 	g_object_unref (proxy_service);
 	return type;
 }
@@ -179,7 +178,7 @@ static void
 pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 					GValue *value, gpointer user_data)
 {
-	gboolean ret;
+	PkNetworkEnum network_state;
 	PkNetworkStackConnman *nstack_connman = (PkNetworkStackConnman *) user_data;
 
 	g_return_if_fail (PK_IS_NETWORK_STACK_CONNMAN (nstack_connman));
@@ -189,12 +188,11 @@ pk_network_stack_connman_state_changed (DBusGProxy *proxy, const char *property,
 
 		state = g_value_dup_string (value);
 		if (g_str_equal (state, "online") == TRUE)
-			ret = TRUE;
+			network_state = PK_NETWORK_ENUM_ONLINE;
 		else
-			ret = FALSE;
-		/* TODO: this is a PkNetworkState, not a gboolean */
-		egg_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (ret));
-		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", ret);
+			network_state = PK_NETWORK_ENUM_OFFLINE;
+		g_debug ("emitting network-state-changed: %s", pk_network_enum_to_string (network_state));
+		g_signal_emit_by_name (PK_NETWORK_STACK (nstack_connman), "state-changed", network_state);
 	}
 
 }
@@ -235,7 +233,7 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	/* get system connection */
 	nstack_connman->priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (nstack_connman->priv->bus == NULL) {
-		egg_warning ("Couldn't connect to system bus: %s", error->message);
+		g_warning ("Couldn't connect to system bus: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -247,7 +245,7 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 
 	/* ConnMan isn't up, so we can't use it */
 	if (nstack_connman->priv->is_enabled && !service_alive) {
-		egg_warning ("UseNetworkConnman true, but %s not up", CONNMAN_DBUS_NAME);
+		g_warning ("UseNetworkConnman true, but %s not up", CONNMAN_DBUS_NAME);
 		nstack_connman->priv->is_enabled = FALSE;
 	}
 
@@ -258,7 +256,7 @@ pk_network_stack_connman_init (PkNetworkStackConnman *nstack_connman)
 	nstack_connman->priv->proxy = proxy;
 
 	if (error != NULL) {
-		egg_warning ("Cannot connect to connman: %s", error->message);
+		g_warning ("Cannot connect to connman: %s", error->message);
 		g_error_free (error);
 		return;
 	}

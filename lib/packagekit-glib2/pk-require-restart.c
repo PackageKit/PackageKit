@@ -35,8 +35,6 @@
 #include <packagekit-glib2/pk-require-restart.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_require_restart_finalize	(GObject     *object);
 
 #define PK_REQUIRE_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestartPrivate))

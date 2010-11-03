@@ -24,8 +24,6 @@
 
 #include "pk-progress-bar.h"
 
-#include "egg-debug.h"
-
 #define PK_PROGRESS_BAR_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PROGRESS_BAR, PkProgressBarPrivate))
 
 typedef struct {
@@ -174,7 +172,7 @@ pk_progress_bar_set_percentage (PkProgressBar *self, gint percentage)
 
 	/* check for old percentage */
 	if (percentage == self->priv->percentage) {
-		egg_debug ("skipping as the same");
+		g_debug ("skipping as the same");
 		goto out;
 	}
 

@@ -20,7 +20,11 @@
  */
 
 #include "apt-utils.h"
+
+#include "pkg_acqfile.h"
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
 
 static int descrBufferSize = 4096;
 static char *descrBuffer = new char[descrBufferSize];
@@ -240,6 +244,143 @@ get_enum_group (string group)
 	}
 }
 
+string getChangelogFile(const string &name,
+                        const string &origin,
+                        const string &verstr,
+                        const string &srcPkg,
+                        const string &uri,
+                        pkgAcquire *fetcher)
+{
+   string descr("Changelog for ");
+   descr += name;
+
+   // no need to translate this, the changelog is in english anyway
+   string filename = "/tmp/aptcc_changelog";
+
+   new pkgAcqFileSane(fetcher, uri, descr, name, filename);
+
+   ofstream out(filename.c_str());
+   if(fetcher->Run() == pkgAcquire::Failed) {
+      out << "Failed to download the list of changes. " << endl;
+      out << "Please check your Internet connection." << endl;
+      // FIXME: Need to dequeue the item
+   } else {
+        struct stat filestatus;
+        stat(filename.c_str(), &filestatus );
+
+        if (filestatus.st_size == 0) {
+            // FIXME: Use supportedOrigins
+            if (origin.compare("Ubuntu") == 0) {
+                out << "The list of changes is not available yet.\n" << endl;
+                out << "Please use http://launchpad.net/ubuntu/+source/"<< srcPkg <<
+                        "/" << verstr << "/+changelog" << endl;
+                out << "until the changes become available or try again later." << endl;
+            } else {
+                out << "This change is not coming from a source that supports changelogs.\n" << endl;
+                out << "Failed to fetch the changelog for " << name << endl;
+                out << "URI was: " << uri << endl;
+            }
+        }
+   }
+   out.close();
+
+   return filename;
+}
+
+string getCVEUrls(const string &changelog)
+{
+    string ret;
+    // Regular expression to find cve references
+    GRegex *regex;
+    GMatchInfo *match_info;
+    regex = g_regex_new("CVE-\\d{4}-\\d{4}",
+                        G_REGEX_CASELESS,
+                        G_REGEX_MATCH_NEWLINE_ANY,
+                        0);
+    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    while (g_match_info_matches(match_info)) {
+        gchar *cve = g_match_info_fetch (match_info, 0);
+        gchar *cveLink;
+        if (!ret.empty()) {
+            ret.append(";");
+        }
+        cveLink = g_strdup_printf("http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s;%s", cve, cve);
+        ret.append(cveLink);
+        g_free(cveLink);
+        g_free(cve);
+        g_match_info_next(match_info, NULL);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+
+    return ret;
+}
+
+string getBugzillaUrls(const string &changelog)
+{
+    string ret;
+    // Matches Ubuntu bugs
+    GRegex *regex;
+    GMatchInfo *match_info;
+    regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*",
+                        G_REGEX_CASELESS,
+                        G_REGEX_MATCH_NEWLINE_ANY,
+                        0);
+    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    while (g_match_info_matches(match_info)) {
+        gchar *bug = g_match_info_fetch_named(match_info, "bug");
+        gchar *bugLink;
+        if (!ret.empty()) {
+            ret.append(";");
+        }
+        bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s;Launchpad bug #%s", bug, bug);
+        ret.append(bugLink);
+        g_free(bugLink);
+        g_free(bug);
+        g_match_info_next(match_info, NULL);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+
+    // Debian bugs
+    // Regular expressions to detect bug numbers in changelogs according to the
+    // Debian Policy Chapter 4.4. For details see the footnote 15:
+    // http://www.debian.org/doc/debian-policy/footnotes.html#f15
+    // /closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*/i
+    regex = g_regex_new("closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
+                        G_REGEX_CASELESS,
+                        G_REGEX_MATCH_NEWLINE_ANY,
+                        0);
+    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    while (g_match_info_matches(match_info)) {
+        gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
+        gchar *bugLink1;
+        if (!ret.empty()) {
+            ret.append(";");
+        }
+        bugLink1 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s;Debian bug #%s", bug1, bug1);
+        ret.append(bugLink1);
+
+        gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
+        if (!ret.empty() && bug2 != NULL) {
+            gchar *bugLink2;
+            ret.append(";");
+            bugLink2 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s;Debian bug #%s", bug1, bug1);
+            ret.append(bugLink2);
+            g_free(bugLink2);
+            g_free(bug2);
+        }
+
+        g_free(bugLink1);
+        g_free(bug1);
+        g_match_info_next(match_info, NULL);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+
+    return ret;
+}
+
 bool contains(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator> > packages,
 	    const pkgCache::PkgIterator pkg)
 {
@@ -265,3 +406,61 @@ bool starts_with (const string &str, const char *start)
 	return str.size() >= startSize && (strncmp(str.data(), start, startSize) == 0);
 }
 
+GDateTime* dateFromString(const gchar *tz,
+                          const gchar *year,
+                          const gchar *month,
+                          const gchar *day,
+                          const gchar *hour,
+                          const gchar *minute,
+                          const gchar *seconds)
+{
+    GDateTime *ret;
+    int monthI;
+    if (strcmp(month, "Jan") == 0) {
+        monthI = 1;
+    } else if (strcmp(month, "Feb") == 0) {
+        monthI = 2;
+    } else if (strcmp(month, "Mar") == 0) {
+        monthI = 3;
+    } else if (strcmp(month, "Apr") == 0) {
+        monthI = 4;
+    } else if (strcmp(month, "May") == 0) {
+        monthI = 5;
+    } else if (strcmp(month, "Jun") == 0) {
+        monthI = 6;
+    } else if (strcmp(month, "Jul") == 0) {
+        monthI = 7;
+    } else if (strcmp(month, "Aug") == 0) {
+        monthI = 8;
+    } else if (strcmp(month, "Sep") == 0) {
+        monthI = 9;
+    } else if (strcmp(month, "Oct") == 0) {
+        monthI = 10;
+    } else if (strcmp(month, "Nov") == 0) {
+        monthI = 11;
+    } else if (strcmp(month, "Dez") == 0) {
+        monthI = 12;
+    }
+
+    ret = g_date_time_new(g_time_zone_new(tz),
+                          atoi(year),
+                          monthI,
+                          atoi(day),
+                          atoi(hour),
+                          atoi(minute),
+                          atoi(seconds));
+    return ret;
+}
+
+const char *utf8(const char *str)
+{
+   static char *_str = NULL;
+   if (str == NULL)
+      return NULL;
+   if (g_utf8_validate(str, -1, NULL) == true)
+      return str;
+   g_free(_str);
+   _str = NULL;
+   _str = g_locale_to_utf8(str, -1, NULL, NULL, NULL);
+   return _str;
+}

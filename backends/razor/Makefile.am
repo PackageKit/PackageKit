@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Razor\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_razor.la
 libpk_backend_razor_la_SOURCES = pk-backend-razor.c

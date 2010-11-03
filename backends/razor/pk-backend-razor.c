@@ -24,7 +24,6 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-internal.h>
-#include <egg-debug.h>
 
 #include <razor/razor.h>
 
@@ -391,6 +390,7 @@ backend_get_filters (PkBackend *backend)
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_DEVELOPMENT, -1);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"razor",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -432,6 +432,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

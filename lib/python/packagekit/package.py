@@ -40,10 +40,6 @@ class PackagekitPackage:
         can be redistributed under any of the licenses in the group.
         For instance: GPLv2+ or Artistic or FooLicense.
 
-        Also, if a license ends with "+", the "+" is removed before
-        comparing it to the list of valid licenses.  So if license
-        "FooLicense" is free, then "FooLicense+" is considered free.
-
         Groups of licenses can be grouped with " and " to indicate
         that parts of the package are distributed under one group of
         licenses, while other parts of the package are distributed
@@ -75,9 +71,6 @@ class PackagekitPackage:
 
                 if len(license) < 1:
                     continue
-
-                if license[-1] == "+":
-                    license = license[0:-1]
 
                 if license in PackageKitEnum.free_licenses:
                     one_free_group = True

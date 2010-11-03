@@ -1,13 +1,16 @@
 NULL =
 
+if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+endif
 
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
+	$(GIO_CFLAGS)						\
 	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/lib					\
@@ -15,6 +18,7 @@ INCLUDES = \
 	-I.							\
 	-DPK_COMPILATION					\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
+	-DG_LOG_DOMAIN=\"PackageKit\"				\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 			\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"		\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
@@ -37,6 +41,7 @@ libpackagekit_glib2_include_HEADERS =				\
 	pk-catalog.h						\
 	pk-category.h						\
 	pk-client.h						\
+	pk-client-helper.h					\
 	pk-client-sync.h					\
 	pk-common.h						\
 	pk-control.h						\
@@ -70,10 +75,6 @@ libpackagekit_glib2_include_HEADERS =				\
 	$(NULL)
 
 libpackagekit_glib2_la_SOURCES =				\
-	egg-debug.c						\
-	egg-debug.h						\
-	egg-string.c						\
-	egg-string.h						\
 	packagekit.h						\
 	pk-bitfield.c						\
 	pk-bitfield.h						\
@@ -83,6 +84,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-category.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-client-helper.c					\
+	pk-client-helper.h					\
 	pk-client-sync.c					\
 	pk-client-sync.h					\
 	pk-common.c						\
@@ -91,6 +94,8 @@ libpackagekit_glib2_la_SOURCES =				\
 	pk-control.h						\
 	pk-control-sync.c					\
 	pk-control-sync.h					\
+	pk-debug.c						\
+	pk-debug.h						\
 	pk-desktop.c						\
 	pk-desktop.h						\
 	pk-details.c						\
@@ -167,10 +172,6 @@ libpackagekit_glib2_la_CFLAGS =					\
 
 noinst_LIBRARIES = libpackagekitprivate.a
 libpackagekitprivate_a_SOURCES =				\
-	egg-debug.c						\
-	egg-debug.h						\
-	egg-string.c						\
-	egg-string.h						\
 	packagekit-private.h					\
 	pk-console-shared.c					\
 	pk-console-shared.h					\
@@ -187,6 +188,11 @@ libpackagekitprivate_a_SOURCES =				\
 libpackagekitprivate_a_CFLAGS =					\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)
+
+noinst_PROGRAMS = pk-socket-example
+pk_socket_example_SOURCES = pk-socket-example.c
+pk_socket_example_LDADD = $(GIO_LIBS) $(GLIB_LIBS)
+pk_socket_example_CFLAGS = $(WARNINGFLAGS_C)
 
 if EGG_BUILD_TESTS
 check_PROGRAMS =						\
@@ -237,17 +243,18 @@ introspection_sources = $(libpackagekit_glib2_la_SOURCES)
 PackageKitGlib-1.0.gir: libpackagekit-glib2.la
 PackageKitGlib_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 PackageKitGlib_1_0_gir_CFLAGS = $(INCLUDES) -DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
+PackageKitGlib_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk --symbol-prefix=pk_ --warn-all --add-include-path=$(srcdir)
 PackageKitGlib_1_0_gir_LIBS = libpackagekit-glib2.la
-PackageKitGlib_1_0_gir_FILES = $(addprefix $(srcdir)/,$(introspection_sources))
+PackageKitGlib_1_0_gir_FILES = $(introspection_sources)
 INTROSPECTION_GIRS += PackageKitGlib-1.0.gir
 
 girdir = $(datadir)/gir-1.0
-dist_gir_DATA = $(INTROSPECTION_GIRS)
+gir_DATA = $(INTROSPECTION_GIRS)
 
 typelibdir = $(libdir)/girepository-1.0
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-CLEANFILES += $(dist_gir_DATA) $(typelib_DATA)
+CLEANFILES += $(gir_DATA) $(typelib_DATA)
 endif
 
 clean-local:

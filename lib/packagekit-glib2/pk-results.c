@@ -36,8 +36,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-enum.h>
 
-#include "egg-debug.h"
-
 static void     pk_results_finalize	(GObject     *object);
 
 #define PK_RESULTS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESULTS, PkResultsPrivate))
@@ -178,7 +176,7 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 		      "info", &info,
 		      NULL);
 	if (info == PK_INFO_ENUM_FINISHED) {
-		egg_warning ("internal error: finished packages cannot be added to a PkResults object");
+		g_warning ("internal error: finished packages cannot be added to a PkResults object");
 		return FALSE;
 	}
 
@@ -514,7 +512,7 @@ pk_results_get_exit_code (PkResults *results)
  *
  * Gets the last error code from the transaction.
  *
- * Return value: A #PkError, or %NULL, free with g_object_unref()
+ * Return value: (transfer full): A #PkError, or %NULL, free with g_object_unref()
  *
  * Since: 0.5.2
  **/
@@ -525,7 +523,7 @@ pk_results_get_error_code (PkResults *results)
 
 	/* failed, but no exit code? */
 	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS)
-		egg_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_string (results->priv->exit_enum));
+		g_warning ("internal error: failed, but no exit code: %s", pk_exit_enum_to_string (results->priv->exit_enum));
 
 	if (results->priv->error_code == NULL)
 		return NULL;
@@ -538,7 +536,7 @@ pk_results_get_error_code (PkResults *results)
  *
  * Gets the packages from the transaction.
  *
- * Return value: A #GPtrArray array of #PkDetails's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkDetails's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -555,7 +553,7 @@ pk_results_get_package_array (PkResults *results)
  *
  * Gets a package sack from the transaction.
  *
- * Return value: A #PkPackageSack of data, g_object_unref() to free.
+ * Return value: (transfer full): A #PkPackageSack of data, g_object_unref() to free.
  *
  * Since: 0.5.2
  **/
@@ -572,7 +570,7 @@ pk_results_get_package_sack (PkResults *results)
  *
  * Gets the package details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkPackage's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -589,7 +587,7 @@ pk_results_get_details_array (PkResults *results)
  *
  * Gets the update details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkUpdateDetail's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkUpdateDetail's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -606,7 +604,7 @@ pk_results_get_update_detail_array (PkResults *results)
  *
  * Gets the categories from the transaction.
  *
- * Return value: A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -623,7 +621,7 @@ pk_results_get_category_array (PkResults *results)
  *
  * Gets the distribution upgrades from the transaction.
  *
- * Return value: A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -640,7 +638,7 @@ pk_results_get_distro_upgrade_array (PkResults *results)
  *
  * Gets the require restarts from the transaction.
  *
- * Return value: A #GPtrArray array of #PkRequireRestart's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkRequireRestart's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -697,7 +695,7 @@ pk_results_get_require_restart_worst (PkResults *results)
  *
  * Gets the transactions from the transaction.
  *
- * Return value: A #GPtrArray array of #PkTransactionPast's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkTransactionPast's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -714,7 +712,7 @@ pk_results_get_transaction_array (PkResults *results)
  *
  * Gets the files from the transaction.
  *
- * Return value: A #GPtrArray array of #PkFiles's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkFiles's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -731,7 +729,7 @@ pk_results_get_files_array (PkResults *results)
  *
  * Gets the repository signatures required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkRepoSignatureRequired's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkRepoSignatureRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -748,7 +746,7 @@ pk_results_get_repo_signature_required_array (PkResults *results)
  *
  * Gets the eulas required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkEulaRequired's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkEulaRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -765,7 +763,7 @@ pk_results_get_eula_required_array (PkResults *results)
  *
  * Gets the media changes required from the transaction.
  *
- * Return value: A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -782,7 +780,7 @@ pk_results_get_media_change_required_array (PkResults *results)
  *
  * Gets the repository details from the transaction.
  *
- * Return value: A #GPtrArray array of #PkRepoDetail's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkRepoDetail's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
@@ -799,7 +797,7 @@ pk_results_get_repo_detail_array (PkResults *results)
  *
  * Gets the messages from the transaction.
  *
- * Return value: A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
+ * Return value: (transfer full): A #GPtrArray array of #PkMessage's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/

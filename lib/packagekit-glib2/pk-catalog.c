@@ -30,10 +30,7 @@
 #  include "config.h"
 #endif
 
-//#include <fcntl.h>
-
 #include <glib.h>
-//#include <glib/gstdio.h>
 #include <gio/gio.h>
 
 #include <packagekit-glib2/pk-catalog.h>
@@ -44,9 +41,6 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-control-sync.h>
-
-#include "egg-debug.h"
-#include "egg-string.h"
 
 #define PK_CATALOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CATALOG, PkCatalogPrivate))
 
@@ -275,7 +269,7 @@ pk_catalog_what_provides_ready_cb (GObject *source_object, GAsyncResult *res, Pk
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", pk_package_get_id (package));
+		g_debug ("adding %s", pk_package_get_id (package));
 		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
@@ -300,7 +294,7 @@ pk_catalog_do_what_provides (PkCatalogState *state)
 	gchar *dbg;
 	data = pk_ptr_array_to_strv (state->array_files);
 	dbg = g_strjoinv ("&", data);
-	egg_debug ("searching for %s", dbg);
+	g_debug ("searching for %s", dbg);
 	pk_client_what_provides_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
 				       PK_PROVIDES_ENUM_ANY, data,
 				       state->cancellable, state->progress_callback, state->progress_user_data,
@@ -344,7 +338,7 @@ pk_catalog_search_file_ready_cb (GObject *source_object, GAsyncResult *res, PkCa
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", pk_package_get_id (package));
+		g_debug ("adding %s", pk_package_get_id (package));
 		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
@@ -375,7 +369,7 @@ pk_catalog_do_search_files (PkCatalogState *state)
 	gchar *dbg;
 	data = pk_ptr_array_to_strv (state->array_files);
 	dbg = g_strjoinv ("&", data);
-	egg_debug ("searching for %s", dbg);
+	g_debug ("searching for %s", dbg);
 	pk_client_search_files_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1),
 				     data,
 				     state->cancellable, state->progress_callback, state->progress_user_data,
@@ -419,7 +413,7 @@ pk_catalog_resolve_ready_cb (GObject *source_object, GAsyncResult *res, PkCatalo
 	array = pk_results_get_package_array (results);
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		egg_debug ("adding %s", pk_package_get_id (package));
+		g_debug ("adding %s", pk_package_get_id (package));
 		g_ptr_array_add (state->array, g_object_ref (package));
 	}
 
@@ -454,8 +448,11 @@ pk_catalog_do_resolve (PkCatalogState *state)
 	gchar *dbg;
 	data = pk_ptr_array_to_strv (state->array_packages);
 	dbg = g_strjoinv ("&", data);
-	egg_debug ("searching for %s", dbg);
-	pk_client_resolve_async (state->catalog->priv->client, pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH, PK_FILTER_ENUM_NEWEST, -1), data,
+	g_debug ("searching for %s", dbg);
+	pk_client_resolve_async (state->catalog->priv->client,
+				 pk_bitfield_from_enums (PK_FILTER_ENUM_ARCH,
+							 PK_FILTER_ENUM_NOT_INSTALLED,
+							 PK_FILTER_ENUM_NEWEST, -1), data,
 				 state->cancellable, state->progress_callback, state->progress_user_data,
 				 (GAsyncReadyCallback) pk_catalog_resolve_ready_cb, state);
 	g_free (dbg);
@@ -468,7 +465,7 @@ pk_catalog_do_resolve (PkCatalogState *state)
  * @filename: the filename of the catalog to install
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *
@@ -506,7 +503,7 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	state->progress_user_data = progress_user_data;
 
 	/* load all data */
-	egg_debug ("loading from %s", filename);
+	g_debug ("loading from %s", filename);
 	ret = g_key_file_load_from_file (state->file, filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		pk_catalog_lookup_state_finish (state, error);
@@ -515,27 +512,25 @@ pk_catalog_lookup_async (PkCatalog *catalog, const gchar *filename, GCancellable
 	}
 
 	/* parse InstallPackages */
-	egg_debug ("processing InstallPackages");
+	g_debug ("processing InstallPackages");
 	pk_catalog_process_type (state, PK_CATALOG_MODE_PACKAGES);
 
 	/* parse InstallFiles */
-	egg_debug ("processing InstallFiles");
+	g_debug ("processing InstallFiles");
 	pk_catalog_process_type (state, PK_CATALOG_MODE_FILES);
 
 	/* parse InstallProvides */
-	egg_debug ("processing InstallProvides");
+	g_debug ("processing InstallProvides");
 	pk_catalog_process_type (state, PK_CATALOG_MODE_PROVIDES);
 
 	/* resolve, search-file then what-provides */
 	if (state->array_packages->len > 0) {
 		pk_catalog_do_resolve (state);
 		goto out;
-	}
-	if (state->array_files->len > 0) {
+	} else if (state->array_files->len > 0) {
 		pk_catalog_do_search_files (state);
 		goto out;
-	}
-	if (state->array_provides->len > 0) {
+	} else if (state->array_provides->len > 0) {
 		pk_catalog_do_what_provides (state);
 		goto out;
 	}
@@ -554,7 +549,7 @@ out:
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
+ * Return value: (transfer full): the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/
@@ -620,7 +615,7 @@ pk_catalog_init (PkCatalog *catalog)
 	control = pk_control_new ();
 	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
-		egg_error ("Failed to contact PackageKit: %s", error->message);
+		g_error ("Failed to contact PackageKit: %s", error->message);
 		g_error_free (error);
 		return;
 	}
@@ -631,7 +626,7 @@ pk_catalog_init (PkCatalog *catalog)
 		      NULL);
 
 	if (catalog->priv->distro_id == NULL)
-		egg_warning ("no distro_id, your distro needs to implement this in pk-engine.c!");
+		g_warning ("no distro_id, your distro needs to implement this in pk-engine.c!");
 }
 
 /**

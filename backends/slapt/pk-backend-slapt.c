@@ -224,8 +224,8 @@ backend_cancel (PkBackend *backend)
 }
 
 static slapt_pkg_info_t* _get_pkg_from_id(PkPackageId *pi,
-                            struct slapt_pkg_list *avail_pkgs,
-                            struct slapt_pkg_list *installed_pkgs)
+                            slapt_pkg_list_t *avail_pkgs,
+                            slapt_pkg_list_t *installed_pkgs)
 {
 	slapt_pkg_info_t *pkg;
 	gchar **fields;
@@ -244,8 +244,8 @@ static slapt_pkg_info_t* _get_pkg_from_id(PkPackageId *pi,
 }
 
 static slapt_pkg_info_t* _get_pkg_from_string(const gchar *package_id,
-                            struct slapt_pkg_list *avail_pkgs,
-                            struct slapt_pkg_list *installed_pkgs)
+                            slapt_pkg_list_t *avail_pkgs,
+                            slapt_pkg_list_t *installed_pkgs)
 {
 	PkPackageId *pi;
 	slapt_pkg_info_t *pkg;
@@ -354,13 +354,13 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	slapt_pkg_info_t *pkg;
 	int ret;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 
-	struct slapt_pkg_list *depends;
+	slapt_pkg_list_t *depends;
 
-	struct slapt_pkg_err_list *conflicts;
-	struct slapt_pkg_err_list *missing;
+	slapt_pkg_err_list_t *conflicts;
+	slapt_pkg_err_list_t *missing;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -432,8 +432,8 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	const gchar *description;
 	PkGroupEnum group;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	slapt_pkg_info_t *pkg;
 	const char *category;
 	struct category_map *catgroup;
@@ -497,10 +497,10 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 
 	slapt_pkg_info_t *pkg;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 
-	struct slapt_pkg_list *requires;
+	slapt_pkg_list_t *requires;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -560,10 +560,10 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	const gchar *old_package_id;
 	PkPackageId *pi;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	const gchar *search;
-	struct slapt_pkg_list *results;
+	slapt_pkg_list_t *results;
 	slapt_pkg_info_t *pkg;
 	slapt_pkg_info_t *oldpkg;
 	const gchar *title;
@@ -635,8 +635,8 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 	const gchar *package_id;
 	const gchar *new_package_id;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	slapt_pkg_info_t *pkg;
 	slapt_pkg_info_t *newpkg;
 	const gchar *summary;
@@ -694,8 +694,8 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 	PkPackageId *pi;
 	int ret;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	slapt_transaction_t *transaction;
 	slapt_pkg_info_t *pkg;
 
@@ -771,9 +771,9 @@ backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 	guint len;
 
 	const gchar *package_id;
-	struct slapt_pkg_list *pkglist;
+	slapt_pkg_list_t *pkglist;
 	slapt_pkg_info_t *pkg = NULL;
-	struct slapt_pkg_list *results = NULL;
+	slapt_pkg_list_t *results = NULL;
 
 	PkInfoEnum state;
 	const gchar *search;
@@ -832,8 +832,8 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	PkPackageId *pi;
 	int ret;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	slapt_transaction_t *transaction;
 	slapt_pkg_info_t *pkg;
 
@@ -896,9 +896,9 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 	guint i;
 
 	const gchar *package_id;
-	struct slapt_pkg_list *pkglist;
+	slapt_pkg_list_t *pkglist;
 	slapt_pkg_info_t *pkg = NULL;
-	struct slapt_pkg_list *results = NULL;
+	slapt_pkg_list_t *results = NULL;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -942,7 +942,7 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 	guint i;
 
 	const gchar *package_id;
-	struct slapt_pkg_list *pkglist;
+	slapt_pkg_list_t *pkglist;
 	slapt_pkg_info_t *pkg = NULL;
 	PkGroupEnum group;
 	PkGroupEnum search_group;
@@ -1003,9 +1003,9 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 	unsigned int i;
 
 	const gchar *package_id;
-	struct slapt_pkg_list *pkglist;
+	slapt_pkg_list_t *pkglist;
 	slapt_pkg_info_t *pkg = NULL;
-	struct slapt_pkg_list *results = NULL;
+	slapt_pkg_list_t *results = NULL;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -1058,10 +1058,10 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 	const gchar *package_id;
 	int ret;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	const gchar *search;
-	struct slapt_pkg_list *results = NULL;
+	slapt_pkg_list_t *results = NULL;
 	slapt_transaction_t *transaction;
 	slapt_pkg_info_t *pkg;
 	slapt_pkg_info_t *oldpkg;
@@ -1200,14 +1200,14 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 	};
 	PkFilterEnum *list_filter;
 
-	struct slapt_pkg_list *pkglist;
+	slapt_pkg_list_t *pkglist;
 	slapt_pkg_info_t *pkg;
 	slapt_pkg_info_t *other_pkg;
 	unsigned int i;
 	const gchar *package_id;
 
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -1278,8 +1278,8 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	const gchar *package_id;
 	const gchar *files;
 	const char *error;
-	struct slapt_pkg_list *installed;
-	struct slapt_pkg_list *available;
+	slapt_pkg_list_t *installed;
+	slapt_pkg_list_t *available;
 	slapt_pkg_info_t *pkg;
 	const char *summary;
 	const char *note = NULL;
@@ -1328,6 +1328,7 @@ backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar 
 	pk_backend_finished (backend);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Slack",				/* description */
 	"Anders F Björklund <afb@users.sourceforge.net>",	/* author */
@@ -1369,6 +1370,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

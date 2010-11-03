@@ -31,6 +31,7 @@ INCLUDES =						\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"	\
 	-DPK_COMPILATION				\
 	-DPOLKIT_LOCAL_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
+	-DG_LOG_DOMAIN=\"PackageKit\"			\
 	-I$(top_srcdir)/lib				\
 	$(NULL)
 
@@ -42,8 +43,6 @@ pkbackendinclude_HEADERS =				\
 	$(NULL)
 
 shared_SOURCES =					\
-	egg-debug.c					\
-	egg-debug.h					\
 	egg-string.c					\
 	egg-string.h					\
 	egg-dbus-monitor.c				\
@@ -62,7 +61,6 @@ shared_SOURCES =					\
 	pk-transaction-extra.h				\
 	pk-backend.c					\
 	pk-backend.h					\
-	pk-backend-internal.h				\
 	pk-network.c					\
 	pk-network.h					\
 	pk-shared.c					\
@@ -186,7 +184,6 @@ libpackagekit_action_lookup_la_SOURCES =			\
 
 libpackagekit_action_lookup_la_CFLAGS =				\
 	-DPOLKIT_BACKEND_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
-	-DG_LOG_DOMAIN=\"PackageKit-Action-Lookup\"		\
 	$(POLKIT_BACKEND_1_CFLAGS)				\
 	$(WARNINGFLAGS_C)					\
 	$(NULL)

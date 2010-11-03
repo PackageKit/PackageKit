@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Slapt\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_slapt.la
 libpk_backend_slapt_la_SOURCES = pk-backend-slapt.c

@@ -28,10 +28,19 @@
 static PkBackendSpawn *spawn;
 
 /**
- * backend_search_names:
+ * pk_backend_get_description:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Test-Spawn");
+}
+
+/**
+ * pk_backend_search_names:
+ */
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
@@ -45,70 +54,24 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_initialize:
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "test");
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
-
-PK_BACKEND_OPTIONS (
-	"Test Spawn",				/* description */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	NULL,					/* get_groups */
-	NULL,					/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	NULL,					/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	NULL,					/* get_depends */
-	NULL,					/* get_details */
-	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
-	NULL,					/* get_packages */
-	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
-	NULL,					/* install_files */
-	NULL,					/* install_packages */
-	NULL,					/* install_signature */
-	NULL,					/* refresh_cache */
-	NULL,					/* remove_packages */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
-	NULL,					/* rollback */
-	NULL,					/* search_details */
-	NULL,					/* search_files */
-	NULL,					/* search_groups */
-	backend_search_names,			/* search_names */
-	NULL,					/* update_package */
-	NULL,					/* update_system */
-	NULL,					/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
-

@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Alpm\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_alpm.la
 libpk_backend_alpm_la_SOURCES = pk-backend-alpm.c

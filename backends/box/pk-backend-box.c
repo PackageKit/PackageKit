@@ -22,7 +22,6 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <pk-backend.h>
-#include <egg-debug.h>
 
 #include <sqlite3.h>
 #include <libbox/libbox-db.h>
@@ -109,7 +108,6 @@ backend_find_packages_thread (PkBackend *backend)
 	sqlite3 *db = NULL;
 	gint filter_box = 0;
 
-
 	filters = pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 	values = pk_backend_get_strv (backend, "search");
@@ -172,7 +170,6 @@ backend_find_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 
-
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
@@ -206,7 +203,6 @@ backend_get_packages_thread (PkBackend *backend)
 	pk_backend_finished (backend);
 	return TRUE;
 }
-
 
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
@@ -460,7 +456,6 @@ backend_get_mime_types (PkBackend *backend)
         return g_strdup ("application/x-box-package");
 }
 
-
 /**
  * backend_get_depends:
  */
@@ -692,12 +687,13 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (!box_repos_set_param (rid, parameter, value)) {
-		egg_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
+		g_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
 	}
 
 	pk_backend_finished (backend);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
 	"Grzegorz Dąbrowski <grzegorz.dabrowski@gmail.com>",	/* author */
@@ -739,6 +735,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
 	NULL,					/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

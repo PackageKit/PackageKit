@@ -37,6 +37,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #endif /* HAVE_ARCHIVE_H */
+#include <string.h>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -49,9 +50,6 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
-
-#include "egg-debug.h"
-#include "egg-string.h"
 
 #define PK_SERVICE_PACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SERVICE_PACK, PkServicePackPrivate))
 
@@ -274,7 +272,7 @@ out:
 	/* switch back to PWD */
 	retval = chdir (buf);
 	if (retval != 0)
-		egg_warning ("cannot chdir back!");
+		g_warning ("cannot chdir back!");
 
 	return ret;
 }
@@ -300,7 +298,7 @@ pk_service_pack_get_random (const gchar *prefix, guint length)
 	guint prefix_len;
 
 	/* make a string to hold both parts */
-	prefix_len = egg_strlen (prefix, 28);
+	prefix_len = strlen (prefix);
 	str = g_strnfill (length + prefix_len, 'X');
 
 	/* copy over prefix */
@@ -475,7 +473,7 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 	/* convert to text */
 	data = g_key_file_to_data (file, NULL, &error);
 	if (data == NULL) {
-		egg_warning ("failed to convert to text: %s", error->message);
+		g_warning ("failed to convert to text: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -483,7 +481,7 @@ pk_service_pack_create_metadata_file (PkServicePackState *state, const gchar *fi
 	/* save contents */
 	ret = g_file_set_contents (filename, data, -1, &error);
 	if (!ret) {
-		egg_warning ("failed to save file: %s", error->message);
+		g_warning ("failed to save file: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -518,7 +516,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 				      "file not found %s", filename);
 		goto out;
 	}
-	egg_debug ("stat(%s), size=%lu bytes\n", filename, (glong) st.st_size);
+	g_debug ("stat(%s), size=%lu bytes\n", filename, (glong) st.st_size);
 
 	/* create new entry */
 	entry = archive_entry_new ();
@@ -552,7 +550,7 @@ pk_service_pack_archive_add_file (struct archive *arch, const gchar *filename, G
 	while (len > 0) {
 		wrote = archive_write_data (arch, buff, len);
 		if (wrote != len)
-			egg_warning("wrote %i instead of %i\n", wrote, len);
+			g_warning("wrote %i instead of %i\n", wrote, len);
 		/* ITS4: ignore, buffer statically preallocated  */
 		len = read (fd, buff, sizeof (buff));
 	}
@@ -674,7 +672,7 @@ pk_service_pack_get_files_from_array (const GPtrArray *array)
 
 	/* internal error */
 	if (array == NULL) {
-		egg_warning ("internal error");
+		g_warning ("internal error");
 		goto out;
 	}
 
@@ -838,7 +836,7 @@ out:
  * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *
@@ -945,7 +943,7 @@ out:
  * @package_ids_exclude: An array of packages to exclude, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @user_data: the data to pass to @callback
  *

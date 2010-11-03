@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-proc.h"
@@ -117,7 +116,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	/* get cmdline */
 	ret = g_file_get_contents (path, &cmdline, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to get cmdline: %s", error->message);
+		g_warning ("failed to get cmdline: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -142,7 +141,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	} else {
 		cmdline_full = pk_proc_refresh_find_file (cmdline);
 		if (cmdline_full == NULL) {
-			egg_warning ("cannot find in any bin dir: %s", cmdline);
+			g_debug ("cannot find in any bin dir: %s", cmdline);
 			ret = FALSE;
 			goto out;
 		}
@@ -151,7 +150,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	/* check if path exists */
 	ret = g_file_test (cmdline_full, G_FILE_TEST_IS_REGULAR);
 	if (!ret) {
-		egg_warning ("cmdline does not exist: %s", cmdline_full);
+		g_debug ("cmdline does not exist: %s", cmdline_full);
 		goto out;
 	}
 
@@ -180,7 +179,7 @@ pk_proc_refresh_add_file (PkProc *proc, const gchar *pid_text, const gchar *path
 	/* add data to array */
 	data = pk_proc_data_new (cmdline_full, pid, uid);
 	g_ptr_array_add (proc->priv->list_data, data);
-	egg_debug ("adding %s pid:%i uid:%i", data->cmdline, data->pid, data->uid);
+	g_debug ("adding %s pid:%i uid:%i", data->cmdline, data->pid, data->uid);
 out:
 	g_free (cmdline_full);
 	g_free (cmdline);
@@ -206,7 +205,7 @@ pk_proc_refresh (PkProc *proc)
 	/* open directory */
 	dir = g_dir_open ("/proc", 0, &error);
 	if (dir == NULL) {
-		egg_warning ("failed to open directory: %s", error->message);
+		g_warning ("failed to open directory: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}

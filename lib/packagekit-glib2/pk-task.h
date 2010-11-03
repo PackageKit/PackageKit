@@ -92,7 +92,7 @@ void		 pk_task_install_packages_async		(PkTask			*task,
 							 GCancellable		*cancellable,
 							 PkProgressCallback	 progress_callback,
 							 gpointer		 progress_user_data,
-							 GAsyncReadyCallback	 callback,
+							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 void		 pk_task_update_packages_async		(PkTask			*task,
 							 gchar			**package_ids,
@@ -273,6 +273,14 @@ gboolean	 pk_task_user_accepted			(PkTask			*task,
 							 guint			 request);
 gboolean	 pk_task_user_declined			(PkTask			*task,
 							 guint			 request);
+
+/* getters and setters */
+void		 pk_task_set_simulate			(PkTask			*task,
+							 gboolean		 simulate);
+gboolean	 pk_task_get_simulate			(PkTask			*task);
+void		 pk_task_set_interactive		(PkTask			*task,
+							 gboolean		 interactive);
+gboolean	 pk_task_get_interactive		(PkTask			*task);
 
 G_END_DECLS
 

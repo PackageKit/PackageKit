@@ -27,30 +27,39 @@
 static gboolean is_cancelled = FALSE;
 
 /**
- * backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
+ * pk_backend_get_description:
  */
-static void
-backend_initialize (PkBackend *backend)
+gchar *
+pk_backend_get_description (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	return g_strdup ("Test-Thread");
 }
 
 /**
- * backend_destroy:
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: initialize");
 }
 
 /**
- * backend_search_group_thread:
+ * pk_backend_destroy:
+ * This should only be run once per backend load, i.e. not every transaction
+ */
+void
+pk_backend_destroy (PkBackend *backend)
+{
+	g_debug ("backend: destroy");
+}
+
+/**
+ * pk_backend_search_groups_thread:
  */
 static gboolean
-backend_search_group_thread (PkBackend *backend)
+pk_backend_search_groups_thread (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -64,19 +73,19 @@ backend_search_group_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_group:
+ * pk_backend_search_groups:
  */
-static void
-backend_search_group (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_search_group_thread);
+	pk_backend_thread_create (backend, pk_backend_search_groups_thread);
 }
 
 /**
- * backend_search_name_thread:
+ * pk_backend_search_names_thread:
  */
 static gboolean
-backend_search_name_thread (PkBackend *backend)
+pk_backend_search_names_thread (PkBackend *backend)
 {
 	GTimer *timer;
 	guint percentage;
@@ -88,7 +97,7 @@ backend_search_name_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 
 	filters_text = pk_filter_bitfield_to_string (filters);
-	egg_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
+	g_debug ("started task (%p) search=%s filters=%s", backend, search, filters_text);
 	g_free (filters_text);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
@@ -107,7 +116,7 @@ backend_search_name_thread (PkBackend *backend)
 	} while (percentage < 100);
 	g_timer_destroy (timer);
 	pk_backend_set_percentage (backend, 100);
-	egg_debug ("exited task (%p)", backend);
+	g_debug ("exited task (%p)", backend);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -118,66 +127,20 @@ backend_search_name_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_name:
+ * pk_backend_search_names:
  */
-static void
-backend_search_name (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
-	pk_backend_thread_create (backend, backend_search_name_thread);
+	pk_backend_thread_create (backend, pk_backend_search_names_thread);
 }
 
 /**
- * backend_cancel:
+ * pk_backend_cancel:
  */
-static void
-backend_cancel (PkBackend *backend)
+void
+pk_backend_cancel (PkBackend *backend)
 {
-	egg_debug ("cancelling %p", backend);
+	g_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
 }
-
-PK_BACKEND_OPTIONS (
-	"Test Thread",				/* description */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	NULL,					/* get_groups */
-	NULL,					/* get_filters */
-	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
-	backend_cancel,				/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	NULL,					/* get_depends */
-	NULL,					/* get_details */
-	NULL,					/* get_distro_upgrades */
-	NULL,					/* get_files */
-	NULL,					/* get_packages */
-	NULL,					/* get_repo_list */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
-	NULL,					/* install_files */
-	NULL,					/* install_packages */
-	NULL,					/* install_signature */
-	NULL,					/* refresh_cache */
-	NULL,					/* remove_packages */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
-	NULL,					/* rollback */
-	NULL,					/* search_details */
-	NULL,					/* search_files */
-	backend_search_group,			/* search_groups */
-	backend_search_name,			/* search_names */
-	NULL,					/* update_package */
-	NULL,					/* update_system */
-	NULL,					/* what_provides */
-	NULL,					/* simulate_install_files */
-	NULL,					/* simulate_install_packages */
-	NULL,					/* simulate_remove_packages */
-	NULL,					/* simulate_update_packages */
-	NULL,					/* transaction_start */
-	NULL					/* transaction_stop */
-);
-

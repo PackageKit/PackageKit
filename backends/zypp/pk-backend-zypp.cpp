@@ -24,7 +24,6 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <unistd.h>
-#include <egg-debug.h>
 #include <string>
 #include <set>
 #include <glib/gi18n.h>
@@ -85,7 +84,7 @@ backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
 //	disabled get_zypp() - too slow for a dbus timeout after zypper clean -a
-	egg_debug ("zypp_backend_initialize");
+	g_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
 	std::vector<std::string> *signature = new std::vector<std::string> ();
@@ -100,7 +99,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	egg_debug ("zypp_backend_destroy");
+	g_debug ("zypp_backend_destroy");
 
 	delete (_eventDirectors [backend]);
 	_eventDirectors.erase (backend);
@@ -180,7 +179,7 @@ backend_get_requires_thread (PkBackend *backend)
 		if (!solver.resolvePool ()) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				g_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			return zypp_backend_finished_error (
 				backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
@@ -288,7 +287,7 @@ backend_get_depends_thread (PkBackend *backend)
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
 
-	egg_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
+	g_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
 
 	try
 	{
@@ -343,10 +342,10 @@ backend_get_depends_thread (PkBackend *backend)
 		std::vector<std::string> pkg_names;
 
 		for (zypp::Capabilities::const_iterator cap = req.begin (); cap != req.end (); ++cap) {
-			egg_debug ("get_depends - capability '%s'", cap->asString().c_str());
+			g_debug ("get_depends - capability '%s'", cap->asString().c_str());
 
 			if (caps.find (cap->asString ()) != caps.end()) {
-				egg_debug ("Interesting ! already have capability '%s'", cap->asString().c_str());
+				g_debug ("Interesting ! already have capability '%s'", cap->asString().c_str());
 				continue;
 			}
 
@@ -358,12 +357,11 @@ backend_get_depends_thread (PkBackend *backend)
 			for (zypp::sat::WhatProvides::const_iterator provider = prov_list.begin ();
 			     provider != prov_list.end (); provider++) {
 
-				egg_debug ("provider: '%s'", provider->asString().c_str());
+				g_debug ("provider: '%s'", provider->asString().c_str());
 
 				// filter out caps like "rpmlib(PayloadFilesHavePrefix) <= 4.0-1" (bnc#372429)
 				if (zypp_is_no_solvable (*provider))
 					continue;
-
 
 				// Is this capability provided by a package we already have listed ?
 				if (std::find (pkg_names.begin (), pkg_names.end(),
@@ -407,7 +405,7 @@ backend_get_depends_thread (PkBackend *backend)
 			zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
 			PkInfoEnum info = it->second.isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
-			egg_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
+			g_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
 				   info == PK_INFO_ENUM_INSTALLED ? "installed" : "available",
 				   it->second.isSystem(), 
 				   zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
@@ -620,7 +618,7 @@ check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
 		zypp::ResObject::constPtr res = ci->resolvable();
 		if (zypp::isKind<zypp::Patch>(res)) {
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
-			//egg_debug ("restart_suggested is %d",(int)patch->restartSuggested());
+			//g_debug ("restart_suggested is %d",(int)patch->restartSuggested());
 			if (patch->restartSuggested ()) {
 				if (!strcmp (PACKAGEKIT_RPM_NAME, res->satSolvable ().name ().c_str ()) ||
 						!strcmp (GNOME_PACKAGKEKIT_RPM_NAME, res->satSolvable ().name ().c_str ())) {
@@ -1023,7 +1021,7 @@ backend_install_packages_thread (PkBackend *backend)
 			for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
 			     it != pool.byNameEnd (name); it++) {
 
-				egg_debug ("PoolItem '%s'", it->satSolvable().asString().c_str());
+				g_debug ("PoolItem '%s'", it->satSolvable().asString().c_str());
 
 				if (!it->satSolvable().isSystem())
 					continue;
@@ -1631,7 +1629,7 @@ backend_update_packages_thread (PkBackend *backend)
 	delete zypp_get_updates (backend); // make sure _updating_self is set
 
 	if (_updating_self) {
-		egg_debug ("updating self and setting restart");
+		g_debug ("updating self and setting restart");
 		restart = PK_RESTART_ENUM_SESSION;
 		_updating_self = FALSE;
 	}
@@ -1812,19 +1810,17 @@ backend_what_provides_thread (PkBackend *backend)
 	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)
 	PkProvidesEnum provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
-	zypp::Capability cap (search);
-	zypp::sat::WhatProvides prov (cap);
+	zypp::ResPool pool = zypp_build_pool (backend, true);
 
 	if((provides == PK_PROVIDES_ENUM_HARDWARE_DRIVER) || g_ascii_strcasecmp("drivers_for_attached_hardware", search) == 0) {
 		// solver run
-		zypp::ResPool pool = zypp_build_pool (backend, true);
 		zypp::Resolver solver(pool);
 		solver.setIgnoreAlreadyRecommended (TRUE);
 
 		if (!solver.resolvePool ()) {
 			std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
 			for (std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-				egg_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+				g_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
 			}
 			solver.setIgnoreAlreadyRecommended (FALSE);
 			return zypp_backend_finished_error (
@@ -1851,6 +1847,9 @@ backend_what_provides_thread (PkBackend *backend)
 		}
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	} else {
+		zypp::Capability cap (search);
+		zypp::sat::WhatProvides prov (cap);
+
 		for (zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
 			if (zypp_filter_solvable (_filters, *it))
 				continue;
@@ -1920,6 +1919,7 @@ backend_transaction_stop (PkBackend *backend)
 	g_unsetenv ("ftp_proxy");
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, "
@@ -1963,6 +1963,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
 	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* upgrade_system */
 	backend_transaction_start,		/* transaction_start */
 	backend_transaction_stop		/* transaction_stop */
 );

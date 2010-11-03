@@ -34,8 +34,6 @@
 
 #include <packagekit-glib2/pk-eula-required.h>
 
-#include "egg-debug.h"
-
 static void     pk_eula_required_finalize	(GObject     *object);
 
 #define PK_EULA_REQUIRED_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequiredPrivate))

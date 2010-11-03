@@ -1,3 +1,119 @@
+Version 0.6.10
+~~~~~~~~~~~~~~
+Released: 2010-11-01
+
+Notes:
+ - This is the first release of PackageKit to support session
+   configuration helper support in the GLib and QT libraries.
+ - This allows debconf to work when using PackageKit on Debian.
+ - A formal transaction lifecyle is now in place, which allows future
+   extensions to hook into the transaction at certain points.
+
+Libraries:
+ - glib: Add several more FSF free licenses (Richard Hughes)
+ - glib: Add some C getters and setters for PkClient and PkTask (Richard Hughes)
+ - glib: Fix up a lot of the gobject-introspection warnings (Richard Hughes)
+
+Backends:
+ - alpm: Fixed detection code (Valeriy Lyasotskiy)
+ - aptcc: Add a nicer string pointing to launchpad when the changelog is not available (Daniel Nicoletti)
+ - aptcc: Feature: added a fetcher/parser for updates changelogs (Daniel Nicoletti)
+ - dummy: Add a self test which uses the frontend-socket hint, and plays ping-pong with the client (Richard Hughes)
+ - slapt: Updated backend for compatibility with slapt-get 0.10.2g (Jason Woodward)
+ - smart: dpkg requires a PATH variable, so set it (Anders F Bjorklund)
+ - smart: Set PATH for FreeBSD and Linux (Anders F Bjorklund)
+ - test: Add a pk_backend_get_description() vfunc to allow the backends to be loaded (Richard Hughes)
+ - yum: Add some initial code to support SearchGroup(collections) when using the Zif backend (Richard Hughes)
+ - yum: Fix compile with libzif from git master (Richard Hughes)
+ - yum: Properly fix the Resolve(@category) search as pkcon needs this to work to be able to install and remove groups (Richard Hughes)
+ - yum: Remove selinux-policy from InfrastructurePackages, it's updated way too often (Richard Hughes)
+ - yum: Support SearchGroup(newest) when using the Zif backend (Richard Hughes)
+ - yum: Use the cache-age if set by the frontend (Richard Hughes)
+ - yum: Use the Zif 'action-changed' signal to emit StatusChanged events for the transaction (Richard Hughes)
+ - yum: When returning results from SearchGroup(collections) check if the groups are installed (Richard Hughes)
+ - zypp: Call zypp_build_pool() when searching with what_provides (Zhang Qiang)
+
+New Features:
+ - Add a new optional hint, 'cache-age' to allow the frontend to control the maximum age of the metadata (Richard Hughes)
+ - Add PkClientHelper, which allows a helper session program to be run for a transaction (Richard Hughes)
+ - Add the concept of a transaction lifecycle (Richard Hughes)
+ - Document the @category resolve special case in the specification as it's been used for at least a year now (Richard Hughes)
+ - Document the @category search in the docs, as it's been used in a few backends for over two years... (Richard Hughes)
+
+Bugfixes:
+ - Add a special case of a DBus unique name of :org.freedesktop.PackageKit which is used in the self check code (Richard Hughes)
+ - Always emit Message(BackendError) when there is a parsing error from a spawned process (Richard Hughes)
+ - Always emit the locked and unlocked signals even if HAL is not available (Richard Hughes)
+ - cnf: Pass all arguments to comand-not-found so we open the newly installed tool with existing argv (Richard Hughes)
+ - Do not strip the trailing plus when comparing licences, as GPL+ exists, but GPL does not (Richard Hughes)
+ - Ensure we notice when a spawn command is invalid by printing it in red on the command line (Richard Hughes)
+ - Make PkLsof find lsof on Debian (Matthias Klumpp)
+ - Make the output of command-not-found match the bash builtin. Fixes rh#641311 (Richard Hughes)
+ - Move the managed bindings to a seporate repo as they are very out of date (Richard Hughes)
+ - Prevent a segfault when estimating the time when the backend issues many ProgressChanged signals at one time. Fixes #30941 (Richard Hughes)
+ - Raise the default of StateChangedTimeoutPriority from 5 seconds to 30 seconds. Fixes rh#641691 (Richard Hughes)
+ - Require GTK >= 2.91.0 for the GTK3 version of the PackageKit font install module (Richard Hughes)
+ - Return with success if the database contained no proxy values for a transaction, as this could be correct (Richard Hughes)
+ - Switch from EggDebug to the GLib debugging framework (Richard Hughes)
+ - Switch the default to UseUpdateCache=false now we are using cache-age (Richard Hughes)
+
+Version 0.6.9
+~~~~~~~~~~~~~
+Released: 2010-10-04
+
+Libraries:
+ - glib: Check the GCancellable is not already cancelled at startup in PkClient and PkControl (Richard Hughes)
+ - glib: Do not crash the client if a catalog file has both file and package sections (Richard Hughes)
+ - glib: Do not return simulation failures as critical errors (Richard Hughes)
+ - glib: Only return packages for catalogs that are _not_ installed (Richard Hughes)
+ - qt: Use setHints() on new constructor (Daniel Nicoletti)
+
+Backends:
+ - aptcc: Added Fonts group (Daniel Nicoletti)
+ - aptcc: Updated calls not to use deprecated apt code (Daniel Nicoletti)
+ - dummy: Remove the table-of-vfuncs from the dummy backend (Richard Hughes)
+ - entropy: Add forward compatibility, use EntropyRepositoryBase.listPackageIdsInCategory() if available. (Fabio Erculiani)
+ - portage: Add compatibility with latest Portage 2.2 rc snapshots (Fabio Erculiani)
+ - test: Remove the table-of-vfuncs from the test backends (Richard Hughes)
+ - yum: Allow SearchFiles and GetUpdateDetail to be processed using zif (Richard Hughes)
+ - yum: Change the configuration value UseZif to a bitfield of roles (Richard Hughes)
+ - yum: Don't assume yb.pkgSack.searchNevra() only returns one result to fix service pack generation (Richard Hughes)
+ - yum: Fix the split media handling in PackageKit yum backend (Hedayat Vatankhah)
+ - yum: For some reason yum needs to download the packagelists at init, so mark the download as cancellable. Fixes fd#30276 (Richard Hughes)
+ - yum: Get the changelog text using zif if it is available (Richard Hughes)
+ - yum: Only cancel the GCancellable if we are using ZIF (Richard Hughes)
+ - yum: Remove RepoSetData, it's a NOOP (Richard Hughes)
+ - yum: Remove the set-proxy from get_distro_upgrades(), it's already done in transaction_start() (Richard Hughes)
+ - yum: Remove the table-of-vfuncs from the yum backend (Richard Hughes)
+ - yum: Select the repository with the higher priority when a package exists in serveral repositories (Hedayat Vatankhah)
+ - yum: Switch to using transaction_start() and transaction_stop() to reduce backend complexity (Richard Hughes)
+ - yum: Use GetCategories also for using a zif GetGroups, as GetGroups does not have a role enum (Richard Hughes)
+ - yum: When prompting for media, include the disc number (Hedayat Vatankhah)
+ - zypp: Add development package support to filtering (Michael Meeks)
+ - zypp: Calculate sizes for patches correctly: bmo#2281, bnc#559802 (Michael Meeks)
+ - zypp: Enable proxy for zypp backend (Zhang Qiang)
+ - zypp: Include patches in 'resolve' results. bmc#2059 (Michael Meeks)
+ - zypp: Refresh cache and sat solv pool data if necessary (Zhang Qiang)
+ - zypp: Refresh cache before geting upgrade and installing (Zhang Qiang)
+ - zypp: Refresh system rpmdb while refresh cache (Zhang Qiang)
+ - zypp: Remove premature require_restart emission in update_packages_thread (Michael Meeks)
+
+New Features:
+ - Add transaction_start() and transaction_stop() vfuncs to make backends simpler (Richard Hughes)
+ - Add a feature that allows external scripts to be run after certain transactions (Richard Hughes)
+ - Allow backends to omit the table-of-vfuncs and use GModule functionality to resolve backend functions (Richard Hughes)
+
+Bugfixes:
+ - Add a nicer translated error when UpdatePackages has no packages to update. Fixes fd#30459 (Richard Hughes)
+ - browser-plugin: Do not query PkDesktop by default (Richard Hughes)
+ - browser-plugin: Fix up 2 small memory leaks in error paths (Richard Hughes)
+ - cnf: Add a proper error message when the transaction was cancelled (Richard Hughes)
+ - Don't call back into the daemon (from the daemon) when checking service packs. Fixes rh#634628 (Richard Hughes)
+ - Ensure we set an error if the spawned backend gets cancelled (Richard Hughes)
+ - Fix build with newer gobject-introspection (Matthias Clasen)
+ - Fix generating an updates service pack using pkgenpack (Richard Hughes)
+ - Use the correct network state for connman (Zhang Qiang)
+
 Version 0.6.8
 ~~~~~~~~~~~~~
 Released: 2010-09-06

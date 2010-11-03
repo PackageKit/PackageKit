@@ -25,7 +25,6 @@
 
 #include <glib.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-store.h"
@@ -60,9 +59,9 @@ pk_store_set_string (PkStore *store, const gchar *key, const gchar *data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_string, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving '%s' for %s", data, key);
+	g_debug ("saving '%s' for %s", data, key);
 	g_hash_table_insert (store->priv->hash_string, g_strdup (key), (gpointer) g_strdup (data));
 	return TRUE;
 }
@@ -85,9 +84,9 @@ pk_store_set_strv (PkStore *store, const gchar *key, gchar **data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_strv, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving %p for %s", data, key);
+	g_debug ("saving %p for %s", data, key);
 	g_hash_table_insert (store->priv->hash_strv, g_strdup (key), (gpointer) g_strdupv (data));
 	return TRUE;
 }
@@ -110,9 +109,9 @@ pk_store_set_array (PkStore *store, const gchar *key, GPtrArray *data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_array, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving %p for %s", data, key);
+	g_debug ("saving %p for %s", data, key);
 	g_hash_table_insert (store->priv->hash_array, g_strdup (key), (gpointer) data);
 	return TRUE;
 }
@@ -131,9 +130,9 @@ pk_store_set_uint (PkStore *store, const gchar *key, guint data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_pointer, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving %i for %s", data, key);
+	g_debug ("saving %i for %s", data, key);
 	g_hash_table_insert (store->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
 	return TRUE;
 }
@@ -152,9 +151,9 @@ pk_store_set_bool (PkStore *store, const gchar *key, gboolean data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_pointer, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving %i for %s", data, key);
+	g_debug ("saving %i for %s", data, key);
 	g_hash_table_insert (store->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
 	return TRUE;
 }
@@ -174,9 +173,9 @@ pk_store_set_pointer (PkStore *store, const gchar *key, gpointer data)
 	/* does already exist? */
 	ret = g_hash_table_remove (store->priv->hash_pointer, key);
 	if (ret)
-		egg_debug ("already set data for %s, so removing", key);
+		g_debug ("already set data for %s, so removing", key);
 
-	egg_debug ("saving %p for %s", data, key);
+	g_debug ("saving %p for %s", data, key);
 	g_hash_table_insert (store->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER(GPOINTER_TO_INT(data)+1));
 	return TRUE;
 }
@@ -194,7 +193,7 @@ pk_store_get_string (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_string, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return NULL;
 	}
 	return (const gchar *) value;
@@ -213,7 +212,7 @@ pk_store_get_strv (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_strv, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return NULL;
 	}
 	return (gchar **) value;
@@ -232,7 +231,7 @@ pk_store_get_array (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_array, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return NULL;
 	}
 	return (GPtrArray *) value;
@@ -251,7 +250,7 @@ pk_store_get_uint (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return 0;
 	}
 	/* we do the +1/-1 as NULL also means missing in the hash table */
@@ -271,7 +270,7 @@ pk_store_get_bool (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return FALSE;
 	}
 	return GPOINTER_TO_INT (value)-1;
@@ -290,7 +289,7 @@ pk_store_get_pointer (const PkStore *store, const gchar *key)
 	/* does already exist? */
 	value = g_hash_table_lookup (store->priv->hash_pointer, (gpointer) key);
 	if (value == NULL) {
-		egg_warning ("not set data for %s", key);
+		g_warning ("not set data for %s", key);
 		return NULL;
 	}
 	return GINT_TO_POINTER(GPOINTER_TO_INT(value)-1);

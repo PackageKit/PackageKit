@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Opkg\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_opkg.la
 libpk_backend_opkg_la_SOURCES = pk-backend-opkg.c

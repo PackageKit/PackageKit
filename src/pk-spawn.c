@@ -42,7 +42,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
 #include "pk-spawn.h"
@@ -186,7 +185,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* this shouldn't happen */
 	if (spawn->priv->finished) {
-		egg_warning ("finished twice!");
+		g_warning ("finished twice!");
 		return FALSE;
 	}
 
@@ -205,12 +204,12 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* Only print one in twenty times to avoid filling the screen */
 	if (limit_printing++ % 20 == 0)
-		egg_debug ("polling child_pid=%ld (1/20)", (long)spawn->priv->child_pid);
+		g_debug ("polling child_pid=%ld (1/20)", (long)spawn->priv->child_pid);
 
 	/* check if the child exited */
 	pid = waitpid (spawn->priv->child_pid, &status, WNOHANG);
 	if (pid == -1) {
-		egg_warning ("failed to get the child PID data for %ld", (long)spawn->priv->child_pid);
+		g_warning ("failed to get the child PID data for %ld", (long)spawn->priv->child_pid);
 		return TRUE;
 	}
 	if (pid == 0) {
@@ -218,7 +217,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		return TRUE;
 	}
 	if (pid != spawn->priv->child_pid) {
-		egg_warning ("some other process id was returned: got %ld and wanted %ld",
+		g_warning ("some other process id was returned: got %ld and wanted %ld",
 			     (long)pid, (long)spawn->priv->child_pid);
 		return TRUE;
 	}
@@ -242,30 +241,30 @@ pk_spawn_check_child (PkSpawn *spawn)
 	if (WIFSIGNALED (status)) {
 		retval = WTERMSIG (status);
 		if (retval == SIGQUIT) {
-			egg_debug ("the child process was terminated by SIGQUIT");
+			g_debug ("the child process was terminated by SIGQUIT");
 			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
 		} else if (retval == SIGKILL) {
-			egg_debug ("the child process was terminated by SIGKILL");
+			g_debug ("the child process was terminated by SIGKILL");
 			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 		} else {
-			egg_warning ("the child process was terminated by signal %i", WTERMSIG (status));
+			g_warning ("the child process was terminated by signal %i", WTERMSIG (status));
 			spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 		}
 	} else {
 		/* check we are dead and buried */
 		if (!WIFEXITED (status)) {
-			egg_warning ("the process did not exit, but waitpid() returned!");
+			g_warning ("the process did not exit, but waitpid() returned!");
 			return TRUE;
 		}
 
 		/* get the exit code */
 		retval = WEXITSTATUS (status);
 		if (retval == 0) {
-			egg_debug ("the child exited with success");
+			g_debug ("the child exited with success");
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SUCCESS;
 		} else {
-			egg_warning ("the child exited with return code %i", retval);
+			g_warning ("the child exited with return code %i", retval);
 			if (spawn->priv->exit == PK_SPAWN_EXIT_TYPE_UNKNOWN)
 				spawn->priv->exit = PK_SPAWN_EXIT_TYPE_FAILED;
 		}
@@ -287,7 +286,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->exit = PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT;
 
 	/* don't emit if we just closed an invalid dispatcher */
-	egg_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_string (spawn->priv->exit));
+	g_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_string (spawn->priv->exit));
 	g_signal_emit (spawn, signals [SIGNAL_EXIT], 0, spawn->priv->exit);
 
 	return FALSE;
@@ -303,20 +302,20 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		egg_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		return FALSE;
 	}
 
 	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 
-	egg_debug ("sending SIGKILL %ld", (long)spawn->priv->child_pid);
+	g_debug ("sending SIGKILL %ld", (long)spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
 	if (retval == EINVAL) {
-		egg_warning ("The signum argument is an invalid or unsupported number");
+		g_warning ("The signum argument is an invalid or unsupported number");
 		return FALSE;
 	} else if (retval == EPERM) {
-		egg_warning ("You do not have the privilege to send a signal to the process");
+		g_warning ("You do not have the privilege to send a signal to the process");
 		return FALSE;
 	}
 
@@ -354,26 +353,26 @@ pk_spawn_kill (PkSpawn *spawn)
 
 	/* is there a process running? */
 	if (spawn->priv->child_pid == -1) {
-		egg_warning ("no child pid to kill!");
+		g_warning ("no child pid to kill!");
 		return FALSE;
 	}
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		egg_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		return FALSE;
 	}
 
 	/* set this in case the script catches the signal and exits properly */
 	spawn->priv->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
 
-	egg_debug ("sending SIGQUIT %ld", (long)spawn->priv->child_pid);
+	g_debug ("sending SIGQUIT %ld", (long)spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
 	if (retval == EINVAL) {
-		egg_warning ("The signum argument is an invalid or unsupported number");
+		g_warning ("The signum argument is an invalid or unsupported number");
 		return FALSE;
 	} else if (retval == EPERM) {
-		egg_warning ("You do not have the privilege to send a signal to the process");
+		g_warning ("You do not have the privilege to send a signal to the process");
 		return FALSE;
 	}
 
@@ -405,20 +404,20 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
-		egg_warning ("already finished, ignoring");
+		g_debug ("already finished, ignoring");
 		ret = FALSE;
 		goto out;
 	}
 
 	/* is there a process running? */
 	if (spawn->priv->child_pid == -1) {
-		egg_debug ("no child pid");
+		g_debug ("no child pid");
 		ret = FALSE;
 		goto out;
 	}
 
 	/* buffer always has to have trailing newline */
-	egg_debug ("sending '%s'", command);
+	g_debug ("sending '%s'", command);
 	buffer = g_strdup_printf ("%s\n", command);
 
 	/* ITS4: ignore, we generated this */
@@ -427,7 +426,7 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->priv->stdin_fd, buffer, length);
 	if (wrote != length) {
-		egg_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
+		g_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length, spawn->priv->stdin_fd, strerror (errno));
 		ret = FALSE;
 	}
 out:
@@ -451,7 +450,7 @@ pk_spawn_exit (PkSpawn *spawn)
 
 	/* check if already sending exit */
 	if (spawn->priv->is_sending_exit) {
-		egg_warning ("already sending exit, ignoring");
+		g_warning ("already sending exit, ignoring");
 		return FALSE;
 	}
 
@@ -459,13 +458,13 @@ pk_spawn_exit (PkSpawn *spawn)
 	spawn->priv->is_sending_exit = TRUE;
 	ret = pk_spawn_send_stdin (spawn, "exit");
 	if (!ret) {
-		egg_warning ("failed to send exit");
+		g_debug ("failed to send exit");
 		goto out;
 	}
 
 	/* block until the previous script exited */
 	do {
-		egg_debug ("waiting for exit");
+		g_debug ("waiting for exit");
 		/* Usleep rather than g_main_loop_run -- we have to block.
 		 * If we run the loop, other idle events can be processed,
 		 * and this includes sending data to a new instance,
@@ -478,7 +477,7 @@ pk_spawn_exit (PkSpawn *spawn)
 	if (count < 500)
 		ret = TRUE;
 	else
-		egg_warning ("failed to exit script");
+		g_warning ("failed to exit script");
 out:
 	spawn->priv->is_sending_exit = FALSE;
 	return ret;
@@ -508,11 +507,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 
 	len = g_strv_length (argv);
 	for (i=0; i<len; i++)
-		egg_debug ("argv[%i] '%s'", i, argv[i]);
+		g_debug ("argv[%i] '%s'", i, argv[i]);
 	if (envp != NULL) {
 		len = g_strv_length (envp);
 		for (i=0; i<len; i++)
-			egg_debug ("envp[%i] '%s'", i, envp[i]);
+			g_debug ("envp[%i] '%s'", i, envp[i]);
 	}
 
 	/* check we are not using a closing instance */
@@ -527,30 +526,30 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 	 *  - all of envp are the same (proxy and locale settings) */
 	if (spawn->priv->stdin_fd != -1) {
 		if (g_strcmp0 (spawn->priv->last_argv0, argv[0]) != 0) {
-			egg_debug ("argv did not match, not reusing");
+			g_debug ("argv did not match, not reusing");
 		} else if (!egg_strvequal (spawn->priv->last_envp, envp)) {
-			egg_debug ("envp did not match, not reusing");
+			g_debug ("envp did not match, not reusing");
 		} else {
 			/* join with tabs, as spaces could be in file name */
 			command = g_strjoinv ("\t", &argv[1]);
 
 			/* reuse instance */
-			egg_debug ("reusing instance");
+			g_debug ("reusing instance");
 			ret = pk_spawn_send_stdin (spawn, command);
 			g_free (command);
 			if (ret)
 				return TRUE;
 
 			/* so fall on through to kill and respawn */
-			egg_warning ("failed to write, so trying to kill and respawn");
+			g_warning ("failed to write, so trying to kill and respawn");
 		}
 
 		/* kill off existing instance */
-		egg_debug ("changing dispatcher (exit old instance)");
+		g_debug ("changing dispatcher (exit old instance)");
 		spawn->priv->is_changing_dispatcher = TRUE;
 		ret = pk_spawn_exit (spawn);
 		if (!ret) {
-			egg_warning ("failed to exit previous instance");
+			g_warning ("failed to exit previous instance");
 			/* remove poll, as we can't reply on pk_spawn_check_child() */
 			if (spawn->priv->poll_id != 0) {
 				g_source_remove (spawn->priv->poll_id);
@@ -562,7 +561,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 
 	/* create spawned object for tracking */
 	spawn->priv->finished = FALSE;
-	egg_debug ("creating new instance of %s", argv[0]);
+	g_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
@@ -587,7 +586,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 #if HAVE_SETPRIORITY
 	/* don't completely bog the system down */
 	if (nice_value != 0) {
-		egg_debug ("renice to %i", nice_value);
+		g_debug ("renice to %i", nice_value);
 		setpriority (PRIO_PROCESS, spawn->priv->child_pid, nice_value);
 	}
 #endif
@@ -598,7 +597,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 		key = "BackendSpawnIdleIOBackground";
 	idleio = pk_conf_get_bool (spawn->priv->conf, key);
 	if (idleio) {
-		egg_debug ("setting ioprio class to idle");
+		g_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (spawn->priv->child_pid);
 	}
 
@@ -616,7 +615,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, GError **error)
 
 	/* sanity check */
 	if (spawn->priv->poll_id != 0) {
-		egg_warning ("trying to set timeout when already set");
+		g_warning ("trying to set timeout when already set");
 		g_source_remove (spawn->priv->poll_id);
 	}
 
@@ -784,7 +783,7 @@ pk_spawn_finalize (GObject *object)
 
 	/* still running? */
 	if (spawn->priv->stdin_fd != -1) {
-		egg_warning ("killing as still running");
+		g_debug ("killing as still running in finalize");
 		pk_spawn_kill (spawn);
 		/* just hope the script responded to SIGQUIT */
 		if (spawn->priv->kill_id != 0)

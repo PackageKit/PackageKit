@@ -5,6 +5,7 @@ NULL =
 
 TEST_FILES =						\
 	test.catalog					\
+	pk-client-helper-test.py			\
 	pk-spawn-test.sh				\
 	pk-spawn-proxy.sh				\
 	pk-spawn-test-sigquit.sh			\

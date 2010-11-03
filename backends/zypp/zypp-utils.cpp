@@ -100,7 +100,7 @@ get_zypp (PkBackend *backend)
 		        initialized = TRUE;
 	        }
         } catch (const zypp::Exception &ex) {
-		egg_error ("%s", ex.asUserString ().c_str ());
+		g_error ("%s", ex.asUserString ().c_str ());
         }
 
 	return zypp;
@@ -178,7 +178,7 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 				continue;
                         // skip not cached repos
                         if (manager.isCached (repo) == false) {
-                                egg_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+                                g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
                                 continue;
                         }
                         //FIXME see above, skip already cached repos
@@ -186,11 +186,11 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
                                 manager.loadFromCache (repo);
 		}
 	} catch (const zypp::repo::RepoNoAliasException &ex) {
-                egg_error ("Can't figure an alias to look in cache");
+                g_error ("Can't figure an alias to look in cache");
         } catch (const zypp::repo::RepoNotCachedException &ex) {
-                egg_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
+                g_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
 	} catch (const zypp::Exception &ex) {
-                egg_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
+                g_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 	}
 
 	return zypp->pool ();
@@ -242,7 +242,7 @@ zypp_build_local_pool (PkBackend *backend)
                 }
 
 	} catch (const zypp::Exception &ex) {
-		egg_error ("%s", ex.asUserString ().c_str ());
+		g_error ("%s", ex.asUserString ().c_str ());
 	}
 
         return zypp->pool ();
@@ -915,7 +915,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		if (simulate) {
 			ret = TRUE;
 
-			egg_debug ("simulating");
+			g_debug ("simulating");
 
 			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
 				if (!zypp_backend_pool_item_notify (backend, *it, TRUE))

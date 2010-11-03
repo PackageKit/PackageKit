@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
-
+# Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
 #
 # This file contain the base classes to implement a PackageKit python backend
 #
@@ -57,6 +57,7 @@ class PackageKitBaseBackend:
         self.has_network = False
         self.background = False
         self.interactive = False
+        self.cache_age = 0
         self.percentage_old = 0
         self.sub_percentage_old = 0
 
@@ -86,6 +87,12 @@ class PackageKitBaseBackend:
                 self.interactive = True
         except KeyError, e:
             print "Error: No INTERACTIVE envp"
+
+        # try to get CACHE_AGE state
+        try:
+            self.cache_age = int(os.environ['CACHE_AGE'])
+        except KeyError, e:
+            pass
 
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''

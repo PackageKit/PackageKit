@@ -25,8 +25,6 @@
 #include "pk-syslog.h"
 #include "pk-conf.h"
 
-#include "egg-debug.h"
-
 #define PK_SYSLOG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SYSLOG, PkSyslogPrivate))
 
 struct PkSyslogPrivate
@@ -60,7 +58,7 @@ pk_syslog_add (PkSyslog *self, PkSyslogType type, const gchar *format, ...)
 	if (type == PK_SYSLOG_TYPE_AUTH)
 		syslog (LOG_AUTHPRIV, "%s", va_args_buffer);
 
-	egg_debug ("logging to syslog '%s'", va_args_buffer);
+	g_debug ("logging to syslog '%s'", va_args_buffer);
 	syslog (LOG_DAEMON, "%s", va_args_buffer);
 }
 
@@ -103,7 +101,7 @@ pk_syslog_init (PkSyslog *self)
 	g_object_unref (conf);
 
 	if (!self->priv->enabled) {
-		egg_debug ("syslog fucntionality disabled");
+		g_debug ("syslog fucntionality disabled");
 		return;
 	}
 

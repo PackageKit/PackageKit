@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -393,6 +393,14 @@ void		 pk_client_simulate_update_packages_async (PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void		 pk_client_upgrade_system_async		(PkClient		*client,
+							 const gchar		*distro_id,
+							 GCancellable		*cancellable,
+							 PkProgressCallback	 progress_callback,
+							 gpointer		 progress_user_data,
+							 GAsyncReadyCallback	 callback_ready,
+							 gpointer		 user_data);
+
 void		 pk_client_adopt_async 			(PkClient		*client,
 							 const gchar		*transaction_id,
 							 GCancellable		*cancellable,
@@ -410,6 +418,21 @@ void		 pk_client_get_progress_async 		(PkClient		*client,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
+
+/* getters and setters */
+void		 pk_client_set_locale			(PkClient		*client,
+							 const gchar		*locale);
+const gchar	*pk_client_get_locale			(PkClient		*client);
+void		 pk_client_set_background		(PkClient		*client,
+							 gboolean		 background);
+gboolean	 pk_client_get_background		(PkClient		*client);
+void		 pk_client_set_interactive		(PkClient		*client,
+							 gboolean		 interactive);
+gboolean	 pk_client_get_interactive		(PkClient		*client);
+gboolean	 pk_client_get_idle			(PkClient		*client);
+void		 pk_client_set_cache_age		(PkClient		*client,
+							 guint			 cache_age);
+guint		 pk_client_get_cache_age		(PkClient		*client);
 
 G_END_DECLS
 

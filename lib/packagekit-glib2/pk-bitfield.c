@@ -32,8 +32,6 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-bitfield.h>
 
-#include "egg-debug.h"
-
 /**
  * pk_bitfield_contain_priority:
  * @values: a valid bitfield instance
@@ -131,7 +129,7 @@ pk_role_bitfield_to_string (PkBitfield roles)
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
-		egg_warning ("not valid!");
+		g_warning ("not valid!");
 		g_string_append (string, pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
@@ -142,7 +140,7 @@ pk_role_bitfield_to_string (PkBitfield roles)
 
 /**
  * pk_role_bitfield_from_string:
- * @roles: the enumerated constant value, e.g. "available;~gui"
+ * @roles: the enumerated constant value, e.g. "search-file;update-system"
  *
  * Converts text representation to its enumerated type bitfield
  *
@@ -161,18 +159,15 @@ pk_role_bitfield_from_string (const gchar *roles)
 
 	split = g_strsplit (roles, ";", 0);
 	if (split == NULL) {
-		egg_warning ("unable to split");
+		g_warning ("unable to split");
 		goto out;
 	}
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		role = pk_role_enum_from_string (split[i]);
-		if (role == PK_ROLE_ENUM_UNKNOWN) {
-			roles_enum = 0;
-			break;
-		}
-		roles_enum += pk_bitfield_value (role);
+		if (role != PK_ROLE_ENUM_UNKNOWN)
+			roles_enum += pk_bitfield_value (role);
 	}
 out:
 	g_strfreev (split);
@@ -203,7 +198,7 @@ pk_group_bitfield_to_string (PkBitfield groups)
 	}
 	/* do we have a no bitfield? \n */
 	if (string->len == 0) {
-		egg_warning ("not valid!");
+		g_warning ("not valid!");
 		g_string_append (string, pk_group_enum_to_string (PK_GROUP_ENUM_UNKNOWN));
 	} else {
 		/* remove last \n */
@@ -233,18 +228,15 @@ pk_group_bitfield_from_string (const gchar *groups)
 
 	split = g_strsplit (groups, ";", 0);
 	if (split == NULL) {
-		egg_warning ("unable to split");
+		g_warning ("unable to split");
 		goto out;
 	}
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		group = pk_group_enum_from_string (split[i]);
-		if (group == PK_GROUP_ENUM_UNKNOWN) {
-			groups_enum = 0;
-			break;
-		}
-		groups_enum += pk_bitfield_value (group);
+		if (group != PK_GROUP_ENUM_UNKNOWN)
+			groups_enum += pk_bitfield_value (group);
 	}
 out:
 	g_strfreev (split);
@@ -279,7 +271,7 @@ pk_filter_bitfield_to_string (PkBitfield filters)
 	}
 	/* do we have a 'none' filter? \n */
 	if (string->len == 0) {
-		egg_warning ("not valid!");
+		g_warning ("not valid!");
 		g_string_append (string, pk_filter_enum_to_string (PK_FILTER_ENUM_NONE));
 	} else {
 		/* remove last \n */
@@ -309,18 +301,15 @@ pk_filter_bitfield_from_string (const gchar *filters)
 
 	split = g_strsplit (filters, ";", 0);
 	if (split == NULL) {
-		egg_warning ("unable to split");
+		g_warning ("unable to split");
 		goto out;
 	}
 
 	length = g_strv_length (split);
 	for (i=0; i<length; i++) {
 		filter = pk_filter_enum_from_string (split[i]);
-		if (filter == PK_FILTER_ENUM_UNKNOWN) {
-			filters_enum = 0;
-			break;
-		}
-		filters_enum += pk_bitfield_value (filter);
+		if (filter != PK_FILTER_ENUM_UNKNOWN)
+			filters_enum += pk_bitfield_value (filter);
 	}
 out:
 	g_strfreev (split);

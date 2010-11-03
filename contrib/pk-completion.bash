@@ -2,6 +2,7 @@
 # bash completion support for PackageKit's console commands.
 #
 # Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+# Copyright (C) 2010 Richard Hughes <richard@hughsie.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -18,7 +19,7 @@
 
 __pkcon_commandlist="
     accept-eula
-    get-actions
+    get-roles
     get-depends
     get-details
     get-distro-upgrades
@@ -33,9 +34,6 @@ __pkcon_commandlist="
     get-update-detail
     get-updates
     get-categories
-    list-create
-    list-diff
-    list-install
     install
     install-local
     refresh
@@ -47,6 +45,7 @@ __pkcon_commandlist="
     resolve
     search
     update
+    upgrade-system
     "
 
 __pkconcomp ()

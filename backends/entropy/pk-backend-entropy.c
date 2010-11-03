@@ -32,7 +32,7 @@ static const gchar* BACKEND_FILE = "entropyBackend.py";
 static void
 backend_initialize (PkBackend *backend)
 {
-	egg_debug ("backend: initialize");
+	g_debug ("backend: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "entropy");
 	/* allowing sigkill as long as no one complain */
@@ -46,7 +46,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	egg_debug ("backend: destroy");
+	g_debug ("backend: destroy");
 	g_object_unref (spawn);
 }
 
@@ -555,6 +555,7 @@ backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
     g_free (package_ids_temp);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Entropy",				/* description */
 	"Fabio Erculiani (lxnay) <lxnay@sabayon.org>",	/* author */
@@ -596,6 +597,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,  /* simulate_install_packages */
 	backend_simulate_remove_packages,   /* simulate_remove_packages */
 	backend_simulate_update_packages,   /* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
 );

@@ -20,6 +20,7 @@ INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
+	-DPK_COMPILATION				\
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"		\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
@@ -33,8 +34,6 @@ PK_GLIB2_LIBS =						\
 	$(NULL)
 
 pk_debuginfo_install_SOURCES =				\
-	egg-debug.c					\
-	egg-debug.h					\
 	pk-debuginfo-install.c				\
 	$(NULL)
 

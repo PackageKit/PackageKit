@@ -28,6 +28,7 @@ from packagekit.package import PackagekitPackage
 from packagekit.enums import *
 import re
 import sys
+import os
 import codecs
 import locale
 
@@ -938,7 +939,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     systemchannel = None # unfortunately package strings depend on system
 
     def _machine(self):
-        import os
         machine = os.uname()[-1]
         if machine == "Power Macintosh": #<sigh>
             machine = "ppc"
@@ -1329,6 +1329,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 def main():
     backend = PackageKitSmartBackend('')
     backend.dispatcher(sys.argv[1:])
+
+# Required for daemon mode
+if sys.platform.startswith("linux"):
+    os.putenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+elif sys.platform.startswith("freebsd"):
+    os.putenv("PATH", "/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin")
 
 if __name__ == "__main__":
     main()

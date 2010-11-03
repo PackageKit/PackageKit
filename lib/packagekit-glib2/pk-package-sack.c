@@ -40,8 +40,6 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
-
 static void     pk_package_sack_finalize	(GObject     *object);
 
 #define PK_PACKAGE_SACK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PACKAGE_SACK, PkPackageSackPrivate))
@@ -103,7 +101,7 @@ pk_package_sack_get_size (PkPackageSack *sack)
  *
  * Returns all the Package IDs in the sack
  *
- * Return value: the number of packages in the sack, free with g_strfreev()
+ * Return value: (transfer full): the number of packages in the sack, free with g_strfreev()
  *
  * Since: 0.5.3
  **/
@@ -132,7 +130,7 @@ pk_package_sack_get_ids (PkPackageSack *sack)
  *
  * Gets the package array from the sack
  *
- * Return value: a #GPtrArray, free with g_ptr_array_unref()
+ * Return value: (transfer full): a #GPtrArray, free with g_ptr_array_unref()
  *
  * Since: 0.6.1
  **/
@@ -151,7 +149,7 @@ pk_package_sack_get_array (PkPackageSack *sack)
  * Returns a new package sack which only matches packages that match the
  * specified info enum value.
  *
- * Return value: a new #PkPackageSack, free with g_object_unref()
+ * Return value: (transfer full): a new #PkPackageSack, free with g_object_unref()
  *
  * Since: 0.6.2
  **/
@@ -183,13 +181,13 @@ pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
 /**
  * pk_package_sack_filter:
  * @sack: a valid #PkPackageSack instance
- * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to add
+ * @filter_cb: (scope call): a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to add
  * @user_data: user data to pass to @filter_cb
  *
  * Returns a new package sack which only matches packages that return %TRUE
  * from the filter function.
  *
- * Return value: a new #PkPackageSack, free with g_object_unref()
+ * Return value: (transfer full): a new #PkPackageSack, free with g_object_unref()
  *
  * Since: 0.6.3
  **/
@@ -340,7 +338,7 @@ pk_package_sack_remove_package_by_id (PkPackageSack *sack, const gchar *package_
 /**
  * pk_package_sack_remove_by_filter:
  * @sack: a valid #PkPackageSack instance
- * @filter_cb: a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to retain
+ * @filter_cb: (scope call): a #PkPackageSackFilterFunc, which returns %TRUE for the #PkPackage's to retain
  * @user_data: user data to pass to @filter_cb
  *
  * Removes from the package sack any packages that return %FALSE from the filter
@@ -383,7 +381,7 @@ pk_package_sack_remove_by_filter (PkPackageSack *sack, PkPackageSackFilterFunc f
  * Finds a package in a sack from reference. As soon as one package is found
  * the search is stopped.
  *
- * Return value: the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
+ * Return value: (transfer full): the #PkPackage object, or %NULL if unfound. Free with g_object_unref()
  *
  * Since: 0.5.2
  **/
@@ -610,7 +608,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to resolve: %s", error->message);
+		g_warning ("failed to resolve: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -619,7 +617,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	/* get the packages */
 	packages = pk_results_get_package_array (results);
 	if (packages->len == 0) {
-		egg_warning ("%i", state->ret);
+		g_warning ("%i", state->ret);
 		error = g_error_new (1, 0, "no packages found!");
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
@@ -638,7 +636,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 
@@ -669,7 +667,7 @@ out:
  * pk_package_sack_resolve_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -764,7 +762,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to details: %s", error->message);
+		g_warning ("failed to details: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -795,7 +793,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 
@@ -831,7 +829,7 @@ out:
  * pk_package_sack_get_details_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -902,7 +900,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
-		egg_warning ("failed to update_detail: %s", error->message);
+		g_warning ("failed to update_detail: %s", error->message);
 		pk_package_sack_merge_bool_state_finish (state, error);
 		g_error_free (error);
 		goto out;
@@ -938,7 +936,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 		/* get package, and set data */
 		package = pk_package_sack_find_by_id (state->sack, package_id);
 		if (package == NULL) {
-			egg_warning ("failed to find %s", package_id);
+			g_warning ("failed to find %s", package_id);
 			goto skip;
 		}
 
@@ -986,7 +984,7 @@ out:
  * pk_package_sack_get_update_detail_async:
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
- * @progress_callback: the function to run when the progress changes
+ * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback

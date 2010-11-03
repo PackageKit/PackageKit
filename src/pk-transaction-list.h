@@ -74,10 +74,7 @@ gchar		*pk_transaction_list_get_state		(PkTransactionList	*tlist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransaction	*pk_transaction_list_get_transaction	(PkTransactionList	*tlist,
-							 const gchar		*tid,
-							 gboolean		*running,
-							 gboolean		*committed,
-							 gboolean		*finished);
+							 const gchar		*tid);
 
 G_END_DECLS
 

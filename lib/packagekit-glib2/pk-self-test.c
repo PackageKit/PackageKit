@@ -22,12 +22,12 @@
 #include "config.h"
 
 #include <glib-object.h>
-
-#include "egg-debug.h"
-#include "egg-string.h"
+#include <glib/gstdio.h>
+#include <gio/gunixsocketaddress.h>
 
 #include "pk-catalog.h"
 #include "pk-client.h"
+#include "pk-client-helper.h"
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-console-shared.h"
@@ -47,6 +47,7 @@
 #include "pk-client-sync.h"
 #include "pk-progress-bar.h"
 #include "pk-service-pack.h"
+#include "pk-debug.h"
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
@@ -258,7 +259,7 @@ pk_test_catalog_lookup_cb (GObject *object, GAsyncResult *res, gpointer user_dat
 	/* list for shits and giggles */
 	for (i=0; i<array->len; i++) {
 		package = g_ptr_array_index (array, i);
-		egg_debug ("%i\t%s", i, pk_package_get_id (package));
+		g_debug ("%i\t%s", i, pk_package_get_id (package));
 	}
 	g_ptr_array_unref (array);
 	_g_test_loop_quit ();
@@ -272,7 +273,7 @@ pk_test_catalog_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -289,9 +290,121 @@ pk_test_catalog_func (void)
 				 (PkProgressCallback) pk_test_catalog_progress_cb, NULL,
 				 (GAsyncReadyCallback) pk_test_catalog_lookup_cb, NULL);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("resolvd, searched, etc. in %f", g_test_timer_elapsed ());
+	g_debug ("resolvd, searched, etc. in %f", g_test_timer_elapsed ());
 
 	g_object_unref (catalog);
+}
+
+/**
+ * pk_test_client_helper_output_cb:
+ **/
+static gboolean
+pk_test_client_helper_output_cb (GSocket *socket, GIOCondition condition, gpointer user_data)
+{
+	GError *error = NULL;
+	gsize len;
+	gchar buffer[6];
+	gboolean ret = TRUE;
+
+	/* the helper process exited */
+	if ((condition & G_IO_HUP) > 0) {
+		g_warning ("socket was disconnected");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* there is data */
+	if ((condition & G_IO_IN) > 0) {
+		len = g_socket_receive (socket, buffer, 6, NULL, &error);
+		g_assert_no_error (error);
+		g_assert_cmpint (len, >, 0);
+
+		/* good for us */
+		if (g_strcmp0 (buffer, "pong\n") == 0) {
+			_g_test_loop_quit ();
+			goto out;
+		}
+		/* bad */
+		g_warning ("child returned unexpected data: %s", buffer);
+	}
+out:
+	return ret;
+}
+
+static void
+pk_test_client_helper_func (void)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *filename;
+	PkClientHelper *client_helper;
+	const gchar *argv[] = { TESTDATADIR "/pk-client-helper-test.py", NULL };
+	const gchar *envp[] = { "DAVE=1", NULL };
+	GSocket *socket = NULL;
+	GSocketAddress *address = NULL;
+	gsize wrote;
+	GSource *source;
+
+	client_helper = pk_client_helper_new ();
+	g_assert (client_helper != NULL);
+
+	/* unref without using */
+	g_object_unref (client_helper);
+
+	/* new object */
+	client_helper = pk_client_helper_new ();
+	g_assert (client_helper != NULL);
+
+	/* create a socket filename */
+	filename = g_build_filename (g_get_tmp_dir (), "pk-self-test.socket", NULL);
+
+	/* ensure previous sockets are deleted */
+	g_unlink (filename);
+
+	/* start a demo program */
+	ret = pk_client_helper_start (client_helper, filename, (gchar**) argv, (gchar**) envp, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
+
+	/* create socket */
+	socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
+	g_assert_no_error (error);
+	g_assert (socket != NULL);
+	g_socket_set_blocking (socket, FALSE);
+	g_socket_set_keepalive (socket, TRUE);
+
+	/* connect to it */
+	address = g_unix_socket_address_new_with_type (filename, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	ret = g_socket_connect (socket, address, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* socket has data */
+	source = g_socket_create_source (socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
+	g_source_set_callback (source, (GSourceFunc) pk_test_client_helper_output_cb, NULL, NULL);
+	g_source_attach (source, NULL);
+
+	/* send some data */
+	wrote = g_socket_send (socket, "ping\n", 5, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (wrote, ==, 5);
+
+	/* run for a few seconds */
+	_g_test_loop_run_with_timeout (1000);
+
+	/* stop the demo program */
+	ret = pk_client_helper_stop (client_helper, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* delete socket */
+	g_unlink (filename);
+
+	g_free (filename);
+	g_object_unref (socket);
+	g_object_unref (address);
+	g_object_unref (client_helper);
 }
 
 static void
@@ -322,7 +435,7 @@ pk_test_client_resolve_cb (GObject *object, GAsyncResult *res, gpointer user_dat
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -351,7 +464,7 @@ pk_test_client_get_details_cb (GObject *object, GAsyncResult *res, gpointer user
 
 	g_ptr_array_unref (details);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -384,7 +497,7 @@ pk_test_client_get_updates_cb (GObject *object, GAsyncResult *res, gpointer user
 
 	g_object_unref (sack);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	g_object_unref (results);
 	_g_test_loop_quit ();
@@ -420,6 +533,18 @@ pk_test_client_search_name_cb (GObject *object, GAsyncResult *res, gpointer user
 	_g_test_loop_quit ();
 }
 
+static void
+pk_test_client_search_name_cancellable_cancelled_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	results = pk_client_generic_finish (client, res, &error);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_CANCELLED);
+	g_assert (results == NULL);
+	_g_test_loop_quit ();
+}
+
 static guint _progress_cb = 0;
 static guint _status_cb = 0;
 static guint _package_cb = 0;
@@ -451,7 +576,7 @@ pk_test_client_progress_cb (PkProgress *progress, PkProgressType type, gpointer 
 static gboolean
 pk_test_client_cancel_cb (GCancellable *cancellable)
 {
-	egg_warning ("cancelling method");
+	g_debug ("cancelling method");
 	g_cancellable_cancel (cancellable);
 	return FALSE;
 }
@@ -513,7 +638,29 @@ pk_test_client_notify_idle_cb (PkClient *client, GParamSpec *pspec, gpointer use
 {
 	gboolean idle;
 	g_object_get (client, "idle", &idle, NULL);
-	egg_debug ("idle=%i", idle);
+	g_debug ("idle=%i", idle);
+}
+
+static void
+pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkClient *client = PK_CLIENT (object);
+	GError *error = NULL;
+	PkResults *results = NULL;
+	GPtrArray *messages;
+
+	/* get the results */
+	results = pk_client_generic_finish (client, res, &error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+
+	/* make sure we handled the ping/pong frontend-socket thing, which is 5 + 1 */
+	messages = pk_results_get_message_array (results);
+	g_assert_cmpint (messages->len, ==, 6);
+	g_ptr_array_unref (messages);
+
+	g_object_unref (results);
+	_g_test_loop_quit ();
 }
 
 static void
@@ -579,7 +726,7 @@ pk_test_client_func (void)
 		 (GAsyncReadyCallback) pk_test_client_resolve_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* check idle */
 	g_object_get (client, "idle", &ret, NULL);
@@ -595,7 +742,7 @@ pk_test_client_func (void)
 	g_assert_cmpstr (tid, ==, _tid);
 	g_assert_cmpint (role, ==, PK_ROLE_ENUM_RESOLVE);
 	g_assert_cmpint (status, ==, PK_STATUS_ENUM_FINISHED);
-	egg_debug ("got progress in %f", g_test_timer_elapsed ());
+	g_debug ("got progress in %f", g_test_timer_elapsed ());
 	g_object_unref (progress);
 	g_free (tid);
 	g_free (_tid);
@@ -616,7 +763,7 @@ pk_test_client_func (void)
 		     (GAsyncReadyCallback) pk_test_client_get_details_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* got updates */
 	g_assert_cmpint (_progress_cb, >, 0);
@@ -632,7 +779,7 @@ pk_test_client_func (void)
 		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
 		     (GAsyncReadyCallback) pk_test_client_get_updates_cb, NULL);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("got updates in %f", g_test_timer_elapsed ());
+	g_debug ("got updates in %f", g_test_timer_elapsed ());
 
 	/* it takes more than 50ms to get the progress of the transaction, and if
 	 * getting updates from internal cache, then it'll take a shed load less
@@ -650,10 +797,24 @@ pk_test_client_func (void)
 		     (GAsyncReadyCallback) pk_test_client_search_name_cb, NULL);
 	g_timeout_add (1000, (GSourceFunc) pk_test_client_cancel_cb, cancellable);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("cancelled in %f", g_test_timer_elapsed ());
+	g_debug ("cancelled in %f", g_test_timer_elapsed ());
+
+	/* ensure we abort with error if we cancel */
+	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
+		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
+		     (GAsyncReadyCallback) pk_test_client_search_name_cancellable_cancelled_cb, NULL);
+	_g_test_loop_run_with_timeout (15000);
 
 	g_strfreev (values);
+
+	/* okay now */
 	g_cancellable_reset (cancellable);
+
+	/* do the update-system role to trigger the fake pipe stuff */
+	pk_client_update_system_async (client, TRUE, NULL,
+				       (PkProgressCallback) pk_test_client_progress_cb, NULL,
+				       (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb, NULL);
+	_g_test_loop_run_with_timeout (15000);
 
 	/* do downloads */
 	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
@@ -662,7 +823,7 @@ pk_test_client_func (void)
 		   (GAsyncReadyCallback) pk_test_client_download_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("downloaded and copied in %f", g_test_timer_elapsed ());
+	g_debug ("downloaded and copied in %f", g_test_timer_elapsed ());
 
 	/* test recursive signal handling */
 #if 0
@@ -752,7 +913,7 @@ pk_test_control_get_tid_cb (GObject *object, GAsyncResult *res, gpointer user_da
 	g_assert_no_error (error);
 	g_assert (tid != NULL);
 
-	egg_debug ("tid = %s", tid);
+	g_debug ("tid = %s", tid);
 	g_free (tid);
 	if (--_refcount == 0)
 		_g_test_loop_quit ();
@@ -793,7 +954,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages");
+		     "simulate-remove-packages;simulate-update-packages;upgrade-system");
 	g_free (text);
 
 	/* check filters */
@@ -804,7 +965,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	/* check groups */
 	text = pk_group_bitfield_to_string (groups);
 	g_assert_cmpstr (text, ==, "accessibility;games;system");
-	egg_debug ("groups = %s", text);
+	g_debug ("groups = %s", text);
 
 	g_free (text);
 
@@ -862,51 +1023,51 @@ pk_test_control_func (void)
 	_refcount = 1;
 	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got tid in %f", g_test_timer_elapsed ());
+	g_debug ("got tid in %f", g_test_timer_elapsed ());
 
 	/* get multiple TIDs async */
 	_refcount = LOOP_SIZE;
 	for (i=0; i<_refcount; i++) {
-		egg_debug ("getting #%i", i+1);
+		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got %i tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
+	g_debug ("got %i tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get properties async */
 	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got properties types in %f", g_test_timer_elapsed ());
+	g_debug ("got properties types in %f", g_test_timer_elapsed ());
 
 	/* get properties async (again, to test caching) */
 	_refcount = 1;
 	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got properties in %f", g_test_timer_elapsed ());
+	g_debug ("got properties in %f", g_test_timer_elapsed ());
 
 	/* do multiple requests async */
 	_refcount = LOOP_SIZE * 4;
 	for (i=0; i<_refcount; i++) {
-		egg_debug ("getting #%i", i+1);
+		g_debug ("getting #%i", i+1);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
 		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got %i 2*properties and 2*tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
+	g_debug ("got %i 2*properties and 2*tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get time since async */
 	pk_control_get_time_since_action_async (control, PK_ROLE_ENUM_GET_UPDATES, NULL, (GAsyncReadyCallback) pk_test_control_get_time_since_action_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got get time since in %f", g_test_timer_elapsed ());
+	g_debug ("got get time since in %f", g_test_timer_elapsed ());
 
 	/* get auth state async */
 	pk_control_can_authorize_async (control, "org.freedesktop.packagekit.system-update", NULL,
 		(GAsyncReadyCallback) pk_test_control_can_authorize_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("get auth state in %f", g_test_timer_elapsed ());
+	g_debug ("get auth state in %f", g_test_timer_elapsed ());
 
 	/* version major */
 	g_object_get (control, "version-major", &version, NULL);
@@ -937,7 +1098,7 @@ pk_test_control_func (void)
 		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;rollback;"
 		     "search-details;search-file;search-group;search-name;update-packages;update-system;"
 		     "what-provides;download-packages;get-distro-upgrades;simulate-install-packages;"
-		     "simulate-remove-packages;simulate-update-packages");
+		     "simulate-remove-packages;simulate-update-packages;upgrade-system");
 	g_free (text);
 
 	g_object_unref (control);
@@ -962,7 +1123,7 @@ pk_test_desktop_func (void)
 	/* file does not exist */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 	if (!ret) {
-		egg_warning ("skipping checks as database does not exist");
+		g_warning ("skipping checks as database does not exist");
 		goto out;
 	}
 
@@ -976,7 +1137,7 @@ pk_test_desktop_func (void)
 
 	/* dummy, not yum */
 	if (g_strcmp0 (package, "vips-doc") == 0); {
-		egg_debug ("created db with dummy, skipping remaining tests");
+		g_debug ("created db with dummy, skipping remaining tests");
 		goto out;
 	}
 	g_assert_cmpstr (package, ==, "gnome-packagekit");
@@ -1330,7 +1491,7 @@ pk_test_package_sack_func (void)
 	/* merge resolve results */
 	pk_package_sack_resolve_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_resolve_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1352,7 +1513,7 @@ pk_test_package_sack_func (void)
 	/* merge details results */
 	pk_package_sack_get_details_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_details_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got details in %f", g_test_timer_elapsed ());
+	g_debug ("got details in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1369,7 +1530,7 @@ pk_test_package_sack_func (void)
 	/* merge update detail results */
 	pk_package_sack_get_update_detail_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_update_detail_cb, NULL);
 	_g_test_loop_run_with_timeout (5000);
-	egg_debug ("got update detail in %f", g_test_timer_elapsed ());
+	g_debug ("got update detail in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
@@ -1537,7 +1698,7 @@ pk_test_service_pack_progress_cb (PkProgress *progress, PkProgressType type, gpo
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1557,7 +1718,7 @@ pk_test_service_pack_func (void)
 		        (GAsyncReadyCallback) pk_test_service_pack_create_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (pack);
 }
@@ -1588,7 +1749,7 @@ pk_test_task_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1608,7 +1769,7 @@ pk_test_task_func (void)
 		        (GAsyncReadyCallback) pk_test_task_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1636,7 +1797,7 @@ pk_test_task_text_install_packages_cb (GObject *object, GAsyncResult *res, gpoin
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	if (results != NULL)
 		g_object_unref (results);
@@ -1651,7 +1812,7 @@ pk_test_task_text_progress_cb (PkProgress *progress, PkProgressType type, gpoint
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1677,7 +1838,7 @@ pk_test_task_text_func (void)
 		        (GAsyncReadyCallback) pk_test_task_text_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1705,7 +1866,7 @@ pk_test_task_wrapper_install_packages_cb (GObject *object, GAsyncResult *res, gp
 
 	g_ptr_array_unref (packages);
 
-	egg_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
+	g_debug ("results exit enum = %s", pk_exit_enum_to_string (exit_enum));
 
 	if (results != NULL)
 		g_object_unref (results);
@@ -1720,7 +1881,7 @@ pk_test_task_wrapper_progress_cb (PkProgress *progress, PkProgressType type, gpo
 		g_object_get (progress,
 		      "status", &status,
 		      NULL);
-		egg_debug ("now %s", pk_status_enum_to_string (status));
+		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
 
@@ -1740,7 +1901,7 @@ pk_test_task_wrapper_func (void)
 		        (GAsyncReadyCallback) pk_test_task_wrapper_install_packages_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
-	egg_debug ("installed in %f", g_test_timer_elapsed ());
+	g_debug ("installed in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1774,14 +1935,14 @@ pk_test_transaction_list_resolve_cb (GObject *object, GAsyncResult *res, gpointe
 static void
 pk_test_transaction_list_added_cb (PkTransactionList *tlist, const gchar *tid, gpointer user_data)
 {
-	egg_debug ("added %s", tid);
+	g_debug ("added %s", tid);
 	_added++;
 }
 
 static void
 pk_test_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *tid, gpointer user_data)
 {
-	egg_debug ("removed %s", tid);
+	g_debug ("removed %s", tid);
 	_removed++;
 }
 
@@ -1820,12 +1981,12 @@ pk_test_transaction_list_func (void)
 		 (GAsyncReadyCallback) pk_test_transaction_list_resolve_cb, NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* wait for remove */
 	g_timeout_add (100, (GSourceFunc) pk_transaction_list_delay_cb, NULL);
 	_g_test_loop_run_with_timeout (15000);
-	egg_debug ("resolved in %f", g_test_timer_elapsed ());
+	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* correct number of added signals */
 	g_assert_cmpint (_added, ==, 2);
@@ -1891,8 +2052,10 @@ main (int argc, char **argv)
 {
 	g_type_init ();
 
-	egg_debug_init (&argc, &argv);
 	g_test_init (&argc, &argv, NULL);
+
+	pk_debug_set_verbose (TRUE);
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);
@@ -1906,6 +2069,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
 	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
+	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
 	g_test_add_func ("/packagekit-glib2/client", pk_test_client_func);
 	g_test_add_func ("/packagekit-glib2/catalog", pk_test_catalog_func);
 	g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);

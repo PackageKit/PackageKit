@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -32,8 +32,6 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <locale.h>
-
-#include "egg-debug.h"
 
 #define PK_EXIT_CODE_SYNTAX_INVALID	3
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
@@ -689,20 +687,28 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		goto out;
 	}
 
+	/* get the role */
+	g_object_get (G_OBJECT(results), "role", &role, NULL);
+
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		/* TRANSLATORS: the transaction failed in a way we could not expect */
-		g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+
+		/* print an error */
+		if (role == PK_ROLE_ENUM_UPDATE_PACKAGES &&
+		    pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE) {
+			/* TRANSLATORS: the user asked to update everything, but there is nothing that can be updated */
+			g_print ("%s\n", _("There are no packages to update."));
+		} else {
+			/* TRANSLATORS: the transaction failed in a way we could not expect */
+			g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+		}
 
 		/* special case */
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE)
 			retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		goto out;
 	}
-
-	/* get the role */
-	g_object_get (G_OBJECT(results), "role", &role, NULL);
 
 	/* get the sack */
 	sack = pk_results_get_package_sack (results);
@@ -1121,7 +1127,7 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 static void
 pk_console_sigint_cb (int sig)
 {
-	egg_debug ("Handling SIGINT");
+	g_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
 	signal (SIGINT, SIG_DFL);
@@ -1130,7 +1136,7 @@ pk_console_sigint_cb (int sig)
 	g_cancellable_cancel (cancellable);
 
 	/* kill ourselves */
-	egg_debug ("Retrying SIGINT");
+	g_debug ("Retrying SIGINT");
 	kill (getpid (), SIGINT);
 }
 
@@ -1245,6 +1251,7 @@ main (int argc, char *argv[])
 	GError *error_local = NULL;
 	gboolean background = FALSE;
 	gboolean noninteractive = FALSE;
+	guint cache_age = 0;
 	gboolean plain = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
@@ -1284,6 +1291,9 @@ main (int argc, char *argv[])
 		{ "plain", 'p', 0, G_OPTION_ARG_NONE, &plain,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
 			_("Print to screen a machine readable output, rather than using animated widgets"), NULL},
+		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
+			/* TRANSLATORS: command line argument, just output without fancy formatting */
+			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
 		{ NULL}
 	};
 
@@ -1300,6 +1310,21 @@ main (int argc, char *argv[])
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
 
+	summary = pk_console_get_summary ();
+	progressbar = pk_progress_bar_new ();
+	pk_progress_bar_set_size (progressbar, 25);
+	pk_progress_bar_set_padding (progressbar, 30);
+
+	cancellable = g_cancellable_new ();
+	context = g_option_context_new ("PackageKit Console Program");
+	g_option_context_set_summary (context, summary) ;
+	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_add_group (context, pk_debug_get_option_group ());
+	g_option_context_parse (context, &argc, &argv, NULL);
+	/* Save the usage string in case command parsing fails. */
+	options_help = g_option_context_get_help (context, TRUE, NULL);
+	g_option_context_free (context);
+
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
 	ret = pk_control_get_properties (control, NULL, &error);
@@ -1314,21 +1339,6 @@ main (int argc, char *argv[])
 	g_object_get (control,
 		      "roles", &roles,
 		      NULL);
-
-	summary = pk_console_get_summary ();
-	progressbar = pk_progress_bar_new ();
-	pk_progress_bar_set_size (progressbar, 25);
-	pk_progress_bar_set_padding (progressbar, 30);
-
-	cancellable = g_cancellable_new ();
-	context = g_option_context_new ("PackageKit Console Program");
-	g_option_context_set_summary (context, summary) ;
-	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, egg_debug_get_option_group ());
-	g_option_context_parse (context, &argc, &argv, NULL);
-	/* Save the usage string in case command parsing fails. */
-	options_help = g_option_context_get_help (context, TRUE, NULL);
-	g_option_context_free (context);
 
 	/* check if we are on console */
 	if (!plain && isatty (fileno (stdout)) == 1)
@@ -1357,6 +1367,7 @@ main (int argc, char *argv[])
 		      "background", background,
 		      "simulate", !noninteractive,
 		      "interactive", !noninteractive,
+		      "cache-age", cache_age,
 		      NULL);
 
 	/* set the proxy */
@@ -1396,7 +1407,7 @@ main (int argc, char *argv[])
 			goto out;
 		}
 	}
-	egg_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
+	g_debug ("filter=%s, filters=%" PK_BITFIELD_FORMAT, filter, filters);
 
 	mode = argv[1];
 	if (argc > 2)
@@ -1485,7 +1496,6 @@ main (int argc, char *argv[])
 		pk_task_install_files_async (PK_TASK(task), argv+2, cancellable,
 					     (PkProgressCallback) pk_console_progress_cb, NULL,
 					     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
-
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1636,7 +1646,6 @@ main (int argc, char *argv[])
 						     (PkProgressCallback) pk_console_progress_cb, NULL,
 						     (GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
-
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
@@ -1698,6 +1707,17 @@ main (int argc, char *argv[])
 		pk_task_get_packages_async (PK_TASK (task),filters, cancellable,
 					    (PkProgressCallback) pk_console_progress_cb, NULL,
 					    (GAsyncReadyCallback) pk_console_finished_cb, NULL);
+
+	} else if (strcmp (mode, "upgrade-system") == 0) {
+		if (value == NULL) {
+			/* TRANSLATORS: The user did not provide a distro name */
+			error = g_error_new (1, 0, "%s", _("A distribution name is required"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
+			goto out;
+		}
+		pk_client_upgrade_system_async (PK_CLIENT (task), value, cancellable,
+						(PkProgressCallback) pk_console_progress_cb, NULL,
+						(GAsyncReadyCallback) pk_console_finished_cb, NULL);
 
 	} else if (strcmp (mode, "get-roles") == 0) {
 		text = pk_role_bitfield_to_string (roles);

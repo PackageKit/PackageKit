@@ -582,7 +582,7 @@ get_ts_summary (TsType type, tn_array *ipkgs, tn_array *dpkgs, tn_array *rpkgs,
 
 			break;
 		default:
-			egg_error ("Unknown ts_type value: %d", type);
+			g_error ("Unknown ts_type value: %d", type);
 	}
 
 	/* return sorted arrays */
@@ -1807,7 +1807,7 @@ update_packages_thread (PkBackend *backend)
 
 	/* sth goes wrong. package_ids has to be set in UpdatePackages */
 	if (update_system == FALSE && package_ids == NULL) {
-		egg_warning ("package_ids cannot be NULL in UpdatePackages method.");
+		g_warning ("package_ids cannot be NULL in UpdatePackages method.");
 		pk_backend_finished (backend);
 		return TRUE;
 	}
@@ -1955,14 +1955,14 @@ show_rpm_progress (PkBackend *backend, gchar *message)
 	g_return_if_fail (message != NULL);
 
 	if (pberror->rpmstate & PB_RPM_STATE_ENUM_REPACKAGING) {
-		egg_debug ("repackaging '%s'", message);
+		g_debug ("repackaging '%s'", message);
 	} else if (pberror->rpmstate & PB_RPM_STATE_ENUM_INSTALLING) {
 		tn_array *upkgs, *ipkgs, *rpkgs, *arr = NULL;
 		guint to_install;
 		PkInfoEnum pkinfo;
 		gint n = -2;
 
-		egg_debug ("installing or updating '%s'", message);
+		g_debug ("installing or updating '%s'", message);
 
 		to_install = pk_backend_get_uint (backend, "to_install");
 
@@ -2224,7 +2224,7 @@ poldek_reload (PkBackend *backend, gboolean load_packages) {
 static void
 backend_initalize (PkBackend *backend)
 {
-	egg_debug ("backend initalize start");
+	g_debug ("backend initalize start");
 
 	clv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify)n_array_free);
 
@@ -2233,7 +2233,7 @@ backend_initalize (PkBackend *backend)
 
 	do_poldek_init (backend);
 
-	egg_debug ("backend initalize end");
+	g_debug ("backend initalize end");
 }
 /**
  * backend_destroy:
@@ -3397,6 +3397,7 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_thread_create (backend, do_simulate_packages);
 }
 
+/* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"poldek",					/* description */
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
@@ -3438,6 +3439,7 @@ PK_BACKEND_OPTIONS (
 	backend_simulate_install_packages,		/* simulate_install_packages */
 	backend_simulate_remove_packages,		/* simulate_remove_packages */
 	backend_simulate_update_packages,		/* simulate_update_packages */
+	NULL,						/* upgrade_system */
 	NULL,						/* transaction_start */
 	NULL						/* transaction_stop */
 );

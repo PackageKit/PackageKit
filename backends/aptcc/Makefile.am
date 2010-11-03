@@ -1,14 +1,17 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Aptcc\"
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_aptcc.la
-libpk_backend_aptcc_la_SOURCES = pk-backend-aptcc.cpp \
-                                 apt.cpp \
-                                 apt-utils.cpp \
-                                 matcher.cpp \
+libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 aptcc_show_broken.cpp \
-				 acqprogress.cpp \
 				 aptcc_show_error.cpp \
-				 pkg_acqfile.cpp \
-				 rsources.cpp
+				 apt-utils.cpp \
+				 acqprogress.cpp \
+				 matcher.cpp \
+				 rsources.cpp \
+				 apt.cpp \
+				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt $(PK_PLUGIN_LIBS)
 libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GST_LIBS)
 libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS)

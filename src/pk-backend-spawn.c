@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -42,10 +42,9 @@
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-package-id.h>
 
-#include "egg-debug.h"
 #include "egg-string.h"
 
-#include "pk-backend-internal.h"
+#include "pk-backend.h"
 #include "pk-backend-spawn.h"
 #include "pk-marshal.h"
 #include "pk-spawn.h"
@@ -117,7 +116,7 @@ pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 	/* only try to close if running */
 	ret = pk_spawn_is_running (backend_spawn->priv->spawn);
 	if (ret) {
-		egg_debug ("closing dispatcher as running and is idle");
+		g_debug ("closing dispatcher as running and is idle");
 		pk_spawn_exit (backend_spawn->priv->spawn);
 	}
 	return FALSE;
@@ -134,7 +133,7 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 
 	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
 	priv->finished = TRUE;
-	egg_debug ("backend marked as finished, so starting kill timer");
+	g_debug ("backend marked as finished, so starting kill timer");
 
 	if (priv->kill_id > 0)
 		g_source_remove (priv->kill_id);
@@ -142,7 +141,7 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 	/* get policy timeout */
 	timeout = pk_conf_get_int (priv->conf, "BackendShutdownTimeout");
 	if (timeout == PK_CONF_VALUE_INT_MISSING) {
-		egg_warning ("using built in default value");
+		g_warning ("using built in default value");
 		timeout = 5;
 	}
 
@@ -157,7 +156,7 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
  * pk_backend_spawn_parse_stdout:
  **/
 static gboolean
-pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
+pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line, GError **error)
 {
 	gchar **sections;
 	guint size;
@@ -194,26 +193,25 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 	if (g_strcmp0 (command, "package") == 0) {
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		if (pk_package_id_check (sections[2]) == FALSE) {
-			egg_warning ("invalid package_id");
+			g_set_error_literal (error, 1, 0, "invalid package_id");
 			ret = FALSE;
 			goto out;
 		}
 		info = pk_info_enum_from_string (sections[1]);
 		if (info == PK_INFO_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Info enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "Info enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_package (priv->backend, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 7) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -222,7 +220,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		/* ITS4: ignore, checked for overflow */
 		package_size = atol (sections[6]);
 		if (package_size > 1073741824) {
-			egg_warning ("package size cannot be larger than one Gb");
+			g_set_error_literal (error, 1, 0, "package size cannot be larger than one Gb");
 			ret = FALSE;
 			goto out;
 		}
@@ -234,7 +232,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -245,14 +243,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 
 	} else if (g_strcmp0 (command, "files") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_files (priv->backend, sections[1], sections[2]);
 	} else if (g_strcmp0 (command, "repo-detail") == 0) {
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -261,20 +259,19 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		} else if (g_strcmp0 (sections[3], "false") == 0) {
 			pk_backend_repo_detail (priv->backend, sections[1], sections[2], FALSE);
 		} else {
-			egg_warning ("invalid qualifier '%s'", sections[3]);
+			g_set_error (error, 1, 0, "invalid qualifier '%s'", sections[3]);
 			ret = FALSE;
 			goto out;
 		}
 	} else if (g_strcmp0 (command, "updatedetail") == 0) {
 		if (size != 13) {
-			egg_warning ("invalid command '%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		restart = pk_restart_enum_from_string (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
+			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
 			ret = FALSE;
 			goto out;
 		}
@@ -289,44 +286,45 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 					  sections[11], sections[12]);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		ret = egg_strtoint (sections[1], &percentage);
 		if (!ret) {
-			egg_warning ("invalid percentage value %s", sections[1]);
+			g_set_error (error, 1, 0, "invalid percentage value %s", sections[1]);
+			ret = FALSE;
 		} else if (percentage < 0 || percentage > 100) {
-			egg_warning ("invalid percentage value %i", percentage);
+			g_set_error (error, 1, 0, "invalid percentage value %i", percentage);
 			ret = FALSE;
 		} else {
 			pk_backend_set_percentage (priv->backend, percentage);
 		}
 	} else if (g_strcmp0 (command, "subpercentage") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		ret = egg_strtoint (sections[1], &percentage);
 		if (!ret) {
-			egg_warning ("invalid subpercentage value %s", sections[1]);
+			g_set_error (error, 1, 0, "invalid subpercentage value %s", sections[1]);
+			ret = FALSE;
 		} else if (percentage < 0 || percentage > 100) {
-			egg_warning ("invalid subpercentage value %i", percentage);
+			g_set_error (error, 1, 0, "invalid subpercentage value %i", percentage);
 			ret = FALSE;
 		} else {
 			pk_backend_set_sub_percentage (priv->backend, percentage);
 		}
 	} else if (g_strcmp0 (command, "error") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		error_enum = pk_error_enum_from_string (sections[1]);
 		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Error enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "Error enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
@@ -343,33 +341,31 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "requirerestart") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		restart_enum = pk_restart_enum_from_string (sections[1]);
 		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 		if (!pk_package_id_check (sections[2])) {
-			egg_warning ("invalid package_id");
+			g_set_error (error, 1, 0, "invalid package_id");
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_require_restart (priv->backend, restart_enum, sections[2]);
 	} else if (g_strcmp0 (command, "message") == 0) {
 		if (size != 3) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		message_enum = pk_message_enum_from_string (sections[1]);
 		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Message enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "Message enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
@@ -380,28 +376,27 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		g_free (text);
 	} else if (g_strcmp0 (command, "change-transaction-data") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_set_transaction_data (priv->backend, sections[1]);
 	} else if (g_strcmp0 (command, "status") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		status_enum = pk_status_enum_from_string (sections[1]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Status enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "Status enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_set_status (priv->backend, status_enum);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -410,13 +405,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		} else if (g_strcmp0 (sections[1], "false") == 0) {
 			pk_backend_set_allow_cancel (priv->backend, FALSE);
 		} else {
-			egg_warning ("invalid section '%s'", sections[1]);
+			g_set_error (error, 1, 0, "invalid section '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 	} else if (g_strcmp0 (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
@@ -424,27 +419,24 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "repo-signature-required") == 0) {
 
 		if (size != 9) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 
 		sig_type = pk_sig_type_enum_from_string (sections[8]);
 		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
+			g_set_error (error, 1, 0, "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
 			ret = FALSE;
 			goto out;
 		}
 		if (egg_strzero (sections[1])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "package_id blank, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 		if (egg_strzero (sections[2])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "repository name blank, and hence ignored: '%s'", sections[2]);
+			g_set_error (error, 1, 0, "repository name blank, and hence ignored: '%s'", sections[2]);
 			ret = FALSE;
 			goto out;
 		}
@@ -458,28 +450,25 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "eula-required") == 0) {
 
 		if (size != 5) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 
 		if (egg_strzero (sections[1])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "eula_id blank, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "eula_id blank, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
 
 		if (egg_strzero (sections[2])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "package_id blank, and hence ignored: '%s'", sections[2]);
+			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[2]);
 			ret = FALSE;
 			goto out;
 		}
 
 		if (egg_strzero (sections[4])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "agreement name blank, and hence ignored: '%s'", sections[4]);
+			g_set_error (error, 1, 0, "agreement name blank, and hence ignored: '%s'", sections[4]);
 			ret = FALSE;
 			goto out;
 		}
@@ -490,15 +479,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
 
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 
 		media_type_enum = pk_media_type_enum_from_string (sections[1]);
 		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "media type enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "media type enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
@@ -508,15 +496,14 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
 		if (size != 4) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 
 		distro_upgrade_enum = pk_distro_upgrade_enum_from_string (sections[1]);
 		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
-					    "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error, 1, 0, "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
@@ -526,39 +513,40 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	} else if (g_strcmp0 (command, "category") == 0) {
 
 		if (size != 6) {
-			egg_warning ("invalid command'%s', size %i", command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			ret = FALSE;
 			goto out;
 		}
 		if (g_strcmp0 (sections[1], sections[2]) == 0) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "cat_id cannot be the same as parent_id");
+			g_set_error_literal (error, 1, 0, "cat_id cannot be the same as parent_id");
 			ret = FALSE;
 			goto out;
 		}
 		if (egg_strzero (sections[2])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "cat_id cannot not blank");
+			g_set_error_literal (error, 1, 0, "cat_id cannot not blank");
 			ret = FALSE;
 			goto out;
 		}
 		if (egg_strzero (sections[3])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "name cannot not blank");
+			g_set_error_literal (error, 1, 0, "name cannot not blank");
 			ret = FALSE;
 			goto out;
 		}
 		if (egg_strzero (sections[5])) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "icon cannot not blank");
+			g_set_error_literal (error, 1, 0, "icon cannot not blank");
 			ret = FALSE;
 			goto out;
 		}
 		if (g_str_has_prefix (sections[5], "/")) {
-			pk_backend_message (priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "icon '%s' should be a named icon, not a path", sections[5]);
+			g_set_error (error, 1, 0, "icon '%s' should be a named icon, not a path", sections[5]);
 			ret = FALSE;
 			goto out;
 		}
 		ret = pk_backend_category (priv->backend, sections[1], sections[2], sections[3], sections[4], sections[5]);
 		goto out;
 	} else {
-		egg_warning ("invalid command '%s'", command);
+		ret = FALSE;
+		g_set_error (error, 1, 0, "invalid command '%s'", command);
 	}
 out:
 	g_strfreev (sections);
@@ -583,16 +571,17 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT ||
 	    exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
-		egg_debug ("dispatcher exited, nothing to see here");
+		g_debug ("dispatcher exited, nothing to see here");
 		return;
 	}
 
 	/* only emit if not finished */
 	if (!backend_spawn->priv->finished) {
-		egg_warning ("script exited without doing finished");
+		g_debug ("script exited without doing finished, tidying up");
 		ret = pk_backend_has_set_error_code (backend_spawn->priv->backend);
 		if (!ret) {
-			pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			pk_backend_error_code (backend_spawn->priv->backend,
+					       PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "The backend exited unexpectedly. "
 					       "This is a serious error as the spawned backend did not complete the pending transaction.");
 		}
@@ -604,7 +593,7 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
  * pk_backend_spawn_inject_data:
  **/
 gboolean
-pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn, const gchar *line)
+pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn, const gchar *line, GError **error)
 {
 	gboolean ret;
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
@@ -616,7 +605,7 @@ pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn, const gchar *line)
 			return TRUE;
 	}
 
-	return pk_backend_spawn_parse_stdout (backend_spawn, line);
+	return pk_backend_spawn_parse_stdout (backend_spawn, line, error);
 }
 
 /**
@@ -626,9 +615,15 @@ static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	ret = pk_backend_spawn_inject_data (backend_spawn, line);
-	if (!ret)
-		egg_debug ("failed to parse: %s", line);
+	GError *error = NULL;
+	ret = pk_backend_spawn_inject_data (backend_spawn, line, &error);
+	if (!ret) {
+		pk_backend_message (backend_spawn->priv->backend,
+				    PK_MESSAGE_ENUM_BACKEND_ERROR,
+				    "Failed to parse output: %s", error->message);
+		g_warning ("failed to parse: %s: %s", line, error->message);
+		g_error_free (error);
+	}
 }
 
 /**
@@ -648,7 +643,7 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	}
 
 	/* send warning up to session, this is never going to be pretty... */
-	egg_warning ("STDERR: %s", line);
+	g_warning ("STDERR: %s", line);
 	pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR, "%s", line);
 }
 
@@ -697,6 +692,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *transaction_id = NULL;
 	const gchar *value;
 	guint i;
+	guint cache_age;
 	GPtrArray *array;
 	gboolean ret;
 	PkHintEnum interactive;
@@ -770,11 +766,18 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	line = g_strdup_printf ("%s=%s", "INTERACTIVE", interactive ? "TRUE" : "FALSE");
 	g_ptr_array_add (array, line);
 
+	/* CACHE_AGE */
+	cache_age = pk_backend_get_cache_age (priv->backend);
+	if (cache_age > 0) {
+		line = g_strdup_printf ("%s=%i", "CACHE_AGE", cache_age);
+		g_ptr_array_add (array, line);
+	}
+
 	/* ensure the malicious user can't inject anthing from the session */
 	for (i=0; i<array->len; i++) {
 		line = g_ptr_array_index (array, i);
 		g_strdelimit (line, "\\;{}[]()*?%\n\r\t", '_');
-		egg_debug ("setting evp '%s'", line);
+		g_debug ("setting evp '%s'", line);
 	}
 
 	envp = pk_ptr_array_to_strv (array);
@@ -851,7 +854,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	/* convert to a argv */
 	argv = pk_backend_spawn_va_list_to_argv (executable, args);
 	if (argv == NULL) {
-		egg_warning ("argv NULL");
+		g_warning ("argv NULL");
 		return FALSE;
 	}
 
@@ -863,19 +866,19 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 
 	filename = g_build_filename ("..", "backends", directory, "helpers", argv[0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		egg_debug ("local helper not found '%s'", filename);
+		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename ("..", "backends", directory, argv[0], NULL);
 	}
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		egg_debug ("local helper not found '%s'", filename);
+		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
 	}
 #else
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers", priv->name, argv[0], NULL);
 #endif
-	egg_debug ("using spawn filename %s", filename);
+	g_debug ("using spawn filename %s", filename);
 
 	/* replace the filename with the full path */
 	g_free (argv[0]);
@@ -937,6 +940,11 @@ gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* set an error as the script will just exit without doing finished */
+	pk_backend_error_code (backend_spawn->priv->backend,
+			       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+			       "the script was killed as the action was cancelled");
 	pk_spawn_kill (backend_spawn->priv->spawn);
 	return TRUE;
 }
@@ -993,7 +1001,7 @@ pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allo
 
 	/* have we banned this in the config ile */
 	if (!backend_spawn->priv->allow_sigkill && allow_sigkill) {
-		egg_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
+		g_warning ("cannot set allow_cancel TRUE as BackendSpawnAllowSIGKILL is set to FALSE in PackageKit.conf");
 		ret = FALSE;
 		goto out;
 	}

@@ -32,8 +32,6 @@
 
 #include <packagekit-glib2/pk-category.h>
 
-#include "egg-debug.h"
-
 static void     pk_category_finalize	(GObject     *object);
 
 #define PK_CATEGORY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CATEGORY, PkCategoryPrivate))

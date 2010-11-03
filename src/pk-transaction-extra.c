@@ -36,12 +36,10 @@
 #include <gio/gdesktopappinfo.h>
 #include <sqlite3.h>
 
-#include "egg-debug.h"
-
 #include "pk-transaction-extra.h"
 #include "pk-shared.h"
 #include "pk-marshal.h"
-#include "pk-backend-internal.h"
+#include "pk-backend.h"
 #include "pk-lsof.h"
 #include "pk-proc.h"
 #include "pk-conf.h"
@@ -82,7 +80,7 @@ pk_transaction_extra_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTr
 {
 	if (g_main_loop_is_running (extra->priv->loop)) {
 		if (exit_enum != PK_EXIT_ENUM_SUCCESS) {
-			egg_warning ("%s failed with exit code: %s",
+			g_warning ("%s failed with exit code: %s",
 				     pk_role_enum_to_string (pk_backend_get_role (backend)),
 				     pk_exit_enum_to_string (exit_enum));
 		}
@@ -105,7 +103,7 @@ pk_transaction_extra_package_cb (PkBackend *backend, PkPackage *package, PkTrans
 static void
 pk_transaction_extra_set_status_changed (PkTransactionExtra *extra, PkStatusEnum status)
 {
-	egg_debug ("emiting status-changed %s", pk_status_enum_to_string (status));
+	g_debug ("emiting status-changed %s", pk_status_enum_to_string (status));
 	g_signal_emit (extra, signals [PK_POST_TRANS_STATUS_CHANGED], 0, status);
 }
 
@@ -115,7 +113,7 @@ pk_transaction_extra_set_status_changed (PkTransactionExtra *extra, PkStatusEnum
 static void
 pk_transaction_extra_set_progress_changed (PkTransactionExtra *extra, guint percentage)
 {
-	egg_debug ("emiting progress-changed %i", percentage);
+	g_debug ("emiting progress-changed %i", percentage);
 	g_signal_emit (extra, signals [PK_POST_TRANS_PROGRESS_CHANGED], 0, percentage, 0, 0, 0);
 }
 
@@ -141,14 +139,14 @@ pk_transaction_extra_get_installed_package_for_file (PkTransactionExtra *extra, 
 
 	/* check that we only matched one package */
 	if (extra->priv->list->len != 1) {
-		egg_warning ("not correct size, %i", extra->priv->list->len);
+		g_warning ("not correct size, %i", extra->priv->list->len);
 		goto out;
 	}
 
 	/* get the package */
 	package = g_ptr_array_index (extra->priv->list, 0);
 	if (package == NULL) {
-		egg_warning ("cannot get package");
+		g_warning ("cannot get package");
 		goto out;
 	}
 out:
@@ -175,7 +173,7 @@ pk_transaction_extra_get_filename_md5 (const gchar *filename)
 	/* get data */
 	ret = g_file_get_contents (filename, &data, &length, &error);
 	if (!ret) {
-		egg_warning ("failed to open file %s: %s", filename, error->message);
+		g_warning ("failed to open file %s: %s", filename, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -218,13 +216,13 @@ pk_transaction_extra_sqlite_add_filename_details (PkTransactionExtra *extra, con
 	/* find out if we should show desktop file in menus */
 	info = g_desktop_app_info_new_from_filename (filename);
 	if (info == NULL) {
-		egg_warning ("could not load desktop file %s", filename);
+		g_warning ("could not load desktop file %s", filename);
 		goto out;
 	}
 	show = g_app_info_should_show (G_APP_INFO (info));
 	g_object_unref (info);
 
-	egg_debug ("add filename %s from %s with md5: %s (show: %i)", filename, package, md5, show);
+	g_debug ("add filename %s from %s with md5: %s (show: %i)", filename, package, md5, show);
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM cache WHERE filename = '%s'", filename);
@@ -234,7 +232,7 @@ pk_transaction_extra_sqlite_add_filename_details (PkTransactionExtra *extra, con
 	/* prepare the query, as we don't escape it */
 	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO cache (filename, package, show, md5) VALUES (?, ?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL failed to prepare: %s", sqlite3_errmsg (extra->priv->db));
+		g_warning ("SQL failed to prepare: %s", sqlite3_errmsg (extra->priv->db));
 		goto out;
 	}
 
@@ -248,7 +246,7 @@ pk_transaction_extra_sqlite_add_filename_details (PkTransactionExtra *extra, con
 	sqlite3_step (sql_statement);
 	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		goto out;
 	}
@@ -277,7 +275,7 @@ pk_transaction_extra_sqlite_add_filename (PkTransactionExtra *extra, const gchar
 	/* resolve */
 	package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
 	if (package == NULL) {
-		egg_warning ("failed to get list");
+		g_warning ("failed to get list");
 		goto out;
 	}
 
@@ -312,14 +310,14 @@ pk_transaction_extra_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv
 
 	/* sanity check */
 	if (filename == NULL || md5 == NULL) {
-		egg_warning ("filename %s and md5 %s)", filename, md5);
+		g_warning ("filename %s and md5 %s)", filename, md5);
 		goto out;
 	}
 
 	/* get md5 */
 	md5_calc = pk_transaction_extra_get_filename_md5 (filename);
 	if (md5_calc == NULL) {
-		egg_debug ("remove of %s as no longer found", filename);
+		g_debug ("remove of %s as no longer found", filename);
 		pk_transaction_extra_sqlite_remove_filename (extra, filename);
 		goto out;
 	}
@@ -329,11 +327,11 @@ pk_transaction_extra_sqlite_cache_rescan_cb (void *data, gint argc, gchar **argv
 
 	/* check md5 is same */
 	if (g_strcmp0 (md5, md5_calc) != 0) {
-		egg_debug ("add of %s as md5 invalid (%s vs %s)", filename, md5, md5_calc);
+		g_debug ("add of %s as md5 invalid (%s vs %s)", filename, md5, md5_calc);
 		pk_transaction_extra_sqlite_add_filename (extra, filename, md5_calc);
 	}
 
-	egg_debug ("existing filename %s valid, md5=%s", filename, md5);
+	g_debug ("existing filename %s valid, md5=%s", filename, md5);
 out:
 	g_free (md5_calc);
 	return 0;
@@ -356,7 +354,7 @@ pk_transaction_extra_get_desktop_files (PkTransactionExtra *extra,
 	/* open directory */
 	dir = g_dir_open (app_dir, 0, &error);
 	if (dir == NULL) {
-		egg_warning ("failed to open directory %s: %s", app_dir, error->message);
+		g_warning ("failed to open directory %s: %s", app_dir, error->message);
 		g_error_free (error);
 		return;
 	}
@@ -370,7 +368,7 @@ pk_transaction_extra_get_desktop_files (PkTransactionExtra *extra,
 		} else if (g_str_has_suffix (filename, ".desktop")) {
 			data = g_hash_table_lookup (extra->priv->hash, path);
 			if (data == NULL) {
-				egg_debug ("add of %s as not present in db", path);
+				g_debug ("add of %s as not present in db", path);
 				g_ptr_array_add (array, g_strdup (path));
 			}
 		}
@@ -398,13 +396,13 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 
 	/* no database */
 	if (extra->priv->db == NULL) {
-		egg_debug ("unable to import: no database");
+		g_debug ("unable to import: no database");
 		return FALSE;
 	}
 
 	/* no support */
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_SEARCH_FILE)) {
-		egg_debug ("cannot search files");
+		g_debug ("cannot search files");
 		return FALSE;
 	}
 
@@ -421,7 +419,7 @@ pk_transaction_extra_import_desktop_files (PkTransactionExtra *extra)
 	rc = sqlite3_exec (extra->priv->db, statement, pk_transaction_extra_sqlite_cache_rescan_cb, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		egg_warning ("SQL error: %s\n", error_msg);
+		g_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 	}
 
@@ -491,11 +489,11 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_PACKAGES)) {
-		egg_debug ("cannot get packages");
+		g_debug ("cannot get packages");
 		return FALSE;
 	}
 
-	egg_debug ("updating package lists");
+	g_debug ("updating package lists");
 
 	/* clear old list */
 	if (extra->priv->list->len > 0)
@@ -519,7 +517,7 @@ pk_transaction_extra_update_package_list (PkTransactionExtra *extra)
 	data = pk_transaction_extra_package_list_to_string (extra->priv->list);
 	ret = g_file_set_contents (PK_SYSTEM_PACKAGE_LIST_FILENAME, data, -1, &error);
 	if (!ret) {
-		egg_warning ("failed to save to file: %s", error->message);
+		g_warning ("failed to save to file: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -544,14 +542,13 @@ pk_transaction_extra_clear_firmware_requests (PkTransactionExtra *extra)
 
 	/* clear the firmware requests directory */
 	filename = g_build_filename (LOCALSTATEDIR, "run", "PackageKit", "udev", NULL);
-	egg_debug ("clearing udev firmware requests at %s", filename);
+	g_debug ("clearing udev firmware requests at %s", filename);
 	ret = pk_directory_remove_contents (filename);
 	if (!ret)
-		egg_warning ("failed to clear %s", filename);
+		g_warning ("failed to clear %s", filename);
 	g_free (filename);
 	return ret;
 }
-
 
 /**
  * pk_transaction_extra_update_files_check_running_cb:
@@ -588,7 +585,7 @@ pk_transaction_extra_update_files_check_running_cb (PkBackend *backend, PkFiles 
 		 * suggest an application restart instead */
 
 		/* send signal about session restart */
-		egg_debug ("package %s updated, and %s is running", package_id, filenames[i]);
+		g_debug ("package %s updated, and %s is running", package_id, filenames[i]);
 		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SESSION, package_id);
 	}
 	g_strfreev (filenames);
@@ -606,7 +603,7 @@ pk_transaction_extra_check_running_process (PkTransactionExtra *extra, gchar **p
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		egg_debug ("cannot get files");
+		g_debug ("cannot get files");
 		return FALSE;
 	}
 
@@ -665,7 +662,7 @@ pk_transaction_extra_update_files_check_desktop_cb (PkBackend *backend, PkFiles 
 		if (!ret)
 			continue;
 
-		egg_debug ("adding filename %s", filenames[i]);
+		g_debug ("adding filename %s", filenames[i]);
 		md5 = pk_transaction_extra_get_filename_md5 (filenames[i]);
 		pk_transaction_extra_sqlite_add_filename_details (extra, filenames[i], package[PK_PACKAGE_ID_NAME], md5);
 		g_free (md5);
@@ -686,7 +683,7 @@ pk_transaction_extra_check_desktop_files (PkTransactionExtra *extra, gchar **pac
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		egg_debug ("cannot get files");
+		g_debug ("cannot get files");
 		return FALSE;
 	}
 
@@ -735,7 +732,7 @@ pk_transaction_extra_files_check_library_restart_cb (PkBackend *backend, PkFiles
 			continue;
 
 		/* add as it matches the criteria */
-		egg_debug ("adding filename %s", filenames[i]);
+		g_debug ("adding filename %s", filenames[i]);
 		g_ptr_array_add (extra->priv->files_list, g_strdup (filenames[i]));
 	}
 	g_strfreev (filenames);
@@ -756,7 +753,7 @@ pk_transaction_extra_get_cmdline (PkTransactionExtra *extra, guint pid)
 	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
 	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
 	if (!ret) {
-		egg_warning ("failed to get cmdline: %s", error->message);
+		g_warning ("failed to get cmdline: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -843,7 +840,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 		else
 			cmdline_full = g_strdup_printf ("/usr/bin/%s", cmdline);
 
-		egg_debug ("pid=%i: %s (%i)", pid, cmdline_full, uid);
+		g_debug ("pid=%i: %s (%i)", pid, cmdline_full, uid);
 		if (uid < 500)
 			g_ptr_array_add (files_system, cmdline_full);
 		else
@@ -853,7 +850,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 	/* we found nothing */
 	if (files_system->len == 0 && files_session->len == 0) {
-		egg_warning ("no pids could be resolved");
+		g_warning ("no pids could be resolved");
 		goto out;
 	}
 
@@ -863,7 +860,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
 		if (package == NULL) {
-			egg_debug ("failed to find package for %s", filename);
+			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
 		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SECURITY_SESSION, pk_package_get_id (package));
@@ -875,7 +872,7 @@ pk_transaction_extra_check_library_restart (PkTransactionExtra *extra)
 
 		package = pk_transaction_extra_get_installed_package_for_file (extra, filename);
 		if (package == NULL) {
-			egg_debug ("failed to find package for %s", filename);
+			g_debug ("failed to find package for %s", filename);
 			continue;
 		}
 		pk_backend_require_restart (extra->priv->backend, PK_RESTART_ENUM_SECURITY_SYSTEM, pk_package_get_id (package));
@@ -939,7 +936,7 @@ pk_transaction_extra_files_check_applications_are_running_cb (PkBackend *backend
 
 	/* check each file to see if it's a system shared library */
 	len = g_strv_length (filenames);
-	egg_debug ("len=%i", len);
+	g_debug ("len=%i", len);
 	for (i=0; i<len; i++) {
 
 		/* does the package filename match */
@@ -948,7 +945,7 @@ pk_transaction_extra_files_check_applications_are_running_cb (PkBackend *backend
 			continue;
 
 		/* add as it matches the criteria */
-		egg_debug ("adding filename %s", filenames[i]);
+		g_debug ("adding filename %s", filenames[i]);
 		g_ptr_array_add (extra->priv->files_list, g_strdup (filenames[i]));
 	}
 	g_strfreev (filenames);
@@ -970,7 +967,7 @@ pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		egg_debug ("cannot get files");
+		g_debug ("cannot get files");
 		/* return success, as we're not setting an error */
 		return TRUE;
 	}
@@ -978,7 +975,7 @@ pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar 
 	/* check we have entry */
 	if (extra->priv->no_update_process_list == NULL ||
 	    extra->priv->no_update_process_list[0] == NULL) {
-		egg_debug ("no processes to watch");
+		g_debug ("no processes to watch");
 		/* return success, as we're not setting an error */
 		return TRUE;
 	}
@@ -993,7 +990,7 @@ pk_transaction_extra_applications_are_running (PkTransactionExtra *extra, gchar 
 	/* get list from proc */
 	ret = pk_proc_refresh (extra->priv->proc);
 	if (!ret) {
-		egg_warning ("failed to refresh");
+		g_warning ("failed to refresh");
 		/* non-fatal */
 		ret = TRUE;
 		goto out;
@@ -1052,7 +1049,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	g_return_val_if_fail (PK_IS_POST_TRANS (extra), FALSE);
 
 	if (!pk_backend_is_implemented (extra->priv->backend, PK_ROLE_ENUM_GET_FILES)) {
-		egg_debug ("cannot get files");
+		g_debug ("cannot get files");
 		return FALSE;
 	}
 
@@ -1071,7 +1068,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 	/* get list from lsof */
 	ret = pk_lsof_refresh (extra->priv->lsof);
 	if (!ret) {
-		egg_warning ("failed to refresh");
+		g_warning ("failed to refresh");
 		goto out;
 	}
 
@@ -1090,7 +1087,7 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 
 	/* nothing to do */
 	if (extra->priv->files_list->len == 0) {
-		egg_debug ("no files");
+		g_debug ("no files");
 		goto out;
 	}
 
@@ -1100,13 +1097,13 @@ pk_transaction_extra_check_library_restart_pre (PkTransactionExtra *extra, gchar
 
 	/* nothing depends on these libraries */
 	if (extra->priv->pids == NULL) {
-		egg_warning ("failed to get process list");
+		g_warning ("failed to get process list");
 		goto out;
 	}
 
 	/* nothing depends on these libraries */
 	if (extra->priv->pids->len == 0) {
-		egg_debug ("no processes depend on these libraries");
+		g_debug ("no processes depend on these libraries");
 		goto out;
 	}
 
@@ -1214,10 +1211,10 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	/* check if exists */
 	ret = g_file_test (PK_DESKTOP_DEFAULT_DATABASE, G_FILE_TEST_EXISTS);
 
-	egg_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
+	g_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
 	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &extra->priv->db);
 	if (rc != 0) {
-		egg_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
+		g_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
 		extra->priv->db = NULL;
 		return;
@@ -1225,7 +1222,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 
 	/* create if not exists */
 	if (!ret) {
-		egg_debug ("creating database cache in %s", PK_DESKTOP_DEFAULT_DATABASE);
+		g_debug ("creating database cache in %s", PK_DESKTOP_DEFAULT_DATABASE);
 		statement = "CREATE TABLE cache ("
 			    "filename TEXT,"
 			    "package TEXT,"
@@ -1233,7 +1230,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 			    "md5 TEXT);";
 		rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 		if (rc != SQLITE_OK) {
-			egg_warning ("SQL error: %s\n", error_msg);
+			g_warning ("SQL error: %s\n", error_msg);
 			sqlite3_free (error_msg);
 		}
 	}

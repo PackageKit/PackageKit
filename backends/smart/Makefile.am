@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Smart\"
+
 helperdir = $(datadir)/PackageKit/helpers/smart
 dist_helper_DATA = 			\
 	smartBackend.py

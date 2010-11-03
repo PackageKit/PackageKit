@@ -317,7 +317,7 @@ backend_get_updates_thread (PkBackend *backend)
 			return FALSE;
 		}
 	} else {
-		egg_debug ("pacman: databases have been refreshed recently");
+		g_debug ("pacman: databases have been refreshed recently");
 	}
 
 	/* find outdated and replacement packages */

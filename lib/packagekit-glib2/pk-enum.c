@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -30,9 +30,6 @@
 
 #include <string.h>
 #include <glib.h>
-
-#include "egg-debug.h"
-#include "egg-string.h"
 
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -127,6 +124,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,	"simulate-install-packages"},
 	{PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,		"simulate-remove-packages"},
 	{PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,		"simulate-update-packages"},
+	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
 	{0, NULL}
 };
 
@@ -378,6 +376,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_AFL,			"AFL"},
 	{PK_LICENSE_ENUM_AGPLV1,		"AGPLv1"},
 	{PK_LICENSE_ENUM_AMDPLPA,		"AMDPLPA"},
+	{PK_LICENSE_ENUM_AML,			"AML"},
 	{PK_LICENSE_ENUM_AMPAS_BSD,		"AMPAS BSD"},
 	{PK_LICENSE_ENUM_APSL_2_DOT_0,		"APSL 2.0"},
 	{PK_LICENSE_ENUM_ARL,			"ARL"},
@@ -388,6 +387,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_ASL_1_DOT_1,		"ASL 1.1"},
 	{PK_LICENSE_ENUM_ASL_2_DOT_0,		"ASL 2.0"},
 	{PK_LICENSE_ENUM_BAEKMUK,		"Baekmuk"},
+	{PK_LICENSE_ENUM_BEOPEN,		"BeOpen"},
 	{PK_LICENSE_ENUM_BITTORRENT,		"BitTorrent"},
 	{PK_LICENSE_ENUM_BOOST,			"Boost"},
 	{PK_LICENSE_ENUM_BSD,			"BSD"},
@@ -460,6 +460,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_JPYTHON,		"JPython"},
 	{PK_LICENSE_ENUM_KNUTH,			"Knuth"},
 	{PK_LICENSE_ENUM_LBNL_BSD,		"LBNL BSD"},
+	{PK_LICENSE_ENUM_LDPL,			"LDPL"},
 	{PK_LICENSE_ENUM_LGPLV2,		"LGPLv2"},
 	{PK_LICENSE_ENUM_LGPLV2_PLUS,		"LGPLv2+"},
 	{PK_LICENSE_ENUM_LGPLV2_PLUS_OR_ARTISTIC, "LGPLv2+ or Artistic"},
@@ -485,6 +486,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_MPLV1_DOT_0,		"MPLv1.0"},
 	{PK_LICENSE_ENUM_MPLV1_DOT_1,		"MPLv1.1"},
 	{PK_LICENSE_ENUM_MS_PL,			"MS-PL"},
+	{PK_LICENSE_ENUM_MS_RL,			"MS-RL"},
 	{PK_LICENSE_ENUM_NAUMEN,		"Naumen"},
 	{PK_LICENSE_ENUM_NCSA,			"NCSA"},
 	{PK_LICENSE_ENUM_NETCDF,		"NetCDF"},
@@ -497,6 +499,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_OAL,			"OAL"},
 	{PK_LICENSE_ENUM_OFL,			"OFL"},
 	{PK_LICENSE_ENUM_OFSFDL,		"OFSFDL"},
+	{PK_LICENSE_ENUM_OML,			"OML"},
 	{PK_LICENSE_ENUM_OPENLDAP,		"OpenLDAP"},
 	{PK_LICENSE_ENUM_OPENPBS,		"OpenPBS"},
 	{PK_LICENSE_ENUM_OPENSSL,		"OpenSSL"},
@@ -509,6 +512,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_PHORUM,		"Phorum"},
 	{PK_LICENSE_ENUM_PHP,			"PHP"},
 	{PK_LICENSE_ENUM_PLEXUS,		"Plexus"},
+	{PK_LICENSE_ENUM_POSTGRESQL,		"PostgreSQL"},
 	{PK_LICENSE_ENUM_PSUTILS,		"psutils"},
 	{PK_LICENSE_ENUM_PTFL,			"PTFL"},
 	{PK_LICENSE_ENUM_PUBLIC_DOMAIN,		"Public Domain"},
@@ -518,6 +522,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_QPL,			"QPL"},
 	{PK_LICENSE_ENUM_RDISC,			"Rdisc"},
 	{PK_LICENSE_ENUM_RICEBSD,		"RiceBSD"},
+	{PK_LICENSE_ENUM_ROMIO,			"Romio"},
 	{PK_LICENSE_ENUM_RPSL,			"RPSL"},
 	{PK_LICENSE_ENUM_RUBY,			"Ruby"},
 	{PK_LICENSE_ENUM_SAXPATH,		"Saxpath"},
@@ -531,6 +536,7 @@ static const PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_SPL,			"SPL"},
 	{PK_LICENSE_ENUM_STIX,			"STIX"},
 	{PK_LICENSE_ENUM_TCL,			"TCL"},
+	{PK_LICENSE_ENUM_TEEWORLDS,		"Teeworlds"},
 	{PK_LICENSE_ENUM_TMATE,			"TMate"},
 	{PK_LICENSE_ENUM_TOSL,			"TOSL"},
 	{PK_LICENSE_ENUM_TPL,			"TPL"},
@@ -1147,7 +1153,7 @@ pk_media_type_enum_to_string (PkMediaTypeEnum media_type)
  *
  * Converts a text enumerated type to its unsigned integer representation
  *
- * Return value: the enumerated constant value, e.g. PK_AUTHORIZE_ENUM_YES
+ * Return value: the enumerated constant value, e.g. %PK_AUTHORIZE_ENUM_YES
  *
  * Since: 0.5.0
  **/

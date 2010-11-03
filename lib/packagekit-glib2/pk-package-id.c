@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#include "egg-debug.h"
-
 #include <glib.h>
 
 #include <packagekit-glib2/pk-package-id.h>
@@ -39,7 +37,7 @@
  * Splits a PackageID into the correct number of parts, checking the correct
  * number of delimiters are present.
  *
- * Return value: a GStrv or %NULL if invalid, use g_strfreev() to free
+ * Return value: (transfer full): a GStrv or %NULL if invalid, use g_strfreev() to free
  *
  * Since: 0.5.3
  **/
@@ -84,10 +82,8 @@ pk_package_id_check (const gchar *package_id)
 
 	/* UTF8 */
 	ret = g_utf8_validate (package_id, -1, NULL);
-	if (!ret) {
-		egg_warning ("invalid UTF8!");
+	if (!ret)
 		return FALSE;
-	}
 
 	/* correct number of sections */
 	sections = pk_package_id_split (package_id);

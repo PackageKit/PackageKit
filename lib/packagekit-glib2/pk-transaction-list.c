@@ -32,8 +32,6 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include "egg-debug.h"
-
 #include <packagekit-glib2/pk-transaction-list.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-common.h>
@@ -79,10 +77,10 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 	/* debug */
 	for (i=0; i<array->len; i++) {
 		tid = g_ptr_array_index (array, i);
-		egg_debug ("last:\t%s", tid);
+		g_debug ("last:\t%s", tid);
 	}
 	for (i=0; transaction_ids[i] != NULL; i++)
-		egg_debug ("current:\t%s", transaction_ids[i]);
+		g_debug ("current:\t%s", transaction_ids[i]);
 
 	/* remove old entries */
 	for (i=0; i<array->len; i++) {
@@ -100,7 +98,7 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 		if (!ret) {
 			tid_tmp = g_strdup (tid);
 			g_ptr_array_remove_index (array, i);
-			egg_debug ("emit removed: %s", tid_tmp);
+			g_debug ("emit removed: %s", tid_tmp);
 			g_signal_emit (tlist, signals[SIGNAL_REMOVED], 0, tid_tmp);
 			g_free (tid_tmp);
 		}
@@ -121,7 +119,7 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 		/* no, so add to array */
 		if (!ret) {
 			g_ptr_array_add (array, g_strdup (transaction_ids[i]));
-			egg_debug ("emit added: %s", transaction_ids[i]);
+			g_debug ("emit added: %s", transaction_ids[i]);
 			g_signal_emit (tlist, signals[SIGNAL_ADDED], 0, transaction_ids[i]);
 		}
 	}
@@ -139,7 +137,7 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 	/* get the result */
 	transaction_ids = pk_control_get_transaction_list_finish (control, res, &error);
 	if (transaction_ids == NULL) {
-		egg_warning ("Failed to get transaction list: %s", error->message);
+		g_warning ("Failed to get transaction list: %s", error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -156,7 +154,7 @@ out:
 static void
 pk_transaction_list_get_transaction_list (PkTransactionList *tlist)
 {
-	egg_debug ("refreshing task list");
+	g_debug ("refreshing task list");
 	pk_control_get_transaction_list_async (tlist->priv->control, tlist->priv->cancellable,
 					       (GAsyncReadyCallback) pk_transaction_list_get_transaction_list_cb, tlist);
 }
@@ -189,7 +187,7 @@ pk_transaction_list_notify_connected_cb (PkControl *control, GParamSpec *pspec, 
  *
  * Gets the string lists of transaction IDs recognised as pending, running or finished by the daemon.
  *
- * Return value: the array of strings, free with g_strfreev()
+ * Return value: (transfer full): the array of strings, free with g_strfreev()
  *
  * Since: 0.5.3
  **/

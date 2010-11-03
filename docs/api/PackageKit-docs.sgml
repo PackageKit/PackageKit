@@ -96,7 +96,6 @@
         This part documents helper funtions in libpackagekit.
       </para>
     </partintro>
-    <xi:include href="xml/egg-debug.xml"/>
     <xi:include href="xml/pk-bitfield.xml"/>
     <xi:include href="xml/pk-client-sync.xml"/>
     <xi:include href="xml/pk-common.xml"/>

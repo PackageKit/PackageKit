@@ -3,7 +3,7 @@ AC_PREREQ(2.63)
 
 m4_define([pk_major_version], [0])
 m4_define([pk_minor_version], [6])
-m4_define([pk_micro_version], [9])
+m4_define([pk_micro_version], [11])
 m4_define([pk_version],
           [pk_major_version.pk_minor_version.pk_micro_version])
 
@@ -13,7 +13,7 @@ AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-GOBJECT_INTROSPECTION_CHECK([0.6.7])
+GOBJECT_INTROSPECTION_CHECK([0.9.8])
 
 # enable nice build output on automake1.11
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -37,7 +37,7 @@ AC_SUBST(PK_VERSION)
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=14
-LT_REVISION=3
+LT_REVISION=5
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
@@ -185,7 +185,7 @@ if test x$enable_qt = xyes; then
 	if test ! -x "$MOC"; then
 		AC_PATH_PROG(MOC, moc)
 		if test ! -x "$MOC"; then
-			AC_MSG_ERROR([MOC hasn't been found])
+			AC_MSG_ERROR([MOC has not been found])
 		fi
 	fi
 	build_qt=yes
@@ -193,32 +193,6 @@ else
 	build_qt=no
 fi
 AM_CONDITIONAL(PK_BUILD_QT, test $build_qt = "yes")
-
-dnl ---------------------------------------------------------------------------
-dnl - Build packageKit-sharp
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(managed, AS_HELP_STRING([--enable-managed],[Build PackageKit-Sharp]),
-	      enable_managed=$enableval,enable_managed=false)
-if test x$enable_managed = xyes; then
-	PKG_CHECK_MODULES(GLIBSHARP, glib-sharp-2.0)
-
-	# for gapi2-parser, gapi2-fixup and gapi2-codegen (only at build time)
-	PKG_CHECK_MODULES(GAPISHARP, gapi-2.0)
-
-	AC_PATH_PROG(MCS, mcs)
-	CS="C#"
-	if test ! -x "$MCS"; then
-		AC_PATH_PROG(MCS, gmcs)
-		if test ! -x "$MCS"; then
-			AC_MSG_ERROR([No $CS compiler found])
-		fi
-	fi
-
-	build_managed=yes
-else
-	build_managed=no
-fi
-AM_CONDITIONAL(PK_BUILD_MANAGED, test $build_managed = "yes")
 
 dnl ---------------------------------------------------------------------------
 dnl - Service Packs (default enabled)
@@ -313,7 +287,7 @@ if test x$enable_man_pages != xno; then
 	AC_PATH_PROG(XSLTPROC, xsltproc, no)
 	if test x$enable_man_pages = xyes; then
 		if test "$XSLTPROC" = "no" ; then
-			AC_MSG_ERROR([xsltproc not found, it's needod to build man pages])
+			AC_MSG_ERROR([xsltproc not found, it is needed to build man pages])
 		fi
 	fi
 else
@@ -440,7 +414,7 @@ AC_ARG_ENABLE(gtk_module, AS_HELP_STRING([--enable-gtk-module],[Build GTK module
 if test x$enable_gtk_module = xyes; then
 	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK2, gtk+-2.0 >= 2.14.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module_gtk2=yes, build_gtk_module_gtk2=no)
-	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK3, gtk+-3.0 pangoft2 fontconfig dbus-glib-1,
+	PKG_CHECK_MODULES(PK_GTK_MODULE_GTK3, gtk+-3.0 >= 2.91.0 pangoft2 fontconfig dbus-glib-1,
 	                  build_gtk_module_gtk3=yes, build_gtk_module_gtk3=no)
 	# if either are true, visit the gtk-module directory
 	if test $build_gtk_module_gtk2 = "yes" -o $build_gtk_module_gtk3 = "yes"; then
@@ -597,7 +571,7 @@ if test x$with_security_framework = xpolkit; then
 				  polkit-backend-1 \
 				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	else
-		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use PolicyKit's new API])
+		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use the new PolicyKit API])
 	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
@@ -666,7 +640,7 @@ if test x$enable_yum = xyes; then
 	AC_ARG_ENABLE(zif, AS_HELP_STRING([--enable-zif],[Build ZIF experimental code]),
 		      enable_zif=$enableval,enable_zif=yes)
 	if test x$enable_zif = xyes; then
-		PKG_CHECK_MODULES(ZIF, zif,
+		PKG_CHECK_MODULES(ZIF, zif >= 0.1.2,
 			          build_zif=yes, build_zif=no)
 	fi
 	if test "x$build_zif" = "xyes"; then
@@ -724,10 +698,9 @@ if test x$enable_opkg = xyes; then
 fi
 
 if test x$enable_alpm = xyes; then
-	with_default_backend=dummy
 	AC_CHECK_HEADER([alpm.h],
-			[with_default_backend=alpm],
-			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
+			[],
+			[AC_MSG_ERROR([No ALPM headers found])])
 fi
 
 if test x$enable_pacman = xyes; then
@@ -776,8 +749,8 @@ AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
-AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib -DPK_COMPILATION $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
-AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
+AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/lib -DPK_COMPILATION $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS $GIO_CFLAGS")
+AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS $GIO_LIBS")
 
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
@@ -843,8 +816,6 @@ lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
 lib/packagekit-qt/packagekit-qt.pc
-lib/packagekit-sharp/Makefile
-lib/packagekit-sharp/samples/Makefile
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
@@ -873,13 +844,13 @@ echo "
         GStreamer plugin:          ${build_gstreamer_plugin}
         Pango module (GTK2):       ${build_gtk_module_gtk2}
         Pango module (GTK3):       ${build_gtk_module_gtk3}
+        gobject-introspection:     ${found_introspection}
         BASH Command not found:    ${build_command_not_found}
         Cron scripts:              ${build_cron}
         debuginfo-install:         ${build_debuginfo_install}
         device-rebind:             ${build_device_rebind}
         pm-utils scripts:          ${build_pm_utils}
         QT library:                ${build_qt}
-        Managed bindings:          ${build_managed}
 
         Backends:
         ALPM backend:              ${enable_alpm}

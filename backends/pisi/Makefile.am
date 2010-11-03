@@ -1,3 +1,6 @@
+INCLUDES = \
+	-DG_LOG_DOMAIN=\"PackageKit-Pisi\"
+
 helperdir = $(datadir)/PackageKit/helpers/pisi
 dist_helper_DATA = 			\
 	pisiBackend.py
