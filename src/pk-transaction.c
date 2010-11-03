@@ -2466,6 +2466,9 @@ pk_transaction_role_to_action_only_trusted (PkRoleEnum role)
 		case PK_ROLE_ENUM_CANCEL:
 			policy = "org.freedesktop.packagekit.cancel-foreign";
 			break;
+		case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+			policy = "org.freedesktop.packagekit.upgrade-system";
+			break;
 		default:
 			break;
 	}
@@ -5459,11 +5462,9 @@ pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_i
 	transaction->priv->cached_value = g_strdup (distro_id);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
-	/* try to commit this */
-	ret = pk_transaction_commit (transaction);
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction, FALSE, PK_ROLE_ENUM_UPGRADE_SYSTEM, &error);
 	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
-				     "Could not commit to a transaction object");
 		pk_transaction_release_tid (transaction);
 		pk_transaction_dbus_return_error (context, error);
 		return;
