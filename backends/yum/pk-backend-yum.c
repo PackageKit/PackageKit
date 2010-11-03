@@ -1637,7 +1637,11 @@ pk_backend_get_depends_thread (PkBackend *backend)
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_loop_inner;
+#ifdef ZIF_CHECK_VERSION
+	ZifDepend *require;
+#else
 	const ZifDepend *require;
+#endif
 	const gchar *id;
 	guint i, j, k;
 	guint len;
@@ -1727,12 +1731,22 @@ pk_backend_get_depends_thread (PkBackend *backend)
 			require = g_ptr_array_index (requires, k);
 
 			/* find the package providing the depend */
+#ifdef ZIF_CHECK_VERSION
+			to_array[0] = zif_depend_get_name (require);
+#else
 			to_array[0] = require->name;
+#endif
 			provides = zif_store_array_what_provides (store_array, (gchar**)to_array, state_loop_inner, &error);
 			if (provides == NULL) {
+#ifdef ZIF_CHECK_VERSION
+				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						       "failed to find provide for %s: %s",
+						       zif_depend_get_name (require), error->message);
+#else
 				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to find provide for %s: %s",
 						       require->name, error->message);
+#endif
 				g_error_free (error);
 				goto out;
 			}
