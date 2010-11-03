@@ -66,8 +66,8 @@ aptcc::aptcc(PkBackend *backend, bool &cancel)
 bool aptcc::init()
 {
 	gchar *locale;
-	gchar *proxy_http;
-	gchar *proxy_ftp;
+	gchar *http_proxy;
+	gchar *ftp_proxy;
 
 	// Set PackageKit status
 	pk_backend_set_status(m_backend, PK_STATUS_ENUM_LOADING_CACHE);
@@ -84,18 +84,12 @@ bool aptcc::init()
 	}
 
 	// set http proxy
-	if (proxy_http = pk_backend_get_proxy_http(m_backend)) {
-		_config->Set("Acquire::http::Proxy", proxy_http);
-	} else {
-		_config->Set("Acquire::http::Proxy", "");
-	}
+	http_proxy = pk_backend_get_proxy_http(m_backend);
+	setenv("http_proxy", http_proxy, 1);
 
 	// set ftp proxy
-	if (proxy_ftp = pk_backend_get_proxy_ftp(m_backend)) {
-		_config->Set("Acquire::ftp::Proxy", proxy_ftp);
-	} else {
-		_config->Set("Acquire::ftp::Proxy", "");
-	}
+	ftp_proxy = pk_backend_get_proxy_ftp(m_backend);
+	setenv("ftp_proxy", ftp_proxy, 1);
 
 	packageSourceList = new pkgSourceList;
 	// Read the source list
