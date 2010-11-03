@@ -3010,6 +3010,7 @@ void
 pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->download_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_string (backend->priv->store, "directory", directory);
@@ -3023,6 +3024,7 @@ void
 pk_backend_get_categories (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_categories != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_CATEGORIES);
 	backend->priv->desc->get_categories (backend);
 }
@@ -3034,6 +3036,7 @@ void
 pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_depends != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DEPENDS);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
@@ -3048,6 +3051,7 @@ void
 pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_details != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DETAILS);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	backend->priv->desc->get_details (backend, package_ids);
@@ -3060,6 +3064,7 @@ void
 pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_distro_upgrades != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
 	backend->priv->desc->get_distro_upgrades (backend);
 }
@@ -3071,6 +3076,7 @@ void
 pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_FILES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	backend->priv->desc->get_files (backend, package_ids);
@@ -3083,6 +3089,7 @@ void
 pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_requires != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REQUIRES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
@@ -3097,6 +3104,7 @@ void
 pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_update_detail != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	backend->priv->desc->get_update_detail (backend, package_ids);
@@ -3109,6 +3117,7 @@ void
 pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_updates != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_UPDATES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	backend->priv->desc->get_updates (backend, filters);
@@ -3121,6 +3130,7 @@ void
 pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->install_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
@@ -3135,6 +3145,7 @@ void
 pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->install_signature != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	pk_store_set_string (backend->priv->store, "key_id", key_id);
 	pk_store_set_string (backend->priv->store, "package_id", package_id);
@@ -3148,6 +3159,7 @@ void
 pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->install_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_INSTALL_FILES);
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
@@ -3162,6 +3174,7 @@ void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->refresh_cache != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_store_set_bool (backend->priv->store, "force", force);
 	backend->priv->desc->refresh_cache (backend, force);
@@ -3174,6 +3187,7 @@ void
 pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->remove_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "allow_deps", allow_deps);
@@ -3189,6 +3203,7 @@ void
 pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->resolve != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_RESOLVE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
@@ -3202,6 +3217,7 @@ void
 pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->rollback != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_ROLLBACK);
 	pk_store_set_string (backend->priv->store, "transaction_id", transaction_id);
 	backend->priv->desc->rollback (backend, transaction_id);
@@ -3214,6 +3230,7 @@ void
 pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->search_details != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_DETAILS);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
@@ -3227,6 +3244,7 @@ void
 pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->search_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_FILE);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
@@ -3240,6 +3258,7 @@ void
 pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->search_groups != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_GROUP);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
@@ -3253,6 +3272,7 @@ void
 pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->search_names != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SEARCH_NAME);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_strv (backend->priv->store, "search", values);
@@ -3266,6 +3286,7 @@ void
 pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->update_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
@@ -3280,6 +3301,7 @@ void
 pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->update_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	pk_store_set_bool (backend->priv->store, "only_trusted", only_trusted);
 	pk_backend_set_bool (backend, "hint:simulate", FALSE);
@@ -3293,6 +3315,7 @@ void
 pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_repo_list != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_REPO_LIST);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	backend->priv->desc->get_repo_list (backend, filters);
@@ -3305,6 +3328,7 @@ void
 pk_backend_repo_enable (PkBackend *backend, const gchar *repo_id, gboolean enabled)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->repo_enable != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_ENABLE);
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_bool (backend->priv->store, "enabled", enabled);
@@ -3318,6 +3342,7 @@ void
 pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->repo_set_data != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_REPO_SET_DATA);
 	pk_store_set_string (backend->priv->store, "repo_id", repo_id);
 	pk_store_set_string (backend->priv->store, "parameter", parameter);
@@ -3332,6 +3357,7 @@ void
 pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->what_provides != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_WHAT_PROVIDES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	pk_store_set_uint (backend->priv->store, "provides", provides);
@@ -3346,6 +3372,7 @@ void
 pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->get_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_GET_PACKAGES);
 	pk_store_set_uint (backend->priv->store, "filters", filters);
 	backend->priv->desc->get_packages (backend, filters);
@@ -3358,6 +3385,7 @@ void
 pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->simulate_install_files != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_FILES);
 	pk_store_set_strv (backend->priv->store, "full_paths", full_paths);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
@@ -3371,6 +3399,7 @@ void
 pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->simulate_install_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
@@ -3384,6 +3413,7 @@ void
 pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean	 autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->simulate_remove_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_store_set_bool (backend->priv->store, "autoremove", autoremove);
@@ -3398,6 +3428,7 @@ void
 pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->simulate_update_packages != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES);
 	pk_store_set_strv (backend->priv->store, "package_ids", package_ids);
 	pk_backend_set_bool (backend, "hint:simulate", TRUE);
@@ -3411,6 +3442,7 @@ void
 pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
 	backend->priv->desc->upgrade_system (backend, distro_id);
