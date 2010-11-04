@@ -46,17 +46,17 @@ pacman_message_cb (const gchar *domain, GLogLevelFlags level, const gchar *messa
 	switch (level) {
 		case G_LOG_LEVEL_WARNING:
 		case G_LOG_LEVEL_MESSAGE:
-			g_warning ("pacman: %s", message);
+			/*g_warning ("pacman: %s", message);*/
 			backend_message ((PkBackend *) user_data, message);
 			break;
 
 		case G_LOG_LEVEL_INFO:
 		case G_LOG_LEVEL_DEBUG:
-			g_debug ("pacman: %s", message);
+			/*g_debug ("pacman: %s", message);*/
 			break;
 
 		default:
-			g_warning ("pacman: %s", message);
+			/*g_warning ("pacman: %s", message);*/
 			break;
 	}
 }
