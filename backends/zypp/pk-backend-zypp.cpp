@@ -76,11 +76,32 @@ static std::map<PkBackend *, EventDirector *> _eventDirectors;
 std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
 /**
- * backend_initialize:
+ * pk_backend_get_description:
+ */
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("ZYpp package manager");
+}
+
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return g_strdup ("Boyd Timothy <btimothy@gmail.com>, "
+			 "Scott Reeves <sreeves@novell.com>, "
+			 "Stefan Haas <shaas@suse.de>"
+			 "ZYpp developers <zypp-devel@opensuse.org>");
+}
+
+/**
+ * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_initialize (PkBackend *backend)
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
 //	disabled get_zypp() - too slow for a dbus timeout after zypper clean -a
@@ -93,11 +114,11 @@ backend_initialize (PkBackend *backend)
 }
 
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("zypp_backend_destroy");
 
@@ -207,19 +228,19 @@ backend_get_requires_thread (PkBackend *backend)
 }
 
 /**
-  * backend_get_requires:
+  * pk_backend_get_requires:
   */
-static void
-backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires(PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_thread_create (backend, backend_get_requires_thread);
 }
 
 /**
- * backend_get_groups:
+ * pk_backend_get_groups:
  */
-static PkBitfield
-backend_get_groups (PkBackend *backend)
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_GROUP_ENUM_ADMIN_TOOLS,
@@ -243,10 +264,10 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
- * backend_get_filters:
+ * pk_backend_get_filters:
  */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
 		PK_FILTER_ENUM_INSTALLED,
@@ -407,7 +428,7 @@ backend_get_depends_thread (PkBackend *backend)
 
 			g_debug ("add dep - '%s' '%s' %d [%s]", it->second.name().c_str(),
 				   info == PK_INFO_ENUM_INSTALLED ? "installed" : "available",
-				   it->second.isSystem(), 
+				   it->second.isSystem(),
 				   zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
 
 			if (!zypp_filter_solvable (_filters, it->second)) {
@@ -430,10 +451,10 @@ backend_get_depends_thread (PkBackend *backend)
 }
 
 /**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_thread_create (backend, backend_get_depends_thread);
 }
@@ -532,10 +553,10 @@ backend_get_details_thread (PkBackend *backend)
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
@@ -580,10 +601,10 @@ backend_get_distro_upgrades_thread(PkBackend *backend)
 }
 
 /**
- * backend_get_distro_upgrades:
+ * pk_backend_get_distro_upgrades:
  */
-static void
-backend_get_distro_upgrades (PkBackend *backend)
+void
+pk_backend_get_distro_upgrades (PkBackend *backend)
 {
 	pk_backend_thread_create (backend, backend_get_distro_upgrades_thread);
 }
@@ -598,10 +619,10 @@ backend_refresh_cache_thread (PkBackend *backend)
 }
 
 /**
- * backend_refresh_cache
+ * pk_backend_refresh_cache
  */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
@@ -696,10 +717,10 @@ backend_get_updates_thread (PkBackend *backend)
 }
 
 /**
- * backend_get_updates
+ * pk_backend_get_updates
  */
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -819,19 +840,19 @@ backend_install_files_thread (PkBackend *backend)
 }
 
 /**
-  * backend_install_files
+  * pk_backend_install_files
   */
-static void
-backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
+void
+pk_backend_install_files (PkBackend *backend, gboolean only_trusted, gchar **full_paths)
 {
 	pk_backend_thread_create (backend, backend_install_files_thread);
 }
 
 /**
-  * backend_simulate_install_files
+  * pk_backend_simulate_install_files
   */
-static void
-backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
+void
+pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 {
 	pk_backend_thread_create (backend, backend_install_files_thread);
 }
@@ -919,10 +940,10 @@ backend_get_update_detail_thread (PkBackend *backend)
 }
 
 /**
-  * backend_get_update_detail
+  * pk_backend_get_update_detail
   */
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_update_detail_thread);
 }
@@ -970,10 +991,10 @@ backend_update_system_thread (PkBackend *backend)
 }
 
 /**
- * backend_update_system
+ * pk_backend_update_system
  */
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
@@ -1032,7 +1053,7 @@ backend_install_packages_thread (PkBackend *backend)
 					break;
 				}
 			}
-			
+
 			if (!system) {
 				gboolean hit = false;
 
@@ -1094,10 +1115,10 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
@@ -1105,10 +1126,10 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 }
 
 /**
- * backend_simulate_install_packages:
+ * pk_backend_simulate_install_packages:
  */
-static void
-backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
@@ -1126,10 +1147,10 @@ backend_install_signature_thread (PkBackend *backend)
 }
 
 /**
- * backend_install_signature:
+ * pk_backend_install_signature:
  */
-static void
-backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
+void
+pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
 {
 	pk_backend_thread_create (backend, backend_install_signature_thread);
 }
@@ -1205,16 +1226,16 @@ backend_remove_packages_thread (PkBackend *backend)
 }
 
 /**
- * backend_remove_packages:
+ * pk_backend_remove_packages:
  */
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
-static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gboolean autoremove)
 {
 	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
@@ -1288,10 +1309,10 @@ backend_resolve_thread (PkBackend *backend)
 }
 
 /**
- * backend_resolve:
+ * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_resolve_thread);
 }
@@ -1360,20 +1381,20 @@ backend_find_packages_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_name:
+ * pk_backend_search_name:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_NAME);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
 }
 
 /**
- * backend_search_details:
+ * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_DETAILS);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1421,19 +1442,19 @@ backend_search_group_thread (PkBackend *backend)
 }
 
 /**
- * backend_search_group:
+ * pk_backend_search_group:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
 
 /**
- * backend_search_file:
+ * pk_backend_search_file:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	pk_backend_set_uint (backend, "mode", SEARCH_TYPE_FILE);
 	pk_backend_thread_create (backend, backend_find_packages_thread);
@@ -1442,8 +1463,8 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 /**
  * backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	//FIXME - use the new param - filter
 
@@ -1480,10 +1501,10 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_repo_enable:
+ * pk_backend_repo_enable:
  */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+void
+pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1584,10 +1605,10 @@ backend_get_files_thread (PkBackend *backend)
 }
 
 /**
-  * backend_get_files:
+  * pk_backend_get_files:
   */
-static void
-backend_get_files(PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_get_files_thread);
 }
@@ -1611,10 +1632,10 @@ backend_get_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 /**
-  * backend_get_packages:
+  * pk_backend_get_packages:
   */
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filter)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filter)
 {
 	pk_backend_thread_create (backend, backend_get_packages_thread);
 }
@@ -1652,7 +1673,7 @@ backend_update_packages_thread (PkBackend *backend)
 				break;
 			}
 		}
-		if (system == true) 
+		if (system == true)
 			continue;
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
@@ -1671,19 +1692,19 @@ backend_update_packages_thread (PkBackend *backend)
 }
 
 /**
-  * backend_update_packages
+  * pk_backend_update_packages
   */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_update_packages_thread);
 }
 
 /**
-  * backend_simulate_update_packages
+  * pk_backend_simulate_update_packages
   */
-static void
-backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_thread_create (backend, backend_update_packages_thread);
 }
@@ -1814,10 +1835,10 @@ backend_repo_set_data_thread (PkBackend *backend)
 }
 
 /**
-  * backend_repo_set_data
+  * pk_backend_repo_set_data
   */
-static void
-backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
+void
+pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
 	pk_backend_thread_create (backend, backend_repo_set_data_thread);
 }
@@ -1873,7 +1894,7 @@ backend_what_provides_thread (PkBackend *backend)
 		for (zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
 			if (zypp_filter_solvable (_filters, *it))
 				continue;
-			
+
 			PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 			zypp_backend_package (backend, info, *it, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		}
@@ -1884,25 +1905,25 @@ backend_what_provides_thread (PkBackend *backend)
 }
 
 /**
-  * backend_what_provides
+  * pk_backend_what_provides
   */
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, gchar **values)
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provide, gchar **values)
 {
 	pk_backend_thread_create (backend, backend_what_provides_thread);
 }
 
-static gchar *
-backend_get_mime_types (PkBackend *backend)
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup ("application/x-rpm");
 }
 
 /**
- * backend_transaction_start:
+ * pk_backend_transaction_start:
  */
-static void
-backend_transaction_start (PkBackend *backend)
+void
+pk_backend_transaction_start (PkBackend *backend)
 {
 	gchar *proxy_http;
 	gchar *proxy_ftp;
@@ -1929,62 +1950,14 @@ backend_transaction_start (PkBackend *backend)
 }
 
 /**
- * backend_transaction_stop:
+ * pk_backend_transaction_stop:
  */
-static void
-backend_transaction_stop (PkBackend *backend)
+void
+pk_backend_transaction_stop (PkBackend *backend)
 {
 	/* unset proxy info for this transaction */
 	g_unsetenv ("http_proxy");
 	g_unsetenv ("ftp_proxy");
 }
 
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-extern "C" PK_BACKEND_OPTIONS (
-	"Zypp",					/* description */
-	"Boyd Timothy <btimothy@gmail.com>, "
-	"Scott Reeves <sreeves@novell.com>, "
-	"Stefan Haas <shaas@suse.de>",		/* author */
-	backend_initialize,			/* initalize */
-	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	NULL,					/* get_roles */
-	backend_get_mime_types,			/* get_mime_types */
-	NULL,					/* cancel */
-	NULL,					/* download_packages */
-	NULL,					/* get_categories */
-	backend_get_depends,			/* get_depends */
-	backend_get_details,			/* get_details */
-	backend_get_distro_upgrades,		/* get_distro_upgrades */
-	backend_get_files,			/* get_files */
-	backend_get_packages,			/* get_packages */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_get_requires,			/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_files,			/* install_files */
-	backend_install_packages,		/* install_packages */
-	backend_install_signature,		/* install_signature */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_packages,		/* remove_packages */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_resolve,			/* resolve */
-	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_files,			/* search_files */
-	backend_search_groups,			/* search_groups */
-	backend_search_names,			/* search_names */
-	backend_update_packages,		/* update_packages */
-	backend_update_system,			/* update_system */
-	backend_what_provides,			/* what_provides */
-	backend_simulate_install_files,		/* simulate_install_files */
-	backend_simulate_install_packages,	/* simulate_install_packages */
-	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	backend_simulate_update_packages,	/* simulate_update_packages */
-	NULL,					/* upgrade_system */
-	backend_transaction_start,		/* transaction_start */
-	backend_transaction_stop		/* transaction_stop */
-);
 
