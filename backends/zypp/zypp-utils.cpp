@@ -150,6 +150,35 @@ zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url)
 	return is_cd;
 }
 
+gboolean
+zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo)
+{
+	std::string repo_debuginfo("-debuginfo");
+	std::string repo_debug("-debug");
+	std::string repo_development("-development");
+	std::string repo_source ("-source");
+	
+	std::string repo_name(repo.name());
+
+	if (repo_name.length() > repo_debuginfo.length() && 
+	    repo_name.compare(repo_name.length() - repo_debuginfo.length(), repo_debuginfo.length(), repo_debuginfo) == 0)
+		return TRUE;
+
+	if (repo_name.length() > repo_debug.length() && 
+	    repo_name.compare(repo_name.length() - repo_debug.length(), repo_debug.length(), repo_debug) == 0)
+		return TRUE;
+
+	if (repo_name.length() > repo_development.length() && 
+	    repo_name.compare(repo_name.length() - repo_development.length(), repo_development.length(), repo_development) == 0)
+		return TRUE;
+
+	if (repo_name.length() > repo_source.length() && 
+	   repo_name.compare(repo_name.length() - repo_source.length(), repo_source.length(), repo_source) == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
 zypp::ResPool
 zypp_build_pool (PkBackend *backend, gboolean include_local)
 {

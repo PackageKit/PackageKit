@@ -1465,6 +1465,8 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 	}
 
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && zypp_is_development_repo (backend, *it))
+			continue;
 		// RepoInfo::alias - Unique identifier for this source.
 		// RepoInfo::name - Short label or description of the
 		// repository, to be used on the user interface
