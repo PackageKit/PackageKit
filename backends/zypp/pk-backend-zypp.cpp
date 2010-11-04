@@ -1622,6 +1622,7 @@ backend_update_packages_thread (PkBackend *backend)
 {
 	gboolean retval;
 	gchar **package_ids;
+	zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
@@ -1634,6 +1635,23 @@ backend_update_packages_thread (PkBackend *backend)
 		_updating_self = FALSE;
 	}
 	for (guint i = 0; package_ids[i]; i++) {
+		gchar **id_parts = pk_package_id_split (package_ids[i]);
+		std::string name = id_parts[PK_PACKAGE_ID_NAME];
+
+		// Do we have already the latest version.
+		gboolean system = false;
+		for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
+				it != pool.byNameEnd (name); it++) {
+			if (!it->satSolvable().isSystem())
+				continue;
+			if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
+						id_parts[PK_PACKAGE_ID_ARCH])) {
+				system = true;
+				break;
+			}
+		}
+		if (system == true) 
+			continue;
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
