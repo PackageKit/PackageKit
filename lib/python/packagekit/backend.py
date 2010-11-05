@@ -396,6 +396,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def upgrade_system(self, distro_id):
+        '''
+        Implement the {backend}-update-system functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -719,6 +726,9 @@ class PackageKitBaseBackend:
         elif cmd == 'simulate-update-packages':
             package_ids = args[0].split(PACKAGE_IDS_DELIM)
             self.simulate_update_packages(package_ids)
+            self.finished()
+        elif cmd == 'upgrade-system':
+            self.upgrade_system(args[0])
             self.finished()
         else:
             errmsg = "command '%s' is not known" % cmd
