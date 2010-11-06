@@ -580,6 +580,14 @@ static const PkEnumMatch enum_authorize_type[] = {
 	{0, NULL}
 };
 
+static const PkEnumMatch enum_upgrade_kind[] = {
+	{PK_UPGRADE_KIND_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_UPGRADE_KIND_ENUM_MINIMAL,		"minimal"},
+	{PK_UPGRADE_KIND_ENUM_DEFAULT,		"default"},
+	{PK_UPGRADE_KIND_ENUM_COMPLETE,		"complete"},
+	{0, NULL}
+};
+
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values
@@ -1177,4 +1185,36 @@ const gchar *
 pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type)
 {
 	return pk_enum_find_string (enum_authorize_type, authorize_type);
+}
+
+/**
+ * pk_upgrade_kind_enum_from_string:
+ * @upgrade_kind: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. %PK_UPGRADE_KIND_ENUM_MINIMAL
+ *
+ * Since: 0.6.11
+ **/
+PkUpgradeKindEnum
+pk_upgrade_kind_enum_from_string (const gchar *upgrade_kind)
+{
+	return pk_enum_find_value (enum_upgrade_kind, upgrade_kind);
+}
+
+/**
+ * pk_upgrade_kind_enum_to_string:
+ * @upgrade_kind: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "minimal"
+ *
+ * Since: 0.6.11
+ **/
+const gchar *
+pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind)
+{
+	return pk_enum_find_string (enum_upgrade_kind, upgrade_kind);
 }

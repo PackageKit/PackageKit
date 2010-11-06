@@ -1715,7 +1715,15 @@ main (int argc, char *argv[])
 			retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_upgrade_system_async (PK_CLIENT (task), value, cancellable,
+		if (details == NULL) {
+			/* TRANSLATORS: The user did not provide an upgrade type */
+			error = g_error_new (1, 0, "%s", _("An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"));
+			retval = PK_EXIT_CODE_SYNTAX_INVALID;
+			goto out;
+		}
+		pk_client_upgrade_system_async (PK_CLIENT (task), value,
+						pk_upgrade_kind_enum_from_string (details),
+						cancellable,
 						(PkProgressCallback) pk_console_progress_cb, NULL,
 						(GAsyncReadyCallback) pk_console_finished_cb, NULL);
 

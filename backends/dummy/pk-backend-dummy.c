@@ -1425,7 +1425,7 @@ pk_backend_upgrade_system_timeout (gpointer data)
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);

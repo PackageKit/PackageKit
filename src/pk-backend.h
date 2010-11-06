@@ -190,7 +190,8 @@ void		pk_backend_simulate_remove_packages	(PkBackend	*backend,
 void		pk_backend_simulate_update_packages	(PkBackend	*backend,
 							 gchar		**package_ids);
 void		pk_backend_upgrade_system		(PkBackend	*backend,
-							 const gchar	*distro_id);
+							 const gchar	*distro_id,
+							 PkUpgradeKindEnum upgrade_kind);
 
 /* set the state */
 gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
@@ -464,7 +465,8 @@ typedef struct {
 	void		(*transaction_start)		(PkBackend	*backend);
 	void		(*transaction_stop)		(PkBackend	*backend);
 	void		(*upgrade_system)		(PkBackend	*backend,
-							 const gchar	*distro_id);
+							 const gchar	*distro_id,
+							 PkUpgradeKindEnum upgrade_kind);
 	gpointer	padding[7];
 } PkBackendDesc;
 

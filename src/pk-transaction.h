@@ -238,6 +238,7 @@ void		 pk_transaction_what_provides			(PkTransaction	*transaction,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_upgrade_system			(PkTransaction	*transaction,
 								 const gchar	*distro_id,
+								 const gchar	*upgrade_kind_str,
 								 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_filter_check			(const gchar	*filter,
 								 GError		**error);

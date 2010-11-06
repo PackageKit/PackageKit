@@ -3439,13 +3439,14 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (backend->priv->desc->upgrade_system != NULL);
 	pk_backend_set_role_internal (backend, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_store_set_string (backend->priv->store, "distro_id", distro_id);
-	backend->priv->desc->upgrade_system (backend, distro_id);
+	pk_store_set_uint (backend->priv->store, "upgrade_kind", upgrade_kind);
+	backend->priv->desc->upgrade_system (backend, distro_id, upgrade_kind);
 }
 
 /**
