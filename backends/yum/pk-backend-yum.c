@@ -3312,6 +3312,7 @@ pk_backend_upgrade_system_thread (PkBackend *backend)
 	gchar **distro_id_split = NULL;
 	guint version;
 	gboolean ret;
+	PkErrorEnum error_code;
 	GError *error = NULL;
 	ZifReleaseUpgradeKind upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_DEFAULT;
 	PkUpgradeKindEnum upgrade_kind = pk_backend_get_uint (backend, "upgrade_kind");
@@ -3346,7 +3347,33 @@ pk_backend_upgrade_system_thread (PkBackend *backend)
 					   priv->state,
 					   &error);
 	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+		/* convert the ZifRelease error code into a PK error enum */
+		switch (error->code) {
+		case ZIF_RELEASE_ERROR_DOWNLOAD_FAILED:
+			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+			break;
+		case ZIF_RELEASE_ERROR_FILE_INVALID:
+			error_code = PK_ERROR_ENUM_FAILED_CONFIG_PARSING;
+			break;
+		case ZIF_RELEASE_ERROR_LOW_DISKSPACE:
+			error_code = PK_ERROR_ENUM_NO_SPACE_ON_DEVICE;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_FOUND:
+			error_code = PK_ERROR_ENUM_PACKAGE_NOT_FOUND;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_SUPPORTED:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_RELEASE_ERROR_NO_UUID_FOR_ROOT:
+		case ZIF_RELEASE_ERROR_SETUP_INVALID:
+		case ZIF_RELEASE_ERROR_SPAWN_FAILED:
+		case ZIF_RELEASE_ERROR_WRITE_FAILED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+		pk_backend_error_code (backend, error_code,
 				       "failed to upgrade: %s", error->message);
 		g_error_free (error);
 		goto out;
