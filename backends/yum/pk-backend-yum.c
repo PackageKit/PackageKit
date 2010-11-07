@@ -44,7 +44,6 @@ typedef struct {
 	guint		 signal_finished;
 	guint		 signal_status;
 #ifdef HAVE_ZIF
-	ZifDownload	*download;
 	ZifConfig	*config;
 	ZifStoreLocal	*store_local;
 	ZifRepos	*repos;
@@ -247,7 +246,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* set the proxy */
 	http_proxy = pk_backend_get_proxy_http (backend);
-	zif_download_set_proxy (priv->download, http_proxy, NULL);
+	zif_config_set_string (priv->config, "http_proxy", http_proxy, NULL);
 
 	/* setup state */
 	zif_state_reset (priv->state);
@@ -1236,9 +1235,6 @@ pk_backend_initialize (PkBackend *backend)
 	/* profile */
 	pk_backend_profile ("read config_file");
 
-	/* ZifDownload */
-	priv->download = zif_download_new ();
-
 	/* ZifLock */
 	priv->lock = zif_lock_new ();
 
@@ -1307,8 +1303,6 @@ pk_backend_destroy (PkBackend *backend)
 		g_object_unref (priv->config);
 	if (priv->release != NULL)
 		g_object_unref (priv->release);
-	if (priv->download != NULL)
-		g_object_unref (priv->download);
 	if (priv->state != NULL)
 		g_object_unref (priv->state);
 	if (priv->repos != NULL)
