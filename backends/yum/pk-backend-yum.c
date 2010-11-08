@@ -44,13 +44,13 @@ typedef struct {
 	guint		 signal_finished;
 	guint		 signal_status;
 #ifdef HAVE_ZIF
-	ZifDownload	*download;
 	ZifConfig	*config;
 	ZifStoreLocal	*store_local;
 	ZifRepos	*repos;
 	ZifGroups	*groups;
 	ZifState	*state;
 	ZifLock		*lock;
+	ZifRelease	*release;
 #endif
 	GTimer		*timer;
 	GVolumeMonitor	*volume_monitor;
@@ -246,7 +246,7 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* set the proxy */
 	http_proxy = pk_backend_get_proxy_http (backend);
-	zif_download_set_proxy (priv->download, http_proxy, NULL);
+	zif_config_set_string (priv->config, "http_proxy", http_proxy, NULL);
 
 	/* setup state */
 	zif_state_reset (priv->state);
@@ -1235,11 +1235,14 @@ pk_backend_initialize (PkBackend *backend)
 	/* profile */
 	pk_backend_profile ("read config_file");
 
-	/* ZifDownload */
-	priv->download = zif_download_new ();
-
 	/* ZifLock */
 	priv->lock = zif_lock_new ();
+
+	/* ZifRelease */
+	priv->release = zif_release_new ();
+	zif_release_set_boot_dir (priv->release, "/boot/upgrade");
+	zif_release_set_cache_dir (priv->release, "/var/cache/PackageKit");
+	zif_release_set_uri (priv->release, "http://mirrors.fedoraproject.org/releases.txt");
 
 	/* ZifStoreLocal */
 	priv->store_local = zif_store_local_new ();
@@ -1298,8 +1301,8 @@ pk_backend_destroy (PkBackend *backend)
 #ifdef HAVE_ZIF
 	if (priv->config != NULL)
 		g_object_unref (priv->config);
-	if (priv->download != NULL)
-		g_object_unref (priv->download);
+	if (priv->release != NULL)
+		g_object_unref (priv->release);
 	if (priv->state != NULL)
 		g_object_unref (priv->state);
 	if (priv->repos != NULL)
@@ -1440,9 +1443,14 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		-1);
 
+#ifdef HAVE_ZIF
+	pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
+#else
 	/* only add GetDistroUpgrades if the binary is present */
 	if (g_file_test (PREUPGRADE_BINARY, G_FILE_TEST_EXISTS))
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+#endif
 
 	return roles;
 }
@@ -1637,11 +1645,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_loop_inner;
-#ifdef ZIF_CHECK_VERSION
 	ZifDepend *require;
-#else
-	const ZifDepend *require;
-#endif
 	const gchar *id;
 	guint i, j, k;
 	guint len;
@@ -1731,22 +1735,12 @@ pk_backend_get_depends_thread (PkBackend *backend)
 			require = g_ptr_array_index (requires, k);
 
 			/* find the package providing the depend */
-#ifdef ZIF_CHECK_VERSION
 			to_array[0] = zif_depend_get_name (require);
-#else
-			to_array[0] = require->name;
-#endif
 			provides = zif_store_array_what_provides (store_array, (gchar**)to_array, state_loop_inner, &error);
 			if (provides == NULL) {
-#ifdef ZIF_CHECK_VERSION
 				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to find provide for %s: %s",
 						       zif_depend_get_name (require), error->message);
-#else
-				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						       "failed to find provide for %s: %s",
-						       require->name, error->message);
-#endif
 				g_error_free (error);
 				goto out;
 			}
@@ -2015,102 +2009,50 @@ static gboolean
 pk_backend_get_distro_upgrades_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
-	gboolean ret;
-	gchar *distro_id = NULL;
-	gchar *filename = NULL;
-	gchar **groups = NULL;
-	gchar *name = NULL;
-	gchar **split = NULL;
-	guint i;
-	guint last_version = 0;
-	guint newest = G_MAXUINT;
-	guint version;
+	gchar *distro_id;
 	GError *error = NULL;
-	GKeyFile *file = NULL;
-	ZifState *child;
+	GPtrArray *array = NULL;
+	guint i;
+	guint version;
+	ZifUpgrade *upgrade;
 
-	/* download, then parse */
+	/* one shot */
 	zif_state_reset (priv->state);
-	zif_state_set_number_steps (priv->state, 2);
 
-	/* download new file */
-	filename = g_build_filename ("/var/cache/PackageKit", "releases.txt", NULL);
-	child = zif_state_get_child (priv->state);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO);
-	ret = zif_download_file (priv->download, "http://mirrors.fedoraproject.org/releases.txt", filename, child, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "failed to download %s: %s", filename, error->message);
-		g_error_free (error);
-		goto out;
-	}
-	ret = zif_state_done (priv->state, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	file = g_key_file_new ();
-	ret = g_key_file_load_from_file (file, filename, G_KEY_FILE_NONE, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "failed to open %s: %s", filename, error->message);
-		g_error_free (error);
-		goto out;
-	}
-
-	/* get all entries */
-	groups = g_key_file_get_groups (file, NULL);
-	for (i=0; groups[i] != NULL; i++) {
-		/* we only care about stable versions */
-		if (!g_key_file_get_boolean (file, groups[i], "stable", NULL))
-			goto out;
-		version = g_key_file_get_integer (file, groups[i], "version", NULL);
-		g_debug ("%s is update to version %i", groups[i], version);
-		if (version > last_version) {
-			newest = i;
-			last_version = version;
-		}
-	}
-
-	/* nothing found */
-	if (newest == G_MAXUINT) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING, "could not get latest distro data");
-		goto out;
-	}
-
-	/* are we already on the latest version */
-	version = zif_config_get_uint (priv->config, "releasever", &error);
+	/* get the current version */
+	version = zif_config_get_uint (priv->config, "releasever", NULL);
 	if (version == G_MAXUINT) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING, "could not get distro present version");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+				       "could not get distro present version");
 		goto out;
 	}
 
-	/* all okay, nothing to show */
-	if (version >= last_version)
-		goto out;
-
-	/* if we have an upgrade candidate then pass back data to daemon */
-	split = g_strsplit (groups[newest], " ", -1);
-	name = g_ascii_strdown (split[0], -1);
-	distro_id = g_strdup_printf ("%s-%s", name, split[1]);
-	pk_backend_distro_upgrade (backend, PK_DISTRO_UPGRADE_ENUM_STABLE, distro_id, groups[newest]);
-
-	/* we're done */
-	ret = zif_state_done (priv->state, &error);
-	if (!ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "cancelled: %s", error->message);
+	/* get the upgrades */
+	array = zif_release_get_upgrades_new (priv->release, version, priv->state, &error);
+	if (array == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+				       "could not get latest distro data : %s", error->message);
 		g_error_free (error);
 		goto out;
+	}
+
+	/* emit the results */
+	for (i=0; i<array->len; i++) {
+		upgrade = g_ptr_array_index (array, i);
+		if (!zif_upgrade_get_enabled (upgrade))
+			continue;
+		distro_id = g_strdup_printf ("fedora-%i", zif_upgrade_get_version (upgrade));
+		pk_backend_distro_upgrade (backend,
+					   zif_upgrade_get_stable (upgrade) ? PK_DISTRO_UPGRADE_ENUM_STABLE :
+									      PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+					   distro_id,
+					   zif_upgrade_get_id (upgrade));
+		g_free (distro_id);
 	}
 out:
 	pk_backend_finished (backend);
-	g_free (distro_id);
-	g_free (filename);
-	g_free (name);
-	if (file != NULL)
-		g_key_file_free (file);
-	g_strfreev (groups);
-	g_strfreev (split);
+	if (array != NULL)
+		g_ptr_array_unref (array);
 #endif
 	return TRUE;
 }
@@ -3354,12 +3296,94 @@ pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 	g_free (package_ids_temp);
 }
 
+/**
+  * pk_backend_upgrade_system_thread:
+  */
+static gboolean
+pk_backend_upgrade_system_thread (PkBackend *backend)
+{
+#ifdef HAVE_ZIF
+	gchar **distro_id_split = NULL;
+	guint version;
+	gboolean ret;
+	PkErrorEnum error_code;
+	GError *error = NULL;
+	ZifReleaseUpgradeKind upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_DEFAULT;
+	PkUpgradeKindEnum upgrade_kind = pk_backend_get_uint (backend, "upgrade_kind");
+	const gchar *distro_id = pk_backend_get_string (backend, "distro_id");
+
+	/* check valid */
+	distro_id_split = g_strsplit (distro_id, "-", -1);
+	if (g_strv_length (distro_id_split) != 2) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+				       "distribution id %s invalid", distro_id);
+		goto out;
+	}
+
+	/* check fedora */
+	if (g_strcmp0 (distro_id_split[0], "fedora") != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
+				       "only 'fedora' is supported");
+		goto out;
+	}
+
+	/* map PK enum to Zif enumerated types */
+	if (upgrade_kind == PK_UPGRADE_KIND_ENUM_MINIMAL)
+		upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_MINIMAL;
+	else if (upgrade_kind == PK_UPGRADE_KIND_ENUM_COMPLETE)
+		upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_COMPLETE;
+
+	/* do the upgrade */
+	version = atoi (distro_id_split[1]);
+	ret = zif_release_upgrade_version (priv->release,
+					   version,
+					   upgrade_kind_zif,
+					   priv->state,
+					   &error);
+	if (!ret) {
+		/* convert the ZifRelease error code into a PK error enum */
+		switch (error->code) {
+		case ZIF_RELEASE_ERROR_DOWNLOAD_FAILED:
+			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+			break;
+		case ZIF_RELEASE_ERROR_FILE_INVALID:
+			error_code = PK_ERROR_ENUM_FAILED_CONFIG_PARSING;
+			break;
+		case ZIF_RELEASE_ERROR_LOW_DISKSPACE:
+			error_code = PK_ERROR_ENUM_NO_SPACE_ON_DEVICE;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_FOUND:
+			error_code = PK_ERROR_ENUM_PACKAGE_NOT_FOUND;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_SUPPORTED:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_RELEASE_ERROR_NO_UUID_FOR_ROOT:
+		case ZIF_RELEASE_ERROR_SETUP_INVALID:
+		case ZIF_RELEASE_ERROR_SPAWN_FAILED:
+		case ZIF_RELEASE_ERROR_WRITE_FAILED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+		pk_backend_error_code (backend, error_code,
+				       "failed to upgrade: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+out:
+	pk_backend_finished (backend);
+	g_strfreev (distro_id_split);
+#endif
+	return TRUE;
+}
 
 /**
  * pk_backend_upgrade_system:
  */
 void
-pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id)
+pk_backend_upgrade_system (PkBackend *backend, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind)
 {
-	/* FIXME */
+	pk_backend_thread_create (backend, pk_backend_upgrade_system_thread);
 }

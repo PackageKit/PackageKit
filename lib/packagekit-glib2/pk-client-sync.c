@@ -1684,6 +1684,7 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
 /**
  * pk_client_upgrade_system:
  * @distro_id: a distro ID such as "fedora-14"
+ * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1703,7 +1704,8 @@ pk_client_simulate_update_packages (PkClient *client, gchar **package_ids, GCanc
  * Since: 0.6.11
  **/
 PkResults *
-pk_client_upgrade_system (PkClient *client, const gchar *distro_id, GCancellable *cancellable,
+pk_client_upgrade_system (PkClient *client, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
+			  GCancellable *cancellable,
 		          PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
 	PkClientHelper *helper;
@@ -1718,7 +1720,8 @@ pk_client_upgrade_system (PkClient *client, const gchar *distro_id, GCancellable
 	helper->error = error;
 
 	/* run async method */
-	pk_client_upgrade_system_async (client, distro_id, cancellable, progress_callback, progress_user_data,
+	pk_client_upgrade_system_async (client, distro_id, upgrade_kind,
+					cancellable, progress_callback, progress_user_data,
 				        (GAsyncReadyCallback) pk_client_generic_finish_sync, helper);
 
 	g_main_loop_run (helper->loop);

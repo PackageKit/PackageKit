@@ -718,6 +718,19 @@ typedef enum {
 	PK_AUTHORIZE_ENUM_LAST
 } PkAuthorizeEnum;
 
+/**
+ * PkUpgradeKindEnum:
+ *
+ * The type of distribution upgrade to perform
+ **/
+typedef enum {
+	PK_UPGRADE_KIND_ENUM_UNKNOWN,
+	PK_UPGRADE_KIND_ENUM_MINIMAL,
+	PK_UPGRADE_KIND_ENUM_DEFAULT,
+	PK_UPGRADE_KIND_ENUM_COMPLETE,
+	PK_UPGRADE_KIND_ENUM_LAST
+} PkUpgradeKindEnum;
+
 /* general */
 void		 pk_enum_test				(gpointer	 user_data);
 guint		 pk_enum_find_value			(const PkEnumMatch *table,
@@ -777,6 +790,9 @@ const gchar	*pk_media_type_enum_to_string		(PkMediaTypeEnum media_type);
 
 PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*authorize_type);
 const gchar	*pk_authorize_type_enum_to_string	(PkAuthorizeEnum authorize_type);
+
+PkUpgradeKindEnum  pk_upgrade_kind_enum_from_string	(const gchar	*upgrade_kind);
+const gchar	*pk_upgrade_kind_enum_to_string		(PkUpgradeKindEnum upgrade_kind);
 
 G_END_DECLS
 

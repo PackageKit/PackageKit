@@ -1550,7 +1550,21 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              The distro ID to upgrade to, e.g. <doc:tt>fedora-14</doc:tt>.
+              The distribution ID to upgrade to, e.g. <doc:tt>fedora-14</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="upgrade_kind" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The type of upgrade, e.g. <doc:tt>minimal</doc:tt>, <doc:tt>default</doc:tt> or <doc:tt>complete</doc:tt>.
+              Minimal upgrades will download the smallest amount of data
+              before launching a installer.
+              The default is to download enough data to launch a full
+              graphical installer, but a complete upgrade will be
+              required if there is no internet access during install time.
             </doc:para>
           </doc:summary>
         </doc:doc>

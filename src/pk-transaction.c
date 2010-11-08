@@ -2022,7 +2022,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 			pk_backend_get_depends (priv->backend, filters, priv->cached_package_ids, TRUE);
 		}
 	} else if (priv->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		pk_backend_upgrade_system (priv->backend, priv->cached_value);
+		pk_backend_upgrade_system (priv->backend, priv->cached_value, priv->cached_provides);
 	} else {
 		g_error ("failed to run as role not assigned");
 		ret = FALSE;
@@ -5431,15 +5431,16 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
  * pk_transaction_upgrade_system:
  **/
 void
-pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_id, DBusGMethodInvocation *context)
+pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_id, const gchar *upgrade_kind_str, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
+	PkUpgradeKindEnum upgrade_kind;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	g_debug ("UpgradeSystem method called: %s", distro_id);
+	g_debug ("UpgradeSystem method called: %s (%s)", distro_id, upgrade_kind_str);
 
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_UPGRADE_SYSTEM)) {
@@ -5458,8 +5459,19 @@ pk_transaction_upgrade_system (PkTransaction *transaction, const gchar *distro_i
 		return;
 	}
 
+	/* check upgrade kind */
+	upgrade_kind = pk_upgrade_kind_enum_from_string (upgrade_kind_str);
+	if (upgrade_kind == PK_UPGRADE_KIND_ENUM_UNKNOWN) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
+				     "upgrade kind '%s' not found", upgrade_kind_str);
+		pk_transaction_release_tid (transaction);
+		pk_transaction_dbus_return_error (context, error);
+		return;
+	}
+
 	/* save so we can run later */
 	transaction->priv->cached_value = g_strdup (distro_id);
+	transaction->priv->cached_provides = upgrade_kind;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
 	/* try to get authorization */

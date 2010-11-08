@@ -121,6 +121,7 @@ typedef struct {
 	PkResults			*results;
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
+	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 refcount;
 	gboolean			 signals_connected;
 	PkClientHelper			*client_helper;
@@ -1791,6 +1792,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 		state->call = dbus_g_proxy_begin_call (state->proxy, "UpgradeSystem",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
 						       G_TYPE_STRING, state->distro_id,
+						       G_TYPE_STRING, pk_upgrade_kind_enum_to_string (state->upgrade_kind),
 						       G_TYPE_INVALID);
 	} else {
 		g_assert_not_reached ();
@@ -4181,6 +4183,7 @@ out:
  * pk_client_upgrade_system_async:
  * @client: a valid #PkClient instance
  * @distro_id: a distro ID such as "fedora-14"
+ * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -4196,7 +4199,8 @@ out:
  * Since: 0.6.11
  **/
 void
-pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, GCancellable *cancellable,
+pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, PkUpgradeKindEnum upgrade_kind,
+				GCancellable *cancellable,
 			        PkProgressCallback progress_callback, gpointer progress_user_data,
 			        GAsyncReadyCallback callback_ready, gpointer user_data)
 {
@@ -4220,6 +4224,7 @@ pk_client_upgrade_system_async (PkClient *client, const gchar *distro_id, GCance
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->distro_id = g_strdup (distro_id);
+	state->upgrade_kind = upgrade_kind;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
