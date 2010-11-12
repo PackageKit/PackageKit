@@ -1636,7 +1636,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 
 		/* download */
 		state_local = zif_state_get_child (priv->state);
-		ret = zif_package_download (package, directory, state_local, &error);
+		ret = zif_package_remote_download (ZIF_PACKAGE_REMOTE (package), directory, state_local, &error);
 		if (!ret) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to download %s: %s", filename, error->message);
@@ -2393,7 +2393,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 		/* updates without updatinfo */
 		info = PK_INFO_ENUM_NORMAL;
 
-		update = zif_package_get_update_detail (package, state_loop, &error);
+		update = zif_package_remote_get_update_detail (ZIF_PACKAGE_REMOTE (package), state_loop, &error);
 		if (update == NULL) {
 			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
@@ -2564,7 +2564,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 		}
 
 		state_local = zif_state_get_child (priv->state);
-		update = zif_package_get_update_detail (package, state_local, &error);
+		update = zif_package_remote_get_update_detail (ZIF_PACKAGE_REMOTE (package), state_local, &error);
 		if (update == NULL) {
 			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
