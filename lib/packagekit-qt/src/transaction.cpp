@@ -343,6 +343,11 @@ void Transaction::downloadPackages(const QSharedPointer<Package> &package)
     downloadPackages(QList<QSharedPointer<Package> >() << package);
 }
 
+void Transaction::getCategories()
+{
+    RUN_TRANSACTION(GetCategories())
+}
+
 void Transaction::getDepends(const QList<QSharedPointer<Package> > &packages, Enum::Filters filters, bool recursive)
 {
     RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
