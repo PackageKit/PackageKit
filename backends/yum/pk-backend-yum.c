@@ -45,7 +45,7 @@ typedef struct {
 	guint		 signal_status;
 #ifdef HAVE_ZIF
 	ZifConfig	*config;
-	ZifStoreLocal	*store_local;
+	ZifStore	*store_local;
 	ZifRepos	*repos;
 	ZifGroups	*groups;
 	ZifState	*state;
@@ -222,7 +222,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	}
 
 	/* try to set, or re-set install root */
-	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
+	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local), root, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
 		g_error_free (error);
@@ -482,7 +482,7 @@ pk_backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield fi
 
 	/* add local packages to the store_array */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		store = ZIF_STORE (zif_store_local_new ());
+		store = zif_store_local_new ();
 		zif_store_array_add_store (store_array, store);
 		g_object_unref (store);
 	}
@@ -2326,7 +2326,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 
 	/* get all the installed packages */
 	state_local = zif_state_get_child (priv->state);
-	packages = zif_store_get_packages (ZIF_STORE (priv->store_local), state_local, &error);
+	packages = zif_store_get_packages (priv->store_local, state_local, &error);
 	if (packages == NULL) {
 		g_print ("failed to get local store: %s", error->message);
 		g_error_free (error);
