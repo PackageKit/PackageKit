@@ -2282,6 +2282,7 @@ static gboolean
 pk_backend_get_updates_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
+#if 0
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	GPtrArray *store_array = NULL;
 	ZifState *state_local;
@@ -2455,6 +2456,7 @@ out:
 		g_ptr_array_unref (result);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
+#endif
 #endif
 	return TRUE;
 }
