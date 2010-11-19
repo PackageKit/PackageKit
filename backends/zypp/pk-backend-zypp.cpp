@@ -1650,13 +1650,6 @@ backend_update_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	delete zypp_get_updates (backend); // make sure _updating_self is set
-
-	if (_updating_self) {
-		g_debug ("updating self and setting restart");
-		restart = PK_RESTART_ENUM_SESSION;
-		_updating_self = FALSE;
-	}
 	for (guint i = 0; package_ids[i]; i++) {
 		gchar **id_parts = pk_package_id_split (package_ids[i]);
 		std::string name = id_parts[PK_PACKAGE_ID_NAME];
@@ -1680,12 +1673,13 @@ backend_update_packages_thread (PkBackend *backend)
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item.resolvable ());
 		zypp_check_restart (&restart, patch);
+		if (restart != PK_RESTART_ENUM_NONE){
+			pk_backend_require_restart (backend, restart, package_ids[i]);
+			restart = PK_RESTART_ENUM_NONE;
+		}
 	}
 
 	retval = zypp_perform_execution (backend, UPDATE, FALSE);
-
-	if (restart != PK_RESTART_ENUM_NONE)
-		pk_backend_require_restart (backend, restart, "A restart is needed");
 
 	pk_backend_finished (backend);
 	return retval;
