@@ -760,6 +760,20 @@ zypp_get_package_updates (std::string repo)
                 zypp::PoolItem candidate =  zypp_find_arch_update_item (pool, *it);
                 if (!candidate.resolvable ())
                         continue;
+
+		gboolean system = false;
+		for (zypp::ResPool::byName_iterator it = pool.byNameBegin (candidate->name());
+				it != pool.byNameEnd (candidate->name()); it++) {
+			if (!it->satSolvable().isSystem())
+				continue;
+			if (zypp_ver_and_arch_equal (it->satSolvable(), candidate->edition ().c_str (),candidate->arch ().c_str ())) {
+				system = true;
+				break;
+			}
+		}
+		if (system == true) 
+			continue;
+
 		if (repo.empty ()) {
 	                pks->insert (candidate);
 		} else {
