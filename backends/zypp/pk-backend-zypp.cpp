@@ -139,6 +139,13 @@ backend_get_requires_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -307,6 +314,10 @@ backend_get_depends_thread (PkBackend *backend)
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	g_debug ("get_depends with filter '%s'", pk_filter_bitfield_to_string (_filters));
 
@@ -463,6 +474,13 @@ static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -564,6 +582,13 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_distro_upgrades_thread(PkBackend *backend)
 {
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// refresh the repos before checking for updates
@@ -657,6 +682,13 @@ static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	typedef std::set<zypp::PoolItem>::iterator pi_it_t;
 
@@ -729,6 +761,13 @@ static gboolean
 backend_install_files_thread (PkBackend *backend)
 {
 	gchar **full_paths;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	full_paths = pk_backend_get_strv (backend, "full_paths");
 
@@ -861,6 +900,13 @@ static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (package_ids == NULL) {
@@ -951,6 +997,13 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_update_system_thread (PkBackend *backend)
 {
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -1015,6 +1068,10 @@ backend_install_packages_thread (PkBackend *backend)
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -1167,6 +1224,10 @@ backend_remove_packages_thread (PkBackend *backend)
 	zypp::Target_Ptr target;
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	target = zypp->target ();
 
@@ -1245,6 +1306,13 @@ backend_resolve_thread (PkBackend *backend)
 {
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1323,7 +1391,13 @@ backend_find_packages_thread (PkBackend *backend)
 	gchar **values;
 	const gchar *search;
 	guint mode;
-	//GList *list = NULL;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	values = pk_backend_get_strv (backend, "search");
 	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
@@ -1405,6 +1479,13 @@ backend_search_group_thread (PkBackend *backend)
 {
 	gchar **values;
 	const gchar *group;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	values = pk_backend_get_strv (backend, "search");
 	group = values[0];  //Fixme - add support for possible multiple values.
@@ -1466,7 +1547,13 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
-	//FIXME - use the new param - filter
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return;
+	}
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1506,6 +1593,13 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 void
 pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return;
+	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	zypp::RepoManager manager;
@@ -1537,6 +1631,13 @@ static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
 	gchar **package_ids;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	if (!pk_package_ids_check (package_ids)) {
@@ -1616,6 +1717,13 @@ pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> v;
@@ -1645,6 +1753,13 @@ backend_update_packages_thread (PkBackend *backend)
 {
 	gboolean retval;
 	gchar **package_ids;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 	zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 	/* FIXME: support only_trusted */
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -1709,6 +1824,13 @@ backend_repo_set_data_thread (PkBackend *backend)
 	const gchar *repo_id;
 	const gchar *parameter;
 	const gchar *value;
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	repo_id = pk_backend_get_string (backend, "repo_id");
 	parameter = pk_backend_get_string (backend, "parameter");
@@ -1840,6 +1962,13 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
 static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
+	zypp::ZYpp::Ptr zypp;
+
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	gchar **values = pk_backend_get_strv (backend, "search");
 	const gchar *search = values[0]; //Fixme - support possible multiple search values (logical OR)

@@ -99,8 +99,12 @@ get_zypp (PkBackend *backend)
 
 		        initialized = TRUE;
 	        }
+	} catch (const zypp::ZYppFactoryException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_INITIALIZATION, ex.asUserString().c_str() );
+		return NULL;
         } catch (const zypp::Exception &ex) {
-		g_error ("%s", ex.asUserString ().c_str ());
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		return NULL
         }
 
 	return zypp;
@@ -1107,6 +1111,8 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
 	// This call is needed as it calls initializeTarget which appears to properly setup the keyring
 	zypp::ZYpp::Ptr zypp = get_zypp (backend);
+        if (zypp == NULL)
+		return  FALSE;
 	zypp::filesystem::Pathname pathname(pk_backend_get_root (backend));
 	// This call is needed to refresh system rpmdb status while refresh cache
 	zypp->finishTarget ();
