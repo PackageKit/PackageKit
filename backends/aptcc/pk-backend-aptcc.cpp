@@ -508,15 +508,13 @@ backend_what_provides_thread (PkBackend *backend)
 {
 	PkProvidesEnum provides;
 	PkBitfield filters;
-	const gchar *search;
 	const gchar *provides_text;
 	gchar **values;
 	bool error = false;
 
 	filters  = (PkBitfield)     pk_backend_get_uint (backend, "filters");
 	provides = (PkProvidesEnum) pk_backend_get_uint (backend, "provides");
-	search   = pk_backend_get_string (backend, "search");
-	values   = g_strsplit (search, "&", 0);
+	values   = pk_backend_get_strv (backend, "search");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -587,7 +585,6 @@ backend_what_provides_thread (PkBackend *backend)
 				       provides_text);
 	}
 
-	g_strfreev (values);
 	pk_backend_finished (backend);
 	return true;
 }

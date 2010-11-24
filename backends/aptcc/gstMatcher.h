@@ -1,7 +1,5 @@
-// apt.h  -*-c++-*-
 //
-//  Copyright 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
-//  Copyright (C) 2009 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
+//  Copyright (C) 2010 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,22 +20,32 @@
 #ifndef GST_MATCHER_H
 #define GST_MATCHER_H
 
-#include <regex.h>
-
 #include <glib.h>
 
 #include <vector>
-#include <map>
 #include <string>
 
 using namespace std;
 
-class gstMatcher
+typedef struct {
+    string   version;
+    string   type;
+    string   data;
+    string   opt;
+    void    *caps;
+} Match;
+
+class GstMatcher
 {
 public:
-	gstMatcher(gchar **values);
-	~gstMatcher();
+    GstMatcher(gchar **values);
+    ~GstMatcher();
 
+    bool matches(string record);
+    bool hasMatches() const;
+
+private:
+    vector<Match> m_matches;
 };
 
 #endif
