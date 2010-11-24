@@ -9,6 +9,7 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 apt-utils.cpp \
 				 acqprogress.cpp \
 				 matcher.cpp \
+				 gstMatcher.cpp \
 				 rsources.cpp \
 				 apt.cpp \
 				 pk-backend-aptcc.cpp
@@ -23,6 +24,7 @@ aptconf_DATA = 20packagekit
 EXTRA_DIST = 20packagekit \
 	     apt.h \
 	     apt-utils.h \
+	     gstMatcher.h \
 	     matcher.h \
 	     aptcc_show_broken.h \
 	     acqprogress.h \

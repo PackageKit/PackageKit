@@ -1058,9 +1058,9 @@ backend_search_package_thread (PkBackend *backend)
 				continue;
 			}
 
+			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 			if (m_matcher->matches(pkg.Name())) {
 				// Don't insert virtual packages instead add what it provides
-				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 				if (ver.end() == false) {
 					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 				} else {
@@ -1079,12 +1079,9 @@ backend_search_package_thread (PkBackend *backend)
 				}
 			} else {
 				// Don't insert virtual packages instead add what it provides
-				pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 				if (ver.end() == false) {
-					if (m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
-					    || m_matcher->matches(get_default_long_description(ver, m_apt->packageRecords))
-					    || m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
-					    || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
+					if (m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
+					 || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
 					{
 						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 					}
@@ -1098,11 +1095,8 @@ backend_search_package_thread (PkBackend *backend)
 						{
 							// we add the package now because we will need to
 							// remove duplicates later anyway
-							if (m_matcher->matches(Prv.OwnerPkg().Name())
-							    || m_matcher->matches(get_default_short_description(ver, m_apt->packageRecords))
-							    || m_matcher->matches(get_default_long_description(ver, m_apt->packageRecords))
-							    || m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
-							    || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
+							if (m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
+							 || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
 							{
 								output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
 							}

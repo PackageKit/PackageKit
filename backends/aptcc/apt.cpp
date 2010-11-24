@@ -46,9 +46,6 @@
 #include <dirent.h>
 #include <assert.h>
 
-// Gstreamer stuff
-// #include <gst/gst.h>
-
 aptcc::aptcc(PkBackend *backend, bool &cancel)
 	:
 	packageRecords(0),
@@ -478,8 +475,6 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 			cout << opt << endl;
 			regex_t sre;
 			gchar *itemreg;
-// 			GstCaps *caps;
-// 			caps = gst_caps_new_simple(data.c_str(), opt.c_str());
 			itemreg = g_strdup_printf("^%s:.* %s\\(, %s\\(,.*\\|;.*\\|$\\)\\|;\\|$\\)",
 						  type.c_str(),
 						  data.c_str(),
