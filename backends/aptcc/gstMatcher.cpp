@@ -20,6 +20,7 @@
 
 #include <regex.h>
 #include <gst/gst.h>
+#include <iostream>
 
 GstMatcher::GstMatcher(gchar **values)
 {
@@ -30,7 +31,7 @@ GstMatcher::GstMatcher(gchar **values)
     // gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
     const char *pkreg = "^gstreamer\\([0-9\\.]\\+\\)"
                 "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
-                "\\((.*)\\)\\?";
+                "\\(([^\\(^\\)]*)\\)\\?";
 
     regex_t pkre;
     if(regcomp(&pkre, pkreg, 0) != 0) {
@@ -60,9 +61,6 @@ GstMatcher::GstMatcher(gchar **values)
             if (matches[4].rm_so != -1) {
                 // remove the '(' ')' that the regex matched
                 opt = string(value, matches[4].rm_so + 1, matches[4].rm_eo - matches[4].rm_so - 2);
-            } else {
-                // if the 4th element did not match match everything
-                opt = ".*";
             }
 
             if (type.compare("encoder") == 0) {
@@ -82,16 +80,25 @@ GstMatcher::GstMatcher(gchar **values)
 //             cout << opt << endl;
 
             gchar *capsString;
-            capsString = g_strdup_printf("%s, %s", data.c_str(), opt.c_str());
+            if (opt.empty()) {
+                capsString = g_strdup_printf("%s", data.c_str());
+            } else {
+                capsString = g_strdup_printf("%s, %s", data.c_str(), opt.c_str());
+            }
+            GstCaps *caps = gst_caps_from_string(capsString);
+            g_free(capsString);
+
+            if (caps == NULL) {
+                continue;
+            }
 
             values.version = version;
             values.type    = type;
             values.data    = data;
             values.opt     = opt;
-            values.caps    = gst_caps_from_string(capsString);
+            values.caps    = caps;
 
             m_matches.push_back(values);
-            g_free(capsString);
         } else {
             g_debug("Did not match: %s", value);
         }
@@ -123,6 +130,9 @@ bool GstMatcher::matches(string record)
 
                     GstCaps *caps;
                     caps = gst_caps_from_string(record.substr(found, endOfLine - found).c_str());
+                    if (caps == NULL) {
+                        continue;
+                    }
 
                     // if the record is capable of intersect them we found the package
                     bool provides = gst_caps_can_intersect(static_cast<GstCaps*>(i->caps), caps);
