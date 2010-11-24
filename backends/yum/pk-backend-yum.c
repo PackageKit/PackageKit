@@ -45,7 +45,7 @@ typedef struct {
 	guint		 signal_status;
 #ifdef HAVE_ZIF
 	ZifConfig	*config;
-	ZifStoreLocal	*store_local;
+	ZifStore	*store_local;
 	ZifRepos	*repos;
 	ZifGroups	*groups;
 	ZifState	*state;
@@ -222,7 +222,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	}
 
 	/* try to set, or re-set install root */
-	ret = zif_store_local_set_prefix (priv->store_local, root, &error);
+	ret = zif_store_local_set_prefix (ZIF_STORE_LOCAL (priv->store_local), root, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to set prefix: %s", error->message);
 		g_error_free (error);
@@ -482,7 +482,7 @@ pk_backend_get_default_store_array_for_filter (PkBackend *backend, PkBitfield fi
 
 	/* add local packages to the store_array */
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		store = ZIF_STORE (zif_store_local_new ());
+		store = zif_store_local_new ();
 		zif_store_array_add_store (store_array, store);
 		g_object_unref (store);
 	}
@@ -783,6 +783,64 @@ out:
 	return array_retval;
 }
 
+/**
+ * pk_backend_what_provides_helper:
+ */
+static GPtrArray *
+pk_backend_what_provides_helper (GPtrArray *store_array, gchar **search, ZifState *state, GError **error)
+{
+	gboolean ret;
+	GPtrArray *array = NULL;
+	GPtrArray *array_retval = NULL;
+	GPtrArray *array_tmp;
+	guint i, j;
+	ZifDepend *depend;
+	ZifPackage *package;
+	ZifState *state_local;
+
+	/* set steps */
+	zif_state_set_number_steps (state, g_strv_length (search));
+
+	/* resolve all the groups */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	for (i=0; search[i] != NULL; i++) {
+		state_local = zif_state_get_child (state);
+
+		/* parse this depend */
+		depend = zif_depend_new ();
+		ret = zif_depend_parse_description (depend, search[i], error);
+		if (!ret)
+			goto out;
+
+		/* find what provides this depend */
+		array_tmp = zif_store_array_what_provides (store_array, depend, state_local, error);
+		g_object_unref (depend);
+		if (array_tmp == NULL)
+			goto out;
+
+		/* add each result */
+		for (j=0; j<array_tmp->len; j++) {
+			package = g_ptr_array_index (array_tmp, i);
+			g_ptr_array_add (array, g_object_ref (package));
+		}
+		g_ptr_array_unref (array_tmp);
+
+		/* set steps */
+		zif_state_set_number_steps (state_local, 2);
+
+		/* this part done */
+		ret = zif_state_done (state, error);
+		if (!ret)
+			goto out;
+	}
+
+	/* success */
+	array_retval = g_ptr_array_ref (array);
+out:
+	if (array != NULL)
+		g_ptr_array_unref (array);
+	return array_retval;
+}
 #endif
 
 /**
@@ -896,7 +954,7 @@ pk_backend_search_thread (PkBackend *backend)
 				array = zif_store_array_resolve (store_array, search, state_local, &error);
 			}
 		} else if (role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-			array = zif_store_array_what_provides (store_array, search, state_local, &error);
+			array = pk_backend_what_provides_helper (store_array, search, state_local, &error);
 		}
 		if (array == NULL) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "failed to search: %s", error->message);
@@ -1242,6 +1300,7 @@ pk_backend_initialize (PkBackend *backend)
 	priv->release = zif_release_new ();
 	zif_release_set_boot_dir (priv->release, "/boot/upgrade");
 	zif_release_set_cache_dir (priv->release, "/var/cache/PackageKit");
+	zif_release_set_repo_dir (priv->release, "/var/cache/yum/preupgrade");
 	zif_release_set_uri (priv->release, "http://mirrors.fedoraproject.org/releases.txt");
 
 	/* ZifStoreLocal */
@@ -1577,7 +1636,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 
 		/* download */
 		state_local = zif_state_get_child (priv->state);
-		ret = zif_package_download (package, directory, state_local, &error);
+		ret = zif_package_remote_download (ZIF_PACKAGE_REMOTE (package), directory, state_local, &error);
 		if (!ret) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to download %s: %s", filename, error->message);
@@ -1654,7 +1713,6 @@ pk_backend_get_depends_thread (PkBackend *backend)
 	GPtrArray *result;
 	GPtrArray *requires;
 	GPtrArray *provides;
-	const gchar *to_array[] = { NULL, NULL };
 
 	len = g_strv_length (package_ids);
 
@@ -1735,8 +1793,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 			require = g_ptr_array_index (requires, k);
 
 			/* find the package providing the depend */
-			to_array[0] = zif_depend_get_name (require);
-			provides = zif_store_array_what_provides (store_array, (gchar**)to_array, state_loop_inner, &error);
+			provides = zif_store_array_what_provides (store_array, require, state_loop_inner, &error);
 			if (provides == NULL) {
 				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to find provide for %s: %s",
@@ -2225,6 +2282,7 @@ static gboolean
 pk_backend_get_updates_thread (PkBackend *backend)
 {
 #ifdef HAVE_ZIF
+#if 0
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	GPtrArray *store_array = NULL;
 	ZifState *state_local;
@@ -2269,7 +2327,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 
 	/* get all the installed packages */
 	state_local = zif_state_get_child (priv->state);
-	packages = zif_store_get_packages (ZIF_STORE (priv->store_local), state_local, &error);
+	packages = zif_store_get_packages (priv->store_local, state_local, &error);
 	if (packages == NULL) {
 		g_print ("failed to get local store: %s", error->message);
 		g_error_free (error);
@@ -2336,7 +2394,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 		/* updates without updatinfo */
 		info = PK_INFO_ENUM_NORMAL;
 
-		update = zif_package_get_update_detail (package, state_loop, &error);
+		update = zif_package_remote_get_update_detail (ZIF_PACKAGE_REMOTE (package), state_loop, &error);
 		if (update == NULL) {
 			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
@@ -2398,6 +2456,7 @@ out:
 		g_ptr_array_unref (result);
 	if (store_array != NULL)
 		g_ptr_array_unref (store_array);
+#endif
 #endif
 	return TRUE;
 }
@@ -2507,7 +2566,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 		}
 
 		state_local = zif_state_get_child (priv->state);
-		update = zif_package_get_update_detail (package, state_local, &error);
+		update = zif_package_remote_get_update_detail (ZIF_PACKAGE_REMOTE (package), state_local, &error);
 		if (update == NULL) {
 			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);

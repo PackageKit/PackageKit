@@ -343,6 +343,11 @@ void Transaction::downloadPackages(const QSharedPointer<Package> &package)
     downloadPackages(QList<QSharedPointer<Package> >() << package);
 }
 
+void Transaction::getCategories()
+{
+    RUN_TRANSACTION(GetCategories())
+}
+
 void Transaction::getDepends(const QList<QSharedPointer<Package> > &packages, Enum::Filters filters, bool recursive)
 {
     RUN_TRANSACTION(GetDepends(Util::filtersToString(filters), Util::packageListToPids(packages), recursive))
@@ -506,6 +511,16 @@ void Transaction::searchDetails(const QString &search, Enum::Filters filters)
     searchDetails(QStringList() << search, filters);
 }
 
+void Transaction::searchGroups(const QStringList &groups, Enum::Filters filters)
+{
+    RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groups))
+}
+
+void Transaction::searchGroups(const QString &group, Enum::Filters filters)
+{
+    searchGroups(QStringList() << group, filters);
+}
+
 void Transaction::searchGroups(Enum::Groups groups, Enum::Filters filters)
 {
     QStringList groupsSL;
@@ -513,7 +528,7 @@ void Transaction::searchGroups(Enum::Groups groups, Enum::Filters filters)
         groupsSL << Util::enumToString<Enum>(group, "Group", "Group");
     }
 
-    RUN_TRANSACTION(SearchGroups(Util::filtersToString(filters), groupsSL))
+    searchGroups(groups, filters);
 }
 
 void Transaction::searchGroups(Enum::Group group, Enum::Filters filters)

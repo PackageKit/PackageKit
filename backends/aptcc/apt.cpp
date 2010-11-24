@@ -46,9 +46,6 @@
 #include <dirent.h>
 #include <assert.h>
 
-// Gstreamer stuff
-// #include <gst/gst.h>
-
 aptcc::aptcc(PkBackend *backend, bool &cancel)
 	:
 	packageRecords(0),
@@ -343,7 +340,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 	package_id = pk_package_id_build(pkg.Name(),
 					 ver.VerStr(),
 					 ver.Arch(),
-					 vf.File().Archive());
+					 vf.File().Archive() == NULL ? "" : vf.File().Archive());
 	pk_backend_package(m_backend,
 			   state,
 			   package_id,
@@ -398,9 +395,9 @@ void aptcc::emitUpdates(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterator
 
 		// let find what kind of upgrade this is
 		pkgCache::VerFileIterator vf = i->second.FileList();
-		std::string origin  = vf.File().Origin();
-		std::string archive = vf.File().Archive();
-		std::string label   = vf.File().Label();
+		std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+		std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
+		std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
 		if (origin.compare("Debian") == 0 ||
 		    origin.compare("Ubuntu") == 0) {
 			if (ends_with(archive, "-security") ||
@@ -478,8 +475,6 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 			cout << opt << endl;
 			regex_t sre;
 			gchar *itemreg;
-// 			GstCaps *caps;
-// 			caps = gst_caps_new_simple(data.c_str(), opt.c_str());
 			itemreg = g_strdup_printf("^%s:.* %s\\(, %s\\(,.*\\|;.*\\|$\\)\\|;\\|$\\)",
 						  type.c_str(),
 						  data.c_str(),
@@ -567,7 +562,7 @@ void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 	package_id = pk_package_id_build(pkg.Name(),
 					 ver.VerStr(),
 					 ver.Arch(),
-					 vf.File().Archive());
+					 vf.File().Archive() == NULL ? "" : vf.File().Archive());
 	pk_backend_details(m_backend,
 			   package_id,
 			   "unknown",
@@ -588,14 +583,13 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
     current_package_id = pk_package_id_build(pkg.Name(),
                                              currver.VerStr(),
                                              currver.Arch(),
-                                             currvf.File().Archive());
+                                             currvf.File().Archive() == NULL ? "" : currvf.File().Archive());
 
     // Get the update version
     pkgCache::VerIterator candver = find_candidate_ver(pkg);
 
     pkgCache::VerFileIterator vf = candver.FileList();
-    pkgCache::PkgFileIterator pkgFile = vf.File();
-    string origin = pkgFile.Origin();
+    string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
     pkgRecords::Parser &rec = packageRecords->Lookup(candver.FileList());
 
     // Build the changelogURI
@@ -795,7 +789,7 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
     }
 
     // Build a package_id from the update version
-    string archive(vf.File().Archive());
+    string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
     gchar *package_id;
     package_id = pk_package_id_build(pkg.Name(),
                     candver.VerStr(),

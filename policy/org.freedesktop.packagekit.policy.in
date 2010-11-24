@@ -239,7 +239,7 @@
             this can make the system unbootable or stop other applications from
             working.
      -->
-    <_description>Remove package</_description>
+    <_description>Upgrade System</_description>
     <_message>Authentication is required to upgrade the operating system</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>

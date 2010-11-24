@@ -429,6 +429,18 @@ public:
     /**
      * \brief Lists all the packages in the given \p group
      *
+     * \p groups is the name of the group that you want, when searching for
+     * categories prefix it with '@'
+     * \p filters can be used to restrict the returned packages
+     *
+     * \note This method emits \sa package()
+     */
+    void searchGroups(const QStringList &groups, Enum::Filters filters = Enum::NoFilter);
+    void searchGroups(const QString &group, Enum::Filters filters = Enum::NoFilter);
+
+    /**
+     * \brief Lists all the packages in the given \p group
+     *
      * \p filters can be used to restrict the returned packages
      *
      * \note This method emits \sa package()

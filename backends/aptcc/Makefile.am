@@ -9,13 +9,14 @@ libpk_backend_aptcc_la_SOURCES = pkg_acqfile.cpp \
 				 apt-utils.cpp \
 				 acqprogress.cpp \
 				 matcher.cpp \
+				 gstMatcher.cpp \
 				 rsources.cpp \
 				 apt.cpp \
 				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt $(PK_PLUGIN_LIBS)
-libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GST_LIBS)
+libpk_backend_aptcc_la_LDFLAGS = -module -avoid-version $(APTCC_LIBS) $(GSTREAMER_LIBS)
 libpk_backend_aptcc_la_CFLAGS = $(PK_PLUGIN_CFLAGS)
-libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(APTCC_CFLAGS)
+libpk_backend_aptcc_la_CPPFLAGS = $(PK_PLUGIN_CFLAGS) $(APTCC_CFLAGS) $(GSTREAMER_CFLAGS)
 
 aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
@@ -23,6 +24,7 @@ aptconf_DATA = 20packagekit
 EXTRA_DIST = 20packagekit \
 	     apt.h \
 	     apt-utils.h \
+	     gstMatcher.h \
 	     matcher.h \
 	     aptcc_show_broken.h \
 	     acqprogress.h \

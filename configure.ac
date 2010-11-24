@@ -671,7 +671,10 @@ if test x$enable_aptcc = xyes; then
 	AC_SUBST(APTCC_CFLAGS)
 	AC_SUBST(APTCC_LIBS)
 
-	AC_CHECK_LIB([gstreamer-0.10], [gst_init], AC_SUBST([GST_LIBS], [`pkg-config –libs gstreamer-0.10`]), AC_MSG_ERROR([Gstreamer-0.10 not found], [2]))
+	PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10 gstreamer-base-0.10 gstreamer-plugins-base-0.10,,
+					[AC_MSG_ERROR([Can't find the gstreamer libraries -- please install libgstreamermm-0.10-dev])])
+	AC_SUBST(GSTREAMER_CFLAGS)
+	AC_SUBST(GSTREAMER_LIBS)
 
 	AC_MSG_CHECKING([whether apt includes the automatic dependency removal patch (required)])
 

@@ -1861,7 +1861,10 @@ pk_client_create_helper_socket (PkClientState *state)
 		display = g_getenv ("DISPLAY");
 		if (display != NULL) {
 			envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
-			dialog = "gnome";
+			if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
+			  dialog = "kde";
+			else
+			  dialog = "gnome";
 		}
 
 		/* indicate a prefered frontend */

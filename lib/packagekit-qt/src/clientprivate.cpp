@@ -80,6 +80,9 @@ void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& old
         t->finished (Enum::ExitFailed, 0);
         t->d_ptr->destroy ();
     }
+
+    // We don't have more transactions running
+    c->transactionListChanged(QList<Transaction*>());
 }
 
 void ClientPrivate::destroyTransaction(const QString &tid)

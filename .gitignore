@@ -63,4 +63,8 @@ packagekit.types
 ChangeLog
 .deps
 .acb
-
+*.la
+*.lo
+*.o
+*.lai
+*.so
