@@ -104,7 +104,7 @@ get_zypp (PkBackend *backend)
 		return NULL;
         } catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		return NULL
+		return NULL;
         }
 
 	return zypp;
