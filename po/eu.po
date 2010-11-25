@@ -3,8 +3,7 @@
 # Asier Sarasua Garmendia <asiersar@yahoo.com>, 2010.
 #
 msgid ""
-msgstr ""
-"Project-Id-Version: packagekit\n"
+msgstr "Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-11-07 07:14+0000\n"
 "PO-Revision-Date: 2010-08-12 01:19+0100\n"
@@ -384,7 +383,7 @@ msgstr "Erakutsi programaren bertsioa eta irten"
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: ../client/pk-console.c:1278
 msgid "Set the filter, e.g. installed"
-msgstr "Ezarri iragazkia, adib. instalatua"
+msgstr "Ezarri iragazkia, adib. 'instalatua'"
 
 #. TRANSLATORS: command line argument, use a non-standard install prefix
 #: ../client/pk-console.c:1281
@@ -405,7 +404,7 @@ msgstr "Instalatu paketeak baieztapena eskatu gabe"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta argindar gutxiago erabilita"
+msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
@@ -1203,7 +1202,7 @@ msgstr "Paketeak zaharkitzen"
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: ../lib/packagekit-glib2/pk-console-shared.c:307
 msgid "Resolving dependencies"
-msgstr "Mendekotasunak konpontzen"
+msgstr "Mendekotasunak ebazten"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: ../lib/packagekit-glib2/pk-console-shared.c:311
