@@ -552,6 +552,9 @@ backend_what_provides_thread (PkBackend *backend)
 			    break;
 			}
 			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
+            if (pkg.end() == true) {
+                continue;
+            }
 			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 			if (ver.end() == true) {
 				continue;
@@ -559,7 +562,7 @@ backend_what_provides_thread (PkBackend *backend)
 			output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
 		}
 
-		if (error) {
+		if (error && provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			// check if app-install-data is installed
 			pkgCache::PkgIterator pkg;
 			pkg = m_apt->packageCache->FindPkg("app-install-data");
@@ -909,6 +912,9 @@ pk_backend_search_files_thread (PkBackend *backend)
 			    break;
 			}
 			pkgCache::PkgIterator pkg = m_apt->packageCache->FindPkg(i->c_str());
+            if (pkg.end() == true) {
+                continue;
+            }
 			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 			if (ver.end() == true)
 			{
