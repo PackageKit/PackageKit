@@ -1,11 +1,12 @@
 # Basque translation of PackageKit.
 # This file is distributed under the same license as the PackageKit package.
 # Asier Sarasua Garmendia <asiersar@yahoo.com>, 2010.
-#
+# 
 msgid ""
-msgstr "Project-Id-Version: packagekit\n"
+msgstr ""
+"Project-Id-Version: packagekit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-07 07:14+0000\n"
+"POT-Creation-Date: 2010-11-26 08:16+0000\n"
 "PO-Revision-Date: 2010-08-12 01:19+0100\n"
 "Last-Translator: Asier Sarasua Garmendia <asiersar@yahoo.com>\n"
 "Language-Team: Librezale <librezale@librezale.org>\n"
@@ -20,7 +21,8 @@ msgstr "Project-Id-Version: packagekit\n"
 msgid "Transaction"
 msgstr "Transakzioa"
 
-#. TRANSLATORS: this is the time the transaction was started in system timezone
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
 #: ../client/pk-console.c:176
 msgid "System time"
 msgstr "Sistemaren ordua"
@@ -142,12 +144,14 @@ msgid_plural "Packages"
 msgstr[0] "Paketea"
 msgstr[1] "Paketeak"
 
-#. TRANSLATORS: details about the update, any packages that this update updates
+#. TRANSLATORS: details about the update, any packages that this update
+#. updates
 #: ../client/pk-console.c:348
 msgid "Updates"
 msgstr "Eguneraketak"
 
-#. TRANSLATORS: details about the update, any packages that this update obsoletes
+#. TRANSLATORS: details about the update, any packages that this update
+#. obsoletes
 #: ../client/pk-console.c:352
 msgid "Obsoletes"
 msgstr "Zaharkituak"
@@ -219,12 +223,14 @@ msgstr "Sistema berrabiaraztea eskatu du honek:"
 msgid "Session restart required:"
 msgstr "Sistema berrabiaraztea eskatua:"
 
-#. TRANSLATORS: a package requires the system to be restarted due to a security update
+#. TRANSLATORS: a package requires the system to be restarted due to a
+#. security update
 #: ../client/pk-console.c:465
 msgid "System restart (security) required by:"
 msgstr "Sistema berrabiaraztea (segurtasunagatik) eskatu du honek:"
 
-#. TRANSLATORS: a package requires the session to be restarted due to a security update
+#. TRANSLATORS: a package requires the session to be restarted due to a
+#. security update
 #: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
 msgstr "Sistema berrabiaraztea (seguratasunagatik) eskatua:"
@@ -239,7 +245,8 @@ msgstr "Aplikazioa berrabiaraztea eskatu du honek:"
 msgid "Package description"
 msgstr "Paketearen deskribapena"
 
-#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
+#. TRANSLATORS: This a message (like a little note that may be of interest)
+#. from the transaction
 #: ../client/pk-console.c:537
 msgid "Message:"
 msgstr "Mezua:"
@@ -274,7 +281,8 @@ msgstr "Emaitzak:"
 msgid "Fatal error"
 msgstr "Errore larria"
 
-#. TRANSLATORS: the user asked to update everything, but there is nothing that can be updated
+#. TRANSLATORS: the user asked to update everything, but there is nothing that
+#. can be updated
 #: ../client/pk-console.c:701
 msgid "There are no packages to update."
 msgstr "Ez da paketerik eguneratu behar."
@@ -306,48 +314,50 @@ msgstr "Amaitu saioa eta hasi saioa eguneraketa osatzeko."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr "Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
 
-#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
+#. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr "Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-local %s' erabiltzen."
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:866
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:894
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Tresna honek ez du aurkitu instalatutako paketea: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:922 ../client/pk-console.c:950
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Tresna honek ez du aurkitu paketea: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The
+#. detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The
+#. detailed error follows
 #: ../client/pk-console.c:978 ../client/pk-console.c:1006
 #: ../client/pk-console.c:1034 ../client/pk-console.c:1062
 #: ../client/pk-console.c:1090
@@ -355,7 +365,8 @@ msgstr "Tresna honek ez du aurkitu paketea: %s"
 msgid "This tool could not find all the packages: %s"
 msgstr "Tresna honek ez du aurkitu pakete guztiak: %s"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
+#. without a paddle
 #: ../client/pk-console.c:1119
 msgid "The daemon crashed mid-transaction!"
 msgstr "Deabruak huts egin du transakzioaren erdian!"
@@ -370,7 +381,8 @@ msgstr "PackageKit-en kontsola-interfazea"
 msgid "Subcommands:"
 msgstr "Azpikomandoak:"
 
-#. TRANSLATORS: we keep a database updated with the time that an action was last executed
+#. TRANSLATORS: we keep a database updated with the time that an action was
+#. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
 msgstr "Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
@@ -408,8 +420,7 @@ msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabili
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili ordez"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -473,7 +484,8 @@ msgstr "Mota bat, key_id bat eta package_id bat behar dira"
 msgid "A package name to remove is required"
 msgstr "Pakete-izen bat behar da kendua izateko"
 
-#. TRANSLATORS: the user did not specify anything about what to download or where
+#. TRANSLATORS: the user did not specify anything about what to download or
+#. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
 msgstr "Helburu-direktorio bat eta pakete-izenak behar dira deskargarako"
@@ -526,7 +538,8 @@ msgstr "Eginkizun zuzena behar da"
 msgid "A package name is required"
 msgstr "Pakete-izen bat behar da"
 
-#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
+#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
+#. decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1670
 msgid "A package provide string is required"
 msgstr "Pakete-eskaintzaren kate bat behar da"
@@ -541,7 +554,8 @@ msgstr "Banaketa-izen bat behar da"
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr "Bertsio-berritze mota bat behar da, adib. 'minimal', 'default' edo 'complete'"
 
-#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#. TRANSLATORS: The user tried to use an unsupported option on the command
+#. line
 #: ../client/pk-console.c:1770
 #, c-format
 msgid "Option '%s' is not supported"
@@ -552,7 +566,8 @@ msgstr "'%s' aukera ez dago onartuta"
 msgid "Command failed"
 msgstr "Komandoak huts egin du"
 
-#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
+#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
+#. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Ezarri baztertuko diren mendekotasunen fitxategi-izena"
@@ -587,25 +602,28 @@ msgstr "Bi aukerak hautatu dira."
 msgid "A output directory or file name is required"
 msgstr "Irteerako direktorio edo fitxategi-izen bat behar da"
 
-#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to startup
+#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
+#. startup
 #: ../client/pk-generate-pack.c:340
 msgid "The daemon failed to startup"
 msgstr "Ezin izan da deabrua abiarazi"
 
-#. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
-#. TRANSLATORS: This is when the backend doesn't have the capability to download
+#. TRANSLATORS: This is when the backend doesn't have the capability to get-
+#. depends
+#. TRANSLATORS: This is when the backend doesn't have the capability to
+#. download
 #: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
 msgstr "Pakete-kudeatzaileak ezin du mota honetako eragiketarik egin."
 
-#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
+#. TRANSLATORS: This is when the distro didn't include libarchive support into
+#. PK
 #: ../client/pk-generate-pack.c:364
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
 msgstr "Zerbitzu-paketeak ezin dira sortu, PackageKit ez baita eraiki libarchive-ren euskarriarekin."
 
-#. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
+#. TRANSLATORS: the user specified an absolute path, but didn't get the
+#. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
 msgstr "Fitxategi bat adierazten bada, zerbitzu-paketearen izenaren amaiera honek izan behar du:"
@@ -620,12 +638,14 @@ msgstr "Jadanik existitzen da izen bera duen pakete bat, gainidatzi nahi al duzu
 msgid "The pack was not overwritten."
 msgstr "Paketea ez da gainidatzi."
 
-#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
+#. TRANSLATORS: This is when the temporary directory cannot be created, the
+#. directory name follows
 #: ../client/pk-generate-pack.c:407
 msgid "Failed to create directory:"
 msgstr "Direktorioaren sorrerak huts egin du:"
 
-#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#. TRANSLATORS: This is when the list of packages from the remote computer
+#. cannot be opened
 #: ../client/pk-generate-pack.c:419
 msgid "Failed to open package list."
 msgstr "Ezin iza da pakete-zerrenda ireki."
@@ -635,13 +655,15 @@ msgstr "Ezin iza da pakete-zerrenda ireki."
 msgid "Finding package name."
 msgstr "Pakete-izena bilatzen."
 
-#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
+#. TRANSLATORS: This is when the package cannot be found in any software
+#. source. The detailed error follows
 #: ../client/pk-generate-pack.c:432
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Ezin izan da  '%s' paketea aurkitu: %s"
 
-#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#. TRANSLATORS: This is telling the user we are in the process of making the
+#. pack
 #: ../client/pk-generate-pack.c:440
 msgid "Creating service pack..."
 msgstr "Zerbitzu-paketea sortzen..."
@@ -804,7 +826,8 @@ msgstr "Hautatu exekutatuko den komandoa"
 msgid "The package providing this file is:"
 msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
 
-#. TRANSLATORS: as the user if we want to install a package to provide the command
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
 #: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
@@ -815,7 +838,8 @@ msgstr "Instalatu  '%s' paketea  '%s' komandoaz hornitzeko?"
 msgid "Packages providing this file are:"
 msgstr "Fitxategi honetaz hornitzen duten paketeak hauek dira:"
 
-#. TRANSLATORS: Show the user a list of packages that they can install to provide this command
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:863
 msgid "Suitable packages are:"
 msgstr "Pakete egokiak hauek dira:"
@@ -837,13 +861,14 @@ msgstr "Instalazioa abiarazten"
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Ez da %s paketea aurkitu, edo jadanik instalatuta dago: %s"
 
-#. command line argument, simulate what would be done, but don't actually do it
+#. command line argument, simulate what would be done, but don't actually do
+#. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
+msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "Ez instalatu paketerik, instalatuko dela simulatu soilik"
 
-#. command line argument, do we skip packages that depend on the ones specified
+#. command line argument, do we skip packages that depend on the ones
+#. specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
 msgid "Do not install dependencies of the core packages"
 msgstr "Ez instalatu oinarrizko paketeen mendekotasunak"
@@ -858,7 +883,8 @@ msgstr "Ez erakutsi ez informaziorik ez aurrerapenik"
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit-en arazketa-informazioko instalatzailea"
 
-#. TRANSLATORS: the use needs to specify a list of package names on the command line
+#. TRANSLATORS: the use needs to specify a list of package names on the
+#. command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
@@ -976,13 +1002,15 @@ msgstr "%i pakete gehigarri aurkitu dira."
 msgid "No extra packages required."
 msgstr "Ez da pakete gehigarririk behar."
 
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list
+#. them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Instalatzeko %i pakete aurkitu dira:"
 
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the
+#. action
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
@@ -1008,7 +1036,8 @@ msgstr "Ezin dira paketeak instalatu: %s"
 msgid "Disabling sources previously enabled"
 msgstr "Aurretiaz gaitutako jatorriak desgaitzen"
 
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
+#. error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
@@ -1065,7 +1094,8 @@ msgstr "Gailuaren bide-izena ez da zuzena"
 msgid "Show extra debugging information"
 msgstr "Erakutsi arazketa-informazio gehigarria"
 
-#. command line argument, simulate what would be done, but don't actually do it
+#. command line argument, simulate what would be done, but don't actually do
+#. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
 msgstr "Ez ukitu hardwarea, soilik simulatu zer egingo litzatekeen"
@@ -1075,7 +1105,8 @@ msgstr "Ez ukitu hardwarea, soilik simulatu zer egingo litzatekeen"
 msgid "Device paths"
 msgstr "Gailuen bide-izenak"
 
-#. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
+#. TRANSLATORS: tool that gets called when the device needs reloading after
+#. installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
 msgstr "PackageKit-en gailu-birkargatzailea"
@@ -1127,7 +1158,8 @@ msgstr "PackageKit zerbitzu-paketea"
 msgid "Please enter a number from 1 to %i: "
 msgstr "Sartu 1etik %i-(e)ra arteko zenbaki bat: "
 
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#. TRANSLATORS: more than one package could be found that matched, to follow
+#. is a list of possible packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:189
 msgid "More than one package matches:"
 msgstr "Pakete bat baino gehiago dator bat:"
@@ -1147,7 +1179,8 @@ msgstr "Egoera ezezaguna"
 msgid "Starting"
 msgstr "Abiarazten"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
 #: ../lib/packagekit-glib2/pk-console-shared.c:263
 msgid "Waiting in queue"
 msgstr "Ilaran itxaroten"
@@ -1189,7 +1222,8 @@ msgstr "Software-zerrenda freskatzen"
 msgid "Installing updates"
 msgstr "Eguneraketak instalatzen"
 
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
 #: ../lib/packagekit-glib2/pk-console-shared.c:299
 msgid "Cleaning up packages"
 msgstr "Paketeak garbitzen"
@@ -1204,7 +1238,8 @@ msgstr "Paketeak zaharkitzen"
 msgid "Resolving dependencies"
 msgstr "Mendekotasunak ebazten"
 
-#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
 #: ../lib/packagekit-glib2/pk-console-shared.c:311
 msgid "Checking signatures"
 msgstr "Sinadurak egiaztatzen"
@@ -1221,7 +1256,8 @@ msgstr "Aurreko transakzio batera itzultzen"
 msgid "Testing changes"
 msgstr "Aldaketak probatzen"
 
-#. TRANSLATORS: transaction state, when we're writing to the system package database
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
 #: ../lib/packagekit-glib2/pk-console-shared.c:323
 msgid "Committing changes"
 msgstr "Aldaketak aplikatzen"
@@ -1286,12 +1322,14 @@ msgstr "Katxea kargatzen"
 msgid "Scanning applications"
 msgstr "Aplikazioak eskaneatzen"
 
-#. TRANSLATORS: transaction state, generating a list of packages installed on the system
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
 #: ../lib/packagekit-glib2/pk-console-shared.c:375
 msgid "Generating package lists"
 msgstr "Pakete-zerrenda sortzen"
 
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
 #: ../lib/packagekit-glib2/pk-console-shared.c:379
 msgid "Waiting for package manager lock"
 msgstr "Pakete-kudeatzailearen blokeoa itxaroten"
@@ -1306,17 +1344,20 @@ msgstr "Autentifikaziorako itxaroten"
 msgid "Updating running applications"
 msgstr "Abioan dauden aplikazioak eguneratzen"
 
-#. TRANSLATORS: transaction state, we are checking executable files currently in use
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
 #: ../lib/packagekit-glib2/pk-console-shared.c:391
 msgid "Checking applications in use"
 msgstr "Abioan dauden aplikazioak egiaztatzen"
 
-#. TRANSLATORS: transaction state, we are checking for libraries currently in use
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
 #: ../lib/packagekit-glib2/pk-console-shared.c:395
 msgid "Checking libraries in use"
 msgstr "Erabiltzen ari diren liburutegiak egiaztatzen"
 
-#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:399
 msgid "Copying files"
 msgstr "Fitxategiak kopiatzen"
@@ -1596,7 +1637,8 @@ msgstr "Arazketa-aukerak"
 msgid "Show debugging options"
 msgstr "Erakutsi arazketa-aukerak"
 
-#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
 #: ../lib/packagekit-glib2/pk-task-text.c:67
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "Sinatu gabeko softwarea instala dadin baimendu nahi duzu?"
@@ -1606,7 +1648,8 @@ msgstr "Sinatu gabeko softwarea instala dadin baimendu nahi duzu?"
 msgid "The unsigned software will not be installed."
 msgstr "Sinatu gabeko softwarea ez da instalatuko."
 
-#. TRANSLATORS: the package repository is signed by a key that is not recognised
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
 #: ../lib/packagekit-glib2/pk-task-text.c:121
 msgid "Software source signature required"
 msgstr "Software-jatorriaren sinadura behar da"
@@ -1651,7 +1694,8 @@ msgstr "Onartzen al duzu sinadura hau?"
 msgid "The signature was not accepted."
 msgstr "Sinadura ez da onartu."
 
-#. TRANSLATORS: this is another name for a software licence that has to be read before installing
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:203
 msgid "End user licence agreement required"
 msgstr "Azken erabiltzailearen lizentzia-kontratua behar da"
@@ -1741,7 +1785,7 @@ msgstr "Transakzioa ez da burutu."
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr "Onartu EULA"
@@ -1751,8 +1795,7 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Autentifikazioa behar da EULA bat onartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan behera uzteko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1760,14 +1803,11 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Autentifikazioa behar da software-jatorrien parametroak aldatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to change the location used to decompress packages"
+msgid "Authentication is required to change the location used to decompress packages"
 msgstr "Autentifikazioa behar da paketeak destrinkotzeko erabiltzen den kokapena aldatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing packages as trusted"
 msgstr "Autentifikazioa behar da paketeak sinatzeko erabilitako gakoa fidagarrizat hartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
@@ -1795,9 +1835,7 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Autentifikazioa behar da transakzio bat atzera botatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
+msgid "Authentication is required to set the network proxy used for downloading packages"
 msgstr "Autentifikazioa behar da paketeak deskargatzeko erabiliko den sareko proxy-a ezartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
@@ -1812,7 +1850,7 @@ msgstr "Autentifikazioa behar da sistema eragilea bertsioz berritzeko"
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
 msgstr "Utzi zeregin arrotza"
@@ -1822,7 +1860,7 @@ msgstr "Utzi zeregin arrotza"
 #. instance to a LTSP image or a virtual machine.
 #. - This could be used to overwrite files not owned by the user using
 #. a carefully created package file.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:34
 msgid "Change location that packages are installed"
 msgstr "Aldatu paketeak instalatuko diren kokapena"
@@ -1831,7 +1869,7 @@ msgstr "Aldatu paketeak instalatuko diren kokapena"
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
 msgstr "Aldatu software-jatorrien parametroak"
@@ -1841,7 +1879,7 @@ msgstr "Aldatu software-jatorrien parametroak"
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
 msgstr "Instalatu sinatutako paketea"
@@ -1851,7 +1889,7 @@ msgstr "Instalatu sinatutako paketea"
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
 msgstr "Instalatu fidagarria ez den fitxategi lokala"
@@ -1859,7 +1897,7 @@ msgstr "Instalatu fidagarria ez den fitxategi lokala"
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
 msgstr "Freskatu sistemaren jatorriak"
@@ -1870,17 +1908,21 @@ msgstr "Freskatu sistemaren jatorriak"
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
 msgstr "Birkargatu gailu bat"
 
 #. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
+#. - Normal users require admin authentication to remove packages as
 #. this can make the system unbootable or stop other applications from
 #. working.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:73
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
 msgstr "Kendu paketea"
 
@@ -1888,16 +1930,16 @@ msgstr "Kendu paketea"
 #. - Normal users require admin authentication to rollback system state
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
 msgstr "Itzuli aurreko transakzio batera"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:84
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
 msgstr "Ezarri sarearen proxy-a"
 
@@ -1906,8 +1948,8 @@ msgstr "Ezarri sarearen proxy-a"
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:91
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
 msgstr "Fidatu paketeak sinatzeko erabili den gako batetaz"
 
@@ -1917,10 +1959,19 @@ msgstr "Fidatu paketeak sinatzeko erabili den gako batetaz"
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:99
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
 msgstr "Eguneratu paketeak"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+msgid "Upgrade System"
+msgstr "Eguneratu sistema"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
@@ -1939,9 +1990,7 @@ msgstr "Exekutagarria ez du erabiltzaile egokiak (normalean root) abiarazi"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
 msgstr "org.freedesktop.PackageKit.conf fitxategia ez dago instalatuta sistemaren direktorioan:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
@@ -1984,7 +2033,8 @@ msgstr "PackageKit zerbitzua"
 msgid "Cannot connect to the system bus"
 msgstr "Ezin izan da sistemaren busera konektatu"
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
+#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
+#. follows
 #: ../src/pk-main.c:316
 msgid "Error trying to start:"
 msgstr "Errorea abiaraztean:"
