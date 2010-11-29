@@ -1046,7 +1046,7 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "socket was disconnected: %s", error->message);
+				       "socket was disconnected");
 		pk_backend_finished (backend);
 		ret = FALSE;
 		goto out;
