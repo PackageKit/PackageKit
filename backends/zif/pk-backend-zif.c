@@ -274,10 +274,7 @@ out:
 static gboolean
 pk_backend_filter_package_array_newest (GPtrArray *array)
 {
-	const gchar *package_id;
-	gboolean installed;
 	gchar *key;
-	gchar **split;
 	GHashTable *hash;
 	gint retval;
 	guint i;
@@ -292,18 +289,12 @@ pk_backend_filter_package_array_newest (GPtrArray *array)
 
 	for (i=0; i<array->len; i++) {
 
-		/* get the current package */
-		package = g_ptr_array_index (array, i);
-		package_id = zif_package_get_id (package);
-		installed = zif_package_is_installed (package);
-
 		/* generate enough data to be specific */
-		split = pk_package_id_split (package_id);
+		package = g_ptr_array_index (array, i);
 		key = g_strdup_printf ("%s-%s-%i",
-				       split[PK_PACKAGE_ID_NAME],
-				       split[PK_PACKAGE_ID_ARCH],
-				       installed);
-		g_strfreev (split);
+				       zif_package_get_name (package),
+				       zif_package_get_arch (package),
+				       zif_package_is_installed (package));
 
 		/* we've not already come across this package */
 		found = g_hash_table_lookup (hash, key);
@@ -1700,7 +1691,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 					       "failed to get filename for %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3004,7 +2995,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find package %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3283,7 +3274,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 				pk_backend_error_code (backend,
 						       PK_ERROR_ENUM_NOT_AUTHORIZED,
 						       "package %s is untrusted",
-						       zif_package_get_id (package));
+						       zif_package_get_printable (package));
 				g_error_free (error);
 				goto out;
 			}
@@ -3388,7 +3379,7 @@ pk_backend_remove_packages_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3525,7 +3516,7 @@ pk_backend_update_packages_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3662,7 +3653,7 @@ pk_backend_install_packages_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -3797,7 +3788,7 @@ pk_backend_install_files_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to add package %s: %s",
-					       zif_package_get_id (package),
+					       zif_package_get_printable (package),
 					       error->message);
 			g_error_free (error);
 			goto out;
