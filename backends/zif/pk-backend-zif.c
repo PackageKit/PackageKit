@@ -141,7 +141,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	guint i;
 	guint lock_delay;
 	guint lock_retries;
-	guint pid;
+	guint pid = 0;
 
 	/* only try a finite number of times */
 	lock_retries = zif_config_get_uint (priv->config, "lock_retries", NULL);
@@ -637,7 +637,6 @@ pk_backend_search_collections (GPtrArray *store_array,
 			       GError **error)
 {
 	gboolean ret;
-	gchar *package_id;
 	GError *error_local = NULL;
 	GPtrArray *array = NULL;
 	GPtrArray *array_tmp;
@@ -691,7 +690,7 @@ pk_backend_search_collections (GPtrArray *store_array,
 			g_ptr_array_add (array, g_object_ref (package));
 		} else {
 			g_warning ("failed to add id %s: %s",
-				   package_id,
+				   zif_category_get_id (cat),
 				   error_local->message);
 			g_clear_error (&error_local);
 		}
@@ -828,6 +827,8 @@ pk_backend_resolve_groups (GPtrArray *store_array,
 					   error_local->message);
 				g_clear_error (&error_local);
 				ret = zif_state_finished (state_loop, error);
+				if (!ret)
+					goto out;
 			}
 		}
 
@@ -904,7 +905,6 @@ pk_backend_what_provides_helper (GPtrArray *store_array,
 					       depend_array,
 					       state_local,
 					       error);
-	g_object_unref (depend);
 	if (array == NULL)
 		goto out;
 
@@ -1577,13 +1577,11 @@ pk_backend_download_packages_thread (PkBackend *backend)
 	GPtrArray *packages = NULL;
 	GPtrArray *store_array = NULL;
 	guint i;
-	guint len;
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
 
-	len = g_strv_length (package_ids);
 	ret = zif_state_set_steps (priv->state,
 				   NULL,
 				   2, /* get default stores */
@@ -1790,24 +1788,21 @@ out:
 static gboolean
 pk_backend_get_depends_thread (PkBackend *backend)
 {
+	const gchar *id;
 	gboolean ret;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	GError *error = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *provides;
+	GPtrArray *requires;
+	GPtrArray *result;
 	GPtrArray *store_array = NULL;
+	guint i, j;
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZifPackage *package;
 	ZifPackage *package_provide;
 	ZifState *state_local;
 	ZifState *state_loop;
-	const gchar *id;
-	guint i, j;
-	guint len;
-	GError *error = NULL;
-	GPtrArray *array = NULL;
-	GPtrArray *result;
-	GPtrArray *requires;
-	GPtrArray *provides;
-
-	len = g_strv_length (package_ids);
 
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
@@ -1918,7 +1913,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						       "failed to find provide for %s: %s",
-						       zif_depend_get_name (g_ptr_array_index (provides, 0)),
+						       zif_depend_get_name (g_ptr_array_index (requires, 0)),
 						       error->message);
 			g_error_free (error);
 			goto out;
@@ -2003,24 +1998,21 @@ out:
 static gboolean
 pk_backend_get_requires_thread (PkBackend *backend)
 {
+	const gchar *id;
 	gboolean ret;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
-	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	GError *error = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *provides;
+	GPtrArray *requires;
+	GPtrArray *result;
 	GPtrArray *store_array = NULL;
+	guint i, j;
+	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZifPackage *package;
 	ZifPackage *package_provide;
 	ZifState *state_local;
 	ZifState *state_loop;
-	const gchar *id;
-	guint i, j;
-	guint len;
-	GError *error = NULL;
-	GPtrArray *array = NULL;
-	GPtrArray *result;
-	GPtrArray *requires;
-	GPtrArray *provides;
-
-	len = g_strv_length (package_ids);
 
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
@@ -2134,7 +2126,7 @@ pk_backend_get_requires_thread (PkBackend *backend)
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 					       "failed to find provide for %s: %s",
-					       zif_depend_get_name (g_ptr_array_index (provides, 0)),
+					       zif_depend_get_name (g_ptr_array_index (requires, 0)),
 					       error->message);
 			g_error_free (error);
 			goto out;
@@ -2230,15 +2222,12 @@ pk_backend_get_details_thread (PkBackend *backend)
 	GPtrArray *store_array = NULL;
 	guint64 size;
 	guint i;
-	guint len;
 	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 	PkGroupEnum group;
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
-
-	len = g_strv_length (package_ids);
 
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
@@ -2523,14 +2512,11 @@ pk_backend_get_files_thread (PkBackend *backend)
 	GPtrArray *store_array = NULL;
 	GString *files_str;
 	guint i, j;
-	guint len;
 	PkBitfield filters = PK_FILTER_ENUM_UNKNOWN;
 	ZifPackage *package;
 	ZifState *state_local;
 	ZifState *state_loop;
 	ZifState *state_tmp;
-
-	len = g_strv_length (package_ids);
 
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
@@ -2824,6 +2810,14 @@ pk_backend_get_updates_thread (PkBackend *backend)
 			g_debug ("failed to get updateinfo for %s", zif_package_get_id (package));
 			g_clear_error (&error);
 			ret = zif_state_finished (state_loop, NULL);
+			if (!ret) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						       "cancelled: %s",
+						       error->message);
+				g_error_free (error);
+				goto out;
+			}
 		} else {
 			update_kind = zif_update_get_kind (update);
 			if (update_kind == ZIF_UPDATE_KIND_BUGFIX)
@@ -2842,9 +2836,9 @@ pk_backend_get_updates_thread (PkBackend *backend)
 		ret = zif_state_done (state_local, &error);
 		if (!ret) {
 			pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "cancelled: %s",
-				       error->message);
+					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "cancelled: %s",
+					       error->message);
 			g_error_free (error);
 			goto out;
 		}
