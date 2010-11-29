@@ -27,8 +27,8 @@ using namespace PackageKit;
 
 TransactionPrivate::TransactionPrivate(Transaction* parent)
  : QObject(parent),
-   t(parent),
    p(0),
+   t(parent),
    destroyed(false)
 {
 }
