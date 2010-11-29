@@ -83,9 +83,6 @@ Client::Client(QObject* parent) : QObject(parent), d_ptr(new ClientPrivate(this)
 	if (!db.open()) {
 		qDebug() << "Failed to initialize the desktop files database";
 	}
-
-	// Set up a watch on DBus so that we know if the daemon disappears
-	connect (QDBusConnection::systemBus ().interface (), SIGNAL(serviceOwnerChanged (const QString&, const QString&, const QString&)), d, SLOT (serviceOwnerChanged (const QString&, const QString&, const QString&)));
 }
 
 Client::~Client()

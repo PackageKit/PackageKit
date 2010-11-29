@@ -1,6 +1,7 @@
 /*
  * This file is part of the QPackageKit project
  * Copyright (C) 2008 Adrien Bustany <madcat@mymadcat.com>
+ * Copyright (C) 2010 Daniel Nicoletti <dantti85-pk@yahoo.com.br>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,6 +23,7 @@
 #define CLIENTPRIVATE_H
 
 #include <QtCore>
+#include <QDBusServiceWatcher>
 #include "client.h"
 
 class DaemonProxy;
@@ -32,28 +34,29 @@ class Transaction;
 
 class ClientPrivate : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	~ClientPrivate();
+    ~ClientPrivate();
 
-	::DaemonProxy* daemon;
-	Client* c;
-	QStringList hints;
-	QHash<QString, Transaction*> runningTransactions;
-	Client::DaemonError error;
+    ::DaemonProxy* daemon;
+    Client* c;
+    QStringList hints;
+    QHash<QString, Transaction*> runningTransactions;
+    Client::DaemonError error;
 
-    QList<Transaction*> transactions(const QStringList& tids, QObject *parent);
-	void destroyTransaction(const QString &tid);
+    QList<Transaction*> transactions(const QStringList &tids, QObject *parent);
+    void destroyTransaction(const QString &tid);
 
 public Q_SLOTS:
-	void transactionListChanged(const QStringList& tids);
-	void serviceOwnerChanged(const QString&, const QString&, const QString&);
+    void transactionListChanged(const QStringList &tids);
+    void serviceUnregistered();
 
 private:
     friend class Client;
-    bool startDaemon;
     ClientPrivate(Client* parent);
+
+    QDBusServiceWatcher *m_watcher;
 };
 
 } // End namespace PackageKit

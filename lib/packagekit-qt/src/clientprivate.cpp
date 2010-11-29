@@ -23,12 +23,20 @@
 #include "transactionprivate.h"
 #include "common.h"
 
+#include <QDBusConnection>
+
 using namespace PackageKit;
 
 ClientPrivate::ClientPrivate(Client* parent)
  : QObject(parent),
    c(parent)
 {
+    m_watcher = new QDBusServiceWatcher(PK_NAME,
+                                        QDBusConnection::systemBus(),
+                                        QDBusServiceWatcher::WatchForUnregistration,
+                                        this);
+    connect(m_watcher, SIGNAL(serviceUnregistered(const QString &)),
+            this, SLOT(serviceUnregistered()));
 }
 
 ClientPrivate::~ClientPrivate()
@@ -58,21 +66,8 @@ void ClientPrivate::transactionListChanged(const QStringList& tids)
 	c->transactionListChanged(transactions(tids, Client::instance()));
 }
 
-void ClientPrivate::serviceOwnerChanged (const QString& name, const QString& oldOnwer, const QString& newOwner)
+void ClientPrivate::serviceUnregistered()
 {
-    if (name != PK_NAME){
-        return;
-    }
-
-    // next time a transaction need to be created
-    // we start the Daemon, we have to find a way
-    // to avoid DBus error that sericeHasNoOwner
-    startDaemon = newOwner.isEmpty();
-
-    if (!newOwner.isEmpty()){
-        return;
-    }
-
     error = Client::ErrorDaemonUnreachable;
     c->error(error);
 
