@@ -497,6 +497,7 @@ AC_ARG_ENABLE(slapt, AS_HELP_STRING([--enable-slapt],[use the slapt backend]),en
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
+AC_ARG_ENABLE(zif, AS_HELP_STRING([--enable-zif],[use the Zif backend]),enable_zif=$enableval,enable_zif=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -518,6 +519,7 @@ AM_CONDITIONAL(BACKEND_TYPE_SLAPT, [test x$enable_slapt = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes])
+AM_CONDITIONAL(BACKEND_TYPE_ZIF, [test x$enable_zif = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes])
 
 dnl ---------------------------------------------------------------------------
@@ -589,11 +591,13 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,razor,slapt,smart,urpmi,yum,zypp (dummy)]))
+                           alpm,apt,aptcc,box,conary,dummy,entropy,opkg,pisi,portage,ports,razor,slapt,smart,urpmi,yum,zif,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
 		with_default_backend=yum
+	elif test -f /usr/bin/zif; then
+		with_default_backend=zif
 	elif test -f /usr/lib/libalpm.so; then
 		with_default_backend=alpm
 	elif test -f /usr/bin/apt-get ; then
@@ -633,7 +637,7 @@ AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend pr
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 build_zif=no
-if test x$enable_yum = xyes; then
+if test x$enable_zif = xyes; then
 	dnl ---------------------------------------------------------------------------
 	dnl - Zif is an experimental library for direct metadata access
 	dnl ---------------------------------------------------------------------------
@@ -801,6 +805,7 @@ backends/urpmi/helpers/perl_packagekit/Makefile
 backends/urpmi/helpers/urpmi_backend/Makefile
 backends/razor/Makefile
 backends/yum/Makefile
+backends/zif/Makefile
 backends/pisi/Makefile
 backends/poldek/Makefile
 backends/portage/Makefile
@@ -874,7 +879,7 @@ echo "
         SMART backend:             ${enable_smart}
         URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
-          (with zif):              ${build_zif}
+        Zif backend:               ${enable_zif}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "
