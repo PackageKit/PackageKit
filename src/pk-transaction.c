@@ -791,6 +791,8 @@ pk_transaction_state_to_string (PkTransactionState state)
 {
 	if (state == PK_TRANSACTION_STATE_NEW)
 		return "new";
+	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH)
+		return "waiting-for-auth";
 	if (state == PK_TRANSACTION_STATE_COMMITTED)
 		return "committed";
 	if (state == PK_TRANSACTION_STATE_READY)
@@ -809,10 +811,11 @@ pk_transaction_state_to_string (PkTransactionState state)
  * Typically, these states will be:
  *
  * 1. 'new'
- * 2. 'committed'  <--- when the client sets the role
- * 3. 'ready'      <--- when the transaction is ready to be run
- * 4. 'running'    <--- where PkBackend gets used
- * 5. 'finished'
+ * 2. 'waiting for auth'  <--- waiting for PolicyKit (optional)
+ * 3. 'committed'         <--- when the client sets the role
+ * 4. 'ready'             <--- when the transaction is ready to be run
+ * 5. 'running'           <--- where PkBackend gets used
+ * 6. 'finished'
  *
  **/
 gboolean
@@ -832,6 +835,24 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
 	transaction->priv->state = state;
+
+	/* update GUI */
+	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH) {
+		pk_transaction_status_changed_emit (transaction,
+						    PK_STATUS_ENUM_WAITING_FOR_AUTH);
+		pk_transaction_progress_changed_emit (transaction,
+						      PK_BACKEND_PERCENTAGE_INVALID,
+						      PK_BACKEND_PERCENTAGE_INVALID,
+						      0, 0);
+
+	} else if (state == PK_TRANSACTION_STATE_READY) {
+		pk_transaction_status_changed_emit (transaction,
+						    PK_STATUS_ENUM_WAIT);
+		pk_transaction_progress_changed_emit (transaction,
+						      PK_BACKEND_PERCENTAGE_INVALID,
+						      PK_BACKEND_PERCENTAGE_INVALID,
+						      0, 0);
+	}
 
 	/* we have no actions to perform here, so go straight to running */
 	if (state == PK_TRANSACTION_STATE_COMMITTED) {
@@ -2537,9 +2558,9 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	/* log */
 	pk_syslog_add (priv->syslog, PK_SYSLOG_TYPE_AUTH, "uid %i is trying to obtain %s auth (only_trusted:%i)", priv->uid, action_id, only_trusted);
 
-	/* emit status for GUIs */
-	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_WAITING_FOR_AUTH);
-	pk_transaction_progress_changed_emit (transaction, PK_BACKEND_PERCENTAGE_INVALID, PK_BACKEND_PERCENTAGE_INVALID, 0, 0);
+	/* set transaction state */
+	pk_transaction_set_state (transaction,
+				  PK_TRANSACTION_STATE_WAITING_FOR_AUTH);
 
 	/* check subject */
 	priv->waiting_for_auth = TRUE;

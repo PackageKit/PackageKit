@@ -584,7 +584,8 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	}
 
 	g_debug ("marking transaction %s as committed", item->tid);
-	ret = pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_COMMITTED);
+	ret = pk_transaction_set_state (item->transaction,
+					PK_TRANSACTION_STATE_COMMITTED);
 	if (!ret) {
 		g_warning ("could not mark as committed");
 		return FALSE;
