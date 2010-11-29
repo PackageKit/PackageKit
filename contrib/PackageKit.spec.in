@@ -68,6 +68,15 @@ Requires: %{name} = %{version}-%{release}
 %description yum
 A backend for PackageKit to enable yum functionality.
 
+%package zif
+Summary: PackageKit Zif backend
+Group: System Environment/Libraries
+Requires: zif >= 0.1.3
+Requires: %{name} = %{version}-%{release}
+
+%description zif
+A backend for PackageKit to enable Zif functionality.
+
 %if 0%{?rhel} == 0
 %package smart
 Summary: PackageKit SMART backend
@@ -359,6 +368,12 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %{_libdir}/packagekit-backend/libpk_backend_yum.so
 %dir %{_datadir}/PackageKit/helpers/yum
 %{_datadir}/PackageKit/helpers/yum/*
+
+%files zif
+%defattr(-,root,root,-)
+%{_libdir}/packagekit-backend/libpk_backend_zif.so
+%dir %{_datadir}/PackageKit/helpers/zif
+%{_datadir}/PackageKit/helpers/zif/*
 
 %files yum-plugin
 %defattr(-, root, root)
