@@ -48,6 +48,7 @@ BuildRequires: pango-devel
 BuildRequires: pm-utils-devel
 BuildRequires: fontconfig-devel
 BuildRequires: gobject-introspection-devel
+BuildRequires: zif-devel >= 0.1.3
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -238,6 +239,7 @@ user to restart the computer or remove and re-insert the device.
 %configure \
         --disable-static \
         --enable-yum \
+        --enable-zif \
 %if 0%{?rhel} == 0
         --enable-smart \
         --enable-introspection \

@@ -10,7 +10,6 @@ INCLUDES = \
 	-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE	\
 	-DG_LOG_DOMAIN=\"PackageKit-Yum\"			\
 	-DPK_COMPILATION					\
-	$(ZIF_CFLAGS)						\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
 plugindir = $(PK_PLUGIN_DIR)
@@ -19,10 +18,6 @@ libpk_backend_yum_la_SOURCES = pk-backend-yum.c
 libpk_backend_yum_la_LIBADD = $(PK_PLUGIN_LIBS)
 libpk_backend_yum_la_LDFLAGS = -module -avoid-version
 libpk_backend_yum_la_CFLAGS = $(PK_PLUGIN_CFLAGS) $(WARNINGFLAGS_C)
-
-libpk_backend_yum_la_LIBADD +=					\
-	$(ZIF_LIBS)						\
-	$(NULL)
 
 confdir = $(PK_CONF_DIR)
 conf_DATA = Yum.conf
