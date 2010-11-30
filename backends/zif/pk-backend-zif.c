@@ -3087,7 +3087,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, NULL, NULL, NULL, NULL,
 						  PK_RESTART_ENUM_NONE,
-						  "<none>",
+						  "",
 						  "No description available",
 						  PK_UPDATE_STATE_ENUM_UNKNOWN,
 						  NULL, NULL);
