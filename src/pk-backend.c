@@ -2413,10 +2413,6 @@ pk_backend_use_background (PkBackend *backend)
 {
 	gboolean ret;
 
-	/* we're watching the GUI, do as fast as possible */
-	if (backend->priv->interactive == PK_HINT_ENUM_TRUE)
-		return FALSE;
-
 	/* check we are allowed */
 	ret = pk_conf_get_bool (backend->priv->conf, "UseIdleBandwidth");
 	if (!ret)
