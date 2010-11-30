@@ -3097,20 +3097,27 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			GPtrArray *changesets;
 			GString *string_cve;
 			GString *string_bugzilla;
+			GString *string_vendor;
 			ZifUpdateInfo *info;
 			array = zif_update_get_update_infos (update);
 			string_cve = g_string_new (NULL);
 			string_bugzilla = g_string_new (NULL);
+			string_vendor = g_string_new (NULL);
 			for (j=0; j<array->len; j++) {
 				info = g_ptr_array_index (array, j);
 				switch (zif_update_info_get_kind (info)) {
 				case ZIF_UPDATE_INFO_KIND_CVE:
-					g_string_append_printf (string_cve, "%s\t%s\t",
+					g_string_append_printf (string_cve, "%s;%s;",
 								zif_update_info_get_title (info),
 								zif_update_info_get_url (info));
 					break;
 				case ZIF_UPDATE_INFO_KIND_BUGZILLA:
-					g_string_append_printf (string_bugzilla, "%s\t%s\t",
+					g_string_append_printf (string_bugzilla, "%s;%s;",
+								zif_update_info_get_title (info),
+								zif_update_info_get_url (info));
+					break;
+				case ZIF_UPDATE_INFO_KIND_VENDOR:
+					g_string_append_printf (string_vendor, "%s;%s;",
 								zif_update_info_get_title (info),
 								zif_update_info_get_url (info));
 					break;
@@ -3119,6 +3126,14 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 				}
 			}
 
+			/* remove trailing ';' */
+			if (string_cve->len > 0)
+				g_string_set_size (string_cve, string_cve->len - 1);
+			if (string_bugzilla->len > 0)
+				g_string_set_size (string_bugzilla, string_bugzilla->len - 1);
+			if (string_vendor->len > 0)
+				g_string_set_size (string_vendor, string_vendor->len - 1);
+
 			/* format changelog */
 			changesets = zif_update_get_changelog (update);
 			if (changesets != NULL)
@@ -3126,7 +3141,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 			pk_backend_update_detail (backend, package_ids[i],
 						  NULL, //updates,
 						  NULL, //obsoletes,
-						  NULL, //vendor_url,
+						  string_vendor->str,
 						  string_bugzilla->str,
 						  string_cve->str,
 						  PK_RESTART_ENUM_NONE,
