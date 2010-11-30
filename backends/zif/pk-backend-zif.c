@@ -2947,11 +2947,12 @@ out:
 static gchar *
 pk_backend_get_changelog_text (GPtrArray *changesets)
 {
-	guint i;
-	ZifChangeset *changeset;
-	GString *text;
+	const gchar *version;
 	gchar date_str[128];
 	GDate *date;
+	GString *text;
+	guint i;
+	ZifChangeset *changeset;
 
 	/* create output string */
 	text = g_string_new ("");
@@ -2964,11 +2965,19 @@ pk_backend_get_changelog_text (GPtrArray *changesets)
 		/* format the indervidual changeset */
 		g_date_set_time_t (date, zif_changeset_get_date (changeset));
 		g_date_strftime (date_str, 128, "%F", date);
-		g_string_append_printf (text, "**%s** %s - %s\n%s\n\n",
-					date_str,
-					zif_changeset_get_author (changeset),
-					zif_changeset_get_version (changeset),
-					zif_changeset_get_description (changeset));
+		version = zif_changeset_get_version (changeset);
+		if (version != NULL) {
+			g_string_append_printf (text, "**%s** %s - %s\n%s\n\n",
+						date_str,
+						zif_changeset_get_author (changeset),
+						version,
+						zif_changeset_get_description (changeset));
+		} else {
+			g_string_append_printf (text, "**%s** %s\n%s\n\n",
+						date_str,
+						zif_changeset_get_author (changeset),
+						zif_changeset_get_description (changeset));
+		}
 	}
 	g_date_free (date);
 	return g_string_free (text, FALSE);
