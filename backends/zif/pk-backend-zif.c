@@ -1381,7 +1381,7 @@ pk_backend_initialize (PkBackend *backend)
 			  backend);
 
 	/* we don't want to enable this for normal runtime */
-	zif_state_set_enable_profile (priv->state, TRUE);
+	//zif_state_set_enable_profile (priv->state, TRUE);
 
 	/* ZifConfig */
 	priv->config = zif_config_new ();
@@ -2642,6 +2642,7 @@ static gboolean
 pk_backend_get_updates_thread (PkBackend *backend)
 {
 	PkBitfield filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
+	gboolean background;
 	gboolean ret;
 	gchar **search = NULL;
 	GError *error = NULL;
@@ -2663,14 +2664,27 @@ pk_backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* set steps */
-	ret = zif_state_set_steps (priv->state,
-				   NULL,
-				   1, /* get remote stores */
-				   1, /* get installed packages */
-				   3, /* filter newest */
-				   45, /* look in remote stores */
-				   50, /* get updateinfo */
-				   -1);
+	background = zif_config_get_boolean (priv->config, "background", NULL);
+	if (!background) {
+		ret = zif_state_set_steps (priv->state,
+					   NULL,
+					   1, /* get remote stores */
+					   1, /* get installed packages */
+					   3, /* filter newest */
+					   45, /* look in remote stores */
+					   50, /* get updateinfo */
+					   -1);
+	} else {
+		ret = zif_state_set_steps (priv->state,
+					   NULL,
+					   1, /* get remote stores */
+					   1, /* get installed packages */
+					   3, /* filter newest */
+					   25, /* look in remote stores */
+					   20, /* get updateinfo */
+					   50, /* depsolve */
+					   -1);
+	}
 	g_assert (ret);
 
 	/* get a store_array of remote stores */
@@ -2853,6 +2867,53 @@ pk_backend_get_updates_thread (PkBackend *backend)
 				       error->message);
 		g_error_free (error);
 		goto out;
+	}
+
+	/* if the transaction is done in the background, then depsolve
+	 * the updates transaction so we have all the file lists up to
+	 * date, and the depends data calculated so the UI is snappy */
+	if (background) {
+		/* use these stores for the transaction */
+		zif_transaction_set_stores_remote (priv->transaction, store_array);
+
+		for (i=0; i<updates_available->len; i++) {
+			package = g_ptr_array_index (updates_available, i);
+			ret = zif_transaction_add_install_as_update (priv->transaction,
+								     package,
+								     &error);
+			if (!ret) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						       "cannot add update: %s",
+						       error->message);
+				g_error_free (error);
+				goto out;
+			}
+		}
+
+		/* resolve this, which will take some time, as it's a
+		 * background action and thus throttled */
+		state_local = zif_state_get_child (priv->state);
+		ret = zif_transaction_resolve (priv->transaction, state_local, &error);
+		if (!ret) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+					       "cannot resolve transaction: %s",
+					       error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* this section done */
+		ret = zif_state_done (priv->state, &error);
+		if (!ret) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "cancelled: %s",
+					       error->message);
+			g_error_free (error);
+			goto out;
+		}
 	}
 
 	/* filter */
