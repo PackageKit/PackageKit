@@ -612,13 +612,6 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
