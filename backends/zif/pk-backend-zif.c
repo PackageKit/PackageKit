@@ -3091,6 +3091,18 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 						  "No description available",
 						  PK_UPDATE_STATE_ENUM_UNKNOWN,
 						  NULL, NULL);
+
+			/* ensure we manually clear the state, as we're
+			 * carrying on */
+			ret = zif_state_finished (state_tmp, &error);
+			if (!ret) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						       "cancelled: %s",
+						       error->message);
+				g_error_free (error);
+				goto out;
+			}
 		} else {
 			gchar *changelog_text = NULL;
 			GPtrArray *array;
