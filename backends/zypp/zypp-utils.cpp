@@ -1162,8 +1162,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 			// Refreshing metadata
 			g_free (_repoName);
 			_repoName = g_strdup (repo.alias ().c_str ());
-			if (zypp_refresh_meta_and_cache (manager, repo, force))
-				break;
+			zypp_refresh_meta_and_cache (manager, repo, force);
 		} catch (const zypp::Exception &ex) {
 			if (repo_messages == NULL) {
 				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
