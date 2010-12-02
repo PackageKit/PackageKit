@@ -774,7 +774,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 	OpTextProgress Prog(*_config);
 	if (Cache.BuildCaches(&Prog, true) == false) {
 		if (_error->PendingError() == true) {
-			show_errors(backend, PK_ERROR_ENUM_CANNOT_GET_LOCK);
+			show_errors(backend, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES);
 		}
 		delete m_apt;
 		pk_backend_finished (backend);
