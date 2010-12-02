@@ -193,6 +193,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_DATABASE_CHANGED, "package-database-changed"},
 	{PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED, "provide-type-not-supported"},
 	{PK_ERROR_ENUM_INSTALL_ROOT_INVALID,	"install-root-invalid"},
+	{PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,	"cannot-fetch-sources"},
 	{0, NULL}
 };
 

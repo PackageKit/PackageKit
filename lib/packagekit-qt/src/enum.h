@@ -323,6 +323,7 @@ public:
         ErrorPackageDatabaseChanged,
         ErrorProvideTypeNotSupported,
         ErrorInstallRootInvalid,
+        ErrorCannotFetchSources,
         /* this always has to be at the end of the list */
         LastError
     } Error;
