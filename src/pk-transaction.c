@@ -2790,16 +2790,6 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 		goto out;
 	}
 
-	/* check if it's safe to kill */
-	if (!transaction->priv->allow_cancel) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-				     "Tried to cancel %s (%s) that is not safe to kill",
-				     transaction->priv->tid,
-				     pk_role_enum_to_string (transaction->priv->role));
-		pk_transaction_dbus_return_error (context, error);
-		goto out;
-	}
-
 	/* first, check the sender -- if it's the same we don't need to check the uid */
 	sender = dbus_g_method_get_sender (context);
 	ret = (g_strcmp0 (transaction->priv->sender, sender) == 0);
