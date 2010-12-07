@@ -91,8 +91,6 @@ struct PkTransactionPrivate
 	guint			 remaining_time;
 	guint			 speed;
 	gboolean		 finished;
-	gboolean		 running;
-	gboolean		 has_been_run;
 	gboolean		 allow_cancel;
 	gboolean		 waiting_for_auth;
 	gboolean		 emit_eula_required;
@@ -1051,9 +1049,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit_enum, PkTransact
 	/* we should get no more from the backend with this tid */
 	transaction->priv->finished = TRUE;
 
-	/* mark not running */
-	transaction->priv->running = FALSE;
-
 	/* if we did ::repo-signature-required or ::eula-required, change the error code */
 	if (transaction->priv->emit_signature_required)
 		exit_enum = PK_EXIT_ENUM_KEY_REQUIRED;
@@ -1945,8 +1940,6 @@ pk_transaction_set_running (PkTransaction *transaction)
 				  G_CALLBACK (pk_transaction_speed_cb), transaction);
 
 	/* mark running */
-	priv->running = TRUE;
-	priv->has_been_run = TRUE;
 	priv->allow_cancel = FALSE;
 
 	/* reset after the pre-transaction checks */
@@ -2826,7 +2819,7 @@ pk_transaction_cancel (PkTransaction *transaction, DBusGMethodInvocation *contex
 
 skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
-	if (!transaction->priv->has_been_run) {
+	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
 		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
 		pk_transaction_allow_cancel_emit (transaction, FALSE);
 		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
@@ -5766,8 +5759,6 @@ pk_transaction_init (PkTransaction *transaction)
 #endif
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->finished = FALSE;
-	transaction->priv->running = FALSE;
-	transaction->priv->has_been_run = FALSE;
 	transaction->priv->waiting_for_auth = FALSE;
 	transaction->priv->allow_cancel = TRUE;
 	transaction->priv->emit_eula_required = FALSE;
