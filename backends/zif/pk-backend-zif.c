@@ -128,6 +128,150 @@ pk_backend_is_all_installed (gchar **package_ids)
 }
 
 /**
+ * pk_backend_convert_error:
+ */
+static PkErrorEnum
+pk_backend_convert_error (const GError *error)
+{
+	PkErrorEnum error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+	if (error->domain == ZIF_STATE_ERROR) {
+		switch (error->code) {
+		case ZIF_STATE_ERROR_CANCELLED:
+			error_code = PK_ERROR_ENUM_TRANSACTION_CANCELLED;
+			break;
+		case ZIF_STATE_ERROR_INVALID:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_TRANSACTION_ERROR) {
+		switch (error->code) {
+		case ZIF_TRANSACTION_ERROR_FAILED:
+			error_code = PK_ERROR_ENUM_TRANSACTION_ERROR;
+			break;
+		case ZIF_TRANSACTION_ERROR_NOTHING_TO_DO:
+			error_code = PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE;
+			break;
+		case ZIF_TRANSACTION_ERROR_NOT_SUPPORTED:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_TRANSACTION_ERROR_CONFLICTING:
+			error_code = PK_ERROR_ENUM_FILE_CONFLICTS;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_STORE_ERROR) {
+		switch (error->code) {
+		case ZIF_STORE_ERROR_FAILED_AS_OFFLINE:
+			error_code = PK_ERROR_ENUM_NO_NETWORK;
+			break;
+		case ZIF_STORE_ERROR_FAILED_TO_FIND:
+			error_code = PK_ERROR_ENUM_PACKAGE_NOT_FOUND;
+			break;
+		case ZIF_STORE_ERROR_FAILED_TO_DOWNLOAD:
+			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+			break;
+		case ZIF_STORE_ERROR_ARRAY_IS_EMPTY:
+			error_code = PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE;
+			break;
+		case ZIF_STORE_ERROR_NO_SUPPORT:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_STORE_ERROR_NOT_LOCKED:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_STORE_ERROR_FAILED:
+		case ZIF_STORE_ERROR_MULTIPLE_MATCHES:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_PACKAGE_ERROR) {
+		switch (error->code) {
+		case ZIF_PACKAGE_ERROR_FAILED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_CONFIG_ERROR) {
+		switch (error->code) {
+		case ZIF_CONFIG_ERROR_FAILED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_DOWNLOAD_ERROR) {
+		switch (error->code) {
+		case ZIF_DOWNLOAD_ERROR_FAILED:
+		case ZIF_DOWNLOAD_ERROR_PERMISSION_DENIED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_MD_ERROR) {
+		switch (error->code) {
+		case ZIF_MD_ERROR_NO_SUPPORT:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_MD_ERROR_FAILED_AS_OFFLINE:
+			error_code = PK_ERROR_ENUM_NO_NETWORK;
+			break;
+		case ZIF_MD_ERROR_FAILED_DOWNLOAD:
+			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+			break;
+		case ZIF_MD_ERROR_BAD_SQL:
+		case ZIF_MD_ERROR_FAILED_TO_LOAD:
+		case ZIF_MD_ERROR_FILE_TOO_OLD:
+		case ZIF_MD_ERROR_FAILED:
+		case ZIF_MD_ERROR_NO_FILENAME:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	} else if (error->domain == ZIF_RELEASE_ERROR) {
+		switch (error->code) {
+		case ZIF_RELEASE_ERROR_DOWNLOAD_FAILED:
+			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+			break;
+		case ZIF_RELEASE_ERROR_FILE_INVALID:
+			error_code = PK_ERROR_ENUM_FAILED_CONFIG_PARSING;
+			break;
+		case ZIF_RELEASE_ERROR_LOW_DISKSPACE:
+			error_code = PK_ERROR_ENUM_NO_SPACE_ON_DEVICE;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_FOUND:
+			error_code = PK_ERROR_ENUM_PACKAGE_NOT_FOUND;
+			break;
+		case ZIF_RELEASE_ERROR_NOT_SUPPORTED:
+			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
+			break;
+		case ZIF_RELEASE_ERROR_NO_UUID_FOR_ROOT:
+		case ZIF_RELEASE_ERROR_SETUP_INVALID:
+		case ZIF_RELEASE_ERROR_SPAWN_FAILED:
+		case ZIF_RELEASE_ERROR_WRITE_FAILED:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+			break;
+		default:
+			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
+		}
+	}
+	if (error_code == PK_ERROR_ENUM_INTERNAL_ERROR) {
+		g_warning ("failed to match error: %s:%i: %s",
+			   g_quark_to_string (error->domain),
+			   error->code,
+			   error->message);
+	}
+	return error_code;
+}
+
+/**
  * pk_backend_transaction_start:
  */
 void
@@ -192,7 +336,7 @@ pk_backend_transaction_start (PkBackend *backend)
 					  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to set prefix: %s",
 				       error->message);
 		g_error_free (error);
@@ -236,6 +380,9 @@ pk_backend_transaction_start (PkBackend *backend)
 
 	/* setup state */
 	zif_state_reset (priv->state);
+
+	/* allow cancelling again */
+	g_cancellable_reset (priv->cancellable);
 
 	/* start with a new transaction */
 	zif_transaction_reset (priv->transaction);
@@ -965,7 +1112,7 @@ pk_backend_search_thread (PkBackend *backend)
 							     &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -990,7 +1137,7 @@ pk_backend_search_thread (PkBackend *backend)
 		array = zif_store_array_get_packages (store_array, state_local, &error);
 		if (array == NULL) {
 			pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 			g_error_free (error);
 			goto out;
@@ -1030,7 +1177,7 @@ pk_backend_search_thread (PkBackend *backend)
 				array = pk_backend_search_newest (store_array, state_local, recent, &error);
 				if (array == NULL) {
 					pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 					g_error_free (error);
 					goto out;
@@ -1039,7 +1186,7 @@ pk_backend_search_thread (PkBackend *backend)
 				array = pk_backend_search_collections (store_array, state_local, &error);
 				if (array == NULL) {
 					pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get packages: %s", error->message);
 					g_error_free (error);
 					goto out;
@@ -1061,7 +1208,7 @@ pk_backend_search_thread (PkBackend *backend)
 		}
 		if (array == NULL) {
 			pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to search: %s", error->message);
 			g_error_free (error);
 			goto out;
@@ -1370,6 +1517,7 @@ pk_backend_initialize (PkBackend *backend)
 
 	/* ZifState */
 	priv->state = zif_state_new ();
+	zif_state_set_cancellable (priv->state, priv->cancellable);
 	g_signal_connect (priv->state, "percentage-changed",
 			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
 			  backend);
@@ -1558,6 +1706,7 @@ void
 pk_backend_cancel (PkBackend *backend)
 {
 	/* try to cancel the thread */
+	g_debug ("cancelling transaction");
 	g_cancellable_cancel (priv->cancellable);
 }
 
@@ -1599,7 +1748,7 @@ pk_backend_download_packages_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -1822,7 +1971,7 @@ pk_backend_get_depends_thread (PkBackend *backend)
 							     &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
 		goto out;
@@ -2032,7 +2181,7 @@ pk_backend_get_requires_thread (PkBackend *backend)
 							     &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
 		goto out;
@@ -2247,7 +2396,7 @@ pk_backend_get_details_thread (PkBackend *backend)
 							     &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -2536,7 +2685,7 @@ pk_backend_get_files_thread (PkBackend *backend)
 							     &error);
 	if (store_array == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get stores: %s", error->message);
 		g_error_free (error);
 		goto out;
@@ -2599,7 +2748,7 @@ pk_backend_get_files_thread (PkBackend *backend)
 		files = zif_package_get_files (package, state_tmp, &error);
 		if (files == NULL) {
 			pk_backend_error_code (backend,
-					       PK_ERROR_ENUM_INTERNAL_ERROR,
+					       pk_backend_convert_error (error),
 					       "no files for %s: %s",
 					       package_ids[i],
 					       error->message);
@@ -2695,7 +2844,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -2762,7 +2911,7 @@ pk_backend_get_updates_thread (PkBackend *backend)
 	updates = zif_store_array_resolve (store_array, search, state_local, &error);
 	if (updates == NULL) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to get updates: %s", error->message);
 		g_error_free (error);
 		goto out;
@@ -3018,7 +3167,7 @@ pk_backend_get_update_detail_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -3390,7 +3539,7 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 				      &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to commit transaction: %s",
 				       error->message);
 		g_error_free (error);
@@ -3557,7 +3706,7 @@ pk_backend_update_packages_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -3694,7 +3843,7 @@ pk_backend_install_packages_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -3830,7 +3979,7 @@ pk_backend_install_files_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -3968,7 +4117,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 						  &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to add enabled stores: %s",
 				       error->message);
 		g_error_free (error);
@@ -3992,7 +4141,7 @@ pk_backend_refresh_cache_thread (PkBackend *backend)
 	ret = zif_store_array_clean (store_array, state_local, &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
-				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       pk_backend_convert_error (error),
 				       "failed to clean: %s", error->message);
 		g_error_free (error);
 		goto out;
@@ -4358,7 +4507,6 @@ pk_backend_upgrade_system_thread (PkBackend *backend)
 	gchar **distro_id_split = NULL;
 	guint version;
 	gboolean ret;
-	PkErrorEnum error_code;
 	GError *error = NULL;
 	ZifReleaseUpgradeKind upgrade_kind_zif = ZIF_RELEASE_UPGRADE_KIND_DEFAULT;
 	PkUpgradeKindEnum upgrade_kind = pk_backend_get_uint (backend, "upgrade_kind");
@@ -4397,33 +4545,8 @@ pk_backend_upgrade_system_thread (PkBackend *backend)
 					   &error);
 	if (!ret) {
 		/* convert the ZifRelease error code into a PK error enum */
-		switch (error->code) {
-		case ZIF_RELEASE_ERROR_DOWNLOAD_FAILED:
-			error_code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
-			break;
-		case ZIF_RELEASE_ERROR_FILE_INVALID:
-			error_code = PK_ERROR_ENUM_FAILED_CONFIG_PARSING;
-			break;
-		case ZIF_RELEASE_ERROR_LOW_DISKSPACE:
-			error_code = PK_ERROR_ENUM_NO_SPACE_ON_DEVICE;
-			break;
-		case ZIF_RELEASE_ERROR_NOT_FOUND:
-			error_code = PK_ERROR_ENUM_PACKAGE_NOT_FOUND;
-			break;
-		case ZIF_RELEASE_ERROR_NOT_SUPPORTED:
-			error_code = PK_ERROR_ENUM_NOT_SUPPORTED;
-			break;
-		case ZIF_RELEASE_ERROR_NO_UUID_FOR_ROOT:
-		case ZIF_RELEASE_ERROR_SETUP_INVALID:
-		case ZIF_RELEASE_ERROR_SPAWN_FAILED:
-		case ZIF_RELEASE_ERROR_WRITE_FAILED:
-			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
-			break;
-		default:
-			error_code = PK_ERROR_ENUM_INTERNAL_ERROR;
-		}
 		pk_backend_error_code (backend,
-				       error_code,
+				       pk_backend_convert_error (error),
 				       "failed to upgrade: %s",
 				       error->message);
 		g_error_free (error);
