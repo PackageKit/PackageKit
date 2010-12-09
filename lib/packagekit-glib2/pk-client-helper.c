@@ -110,19 +110,21 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 	g_return_val_if_fail (priv->socket_file != NULL, FALSE);
 
 	/* close the socket */
-	ret = g_socket_close (priv->socket, error);
-	if (!ret)
-		goto out;
+	if (priv->socket != NULL) {
+		ret = g_socket_close (priv->socket, error);
+		if (!ret)
+			goto out;
 
-	/* stop watching for events */
-	if (priv->io_channel_socket_listen_id > 0)
-		g_source_remove (priv->io_channel_socket_listen_id);
-	if (priv->io_channel_child_stdout_listen_id > 0)
-		g_source_remove (priv->io_channel_child_stdout_listen_id);
-	if (priv->io_channel_child_stderr_listen_id > 0)
-		g_source_remove (priv->io_channel_child_stderr_listen_id);
-	if (priv->io_channel_child_stdin_listen_id > 0)
-		g_source_remove (priv->io_channel_child_stdin_listen_id);
+		/* stop watching for events */
+		if (priv->io_channel_socket_listen_id > 0)
+			g_source_remove (priv->io_channel_socket_listen_id);
+		if (priv->io_channel_child_stdout_listen_id > 0)
+			g_source_remove (priv->io_channel_child_stdout_listen_id);
+		if (priv->io_channel_child_stderr_listen_id > 0)
+			g_source_remove (priv->io_channel_child_stderr_listen_id);
+		if (priv->io_channel_child_stdin_listen_id > 0)
+			g_source_remove (priv->io_channel_child_stdin_listen_id);
+	}
 
 	/* kill process */
 	if (priv->child_pid > 0) {
@@ -138,10 +140,15 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 		}
 	}
 
+	/* when we're here, everything worked fine */
+	ret = TRUE;
+
 	/* remove any socket file */
-	ret = g_file_delete (priv->socket_file, NULL, error);
-	if (!ret)
-		goto out;
+	if (g_file_query_exists (priv->socket_file, NULL)) {
+		ret = g_file_delete (priv->socket_file, NULL, error);
+		if (!ret)
+		    goto out;
+	}
 out:
 	return ret;
 }
@@ -437,7 +444,10 @@ pk_client_helper_start (PkClientHelper *client_helper,
 			gchar **argv, gchar **envp,
 			GError **error)
 {
+	guint i;
 	gboolean ret = FALSE;
+	gboolean use_kde_helper = FALSE;
+	GError *error_local = NULL;
 	gint fd;
 	GSocketAddress *address = NULL;
 	PkClientHelperPrivate *priv = client_helper->priv;
@@ -459,13 +469,20 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	}
 
 	g_debug ("using socket in %s", socket_filename);
+	priv->socket_file = g_file_new_for_path (socket_filename);
+
+	/* preconfigure KDE frontend, if requested */
+	for (i=0; envp[i] != NULL; i++) {
+		if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0)
+			if (g_file_test ("/usr/bin/debconf-kde-helper", G_FILE_TEST_EXISTS))
+				use_kde_helper = TRUE;
+	}
 
 	/* cache for actual start */
 	priv->argv = g_strdupv (argv);
 	priv->envp = g_strdupv (envp);
 
 	/* create socket */
-	priv->socket_file = g_file_new_for_path (socket_filename);
 	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, error);
 	if (priv->socket == NULL)
 		goto out;
@@ -475,6 +492,23 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	ret = g_socket_bind (priv->socket, address, TRUE, error);
 	if (!ret)
 		goto out;
+
+	/* spawn KDE debconf communicator */
+	if (use_kde_helper) {
+		priv->argv = g_new0 (gchar *, 2);
+		priv->argv[0] = g_strdup ("/usr/bin/debconf-kde-helper");
+		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
+
+		ret = g_spawn_async (NULL, priv->argv, NULL, G_SPAWN_STDOUT_TO_DEV_NULL,
+			NULL, NULL, &priv->child_pid, &error_local);
+		if (!ret) {
+			g_warning ("failed to spawn: %s", error_local->message);
+			g_error_free (error_local);
+			goto out;
+		}
+		g_debug ("started process %s with pid %i", priv->argv[0], priv->child_pid);
+		goto out;
+	}
 
 	/* listen to the socket */
 	ret = g_socket_listen (priv->socket, error);
