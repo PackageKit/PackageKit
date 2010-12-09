@@ -1194,11 +1194,16 @@
             <doc:para>
               An enumerated group type, or <doc:tt>unknown</doc:tt>. The search
               cannot contain spaces.
+              The following recommendations are made below:
             </doc:para>
             <doc:para>
-              If the values strings are prefixed with <doc:tt>@</doc:tt> then
-              this is treated as a category, for example:
-              <doc:tt>@web-development</doc:tt>.
+              If the values strings are prefixed with <doc:tt>category:</doc:tt> then
+              the request is treated as a 'category search', for example:
+              <doc:tt>category:web-development</doc:tt>.
+              Note: the old nomenclature for a 'category search' suggested
+              using a <doc:tt>@</doc:tt> prefix for the values options.
+              This is still supported, and backends should continue to support
+              category searches like <doc:tt>@web-development</doc:tt>.
             </doc:para>
           </doc:summary>
         </doc:doc>
