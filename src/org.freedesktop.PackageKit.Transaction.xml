@@ -283,6 +283,13 @@
             This method typically emits
             <doc:tt>Categories</doc:tt> and <doc:tt>Error</doc:tt>.
           </doc:para>
+          <doc:para>
+            Note: Categories can be returned that represent groups of
+            packages in a specific repository.
+            These will have a category prefix of <doc:tt>repo:</doc:tt>
+            which should be understood by <doc:tt>SearchGroups</doc:tt>
+            if this feature is used.
+          </doc:para>
       </doc:doc>
     </method>
 
@@ -1204,6 +1211,14 @@
               using a <doc:tt>@</doc:tt> prefix for the values options.
               This is still supported, and backends should continue to support
               category searches like <doc:tt>@web-development</doc:tt>.
+            </doc:para>
+            <doc:para>
+              If the values strings are prefixed with <doc:tt>repo:</doc:tt> then
+              the request is treated as a 'repository search', for example:
+              <doc:tt>repo:fedora-debuginfo</doc:tt>.
+              In this instance all packages that were either installed
+              from, or can be installed from the <doc:tt>fedora-debuginfo</doc:tt>
+              source would be returned.
             </doc:para>
           </doc:summary>
         </doc:doc>
