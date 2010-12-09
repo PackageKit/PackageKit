@@ -776,6 +776,96 @@ out:
 }
 
 /**
+ * pk_backend_search_repos:
+ */
+static GPtrArray *
+pk_backend_search_repos (gchar **repos,
+			 ZifState *state,
+			 GError **error)
+{
+	gboolean ret;
+	gchar *installed_repo_id = NULL;
+	GPtrArray *array_local = NULL;
+	GPtrArray *array = NULL;
+	GPtrArray *array_remote = NULL;
+	GPtrArray *array_tmp = NULL;
+	guint i;
+	ZifPackage *package;
+	ZifState *state_local;
+	ZifStoreRemote *store;
+
+	/* set steps */
+	ret = zif_state_set_steps (state,
+				   NULL,
+				   90, /* search installed */
+				   5, /* get remote store */
+				   5, /* get store */
+				   -1);
+	g_assert (ret);
+
+	/* results array */
+	array_tmp = zif_object_array_new ();
+
+	/* blank */
+	if (g_strcmp0 (repos[0], "repo:") == 0)
+		goto skip;
+
+	/* get all installed packages that were installed from this repo */
+	installed_repo_id = g_strdup_printf ("installed:%s", repos[0]);
+	state_local = zif_state_get_child (state);
+	array_local = zif_store_get_packages (priv->store_local, state_local, error);
+	if (array_local == NULL)
+		goto out;
+	for (i=0; i<array_local->len; i++) {
+		package = g_ptr_array_index (array_local, i);
+		if (g_strcmp0 (zif_package_get_data (package),
+			       installed_repo_id) == 0)
+			zif_object_array_add (array_tmp, package);
+	}
+
+	/* this section done */
+	ret = zif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	/* get all the available packages from this repo */
+	state_local = zif_state_get_child (state);
+	store = zif_repos_get_store (priv->repos, repos[0], state_local, error);
+	if (store == NULL)
+		goto out;
+
+	/* this section done */
+	ret = zif_state_done (state, error);
+	if (!ret)
+		goto out;
+
+	state_local = zif_state_get_child (state);
+	array_remote = zif_store_get_packages (ZIF_STORE (store), state_local, error);
+	if (array_remote == NULL)
+		goto out;
+	zif_object_array_add_array (array_tmp, array_remote);
+
+	/* this section done */
+	ret = zif_state_done (state, error);
+	if (!ret)
+		goto out;
+skip:
+	/* success */
+	array = g_ptr_array_ref (array_tmp);
+out:
+	g_free (installed_repo_id);
+	if (store != NULL)
+		g_object_unref (store);
+	if (array_tmp != NULL)
+		g_ptr_array_unref (array_tmp);
+	if (array_local != NULL)
+		g_ptr_array_unref (array_local);
+	if (array_remote != NULL)
+		g_ptr_array_unref (array_remote);
+	return array;
+}
+
+/**
  * pk_backend_search_collections:
  */
 static GPtrArray *
@@ -1171,6 +1261,20 @@ pk_backend_search_thread (PkBackend *backend)
 				for (i=0; i < search_entries; i++)
 					search_stripped[i] = g_strdup (&search[i][1]);
 				array = zif_store_array_search_category (store_array, search_stripped, state_local, &error);
+				g_strfreev (search_stripped);
+			} else if (g_str_has_prefix (search[0], "category:")) {
+				search_entries = g_strv_length (search);
+				search_stripped = g_new0 (gchar *, search_entries + 1);
+				for (i=0; i < search_entries; i++)
+					search_stripped[i] = g_strdup (&search[i][9]);
+				array = zif_store_array_search_category (store_array, search_stripped, state_local, &error);
+				g_strfreev (search_stripped);
+			} else if (g_str_has_prefix (search[0], "repo:")) {
+				search_entries = g_strv_length (search);
+				search_stripped = g_new0 (gchar *, search_entries + 1);
+				for (i=0; i < search_entries; i++)
+					search_stripped[i] = g_strdup (&search[i][5]);
+				array = pk_backend_search_repos (search_stripped, state_local, &error);
 				g_strfreev (search_stripped);
 			} else if (g_strcmp0 (search[0], "newest") == 0) {
 				recent = zif_config_get_uint (priv->config, "recent", &error);
@@ -4389,21 +4493,29 @@ out:
 static gboolean
 pk_backend_get_categories_thread (PkBackend *backend)
 {
+	const gchar *name;
+	const gchar *repo_id;
+	gboolean enabled;
 	gboolean ret;
 	gchar *cat_id;
+	GError *error = NULL;
 	GPtrArray *array = NULL;
+	GPtrArray *repos = NULL;
 	GPtrArray *stores = NULL;
 	guint i;
 	ZifCategory *cat;
-
 	ZifState *state_local;
-	GError *error = NULL;
+	ZifState *state_loop;
+	ZifState *state_tmp;
+	ZifStoreRemote *store;
 
 	/* set steps */
 	ret = zif_state_set_steps (priv->state,
 				   NULL,
 				   25, /* get stores */
-				   60, /* get cats */
+				   50, /* get cats */
+				   5, /* get repos */
+				   5, /* emit repos */
 				   15, /* emit */
 				   -1);
 	g_assert (ret);
@@ -4489,8 +4601,131 @@ pk_backend_get_categories_thread (PkBackend *backend)
 		g_error_free (error);
 		goto out;
 	}
+
+	/* add the repo category objects */
+	pk_backend_category (backend,
+			     NULL,
+			     "repo:",
+			     "Software Sources",
+			     "Packages from specific software sources",
+			     "base-system");
+	state_local = zif_state_get_child (priv->state);
+	repos = zif_repos_get_stores (priv->repos, state_local, &error);
+	if (repos == NULL) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_REPO_NOT_FOUND,
+				       "failed to find repos: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* looks at each store */
+	state_local = zif_state_get_child (priv->state);
+	zif_state_set_number_steps (state_local, repos->len);
+	for (i=0; i<repos->len; i++) {
+		store = g_ptr_array_index (repos, i);
+
+		/* allow filtering on devel */
+		state_loop = zif_state_get_child (state_local);
+
+		/* devel, name, enabled */
+		ret = zif_state_set_steps (state_loop,
+					   NULL,
+					   50, /* get enabled */
+					   50, /* get name */
+					   -1);
+		g_assert (ret);
+
+		state_tmp = zif_state_get_child (state_loop);
+		enabled = zif_store_remote_get_enabled (store, state_tmp, NULL);
+		if (!enabled) {
+			ret = zif_state_finished (state_loop, &error);
+			if (!ret) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						       "cancelled: %s",
+						       error->message);
+				g_error_free (error);
+				goto out;
+			}
+			goto skip;
+		}
+
+		/* this section done */
+		ret = zif_state_done (state_loop, &error);
+		if (!ret) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "cancelled: %s",
+					       error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* get name */
+		state_tmp = zif_state_get_child (state_loop);
+		name = zif_store_remote_get_name (store, state_tmp, NULL);
+
+		/* this section done */
+		ret = zif_state_done (state_loop, &error);
+		if (!ret) {
+			pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+			g_error_free (error);
+			goto out;
+		}
+
+		/* emit */
+		repo_id = zif_store_get_id (ZIF_STORE (store));
+		cat_id = g_strdup_printf ("repo:%s", repo_id);
+		pk_backend_category (backend,
+				     "repo:",
+				     cat_id,
+				     name,
+				     name,
+				     "base-system");
+		g_free (cat_id);
+skip:
+		/* this section done */
+		ret = zif_state_done (state_local, &error);
+		if (!ret) {
+			pk_backend_error_code (backend,
+					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+					       "cancelled: %s",
+					       error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
 out:
 	pk_backend_finished (backend);
+	if (repos != NULL)
+		g_ptr_array_unref (repos);
 	if (array != NULL)
 		g_ptr_array_unref (array);
 	if (stores != NULL)
