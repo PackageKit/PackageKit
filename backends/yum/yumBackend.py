@@ -421,7 +421,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 res = self.yumbase.searchGenerator(searchlist, values)
                 for (pkg, inst) in res:
-                    if pkg.repo.id == 'installed':
+                    if pkg.repo.id.startswith('installed'):
                         installed.append(pkg)
                     else:
                         available.append(pkg)
@@ -1056,7 +1056,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # get e, v, r from package id version
         e, v, r = _getEVR(idver)
 
-        if repo == 'installed':
+        if repo.startswith('installed'):
             # search the rpmdb for the nevra
             try:
                 pkgs = self.yumbase.rpmdb.searchNevra(name=n, epoch=e, ver=v, rel=r, arch=a)
@@ -2478,7 +2478,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # if we are remote and in the cache, our size is zero
         size = pkg.size
-        if pkg.repo.id != 'installed' and pkg.verifyLocalPkg():
+        if not pkg.repo.id.startswith('installed') and pkg.verifyLocalPkg():
             size = 0
 
         group = self.comps.get_group(pkg.name)
@@ -2514,6 +2514,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         repo = str(pkg.repo)
         if repo.startswith('/'):
             repo = "local"
+        # can we add data from the yumdb
+        if repo == 'installed':
+            repo_tmp = pkg.yumdb_info.get('from_repo')
+            if repo_tmp:
+                repo = 'installed:' + repo_tmp
         package_id = self.get_package_id(pkg.name, pkgver, pkg.arch, repo)
         return package_id
 
