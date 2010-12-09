@@ -520,6 +520,113 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         return pkgs
 
+    def _handle_repo_group_search_using_yumdb(self, repo_id, filters):
+        """
+        Handle the special repo groups
+        """
+        self.percentage(None)
+        pkgfilter = YumFilter(filters)
+        available = []
+        installed = []
+
+        pkgs = []
+        # get installed packages that came from this repo
+        try:
+            pkgs = self.yumbase.rpmdb
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        for pkg in pkgs:
+            if pkg.yumdb_info.get('from_repo') == repo_id:
+                pkgfilter.add_installed([pkg])
+
+        # find the correct repo
+        try:
+            repos = self.yumbase.repos.findRepos(repo_id)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        if len(repos) == 0:
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+
+        # the repo might have been disabled if it is no longer contactable
+        if not repos[0].isEnabled():
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+
+        # populate the sack with data
+        try:
+            self.yumbase.repos.populateSack(repo_id)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        for pkg in repos[0].sack:
+            available.append(pkg)
+
+        # add list to filter
+        pkgfilter.add_installed(installed)
+        pkgfilter.add_available(available)
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
+        self.percentage(100)
+
+    def _handle_repo_group_search(self, repo_id, filters):
+        """
+        Handle the special repo groups
+        This is much slower than using _handle_repo_group_search_using_yumdb()
+        as we have to resolve each package in the repo to see if it's
+        installed.
+        Of course, on RHEL5, there is no yumdb.
+        """
+        self.percentage(None)
+        pkgfilter = YumFilter(filters)
+        available = []
+        installed = []
+
+        # find the correct repo
+        try:
+            repos = self.yumbase.repos.findRepos(repo_id)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+        if len(repos) == 0:
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+        print "found repos"
+
+        # the repo might have been disabled if it is no longer contactable
+        if not repos[0].isEnabled():
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+
+        # populate the sack with data
+        try:
+            self.yumbase.repos.populateSack(repo_id)
+        except exceptions.IOError, e:
+            raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+        except Exception, e:
+            raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+
+        for pkg in repos[0].sack:
+            try:
+                instpo = self.yumbase.rpmdb.searchNevra(name=pkg.name, epoch=pkg.epoch, ver=pkg.ver, rel=pkg.rel, arch=pkg.arch)
+            except exceptions.IOError, e:
+                raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+            except Exception, e:
+                raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            if self._is_inst(pkg):
+                installed.append(instpo[0])
+            else:
+                available.append(pkg)
+
+        # add list to filter
+        pkgfilter.add_installed(installed)
+        pkgfilter.add_available(available)
+        package_list = pkgfilter.post_process()
+        self._show_package_list(package_list)
+        self.percentage(100)
+
     def _handle_newest(self, filters):
         """
         Handle the special newest group
@@ -636,6 +743,14 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if GROUP_NEWEST in values:
             try:
                 self._handle_newest(filters)
+            except PkError, e:
+                self.error(e.code, e.details, exit=False)
+            return
+
+        # handle repo groups
+        if 'repo:' in values[0]:
+            try:
+                self._handle_repo_group_search_using_yumdb(values[0].replace('repo:',''), filters)
             except PkError, e:
                 self.error(e.code, e.details, exit=False)
             return
@@ -893,6 +1008,20 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     icon = "image-missing"
                 self.category("", cat_id, name, summary, icon)
                 self._get_groups(cat_id)
+
+        # also add the repo category objects
+        self.category("", 'repo:', 'Software Sources', 'Packages from specific software sources', 'base-system')
+        try:
+            repos = self.yumbase.repos.repos.values()
+        except exceptions.IOError, e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
+            return
+        except Exception, e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            return
+        for repo in repos:
+            if repo.isEnabled():
+                self.category("repo:", "repo:" + repo.id, repo.name, 'Packages from ' + repo.name, 'base-system')
 
     def _get_groups(self, cat_id):
         '''
