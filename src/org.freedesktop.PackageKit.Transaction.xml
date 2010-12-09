@@ -1063,7 +1063,8 @@
           <doc:para>
             <doc:tt>Package</doc:tt> enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>        </doc:description>
+          </doc:para>
+        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
@@ -1115,7 +1116,8 @@
           <doc:para>
             <doc:tt>Package</doc:tt> enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>        </doc:description>
+          </doc:para>
+        </doc:description>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
@@ -1870,7 +1872,32 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid package ID string with as much data as known
+              This identifier is of the form <doc:tt>name;version;arch;data</doc:tt>
+              in a single string and is meant to represent a single package
+              unique across all local and remote data stores.
+            </doc:para>
+            <doc:para>
+              For a remote, not-installed package the data field should
+              be set as the repository identifier or repository name.
+            </doc:para>
+            <doc:para>
+              The data field for an installed package must be prefixed
+              with <doc:tt>installed</doc:tt> as this is used to identify
+              which packages are installable or installed in the client
+              tools.
+            </doc:para>
+            <doc:para>
+              As a special extension, if the package manager is able to
+              track which repository a package was originally installed
+              from, then the data field can be set to
+              <doc:tt>installed:REPO-NAME</doc:tt> which allows the
+              frontend client to advise the user of the package origin.
+            </doc:para>
+            <doc:para>
+              The data field for a non-installed local package must be
+              <doc:tt>local</doc:tt> as this signifies a repository name is
+              not available and that package resides locally on the
+              client system rather than in any specific repository.
             </doc:para>
           </doc:summary>
         </doc:doc>

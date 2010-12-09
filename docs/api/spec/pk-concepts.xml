@@ -22,8 +22,7 @@
       be present.
       For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
       valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
-      The data field can be used for the repository name or any other purpose.
-      It is designed to make the life of a backend writer a little bit easier.
+      The data field is used for the repository name.
     </para>
     <para>
       The data field for an installed package must be
