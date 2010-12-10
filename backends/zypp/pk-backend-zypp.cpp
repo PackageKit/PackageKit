@@ -1433,14 +1433,13 @@ backend_find_packages_thread (PkBackend *backend)
 		// did not search in srcpackages.
 		break;
 	case SEARCH_TYPE_FILE: {
-		// zypp_build_pool (TRUE); called by zypp_get_packages_by_file
-		std::vector<zypp::sat::Solvable> *r;
-		r = zypp_get_packages_by_file (backend, search);
-		v.swap( *r );
-		delete r;
-		// zypp_get_packages_by_file does strange things :)
-		// Maybe it would be sufficient to simply query
-		// zypp::sat::SolvAttr::filelist instead?
+		zypp_build_pool (backend, TRUE);
+		q.addKind( zypp::ResKind::package );
+		q.addAttribute( zypp::sat::SolvAttr::name );
+		q.addAttribute( zypp::sat::SolvAttr::description );
+		q.addAttribute( zypp::sat::SolvAttr::filelist );
+		q.setFilesMatchFullPath(true);
+		q.setMatchExact();
 		break;
 	    }
 	};
