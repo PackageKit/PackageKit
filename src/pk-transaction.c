@@ -687,7 +687,7 @@ pk_transaction_process_script (PkTransaction *transaction, const gchar *filename
 	GFile *file = NULL;
 	GFileInfo *info = NULL;
 	guint file_uid;
-	gchar *command;
+	gchar *command = NULL;
 	gint exit_status = 0;
 	gboolean ret;
 	GError *error = NULL;
