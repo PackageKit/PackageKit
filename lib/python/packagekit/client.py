@@ -168,7 +168,7 @@ class PackageKitTransaction:
 
     def set_locale(self, code):
         '''Set the language to the given locale code'''
-        return self._iface.SetLocale(code)
+        return self._iface.SetHints(['locale=%s' % code])
 
     def cancel(self):
         '''Cancel the transaction'''

@@ -1029,7 +1029,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if repoid == 'local':
             channels = self.ctrl.getFileChannels()
         elif repoid:
-            if repoid == 'installed':
+            if repoid.startswith('installed'):
                 repoid = self.systemchannel
             channels = self.ctrl.getChannels()
             channels = [x for x in channels if x.getAlias() == repoid]
@@ -1073,6 +1073,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         channel = loader.getChannel()
         if package.installed:
             data = 'installed'
+            if hasattr(smart.pkgconf, 'getOrigin'):
+                origin = smart.pkgconf.getOrigin(package)
+                if origin:
+                    data += ':' + origin
         elif self._channel_is_local(channel):
             data = 'local'
         else:
