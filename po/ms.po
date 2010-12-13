@@ -1,157 +1,165 @@
-# packagekit Bahasa Melayu (Malay) (ms)
-# Copyright (C) 2008 Fedora Project
-# This file is distributed under the same license as the packagekit package.
-# Sharuzzaman Ahmat Raslan <sharuzzaman@myrealbox.com>, 2008.
-#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit\n"
+"Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-24 11:06+0100\n"
-"PO-Revision-Date: 2008-09-25 23:36+0800\n"
-"Last-Translator: Sharuzzaman Ahmat Raslan <sharuzzaman@myrealbox.com>\n"
-"Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
+"POT-Creation-Date: 2010-12-13 12:23+0000\n"
+"PO-Revision-Date: 2010-12-13 13:11+0000\n"
+"Last-Translator: hughsie <richard@hughsie.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ms\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:235
+#. TRANSLATORS: the role is the point of the transaction, e.g. update-system
+#: ../client/pk-console.c:174 ../client/pk-console.c:596
 msgid "Transaction"
 msgstr ""
 
-#. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:237
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+#: ../client/pk-console.c:176
 msgid "System time"
 msgstr ""
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:239
+#: ../client/pk-console.c:178
 msgid "Succeeded"
 msgstr ""
 
-#. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:178
 msgid "True"
 msgstr ""
 
-#: ../client/pk-console.c:239 ../client/pk-console.c:406
+#: ../client/pk-console.c:178
 msgid "False"
 msgstr ""
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:241 ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:180 ../src/pk-polkit-action-lookup.c:332
 msgid "Role"
 msgstr ""
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:185
 msgid "Duration"
 msgstr ""
 
-#: ../client/pk-console.c:246
+#: ../client/pk-console.c:185
 msgid "(seconds)"
 msgstr ""
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:250 ../src/pk-polkit-action-lookup.c:341
-#, fuzzy
+#: ../client/pk-console.c:189 ../src/pk-polkit-action-lookup.c:346
 msgid "Command line"
-msgstr "Sambungan Gagal"
+msgstr ""
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:252
+#: ../client/pk-console.c:191
 msgid "User ID"
 msgstr ""
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:259
+#: ../client/pk-console.c:198
 msgid "Username"
 msgstr ""
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:263
+#: ../client/pk-console.c:202
 msgid "Real name"
 msgstr ""
 
-#: ../client/pk-console.c:271
+#: ../client/pk-console.c:210
 msgid "Affected packages:"
 msgstr ""
 
-#: ../client/pk-console.c:273
+#: ../client/pk-console.c:212
 msgid "Affected packages: None"
 msgstr ""
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:298
+#: ../client/pk-console.c:247
 msgid "Distribution"
 msgstr ""
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:300
+#: ../client/pk-console.c:249
 msgid "Type"
 msgstr ""
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:302 ../client/pk-console.c:325
+#: ../client/pk-console.c:251 ../client/pk-console.c:290
 msgid "Summary"
 msgstr ""
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:314
+#: ../client/pk-console.c:279
 msgid "Category"
 msgstr ""
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:316
+#: ../client/pk-console.c:281
 msgid "ID"
 msgstr ""
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:319
+#: ../client/pk-console.c:284
 msgid "Parent"
 msgstr ""
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:322
+#: ../client/pk-console.c:287
 msgid "Name"
 msgstr ""
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:328
+#: ../client/pk-console.c:293
 msgid "Icon"
 msgstr ""
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:343
+#: ../client/pk-console.c:339
 msgid "Details about the update:"
 msgstr ""
 
 #. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:345 ../src/pk-polkit-action-lookup.c:352
-#, fuzzy
+#: ../client/pk-console.c:345 ../client/pk-console.c:615
+#: ../lib/packagekit-glib2/pk-task-text.c:124
+#: ../lib/packagekit-glib2/pk-task-text.c:206
+#: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
 msgid_plural "Packages"
-msgstr[0] "  -l             - senaraikan fail dalam pakej.\n"
-msgstr[1] "  -l             - senaraikan fail dalam pakej.\n"
+msgstr[0] ""
 
-#. TRANSLATORS: details about the update, any packages that this update updates
+#. TRANSLATORS: details about the update, any packages that this update
+#. updates
 #: ../client/pk-console.c:348
-#, fuzzy
 msgid "Updates"
-msgstr " Auto Kemaskini"
+msgstr ""
 
-#. TRANSLATORS: details about the update, any packages that this update obsoletes
+#. TRANSLATORS: details about the update, any packages that this update
+#. obsoletes
 #: ../client/pk-console.c:352
 msgid "Obsoletes"
 msgstr ""
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:356
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: ../client/pk-console.c:356 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr ""
 
@@ -172,9 +180,8 @@ msgstr ""
 
 #. TRANSLATORS: details about the update, any description of the update
 #: ../client/pk-console.c:372
-#, fuzzy
 msgid "Update text"
-msgstr " Auto Kemaskini"
+msgstr ""
 
 #. TRANSLATORS: details about the update, the changelog for the package
 #: ../client/pk-console.c:376
@@ -187,1130 +194,1599 @@ msgid "State"
 msgstr ""
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:385
+#: ../client/pk-console.c:384
 msgid "Issued"
 msgstr ""
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:390
-#, fuzzy
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:515
 msgid "Updated"
-msgstr " Auto Kemaskini"
-
-#: ../client/pk-console.c:477 ../client/pk-console.c:479
-msgid "Percentage"
 msgstr ""
 
-#: ../client/pk-console.c:479
-msgid "Unknown"
+#. TRANSLATORS: if the repo is enabled
+#: ../client/pk-console.c:424
+msgid "Enabled"
+msgstr ""
+
+#. TRANSLATORS: if the repo is disabled
+#: ../client/pk-console.c:427
+msgid "Disabled"
 msgstr ""
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:521
-#, fuzzy
+#: ../client/pk-console.c:459
 msgid "System restart required by:"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+msgstr ""
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:524
-#, fuzzy
+#: ../client/pk-console.c:462
 msgid "Session restart required:"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+msgstr ""
 
-#. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:527
-#, fuzzy
+#. TRANSLATORS: a package requires the system to be restarted due to a
+#. security update
+#: ../client/pk-console.c:465
 msgid "System restart (security) required by:"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+msgstr ""
 
-#. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:530
-#, fuzzy
+#. TRANSLATORS: a package requires the session to be restarted due to a
+#. security update
+#: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+msgstr ""
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:533
-#, fuzzy
+#: ../client/pk-console.c:471
 msgid "Application restart required by:"
-msgstr "Katalaluan diperlukan, ini adalah dokumen yang dienkrip"
+msgstr ""
+
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:506
+msgid "Package description"
+msgstr ""
+
+#. TRANSLATORS: This a message (like a little note that may be of interest)
+#. from the transaction
+#: ../client/pk-console.c:537
+msgid "Message:"
+msgstr ""
+
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:558
+msgid "No files"
+msgstr ""
+
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:563
+msgid "Package files"
+msgstr ""
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: ../client/pk-console.c:631
+msgid "Percentage"
+msgstr ""
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: ../client/pk-console.c:649
+msgid "Status"
+msgstr ""
+
+#. TRANSLATORS: the results from the transaction
+#: ../client/pk-console.c:678
+msgid "Results:"
+msgstr ""
+
+#. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
+#: ../client/pk-console.c:685
+msgid "Fatal error"
+msgstr ""
+
+#. TRANSLATORS: the user asked to update everything, but there is nothing that
+#. can be updated
+#: ../client/pk-console.c:701
+msgid "There are no packages to update."
+msgstr ""
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: ../client/pk-console.c:704
+#: ../contrib/command-not-found/pk-command-not-found.c:639
+msgid "The transaction failed"
+msgstr ""
+
+#. TRANSLATORS: print a message when there are no updates
+#: ../client/pk-console.c:733
+msgid "There are no updates available at this time."
+msgstr ""
+
+#: ../client/pk-console.c:756
+msgid "There are no upgrades available at this time."
+msgstr ""
 
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:588
+#: ../client/pk-console.c:823
 msgid "Please restart the computer to complete the update."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:591
+#: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
 msgstr ""
 
-#. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:594
-msgid "Please restart the application as it is being used."
-msgstr ""
-
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:597
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+#: ../client/pk-console.c:829
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:600
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+#: ../client/pk-console.c:832
+msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr ""
 
-#. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:727
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
+#. install-local dave.rpm'
+#: ../client/pk-console.c:858
 #, c-format
-msgid "The package %s is already installed"
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:735
-#, fuzzy, c-format
-msgid "The package %s could not be installed: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:760 ../client/pk-console.c:783
-#: ../client/pk-console.c:879 ../client/pk-console.c:996
-#: ../client/pk-tools-common.c:62 ../client/pk-tools-common.c:81
-#: ../client/pk-tools-common.c:89
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:866
 #, c-format
-msgid "Internal error: %s"
+msgid "This tool could not find any available package: %s"
 msgstr ""
 
-#. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:768 ../client/pk-console.c:1392
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:894
 #, c-format
-msgid "This tool could not install the packages: %s"
+msgid "This tool could not find the installed package: %s"
 msgstr ""
 
-#. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:791
-#, fuzzy, c-format
-msgid "This tool could not install the files: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:847
-#, fuzzy, c-format
-msgid "This tool could not remove %s: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:870 ../client/pk-console.c:908
-#: ../client/pk-console.c:941
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:922 ../client/pk-console.c:950
 #, c-format
-msgid "This tool could not remove the packages: %s"
+msgid "This tool could not find the package: %s"
 msgstr ""
 
-#. TRANSLATORS: When removing, we might have to remove other dependencies
-#: ../client/pk-console.c:920
-#, fuzzy
-msgid "The following packages have to be removed:"
-msgstr "Memeriksa untuk membuang pakej berikut"
-
-#. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:927
-#, fuzzy
-msgid "Proceed removing additional packages?"
-msgstr "Memeriksa untuk membuang pakej berikut"
-
-#. TRANSLATORS: We did not remove any packages
-#: ../client/pk-console.c:932
-msgid "The package removal was canceled!"
-msgstr ""
-
-#. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:973
-#, fuzzy, c-format
-msgid "This tool could not download the package %s as it could not be found"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1004
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The
+#. detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The
+#. detailed error follows
+#: ../client/pk-console.c:978 ../client/pk-console.c:1006
+#: ../client/pk-console.c:1034 ../client/pk-console.c:1062
+#: ../client/pk-console.c:1090
 #, c-format
-msgid "This tool could not download the packages: %s"
+msgid "This tool could not find all the packages: %s"
 msgstr ""
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1031 ../client/pk-console.c:1040
-#, fuzzy, c-format
-msgid "This tool could not update %s: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1062 ../client/pk-console.c:1070
-#, fuzzy, c-format
-msgid "This tool could not get the requirements for %s: %s"
-msgstr "Tidak dapat memperoleh kekunci OpenPGP."
-
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1092 ../client/pk-console.c:1100
-#, fuzzy, c-format
-msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Tidak dapat memperoleh kekunci OpenPGP."
-
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1122 ../client/pk-console.c:1130
-#, fuzzy, c-format
-msgid "This tool could not get package details for %s: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1152
-#, fuzzy, c-format
-msgid "This tool could not find the files for %s: %s"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1160
-#, fuzzy, c-format
-msgid "This tool could not get the file list for %s: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1182
-#, c-format
-msgid "File already exists: %s"
-msgstr ""
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1187 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1318
-#, fuzzy
-msgid "Getting package list"
-msgstr "Lebih maklumat pada pakej %s"
-
-#. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1193 ../client/pk-console.c:1249
-#: ../client/pk-console.c:1324
-#, fuzzy, c-format
-msgid "This tool could not get package list: %s"
-msgstr "Tidak dapat menulis kepada fail %s"
-
-#. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1204
-#, fuzzy, c-format
-msgid "Failed to save to disk"
-msgstr "gagal untuk mencipta direktori"
-
-#. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1238 ../client/pk-console.c:1313
-#, c-format
-msgid "File does not exist: %s"
-msgstr ""
-
-#. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1270
-#, fuzzy
-msgid "Packages to add"
-msgstr "Monitor Rangkaian"
-
-#. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1278
-#, fuzzy
-msgid "Packages to remove"
-msgstr "Servis PackageKit"
-
-#. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1346
-#, c-format
-msgid "No new packages need to be installed"
-msgstr ""
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1352
-msgid "To install"
-msgstr ""
-
-#. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1364
-msgid "Searching for package: "
-msgstr ""
-
-#. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1368
-#, fuzzy
-msgid "not found."
-msgstr "Fail %s tidak dijumpai"
-
-#. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1379
-#, c-format
-msgid "No packages can be found to install"
-msgstr ""
-
-#. TRANSLATORS: installing new packages from package list
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1385
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:886
-#, fuzzy, c-format
-msgid "Installing packages"
-msgstr "Memasang pemuatboot..."
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1421
-#, fuzzy, c-format
-msgid "This tool could not find the update details for %s: %s"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1429
-#, fuzzy, c-format
-msgid "This tool could not get the update details for %s: %s"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1460
-msgid "Error:"
-msgstr ""
-
-#. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1474
-#, fuzzy
-msgid "Package description"
-msgstr "Tiada keterangan"
-
-#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1490
-msgid "Message:"
-msgstr ""
-
-#. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1518
-#, fuzzy
-msgid "Package files"
-msgstr "  -l             - senaraikan fail dalam pakej.\n"
-
-#. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1526
-#, fuzzy
-msgid "No files"
-msgstr "Tiada fail boleh ditukar nama dijumpai."
-
-#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1549
-msgid "Repository signature required"
-msgstr ""
-
-#. TRANSLATORS: This a prompt asking the user to import the security key
-#: ../client/pk-console.c:1559
-msgid "Do you accept this signature?"
-msgstr ""
-
-#. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1563
-msgid "The signature was not accepted."
-msgstr ""
-
-#. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1597
-msgid "End user license agreement required"
-msgstr ""
-
-#. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1604
-#, fuzzy
-msgid "Do you agree to this license?"
-msgstr "Anda ada Cekera jurupacu?"
-
-#. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1608
-msgid "The license was refused."
-msgstr ""
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1637
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
+#. without a paddle
+#: ../client/pk-console.c:1119
 msgid "The daemon crashed mid-transaction!"
 msgstr ""
 
 #. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1690
-#, fuzzy
+#: ../client/pk-console.c:1153
 msgid "PackageKit Console Interface"
-msgstr "Bahasa Antaramuka Pengguna"
+msgstr ""
 
 #. these are commands we can use with pkcon
-#: ../client/pk-console.c:1692
+#: ../client/pk-console.c:1155
 msgid "Subcommands:"
 msgstr ""
 
-#. TRANSLATORS: command line argument, if we should show debugging information
-#. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:1785 ../client/pk-generate-pack.c:185
-#: ../client/pk-monitor.c:128
-#: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:550
-#: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
-msgid "Show extra debugging information"
+#. TRANSLATORS: we keep a database updated with the time that an action was
+#. last executed
+#: ../client/pk-console.c:1234
+msgid "Failed to get the time since this action was last completed"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:1788 ../client/pk-monitor.c:130
-#, fuzzy
+#: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
 msgid "Show the program version and exit"
-msgstr "Papar maklumat program, nombor versi, dan hakcipta"
+msgstr ""
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:1791
-#, fuzzy
+#: ../client/pk-console.c:1278
 msgid "Set the filter, e.g. installed"
-msgstr " tiada pemandu dipasang."
+msgstr ""
+
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1281
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr ""
 
 #. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:1794
+#: ../client/pk-console.c:1284
 msgid "Exit without waiting for actions to complete"
 msgstr ""
 
-#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:1821
-msgid "This tool could not connect to system DBUS."
+#. command line argument, do we ask questions
+#: ../client/pk-console.c:1287
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
+msgid "Install the packages without asking for confirmation"
+msgstr ""
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: ../client/pk-console.c:1290
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: ../client/pk-console.c:1293
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: ../client/pk-console.c:1296
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr ""
+
+#. TRANSLATORS: we failed to contact the daemon
+#: ../client/pk-console.c:1333
+msgid "Failed to contact PackageKit"
 msgstr ""
 
 #. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:1911
+#: ../client/pk-console.c:1381
+msgid "The proxy could not be set"
+msgstr ""
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
+msgid "The install root could not be set"
+msgstr ""
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1405
 msgid "The filter specified was invalid"
 msgstr ""
 
 #. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:1930
+#: ../client/pk-console.c:1424
 msgid "A search type is required, e.g. name"
 msgstr ""
 
 #. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:1937 ../client/pk-console.c:1946
-#: ../client/pk-console.c:1955 ../client/pk-console.c:1964
+#: ../client/pk-console.c:1431 ../client/pk-console.c:1443
+#: ../client/pk-console.c:1455 ../client/pk-console.c:1467
 msgid "A search term is required"
 msgstr ""
 
 #. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:1971
-#, fuzzy
+#: ../client/pk-console.c:1477
 msgid "Invalid search type"
-msgstr "Jenis Senarai Semasa"
+msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:1977
-msgid "A package name or filename to install is required"
+#: ../client/pk-console.c:1483
+msgid "A package name to install is required"
+msgstr ""
+
+#. TRANSLATORS: the user did not specify what they wanted to install
+#: ../client/pk-console.c:1492
+msgid "A filename to install is required"
 msgstr ""
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:1986
+#: ../client/pk-console.c:1503
 msgid "A type, key_id and package_id are required"
 msgstr ""
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:1995
+#: ../client/pk-console.c:1514
 msgid "A package name to remove is required"
 msgstr ""
 
-#. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2003
+#. TRANSLATORS: the user did not specify anything about what to download or
+#. where
+#: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
 msgstr ""
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2010
-#, fuzzy
+#: ../client/pk-console.c:1530
 msgid "Directory not found"
-msgstr "Fail %s tidak dijumpai"
+msgstr ""
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2018
-#, fuzzy
+#: ../client/pk-console.c:1539
 msgid "A licence identifier (eula-id) is required"
-msgstr "Anda perlu menyatakan fail untuk dibuka!"
+msgstr ""
 
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2028
+#: ../client/pk-console.c:1550
 msgid "A transaction identifier (tid) is required"
 msgstr ""
 
 #. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2045
+#: ../client/pk-console.c:1571
 msgid "A package name to resolve is required"
 msgstr ""
 
 #. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2054 ../client/pk-console.c:2063
+#: ../client/pk-console.c:1582 ../client/pk-console.c:1593
 msgid "A repository name is required"
 msgstr ""
 
 #. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2072
+#: ../client/pk-console.c:1604
 msgid "A repo name, parameter and value are required"
 msgstr ""
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2086
-#, fuzzy
+#: ../client/pk-console.c:1621
 msgid "An action, e.g. 'update-system' is required"
-msgstr "(anda tidak perlu menaip domain selepas nama)"
-
-#. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2093
-msgid "A correct role is required"
 msgstr ""
 
-#. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2100
-msgid "Failed to get the time since this action was last completed"
+#. TRANSLATORS: The user specified an invalid action
+#: ../client/pk-console.c:1628
+msgid "A correct role is required"
 msgstr ""
 
 #. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2110 ../client/pk-console.c:2122
-#: ../client/pk-console.c:2131 ../client/pk-console.c:2149
-#: ../client/pk-console.c:2158 ../client/pk-generate-pack.c:241
+#: ../client/pk-console.c:1638 ../client/pk-console.c:1652
+#: ../client/pk-console.c:1661 ../client/pk-console.c:1681
+#: ../client/pk-console.c:1690 ../client/pk-generate-pack.c:314
 msgid "A package name is required"
 msgstr ""
 
-#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2140
+#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
+#. decoder-mp3), the user didn't specify it
+#: ../client/pk-console.c:1670
 msgid "A package provide string is required"
 msgstr ""
 
-#. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2167
-msgid "A list file name to create is required"
+#. TRANSLATORS: The user did not provide a distro name
+#: ../client/pk-console.c:1714
+msgid "A distribution name is required"
 msgstr ""
 
-#. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2177 ../client/pk-console.c:2187
-msgid "A list file to open is required"
+#. TRANSLATORS: The user did not provide an upgrade type
+#: ../client/pk-console.c:1720
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr ""
 
-#. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2241
-#, fuzzy, c-format
+#. TRANSLATORS: The user tried to use an unsupported option on the command
+#. line
+#: ../client/pk-console.c:1770
+#, c-format
 msgid "Option '%s' is not supported"
-msgstr "Format Tidak Disokong"
-
-#. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2254
-msgid "Incorrect privileges for this operation"
 msgstr ""
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2257
-#, fuzzy
+#: ../client/pk-console.c:1780
 msgid "Command failed"
-msgstr "Sambungan Gagal"
-
-#. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:101
-msgid "Downloading"
 msgstr ""
 
-#. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:121
-msgid "Downloading packages"
-msgstr ""
-
-#. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:126
-msgid "Downloading dependencies"
-msgstr ""
-
-#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:188
+#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
+#. exist on the target
+#: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
 msgstr ""
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:191
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
+#: ../client/pk-generate-pack.c:256
+msgid "The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:194
+#: ../client/pk-generate-pack.c:259
 msgid "The package to be put into the service pack"
 msgstr ""
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:197
+#: ../client/pk-generate-pack.c:262
 msgid "Put all updates available in the service pack"
 msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:225
+#: ../client/pk-generate-pack.c:298
 msgid "Neither --package or --updates option selected."
 msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:233
+#: ../client/pk-generate-pack.c:306
 msgid "Both options selected."
 msgstr ""
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:249
+#: ../client/pk-generate-pack.c:322
 msgid "A output directory or file name is required"
 msgstr ""
 
-#. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
-#. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:267 ../client/pk-generate-pack.c:273
+#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
+#. startup
+#: ../client/pk-generate-pack.c:340
+msgid "The daemon failed to startup"
+msgstr ""
+
+#. TRANSLATORS: This is when the backend doesn't have the capability to get-
+#. depends
+#. TRANSLATORS: This is when the backend doesn't have the capability to
+#. download
+#: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
 msgstr ""
 
-#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:280
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
+#. TRANSLATORS: This is when the distro didn't include libarchive support into
+#. PK
+#: ../client/pk-generate-pack.c:364
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
 msgstr ""
 
-#. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:291
+#. TRANSLATORS: the user specified an absolute path, but didn't get the
+#. extension correct
+#: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
 msgstr ""
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:307
+#: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr ""
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:310
+#: ../client/pk-generate-pack.c:394
 msgid "The pack was not overwritten."
 msgstr ""
 
-#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:323
-#, fuzzy
+#. TRANSLATORS: This is when the temporary directory cannot be created, the
+#. directory name follows
+#: ../client/pk-generate-pack.c:407
 msgid "Failed to create directory:"
-msgstr "gagal untuk mencipta direktori:"
+msgstr ""
 
-#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:333
-#, fuzzy
+#. TRANSLATORS: This is when the list of packages from the remote computer
+#. cannot be opened
+#: ../client/pk-generate-pack.c:419
 msgid "Failed to open package list."
-msgstr "gagal untuk mencipta direktori."
+msgstr ""
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:344
+#: ../client/pk-generate-pack.c:428
 msgid "Finding package name."
 msgstr ""
 
-#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:348
-#, fuzzy, c-format
+#. TRANSLATORS: This is when the package cannot be found in any software
+#. source. The detailed error follows
+#: ../client/pk-generate-pack.c:432
+#, c-format
 msgid "Failed to find package '%s': %s"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+msgstr ""
 
-#. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:365
+#. TRANSLATORS: This is telling the user we are in the process of making the
+#. pack
+#: ../client/pk-generate-pack.c:440
 msgid "Creating service pack..."
 msgstr ""
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:372
+#: ../client/pk-generate-pack.c:455
 #, c-format
 msgid "Service pack created '%s'"
 msgstr ""
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:377
-#, fuzzy, c-format
+#: ../client/pk-generate-pack.c:460
+#, c-format
 msgid "Failed to create '%s': %s"
-msgstr "gagal untuk mencipta direktori %s: %s"
+msgstr ""
+
+#: ../client/pk-monitor.c:284
+msgid "Failed to get daemon state"
+msgstr ""
+
+#: ../client/pk-monitor.c:349
+msgid "Failed to get properties"
+msgstr ""
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:146
-#, fuzzy
+#: ../client/pk-monitor.c:387
 msgid "PackageKit Monitor"
-msgstr "Monitor Rangkaian"
-
-#: ../client/pk-monitor.c:183
-msgid "Cannot show the list of transactions"
 msgstr ""
-
-#. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:118
-#, c-format
-msgid "The package could not be found"
-msgstr ""
-
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-tools-common.c:130
-#, fuzzy
-msgid "More than one package matches:"
-msgstr "Tidak dapat mencari subkekunci OpenPGP."
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-tools-common.c:137
-#, fuzzy
-msgid "Please choose the correct package: "
-msgstr "Sila masukkan %(instkey) anda."
-
-#: ../client/pk-tools-common.c:162
-#, fuzzy, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Pilih nombor latihan dari 1 hingga 10."
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:466
-#, fuzzy
+#: ../contrib/browser-plugin/pk-plugin-install.c:499
 msgid "Getting package information..."
-msgstr "Lebih maklumat pada pakej %s"
+msgstr ""
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:472
+#: ../contrib/browser-plugin/pk-plugin-install.c:505
 #, c-format
 msgid "Run %s"
 msgstr ""
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:478
-#, fuzzy
+#: ../contrib/browser-plugin/pk-plugin-install.c:511
 msgid "Installed version"
-msgstr "Versi dipasang semasa:"
+msgstr ""
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:486
+#: ../contrib/browser-plugin/pk-plugin-install.c:519
 #, c-format
 msgid "Run version %s now"
 msgstr ""
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:492
+#: ../contrib/browser-plugin/pk-plugin-install.c:525
 msgid "Run now"
 msgstr ""
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:498
+#: ../contrib/browser-plugin/pk-plugin-install.c:531
 #, c-format
 msgid "Update to version %s"
 msgstr ""
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:504
+#: ../contrib/browser-plugin/pk-plugin-install.c:537
 #, c-format
 msgid "Install %s now"
 msgstr ""
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:507
+#: ../contrib/browser-plugin/pk-plugin-install.c:540
 msgid "Version"
 msgstr ""
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:512
+#: ../contrib/browser-plugin/pk-plugin-install.c:545
 msgid "No packages found for your system"
 msgstr ""
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:517
-#, fuzzy
+#: ../contrib/browser-plugin/pk-plugin-install.c:550
 msgid "Installing..."
-msgstr "Memasang pemuatboot..."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:349
+#: ../contrib/command-not-found/pk-command-not-found.c:366
 msgid "Downloading details about the software sources."
 msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:353
+#: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr ""
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:357
+#: ../contrib/command-not-found/pk-command-not-found.c:374
 msgid "Waiting for package manager lock."
 msgstr ""
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:361
-#, fuzzy
+#: ../contrib/command-not-found/pk-command-not-found.c:378
 msgid "Loading list of packages."
-msgstr "gagal untuk mencipta direktori."
+msgstr ""
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:420
-#, fuzzy
+#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Failed to search for file"
-msgstr "gagal untuk mencipta direktori"
+msgstr ""
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: ../contrib/command-not-found/pk-command-not-found.c:456
+msgid "Getting the list of files failed"
+msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:557
+#: ../contrib/command-not-found/pk-command-not-found.c:602
 msgid "Failed to launch:"
 msgstr ""
 
-#. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:632
-#, fuzzy
-msgid "PackageKit Command Not Found"
-msgstr "Monitor Rangkaian"
+#. TRANSLATORS: we failed to install the package
+#: ../contrib/command-not-found/pk-command-not-found.c:630
+msgid "Failed to install packages"
+msgstr ""
 
-#. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:658
-#, fuzzy
-msgid "Command not found."
-msgstr "Fail %s tidak dijumpai"
+#. TRANSLATORS: tool that gets called when the command is not found
+#: ../contrib/command-not-found/pk-command-not-found.c:706
+msgid "PackageKit Command Not Found"
+msgstr ""
+
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+#: ../contrib/command-not-found/pk-command-not-found.c:739
+msgid "command not found"
+msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:665
+#: ../contrib/command-not-found/pk-command-not-found.c:757
 msgid "Similar command is:"
 msgstr ""
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:674
+#: ../contrib/command-not-found/pk-command-not-found.c:771
 msgid "Run similar command:"
 msgstr ""
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:686
-#: ../contrib/command-not-found/pk-command-not-found.c:695
+#: ../contrib/command-not-found/pk-command-not-found.c:785
+#: ../contrib/command-not-found/pk-command-not-found.c:794
 msgid "Similar commands are:"
 msgstr ""
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:702
+#: ../contrib/command-not-found/pk-command-not-found.c:801
 msgid "Please choose a command to run"
 msgstr ""
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:721
+#: ../contrib/command-not-found/pk-command-not-found.c:819
 msgid "The package providing this file is:"
 msgstr ""
 
-#. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:726
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr ""
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:853
 msgid "Packages providing this file are:"
 msgstr ""
 
-#. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:756
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+#: ../contrib/command-not-found/pk-command-not-found.c:863
 msgid "Suitable packages are:"
 msgstr ""
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:764
-#, fuzzy
+#: ../contrib/command-not-found/pk-command-not-found.c:872
 msgid "Please choose a package to install"
-msgstr "Sila masukkan %(instkey) anda."
+msgstr ""
 
 #. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
 msgid "Starting install"
 msgstr ""
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
+#, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:553
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
 msgstr ""
 
-#. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:556
+#. command line argument, simulate what would be done, but don't actually do
+#. it
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
+msgid "Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+
+#. command line argument, do we skip packages that depend on the ones
+#. specified
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
 msgid "Do not install dependencies of the core packages"
 msgstr ""
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:559
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
 msgid "Do not display information or progress"
 msgstr ""
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:577
-#, fuzzy
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 msgid "PackageKit Debuginfo Installer"
-msgstr "Bahasa Antaramuka Pengguna"
+msgstr ""
 
-#. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:589
+#. TRANSLATORS: the use needs to specify a list of package names on the
+#. command line
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr ""
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:623
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
+#, c-format
 msgid "Getting sources list"
-msgstr "Lebih maklumat pada pakej %s"
+msgstr ""
+
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
+msgid "FAILED."
+msgstr ""
 
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:641
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:681
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:716
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:800
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:844
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:911
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:955
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
 msgstr ""
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:644
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr ""
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:651
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
 msgstr ""
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:684
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr ""
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:691
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
 msgstr ""
 
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:701
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:785
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:829
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:896
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:940
-msgid "FAILED."
-msgstr ""
-
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:719
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr ""
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:726
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
 msgstr ""
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:738
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
+#, c-format
 msgid "Failed to find the package %s: %s"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+msgstr ""
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:761
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
+#, c-format
 msgid "Failed to find the debuginfo package %s: %s"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+msgstr ""
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:789
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
+#, c-format
 msgid "Found no packages to install."
-msgstr "Sila masukkan %(instkey) anda."
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
 msgstr ""
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:819
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr ""
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:832
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
+#, c-format
 msgid "Could not find dependant packages: %s"
-msgstr "Tak dapat membuka fail %s."
+msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
 msgstr ""
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:852
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
 msgstr ""
 
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:861
-#, fuzzy, c-format
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list
+#. them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
+#, c-format
 msgid "Found %i packages to install:"
-msgstr "Sila masukkan %(instkey) anda."
+msgstr ""
 
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:874
-#, fuzzy, c-format
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the
+#. action
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
+#, c-format
 msgid "Not installing packages in simulate mode"
-msgstr "Memasang pemuatboot..."
+msgstr ""
+
+#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
+#. TRANSLATORS: transaction state, installing packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../lib/packagekit-glib2/pk-console-shared.c:287
+#, c-format
+msgid "Installing packages"
+msgstr ""
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:899
-#, fuzzy, c-format
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
+#, c-format
 msgid "Could not install packages: %s"
-msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
+msgstr ""
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:931
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr ""
 
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:943
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
+#. error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr ""
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:958
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr ""
 
 #. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:61
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
-msgstr "gagal untuk mencipta direktori"
+msgstr ""
 
 #. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:70
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
-msgstr "gagal untuk mencipta direktori"
+msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:110
-#: ../contrib/device-rebind/pk-device-rebind.c:147
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:111
+#: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
-msgstr "gagal untuk mencipta direktori"
+msgstr ""
 
 #. TRANSLATORS: the device could not be found in sysfs
-#: ../contrib/device-rebind/pk-device-rebind.c:175
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:176
 msgid "Device could not be found"
-msgstr "Fail %s tidak dijumpai"
+msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:202
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:203
 msgid "Failed to unregister driver"
-msgstr "gagal untuk mencipta direktori:"
+msgstr ""
 
 #. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:211
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:212
 msgid "Failed to register driver"
-msgstr "gagal untuk mencipta direktori:"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:260
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:261
 msgid "Device path not found"
-msgstr "Fail %s tidak dijumpai"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:268
+#: ../contrib/device-rebind/pk-device-rebind.c:269
 msgid "Incorrect device path specified"
 msgstr ""
 
-#. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/device-rebind/pk-device-rebind.c:296
+#: ../contrib/device-rebind/pk-device-rebind.c:294
+msgid "Show extra debugging information"
+msgstr ""
+
+#. command line argument, simulate what would be done, but don't actually do
+#. it
+#: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
 msgstr ""
 
 #. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:299
+#: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
 msgstr ""
 
-#. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:314
-#, fuzzy
+#. TRANSLATORS: tool that gets called when the device needs reloading after
+#. installing firmware
+#: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
-msgstr "Konfigur penemuan servis"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:322
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:323
 msgid "You need to specify at least one valid device path"
-msgstr "Anda perlu menyatakan fail untuk dibuka!"
+msgstr ""
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:332
+#: ../contrib/device-rebind/pk-device-rebind.c:333
 msgid "This script can only be used by the root user"
 msgstr ""
 
 #. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:341
+#: ../contrib/device-rebind/pk-device-rebind.c:342
 msgid "Verifying device path"
 msgstr ""
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:346
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:347
 msgid "Failed to verify device path"
-msgstr "gagal untuk mencipta direktori"
+msgstr ""
 
 #. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:360
+#: ../contrib/device-rebind/pk-device-rebind.c:361
 msgid "Attempting to rebind device"
 msgstr ""
 
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:365
-#, fuzzy
+#: ../contrib/device-rebind/pk-device-rebind.c:366
 msgid "Failed to rebind device"
-msgstr "gagal untuk mencipta direktori:"
+msgstr ""
 
 #: ../data/packagekit-catalog.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Catalog"
-msgstr "Kembalikan Dari Katalog"
+msgstr ""
 
 #: ../data/packagekit-package-list.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Package List"
-msgstr "Kembalikan Dari Katalog"
+msgstr ""
 
 #: ../data/packagekit-servicepack.xml.in.h:1
-#, fuzzy
 msgid "PackageKit Service Pack"
-msgstr "Konfigur penemuan servis"
+msgstr ""
+
+#: ../lib/packagekit-glib2/pk-console-shared.c:63
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr ""
+
+#. TRANSLATORS: more than one package could be found that matched, to follow
+#. is a list of possible packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:189
+msgid "More than one package matches:"
+msgstr ""
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../lib/packagekit-glib2/pk-console-shared.c:200
+msgid "Please choose the correct package: "
+msgstr ""
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: ../lib/packagekit-glib2/pk-console-shared.c:255
+msgid "Unknown state"
+msgstr ""
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: ../lib/packagekit-glib2/pk-console-shared.c:259
+msgid "Starting"
+msgstr ""
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+#: ../lib/packagekit-glib2/pk-console-shared.c:263
+msgid "Waiting in queue"
+msgstr ""
+
+#. TRANSLATORS: transaction state, just started
+#: ../lib/packagekit-glib2/pk-console-shared.c:267
+msgid "Running"
+msgstr ""
+
+#. TRANSLATORS: transaction state, is querying data
+#: ../lib/packagekit-glib2/pk-console-shared.c:271
+msgid "Querying"
+msgstr ""
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:275
+msgid "Getting information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, removing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:279
+msgid "Removing packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:283
+#: ../lib/packagekit-glib2/pk-console-shared.c:661
+msgid "Downloading packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: ../lib/packagekit-glib2/pk-console-shared.c:291
+msgid "Refreshing software list"
+msgstr ""
+
+#. TRANSLATORS: transaction state, installing updates
+#: ../lib/packagekit-glib2/pk-console-shared.c:295
+msgid "Installing updates"
+msgstr ""
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+#: ../lib/packagekit-glib2/pk-console-shared.c:299
+msgid "Cleaning up packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:303
+msgid "Obsoleting packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: ../lib/packagekit-glib2/pk-console-shared.c:307
+msgid "Resolving dependencies"
+msgstr ""
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+#: ../lib/packagekit-glib2/pk-console-shared.c:311
+msgid "Checking signatures"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we return to a previous system state
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:315
+#: ../lib/packagekit-glib2/pk-console-shared.c:621
+msgid "Rolling back"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:319
+msgid "Testing changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+#: ../lib/packagekit-glib2/pk-console-shared.c:323
+msgid "Committing changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:327
+msgid "Requesting data"
+msgstr ""
+
+#. TRANSLATORS: transaction state, all done!
+#: ../lib/packagekit-glib2/pk-console-shared.c:331
+msgid "Finished"
+msgstr ""
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+#: ../lib/packagekit-glib2/pk-console-shared.c:335
+msgid "Cancelling"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:339
+msgid "Downloading repository information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:343
+msgid "Downloading list of packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:347
+msgid "Downloading file lists"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:351
+msgid "Downloading lists of changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:355
+msgid "Downloading groups"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:359
+msgid "Downloading update information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: ../lib/packagekit-glib2/pk-console-shared.c:363
+msgid "Repackaging files"
+msgstr ""
+
+#. TRANSLATORS: transaction state, loading databases
+#: ../lib/packagekit-glib2/pk-console-shared.c:367
+msgid "Loading cache"
+msgstr ""
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:371
+msgid "Scanning applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+#: ../lib/packagekit-glib2/pk-console-shared.c:375
+msgid "Generating package lists"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+#: ../lib/packagekit-glib2/pk-console-shared.c:379
+msgid "Waiting for package manager lock"
+msgstr ""
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: ../lib/packagekit-glib2/pk-console-shared.c:383
+msgid "Waiting for authentication"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:387
+msgid "Updating running applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+#: ../lib/packagekit-glib2/pk-console-shared.c:391
+msgid "Checking applications in use"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+#: ../lib/packagekit-glib2/pk-console-shared.c:395
+msgid "Checking libraries in use"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:399
+msgid "Copying files"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:417
+msgid "Trivial"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:421
+msgid "Normal"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:425
+msgid "Important"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:429
+msgid "Security"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:433
+msgid "Bug fix "
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:437
+msgid "Enhancement"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:441
+msgid "Blocked"
+msgstr ""
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:446
+#: ../lib/packagekit-glib2/pk-console-shared.c:519
+msgid "Installed"
+msgstr ""
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:451
+msgid "Available"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:469
+msgid "Downloading"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:473
+msgid "Updating"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:477
+#: ../lib/packagekit-glib2/pk-console-shared.c:597
+msgid "Installing"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:481
+#: ../lib/packagekit-glib2/pk-console-shared.c:593
+msgid "Removing"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:485
+msgid "Cleaning up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:489
+msgid "Obsoleting"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:493
+msgid "Reinstalling"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:511
+msgid "Downloaded"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:523
+msgid "Removed"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:527
+msgid "Cleaned up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:531
+msgid "Obsoleted"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:535
+msgid "Reinstalled"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:553
+msgid "Unknown role type"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:557
+msgid "Getting dependencies"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:561
+msgid "Getting update details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:565
+msgid "Getting details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:569
+msgid "Getting requires"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:573
+msgid "Getting updates"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:577
+msgid "Searching by details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:581
+msgid "Searching by file"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:585
+msgid "Searching groups"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:589
+msgid "Searching by name"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:601
+msgid "Installing files"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:605
+msgid "Refreshing cache"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:609
+msgid "Updating packages"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:613
+msgid "Updating system"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:617
+msgid "Canceling"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:625
+msgid "Getting repositories"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:629
+msgid "Enabling repository"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:633
+msgid "Setting data"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:637
+msgid "Resolving"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:641
+msgid "Getting file list"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:645
+msgid "Getting provides"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:649
+msgid "Installing signature"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:653
+msgid "Getting packages"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:657
+msgid "Accepting EULA"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:665
+msgid "Getting upgrades"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:669
+msgid "Getting categories"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:673
+msgid "Getting transactions"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:677
+#: ../lib/packagekit-glib2/pk-console-shared.c:681
+msgid "Simulating install"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:685
+msgid "Simulating remove"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:689
+msgid "Simulating update"
+msgstr ""
+
+#. TRANSLATORS: turn on all debugging
+#: ../lib/packagekit-glib2/pk-debug.c:133
+msgid "Show debugging information for all files"
+msgstr ""
+
+#: ../lib/packagekit-glib2/pk-debug.c:201
+msgid "Debugging Options"
+msgstr ""
+
+#: ../lib/packagekit-glib2/pk-debug.c:201
+msgid "Show debugging options"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+#: ../lib/packagekit-glib2/pk-task-text.c:67
+msgid "Do you want to allow installing of unsigned software?"
+msgstr ""
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:72
+msgid "The unsigned software will not be installed."
+msgstr ""
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+#: ../lib/packagekit-glib2/pk-task-text.c:121
+msgid "Software source signature required"
+msgstr ""
+
+#. TRANSLATORS: the package repository name
+#: ../lib/packagekit-glib2/pk-task-text.c:127
+msgid "Software source name"
+msgstr ""
+
+#. TRANSLATORS: the key URL
+#: ../lib/packagekit-glib2/pk-task-text.c:130
+msgid "Key URL"
+msgstr ""
+
+#. TRANSLATORS: the username of the key
+#: ../lib/packagekit-glib2/pk-task-text.c:133
+msgid "Key user"
+msgstr ""
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: ../lib/packagekit-glib2/pk-task-text.c:136
+msgid "Key ID"
+msgstr ""
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: ../lib/packagekit-glib2/pk-task-text.c:139
+msgid "Key fingerprint"
+msgstr ""
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: ../lib/packagekit-glib2/pk-task-text.c:142
+msgid "Key Timestamp"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they want to import
+#: ../lib/packagekit-glib2/pk-task-text.c:155
+msgid "Do you accept this signature?"
+msgstr ""
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:160
+msgid "The signature was not accepted."
+msgstr ""
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+#: ../lib/packagekit-glib2/pk-task-text.c:203
+msgid "End user licence agreement required"
+msgstr ""
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: ../lib/packagekit-glib2/pk-task-text.c:212
+msgid "Agreement"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: ../lib/packagekit-glib2/pk-task-text.c:221
+msgid "Do you accept this agreement?"
+msgstr ""
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:226
+msgid "The agreement was not accepted."
+msgstr ""
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: ../lib/packagekit-glib2/pk-task-text.c:265
+msgid "Media change required"
+msgstr ""
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: ../lib/packagekit-glib2/pk-task-text.c:268
+msgid "Media type"
+msgstr ""
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: ../lib/packagekit-glib2/pk-task-text.c:271
+msgid "Media label"
+msgstr ""
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: ../lib/packagekit-glib2/pk-task-text.c:274
+msgid "Text"
+msgstr ""
+
+#. TRANSLATORS: ask the user to insert the media
+#: ../lib/packagekit-glib2/pk-task-text.c:280
+msgid "Please insert the correct media"
+msgstr ""
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: ../lib/packagekit-glib2/pk-task-text.c:285
+msgid "The correct media was not inserted."
+msgstr ""
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:300
+msgid "The following packages have to be removed:"
+msgstr ""
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:305
+msgid "The following packages have to be installed:"
+msgstr ""
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:310
+msgid "The following packages have to be updated:"
+msgstr ""
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:315
+msgid "The following packages have to be reinstalled:"
+msgstr ""
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:320
+msgid "The following packages have to be downgraded:"
+msgstr ""
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: ../lib/packagekit-glib2/pk-task-text.c:380
+msgid "Proceed with changes?"
+msgstr ""
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: ../lib/packagekit-glib2/pk-task-text.c:385
+msgid "The transaction did not proceed."
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr ""
@@ -1320,8 +1796,7 @@ msgid "Authentication is required to accept a EULA"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1329,60 +1804,74 @@ msgid "Authentication is required to change software source parameters"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
+msgid "Authentication is required to change the location used to decompress packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to install a signed package"
+msgid "Authentication is required to consider a key used for signing packages as trusted"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Authentication is required to install an untrusted package"
+msgid "Authentication is required to install a signed package"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Authentication is required to refresh the system sources"
+msgid "Authentication is required to install an untrusted package"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Authentication is required to reload the device with a new driver"
+msgid "Authentication is required to refresh the system sources"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Authentication is required to remove packages"
+msgid "Authentication is required to reload the device with a new driver"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Authentication is required to rollback a transaction"
+msgid "Authentication is required to remove packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
+msgid "Authentication is required to rollback a transaction"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
+msgstr ""
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Authentication is required to upgrade the operating system"
 msgstr ""
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
+msgstr ""
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:34
+msgid "Change location that packages are installed"
 msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
 msgstr ""
 
@@ -1391,27 +1880,26 @@ msgstr ""
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
-#, fuzzy
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
-msgstr "Memasang pemuatboot..."
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
 msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
 msgstr ""
 
@@ -1421,8 +1909,8 @@ msgstr ""
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
 msgstr ""
 
@@ -1434,8 +1922,8 @@ msgstr ""
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
 msgstr ""
 
@@ -1443,16 +1931,16 @@ msgstr ""
 #. - Normal users require admin authentication to rollback system state
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
 msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
 msgstr ""
 
@@ -1461,8 +1949,8 @@ msgstr ""
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
 msgstr ""
 
@@ -1472,9 +1960,18 @@ msgstr ""
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
+msgstr ""
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+msgid "Upgrade System"
 msgstr ""
 
 #. TRANSLATORS: failed due to DBus security
@@ -1494,144 +1991,86 @@ msgstr ""
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
 msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:200
 msgid "Packaging backend to use, e.g. dummy"
 msgstr ""
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:203
 msgid "Daemonize and detach from the terminal"
 msgstr ""
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:214
-#, fuzzy
+#: ../src/pk-main.c:206
 msgid "Disable the idle timer"
-msgstr "Widget penetapan pemasa"
+msgstr ""
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:217
+#: ../src/pk-main.c:209
 msgid "Show version and exit"
 msgstr "Papar versi dan keluar"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:220
+#: ../src/pk-main.c:212
 msgid "Exit after a small delay"
 msgstr ""
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:223
+#: ../src/pk-main.c:215
 msgid "Exit after the engine has loaded"
 msgstr ""
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:238
+#: ../src/pk-main.c:230
 msgid "PackageKit service"
 msgstr "Servis PackageKit"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:275
+#: ../src/pk-main.c:267
 msgid "Cannot connect to the system bus"
 msgstr ""
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
-#: ../src/pk-main.c:334
+#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
+#. follows
+#: ../src/pk-main.c:316
 msgid "Error trying to start:"
 msgstr "Ralat cuba untuk memulakan:"
 
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr ""
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
+#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
 msgstr ""
 
-#: ../src/pk-polkit-action-lookup.c:173
+#: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-polkit-action-lookup.c:174
+#: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-polkit-action-lookup.c:192
+#: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr ""
 
-#: ../src/pk-polkit-action-lookup.c:193
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr ""
 
-#. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:199
-msgid "Malicious software can damage your computer or cause other harm."
-msgstr ""
-
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:274
-#, fuzzy
+#: ../src/pk-polkit-action-lookup.c:273
 msgid "Many packages"
-msgstr "Memasang pemuatboot..."
+msgstr ""
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:339
 msgid "Only trusted"
 msgstr ""
-
-#, fuzzy
-#~ msgid "You need to specify a search type, e.g. name"
-#~ msgstr "(anda tidak perlu menaip domain selepas nama)"
-
-#, fuzzy
-#~ msgid "You need to specify a search term"
-#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
-
-#, fuzzy
-#~ msgid "You need to specify a package to remove"
-#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
-
-#, fuzzy
-#~ msgid "You need to specify a repository name"
-#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
-
-#, fuzzy
-#~ msgid "You need to specify a correct role"
-#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
-
-#, fuzzy
-#~ msgid "You need to specify a list file to open"
-#~ msgstr "Anda perlu menyatakan fail untuk dibuka!"
-
-#, fuzzy
-#~ msgid "Cancelled!"
-#~ msgstr "Dibatalkan"
-
-#, fuzzy
-#~ msgid "Could not find package to download"
-#~ msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#, fuzzy
-#~ msgid "Could not find package to update"
-#~ msgstr "  -P             - jangan cari dalam tersedia utk mencari pakej.\n"
-
-#, fuzzy
-#~ msgid "Okay to import key?"
-#~ msgstr "tidak dapat mengimport fail pubkey \"%s\""
-
-#, fuzzy
-#~ msgid "Did not import key"
-#~ msgstr "Tidak dapat memperoleh kekunci OpenPGP."
-
-#, fuzzy
-#~ msgid ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
-#~ msgstr "Sejarah versi"
