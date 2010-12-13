@@ -30,6 +30,7 @@ endif
 
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
+	$(GIO_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	-DBINDIR=\"$(bindir)\"			 	\
@@ -64,6 +65,7 @@ pkcon_SOURCES =						\
 
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
+	$(GIO_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -79,6 +81,7 @@ pkmon_SOURCES =						\
 
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
+	$(GIO_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
@@ -95,6 +98,7 @@ pkgenpack_SOURCES =					\
 pkgenpack_LDADD = 					\
 	$(ARCHIVE_LIBS)					\
 	$(GLIB_LIBS)					\
+	$(GIO_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_GLIB2_LIBS)				\
