@@ -1,19 +1,21 @@
-# Basque translation of PackageKit.
-# This file is distributed under the same license as the PackageKit package.
-# Asier Sarasua Garmendia <asiersar@yahoo.com>, 2010.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit\n"
+"Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-26 08:16+0000\n"
-"PO-Revision-Date: 2010-08-12 01:19+0100\n"
-"Last-Translator: Asier Sarasua Garmendia <asiersar@yahoo.com>\n"
-"Language-Team: Librezale <librezale@librezale.org>\n"
+"POT-Creation-Date: 2010-12-13 12:23+0000\n"
+"PO-Revision-Date: 2010-12-13 12:52+0000\n"
+"Last-Translator: hughsie <richard@hughsie.com>\n"
+"Language-Team: Basque <None>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: eu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system

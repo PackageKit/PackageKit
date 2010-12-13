@@ -1,23 +1,21 @@
-# PackageKit Czech translation
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
-# Vojtech Smejkal <smejkalv@gmail.com>, 2008.
-# Adam Pribyl <pribyl@lowlevel.cz>, 2008.
-# Pavel Fric <fripohled.blogspot.com>, 2010.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: packagekit.master.cs\n"
+"Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-21 07:25+0000\n"
-"PO-Revision-Date: 2010-11-21 20:28+0100\n"
-"Last-Translator: Pavel Fric <fripohled.blogspot.com>\n"
-"Language-Team: Czech <fedora-cs-list@redhat.com>\n"
+"POT-Creation-Date: 2010-12-13 12:23+0000\n"
+"PO-Revision-Date: 2010-12-13 12:52+0000\n"
+"Last-Translator: hughsie <richard@hughsie.com>\n"
+"Language-Team: Czech <None>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Lokalize 1.1\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
@@ -25,7 +23,8 @@ msgstr ""
 msgid "Transaction"
 msgstr "Transakce"
 
-#. TRANSLATORS: this is the time the transaction was started in system timezone
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
 #: ../client/pk-console.c:176
 msgid "System time"
 msgstr "Systémový čas"
@@ -144,15 +143,18 @@ msgstr "Podrobnosti k aktualizaci:"
 #: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
 msgid_plural "Packages"
-msgstr[0] "Balíček"
-msgstr[1] "Balíky"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
-#. TRANSLATORS: details about the update, any packages that this update updates
+#. TRANSLATORS: details about the update, any packages that this update
+#. updates
 #: ../client/pk-console.c:348
 msgid "Updates"
 msgstr "Nejnovější balíčky"
 
-#. TRANSLATORS: details about the update, any packages that this update obsoletes
+#. TRANSLATORS: details about the update, any packages that this update
+#. obsoletes
 #: ../client/pk-console.c:352
 msgid "Obsoletes"
 msgstr "Zastaralé balíčky"
@@ -224,12 +226,14 @@ msgstr "Znovuspuštění systému požaduje:"
 msgid "Session restart required:"
 msgstr "Je požadováno znovuspuštění sezení:"
 
-#. TRANSLATORS: a package requires the system to be restarted due to a security update
+#. TRANSLATORS: a package requires the system to be restarted due to a
+#. security update
 #: ../client/pk-console.c:465
 msgid "System restart (security) required by:"
 msgstr "Znovuspuštění (bezpečnostní) systému požaduje:"
 
-#. TRANSLATORS: a package requires the session to be restarted due to a security update
+#. TRANSLATORS: a package requires the session to be restarted due to a
+#. security update
 #: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
 msgstr "Je požadováno znovuspuštění (bezpečnostní) sezení:"
@@ -244,7 +248,8 @@ msgstr "Znovuspuštění programu vyžaduje:"
 msgid "Package description"
 msgstr "Popis balíčku"
 
-#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
+#. TRANSLATORS: This a message (like a little note that may be of interest)
+#. from the transaction
 #: ../client/pk-console.c:537
 msgid "Message:"
 msgstr "Zpráva:"
@@ -279,7 +284,8 @@ msgstr "Výsledky:"
 msgid "Fatal error"
 msgstr "Vážná chyba"
 
-#. TRANSLATORS: the user asked to update everything, but there is nothing that can be updated
+#. TRANSLATORS: the user asked to update everything, but there is nothing that
+#. can be updated
 #: ../client/pk-console.c:701
 msgid "There are no packages to update."
 msgstr "Nejsou tu žádné balíčky k aktualizaci"
@@ -307,63 +313,54 @@ msgstr "Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokonče
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
-msgstr ""
-"Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být "
-"dokončena."
+msgstr "Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být dokončena."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokončena, protože "
-"byly nainstalovány "
-"důležité bezpečnostní aktualizace."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být "
-"dokončena, protože byly nainstalovány "
-"důležité bezpečnostní aktualizace."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
 
-#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon install-local dave.rpm'
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
+#. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Očekáván název balíčku, doopravdy však byl obdržen soubor. Místo toho "
-"vyzkoušejte "
-"užití 'pkcon install-local %s'."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Očekáván název balíčku, doopravdy však byl obdržen soubor. Místo toho vyzkoušejte užití 'pkcon install-local %s'."
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:866
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Tomuto nástroji se nepodařilo nalézt žádný dostupný balíček: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:894
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Tomuto nástroji se nepodařilo nalézt nainstalovaný balíček: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
 #: ../client/pk-console.c:922 ../client/pk-console.c:950
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Tomuto nástroji se nepodařilo nalézt balíček: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The
+#. detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The
+#. detailed error follows
 #: ../client/pk-console.c:978 ../client/pk-console.c:1006
 #: ../client/pk-console.c:1034 ../client/pk-console.c:1062
 #: ../client/pk-console.c:1090
@@ -371,7 +368,8 @@ msgstr "Tomuto nástroji se nepodařilo nalézt balíček: %s"
 msgid "This tool could not find all the packages: %s"
 msgstr "Tomuto nástroji se nepodařilo nalézt všechny balíčky: %s"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
+#. without a paddle
 #: ../client/pk-console.c:1119
 msgid "The daemon crashed mid-transaction!"
 msgstr "Démon havaroval uprostřed činnosti!"
@@ -386,12 +384,11 @@ msgstr "Konzolové rozhraní k PackageKitu"
 msgid "Subcommands:"
 msgstr "Dílčí příkazy:"
 
-#. TRANSLATORS: we keep a database updated with the time that an action was last executed
+#. TRANSLATORS: we keep a database updated with the time that an action was
+#. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Nepodařilo se zjistit čas od té doby, co tato činnost byla naposledy "
-"dokončena"
+msgstr "Nepodařilo se zjistit čas od té doby, co tato činnost byla naposledy dokončena"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -422,18 +419,12 @@ msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Spustit příkaz za použití nepoužívané šířky pásma sítě a také za využití "
-"menšího "
-"množství energie"
+msgstr "Spustit příkaz za použití nepoužívané šířky pásma sítě a také za využití menšího množství energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Vyvolat na obrazovku strojově čitelný výstup, namísto použití kreslených "
-"prvků"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Vyvolat na obrazovku strojově čitelný výstup, namísto použití kreslených prvků"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -496,7 +487,8 @@ msgstr "Je požadován typ, key_id a package_id"
 msgid "A package name to remove is required"
 msgstr "Je požadován název balíčku, který se má odstranit"
 
-#. TRANSLATORS: the user did not specify anything about what to download or where
+#. TRANSLATORS: the user did not specify anything about what to download or
+#. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
 msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
@@ -549,7 +541,8 @@ msgstr "Je požadována správná úloha"
 msgid "A package name is required"
 msgstr "Je požadován název balíčku"
 
-#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
+#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
+#. decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1670
 msgid "A package provide string is required"
 msgstr "Je požadován řetězec k poskytnutí balíčku"
@@ -564,7 +557,8 @@ msgstr "Je požadován název distribuce"
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
 msgstr "Je požadován typ povýšení, např. 'minimal', 'default' nebo 'complete'"
 
-#. TRANSLATORS: The user tried to use an unsupported option on the command line
+#. TRANSLATORS: The user tried to use an unsupported option on the command
+#. line
 #: ../client/pk-console.c:1770
 #, c-format
 msgid "Option '%s' is not supported"
@@ -575,7 +569,8 @@ msgstr "Volba '%s' není podporována "
 msgid "Command failed"
 msgstr "Příkaz selhal"
 
-#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
+#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
+#. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Nastavit název souboru se závislostmi, které mají být vynechány"
@@ -583,8 +578,7 @@ msgstr "Nastavit název souboru se závislostmi, které mají být vynechány"
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
 msgid "The output file or directory (the current directory is used if omitted)"
-msgstr ""
-"Výstupní soubor nebo adresář (je-li vynecháno, používá se současný adresář)"
+msgstr "Výstupní soubor nebo adresář (je-li vynecháno, používá se současný adresář)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -611,27 +605,28 @@ msgstr "Obě volby vybrány."
 msgid "A output directory or file name is required"
 msgstr "Je požadován výstupní adresář nebo název souboru"
 
-#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to startup
+#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
+#. startup
 #: ../client/pk-generate-pack.c:340
 msgid "The daemon failed to startup"
 msgstr "Démona se nepodařilo spustit"
 
-#. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
-#. TRANSLATORS: This is when the backend doesn't have the capability to download
+#. TRANSLATORS: This is when the backend doesn't have the capability to get-
+#. depends
+#. TRANSLATORS: This is when the backend doesn't have the capability to
+#. download
 #: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
 msgstr "Správce balíčků neumí provádět tento typ úlohy."
 
-#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
+#. TRANSLATORS: This is when the distro didn't include libarchive support into
+#. PK
 #: ../client/pk-generate-pack.c:364
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
-msgstr ""
-"Obslužné balíky nelze vytvářet, jelikož PackageKitnebyl sestaven s podporou "
-"pro libarchive."
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgstr "Obslužné balíky nelze vytvářet, jelikož PackageKitnebyl sestaven s podporou pro libarchive."
 
-#. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
+#. TRANSLATORS: the user specified an absolute path, but didn't get the
+#. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
 msgstr "Pokud zadáte soubor, pak musí název obslužného balíku končit na"
@@ -646,12 +641,14 @@ msgstr "Balík se stejným jménem už existuje, chcete jej přepsat?"
 msgid "The pack was not overwritten."
 msgstr "Balík nebyl přepsán."
 
-#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
+#. TRANSLATORS: This is when the temporary directory cannot be created, the
+#. directory name follows
 #: ../client/pk-generate-pack.c:407
 msgid "Failed to create directory:"
 msgstr "Nepodařilo se vytvořit adresář."
 
-#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
+#. TRANSLATORS: This is when the list of packages from the remote computer
+#. cannot be opened
 #: ../client/pk-generate-pack.c:419
 msgid "Failed to open package list."
 msgstr "Nepodařilo se otevřít seznam s balíčky."
@@ -661,13 +658,15 @@ msgstr "Nepodařilo se otevřít seznam s balíčky."
 msgid "Finding package name."
 msgstr "Hledá se název balíčku."
 
-#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
+#. TRANSLATORS: This is when the package cannot be found in any software
+#. source. The detailed error follows
 #: ../client/pk-generate-pack.c:432
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Nepodařilo se najít balíček '%s': %s"
 
-#. TRANSLATORS: This is telling the user we are in the process of making the pack
+#. TRANSLATORS: This is telling the user we are in the process of making the
+#. pack
 #: ../client/pk-generate-pack.c:440
 msgid "Creating service pack..."
 msgstr "Vytváří se obslužný balík..."
@@ -830,7 +829,8 @@ msgstr "Vyberte, prosím, příkaz ke spuštění"
 msgid "The package providing this file is:"
 msgstr "Balíček poskytující tento soubor je:"
 
-#. TRANSLATORS: as the user if we want to install a package to provide the command
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
 #: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
@@ -841,7 +841,8 @@ msgstr "Nainstalovat balíček '%s', který poskytuje příkaz '%s'?"
 msgid "Packages providing this file are:"
 msgstr "Balíčky poskytující tento soubor jsou:"
 
-#. TRANSLATORS: Show the user a list of packages that they can install to provide this command
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:863
 msgid "Suitable packages are:"
 msgstr "Vhodné balíčky jsou:"
@@ -863,13 +864,14 @@ msgstr "Spouští se instalace"
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Nepodařilo se najít balíček %s, nebo je již nainstalován: %s"
 
-#. command line argument, simulate what would be done, but don't actually do it
+#. command line argument, simulate what would be done, but don't actually do
+#. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
+msgid "Don't actually install any packages, only simulate what would be installed"
 msgstr "Ve skutečnosti neinstalovat žádné balíčky, pouze instalaci napodobit"
 
-#. command line argument, do we skip packages that depend on the ones specified
+#. command line argument, do we skip packages that depend on the ones
+#. specified
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
 msgid "Do not install dependencies of the core packages"
 msgstr "Neinstalovat závislosti základních balíčků"
@@ -884,7 +886,8 @@ msgstr "Nezobrazovat informace nebo postup"
 msgid "PackageKit Debuginfo Installer"
 msgstr "Instalátor pro informace o chybách pro PackageKit"
 
-#. TRANSLATORS: the use needs to specify a list of package names on the command line
+#. TRANSLATORS: the use needs to specify a list of package names on the
+#. command line
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
@@ -1002,13 +1005,15 @@ msgstr "Bylo nalezeno %i dalších balíčků."
 msgid "No extra packages required."
 msgstr "Nejsou potřeba žádné další balíčky."
 
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list
+#. them
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Byly nalezeny %i balíčky k instalaci:"
 
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the
+#. action
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
@@ -1034,7 +1039,8 @@ msgstr "Nepodařilo se nainstalovat balíčky: %s"
 msgid "Disabling sources previously enabled"
 msgstr "Zakazují se zdroje, jež byly předtím povoleny"
 
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
+#. error follows
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
@@ -1091,19 +1097,19 @@ msgstr "Zadána nesprávná cesta k zařízení"
 msgid "Show extra debugging information"
 msgstr "Ukázat další informace o chybách"
 
-#. command line argument, simulate what would be done, but don't actually do it
+#. command line argument, simulate what would be done, but don't actually do
+#. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr ""
-"Nedotýkat se ve skutečnosti žádného technického vybavení, nýbrž jen "
-"napodobit, co se dělá"
+msgstr "Nedotýkat se ve skutečnosti žádného technického vybavení, nýbrž jen napodobit, co se dělá"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
 msgstr "Cesty k zařízení"
 
-#. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
+#. TRANSLATORS: tool that gets called when the device needs reloading after
+#. installing firmware
 #: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
 msgstr "Dobíječ zařízení PackageKit"
@@ -1155,7 +1161,8 @@ msgstr "Obslužný balík PackageKit"
 msgid "Please enter a number from 1 to %i: "
 msgstr "Zadejte, prosím, číslo od 1 do %i: "
 
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
+#. TRANSLATORS: more than one package could be found that matched, to follow
+#. is a list of possible packages
 #: ../lib/packagekit-glib2/pk-console-shared.c:189
 msgid "More than one package matches:"
 msgstr "Odpovídá více než jeden balíček:"
@@ -1175,7 +1182,8 @@ msgstr "Neznámý stav"
 msgid "Starting"
 msgstr "Spouští se"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
 #: ../lib/packagekit-glib2/pk-console-shared.c:263
 msgid "Waiting in queue"
 msgstr "Čeká se v řadě"
@@ -1217,7 +1225,8 @@ msgstr "Obnovuje se seznam balíčků"
 msgid "Installing updates"
 msgstr "Instalují se nejnovější balíčky"
 
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
 #: ../lib/packagekit-glib2/pk-console-shared.c:299
 msgid "Cleaning up packages"
 msgstr "Uklízí se balíčky"
@@ -1232,7 +1241,8 @@ msgstr "Uklízí se zastaralé balíčky"
 msgid "Resolving dependencies"
 msgstr "Nachází se řešení závislostí"
 
-#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
 #: ../lib/packagekit-glib2/pk-console-shared.c:311
 msgid "Checking signatures"
 msgstr "Ověřují se podpisy"
@@ -1249,7 +1259,8 @@ msgstr "Vrací se zpět"
 msgid "Testing changes"
 msgstr "Zkouší se změny"
 
-#. TRANSLATORS: transaction state, when we're writing to the system package database
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
 #: ../lib/packagekit-glib2/pk-console-shared.c:323
 msgid "Committing changes"
 msgstr "Zaznamenávají se změny"
@@ -1314,12 +1325,14 @@ msgstr "Nahrává se vyrovnávací paměť"
 msgid "Scanning applications"
 msgstr "Prohledávají se programy"
 
-#. TRANSLATORS: transaction state, generating a list of packages installed on the system
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
 #: ../lib/packagekit-glib2/pk-console-shared.c:375
 msgid "Generating package lists"
 msgstr "Vytváří se seznamy balíčků"
 
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
 #: ../lib/packagekit-glib2/pk-console-shared.c:379
 msgid "Waiting for package manager lock"
 msgstr "Čeká se na zámek správce balíčků"
@@ -1334,17 +1347,20 @@ msgstr "Čeká se na ověření"
 msgid "Updating running applications"
 msgstr "Aktualizují se běžící programy"
 
-#. TRANSLATORS: transaction state, we are checking executable files currently in use
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
 #: ../lib/packagekit-glib2/pk-console-shared.c:391
 msgid "Checking applications in use"
 msgstr "Ověřují se používané programy"
 
-#. TRANSLATORS: transaction state, we are checking for libraries currently in use
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
 #: ../lib/packagekit-glib2/pk-console-shared.c:395
 msgid "Checking libraries in use"
 msgstr "Ověřují se používané knihovny"
 
-#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
 #: ../lib/packagekit-glib2/pk-console-shared.c:399
 msgid "Copying files"
 msgstr "Kopírují se soubory"
@@ -1624,7 +1640,8 @@ msgstr "Volby pro informace o chybách"
 msgid "Show debugging options"
 msgstr "Ukázat volby pro informace o chybách"
 
-#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
 #: ../lib/packagekit-glib2/pk-task-text.c:67
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "Chcete povolit instalování nepodepsaných programů?"
@@ -1634,7 +1651,8 @@ msgstr "Chcete povolit instalování nepodepsaných programů?"
 msgid "The unsigned software will not be installed."
 msgstr "Nepodepsané programy nebudou nainstalovány."
 
-#. TRANSLATORS: the package repository is signed by a key that is not recognised
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
 #: ../lib/packagekit-glib2/pk-task-text.c:121
 msgid "Software source signature required"
 msgstr "Vyžadován podpis zdroje programů"
@@ -1679,7 +1697,8 @@ msgstr "Příjímáte tento podpis?"
 msgid "The signature was not accepted."
 msgstr "Podpis nebyl přijat."
 
-#. TRANSLATORS: this is another name for a software licence that has to be read before installing
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:203
 msgid "End user licence agreement required"
 msgstr "Je vyžadován souhlas s licencí pro koncového uživatele"
@@ -1769,7 +1788,7 @@ msgstr "Transakce nemohla dále pokračovat."
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr "Přijmout licenční smlouvu (EULA)"
@@ -1779,8 +1798,7 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Pro přijetí licenční smlouvy (EULA) je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1788,17 +1806,12 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Pro změnu parametrů zdrojů programů je vyžádováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to change the location used to decompress packages"
-msgstr ""
-"Pro změnu místa používaného pro rozbalování balíčků je vyžadováno oprávnění"
+msgid "Authentication is required to change the location used to decompress packages"
+msgstr "Pro změnu místa používaného pro rozbalování balíčků je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
-msgstr ""
-"Pro zvážení klíče použitého k podepsání balíčků je vyžadováno oprávnění"
+msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgstr "Pro zvážení klíče použitého k podepsání balíčků je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1814,8 +1827,7 @@ msgstr "Pro obnovení systémových zdrojů je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr ""
-"Pro opětovné nahrání zařízení s novým ovladačem je vyžadováno oprávnění"
+msgstr "Pro opětovné nahrání zařízení s novým ovladačem je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1826,12 +1838,8 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Pro vrácení transakce je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-"Pro nastavení síťové proxy používané ke stahování balíčků je vyžadováno "
-"oprávnění"
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr "Pro nastavení síťové proxy používané ke stahování balíčků je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1845,7 +1853,7 @@ msgstr "Pro povýšení operačního systému je vyžadováno oprávnění"
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
 msgstr "Zrušit cizí úkol"
@@ -1855,7 +1863,7 @@ msgstr "Zrušit cizí úkol"
 #. instance to a LTSP image or a virtual machine.
 #. - This could be used to overwrite files not owned by the user using
 #. a carefully created package file.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:34
 msgid "Change location that packages are installed"
 msgstr "Změnit místo, kam jsou balíčky instalovány"
@@ -1864,7 +1872,7 @@ msgstr "Změnit místo, kam jsou balíčky instalovány"
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
 msgstr "Změnit parametry zdrojů programů"
@@ -1874,7 +1882,7 @@ msgstr "Změnit parametry zdrojů programů"
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
 msgstr "Nainstalovat podepsaný balík"
@@ -1884,7 +1892,7 @@ msgstr "Nainstalovat podepsaný balík"
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
 msgstr "Nainstalovat místní nedůvěryhodný soubor"
@@ -1892,7 +1900,7 @@ msgstr "Nainstalovat místní nedůvěryhodný soubor"
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
 msgstr "Obnovit systémové zdroje"
@@ -1903,7 +1911,7 @@ msgstr "Obnovit systémové zdroje"
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
 msgstr "Nahrát zařízení znovu"
@@ -1916,7 +1924,7 @@ msgstr "Nahrát zařízení znovu"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
 msgstr "Odstranit balíček"
@@ -1925,7 +1933,7 @@ msgstr "Odstranit balíček"
 #. - Normal users require admin authentication to rollback system state
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
 msgstr "Vrátit se k předchozí transakci"
@@ -1933,7 +1941,7 @@ msgstr "Vrátit se k předchozí transakci"
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
 msgstr "Nastavit proxy sítě"
@@ -1943,7 +1951,7 @@ msgstr "Nastavit proxy sítě"
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
 msgstr "Důvěřovat klíči použitému k podepsání balíčků"
@@ -1954,7 +1962,7 @@ msgstr "Důvěřovat klíči použitému k podepsání balíčků"
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
 msgstr "Aktualizovat balíčky"
@@ -1963,7 +1971,7 @@ msgstr "Aktualizovat balíčky"
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Upgrade System"
 msgstr "Povýšit systém"
@@ -1985,12 +1993,8 @@ msgstr "Program není spuštěn pod správným uživatelem (obvykle superuživat
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém "
-"adresáři:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgstr "Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém adresáři:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2032,16 +2036,15 @@ msgstr "Služba PackageKit"
 msgid "Cannot connect to the system bus"
 msgstr "Nelze se připojit k systémové sběrnici"
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
+#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
+#. follows
 #: ../src/pk-main.c:316
 msgid "Error trying to start:"
 msgstr "Chyba při pokusu o spuštění:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr ""
-"Aby mohly být nainstalovány balíčky pro informace o chybách, je třeba "
-"povolit další zdroje"
+msgstr "Aby mohly být nainstalovány balíčky pro informace o chybách, je třeba povolit další zdroje"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2073,277 +2076,3 @@ msgstr "Mnoho balíčků"
 #: ../src/pk-polkit-action-lookup.c:339
 msgid "Only trusted"
 msgstr "Pouze důvěryhodné"
-
-#~ msgid "Please restart the application as it is being used."
-#~ msgstr "Prosím restartujte aplikaci, protože je právě používána."
-
-#~ msgid "The package %s is already installed"
-#~ msgstr "Balík %s je již nainstalován"
-
-#~ msgid "The package %s could not be installed: %s"
-#~ msgstr "Balík %s nemůže být nainstalován: %s"
-
-#~ msgid "The package install was canceled!"
-#~ msgstr "Instalace baličku byla zrušena!"
-
-#~ msgid "This tool could not install the files: %s"
-#~ msgstr "Tento nástroj není schopen nainstalovat soubory: %s"
-
-#~ msgid "This tool could not remove the packages: %s"
-#~ msgstr "Tento nástroj nemůže odstranit balíky: %s"
-
-#~ msgid "Proceed with additional packages?"
-#~ msgstr "Pokračovat s doplňkovými balíky? "
-
-#~ msgid "The package removal was canceled!"
-#~ msgstr "Odstranění baličku bylo zrušeno!"
-
-#~ msgid "This tool could not download the package %s as it could not be found"
-#~ msgstr "Tento nástroj nemůže stáhnout balík %s, protože nemůže být nalezen"
-
-#~ msgid "This tool could not download the packages: %s"
-#~ msgstr "Tento nástroj nemůže stáhnout balíky: %s"
-
-#~ msgid "This tool could not update %s: %s"
-#~ msgstr "Tento nástroj nemůže aktualizovat %s: %s"
-
-#~ msgid "The package update was canceled!"
-#~ msgstr "Aktualizace balíčku byla zrušena!"
-
-#, fuzzy
-#~ msgid "This tool could not get the requirements for %s: %s"
-#~ msgstr "Tento nástroj nemůže získat  požadavky pro '%s': %s"
-
-#, fuzzy
-#~ msgid "This tool could not get the dependencies for %s: %s"
-#~ msgstr "Tento nástroj nemůže získat závislosti pro '%s': %s"
-
-#, fuzzy
-#~ msgid "This tool could not get package details for %s: %s"
-#~ msgstr "Tento nástroj nemůže získat detaily o '%s': %s"
-
-#, fuzzy
-#~ msgid "This tool could not find the files for %s: %s"
-#~ msgstr "Tento nástroj nemůže najít soubory pro '%s': %s"
-
-#, fuzzy
-#~ msgid "This tool could not get the file list for %s: %s"
-#~ msgstr "Tento nástroj nemůže získat seznam souborů pro '%s': %s"
-
-#~ msgid "File already exists: %s"
-#~ msgstr "Soubor již existuje: %s"
-
-#, fuzzy
-#~ msgid "This tool could not get package list: %s"
-#~ msgstr "Tento nástroj nemůže odstranit balíky: %s"
-
-#~ msgid "Failed to save to disk"
-#~ msgstr "Selhalo uložení na disk"
-
-#~ msgid "File does not exist: %s"
-#~ msgstr "Soubor neexistuje: %s"
-
-#~ msgid "Packages to add"
-#~ msgstr "Balíčky k přidání"
-
-#~ msgid "Packages to remove"
-#~ msgstr "Balíčky k odebrání"
-
-#, fuzzy
-#~ msgid "No new packages need to be installed"
-#~ msgstr "Balík '%s' nemůže být nainstalován: %s"
-
-#~ msgid "not found."
-#~ msgstr "nenalezen."
-
-#, fuzzy
-#~ msgid "No packages can be found to install"
-#~ msgstr "Pro váš systém nebyly nalezeny žádné balíky"
-
-#, fuzzy
-#~ msgid "This tool could not find the update details for %s: %s"
-#~ msgstr "Tento nástroj nemůže najít podrobnosti o aktualizaci pro '%s': %s"
-
-#, fuzzy
-#~ msgid "This tool could not get the update details for %s: %s"
-#~ msgstr "Tento nástroj nemůže získat podrobnosti o aktualizaci pro '%s': %s"
-
-#~ msgid "Error:"
-#~ msgstr "Chyba: "
-
-#~ msgid "Repository signature required"
-#~ msgstr "Vyžaduje podpis repozitáře"
-
-#~ msgid "End user license agreement required"
-#~ msgstr "Vyžaduje souhlas s licencí koncového uživatele"
-
-#~ msgid "Do you agree to this license?"
-#~ msgstr "Souhlasíte s touto licencí?"
-
-#~ msgid "The license was refused."
-#~ msgstr "Licence byla odmítnuta."
-
-#~ msgid "This tool could not connect to system DBUS."
-#~ msgstr "Tento nástroj se nemůže připojit k systému DBUS"
-
-#~ msgid "Incorrect privileges for this operation"
-#~ msgstr "Nesprávná oprávnění pro tuto operaci"
-
-#~ msgid "Cannot show the list of transactions"
-#~ msgstr "Nelze zobrazit seznam transakcí"
-
-#~ msgid "EULA ID"
-#~ msgstr "EULA ID"
-
-#~ msgid "Media ID"
-#~ msgstr "ID Média"
-
-#~ msgid "Malicious software can damage your computer or cause other harm."
-#~ msgstr ""
-#~ "Škodlivý software může poškodit váš počítač nebo způsobit jiné škody."
-
-#~ msgid "You need to specify a search type, e.g. name"
-#~ msgstr "Je nutné stanovit typ vyhledávání, např. jméno"
-
-#~ msgid "You need to specify a search term"
-#~ msgstr "Je nutné uvést termín, který se bude hledat"
-
-#~ msgid "You need to specify a package to remove"
-#~ msgstr "Vyberte balík, který se má odstranit"
-
-#~ msgid "You need to specify a package name to resolve"
-#~ msgstr "K vyřešení je nutné uvést název balíku"
-
-#~ msgid "You need to specify a repository name"
-#~ msgstr "Je nutné zadat název repozitáře"
-
-#~ msgid "You need to specify a correct role"
-#~ msgstr "Je nutné určit správnou roli"
-
-#~ msgid "You need to specify a package to find the details for"
-#~ msgstr "Je nutné určit balík, pro který se mají najít podrobnosti"
-
-#~ msgid "You need to specify a package to find the files for"
-#~ msgstr "Je nutné určit balík, pro který se mají najít soubory"
-
-#, fuzzy
-#~ msgid "You need to specify a list file to open"
-#~ msgstr "Je nutné určit časový termín"
-
-#~ msgid "This tool could not remove the packages: '%s'"
-#~ msgstr "Tento nástroj nemůže odstranit balíky: '%s'"
-
-#~ msgid "Install local file"
-#~ msgstr "Nainstalovat místní soubor"
-
-#~ msgid "Okay to import key?"
-#~ msgstr "Chcete importovat klíč?"
-
-#~ msgid "Did not import key"
-#~ msgstr "Klíč nebyl importován"
-
-#~ msgid "Do you agree?"
-#~ msgstr "Souhlasíte?"
-
-#~ msgid "Could not find package to remove"
-#~ msgstr "Nemohu najít balík, který se má odstranit"
-
-#~ msgid "Could not find details for"
-#~ msgstr "Nemohu zjistit detaily pro"
-
-#, fuzzy
-#~ msgid "Could not set database readonly"
-#~ msgstr "Nemohu otevřít databázi: %s"
-
-#~ msgid "Could not open database: %s"
-#~ msgstr "Nemohu otevřít databázi: %s"
-
-#~ msgid "You probably need to run this program as the root user"
-#~ msgstr "Nejspíše budete muset spustit tento program jako superuživatel"
-
-#~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Spustit %s</span>"
-
-#~ msgid "<big>%s</big>"
-#~ msgstr "<big>%s</big>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run version %s now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Ihned spustit verzi %s</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Ihned spustit</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Aktualizovat na verzi %s</span>"
-
-#~ msgid ""
-#~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Ihned instalovat %s</"
-#~ "span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
-#~ msgstr ""
-#~ "\n"
-#~ "<small>Verze: %s</small>"
-
-#~ msgid "failed to download: invalid package_id and/or directory"
-#~ msgstr "stahování selhala: neplatné package_id a/nebo adresář"
-
-#~ msgid "Could not find a valid metadata file"
-#~ msgstr "Nemohu najít platný soubor metadat"
-
-#~ msgid "Okay to download the additional packages"
-#~ msgstr "Souhlasíte s stažením doplňkových balíků"
-
-#~ msgid "You need to specify the pack name and packages to be packed\n"
-#~ msgstr "Musíte určit jméno balíku a balíčky, které mají být zabaleny\n"
-
-#~ msgid ""
-#~ "Invalid name for the service pack, Specify a name with .servicepack "
-#~ "extension\n"
-#~ msgstr ""
-#~ "Neplatné jméno opravného balíčku. Zadejte jméno s příponou .servicepack\n"
-
-#~ msgid "Authentication is required to install a local file"
-#~ msgstr "K instalaci místního souboru je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to install a security signature"
-#~ msgstr "K instalaci bezpečnostního podpisu je vyžadováno oprávnění"
-
-#~ msgid "Authentication is required to update all packages"
-#~ msgstr "K aktualizaci všech balíků je vyžadováno oprávnění"
-
-#~ msgid "Update all packages"
-#~ msgstr "Aktualizovat všechny balíky"
-
-#~ msgid ""
-#~ "Could not find a package with that name to install, or package already "
-#~ "installed"
-#~ msgstr ""
-#~ "K danému názvu nemohu najít balík k nainstalovaní ani balík, který už je "
-#~ "nainstalovaný"
-
-#~ msgid "Could not find a package with that name to update"
-#~ msgstr "K daného názvu nemohu najít balík, který se má aktualizovat"
-
-#~ msgid "Could not find a description for this package"
-#~ msgstr "Nemohu získat popis tohoto balíku"
-
-#~ msgid "You need to specify a package to find the description for"
-#~ msgstr "Je nutné určit balík, pro který se má najít popis"

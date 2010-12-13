@@ -24,6 +24,10 @@ Bugfixes:
 
 2. Add download date to docs/html/pk-download.html, save file.
 
+2.5. Update translations and commit them with sign-off:
+
+tx pull --all
+
 3. Update library version if new ABI or API in configure.ac
 
 4. Commit changes in PackageKit git:
@@ -48,6 +52,7 @@ scp *.tar.* packagekit.org:/srv/www/html/releases/
 
 git commit -a -m "trivial: post release version bump"
 git push
+tx push --source
 
 9. Upload new html sources
 

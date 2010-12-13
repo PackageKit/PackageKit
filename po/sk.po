@@ -1,1468 +1,1146 @@
-# PackageKit, slovensky preklad
-# >o
-# (\)
-# ~~~
-# Copyright (C) 2008 Lubomir Kundrak
-# This file is distributed under the same license as the PackageKit package.
-# Lubomir Kundrak <lkundrak@redhat.com>, 2008.
-# Pavol Šimo <palo.simo@gmail.com>, 2008, 2009.
-#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-05 08:29+0000\n"
-"PO-Revision-Date: 2009-03-24 23:07+0100\n"
-"Last-Translator: Pavol Šimo <palo.simo@gmail.com>\n"
-"Language-Team: Fedora Project <fedora-cs-list@redhat.com>\n"
+"POT-Creation-Date: 2010-12-13 12:23+0000\n"
+"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"Last-Translator: hughsie <richard@hughsie.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural= (n==1) ? 1 : (n>=2 && n<=4) ? 2 : 0;\n"
+"Language: sk\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #. TRANSLATORS: this is an atomic transaction
-#: ../client/pk-console.c:238 ../client/pk-console-test.c:147
+#. TRANSLATORS: the role is the point of the transaction, e.g. update-system
+#: ../client/pk-console.c:174 ../client/pk-console.c:596
 msgid "Transaction"
 msgstr "Transakcia"
 
-#. TRANSLATORS: this is the time the transaction was started in system timezone
-#: ../client/pk-console.c:240 ../client/pk-console-test.c:149
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+#: ../client/pk-console.c:176
 msgid "System time"
 msgstr "Čas systému"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
+#: ../client/pk-console.c:178
 msgid "Succeeded"
 msgstr "Úspešná"
 
-#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
+#: ../client/pk-console.c:178
 msgid "True"
 msgstr "Áno"
 
-#: ../client/pk-console.c:242 ../client/pk-console-test.c:151
+#: ../client/pk-console.c:178
 msgid "False"
 msgstr "Nie"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-system"
 #. TRANSLATORS: the trasaction role, e.g. update-system
-#: ../client/pk-console.c:244 ../client/pk-console-test.c:153
-#: ../src/pk-polkit-action-lookup.c:327
+#: ../client/pk-console.c:180 ../src/pk-polkit-action-lookup.c:332
 msgid "Role"
 msgstr "Rola"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
+#: ../client/pk-console.c:185
 msgid "Duration"
 msgstr "Trvanie"
 
-#: ../client/pk-console.c:249 ../client/pk-console-test.c:158
+#: ../client/pk-console.c:185
 msgid "(seconds)"
 msgstr "(sekúnd)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #. TRANSLATORS: the command line of the thing that wants the authentication
-#: ../client/pk-console.c:253 ../client/pk-console-test.c:162
-#: ../src/pk-polkit-action-lookup.c:341
+#: ../client/pk-console.c:189 ../src/pk-polkit-action-lookup.c:346
 msgid "Command line"
 msgstr "Príkazový riadok"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: ../client/pk-console.c:255 ../client/pk-console-test.c:164
+#: ../client/pk-console.c:191
 msgid "User ID"
 msgstr "ID používateľa"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: ../client/pk-console.c:262 ../client/pk-console-test.c:171
+#: ../client/pk-console.c:198
 msgid "Username"
 msgstr "Používateľské meno"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: ../client/pk-console.c:266 ../client/pk-console-test.c:175
+#: ../client/pk-console.c:202
 msgid "Real name"
 msgstr "Plné meno"
 
-#: ../client/pk-console.c:274 ../client/pk-console-test.c:183
+#: ../client/pk-console.c:210
 msgid "Affected packages:"
 msgstr "Ovplyvnené balíčky:"
 
-#: ../client/pk-console.c:276 ../client/pk-console-test.c:185
+#: ../client/pk-console.c:212
 msgid "Affected packages: None"
 msgstr "Ovplyvnené balíčky: Žiadne"
 
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-#: ../client/pk-console.c:337 ../client/pk-task-text.c:220
-msgid "The following packages have to be removed:"
-msgstr "Nasledujúce balíčky budú musieť byť odstránené:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-#: ../client/pk-console.c:340 ../client/pk-task-text.c:225
-msgid "The following packages have to be installed:"
-msgstr "Nasledujúce balíčky budú musieť byť nainštalované:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-#: ../client/pk-console.c:343 ../client/pk-task-text.c:230
-msgid "The following packages have to be updated:"
-msgstr "Nasledujúce balíčky budú musieť byť aktualizované:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: ../client/pk-console.c:346 ../client/pk-task-text.c:235
-msgid "The following packages have to be reinstalled:"
-msgstr "Nasledujúce balíčky budú musieť byť preinštalované:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: ../client/pk-console.c:349 ../client/pk-task-text.c:240
-msgid "The following packages have to be downgraded:"
-msgstr "Nasledujúcim balíčkom bude musieť byť znížené číslo verzie:"
-
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: ../client/pk-console.c:363 ../client/pk-console-test.c:205
+#: ../client/pk-console.c:247
 msgid "Distribution"
 msgstr "Distribúcia"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: ../client/pk-console.c:365 ../client/pk-console-test.c:207
+#: ../client/pk-console.c:249
 msgid "Type"
 msgstr "Typ"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: ../client/pk-console.c:367 ../client/pk-console.c:390
-#: ../client/pk-console-test.c:209 ../client/pk-console-test.c:230
+#: ../client/pk-console.c:251 ../client/pk-console.c:290
 msgid "Summary"
 msgstr "Zhrnutie"
 
 #. TRANSLATORS: this is the group category name
-#: ../client/pk-console.c:379 ../client/pk-console-test.c:219
+#: ../client/pk-console.c:279
 msgid "Category"
 msgstr "Kategória"
 
 #. TRANSLATORS: this is group identifier
-#: ../client/pk-console.c:381 ../client/pk-console-test.c:221
+#: ../client/pk-console.c:281
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: ../client/pk-console.c:384 ../client/pk-console-test.c:224
+#: ../client/pk-console.c:284
 msgid "Parent"
 msgstr "Rodič"
 
 #. TRANSLATORS: this is the name of the parent group
-#: ../client/pk-console.c:387 ../client/pk-console-test.c:227
+#: ../client/pk-console.c:287
 msgid "Name"
 msgstr "Názov"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: ../client/pk-console.c:393 ../client/pk-console-test.c:233
+#: ../client/pk-console.c:293
 msgid "Icon"
 msgstr "Ikona"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: ../client/pk-console.c:408 ../client/pk-console-test.c:247
+#: ../client/pk-console.c:339
 msgid "Details about the update:"
 msgstr "Podrobnosti o aktualizácii:"
 
 #. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
 #. TRANSLATORS: title, the names of the packages that the method is processing
-#: ../client/pk-console.c:410 ../client/pk-console-test.c:253
-#: ../client/pk-task-text.c:101 ../client/pk-task-text.c:153
-#: ../src/pk-polkit-action-lookup.c:352
+#: ../client/pk-console.c:345 ../client/pk-console.c:615
+#: ../lib/packagekit-glib2/pk-task-text.c:124
+#: ../lib/packagekit-glib2/pk-task-text.c:206
+#: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] "Balíčky"
 msgstr[1] "Balíček"
 msgstr[2] "Balíčky"
 
-#. TRANSLATORS: details about the update, any packages that this update updates
-#: ../client/pk-console.c:413 ../client/pk-console-test.c:256
+#. TRANSLATORS: details about the update, any packages that this update
+#. updates
+#: ../client/pk-console.c:348
 msgid "Updates"
 msgstr "Aktualizuje"
 
-#. TRANSLATORS: details about the update, any packages that this update obsoletes
-#: ../client/pk-console.c:417 ../client/pk-console-test.c:260
+#. TRANSLATORS: details about the update, any packages that this update
+#. obsoletes
+#: ../client/pk-console.c:352
 msgid "Obsoletes"
 msgstr "Nahrádza"
 
 #. TRANSLATORS: details about the update, the vendor URLs
-#: ../client/pk-console.c:421 ../client/pk-console-test.c:264
-#: ../client/pk-task-text.c:154
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: ../client/pk-console.c:356 ../lib/packagekit-glib2/pk-task-text.c:209
 msgid "Vendor"
 msgstr "Dodávateľ"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: ../client/pk-console.c:425 ../client/pk-console-test.c:268
+#: ../client/pk-console.c:360
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: ../client/pk-console.c:429 ../client/pk-console-test.c:272
+#: ../client/pk-console.c:364
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package requires a restart
-#: ../client/pk-console.c:433 ../client/pk-console-test.c:276
+#: ../client/pk-console.c:368
 msgid "Restart"
 msgstr "Reštart"
 
 #. TRANSLATORS: details about the update, any description of the update
-#: ../client/pk-console.c:437 ../client/pk-console-test.c:280
+#: ../client/pk-console.c:372
 msgid "Update text"
 msgstr "Text aktualizácie"
 
 #. TRANSLATORS: details about the update, the changelog for the package
-#: ../client/pk-console.c:441 ../client/pk-console-test.c:284
+#: ../client/pk-console.c:376
 msgid "Changes"
 msgstr "Zmeny"
 
 #. TRANSLATORS: details about the update, the ongoing state of the update
-#: ../client/pk-console.c:445 ../client/pk-console-test.c:288
+#: ../client/pk-console.c:380
 msgid "State"
 msgstr "Stav"
 
 #. TRANSLATORS: details about the update, date the update was issued
-#: ../client/pk-console.c:450 ../client/pk-console-test.c:293
+#: ../client/pk-console.c:384
 msgid "Issued"
 msgstr "Vydané"
 
 #. TRANSLATORS: details about the update, date the update was updated
-#: ../client/pk-console.c:455 ../client/pk-console-test.c:298
+#. TRANSLATORS: The action of the package, in past tense
+#: ../client/pk-console.c:388 ../lib/packagekit-glib2/pk-console-shared.c:515
 msgid "Updated"
 msgstr "Aktualizované"
 
 #. TRANSLATORS: if the repo is enabled
-#: ../client/pk-console.c:475 ../client/pk-console-test.c:316
+#: ../client/pk-console.c:424
 msgid "Enabled"
 msgstr "Povolený"
 
 #. TRANSLATORS: if the repo is disabled
-#: ../client/pk-console.c:478 ../client/pk-console-test.c:319
+#: ../client/pk-console.c:427
 msgid "Disabled"
 msgstr "Zakázaný"
 
-#: ../client/pk-console.c:555 ../client/pk-console.c:557
-msgid "Percentage"
-msgstr "Počet percent"
-
-#: ../client/pk-console.c:557
-msgid "Unknown"
-msgstr "Neznámy"
-
 #. TRANSLATORS: a package requires the system to be restarted
-#: ../client/pk-console.c:599 ../client/pk-console-test.c:341
+#: ../client/pk-console.c:459
 msgid "System restart required by:"
 msgstr "Reštart systému vyžaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: ../client/pk-console.c:602 ../client/pk-console-test.c:344
+#: ../client/pk-console.c:462
 msgid "Session restart required:"
 msgstr "Reštart relácie vyžaduje:"
 
-#. TRANSLATORS: a package requires the system to be restarted due to a security update
-#: ../client/pk-console.c:605 ../client/pk-console-test.c:347
+#. TRANSLATORS: a package requires the system to be restarted due to a
+#. security update
+#: ../client/pk-console.c:465
 msgid "System restart (security) required by:"
 msgstr "Reštart systému (kvôli bezpečnosti) vyžaduje:"
 
-#. TRANSLATORS: a package requires the session to be restarted due to a security update
-#: ../client/pk-console.c:608 ../client/pk-console-test.c:350
+#. TRANSLATORS: a package requires the session to be restarted due to a
+#. security update
+#: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
 msgstr "Reštart relácie (kvôli bezpečnosti) vyžaduje:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: ../client/pk-console.c:611 ../client/pk-console-test.c:353
+#: ../client/pk-console.c:471
 msgid "Application restart required by:"
 msgstr "Reštart aplikácie vyžaduje:"
 
+#. TRANSLATORS: This a list of details about the package
+#: ../client/pk-console.c:506
+msgid "Package description"
+msgstr "Popis balíčka"
+
+#. TRANSLATORS: This a message (like a little note that may be of interest)
+#. from the transaction
+#: ../client/pk-console.c:537
+msgid "Message:"
+msgstr "Správa:"
+
+#. TRANSLATORS: This where the package has no files
+#: ../client/pk-console.c:558
+msgid "No files"
+msgstr "Žiadne súbory"
+
+#. TRANSLATORS: This a list files contained in the package
+#: ../client/pk-console.c:563
+msgid "Package files"
+msgstr "Zonam súborov v balíčku"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: ../client/pk-console.c:631
+msgid "Percentage"
+msgstr "Počet percent"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: ../client/pk-console.c:649
+msgid "Status"
+msgstr ""
+
+#. TRANSLATORS: the results from the transaction
+#: ../client/pk-console.c:678
+msgid "Results:"
+msgstr ""
+
+#. TRANSLATORS: we failed to get any results, which is pretty fatal in my book
+#: ../client/pk-console.c:685
+msgid "Fatal error"
+msgstr ""
+
+#. TRANSLATORS: the user asked to update everything, but there is nothing that
+#. can be updated
+#: ../client/pk-console.c:701
+msgid "There are no packages to update."
+msgstr ""
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: ../client/pk-console.c:704
+#: ../contrib/command-not-found/pk-command-not-found.c:639
+msgid "The transaction failed"
+msgstr ""
+
+#. TRANSLATORS: print a message when there are no updates
+#: ../client/pk-console.c:733
+msgid "There are no updates available at this time."
+msgstr ""
+
+#: ../client/pk-console.c:756
+msgid "There are no upgrades available at this time."
+msgstr ""
+
 #. TRANSLATORS: a package needs to restart their system
-#: ../client/pk-console.c:666 ../client/pk-console-test.c:704
+#: ../client/pk-console.c:823
 msgid "Please restart the computer to complete the update."
 msgstr "Pre dokončenie aktualizácie reštartujte počítač."
 
 #. TRANSLATORS: a package needs to restart the session
-#: ../client/pk-console.c:669 ../client/pk-console-test.c:707
+#: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
 msgstr "Pre dokončenie aktualizácie sa odhláste a znovu prihláste."
 
-#. TRANSLATORS: a package needs to restart the application
-#: ../client/pk-console.c:672
-msgid "Please restart the application as it is being used."
-msgstr "Reštartujte aplikáciu, pretože sa momentálne používa."
-
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: ../client/pk-console.c:675 ../client/pk-console-test.c:710
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Na dokončenie aktualizácie prosím reštartujte počítač, pretože boli "
-"nainštalované dôležité bezpečnostné aktualizácie."
+#: ../client/pk-console.c:829
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Na dokončenie aktualizácie prosím reštartujte počítač, pretože boli nainštalované dôležité bezpečnostné aktualizácie."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: ../client/pk-console.c:678 ../client/pk-console-test.c:713
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+#: ../client/pk-console.c:832
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Na dokončenie aktualizácie sa prosím odhláste a znovu prihláste, pretože boli nainštalované dôležité bezpečnostné aktualizácie."
+
+#. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
+#. install-local dave.rpm'
+#: ../client/pk-console.c:858
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
-"Na dokončenie aktualizácie sa prosím odhláste a znovu prihláste, pretože boli "
-"nainštalované dôležité bezpečnostné aktualizácie."
 
-#. TRANSLATORS: The package is already installed on the system
-#: ../client/pk-console.c:810
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:866
 #, c-format
-msgid "The package %s is already installed"
-msgstr "Balíček %s je už nainštalovaný"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:818
-#, c-format
-msgid "The package %s could not be installed: %s"
-msgstr "Balíček %s nemôže byť nainštalovaný: %s"
-
-#. TRANSLATORS: There was a programming error that shouldn't happen. The detailed error follows
-#: ../client/pk-console.c:844 ../client/pk-console.c:892
-#: ../client/pk-console.c:916 ../client/pk-console.c:964
-#: ../client/pk-console.c:1060 ../client/pk-console.c:1173
-#: ../client/pk-console.c:1234 ../client/pk-tools-common.c:63
-#: ../client/pk-tools-common.c:82 ../client/pk-tools-common.c:90
-#, c-format
-msgid "Internal error: %s"
-msgstr "Vnútorná chyba: %s"
-
-#. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#. ask the user
-#: ../client/pk-console.c:876 ../client/pk-console.c:948
-#: ../client/pk-console.c:1266 ../client/pk-task-text.c:299
-msgid "Proceed with changes?"
-msgstr "Vykonať zmeny?"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:881 ../client/pk-console.c:953
-msgid "The package install was canceled!"
-msgstr "Inštalovanie balíčkov bolo zrušené!"
-
-#. TRANSLATORS: There was an error installing the packages. The detailed error follows
-#: ../client/pk-console.c:900 ../client/pk-console.c:1634
-#, c-format
-msgid "This tool could not install the packages: %s"
-msgstr "Nepodarilo sa nainštalovať balíčky: %s"
-
-#. TRANSLATORS: There was an error installing the files. The detailed error follows
-#: ../client/pk-console.c:972
-#, c-format
-msgid "This tool could not install the files: %s"
-msgstr "Nepodarilo sa nainštalovať súbory: %s"
-
-#. TRANSLATORS: The package name was not found in the installed list. The detailed error follows
-#: ../client/pk-console.c:1028
-#, c-format
-msgid "This tool could not remove %s: %s"
-msgstr "Nepodarilo sa odstrániť %s: %s"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1051 ../client/pk-console.c:1089
-#: ../client/pk-console.c:1118
-#, c-format
-msgid "This tool could not remove the packages: %s"
-msgstr "Nepodarilo sa odstrániť balíčky: %s"
-
-#. TRANSLATORS: We are checking if it's okay to remove a list of packages
-#: ../client/pk-console.c:1104
-msgid "Proceed with additional packages?"
-msgstr "Pokračovať s doplnkovými balíčkami?"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1109
-msgid "The package removal was canceled!"
-msgstr "Odstránenie balíčkov bolo zrušené!"
-
-#. TRANSLATORS: The package name was not found in any software sources
-#: ../client/pk-console.c:1150
-#, c-format
-msgid "This tool could not download the package %s as it could not be found"
-msgstr "Nepodarilo sa získať balíček %s, balíček nebol nájdený"
-
-#. TRANSLATORS: Could not download the packages for some reason. The detailed error follows
-#: ../client/pk-console.c:1181
-#, c-format
-msgid "This tool could not download the packages: %s"
-msgstr "Nepodarilo sa získať balíčky: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1213 ../client/pk-console.c:1225
-#: ../client/pk-console.c:1280
-#, c-format
-msgid "This tool could not update %s: %s"
-msgstr "Nepodarilo sa aktualizovať %s: %s"
-
-#. TRANSLATORS: There was an error removing the packages. The detailed error follows
-#: ../client/pk-console.c:1271
-msgid "The package update was canceled!"
-msgstr "Aktualizácia balíčkov bola zrušená!"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1304 ../client/pk-console.c:1312
-#, c-format
-msgid "This tool could not get the requirements for %s: %s"
-msgstr "Nepodarilo sa získať požiadavky balíčka %s: %s"
-
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#: ../client/pk-console.c:1334 ../client/pk-console.c:1342
-#, c-format
-msgid "This tool could not get the dependencies for %s: %s"
-msgstr "Nepodarilo sa získať závislosti pre %s: %s"
-
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#: ../client/pk-console.c:1364 ../client/pk-console.c:1372
-#, c-format
-msgid "This tool could not get package details for %s: %s"
-msgstr "Nepodarilo sa získať detaily o balíčku %s: %s"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1394
-#, c-format
-msgid "This tool could not find the files for %s: %s"
-msgstr "Nepodarilo sa nájsť zoznam súborov balíčka %s: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console.c:1402
-#, c-format
-msgid "This tool could not get the file list for %s: %s"
-msgstr "Nepodarilo sa získať zoznam súborov balíčka %s: %s"
-
-#. TRANSLATORS: There was an error getting the list of packages. The filename follows
-#: ../client/pk-console.c:1424
-#, c-format
-msgid "File already exists: %s"
-msgstr "Súbor už existuje: %s"
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1429 ../client/pk-console.c:1485
-#: ../client/pk-console.c:1560
-msgid "Getting package list"
-msgstr "Získavanie zoznamu balíčkov"
-
-#. TRANSLATORS: There was an error getting the list of packages. The detailed error follows
-#: ../client/pk-console.c:1435 ../client/pk-console.c:1491
-#: ../client/pk-console.c:1566
-#, c-format
-msgid "This tool could not get package list: %s"
-msgstr "Nepodarilo sa získať zoznam balíčkov: %s"
-
-# XXX
-#. TRANSLATORS: There was an error saving the list
-#: ../client/pk-console.c:1446
-#, c-format
-msgid "Failed to save to disk"
-msgstr "Nebolo možné uložiť na disk"
-
-#. TRANSLATORS: There was an error getting the list. The filename follows
-#: ../client/pk-console.c:1480 ../client/pk-console.c:1555
-#, c-format
-msgid "File does not exist: %s"
-msgstr "Súbor neexistuje: %s"
-
-#. TRANSLATORS: header to a list of packages newly added
-#: ../client/pk-console.c:1512
-msgid "Packages to add"
-msgstr "Balíčky na pridanie"
-
-#. TRANSLATORS: header to a list of packages removed
-#: ../client/pk-console.c:1520
-msgid "Packages to remove"
-msgstr "Balíčky na odobratie"
-
-#. TRANSLATORS: We didn't find any differences
-#: ../client/pk-console.c:1588
-#, c-format
-msgid "No new packages need to be installed"
-msgstr "Žiadne nové balíčky nemusia byť nainštalované"
-
-#. TRANSLATORS: follows a list of packages to install
-#: ../client/pk-console.c:1594
-msgid "To install"
-msgstr "Nainštalovať"
-
-#. TRANSLATORS: searching takes some time....
-#: ../client/pk-console.c:1606
-msgid "Searching for package: "
-msgstr "Vyhľadávanie balíčka: "
-
-#. TRANSLATORS: package was not found -- this is the end of a string ended in ...
-#: ../client/pk-console.c:1610
-msgid "not found."
-msgstr "nenájdený."
-
-#. TRANSLATORS: We didn't find any packages to install
-#: ../client/pk-console.c:1621
-#, c-format
-msgid "No packages can be found to install"
-msgstr "Neboli nájdené žiadne balíčky pre nainštalovanie"
-
-#. TRANSLATORS: installing new packages from package list
-#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
-#: ../client/pk-console.c:1627
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
-#, c-format
-msgid "Installing packages"
-msgstr "Inštalovanie balíčkov"
-
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console.c:1663
-#, c-format
-msgid "This tool could not find the update details for %s: %s"
-msgstr "Nepodarilo sa nájsť detaily aktualizácie pre %s: %s"
-
-#. TRANSLATORS: There was an error getting the details about the update for the package. The detailed error follows
-#: ../client/pk-console.c:1671
-#, c-format
-msgid "This tool could not get the update details for %s: %s"
-msgstr "Nepodarilo sa získať detaily aktualizácie pre %s: %s"
-
-#. TRANSLATORS: This was an unhandled error, and we don't have _any_ context
-#: ../client/pk-console.c:1702
-msgid "Error:"
-msgstr "Chyba:"
-
-#. TRANSLATORS: This a list of details about the package
-#: ../client/pk-console.c:1716 ../client/pk-console-test.c:370
-msgid "Package description"
-msgstr "Popis balíčka"
-
-#. TRANSLATORS: This a message (like a little note that may be of interest) from the transaction
-#: ../client/pk-console.c:1732 ../client/pk-console-test.c:388
-msgid "Message:"
-msgstr "Správa:"
-
-#. TRANSLATORS: This a list files contained in the package
-#: ../client/pk-console.c:1760 ../client/pk-console-test.c:407
-msgid "Package files"
-msgstr "Zonam súborov v balíčku"
-
-#. TRANSLATORS: This where the package has no files
-#: ../client/pk-console.c:1768 ../client/pk-console-test.c:402
-msgid "No files"
-msgstr "Žiadne súbory"
-
-#. TRANSLATORS: This a request for a GPG key signature from the backend, which the client will prompt for later
-#: ../client/pk-console.c:1791
-msgid "Repository signature required"
-msgstr "Požadovaný podpis repozitára"
-
-#. TRANSLATORS: This a prompt asking the user to import the security key
-#. ask the user
-#: ../client/pk-console.c:1801 ../client/pk-task-text.c:113
-msgid "Do you accept this signature?"
-msgstr "Akceptujete tento podpis?"
-
-#. TRANSLATORS: This is where the user declined the security key
-#: ../client/pk-console.c:1805 ../client/pk-task-text.c:117
-msgid "The signature was not accepted."
-msgstr "Podpis nebol prijatý."
-
-#. TRANSLATORS: This a request for a EULA
-#: ../client/pk-console.c:1839
-msgid "End user license agreement required"
-msgstr "Požadovaný je súhlas s licenciou"
-
-#. TRANSLATORS: This a prompt asking the user to agree to the license
-#: ../client/pk-console.c:1846
-msgid "Do you agree to this license?"
-msgstr "Súhlasíte s touto licenciou?"
-
-#. TRANSLATORS: This is where the user declined the license
-#: ../client/pk-console.c:1850
-msgid "The license was refused."
-msgstr "Licencia bola odmietnutá."
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek without a paddle
-#: ../client/pk-console.c:1879 ../client/pk-console-test.c:972
-msgid "The daemon crashed mid-transaction!"
-msgstr "Služba na pozadí neočakávne skončila počas transakcie!"
-
-#. TRANSLATORS: This is the header to the --help menu
-#: ../client/pk-console.c:1932 ../client/pk-console-test.c:1006
-msgid "PackageKit Console Interface"
-msgstr "Konzola PackageKit"
-
-#. these are commands we can use with pkcon
-#: ../client/pk-console.c:1934 ../client/pk-console-test.c:1008
-msgid "Subcommands:"
-msgstr "Podpríkazy:"
-
-#. TRANSLATORS: command line argument, if we should show debugging information
-#. TRANSLATORS: if we should show debugging data
-#: ../client/pk-console.c:2027 ../client/pk-console-test.c:1099
-#: ../client/pk-generate-pack.c:187 ../client/pk-monitor.c:128
-#: ../client/pk-monitor-test.c:282
-#: ../contrib/command-not-found/pk-command-not-found.c:616
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:549
-#: ../contrib/device-rebind/pk-device-rebind.c:293 ../src/pk-main.c:211
-msgid "Show extra debugging information"
-msgstr "Zobrazovať dodatočné ladiace informácie"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: ../client/pk-console.c:2030 ../client/pk-console-test.c:1102
-#: ../client/pk-monitor.c:130 ../client/pk-monitor-test.c:284
-msgid "Show the program version and exit"
-msgstr "Zobraziť verziu programu a skončiť"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: ../client/pk-console.c:2033 ../client/pk-console-test.c:1105
-msgid "Set the filter, e.g. installed"
-msgstr "Nastaviť filter, napríklad \"nainštalované\""
-
-#. TRANSLATORS: command line argument, work asynchronously
-#: ../client/pk-console.c:2036 ../client/pk-console-test.c:1108
-msgid "Exit without waiting for actions to complete"
-msgstr "Nečakať na dokončenie úloh a skončiť"
-
-#. TRANSLATORS: This is when we could not connect to the system bus, and is fatal
-#: ../client/pk-console.c:2063
-msgid "This tool could not connect to system DBUS."
-msgstr "Pokus o pripojenie k systémovej zbernici DBUS neuspel."
-
-#. TRANSLATORS: The user specified an incorrect filter
-#: ../client/pk-console.c:2153 ../client/pk-console-test.c:1183
-msgid "The filter specified was invalid"
-msgstr "Zadaný filter nebol platný"
-
-#. TRANSLATORS: a search type can be name, details, file, etc
-#: ../client/pk-console.c:2172 ../client/pk-console-test.c:1202
-msgid "A search type is required, e.g. name"
-msgstr "Je potrebný typ hľadania, napr. názov"
-
-#. TRANSLATORS: the user needs to provide a search term
-#: ../client/pk-console.c:2179 ../client/pk-console.c:2188
-#: ../client/pk-console.c:2197 ../client/pk-console.c:2206
-#: ../client/pk-console-test.c:1209 ../client/pk-console-test.c:1221
-#: ../client/pk-console-test.c:1233 ../client/pk-console-test.c:1245
-msgid "A search term is required"
-msgstr "Je potrebný vyhľadávací reťazec"
-
-#. TRANSLATORS: the search type was provided, but invalid
-#: ../client/pk-console.c:2213 ../client/pk-console-test.c:1255
-msgid "Invalid search type"
-msgstr "Neplatný typ vyhľadávania"
-
-#. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console.c:2219
-msgid "A package name or filename to install is required"
-msgstr "Je potrebný názov balíčka alebo súboru na inštalovanie"
-
-#. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2228 ../client/pk-console-test.c:1282
-msgid "A type, key_id and package_id are required"
-msgstr "Je potrebné určiť typ, key_id a package_id"
-
-#. TRANSLATORS: the user did not specify what they wanted to remove
-#: ../client/pk-console.c:2237 ../client/pk-console-test.c:1293
-msgid "A package name to remove is required"
-msgstr "Je potrebný názov balíčka na odstránenie"
-
-#. TRANSLATORS: the user did not specify anything about what to download or where
-#: ../client/pk-console.c:2245 ../client/pk-console-test.c:1302
-msgid "A destination directory and the package names to download are required"
-msgstr "Je potrebné určiť cieľový priečinok a názvy balíčkov na stiahnutie"
-
-#. TRANSLATORS: the directory does not exist, so we can't continue
-#: ../client/pk-console.c:2252 ../client/pk-console-test.c:1309
-msgid "Directory not found"
-msgstr "Priečinok nenájdený"
-
-#. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2260 ../client/pk-console-test.c:1318
-msgid "A licence identifier (eula-id) is required"
-msgstr "Je potrebný identifikátor licencie (eula-id)"
-
-#. TRANSLATORS: geeky error, 99.9999% of users won't see this
-#: ../client/pk-console.c:2270 ../client/pk-console-test.c:1329
-msgid "A transaction identifier (tid) is required"
-msgstr "Je potrebný identifikátor transakcie (tid)"
-
-#. TRANSLATORS: The user did not specify a package name
-#: ../client/pk-console.c:2287 ../client/pk-console-test.c:1350
-msgid "A package name to resolve is required"
-msgstr "Je potrebný názov balíčka na rozvinutie"
-
-#. TRANSLATORS: The user did not specify a repository (software source) name
-#: ../client/pk-console.c:2296 ../client/pk-console.c:2305
-#: ../client/pk-console-test.c:1361 ../client/pk-console-test.c:1372
-msgid "A repository name is required"
-msgstr "Je potrebný názov repozitára"
-
-#. TRANSLATORS: The user didn't provide any data
-#: ../client/pk-console.c:2314 ../client/pk-console-test.c:1383
-msgid "A repo name, parameter and value are required"
-msgstr "Je potrebné určiť názov repozitára, parameter a hodnotu"
-
-#. TRANSLATORS: The user didn't specify what action to use
-#: ../client/pk-console.c:2328 ../client/pk-console-test.c:1401
-msgid "An action, e.g. 'update-system' is required"
-msgstr "Je potrebná akcia, napr. 'update-system'"
-
-#. TRANSLATORS: The user specified an invalid action
-#: ../client/pk-console.c:2335 ../client/pk-console-test.c:1408
-msgid "A correct role is required"
-msgstr "Je potrebná správna rola"
-
-#. TRANSLATORS: we keep a database updated with the time that an action was last executed
-#: ../client/pk-console.c:2342 ../client/pk-console-test.c:1415
-msgid "Failed to get the time since this action was last completed"
-msgstr "Získanie času od ukončenia tejto akcie zlyhalo"
-
-#. TRANSLATORS: The user did not provide a package name
-#. TRANSLATORS: This is when the user fails to supply the package name
-#: ../client/pk-console.c:2352 ../client/pk-console.c:2364
-#: ../client/pk-console.c:2373 ../client/pk-console.c:2391
-#: ../client/pk-console.c:2400 ../client/pk-console-test.c:1425
-#: ../client/pk-console-test.c:1440 ../client/pk-console-test.c:1449
-#: ../client/pk-console-test.c:1469 ../client/pk-console-test.c:1478
-#: ../client/pk-generate-pack.c:243
-msgid "A package name is required"
-msgstr "Je potrebný názov balíčka"
-
-#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-decoder-mp3), the user didn't specify it
-#: ../client/pk-console.c:2382 ../client/pk-console-test.c:1458
-msgid "A package provide string is required"
-msgstr "Je potrebný reťazec poskytovania"
-
-#. TRANSLATORS: The user didn't specify a filename to create as a list
-#: ../client/pk-console.c:2409
-msgid "A list file name to create is required"
-msgstr "Je potrebný názov súboru zoznamu na vytvorenie"
-
-#. TRANSLATORS: The user didn't specify a filename to open as a list
-#: ../client/pk-console.c:2419 ../client/pk-console.c:2429
-msgid "A list file to open is required"
-msgstr "Je potrebný názov súboru zoznamu na otvorenie"
-
-#. TRANSLATORS: The user tried to use an unsupported option on the command line
-#: ../client/pk-console.c:2483 ../client/pk-console-test.c:1538
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Voľba '%s' nie je podporovaná"
-
-#. TRANSLATORS: User does not have permission to do this
-#: ../client/pk-console.c:2496
-msgid "Incorrect privileges for this operation"
-msgstr "Nedostatočné privilégiá na vykonanie tejto úlohy"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#. /* TRANSLATORS: User does not have permission to do this */
-#. g_print ("%s\n", _("Incorrect privileges for this operation"));
-#. TRANSLATORS: Generic failure of what they asked to do
-#: ../client/pk-console.c:2499 ../client/pk-console-test.c:1550
-msgid "Command failed"
-msgstr "Príkaz neuspel"
-
-#. TRANSLATORS: more than one package could be found that matched, to follow is a list of possible packages
-#: ../client/pk-console-test.c:523 ../client/pk-tools-common.c:131
-msgid "More than one package matches:"
-msgstr "Zadaniu vyhovuje viac balíčkov:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: ../client/pk-console-test.c:532 ../client/pk-tools-common.c:138
-msgid "Please choose the correct package: "
-msgstr "Zadajte prosím správny balíček: "
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console-test.c:734
-#, c-format
-msgid "This tool could not find the available package: %s"
-msgstr "Nepodarilo sa nájsť dostupný balíček: %s"
-
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console-test.c:762
+msgid "This tool could not find any available package: %s"
+msgstr ""
+
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:894
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "Nepodarilo sa nájsť nainštalovaný balíček: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#: ../client/pk-console-test.c:790 ../client/pk-console-test.c:818
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#: ../client/pk-console.c:922 ../client/pk-console.c:950
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Nepodarilo sa nájsť balíček: %s"
 
-#. TRANSLATORS: There was an error getting the list of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in any software sources. The detailed error follows
-#: ../client/pk-console-test.c:846 ../client/pk-console-test.c:872
-#: ../client/pk-console-test.c:898 ../client/pk-console-test.c:924
-#: ../client/pk-console-test.c:950
+#. TRANSLATORS: There was an error getting the list of files for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the dependencies for the package.
+#. The detailed error follows
+#. TRANSLATORS: There was an error getting the details about the package. The
+#. detailed error follows
+#. TRANSLATORS: The package name was not found in any software sources. The
+#. detailed error follows
+#: ../client/pk-console.c:978 ../client/pk-console.c:1006
+#: ../client/pk-console.c:1034 ../client/pk-console.c:1062
+#: ../client/pk-console.c:1090
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Nepodarilo sa nájsť všetky balíčky: %s"
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up shit creek
+#. without a paddle
+#: ../client/pk-console.c:1119
+msgid "The daemon crashed mid-transaction!"
+msgstr "Služba na pozadí neočakávne skončila počas transakcie!"
+
+#. TRANSLATORS: This is the header to the --help menu
+#: ../client/pk-console.c:1153
+msgid "PackageKit Console Interface"
+msgstr "Konzola PackageKit"
+
+#. these are commands we can use with pkcon
+#: ../client/pk-console.c:1155
+msgid "Subcommands:"
+msgstr "Podpríkazy:"
+
+#. TRANSLATORS: we keep a database updated with the time that an action was
+#. last executed
+#: ../client/pk-console.c:1234
+msgid "Failed to get the time since this action was last completed"
+msgstr "Získanie času od ukončenia tejto akcie zlyhalo"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
+msgid "Show the program version and exit"
+msgstr "Zobraziť verziu programu a skončiť"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: ../client/pk-console.c:1278
+msgid "Set the filter, e.g. installed"
+msgstr "Nastaviť filter, napríklad \"nainštalované\""
+
+#. TRANSLATORS: command line argument, use a non-standard install prefix
+#: ../client/pk-console.c:1281
+msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
+msgstr ""
+
+#. TRANSLATORS: command line argument, work asynchronously
+#: ../client/pk-console.c:1284
+msgid "Exit without waiting for actions to complete"
+msgstr "Nečakať na dokončenie úloh a skončiť"
+
+#. command line argument, do we ask questions
+#: ../client/pk-console.c:1287
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:525
+msgid "Install the packages without asking for confirmation"
+msgstr ""
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: ../client/pk-console.c:1290
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: ../client/pk-console.c:1293
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: ../client/pk-console.c:1296
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr ""
+
+#. TRANSLATORS: we failed to contact the daemon
+#: ../client/pk-console.c:1333
+msgid "Failed to contact PackageKit"
+msgstr ""
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1381
+msgid "The proxy could not be set"
+msgstr ""
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1393
+msgid "The install root could not be set"
+msgstr ""
+
+#. TRANSLATORS: The user specified an incorrect filter
+#: ../client/pk-console.c:1405
+msgid "The filter specified was invalid"
+msgstr "Zadaný filter nebol platný"
+
+#. TRANSLATORS: a search type can be name, details, file, etc
+#: ../client/pk-console.c:1424
+msgid "A search type is required, e.g. name"
+msgstr "Je potrebný typ hľadania, napr. názov"
+
+#. TRANSLATORS: the user needs to provide a search term
+#: ../client/pk-console.c:1431 ../client/pk-console.c:1443
+#: ../client/pk-console.c:1455 ../client/pk-console.c:1467
+msgid "A search term is required"
+msgstr "Je potrebný vyhľadávací reťazec"
+
+#. TRANSLATORS: the search type was provided, but invalid
+#: ../client/pk-console.c:1477
+msgid "Invalid search type"
+msgstr "Neplatný typ vyhľadávania"
+
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console-test.c:1261
+#: ../client/pk-console.c:1483
 msgid "A package name to install is required"
 msgstr "Je potrebný názov balíčka na inštalovanie"
 
 #. TRANSLATORS: the user did not specify what they wanted to install
-#: ../client/pk-console-test.c:1270
+#: ../client/pk-console.c:1492
 msgid "A filename to install is required"
 msgstr "Je potrebný názov súboru na inštalovanie"
 
-#. TRANSLATORS: This is the state of the transaction
-#: ../client/pk-generate-pack.c:103
-msgid "Downloading"
-msgstr "Získavanie"
+#. TRANSLATORS: geeky error, 99.9999% of users won't see this
+#: ../client/pk-console.c:1503
+msgid "A type, key_id and package_id are required"
+msgstr "Je potrebné určiť typ, key_id a package_id"
 
-#. TRANSLATORS: This is when the main packages are being downloaded
-#: ../client/pk-generate-pack.c:123
-msgid "Downloading packages"
-msgstr "Získavanie balíčkov"
+#. TRANSLATORS: the user did not specify what they wanted to remove
+#: ../client/pk-console.c:1514
+msgid "A package name to remove is required"
+msgstr "Je potrebný názov balíčka na odstránenie"
 
-#. TRANSLATORS: This is when the dependency packages are being downloaded
-#: ../client/pk-generate-pack.c:128
-msgid "Downloading dependencies"
-msgstr "Získavanie závislostí"
+#. TRANSLATORS: the user did not specify anything about what to download or
+#. where
+#: ../client/pk-console.c:1523
+msgid "A destination directory and the package names to download are required"
+msgstr "Je potrebné určiť cieľový priečinok a názvy balíčkov na stiahnutie"
 
-#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll exist on the target
-#: ../client/pk-generate-pack.c:190
+#. TRANSLATORS: the directory does not exist, so we can't continue
+#: ../client/pk-console.c:1530
+msgid "Directory not found"
+msgstr "Priečinok nenájdený"
+
+#. TRANSLATORS: geeky error, 99.9999% of users won't see this
+#: ../client/pk-console.c:1539
+msgid "A licence identifier (eula-id) is required"
+msgstr "Je potrebný identifikátor licencie (eula-id)"
+
+#. TRANSLATORS: geeky error, 99.9999% of users won't see this
+#: ../client/pk-console.c:1550
+msgid "A transaction identifier (tid) is required"
+msgstr "Je potrebný identifikátor transakcie (tid)"
+
+#. TRANSLATORS: The user did not specify a package name
+#: ../client/pk-console.c:1571
+msgid "A package name to resolve is required"
+msgstr "Je potrebný názov balíčka na rozvinutie"
+
+#. TRANSLATORS: The user did not specify a repository (software source) name
+#: ../client/pk-console.c:1582 ../client/pk-console.c:1593
+msgid "A repository name is required"
+msgstr "Je potrebný názov repozitára"
+
+#. TRANSLATORS: The user didn't provide any data
+#: ../client/pk-console.c:1604
+msgid "A repo name, parameter and value are required"
+msgstr "Je potrebné určiť názov repozitára, parameter a hodnotu"
+
+#. TRANSLATORS: The user didn't specify what action to use
+#: ../client/pk-console.c:1621
+msgid "An action, e.g. 'update-system' is required"
+msgstr "Je potrebná akcia, napr. 'update-system'"
+
+#. TRANSLATORS: The user specified an invalid action
+#: ../client/pk-console.c:1628
+msgid "A correct role is required"
+msgstr "Je potrebná správna rola"
+
+#. TRANSLATORS: The user did not provide a package name
+#. TRANSLATORS: This is when the user fails to supply the package name
+#: ../client/pk-console.c:1638 ../client/pk-console.c:1652
+#: ../client/pk-console.c:1661 ../client/pk-console.c:1681
+#: ../client/pk-console.c:1690 ../client/pk-generate-pack.c:314
+msgid "A package name is required"
+msgstr "Je potrebný názov balíčka"
+
+#. TRANSLATORS: each package "provides" certain things, e.g. mime(gstreamer-
+#. decoder-mp3), the user didn't specify it
+#: ../client/pk-console.c:1670
+msgid "A package provide string is required"
+msgstr "Je potrebný reťazec poskytovania"
+
+#. TRANSLATORS: The user did not provide a distro name
+#: ../client/pk-console.c:1714
+msgid "A distribution name is required"
+msgstr ""
+
+#. TRANSLATORS: The user did not provide an upgrade type
+#: ../client/pk-console.c:1720
+msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
+msgstr ""
+
+#. TRANSLATORS: The user tried to use an unsupported option on the command
+#. line
+#: ../client/pk-console.c:1770
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Voľba '%s' nie je podporovaná"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+#: ../client/pk-console.c:1780
+msgid "Command failed"
+msgstr "Príkaz neuspel"
+
+#. TRANSLATORS: we can exclude certain packages (glibc) when we know they'll
+#. exist on the target
+#: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
 msgstr "Nastavte názov súboru so závislosťami, ktoré sa majú vynechať"
 
 #. TRANSLATORS: the output location
-#: ../client/pk-generate-pack.c:193
-msgid ""
-"The output file or directory (the current directory is used if ommitted)"
+#: ../client/pk-generate-pack.c:256
+msgid "The output file or directory (the current directory is used if omitted)"
 msgstr ""
-"Cieľový súbor alebo priečinok (ak bude vynechané, použije sa aktuálny "
-"priečinok)"
 
 #. TRANSLATORS: put a list of packages in the pack
-#: ../client/pk-generate-pack.c:196
+#: ../client/pk-generate-pack.c:259
 msgid "The package to be put into the service pack"
 msgstr "Balíček ktorý sa má uložiť do servisného archívu"
 
 #. TRANSLATORS: put all pending updates in the pack
-#: ../client/pk-generate-pack.c:199
+#: ../client/pk-generate-pack.c:262
 msgid "Put all updates available in the service pack"
 msgstr "Vložiť do servisného archívu všetky dostupné aktualizácie"
 
 #. TRANSLATORS: This is when the user fails to supply the correct arguments
-#: ../client/pk-generate-pack.c:227
+#: ../client/pk-generate-pack.c:298
 msgid "Neither --package or --updates option selected."
 msgstr "Nezvolená ani voľba --package ani voľba --updates."
 
 #. TRANSLATORS: This is when the user fails to supply just one argument
-#: ../client/pk-generate-pack.c:235
+#: ../client/pk-generate-pack.c:306
 msgid "Both options selected."
 msgstr "Obidve voľby boli určené."
 
 #. TRANSLATORS: This is when the user fails to supply the output
-#: ../client/pk-generate-pack.c:251
+#: ../client/pk-generate-pack.c:322
 msgid "A output directory or file name is required"
 msgstr "Je potrebný názov výstupného priečinka alebo súboru"
 
-#. TRANSLATORS: This is when the backend doesn't have the capability to get-depends
-#. TRANSLATORS: This is when the backend doesn't have the capability to download
-#: ../client/pk-generate-pack.c:269 ../client/pk-generate-pack.c:275
+#. TRANSLATORS: This is when the daemon is not-installed/broken and fails to
+#. startup
+#: ../client/pk-generate-pack.c:340
+msgid "The daemon failed to startup"
+msgstr ""
+
+#. TRANSLATORS: This is when the backend doesn't have the capability to get-
+#. depends
+#. TRANSLATORS: This is when the backend doesn't have the capability to
+#. download
+#: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
 msgstr "Správca balíčkov nemôže vykonať tento druh operácie."
 
-#. TRANSLATORS: This is when the distro didn't include libarchive support into PK
-#: ../client/pk-generate-pack.c:282
-msgid ""
-"Service packs cannot be created as PackageKit was not built with libarchive "
-"support."
-msgstr "Nie je možné vytvárať servisné archívy, pretože PackageKit nebol "
-"zostavený s podporou libarchive."
+#. TRANSLATORS: This is when the distro didn't include libarchive support into
+#. PK
+#: ../client/pk-generate-pack.c:364
+msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgstr "Nie je možné vytvárať servisné archívy, pretože PackageKit nebol zostavený s podporou libarchive."
 
-#. TRANSLATORS: the user specified an absolute path, but didn't get the extension correct
-#: ../client/pk-generate-pack.c:293
+#. TRANSLATORS: the user specified an absolute path, but didn't get the
+#. extension correct
+#: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
 msgstr "Pri určovaní súboru musí názov servisného archívu končiť na"
 
 #. TRANSLATORS: This is when file already exists
-#: ../client/pk-generate-pack.c:309
+#: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
 msgstr "Archív s rovnakým názvom už existuje, chcete ho nahradiť?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
-#: ../client/pk-generate-pack.c:312
+#: ../client/pk-generate-pack.c:394
 msgid "The pack was not overwritten."
 msgstr "Archív nebol prepísaný."
 
-# XXX
-#. TRANSLATORS: This is when the temporary directory cannot be created, the directory name follows
-#: ../client/pk-generate-pack.c:325
+#. TRANSLATORS: This is when the temporary directory cannot be created, the
+#. directory name follows
+#: ../client/pk-generate-pack.c:407
 msgid "Failed to create directory:"
 msgstr "Nepodarilo sa vytvoriť priečinok:"
 
-# XXX
-#. TRANSLATORS: This is when the list of packages from the remote computer cannot be opened
-#: ../client/pk-generate-pack.c:335
+#. TRANSLATORS: This is when the list of packages from the remote computer
+#. cannot be opened
+#: ../client/pk-generate-pack.c:419
 msgid "Failed to open package list."
 msgstr "Nepodarilo sa otvoriť zoznam balíčkov."
 
 #. TRANSLATORS: The package name is being matched up to available packages
-#: ../client/pk-generate-pack.c:346
+#: ../client/pk-generate-pack.c:428
 msgid "Finding package name."
 msgstr "Hľadanie názvu balíčka."
 
-#. TRANSLATORS: This is when the package cannot be found in any software source. The detailed error follows
-#: ../client/pk-generate-pack.c:350
+#. TRANSLATORS: This is when the package cannot be found in any software
+#. source. The detailed error follows
+#: ../client/pk-generate-pack.c:432
 #, c-format
 msgid "Failed to find package '%s': %s"
 msgstr "Nepodarilo sa nájsť balíček '%s': %s"
 
-#. TRANSLATORS: This is telling the user we are in the process of making the pack
-#: ../client/pk-generate-pack.c:367
+#. TRANSLATORS: This is telling the user we are in the process of making the
+#. pack
+#: ../client/pk-generate-pack.c:440
 msgid "Creating service pack..."
 msgstr "Vytváranie servisného archívu..."
 
 #. TRANSLATORS: we succeeded in making the file
-#: ../client/pk-generate-pack.c:374
+#: ../client/pk-generate-pack.c:455
 #, c-format
 msgid "Service pack created '%s'"
 msgstr "Vytvorený servisný archív '%s'"
 
 #. TRANSLATORS: we failed to make te file
-#: ../client/pk-generate-pack.c:379
+#: ../client/pk-generate-pack.c:460
 #, c-format
 msgid "Failed to create '%s': %s"
 msgstr "Nepodarilo sa vytvoriť '%s': %s"
 
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: ../client/pk-monitor.c:146 ../client/pk-monitor-test.c:299
-msgid "PackageKit Monitor"
-msgstr "Monitor PackageKit"
-
-#: ../client/pk-monitor.c:183
-msgid "Cannot show the list of transactions"
-msgstr "Nie je možné zobraziť zoznam transakcií"
-
-# XXX
-#: ../client/pk-monitor-test.c:204
-msgid "Failed to get transaction list"
-msgstr "Nepodarilo sa získať zoznam transakcií"
-
-# XXX
-#: ../client/pk-monitor-test.c:235
+#: ../client/pk-monitor.c:284
 msgid "Failed to get daemon state"
 msgstr "Nepodarilo sa zistiť stav démona"
 
-#. ask the user
-#: ../client/pk-task-text.c:64
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Chcete povoliť inštalovanie nepodpísaného softvéru?"
+#: ../client/pk-monitor.c:349
+msgid "Failed to get properties"
+msgstr ""
 
-#: ../client/pk-task-text.c:68
-msgid "The unsigned software will not be installed."
-msgstr "Nepodpísaný softvér nebude nainštalovaný."
-
-#: ../client/pk-task-text.c:100
-msgid "Software source signature required"
-msgstr "Požadovaný je podpis zdroja softvéru"
-
-#: ../client/pk-task-text.c:102
-msgid "Software source name"
-msgstr "Názov zdroja softvéru"
-
-#: ../client/pk-task-text.c:103
-msgid "Key URL"
-msgstr "URL kľúča"
-
-#: ../client/pk-task-text.c:104
-msgid "Key user"
-msgstr "Užívateľ kľúča"
-
-#: ../client/pk-task-text.c:105
-msgid "Key ID"
-msgstr "ID kľúča"
-
-#: ../client/pk-task-text.c:106
-msgid "Key fingerprint"
-msgstr "Odtlačok kľúča"
-
-#: ../client/pk-task-text.c:107
-msgid "Key Timestamp"
-msgstr "Časová značka kľúča"
-
-#: ../client/pk-task-text.c:151
-msgid "End user licence agreement required"
-msgstr "Požadovaný je súhlas s licenciou koncového používateľa"
-
-#: ../client/pk-task-text.c:152
-msgid "EULA ID"
-msgstr "EULA ID"
-
-#: ../client/pk-task-text.c:155
-msgid "Agreement"
-msgstr "Dohoda"
-
-#. ask the user
-#: ../client/pk-task-text.c:161
-msgid "Do you accept this agreement?"
-msgstr "Akceptujete túto dohodu?"
-
-#: ../client/pk-task-text.c:165
-msgid "The agreement was not accepted."
-msgstr "Dohoda nebola prijatá."
-
-#: ../client/pk-task-text.c:194
-msgid "Media change required"
-msgstr "Je potrebná zmena média"
-
-#: ../client/pk-task-text.c:195
-msgid "Media type"
-msgstr "Typ média"
-
-#: ../client/pk-task-text.c:196
-msgid "Media ID"
-msgstr "ID média"
-
-#: ../client/pk-task-text.c:197
-msgid "Text"
-msgstr "Text"
-
-#. ask the user
-#: ../client/pk-task-text.c:201
-msgid "Please insert the correct media"
-msgstr "Vložte prosím správne médium"
-
-#: ../client/pk-task-text.c:205
-msgid "The correct media was not inserted."
-msgstr "Nebolo vložené správne médium."
-
-#: ../client/pk-task-text.c:303
-msgid "The transaction did not proceed."
-msgstr "Transakcia neprešla."
-
-#: ../client/pk-text.c:50
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Zadajte prosím číslo od 1 do %i: "
-
-#. TRANSLATORS: The package was not found in any software sources
-#: ../client/pk-tools-common.c:119
-#, c-format
-msgid "The package could not be found"
-msgstr "Balíček sa nepodarilo nájsť"
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: ../client/pk-monitor.c:387
+msgid "PackageKit Monitor"
+msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: when we are getting data from the daemon
-#: ../contrib/browser-plugin/pk-plugin-install.c:466
+#: ../contrib/browser-plugin/pk-plugin-install.c:499
 msgid "Getting package information..."
 msgstr "Získavanie informácií o balíčku..."
 
 #. TRANSLATORS: run an applicaiton
-#: ../contrib/browser-plugin/pk-plugin-install.c:472
+#: ../contrib/browser-plugin/pk-plugin-install.c:505
 #, c-format
 msgid "Run %s"
 msgstr "Spustiť %s"
 
 #. TRANSLATORS: show the installed version of a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:478
+#: ../contrib/browser-plugin/pk-plugin-install.c:511
 msgid "Installed version"
 msgstr "Nainštalovaná verzia"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:486
+#: ../contrib/browser-plugin/pk-plugin-install.c:519
 #, c-format
 msgid "Run version %s now"
 msgstr "Spustiť verziu %s teraz"
 
 #. TRANSLATORS: run the application now
-#: ../contrib/browser-plugin/pk-plugin-install.c:492
+#: ../contrib/browser-plugin/pk-plugin-install.c:525
 msgid "Run now"
 msgstr "Spustiť teraz"
 
 #. TRANSLATORS: update to a new version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:498
+#: ../contrib/browser-plugin/pk-plugin-install.c:531
 #, c-format
 msgid "Update to version %s"
 msgstr "Aktualizovať na verziu %s"
 
 #. TRANSLATORS: To install a package
-#: ../contrib/browser-plugin/pk-plugin-install.c:504
+#: ../contrib/browser-plugin/pk-plugin-install.c:537
 #, c-format
 msgid "Install %s now"
 msgstr "Nainštalovať %s teraz"
 
 #. TRANSLATORS: the version of the package
-#: ../contrib/browser-plugin/pk-plugin-install.c:507
+#: ../contrib/browser-plugin/pk-plugin-install.c:540
 msgid "Version"
 msgstr "Verzia"
 
 #. TRANSLATORS: noting found, so can't install
-#: ../contrib/browser-plugin/pk-plugin-install.c:512
+#: ../contrib/browser-plugin/pk-plugin-install.c:545
 msgid "No packages found for your system"
 msgstr "Pre váš systém neboli nájdené žiadne balíčky"
 
 #. TRANSLATORS: package is being installed
-#: ../contrib/browser-plugin/pk-plugin-install.c:517
+#: ../contrib/browser-plugin/pk-plugin-install.c:550
 msgid "Installing..."
 msgstr "Inštalovanie..."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:349
+#: ../contrib/command-not-found/pk-command-not-found.c:366
 msgid "Downloading details about the software sources."
 msgstr "Získavanie detailov o zdrojoch softvéru."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:353
+#: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Získavanie zoznamov súborov (dokončenie môže chvíľu trvať)."
 
 #. TRANSLATORS: waiting for native lock
-#: ../contrib/command-not-found/pk-command-not-found.c:357
+#: ../contrib/command-not-found/pk-command-not-found.c:374
 msgid "Waiting for package manager lock."
 msgstr "Čakanie na zámok správcu balíčkov."
 
 #. TRANSLATORS: loading package cache so we can search
-#: ../contrib/command-not-found/pk-command-not-found.c:361
+#: ../contrib/command-not-found/pk-command-not-found.c:378
 msgid "Loading list of packages."
 msgstr "Načítavanie zoznamu balíčkov."
 
-# XXX
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: ../contrib/command-not-found/pk-command-not-found.c:420
+#: ../contrib/command-not-found/pk-command-not-found.c:444
 msgid "Failed to search for file"
 msgstr "Vyhľadanie súboru zlyhalo"
 
-# XXX
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: ../contrib/command-not-found/pk-command-not-found.c:456
+msgid "Getting the list of files failed"
+msgstr ""
+
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: ../contrib/command-not-found/pk-command-not-found.c:557
+#: ../contrib/command-not-found/pk-command-not-found.c:602
 msgid "Failed to launch:"
 msgstr "Spustenie zlyhalo:"
 
+#. TRANSLATORS: we failed to install the package
+#: ../contrib/command-not-found/pk-command-not-found.c:630
+msgid "Failed to install packages"
+msgstr ""
+
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/command-not-found/pk-command-not-found.c:632
+#: ../contrib/command-not-found/pk-command-not-found.c:706
 msgid "PackageKit Command Not Found"
 msgstr "PackageKit príkaz nenájdený"
 
-#. TRANSLATORS: the prefix of all the output telling the user why it's not executing
-#: ../contrib/command-not-found/pk-command-not-found.c:658
-msgid "Command not found."
-msgstr "Príkaz nenájdený."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+#: ../contrib/command-not-found/pk-command-not-found.c:739
+msgid "command not found"
+msgstr ""
 
 #. TRANSLATORS: tell the user what we think the command is
-#: ../contrib/command-not-found/pk-command-not-found.c:665
+#: ../contrib/command-not-found/pk-command-not-found.c:757
 msgid "Similar command is:"
 msgstr "Podobný príkaz je:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: ../contrib/command-not-found/pk-command-not-found.c:674
+#: ../contrib/command-not-found/pk-command-not-found.c:771
 msgid "Run similar command:"
 msgstr "Spustiť podobný príkaz:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: ../contrib/command-not-found/pk-command-not-found.c:686
-#: ../contrib/command-not-found/pk-command-not-found.c:695
+#: ../contrib/command-not-found/pk-command-not-found.c:785
+#: ../contrib/command-not-found/pk-command-not-found.c:794
 msgid "Similar commands are:"
 msgstr "Podobné príkazy sú:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: ../contrib/command-not-found/pk-command-not-found.c:702
+#: ../contrib/command-not-found/pk-command-not-found.c:801
 msgid "Please choose a command to run"
 msgstr "Zvoľte, prosí, príkaz na spustenie"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: ../contrib/command-not-found/pk-command-not-found.c:721
+#: ../contrib/command-not-found/pk-command-not-found.c:819
 msgid "The package providing this file is:"
 msgstr "Balíček poskytujúci tento súbor je:"
 
-#. TRANSLATORS: as the user if we want to install a package to provide the command
-#: ../contrib/command-not-found/pk-command-not-found.c:726
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Nainštalovať balíček '%s' pre zaobstaranie príkazu '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:747
+#: ../contrib/command-not-found/pk-command-not-found.c:853
 msgid "Packages providing this file are:"
 msgstr "Balíčky poskytujúce tento súbor sú:"
 
-#. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: ../contrib/command-not-found/pk-command-not-found.c:756
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+#: ../contrib/command-not-found/pk-command-not-found.c:863
 msgid "Suitable packages are:"
 msgstr "Vhodné balíčky sú:"
 
 #. get selection
 #. TRANSLATORS: ask the user to choose a file to install
-#: ../contrib/command-not-found/pk-command-not-found.c:764
+#: ../contrib/command-not-found/pk-command-not-found.c:872
 msgid "Please choose a package to install"
 msgstr "Zvoľte, prosím, balíček na inštalovanie"
 
 #. TRANSLATORS: we are starting to install the packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:187
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:195
 msgid "Starting install"
 msgstr "Spúšťanie inštalácie"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:397
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
 msgstr "Balíček %s sa nenašiel, alebo už je nainštalovaný: %s"
 
-#. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:552
-msgid ""
-"Don't actually install any packages, only simulate what would be installed"
-msgstr "V skutočnosti neinštalovať žiadne balíčky, len simulovať, čo by mohlo "
-"byť nainštalované"
+#. command line argument, simulate what would be done, but don't actually do
+#. it
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
+msgid "Don't actually install any packages, only simulate what would be installed"
+msgstr "V skutočnosti neinštalovať žiadne balíčky, len simulovať, čo by mohlo byť nainštalované"
 
-#. command line argument, do we skip packages that depend on the ones specified
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:555
+#. command line argument, do we skip packages that depend on the ones
+#. specified
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:519
 msgid "Do not install dependencies of the core packages"
 msgstr "Neinštalovať závislosti hlavných balíčkov"
 
 #. command line argument, do we operate quietly
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:558
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:522
 msgid "Do not display information or progress"
 msgstr "Nezobrazovať informácie ani priebeh"
 
 #. TRANSLATORS: tool that gets called when the command is not found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:576
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:540
 msgid "PackageKit Debuginfo Installer"
 msgstr "PackageKit inštalátor pre debuginfo"
 
-#. TRANSLATORS: the use needs to specify a list of package names on the command line
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:588
+#. TRANSLATORS: the use needs to specify a list of package names on the
+#. command line
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:554
 #, c-format
 msgid "ERROR: Specify package names to install."
 msgstr "CHYBA: Je potrebné určiť názvy balíčkov na inštaláciu."
 
 #. TRANSLATORS: we are getting the list of repositories
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:622
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:590
 #, c-format
 msgid "Getting sources list"
 msgstr "Získavanie zoznamu zdrojov"
 
+#. TRANSLATORS: operation was not successful
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:600
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:675
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:759
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:803
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:870
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:914
+msgid "FAILED."
+msgstr "ZLYHALO."
+
 #. TRANSLATORS: all completed 100%
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:640
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:680
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:715
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:799
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:843
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:910
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:954
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:615
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:655
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:774
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:885
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:929
 #, c-format
 msgid "OK."
 msgstr "Ok."
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:643
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
 msgstr "Nájdených %i povolených a %i zakázaných zdrojov."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:650
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
 #, c-format
 msgid "Finding debugging sources"
 msgstr "Vyhľadanie ladiacich zdrojov"
 
 #. TRANSLATORS: tell the user what we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:683
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
 msgstr "Nájdených %i zakázaných debuginfo zdrojov."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:690
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
 #, c-format
 msgid "Enabling debugging sources"
 msgstr "Povoľovanie ladiacich zdrojov"
 
-#. TRANSLATORS: operation was not successful
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:784
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:828
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:895
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:939
-msgid "FAILED."
-msgstr "ZLYHALO."
-
 #. TRANSLATORS: tell the user how many we enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:718
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:693
 #, c-format
 msgid "Enabled %i debugging sources."
 msgstr "Povolených %i ladiacich zdrojov."
 
 #. TRANSLATORS: we're now finding packages that match in all the repos
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:725
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:700
 #, c-format
 msgid "Finding debugging packages"
 msgstr "Hľadanie ladiacich balíčkov"
 
 #. TRANSLATORS: we couldn't find the package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:737
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:712
 #, c-format
 msgid "Failed to find the package %s: %s"
 msgstr "Nepodarilo sa nájsť balíček '%s': %s"
 
 #. TRANSLATORS: we couldn't find the debuginfo package name, non-fatal
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:760
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:735
 #, c-format
 msgid "Failed to find the debuginfo package %s: %s"
 msgstr "Nepodarilo sa nájsť ladiaci balíček '%s': %s"
 
 #. TRANSLATORS: no debuginfo packages could be found to be installed
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:788
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:763
 #, c-format
 msgid "Found no packages to install."
 msgstr "Žiadne balíčky na inštalovanie."
 
 #. TRANSLATORS: tell the user we found some packages, and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:802
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:777
 #, c-format
 msgid "Found %i packages:"
 msgstr "Nájdených %i balíčkov:"
 
 #. TRANSLATORS: tell the user we are searching for deps
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:818
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:793
 #, c-format
 msgid "Finding packages that depend on these packages"
 msgstr "Hľadanie balíčkov závisiacich na týchto balíčkoch"
 
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:831
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:806
 #, c-format
 msgid "Could not find dependant packages: %s"
 msgstr "Nebolo možné nájsť závislé balíčky: %s"
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:847
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:822
 #, c-format
 msgid "Found %i extra packages."
 msgstr "Nájdených %i extra balíčkov."
 
 #. TRANSLATORS: tell the user we found some more packages
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:851
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:826
 #, c-format
 msgid "No extra packages required."
 msgstr "Nie sú potrebné žiadne extra balíčky."
 
-#. TRANSLATORS: tell the user we found some packages (and deps), and then list them
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#. TRANSLATORS: tell the user we found some packages (and deps), and then list
+#. them
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:835
 #, c-format
 msgid "Found %i packages to install:"
 msgstr "Nájdených %i balíčkov na inštalovanie:"
 
-#. TRANSLATORS: simulate mode is a testing mode where we quit before the action
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
+#. TRANSLATORS: simulate mode is a testing mode where we quit before the
+#. action
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:848
 #, c-format
 msgid "Not installing packages in simulate mode"
 msgstr "V režime simulácie sa balíčky nebudú inštalovať"
 
+#. TRANSLATORS: we are now installing the debuginfo packages we found earlier
+#. TRANSLATORS: transaction state, installing packages
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:860
+#: ../lib/packagekit-glib2/pk-console-shared.c:287
+#, c-format
+msgid "Installing packages"
+msgstr "Inštalovanie balíčkov"
+
 #. TRANSLATORS: could not install, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:898
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:873
 #, c-format
 msgid "Could not install packages: %s"
 msgstr "Nepodarilo sa nainštalovať balíčky: %s"
 
 #. TRANSLATORS: we are now disabling all debuginfo repos we previously enabled
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:930
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:905
 #, c-format
 msgid "Disabling sources previously enabled"
 msgstr "Zakázanie predtým povolených zdrojov"
 
-#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed error follows
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:942
+#. TRANSLATORS: no debuginfo packages could be found to be installed, detailed
+#. error follows
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:917
 #, c-format
 msgid "Could not disable the debugging sources: %s"
 msgstr "Nepodarilo sa zakázať ladiace zdroje: %s"
 
 #. TRANSLATORS: we disabled all the debugging repos that we enabled before
-#: ../contrib/debuginfo-install/pk-debuginfo-install.c:957
+#: ../contrib/debuginfo-install/pk-debuginfo-install.c:932
 #, c-format
 msgid "Disabled %i debugging sources."
 msgstr "Zakázaných %i ladiacich zdrojov."
 
-# XXX
 #. TRANSLATORS: couldn't open device to write
-#: ../contrib/device-rebind/pk-device-rebind.c:61
+#: ../contrib/device-rebind/pk-device-rebind.c:62
 msgid "Failed to open file"
 msgstr "Otvorenie súboru zlyhalo"
 
-# XXX
 #. TRANSLATORS: could not write to the device
-#: ../contrib/device-rebind/pk-device-rebind.c:70
+#: ../contrib/device-rebind/pk-device-rebind.c:71
 msgid "Failed to write to the file"
 msgstr "Zápis do súboru zlyhal"
 
-# XXX
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:110
-#: ../contrib/device-rebind/pk-device-rebind.c:147
+#: ../contrib/device-rebind/pk-device-rebind.c:111
+#: ../contrib/device-rebind/pk-device-rebind.c:148
 msgid "Failed to write to device"
 msgstr "Zápis na zariadenie zlyhal"
 
 #. TRANSLATORS: the device could not be found in sysfs
-#: ../contrib/device-rebind/pk-device-rebind.c:175
+#: ../contrib/device-rebind/pk-device-rebind.c:176
 msgid "Device could not be found"
 msgstr "Zariadenie sa nepodarilo nájsť"
 
-# XXX
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:202
+#: ../contrib/device-rebind/pk-device-rebind.c:203
 msgid "Failed to unregister driver"
 msgstr "Nepodarilo sa odregistrovať ovládač"
 
-# XXX
 #. TRANSLATORS: we failed to bind the old driver
-#: ../contrib/device-rebind/pk-device-rebind.c:211
+#: ../contrib/device-rebind/pk-device-rebind.c:212
 msgid "Failed to register driver"
 msgstr "Nepodarilo sa zaregistrovať ovládač"
 
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:260
+#: ../contrib/device-rebind/pk-device-rebind.c:261
 msgid "Device path not found"
 msgstr "Cesta k zariadeniu nenájdená"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:268
+#: ../contrib/device-rebind/pk-device-rebind.c:269
 msgid "Incorrect device path specified"
 msgstr "Určená nesprávna cesta k zariadeniu"
 
-#. command line argument, simulate what would be done, but don't actually do it
-#: ../contrib/device-rebind/pk-device-rebind.c:296
+#: ../contrib/device-rebind/pk-device-rebind.c:294
+msgid "Show extra debugging information"
+msgstr "Zobrazovať dodatočné ladiace informácie"
+
+#. command line argument, simulate what would be done, but don't actually do
+#. it
+#: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
 msgstr "V skutočnosti sa nedotýkať hardvéru, len simulovať, čo by sa udialo"
 
 #. TRANSLATORS: command line option: a list of files to install
-#: ../contrib/device-rebind/pk-device-rebind.c:299
+#: ../contrib/device-rebind/pk-device-rebind.c:300
 msgid "Device paths"
 msgstr "Cesty k zariadeniu"
 
-#. TRANSLATORS: tool that gets called when the device needs reloading after installing firmware
-#: ../contrib/device-rebind/pk-device-rebind.c:314
+#. TRANSLATORS: tool that gets called when the device needs reloading after
+#. installing firmware
+#: ../contrib/device-rebind/pk-device-rebind.c:315
 msgid "PackageKit Device Reloader"
 msgstr "PackageKit obnovenie zariadenia"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:322
+#: ../contrib/device-rebind/pk-device-rebind.c:323
 msgid "You need to specify at least one valid device path"
 msgstr "Je potrebné určiť aspoň jednu platnú cestu k zariadeniu"
 
 #. TRANSLATORS: user did not specify a valid device sysfs path
-#: ../contrib/device-rebind/pk-device-rebind.c:332
+#: ../contrib/device-rebind/pk-device-rebind.c:333
 msgid "This script can only be used by the root user"
 msgstr "Tento skript môže používať len používateľ root"
 
 #. TRANSLATORS: we're going to verify the path first
-#: ../contrib/device-rebind/pk-device-rebind.c:341
+#: ../contrib/device-rebind/pk-device-rebind.c:342
 msgid "Verifying device path"
 msgstr "Overovanie cesty k zariadeniu"
 
-# XXX
 #. TRANSLATORS: user did not specify a device sysfs path that exists
-#: ../contrib/device-rebind/pk-device-rebind.c:346
+#: ../contrib/device-rebind/pk-device-rebind.c:347
 msgid "Failed to verify device path"
 msgstr "Overovanie cesty k zariadeniu zlyhalo"
 
 #. TRANSLATORS: we're going to try
-#: ../contrib/device-rebind/pk-device-rebind.c:360
+#: ../contrib/device-rebind/pk-device-rebind.c:361
 msgid "Attempting to rebind device"
 msgstr "Pokus o obnovenie spojenia k zariadeniu"
 
-# XXX
 #. TRANSLATORS: we failed to release the current driver
-#: ../contrib/device-rebind/pk-device-rebind.c:365
+#: ../contrib/device-rebind/pk-device-rebind.c:366
 msgid "Failed to rebind device"
 msgstr "Nepodarilo sa obnoviť spojenie k zariadeniu"
 
@@ -1478,12 +1156,639 @@ msgstr "Zoznam balíčkov PackageKit"
 msgid "PackageKit Service Pack"
 msgstr "Servisný archív PackageKit"
 
+#: ../lib/packagekit-glib2/pk-console-shared.c:63
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Zadajte prosím číslo od 1 do %i: "
+
+#. TRANSLATORS: more than one package could be found that matched, to follow
+#. is a list of possible packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:189
+msgid "More than one package matches:"
+msgstr "Zadaniu vyhovuje viac balíčkov:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: ../lib/packagekit-glib2/pk-console-shared.c:200
+msgid "Please choose the correct package: "
+msgstr "Zadajte prosím správny balíček: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: ../lib/packagekit-glib2/pk-console-shared.c:255
+msgid "Unknown state"
+msgstr ""
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: ../lib/packagekit-glib2/pk-console-shared.c:259
+msgid "Starting"
+msgstr ""
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+#: ../lib/packagekit-glib2/pk-console-shared.c:263
+msgid "Waiting in queue"
+msgstr ""
+
+#. TRANSLATORS: transaction state, just started
+#: ../lib/packagekit-glib2/pk-console-shared.c:267
+msgid "Running"
+msgstr ""
+
+#. TRANSLATORS: transaction state, is querying data
+#: ../lib/packagekit-glib2/pk-console-shared.c:271
+msgid "Querying"
+msgstr ""
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:275
+msgid "Getting information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, removing packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:279
+msgid "Removing packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:283
+#: ../lib/packagekit-glib2/pk-console-shared.c:661
+msgid "Downloading packages"
+msgstr "Získavanie balíčkov"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: ../lib/packagekit-glib2/pk-console-shared.c:291
+msgid "Refreshing software list"
+msgstr ""
+
+#. TRANSLATORS: transaction state, installing updates
+#: ../lib/packagekit-glib2/pk-console-shared.c:295
+msgid "Installing updates"
+msgstr ""
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+#: ../lib/packagekit-glib2/pk-console-shared.c:299
+msgid "Cleaning up packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: ../lib/packagekit-glib2/pk-console-shared.c:303
+msgid "Obsoleting packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: ../lib/packagekit-glib2/pk-console-shared.c:307
+msgid "Resolving dependencies"
+msgstr ""
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+#: ../lib/packagekit-glib2/pk-console-shared.c:311
+msgid "Checking signatures"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we return to a previous system state
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:315
+#: ../lib/packagekit-glib2/pk-console-shared.c:621
+msgid "Rolling back"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:319
+msgid "Testing changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+#: ../lib/packagekit-glib2/pk-console-shared.c:323
+msgid "Committing changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: ../lib/packagekit-glib2/pk-console-shared.c:327
+msgid "Requesting data"
+msgstr ""
+
+#. TRANSLATORS: transaction state, all done!
+#: ../lib/packagekit-glib2/pk-console-shared.c:331
+msgid "Finished"
+msgstr ""
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+#: ../lib/packagekit-glib2/pk-console-shared.c:335
+msgid "Cancelling"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:339
+msgid "Downloading repository information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:343
+msgid "Downloading list of packages"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:347
+msgid "Downloading file lists"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:351
+msgid "Downloading lists of changes"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:355
+msgid "Downloading groups"
+msgstr ""
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: ../lib/packagekit-glib2/pk-console-shared.c:359
+msgid "Downloading update information"
+msgstr ""
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: ../lib/packagekit-glib2/pk-console-shared.c:363
+msgid "Repackaging files"
+msgstr ""
+
+#. TRANSLATORS: transaction state, loading databases
+#: ../lib/packagekit-glib2/pk-console-shared.c:367
+msgid "Loading cache"
+msgstr ""
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:371
+msgid "Scanning applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+#: ../lib/packagekit-glib2/pk-console-shared.c:375
+msgid "Generating package lists"
+msgstr ""
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+#: ../lib/packagekit-glib2/pk-console-shared.c:379
+msgid "Waiting for package manager lock"
+msgstr ""
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: ../lib/packagekit-glib2/pk-console-shared.c:383
+msgid "Waiting for authentication"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: ../lib/packagekit-glib2/pk-console-shared.c:387
+msgid "Updating running applications"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+#: ../lib/packagekit-glib2/pk-console-shared.c:391
+msgid "Checking applications in use"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+#: ../lib/packagekit-glib2/pk-console-shared.c:395
+msgid "Checking libraries in use"
+msgstr ""
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+#: ../lib/packagekit-glib2/pk-console-shared.c:399
+msgid "Copying files"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:417
+msgid "Trivial"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:421
+msgid "Normal"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:425
+msgid "Important"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:429
+msgid "Security"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:433
+msgid "Bug fix "
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:437
+msgid "Enhancement"
+msgstr ""
+
+#. TRANSLATORS: The type of update
+#: ../lib/packagekit-glib2/pk-console-shared.c:441
+msgid "Blocked"
+msgstr ""
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:446
+#: ../lib/packagekit-glib2/pk-console-shared.c:519
+msgid "Installed"
+msgstr ""
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: ../lib/packagekit-glib2/pk-console-shared.c:451
+msgid "Available"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:469
+msgid "Downloading"
+msgstr "Získavanie"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:473
+msgid "Updating"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:477
+#: ../lib/packagekit-glib2/pk-console-shared.c:597
+msgid "Installing"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:481
+#: ../lib/packagekit-glib2/pk-console-shared.c:593
+msgid "Removing"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:485
+msgid "Cleaning up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:489
+msgid "Obsoleting"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:493
+msgid "Reinstalling"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:511
+msgid "Downloaded"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:523
+msgid "Removed"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:527
+msgid "Cleaned up"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:531
+msgid "Obsoleted"
+msgstr ""
+
+#. TRANSLATORS: The action of the package, in past tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:535
+msgid "Reinstalled"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:553
+msgid "Unknown role type"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:557
+msgid "Getting dependencies"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:561
+msgid "Getting update details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:565
+msgid "Getting details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:569
+msgid "Getting requires"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:573
+msgid "Getting updates"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:577
+msgid "Searching by details"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:581
+msgid "Searching by file"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:585
+msgid "Searching groups"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:589
+msgid "Searching by name"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:601
+msgid "Installing files"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:605
+msgid "Refreshing cache"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:609
+msgid "Updating packages"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:613
+msgid "Updating system"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:617
+msgid "Canceling"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:625
+msgid "Getting repositories"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:629
+msgid "Enabling repository"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:633
+msgid "Setting data"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:637
+msgid "Resolving"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:641
+msgid "Getting file list"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:645
+msgid "Getting provides"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:649
+msgid "Installing signature"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:653
+msgid "Getting packages"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:657
+msgid "Accepting EULA"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:665
+msgid "Getting upgrades"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:669
+msgid "Getting categories"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:673
+msgid "Getting transactions"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:677
+#: ../lib/packagekit-glib2/pk-console-shared.c:681
+msgid "Simulating install"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:685
+msgid "Simulating remove"
+msgstr ""
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: ../lib/packagekit-glib2/pk-console-shared.c:689
+msgid "Simulating update"
+msgstr ""
+
+#. TRANSLATORS: turn on all debugging
+#: ../lib/packagekit-glib2/pk-debug.c:133
+msgid "Show debugging information for all files"
+msgstr ""
+
+#: ../lib/packagekit-glib2/pk-debug.c:201
+msgid "Debugging Options"
+msgstr ""
+
+#: ../lib/packagekit-glib2/pk-debug.c:201
+msgid "Show debugging options"
+msgstr ""
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+#: ../lib/packagekit-glib2/pk-task-text.c:67
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Chcete povoliť inštalovanie nepodpísaného softvéru?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:72
+msgid "The unsigned software will not be installed."
+msgstr "Nepodpísaný softvér nebude nainštalovaný."
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+#: ../lib/packagekit-glib2/pk-task-text.c:121
+msgid "Software source signature required"
+msgstr "Požadovaný je podpis zdroja softvéru"
+
+#. TRANSLATORS: the package repository name
+#: ../lib/packagekit-glib2/pk-task-text.c:127
+msgid "Software source name"
+msgstr "Názov zdroja softvéru"
+
+#. TRANSLATORS: the key URL
+#: ../lib/packagekit-glib2/pk-task-text.c:130
+msgid "Key URL"
+msgstr "URL kľúča"
+
+#. TRANSLATORS: the username of the key
+#: ../lib/packagekit-glib2/pk-task-text.c:133
+msgid "Key user"
+msgstr "Užívateľ kľúča"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: ../lib/packagekit-glib2/pk-task-text.c:136
+msgid "Key ID"
+msgstr "ID kľúča"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: ../lib/packagekit-glib2/pk-task-text.c:139
+msgid "Key fingerprint"
+msgstr "Odtlačok kľúča"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: ../lib/packagekit-glib2/pk-task-text.c:142
+msgid "Key Timestamp"
+msgstr "Časová značka kľúča"
+
+#. TRANSLATORS: ask the user if they want to import
+#: ../lib/packagekit-glib2/pk-task-text.c:155
+msgid "Do you accept this signature?"
+msgstr "Akceptujete tento podpis?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:160
+msgid "The signature was not accepted."
+msgstr "Podpis nebol prijatý."
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+#: ../lib/packagekit-glib2/pk-task-text.c:203
+msgid "End user licence agreement required"
+msgstr "Požadovaný je súhlas s licenciou koncového používateľa"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: ../lib/packagekit-glib2/pk-task-text.c:212
+msgid "Agreement"
+msgstr "Dohoda"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: ../lib/packagekit-glib2/pk-task-text.c:221
+msgid "Do you accept this agreement?"
+msgstr "Akceptujete túto dohodu?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: ../lib/packagekit-glib2/pk-task-text.c:226
+msgid "The agreement was not accepted."
+msgstr "Dohoda nebola prijatá."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: ../lib/packagekit-glib2/pk-task-text.c:265
+msgid "Media change required"
+msgstr "Je potrebná zmena média"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: ../lib/packagekit-glib2/pk-task-text.c:268
+msgid "Media type"
+msgstr "Typ média"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: ../lib/packagekit-glib2/pk-task-text.c:271
+msgid "Media label"
+msgstr ""
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: ../lib/packagekit-glib2/pk-task-text.c:274
+msgid "Text"
+msgstr "Text"
+
+#. TRANSLATORS: ask the user to insert the media
+#: ../lib/packagekit-glib2/pk-task-text.c:280
+msgid "Please insert the correct media"
+msgstr "Vložte prosím správne médium"
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: ../lib/packagekit-glib2/pk-task-text.c:285
+msgid "The correct media was not inserted."
+msgstr "Nebolo vložené správne médium."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:300
+msgid "The following packages have to be removed:"
+msgstr "Nasledujúce balíčky budú musieť byť odstránené:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:305
+msgid "The following packages have to be installed:"
+msgstr "Nasledujúce balíčky budú musieť byť nainštalované:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:310
+msgid "The following packages have to be updated:"
+msgstr "Nasledujúce balíčky budú musieť byť aktualizované:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:315
+msgid "The following packages have to be reinstalled:"
+msgstr "Nasledujúce balíčky budú musieť byť preinštalované:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: ../lib/packagekit-glib2/pk-task-text.c:320
+msgid "The following packages have to be downgraded:"
+msgstr "Nasledujúcim balíčkom bude musieť byť znížené číslo verzie:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: ../lib/packagekit-glib2/pk-task-text.c:380
+msgid "Proceed with changes?"
+msgstr "Vykonať zmeny?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: ../lib/packagekit-glib2/pk-task-text.c:385
+msgid "The transaction did not proceed."
+msgstr "Transakcia neprešla."
+
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#.
+#. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:7
 msgid "Accept EULA"
 msgstr "Prijať licenčné podmienky"
@@ -1493,73 +1798,82 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Na prijatie licenčných podmienok je potrebné overenie totožnosti"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Na zrušenie úlohy, ktorá nebola naštartovaná vami, je potrebné overenie totožnosti"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Na zrušenie úlohy, ktorá nebola naštartovaná vami, je potrebné overenie totožnosti"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "Na zmenu parametrov softvérového zdroja je potrebné overenie totožnosti"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid ""
-"Authentication is required to consider a key used for signing packages as "
-"trusted"
+msgid "Authentication is required to change the location used to decompress packages"
 msgstr ""
-"Na vyjadrenie dôvery kľúču používaného na podpisovanie balíčkov je potrebné "
-"overenie totožnosti"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgstr "Na vyjadrenie dôvery kľúču používaného na podpisovanie balíčkov je potrebné overenie totožnosti"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
 msgstr "Na inštalovanie podpísaného balíčka je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
 msgstr "Na inštaláciu nedôveryhodného balíčka je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
 msgstr "Na obnovenie zdrojov pre systém je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "Na obnovenie zariadenia s novým ovládačom je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
 msgstr "Na odstránenie balíčkov je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
 msgstr "Na navrátenie transakcie je potrebné overenie totožnosti"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"packages"
-msgstr ""
-"Na nastavenie sieťového proxy pre získavanie balíčkov je potrebné overenie totožnosti"
-
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Authentication is required to set the network proxy used for downloading packages"
+msgstr "Na nastavenie sieťového proxy pre získavanie balíčkov je potrebné overenie totožnosti"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
 msgstr "Na aktualizáciu balíčkov je potrebné overenie totožnosti"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:21
+msgid "Authentication is required to upgrade the operating system"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:25
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:27
 msgid "Cancel foreign task"
 msgstr "Zrušiť cudziu úlohu"
+
+#. SECURITY:
+#. - This is used when users want to install to a different prefix, for
+#. instance to a LTSP image or a virtual machine.
+#. - This could be used to overwrite files not owned by the user using
+#. a carefully created package file.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:34
+msgid "Change location that packages are installed"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software sources as this can be used to enable new updates or
 #. install different versions of software.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:31
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:40
 msgid "Change software source parameters"
 msgstr "Zmeniť parametre zdrojov softvéru"
 
@@ -1568,8 +1882,8 @@ msgstr "Zmeniť parametre zdrojov softvéru"
 #. from signed repositories, as this cannot exploit a system.
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:38
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:47
 msgid "Install signed package"
 msgstr "Inštalovať podpísaný balíček"
 
@@ -1578,16 +1892,16 @@ msgstr "Inštalovať podpísaný balíček"
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:45
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:54
 msgid "Install untrusted local file"
 msgstr "Inštalovať nedôveryhodný lokálny súbor"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:50
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:59
 msgid "Refresh system sources"
 msgstr "Obnoviť zdroje pre systém"
 
@@ -1597,8 +1911,8 @@ msgstr "Obnoviť zdroje pre systém"
 #. - This should not be set to 'yes' as unprivileged users could then
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:58
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:67
 msgid "Reload a device"
 msgstr "Obnoviť zariadenie"
 
@@ -1610,8 +1924,8 @@ msgstr "Obnoviť zariadenie"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:68
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:77
 msgid "Remove package"
 msgstr "Odstrániť balíček"
 
@@ -1619,16 +1933,16 @@ msgstr "Odstrániť balíček"
 #. - Normal users require admin authentication to rollback system state
 #. as this will change a large number of packages, and could expose the
 #. system to previously patched security vulnerabilities.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:74
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:83
 msgid "Rollback to a previous transaction"
 msgstr "Navrátiť sa k stavu pred transakciou"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:79
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:88
 msgid "Set network proxy"
 msgstr "Nastaviť sieťové proxy"
 
@@ -1637,8 +1951,8 @@ msgstr "Nastaviť sieťové proxy"
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:86
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
 msgstr "Dôverovať kľúču pre podpisovanie balíčkov"
 
@@ -1648,10 +1962,19 @@ msgstr "Dôverovať kľúču pre podpisovanie balíčkov"
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#.
-#: ../policy/org.freedesktop.packagekit.policy.in.h:94
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:103
 msgid "Update packages"
 msgstr "Aktualizovať balíčky"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. 
+#: ../policy/org.freedesktop.packagekit.policy.in.h:109
+msgid "Upgrade System"
+msgstr ""
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
@@ -1670,263 +1993,86 @@ msgstr "Program nebol spustený správnym používateľom (obvykle root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid ""
-"The org.freedesktop.PackageKit.conf file is not installed in the system "
-"directory:"
-msgstr ""
-"Súbor org.freedesktop.PackageKit.conf nie je nainštalovaný v systémovom "
-"priečinku:"
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgstr "Súbor org.freedesktop.PackageKit.conf nie je nainštalovaný v systémovom priečinku:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
-#: ../src/pk-main.c:205
+#: ../src/pk-main.c:200
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Rozhranie balíčkoveho systému ktoré sa má použiť, napríklad \"dummy\""
 
 #. TRANSLATORS: if we should run in the background
-#: ../src/pk-main.c:208
+#: ../src/pk-main.c:203
 msgid "Daemonize and detach from the terminal"
 msgstr "Uvoľniť terminál a presunúť sa na pozadie"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: ../src/pk-main.c:214
+#: ../src/pk-main.c:206
 msgid "Disable the idle timer"
 msgstr "Vypnúť počítadlo času nečinnosti"
 
 #. TRANSLATORS: show version
-#: ../src/pk-main.c:217
+#: ../src/pk-main.c:209
 msgid "Show version and exit"
 msgstr "Zobraziť verziu a skončiť"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: ../src/pk-main.c:220
+#: ../src/pk-main.c:212
 msgid "Exit after a small delay"
 msgstr "Skončiť po krátkej prestávke"
 
-# XXX
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: ../src/pk-main.c:223
+#: ../src/pk-main.c:215
 msgid "Exit after the engine has loaded"
 msgstr "Skončiť po načítaní enginu"
 
 #. TRANSLATORS: describing the service that is running
-#: ../src/pk-main.c:238
+#: ../src/pk-main.c:230
 msgid "PackageKit service"
 msgstr "Služba PackageKit"
 
 #. TRANSLATORS: fatal error, dbus is not running
-#: ../src/pk-main.c:275
+#: ../src/pk-main.c:267
 msgid "Cannot connect to the system bus"
 msgstr "Pokus o pripojenie k systémovej zbernici neuspel"
 
-#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error follows
-#: ../src/pk-main.c:334
+#. TRANSLATORS: cannot register on system bus, unknown reason -- geeky error
+#. follows
+#: ../src/pk-main.c:316
 msgid "Error trying to start:"
 msgstr "Chyba pri pokuse o spustenie:"
 
-#: ../src/pk-polkit-action-lookup.c:147
+#: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
 msgstr "Na inštalovanie ladiacich balíčkov je potrebné povoliť extra zdroje"
 
 #. TRANSLATORS: is not GPG signed
-#: ../src/pk-polkit-action-lookup.c:168 ../src/pk-polkit-action-lookup.c:187
+#: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
 msgid "The software is not from a trusted source."
 msgstr "Tento softvér nepochádza z dôveryhodného zdroja."
 
-#: ../src/pk-polkit-action-lookup.c:173
+#: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Neaktualizujte tento balíček, pokiaľ nie ste si istý, že to je bezpečné."
 
-#: ../src/pk-polkit-action-lookup.c:174
+#: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Neaktualizujte tieto balíčky, pokiaľ nie ste si istý, že to je bezpečné."
 
-#: ../src/pk-polkit-action-lookup.c:192
+#: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Neinštalujte tento balíček, pokiaľ nie ste si istý, že to je bezpečné."
 
-#: ../src/pk-polkit-action-lookup.c:193
+#: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Neinštalujte tieto balíčky, pokiaľ nie ste si istý, že to je bezpečné."
 
-#. TRANSLATORS: warn the user that all bets are off
-#: ../src/pk-polkit-action-lookup.c:199
-msgid "Malicious software can damage your computer or cause other harm."
-msgstr "Zákerný softvér môže poškodiť váš počítač alebo spôsobiť iné škody."
-
 #. TRANSLATORS: too many packages to list each one
-#: ../src/pk-polkit-action-lookup.c:274
+#: ../src/pk-polkit-action-lookup.c:273
 msgid "Many packages"
 msgstr "Priveľa balíčkov"
 
 #. TRANSLATORS: if the transaction is forced to install only trusted packages
-#: ../src/pk-polkit-action-lookup.c:334
+#: ../src/pk-polkit-action-lookup.c:339
 msgid "Only trusted"
 msgstr "Len dôveryhodné"
-
-#~ msgid "You need to specify a search type, e.g. name"
-#~ msgstr "Je potrebné určiť typ vyhľadávania, napríklad názov"
-
-#~ msgid "You need to specify a search term"
-#~ msgstr "Je potrebné určiť kľúčové slová na vyhľadávanie"
-
-#~ msgid "You need to specify a package to remove"
-#~ msgstr "Je potrebné určit balíček na odstránenie"
-
-#~ msgid "You need to specify a package name to resolve"
-#~ msgstr "Je potrebné určiť názov balíčka na vyhľadanie"
-
-#~ msgid "You need to specify a repository name"
-#~ msgstr "Je potrebné určiť názov repozitára"
-
-#~ msgid "You need to specify an action, e.g. 'update-system'"
-#~ msgstr "Je potrebné určiť akciu, napríklad 'update-system'"
-
-#~ msgid "You need to specify a correct role"
-#~ msgstr "Je potrebné určiť správnu rolu"
-
-#~ msgid "You need to specify a package to find the details for"
-#~ msgstr "Je potrebné určiť balíček, ktorého detaily sa majú získať"
-
-#~ msgid "You need to specify a package to find the files for"
-#~ msgstr "Je potrebné určiť balíček, zoznam súborov ktorého sa má získať"
-
-#~ msgid "You need to specify a list file to open"
-#~ msgstr "Je potrebné určiť súbor zoznamu pre otvorenie"
-
-#~ msgid "This tool could not remove the packages: '%s'"
-#~ msgstr "Nepodarilo sa odstrániť balíčky: '%s'"
-
-#~ msgid "Install local file"
-#~ msgstr "Inštalovať z lokálneho súboru"
-
-#~ msgid "Okay to import key?"
-#~ msgstr "Importovať kľúč?"
-
-#~ msgid "Did not import key"
-#~ msgstr "Kľúč nebol importovaný"
-
-#~ msgid "Eula required"
-#~ msgstr "Požadovaná je licencia EULA"
-
-#~ msgid "Do you agree?"
-#~ msgstr "Súhlasíte?"
-
-#~ msgid "Could not find package to remove"
-#~ msgstr "Nebolo možné nájsť balíček na odstránenie"
-
-#~ msgid "Cancelled!"
-#~ msgstr "Zrušené!"
-
-#~ msgid "Could not find package to update"
-#~ msgstr "Nebolo možné nájsť balíček na aktualizovanie"
-
-#~ msgid "Could not find what packages require"
-#~ msgstr "Nebolo možné určiť čo vyžadujú balíčky"
-
-#~ msgid "Could not find details for"
-#~ msgstr "Nebolo možné získať detaily pre"
-
-#~ msgid "Could not set database readonly"
-#~ msgstr "Pokus o nastavenie databázy do režimu len pre čítanie neuspel"
-
-#~ msgid "Could not open database: %s"
-#~ msgstr "Pokus o otvorenie databázy neuspel: %s"
-
-#~ msgid "You probably need to run this program as the root user"
-#~ msgstr ""
-#~ "Tento program budete pravdepodobne musieť spustiť ako privilegovaný "
-#~ "používateľ (root)"
-
-#~ msgid "<span color='#%06x' underline='single' size='larger'>Run %s</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Spustiť %s</span>"
-
-#~ msgid "<big>%s</big>"
-#~ msgstr "<big>%s</big>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run version %s now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Spustiť verziu %s teraz</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Run now</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Spustiť teraz</span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Upgrade to version %s</span>"
-#~ msgstr ""
-#~ "\n"
-#~ "<span color='#%06x' underline='single'>Aktualizovať na verziu %s</span>"
-
-#~ msgid ""
-#~ "<span color='#%06x' underline='single' size='larger'>Install %s Now</span>"
-#~ msgstr ""
-#~ "<span color='#%06x' underline='single' size='larger'>Inštalovať %s teraz</"
-#~ "span>"
-
-#~ msgid ""
-#~ "\n"
-#~ "<small>Version: %s</small>"
-#~ msgstr ""
-#~ "\n"
-#~ "<small>Verzia: %s</small>"
-
-#~ msgid "failed to download: invalid package_id and/or directory"
-#~ msgstr "získavanie zlyhalo: neplatné package_id a/alebo priečinok"
-
-#~ msgid "Could not find a valid metadata file"
-#~ msgstr "Nebolo možné nájsť platný súbor metadát"
-
-#~ msgid "Okay to download the additional packages"
-#~ msgstr "Chcete stiahnuť dodatočné balíčky"
-
-#~ msgid "You need to specify the pack name and packages to be packed\n"
-#~ msgstr "Je potrebné určit názov archívu a balíčky, ktoré sa majú zabaliť\n"
-
-#~ msgid ""
-#~ "Invalid name for the service pack, Specify a name with .servicepack "
-#~ "extension\n"
-#~ msgstr ""
-#~ "Neplatný názov pre service pack, špecifikujte názov s platnou príponou "
-#~ "pre service pack\n"
-
-#~ msgid "Authentication is required to install a local file"
-#~ msgstr "Na inštaláciu z lokálneho súboru je nutná autentifikácia"
-
-#~ msgid "Authentication is required to install a security signature"
-#~ msgstr "Na inštaláciu bezpečnostný podpisu je nutná autentifikácia"
-
-#~ msgid "Authentication is required to update all packages"
-#~ msgstr "Na aktualizáciu všetkých balíčkov je nutná autentifikácia"
-
-#~ msgid "Install security signature"
-#~ msgstr "Inštalovať bezpečnostný podpis"
-
-#~ msgid "Refresh package lists"
-#~ msgstr "Obnoviť zoznam balíčkov"
-
-#~ msgid "Update all packages"
-#~ msgstr "Aktualizovať všetky balíčky"
-
-#~ msgid ""
-#~ "Could not find a package with that name to install, or package already "
-#~ "installed"
-#~ msgstr ""
-#~ "Nebolo možné nájsť balíček zadaného mena na inštaláciu, alebo je už "
-#~ "balíček nainštalovaný"
-
-#~ msgid "Could not find a package with that name to update"
-#~ msgstr "Nebolo možné nájsť balíček zadaného mena na aktualizáciu"
-
-#~ msgid "Could not find a description for this package"
-#~ msgstr "Nebolo možné získať popis tohoto balíčka"
-
-#~ msgid "You need to specify a package to find the description for"
-#~ msgstr "Je potrebné určiť balíček, ktorého popis sa má vyhľadať"
