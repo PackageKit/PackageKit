@@ -1,3 +1,87 @@
+Version 0.6.11
+~~~~~~~~~~~~~~
+Released: 2010-12-13
+
+Notes:
+ - Additonal notes have been added to the DBus specification that allow
+   backends to send the origin of a installed package. This is optional.
+ - Additionally, more reccomendations have been made to allow searching
+   by repository. See the DBus specification for more details.
+ - An experimental Zif backend has been added. This should not be used
+   on production machines as it may crash and cause filesystem corruption.
+
+Translations:
+ - Added Basque translation (assar)
+ - Updated Chinese (Taiwan) (zh_TW) translation (Cheng-Chia Tseng)
+ - Updated Czech (cs) translation (fri)
+ - Updated Polish (pl) translation (Piotr Drąg)
+ - Updated Spanish (Castilian) (es) translation (Jorge González)
+ - Updated Ukrainian (uk) translation (Yuri Chornoivan)
+
+Libraries:
+ - glib: Add some C getters to PkDistroUpgrade (Richard Hughes)
+ - packagekit-qt: Add searchGroups methods that can take a string so we can search on categories (Daniel Nicoletti)
+ - packagekit-qt: Emit transactionListChanged(empty) when daemon crashes (Daniel Nicoletti)
+ - packagekit-qt: Fix order of initialization (Daniel Nicoletti)
+ - packagekit-qt: Updated enums and converted tabs to spaces (Daniel Nicoletti)
+ - packagekit-qt: Use QDBusServiceWatcher instead of watching for serviceOwnerChanged() (Daniel Nicoletti)
+ - packagekit-qt: Write the getCategories() code so we can use it (Daniel Nicoletti)
+ - python: use SetHints now instead of SetLocale (Tim Waugh)
+
+Backends:
+ - aptcc: Added GStreamer search (Daniel Nicoletti)
+ - aptcc: Fix crash due to NULL strings
+ - aptcc: Fix regex not to match "()(64bit)" as we don't support multiarch anyway (Daniel Nicoletti)
+ - aptcc: Make sure the package is valid before some operations (Daniel Nicoletti)
+ - aptcc: Port away from PK_BACKEND_OPTIONS (Daniel Nicoletti)
+ - aptcc: Set the env proxy vars so that Apt::Acquire is not overwritten, fixes LP: #633008 (Daniel Nicoletti)
+ - aptcc: Use the new PK_ERROR_ENUM_CANNOT_GET_LOCK (Daniel Nicoletti)
+ - dummy: Add a more realistic UpgradeSystem (Richard Hughes)
+ - dummy: Fix a potential NULL dereference spotted by clang (Richard Hughes)
+ - pacman: Prevent recursive logging (Jonathan Conder)
+ - smart: Add origin to installed, if available (Anders F Bjorklund)
+ - yum: Allow a cache refresh when offline to deal with networkless setups (Richard Hughes)
+ - yum: Do not claim to implement the RepoSetData method (Richard Hughes)
+ - yum: Fix compiling when not using Zif (Richard Hughes)
+ - yum: Set the repository directory when doing a complete upgrade (Richard Hughes)
+ - yum: Support repo:foo virtual categories and searching using SearchGroup (Richard Hughes)
+ - yum: Support the optional origin extension for installed packages by using the yumdb information (Richard Hughes)
+ - zif: Add a new backend, which uses Zif to interface with the rpmdb and the Fedora metadata (Richard Hughes)
+ - zif: Add support for SearchGroup('repo:foo') (Richard Hughes)
+ - zif: Don't emit a ZifState warning if an update does not have update details (Richard Hughes)
+ - zif: Fix changelog generation when there is no changeset version available (Richard Hughes)
+ - zif: For updates without updateinfo, do not put '<none>' in the translated display (Richard Hughes)
+ - zif: Get the update vendor string and send to the daemon (Richard Hughes)
+ - zif: If we are running in background mode, depsolve the update lists (Richard Hughes)
+ - zif: Try to use PK_ERROR_ENUM_INTERNAL_ERROR less by using the correct PackageKit error code (Richard Hughes)
+ - zif: Use zif_package_get_printable() to get easier to understand error messages (Richard Hughes)
+ - zypp: Catch ZYppFactoryException in get_zypp (Zhang Qiang)
+ - zypp: Filter installed packages to update (Zhang Qiang)
+ - zypp: Fix a logic error in refresh cache (Zhang Qiang)
+ - zypp: Fix a typo in get_zypp (Zhang Qiang)
+ - zypp: Port from PK_BACKEND_OPTIONS function table (Duncan Mac-Vicar P)
+ - zypp: Support repo filter in geting repo list (Zhang Qiang)
+ - zypp: Transfer correct restart info while updating packages (Zhang Qiang)
+ - zypp: Use zypp::sat::SolvAttr::filelist in search file (Zhang Qiang)
+
+New Features:
+ - Add a new backend role for updating the whole distro: UpgradeSystem (Richard Hughes)
+ - Allow backend to encode the package origin in the package-id (Richard Hughes)
+ - Added PK_ERROR_ENUM_CANNOT_FETCH_SOURCES when refreshing cache fails (Daniel Nicoletti)
+ - Add recommendation repo:foo' to be able to return all packages in a certain repository (Richard Hughes)
+ - Change the spec to recommend 'category:web-development' rather than '@web-development' (Richard Hughes)
+ - Spawn KDE Debconf frontend if KDE is running (Matthias Klumpp)
+
+Bugfixes:
+ - Allow cancelling a transaction if it is not cancellable (Richard Hughes)
+ - Always show update a package even if already update (Zhang Qiang)
+ - Correct the description of org.freedesktop.packagekit.upgrade-system (Sveinung Kvilhaugsvik)
+ - Do not disable background mode if we are marked as interactive, as the two are orthognal (Richard Hughes)
+ - Ensure we can send a cache-age of maxuint to fix command-not-found (Richard Hughes)
+ - Ensure we emit PK_STATUS_ENUM_WAIT when a transaction is in the 'ready' state (Richard Hughes)
+ - Ignore unknown entries in the pk_x_bitfield_from_string() to ensure forwards compatibility (Richard Hughes)
+ - Use G_LOG_DOMAIN in all the backends (Richard Hughes)
+
 Version 0.6.10
 ~~~~~~~~~~~~~~
 Released: 2010-11-01
