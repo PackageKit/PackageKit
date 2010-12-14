@@ -1399,6 +1399,12 @@ backend_find_packages_thread (PkBackend *backend)
 		return FALSE;
 	}
 
+	// refresh the repos before searching
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	values = pk_backend_get_strv (backend, "search");
 	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
 	mode = pk_backend_get_uint (backend, "mode");
