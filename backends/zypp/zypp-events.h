@@ -302,10 +302,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		//g_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
 		//		g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
 		if (_package_id != NULL) {
-			gchar* summary = g_strdup (file.asString().c_str());
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
-			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, summary);
-			g_free (summary);
 			reset_sub_percentage ();
 		}
 	}
