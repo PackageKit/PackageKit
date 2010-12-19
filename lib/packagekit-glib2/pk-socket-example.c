@@ -83,7 +83,7 @@ main (void)
 	g_socket_set_keepalive (socket, TRUE);
 
 	/* connect to it */
-	address = g_unix_socket_address_new_with_type (socket_filename, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	address = g_unix_socket_address_new (socket_filename);
 	ret = g_socket_connect (socket, address, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to connect to socket: %s", error->message);

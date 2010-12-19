@@ -488,7 +488,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 		goto out;
 
 	/* bind to the socket */
-	address = g_unix_socket_address_new_with_type (socket_filename, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	address = g_unix_socket_address_new (socket_filename);
 	ret = g_socket_bind (priv->socket, address, TRUE, error);
 	if (!ret)
 		goto out;

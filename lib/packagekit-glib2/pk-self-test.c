@@ -375,7 +375,7 @@ pk_test_client_helper_func (void)
 	g_socket_set_keepalive (socket, TRUE);
 
 	/* connect to it */
-	address = g_unix_socket_address_new_with_type (filename, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	address = g_unix_socket_address_new (filename);
 	ret = g_socket_connect (socket, address, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);

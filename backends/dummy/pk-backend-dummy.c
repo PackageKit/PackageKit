@@ -1141,7 +1141,7 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 	g_socket_set_keepalive (_socket, TRUE);
 
 	/* connect to it */
-	address = g_unix_socket_address_new_with_type (frontend_socket, -1, G_UNIX_SOCKET_ADDRESS_PATH);
+	address = g_unix_socket_address_new (frontend_socket);
 	ret = g_socket_connect (_socket, address, NULL, &error);
 	if (!ret) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
