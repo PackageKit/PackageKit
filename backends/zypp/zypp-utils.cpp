@@ -196,6 +196,13 @@ zypp_build_pool (PkBackend *backend, gboolean include_local)
 			zypp::Target_Ptr target = zypp->target ();
 			target->load ();
 		}
+	} else {
+		if (!zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
+		{
+			// Remove local resolvables
+			zypp::Repository repository = zypp::sat::Pool::instance ().reposFind (zypp::sat::Pool::systemRepoAlias());
+			repository.eraseFromPool ();
+		}
 	}
 
 	// Add resolvables from enabled repos

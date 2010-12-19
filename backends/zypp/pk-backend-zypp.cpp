@@ -27,6 +27,7 @@
 #include <string>
 #include <set>
 #include <glib/gi18n.h>
+#include <sys/vfs.h>
 
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
@@ -51,6 +52,8 @@
 #include <zypp/base/Functional.h>
 #include <zypp/parser/ProductFileReader.h>
 #include <zypp/TmpPath.h>
+#include <zypp/PathInfo.h>
+#include <zypp/repo/PackageProvider.h>
 
 #include <zypp/sat/Solvable.h>
 
@@ -1399,6 +1402,12 @@ backend_find_packages_thread (PkBackend *backend)
 		return FALSE;
 	}
 
+	// refresh the repos before searching
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	values = pk_backend_get_strv (backend, "search");
 	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
 	mode = pk_backend_get_uint (backend, "mode");
@@ -2039,6 +2048,90 @@ gchar *
 pk_backend_get_mime_types (PkBackend *backend)
 {
 	return g_strdup ("application/x-rpm");
+}
+
+static gboolean
+backend_download_packages_thread (PkBackend *backend)
+{
+	gchar **package_ids;
+	gulong size = 0;
+	
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	zypp::ZYpp::Ptr zypp;
+	zypp = get_zypp (backend);
+	if (zypp == NULL){
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	if (!pk_package_ids_check (package_ids)) {
+		return zypp_backend_finished_error (
+			backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+	}
+	
+	try
+	{
+		zypp::ResPool pool = zypp_build_pool (backend, FALSE);
+		zypp::PoolItem item;
+
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		for (guint i = 0; package_ids[i]; i++) {
+			gchar **id_parts = pk_package_id_split (package_ids[i]);
+			std::string name = id_parts[PK_PACKAGE_ID_NAME];
+
+			for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name); it != pool.byNameEnd (name); it++) {
+				if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
+							     id_parts[PK_PACKAGE_ID_ARCH])) {
+					size += it->satSolvable().lookupNumAttribute (zypp::sat::SolvAttr::installsize);
+					size += it->satSolvable().lookupNumAttribute (zypp::sat::SolvAttr::downloadsize);
+					item = *it;
+					break;
+				}
+			}
+
+			struct statfs stat;
+			statfs(pk_backend_get_root (backend), &stat);
+			if (size > stat.f_bavail * 4) {
+				g_strfreev (id_parts);
+				pk_backend_error_code (backend, PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+					"Insufficient space in download directory '%s'.", pk_backend_get_root (backend));
+				pk_backend_finished (backend);
+				return FALSE;
+			}
+
+			zypp::sat::Solvable solvable = item.resolvable()->satSolvable();
+			zypp::Package::constPtr package = zypp::asKind<zypp::Package>(item.resolvable());
+			zypp::repo::RepoMediaAccess access;
+			zypp::repo::DeltaCandidates deltas;
+			zypp::repo::PackageProvider pkgProvider(access, package, deltas);
+			pkgProvider.providePackage();
+			zypp::filesystem::Pathname tmp_file = solvable.repository().info().packagesPath()+ package->location().filename();
+			pk_backend_files (backend, package_ids[i], tmp_file.c_str());
+			zypp_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, solvable, item->summary ().c_str());
+
+			g_strfreev (id_parts);
+		}
+	} catch (const zypp::Exception &ex) {
+		return zypp_backend_finished_error (
+			backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str());
+	}
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * pk_backend_download_packages:
+ */
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gchar *directory)
+{
+	pk_backend_thread_create (backend, backend_download_packages_thread);
 }
 
 /**
