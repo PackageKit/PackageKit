@@ -406,52 +406,6 @@ bool starts_with (const string &str, const char *start)
 	return str.size() >= startSize && (strncmp(str.data(), start, startSize) == 0);
 }
 
-GDateTime* dateFromString(const gchar *tz,
-                          const gchar *year,
-                          const gchar *month,
-                          const gchar *day,
-                          const gchar *hour,
-                          const gchar *minute,
-                          const gchar *seconds)
-{
-    GDateTime *ret;
-    int monthI;
-    if (strcmp(month, "Jan") == 0) {
-        monthI = 1;
-    } else if (strcmp(month, "Feb") == 0) {
-        monthI = 2;
-    } else if (strcmp(month, "Mar") == 0) {
-        monthI = 3;
-    } else if (strcmp(month, "Apr") == 0) {
-        monthI = 4;
-    } else if (strcmp(month, "May") == 0) {
-        monthI = 5;
-    } else if (strcmp(month, "Jun") == 0) {
-        monthI = 6;
-    } else if (strcmp(month, "Jul") == 0) {
-        monthI = 7;
-    } else if (strcmp(month, "Aug") == 0) {
-        monthI = 8;
-    } else if (strcmp(month, "Sep") == 0) {
-        monthI = 9;
-    } else if (strcmp(month, "Oct") == 0) {
-        monthI = 10;
-    } else if (strcmp(month, "Nov") == 0) {
-        monthI = 11;
-    } else if (strcmp(month, "Dez") == 0) {
-        monthI = 12;
-    }
-
-    ret = g_date_time_new(g_time_zone_new(tz),
-                          atoi(year),
-                          monthI,
-                          atoi(day),
-                          atoi(hour),
-                          atoi(minute),
-                          atoi(seconds));
-    return ret;
-}
-
 const char *utf8(const char *str)
 {
    static char *_str = NULL;

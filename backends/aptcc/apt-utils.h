@@ -139,13 +139,6 @@ bool ends_with(const string &str, const char *end);
   */
 bool starts_with(const string &str, const char *end);
 
-GDateTime* dateFromString(const gchar *tz,
-                          const gchar *year,
-                          const gchar *month,
-                          const gchar *day,
-                          const gchar *hour,
-                          const gchar *minute,
-                          const gchar *seconds);
 /**
   * Return an utf8 string
   */

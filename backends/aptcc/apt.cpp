@@ -600,8 +600,7 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
                            G_REGEX_MATCH_ANCHORED,
                            0);
     GRegex *regexDate;
-    regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'dayname'\\w+,) "
-"(?'d'\\d+) (?'m'\\w+) (?'y'\\d+) (?'H'\\d+):(?'M'\\d+):(?'s'\\d+) (?'offset'[-\\+]\\d+)$",
+    regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$",
                             G_REGEX_CASELESS,
                             G_REGEX_MATCH_ANCHORED,
                             0);
@@ -653,39 +652,15 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
             // and when it got updated
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                gchar *tz;
-                gchar *year;
-                gchar *month;
-                gchar *day;
-                gchar *hour;
-                gchar *minute;
-                gchar *seconds;
-                tz = g_match_info_fetch_named(match_info, "offset");
-                year = g_match_info_fetch_named(match_info, "y");
-                month = g_match_info_fetch_named(match_info, "m");
-                day = g_match_info_fetch_named(match_info, "d");
-                hour = g_match_info_fetch_named(match_info, "H");
-                minute = g_match_info_fetch_named(match_info, "M");
-                seconds = g_match_info_fetch_named(match_info, "s");
-                GDateTime *dateTime;
-                dateTime = dateFromString(tz,
-                                          year,
-                                          month,
-                                          day,
-                                          hour,
-                                          minute,
-                                          seconds);
-                g_free(tz);
-                g_free(year);
-                g_free(month);
-                g_free(day);
-                g_free(hour);
-                g_free(minute);
-                g_free(seconds);
+                GTimeVal dateTime = {0, 0};
+                gchar *date;
+                date = g_match_info_fetch_named(match_info, "date");
+                g_warn_if_fail(RFC1123StrToTime(date, dateTime.tv_sec));
+                g_free(date);
 
-                issued = g_date_time_format(dateTime, "%FT%R:%S");
+                issued = g_time_val_to_iso8601(&dateTime);
                 if (updated.empty()) {
-                    updated = g_date_time_format(dateTime, "%FT%R:%S");
+                    updated = g_time_val_to_iso8601(&dateTime);
                 }
             }
             g_match_info_free(match_info);
