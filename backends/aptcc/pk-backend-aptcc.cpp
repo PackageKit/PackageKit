@@ -988,7 +988,7 @@ backend_search_groups_thread (PkBackend *backend)
 		// Ignore virtual packages
 		pkgCache::VerIterator ver = m_apt->find_ver(pkg);
 		if (ver.end() == false) {
-			string section = pkg.VersionList().Section();
+			string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
 
 			size_t found;
 			found = section.find_last_of("/");

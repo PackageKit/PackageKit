@@ -260,7 +260,7 @@ void aptcc::emit_package(const pkgCache::PkgIterator &pkg,
 	}
 
 	if (filters != 0) {
-		std::string str = ver.Section();
+		std::string str = ver.Section() == NULL ? "" : ver.Section();
 		std::string section, repo_section;
 
 		size_t found;
@@ -462,7 +462,7 @@ void aptcc::povidesCodec(vector<pair<pkgCache::PkgIterator, pkgCache::VerIterato
 void aptcc::emit_details(const pkgCache::PkgIterator &pkg)
 {
 	pkgCache::VerIterator ver = find_ver(pkg);
-	std::string section = ver.Section();
+	std::string section = ver.Section() == NULL ? "" : ver.Section();
 
 	size_t found;
 	found = section.find_last_of("/");
@@ -518,7 +518,7 @@ void aptcc::emit_update_detail(const pkgCache::PkgIterator &pkg)
     if (origin.compare("Debian") == 0 || origin.compare("Ubuntu") == 0) {
         string prefix;
 
-        string src_section = candver.Section();
+        string src_section = candver.Section() == NULL ? "" : candver.Section();
         if(src_section.find('/') != src_section.npos) {
             src_section = string(src_section, 0, src_section.find('/'));
         } else {
