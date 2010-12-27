@@ -35,6 +35,7 @@
 #include <zypp/ui/Selectable.h>
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
+#include <zypp/SrcPackage.h>
 #include <zypp/Pattern.h>
 #include <zypp/Product.h>
 #include <zypp/Repository.h>
@@ -54,6 +55,7 @@
 #include <zypp/TmpPath.h>
 #include <zypp/PathInfo.h>
 #include <zypp/repo/PackageProvider.h>
+#include <zypp/repo/SrcPackageProvider.h>
 
 #include <zypp/sat/Solvable.h>
 
@@ -2087,8 +2089,7 @@ backend_download_packages_thread (PkBackend *backend)
 			for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name); it != pool.byNameEnd (name); it++) {
 				if (zypp_ver_and_arch_equal (it->satSolvable(), id_parts[PK_PACKAGE_ID_VERSION],
 							     id_parts[PK_PACKAGE_ID_ARCH])) {
-					size += it->satSolvable().lookupNumAttribute (zypp::sat::SolvAttr::installsize);
-					size += it->satSolvable().lookupNumAttribute (zypp::sat::SolvAttr::downloadsize);
+					size += 2 * it->satSolvable().lookupNumAttribute (zypp::sat::SolvAttr::downloadsize);
 					item = *it;
 					break;
 				}
@@ -2105,12 +2106,21 @@ backend_download_packages_thread (PkBackend *backend)
 			}
 
 			zypp::sat::Solvable solvable = item.resolvable()->satSolvable();
-			zypp::Package::constPtr package = zypp::asKind<zypp::Package>(item.resolvable());
+			zypp::filesystem::Pathname tmp_file;
 			zypp::repo::RepoMediaAccess access;
 			zypp::repo::DeltaCandidates deltas;
-			zypp::repo::PackageProvider pkgProvider(access, package, deltas);
-			pkgProvider.providePackage();
-			zypp::filesystem::Pathname tmp_file = solvable.repository().info().packagesPath()+ package->location().filename();
+			if (strcmp (id_parts[PK_PACKAGE_ID_ARCH], "source") == 0) {
+				zypp::SrcPackage::constPtr package = zypp::asKind<zypp::SrcPackage>(item.resolvable());
+				zypp::repo::SrcPackageProvider pkgProvider(access);
+				pkgProvider.provideSrcPackage(package);
+				tmp_file = solvable.repository().info().packagesPath()+ package->location().filename();
+			
+			} else {
+				zypp::Package::constPtr package = zypp::asKind<zypp::Package>(item.resolvable());
+				zypp::repo::PackageProvider pkgProvider(access, package, deltas);
+				pkgProvider.providePackage();
+				tmp_file = solvable.repository().info().packagesPath()+ package->location().filename();
+			}
 			pk_backend_files (backend, package_ids[i], tmp_file.c_str());
 			zypp_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, solvable, item->summary ().c_str());
 
