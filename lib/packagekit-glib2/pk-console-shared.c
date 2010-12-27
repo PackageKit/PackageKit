@@ -32,6 +32,7 @@
 #include <packagekit-glib2/pk-results.h>
 #include <packagekit-glib2/pk-package-id.h>
 
+#include "pk-error.h"
 #include "pk-client-sync.h"
 #include "pk-console-shared.h"
 
@@ -149,6 +150,7 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	guint i;
 	gchar *printable;
 	PkPackage *package;
+	PkError *error_code = NULL;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package_name);
@@ -162,6 +164,13 @@ pk_console_resolve_package (PkClient *client, PkBitfield filter, const gchar *pa
 	results = pk_client_resolve (client, filter, tmp, NULL, NULL, NULL, error);
 	if (results == NULL)
 		goto out;
+
+	/* check error code */
+	error_code = pk_results_get_error_code (results);
+	if (error_code != NULL) {
+		g_set_error (error, 1, 0, "\n%s", pk_error_get_details (error_code));
+		goto out;
+	}
 
 	/* get the packages returned */
 	array = pk_results_get_package_array (results);
