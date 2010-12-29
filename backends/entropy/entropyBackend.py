@@ -1168,8 +1168,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
             updates = []
             keyslot = c_repo.retrieveKeySlotAggregated(pkg_id)
-            matches, m_rc = self._entropy.atom_match(keyslot, multiMatch = True,
-                multiRepo = True)
+            matches, m_rc = self._entropy.atom_match(keyslot, multi_match = True,
+                multi_repo = True)
             for m_pkg_id, m_repo_id in matches:
                 if (m_pkg_id, m_repo_id) == (pkg_id, repo_name):
                     continue # fliter myself
