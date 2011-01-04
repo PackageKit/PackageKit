@@ -705,9 +705,11 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: tool that gets called when the command is not found */
 	g_option_context_set_summary (context, _("PackageKit Command Not Found"));
 	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_add_group (context, pk_debug_get_option_group ());
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
+
+	/* don't show debugging, unless VERBOSE is specified */
+	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
 	/* no input */
 	if (argv[1] == NULL)
