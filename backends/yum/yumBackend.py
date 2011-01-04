@@ -999,8 +999,8 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 # yum >= 3.2.10
                 # name = cat.nameByLang(self.lang)
                 # summary = cat.descriptionByLang(self.lang)
-                name = cat.name
-                summary = cat.description
+                name = _to_unicode(cat.name)
+                summary = _to_unicode(cat.description)
                 fn = "/usr/share/pixmaps/comps/%s.png" % cat_id
                 if os.access(fn, os.R_OK):
                     icon = cat_id
