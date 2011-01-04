@@ -1,5 +1,7 @@
 include ${top_srcdir}/moc.mk
 
+.NOTPARALLEL:
+
 NULL =
 
 INCLUDES = \
