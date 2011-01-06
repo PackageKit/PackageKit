@@ -3580,8 +3580,8 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 		state_local = zif_state_get_child (state);
 		pk_backend_emit_package_array (backend, simulate_array, state_local);
 
-		/* this section done */
-		ret = zif_state_done (state, &error);
+		/* this section finished */
+		ret = zif_state_finished (state, &error);
 		if (!ret) {
 			pk_backend_error_code (backend,
 					       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
