@@ -3615,11 +3615,11 @@ pk_backend_run_transaction (PkBackend *backend, ZifState *state)
 			package = g_ptr_array_index (install, i);
 			trust_kind = zif_package_get_trust_kind (package);
 			if (trust_kind != ZIF_PACKAGE_TRUST_KIND_PUBKEY) {
+				ret = FALSE;
 				pk_backend_error_code (backend,
 						       PK_ERROR_ENUM_MISSING_GPG_SIGNATURE,
 						       "package %s is untrusted",
 						       zif_package_get_printable (package));
-				g_error_free (error);
 				goto out;
 			}
 		}
