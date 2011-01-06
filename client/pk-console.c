@@ -39,7 +39,7 @@
 #define PK_EXIT_CODE_CANNOT_SETUP	6
 
 static GMainLoop *loop = NULL;
-static PkBitfield roles;
+static PkBitfield roles = 0;
 static gboolean is_console = FALSE;
 static gboolean nowait = FALSE;
 static PkControl *control = NULL;
@@ -1250,6 +1250,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	GError *error_local = NULL;
 	gboolean background = FALSE;
+	gboolean help = FALSE;
 	gboolean noninteractive = FALSE;
 	guint cache_age = 0;
 	gboolean plain = FALSE;
@@ -1294,6 +1295,9 @@ main (int argc, char *argv[])
 		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
 			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
+		{ "help", 'h', 0, G_OPTION_ARG_NONE, &help,
+			/* TRANSLATORS: command line argument, --help */
+			_("Show help options."), NULL},
 		{ NULL}
 	};
 
@@ -1310,20 +1314,23 @@ main (int argc, char *argv[])
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_console_sigint_cb);
 
-	summary = pk_console_get_summary ();
 	progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (progressbar, 25);
 	pk_progress_bar_set_padding (progressbar, 30);
 
 	cancellable = g_cancellable_new ();
 	context = g_option_context_new ("PackageKit Console Program");
+	g_option_context_set_help_enabled (context, FALSE);
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_add_group (context, pk_debug_get_option_group ());
-	g_option_context_parse (context, &argc, &argv, NULL);
-	/* Save the usage string in case command parsing fails. */
-	options_help = g_option_context_get_help (context, TRUE, NULL);
-	g_option_context_free (context);
+	ret = g_option_context_parse (context, &argc, &argv, &error);
+	if (!ret) {
+		/* TRANSLATORS: we failed to contact the daemon */
+		g_print ("%s: %s\n", _("Failed to parse command line"), error->message);
+		g_error_free (error);
+		goto out_last;
+	}
 
 	/* we need the roles early, as we only show the user only what they can do */
 	control = pk_control_new ();
@@ -1339,6 +1346,11 @@ main (int argc, char *argv[])
 	g_object_get (control,
 		      "roles", &roles,
 		      NULL);
+
+	/* set the summary text based on the available roles */
+	summary = pk_console_get_summary ();
+	g_option_context_set_summary (context, summary) ;
+	options_help = g_option_context_get_help (context, TRUE, NULL);
 
 	/* check if we are on console */
 	if (!plain && isatty (fileno (stdout)) == 1)
@@ -1791,6 +1803,7 @@ out:
 	g_object_unref (task);
 	g_object_unref (cancellable);
 out_last:
+	g_option_context_free (context);
 	return retval;
 }
 
