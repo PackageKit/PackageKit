@@ -253,7 +253,7 @@ user to restart the computer or remove and re-insert the device.
         --enable-smart \
         --enable-introspection \
 %endif
-        --with-default-backend=yum \
+        --with-default-backend=yum,zif \
         --disable-local \
         --disable-ruck \
         --disable-strict \

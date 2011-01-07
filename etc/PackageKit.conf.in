@@ -89,8 +89,12 @@ BackendSpawnIdleIOBackground=true
 # default=true
 BackendSpawnAllowSIGKILL=true
 
-# Default backend, as chosen in the configure script. This will be used where
-# no --backend="foo" option is given to the daemon.
+# Default backends, as chosen in the configure script. This will be used
+# where no --backend="foo" option is given to the daemon.
+#
+# The order they are specified is the order they are tried, so for the
+# value "foo,bar" first "foo" will be attempted and then "bar" if the
+# libpk_backend_foo.so module load failed.
 #
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@

@@ -186,6 +186,8 @@ main (int argc, char *argv[])
 	gboolean immediate_exit = FALSE;
 	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
+	gchar **backend_names = NULL;
+	guint i;
 	PkEngine *engine = NULL;
 	PkBackend *backend = NULL;
 	PkConf *conf = NULL;
@@ -294,13 +296,24 @@ main (int argc, char *argv[])
 		backend_name = pk_conf_get_string (conf, "DefaultBackend");
 		g_debug ("using default backend %s", backend_name);
 	}
+	backend_names = g_strsplit (backend_name, ",", -1);
 
-	/* load our chosen backend */
+	/* try to load our chosen backends in order */
 	backend = pk_backend_new ();
-	ret = pk_backend_set_name (backend, backend_name, &error);
+	for (i=0; backend_names[i] != NULL; i++) {
+		ret = pk_backend_set_name (backend, backend_names[i], &error);
+		if (!ret) {
+			g_warning ("backend %s invalid: %s",
+				   backend_names[i],
+				   error->message);
+			g_clear_error (&error);
+		}
+	}
 	if (!ret) {
-		g_error ("cannot continue, backend invalid: %s", error->message);
-		g_error_free (error);
+		/* TRANSLATORS: cannot load the backend the user specified */
+		g_print ("%s: %s\n",
+			 _("Failed to load any of the specified backends:"),
+			 backend_name);
 		goto out;
 	}
 
@@ -345,11 +358,14 @@ out:
 	if (timer_id > 0)
 		g_source_remove (timer_id);
 
-	g_main_loop_unref (loop);
+	if (loop != NULL)
+		g_main_loop_unref (loop);
 	g_object_unref (syslog);
 	g_object_unref (conf);
-	g_object_unref (engine);
+	if (engine != NULL)
+		g_object_unref (engine);
 	g_object_unref (backend);
+	g_strfreev (backend_names);
 	g_free (backend_name);
 
 exit_program:
