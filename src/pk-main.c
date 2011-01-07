@@ -302,12 +302,12 @@ main (int argc, char *argv[])
 	backend = pk_backend_new ();
 	for (i=0; backend_names[i] != NULL; i++) {
 		ret = pk_backend_set_name (backend, backend_names[i], &error);
-		if (!ret) {
-			g_warning ("backend %s invalid: %s",
-				   backend_names[i],
-				   error->message);
-			g_clear_error (&error);
-		}
+		if (ret)
+			break;
+		g_warning ("backend %s invalid: %s",
+			   backend_names[i],
+			   error->message);
+		g_clear_error (&error);
 	}
 	if (!ret) {
 		/* TRANSLATORS: cannot load the backend the user specified */
