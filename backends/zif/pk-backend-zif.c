@@ -1577,6 +1577,20 @@ out:
 		pk_backend_set_status (backend, status);
 }
 
+#if ZIF_CHECK_VERSION(0,1,5)
+/**
+ * pk_backend_speed_changed_cb:
+ **/
+static void
+pk_backend_speed_changed_cb (ZifState *state,
+			     GParamSpec *pspec,
+			     PkBackend *backend)
+{
+	pk_backend_set_speed (backend,
+			      zif_state_get_speed (state));
+}
+#endif
+
 /**
  * pk_backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
@@ -1631,6 +1645,11 @@ pk_backend_initialize (PkBackend *backend)
 	g_signal_connect (priv->state, "action-changed",
 			  G_CALLBACK (pk_backend_state_action_changed_cb),
 			  backend);
+#if ZIF_CHECK_VERSION(0,1,5)
+	g_signal_connect (priv->state, "notify::speed",
+			  G_CALLBACK (pk_backend_speed_changed_cb),
+			  backend);
+#endif
 
 	/* we don't want to enable this for normal runtime */
 	//zif_state_set_enable_profile (priv->state, TRUE);
