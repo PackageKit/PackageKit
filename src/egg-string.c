@@ -80,6 +80,32 @@ egg_strtoint (const gchar *text, gint *value)
 }
 
 /**
+ * egg_strtouint64:
+ * @text: The text the convert
+ * @value: The return numeric return value
+ *
+ * Converts a string into a unsigned integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+egg_strtouint64 (const gchar *text, guint64 *value)
+{
+	gchar *endptr = NULL;
+
+	/* invalid */
+	if (text == NULL)
+		return FALSE;
+
+	/* parse */
+	*value = g_ascii_strtoull (text, &endptr, 10);
+	if (endptr == text)
+		return FALSE;
+
+	return TRUE;
+}
+
+/**
  * egg_strtouint:
  * @text: The text the convert
  * @value: The return numeric return value
@@ -91,18 +117,11 @@ egg_strtoint (const gchar *text, gint *value)
 gboolean
 egg_strtouint (const gchar *text, guint *value)
 {
-	gchar *endptr = NULL;
+	gboolean ret;
 	guint64 value_raw;
 
-	/* invalid */
-	if (text == NULL)
-		return FALSE;
-
-	/* parse */
-	value_raw = g_ascii_strtoull (text, &endptr, 10);
-
-	/* parsing error */
-	if (endptr == text)
+	ret = egg_strtouint64 (text, &value_raw);
+	if (!ret)
 		return FALSE;
 
 	/* out of range */

@@ -38,6 +38,8 @@ gboolean	 egg_strtoint				(const gchar	*text,
 							 gint		*value);
 gboolean	 egg_strtouint				(const gchar	*text,
 							 guint		*value);
+gboolean	 egg_strtouint64			(const gchar	*text,
+							 guint64	*value);
 gchar		*egg_strreplace				(const gchar	*text,
 							 const gchar	*find,
 							 const gchar	*replace);

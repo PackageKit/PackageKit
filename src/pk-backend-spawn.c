@@ -163,6 +163,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 	gchar *command;
 	gchar *text;
 	gboolean ret = TRUE;
+	guint64 speed;
 	PkInfoEnum info;
 	PkRestartEnum restart;
 	PkGroupEnum group;
@@ -394,6 +395,21 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line,
 			goto out;
 		}
 		pk_backend_set_status (priv->backend, status_enum);
+	} else if (g_strcmp0 (command, "speed") == 0) {
+		if (size != 2) {
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
+			ret = FALSE;
+			goto out;
+		}
+		ret = egg_strtouint64 (sections[1], &speed);
+		if (!ret) {
+			g_set_error (error, 1, 0,
+				     "failed to parse speed: '%s'",
+				     sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_set_speed (priv->backend, speed);
 	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
