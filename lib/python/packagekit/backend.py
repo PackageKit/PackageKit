@@ -117,6 +117,14 @@ class PackageKitBaseBackend:
             self.percentage_old = percent
         sys.stdout.flush()
 
+    def speed(self, bps=0):
+        '''
+        Write progress speed
+        @param bps: Progress speed (int, bytes per second)
+        '''
+        print "speed\t%i" % (bps)
+        sys.stdout.flush()
+
     def sub_percentage(self, percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
