@@ -358,7 +358,7 @@ pk_backend_transaction_start (PkBackend *backend)
 	/* set cache age */
 	cache_age = pk_backend_get_cache_age (backend);
 	if (cache_age > 0)
-		zif_config_set_uint (priv->config, "max-age",
+		zif_config_set_uint (priv->config, "metadata_expire",
 				     cache_age, NULL);
 
 	/* set the proxy */
