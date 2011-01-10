@@ -1126,7 +1126,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 	/* we automatically set the transaction status for some PkInfoEnums if running
 	 * in non-simultaneous transaction mode */
 	if (!backend->priv->simultaneous) {
-		g_debug ("auto-setting status based on info %s", pk_info_enum_to_string (info));
 		if (info == PK_INFO_ENUM_DOWNLOADING)
 			pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 		else if (info == PK_INFO_ENUM_UPDATING)
