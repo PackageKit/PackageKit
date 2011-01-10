@@ -170,7 +170,6 @@ pk_control_cancellable_cancel_cb (GCancellable *cancellable, PkControlState *sta
 	if (state->call != NULL) {
 		dbus_g_proxy_cancel_call (state->control->priv->proxy, state->call);
 		dbus_g_proxy_cancel_call (state->control->priv->proxy_props, state->call);
-		g_debug ("cancelling, ended DBus call: %p (%p)", state, state->call);
 		state->call = NULL;
 	}
 }
@@ -192,10 +191,6 @@ pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -305,7 +300,6 @@ pk_control_get_tid_async (PkControl *control, GCancellable *cancellable, GAsyncR
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -360,10 +354,6 @@ pk_control_suggest_daemon_quit_state_finish (PkControlState *state, const GError
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -459,7 +449,6 @@ pk_control_suggest_daemon_quit_async (PkControl *control, GCancellable *cancella
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -514,10 +503,6 @@ pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *e
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -617,7 +602,6 @@ pk_control_get_daemon_state_async (PkControl *control, GCancellable *cancellable
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -672,10 +656,6 @@ pk_control_set_proxy_state_finish (PkControlState *state, const GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -776,7 +756,6 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -831,10 +810,6 @@ pk_control_set_root_state_finish (PkControlState *state, const GError *error)
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -933,7 +908,6 @@ pk_control_set_root_async (PkControl *control, const gchar *root, GCancellable *
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -988,10 +962,6 @@ pk_control_get_transaction_list_state_finish (PkControlState *state, const GErro
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1091,7 +1061,6 @@ pk_control_get_transaction_list_async (PkControl *control, GCancellable *cancell
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1146,10 +1115,6 @@ pk_control_get_time_since_action_state_finish (PkControlState *state, const GErr
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1259,7 +1224,6 @@ pk_control_get_time_since_action_async (PkControl *control, PkRoleEnum role, GCa
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1314,10 +1278,6 @@ pk_control_can_authorize_state_finish (PkControlState *state, const GError *erro
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1427,7 +1387,6 @@ pk_control_can_authorize_async (PkControl *control, const gchar *action_id, GCan
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1481,10 +1440,6 @@ pk_control_get_properties_state_finish (PkControlState *state, const GError *err
 
 	/* remove from list */
 	g_ptr_array_remove (state->control->priv->calls, state);
-	if (state->call != NULL)
-		g_warning ("state array remove %p (%p)", state, state->call);
-	else
-		g_debug ("state array remove %p", state);
 
 	/* complete */
 	g_simple_async_result_complete_in_idle (state->res);
@@ -1841,7 +1796,6 @@ pk_control_get_properties_async (PkControl *control, GCancellable *cancellable,
 
 	/* track state */
 	g_ptr_array_add (control->priv->calls, state);
-	g_debug ("state array add %p (%p)", state, state->call);
 out:
 	g_object_unref (res);
 }
@@ -1903,7 +1857,6 @@ pk_control_idle_signal_store_free (PkIdleSignalStore *store)
 static gboolean
 pk_control_transaction_list_changed_idle_cb (PkIdleSignalStore *store)
 {
-	g_debug ("emit transaction-list-changed");
 	g_signal_emit (store->control, signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0, store->transaction_ids);
 	store->control->priv->transaction_list_changed_id = 0;
 	pk_control_idle_signal_store_free (store);
@@ -1921,10 +1874,8 @@ pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_i
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	/* already pending */
-	if (control->priv->transaction_list_changed_id != 0) {
-		g_debug ("already pending, so ignoring");
+	if (control->priv->transaction_list_changed_id != 0)
 		return;
-	}
 
 	/* create store object */
 	store = g_new0 (PkIdleSignalStore, 1);
@@ -1965,10 +1916,8 @@ pk_control_restart_schedule_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	/* already pending */
-	if (control->priv->restart_schedule_id != 0) {
-		g_debug ("already pending, so ignoring");
+	if (control->priv->restart_schedule_id != 0)
 		return;
-	}
 
 	/* create store object */
 	store = g_new0 (PkIdleSignalStore, 1);
@@ -2008,10 +1957,8 @@ pk_control_updates_changed_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	/* already pending */
-	if (control->priv->updates_changed_id != 0) {
-		g_debug ("already pending, so ignoring");
+	if (control->priv->updates_changed_id != 0)
 		return;
-	}
 
 	/* create store object */
 	store = g_new0 (PkIdleSignalStore, 1);
@@ -2051,10 +1998,8 @@ pk_control_repo_list_changed_cb (DBusGProxy *proxy, PkControl *control)
 	g_return_if_fail (PK_IS_CONTROL (control));
 
 	/* already pending */
-	if (control->priv->repo_list_changed_id != 0) {
-		g_debug ("already pending, so ignoring");
+	if (control->priv->repo_list_changed_id != 0)
 		return;
-	}
 
 	/* create store object */
 	store = g_new0 (PkIdleSignalStore, 1);
@@ -2110,10 +2055,8 @@ static void
 pk_control_changed_cb (DBusGProxy *proxy, PkControl *control)
 {
 	/* already getting properties */
-	if (control->priv->call_get_properties != NULL) {
-		g_warning ("already getting properties, will ignore");
+	if (control->priv->call_get_properties != NULL)
 		return;
-	}
 
 	/* call D-Bus get_properties async */
 	g_debug ("properties changed, so getting new list");
@@ -2142,7 +2085,7 @@ pk_control_cancel_all_dbus_methods (PkControl *control)
 		state = g_ptr_array_index (array, i);
 		if (state->call == NULL)
 			continue;
-		g_debug ("cancel in flight call: %p (%p)", state, state->call);
+		g_debug ("cancel in flight call");
 		dbus_g_proxy_cancel_call (control->priv->proxy, state->call);
 	}
 
