@@ -842,7 +842,7 @@ backend_install_files_thread (PkBackend *backend)
 
 		// look for the packages and set them to toBeInstalled
 		std::vector<zypp::sat::Solvable> *solvables = 0;
-		solvables = zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
+		solvables = zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), zypp::ResKind::package, TRUE);
 		zypp::PoolItem *item = NULL;
 
 		gboolean found = FALSE;
