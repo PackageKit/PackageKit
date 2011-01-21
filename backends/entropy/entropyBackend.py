@@ -347,6 +347,9 @@ class PackageKitEntropyMixin(object):
         Return repository name (identifier) given an EntropyRepository
         instance.
         """
+        if hasattr(repo_db, "name"):
+            # new Entropy releases, >=1.0_alpha8
+            return repo_db.name
         repo_name = self._repo_name_cache.get(repo_db)
         if repo_name is None:
             repo_name = repo_db.get_plugins_metadata().get("repo_name")
