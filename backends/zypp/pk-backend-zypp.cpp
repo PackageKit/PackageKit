@@ -1220,6 +1220,7 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
 static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
+	gboolean autoremove;
 	gchar **package_ids;
 	std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
@@ -1233,6 +1234,8 @@ backend_remove_packages_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+	autoremove = pk_backend_get_bool (backend, "autoremove");
+	zypp->resolver()->setCleandepsOnRemove(autoremove);
 
 	target = zypp->target ();
 
