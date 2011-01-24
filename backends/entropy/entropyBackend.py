@@ -420,7 +420,7 @@ class PackageKitEntropyMixin(object):
         for pkg_id, c_repo, pk_pkg in pkgs:
             if c_repo is not self._entropy.installed_repository():
                 self.error(ERROR_DEP_RESOLUTION_FAILED,
-                    "Cannot remove a package coming fro a repository: %s" % (
+                    "Cannot remove a package coming from a repository: %s" % (
                         pk_pkg,))
                 return
 
@@ -465,8 +465,9 @@ class PackageKitEntropyMixin(object):
 
             percent = PackageKitEntropyMixin.get_percentage(count, max_count)
 
-            self._log_message(__name__, "get_packages: done %s/100" % (
-                percent,))
+            self._log_message(__name__,
+                "_execute_etp_pkgs_remove: done %s/100" % (
+                    percent,))
 
             self.percentage(percent)
             map_item = match_map.get(pkg_id)
