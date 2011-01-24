@@ -451,6 +451,11 @@ class PackageKitEntropyMixin(object):
 
         self.percentage(0)
         self.status(STATUS_REMOVE)
+        inst_repo = self._entropy.installed_repository()
+
+        def _generate_map_item(etp_pkg_id):
+            _etp_match = (etp_pkg_id, inst_repo)
+            return etp_pkg_id, inst_repo, self._etp_to_id(_etp_match)
 
         # remove
         max_count = len(run_queue)
@@ -464,7 +469,10 @@ class PackageKitEntropyMixin(object):
                 percent,))
 
             self.percentage(percent)
-            pkg_id, pkg_c_repo, pk_pkg = match_map.get(pkg_id)
+            map_item = match_map.get(pkg_id)
+            if map_item is None:
+                map_item = _generate_map_item(pkg_id)
+            pkg_id, pkg_c_repo, pk_pkg = map_item
             pkg_desc = pkg_c_repo.retrieveDescription(pkg_id)
             self.package(pk_pkg, INFO_REMOVING, pkg_desc)
 
