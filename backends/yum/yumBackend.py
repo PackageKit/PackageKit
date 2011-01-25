@@ -42,7 +42,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
-from yum.packages import YumLocalPackage, parsePackages, PackageObject
+from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
@@ -281,7 +281,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
             except socket.error, e:
-                pass;
+                pass
 
         # we only check these types
         self.transaction_sig_check_map = [TS_UPDATE, TS_INSTALL, TS_TRUEINSTALL, TS_OBSOLETING]
@@ -3538,7 +3538,7 @@ class PackageKitYumBase(yum.YumBase):
 
         # we have to send a message to the client
         if not root:
-            name = "%s Volume #%s" %(kwargs["name"], kwargs["discnum"])
+            name = "%s Volume #%s" % (kwargs["name"], kwargs["discnum"])
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,
