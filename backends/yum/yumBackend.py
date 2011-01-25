@@ -549,11 +549,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
-            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo_id)
 
         # the repo might have been disabled if it is no longer contactable
         if not repos[0].isEnabled():
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (repo_id, repos[0].id))
 
         # populate the sack with data
         try:
@@ -593,12 +593,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
-            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo_id)
         print "found repos"
 
         # the repo might have been disabled if it is no longer contactable
         if not repos[0].isEnabled():
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (repo_id, repos[0].id))
 
         # populate the sack with data
         try:
@@ -1147,7 +1147,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             isGroup = False
             if repo == 'meta':
                 if name[0] == '@':
-                    name == name[1:]
+                    name = name[1:]
                 try:
                     grp = self.yumbase.comps.return_group(name)
                 except exceptions.IOError, e:
