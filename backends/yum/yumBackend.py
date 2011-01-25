@@ -2843,6 +2843,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # update the comps groups too
+        self.comps.refresh()
+
     def get_repo_list(self, filters):
         '''
         Implement the get-repo-list functionality
