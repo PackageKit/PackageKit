@@ -3450,10 +3450,25 @@ class PackageKitYumBase(yum.YumBase):
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
         self.mediagrabber = self.MediaGrabber
+
         # setup Repo GPG support callbacks
+        #
+        # self.preconf may or may not exist at this point...
+        # What we think is happening is that it's going:
+        #
+        #    PK.init => yum._getRepos => yum.conf =>
+        #    plugins *.init_hook => RHN.init => conduit.getRepos() =>
+        #    yum._getRepos
+        #
+        # ..at which point we try to setup from prerepoconf twice, and
+        # the second time it fails.
         try:
-            self.repos.confirm_func = self._repo_gpg_confirm
-            self.repos.gpg_import_func = self._repo_gpg_import
+            if hasattr(self, 'prerepoconf'):
+                self.prerepoconf.confirm_func = self._repo_gpg_confirm
+                self.prerepoconf.gpg_import_func = self._repo_gpg_import
+            else:
+                self.repos.confirm_func = self._repo_gpg_confirm
+                self.repos.gpg_import_func = self._repo_gpg_import
         except exceptions.IOError, e:
             raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
