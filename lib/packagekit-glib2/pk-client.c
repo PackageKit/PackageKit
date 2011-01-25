@@ -4883,7 +4883,7 @@ pk_client_init (PkClient *client)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* cache locale */
-	client->priv->locale = 	g_strdup (setlocale (LC_ALL, NULL));
+	client->priv->locale = 	g_strdup (setlocale (LC_MESSAGES, NULL));
 }
 
 /**
