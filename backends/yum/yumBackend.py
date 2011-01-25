@@ -42,7 +42,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
-from yum.packages import YumLocalPackage, parsePackages, PackageObject
+from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
@@ -281,7 +281,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, "lp")
             except socket.error, e:
-                pass;
+                pass
 
         # we only check these types
         self.transaction_sig_check_map = [TS_UPDATE, TS_INSTALL, TS_TRUEINSTALL, TS_OBSOLETING]
@@ -549,11 +549,11 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
-            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo_id)
 
         # the repo might have been disabled if it is no longer contactable
         if not repos[0].isEnabled():
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (repo_id, repos[0].id))
 
         # populate the sack with data
         try:
@@ -593,12 +593,12 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             raise PkError(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
         if len(repos) == 0:
-            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo)
+            raise PkError(ERROR_REPO_NOT_FOUND, "cannot find repo %s" % repo_id)
         print "found repos"
 
         # the repo might have been disabled if it is no longer contactable
         if not repos[0].isEnabled():
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (_format_package_id(package_id), repos[0].id))
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, '%s cannot be found as %s is disabled' % (repo_id, repos[0].id))
 
         # populate the sack with data
         try:
@@ -1147,7 +1147,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             isGroup = False
             if repo == 'meta':
                 if name[0] == '@':
-                    name == name[1:]
+                    name = name[1:]
                 try:
                     grp = self.yumbase.comps.return_group(name)
                 except exceptions.IOError, e:
@@ -2843,6 +2843,9 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         except Exception, e:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
+        # update the comps groups too
+        self.comps.refresh()
+
     def get_repo_list(self, filters):
         '''
         Implement the get-repo-list functionality
@@ -3450,10 +3453,25 @@ class PackageKitYumBase(yum.YumBase):
         self.dsCallback = DepSolveCallback(backend)
         self.backend = backend
         self.mediagrabber = self.MediaGrabber
+
         # setup Repo GPG support callbacks
+        #
+        # self.preconf may or may not exist at this point...
+        # What we think is happening is that it's going:
+        #
+        #    PK.init => yum._getRepos => yum.conf =>
+        #    plugins *.init_hook => RHN.init => conduit.getRepos() =>
+        #    yum._getRepos
+        #
+        # ..at which point we try to setup from prerepoconf twice, and
+        # the second time it fails.
         try:
-            self.repos.confirm_func = self._repo_gpg_confirm
-            self.repos.gpg_import_func = self._repo_gpg_import
+            if hasattr(self, 'prerepoconf'):
+                self.prerepoconf.confirm_func = self._repo_gpg_confirm
+                self.prerepoconf.gpg_import_func = self._repo_gpg_import
+            else:
+                self.repos.confirm_func = self._repo_gpg_confirm
+                self.repos.gpg_import_func = self._repo_gpg_import
         except exceptions.IOError, e:
             raise PkError(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % _to_unicode(e))
         except Exception, e:
@@ -3523,7 +3541,7 @@ class PackageKitYumBase(yum.YumBase):
 
         # we have to send a message to the client
         if not root:
-            name = "%s Volume #%s" %(kwargs["name"], kwargs["discnum"])
+            name = "%s Volume #%s" % (kwargs["name"], kwargs["discnum"])
             self.backend.media_change_required(MEDIA_TYPE_DISC, name, name)
             self.backend.error(ERROR_MEDIA_CHANGE_REQUIRED,
                                "Insert media labeled '%s' or disable media repos" % name,
