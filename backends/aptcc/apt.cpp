@@ -1783,9 +1783,11 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 			close(writeToChildFD[0]);
 			_exit(1);
 		}
+		close(writeToChildFD[0]);
 
-		// close Forked stdout and the read end of the pipe
-		close(1);
+		// close pipes we don't need
+		close(readFromChildFD[0]);
+		close(writeToChildFD[1]);
 
 		// Change the locale to not get libapt localization
 		setlocale(LC_ALL, "C");
@@ -1814,10 +1816,7 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 		// dump errors into cerr (pass it to the parent process)
 		_error->DumpErrors();
 
-		close(readFromChildFD[0]);
-		close(writeToChildFD[1]);
 		close(readFromChildFD[1]);
-		close(writeToChildFD[0]);
 
 		_exit(res);
 	}
