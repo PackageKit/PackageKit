@@ -12,7 +12,7 @@ URL:       http://www.packagekit.org
 Source0:   http://www.packagekit.org/releases/%{name}-%{version}.tar.gz
 
 Requires: PackageKit-glib = %{version}-%{release}
-Requires: PackageKit-yum = %{version}-%{release}
+Requires: PackageKit-backend
 Requires: shared-mime-info
 Requires: comps-extras
 %if 0%{?rhel} == 0
@@ -64,6 +64,7 @@ Summary: PackageKit YUM backend
 Group: System Environment/Libraries
 Requires: yum >= 3.2.19
 Requires: %{name} = %{version}-%{release}
+Provides: PackageKit-backend
 
 %description yum
 A backend for PackageKit to enable yum functionality.
@@ -73,6 +74,7 @@ Summary: PackageKit Zif backend
 Group: System Environment/Libraries
 Requires: zif >= 0.1.3
 Requires: %{name} = %{version}-%{release}
+Provides: PackageKit-backend
 
 %description zif
 A backend for PackageKit to enable Zif functionality.
