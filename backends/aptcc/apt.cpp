@@ -40,6 +40,7 @@
 #include <sys/statfs.h>
 #include <sys/wait.h>
 #include <sys/fcntl.h>
+#include <pty.h>
 
 #define RAMFS_MAGIC     0x858458f6
 
@@ -1762,32 +1763,22 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 
 	// File descriptors for reading dpkg --status-fd
 	int readFromChildFD[2];
-	int writeToChildFD[2];
-	if (pipe(readFromChildFD) < 0 || pipe(writeToChildFD) < 0) {
+	if (pipe(readFromChildFD) < 0) {
 		cout << "Failed to create a pipe" << endl;
 		return false;
 	}
 
-	m_child_pid = fork();
+	int pty_master;
+	m_child_pid = forkpty(&pty_master, NULL, NULL, NULL);
 	if (m_child_pid == -1) {
 		return false;
 	}
 
 	if (m_child_pid == 0) {
-		close(0);
 		//cout << "FORKED: installPackages(): DoInstall" << endl;
-		// redirect writeToChildFD to stdin
-		if (dup(writeToChildFD[0]) != 0) {
-			cerr << "Aptcc: dup failed duplicate pipe to stdin" << endl;
-			close(readFromChildFD[1]);
-			close(writeToChildFD[0]);
-			_exit(1);
-		}
-		close(writeToChildFD[0]);
 
-		// close pipes we don't need
+		// close pipe we don't need
 		close(readFromChildFD[0]);
-		close(writeToChildFD[1]);
 
 		// Change the locale to not get libapt localization
 		setlocale(LC_ALL, "C");
@@ -1833,13 +1824,12 @@ cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
 	// Check if the child died
 	int ret;
 	while (waitpid(m_child_pid, &ret, WNOHANG) == 0) {
-		updateInterface(readFromChildFD[0], writeToChildFD[1]);
+		updateInterface(readFromChildFD[0], pty_master);
 	}
 
 	close(readFromChildFD[0]);
 	close(readFromChildFD[1]);
-	close(writeToChildFD[0]);
-	close(writeToChildFD[1]);
+	close(pty_master);
 
 	cout << "Parent finished..." << endl;
 	return true;
