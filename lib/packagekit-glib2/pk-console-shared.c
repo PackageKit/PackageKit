@@ -59,7 +59,7 @@ pk_console_get_number (const gchar *question, guint maxnum)
 		retval = sscanf(buffer, "%u", &answer);
 
 		/* positive */
-		if (answer > 0 && answer <= (gint) maxnum)
+		if (retval == 1 && answer > 0 && answer <= (gint) maxnum)
 			break;
 		g_print (_("Please enter a number from 1 to %i: "), maxnum);
 	} while (TRUE);
