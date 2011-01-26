@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <glib-object.h>
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
@@ -320,7 +321,8 @@ pk_test_client_helper_output_cb (GSocket *socket, GIOCondition condition, gpoint
 		g_assert_cmpint (len, >, 0);
 
 		/* good for us */
-		if (g_strcmp0 (buffer, "pong\n") == 0) {
+		if (buffer != NULL &&
+		    strncmp (buffer, "pong\n", len) == 0) {
 			_g_test_loop_quit ();
 			goto out;
 		}
