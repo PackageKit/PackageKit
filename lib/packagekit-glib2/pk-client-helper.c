@@ -472,10 +472,15 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	priv->socket_file = g_file_new_for_path (socket_filename);
 
 	/* preconfigure KDE frontend, if requested */
-	for (i=0; envp[i] != NULL; i++) {
-		if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0)
-			if (g_file_test ("/usr/bin/debconf-kde-helper", G_FILE_TEST_EXISTS))
-				use_kde_helper = TRUE;
+	if (envp != NULL) {
+		for (i=0; envp[i] != NULL; i++) {
+			if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0) {
+				if (g_file_test ("/usr/bin/debconf-kde-helper",
+						 G_FILE_TEST_EXISTS)) {
+					use_kde_helper = TRUE;
+				}
+			}
+		}
 	}
 
 	/* cache for actual start */
