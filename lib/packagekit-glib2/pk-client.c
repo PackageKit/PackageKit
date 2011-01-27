@@ -1809,63 +1809,119 @@ pk_client_bool_to_string (gboolean value)
 }
 
 /**
+ * pk_client_create_helper_argv_envp_test:
+ **/
+static gboolean
+pk_client_create_helper_argv_envp_test (PkClientState *state,
+					gchar ***argv,
+					gchar ***envp)
+{
+	gboolean ret;
+
+	/* check we have the right file */
+	ret = g_file_test (TESTDATADIR "/pk-client-helper-test.py",
+			   G_FILE_TEST_EXISTS);
+	if (!ret) {
+		g_warning ("could not find the socket helper!");
+		goto out;
+	}
+
+	/* setup simple test socket */
+	*argv = g_new0 (gchar *, 2);
+	*argv[0] = g_build_filename (TESTDATADIR,
+				     "pk-client-helper-test.py",
+				     NULL);
+out:
+	return ret;
+}
+
+/**
+ * pk_client_create_helper_argv_envp:
+ **/
+static gboolean
+pk_client_create_helper_argv_envp (PkClientState *state,
+				   gchar ***argv,
+				   gchar ***envp)
+{
+	const gchar *dialog = NULL;
+	const gchar *display;
+	const gchar *term;
+	gboolean ret;
+	guint envpi = 0;
+
+	/* check we have the right file */
+	ret = g_file_test ("/usr/bin/debconf-communicate",
+			   G_FILE_TEST_EXISTS);
+	if (!ret)
+		goto out;
+
+	/* setup simple test socket */
+	*argv = g_new0 (gchar *, 2);
+	*argv[0] = g_strdup ("/usr/bin/debconf-communicate");
+
+	*envp = g_new0 (gchar *, 8);
+	*envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
+	*envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
+	if (pk_debug_is_verbose ())
+		*envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
+
+	/* do we have an available terminal to use */
+	term = g_getenv ("TERM");
+	if (term != NULL) {
+		*envp[envpi++] = g_strdup_printf ("TERM=%s", term);
+		dialog = "dialog";
+	}
+
+	/* do we have access to the display */
+	display = g_getenv ("DISPLAY");
+	if (display != NULL) {
+		*envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
+		if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
+		  dialog = "kde";
+		else
+		  dialog = "gnome";
+	}
+
+	/* indicate a prefered frontend */
+	if (dialog != NULL) {
+		*envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
+		g_debug ("using frontend %s", dialog);
+	}
+out:
+	return ret;
+}
+
+/**
  * pk_client_create_helper_socket:
  **/
 static gchar *
 pk_client_create_helper_socket (PkClientState *state)
 {
+	gboolean ret = FALSE;
+	gchar **argv = NULL;
+	gchar **envp = NULL;
 	gchar *hint = NULL;
 	gchar *socket_filename = NULL;
 	gchar *socket_id = NULL;
 	GError *error = NULL;
-	gboolean ret;
-	gchar **argv = NULL;
-	gchar **envp = NULL;
-	guint argvi = 0;
-	guint envpi = 0;
-	const gchar *display;
-	const gchar *term;
-	const gchar *dialog = NULL;
 
-	/* do we have any supported clients */
-	if (g_file_test ("/usr/bin/debconf-communicate", G_FILE_TEST_EXISTS)) {
-		argv = g_new0 (gchar *, 2);
-		argv[argvi++] = g_strdup ("/usr/bin/debconf-communicate");
-		envp = g_new0 (gchar *, 8);
-		envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
-		envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
-		if (pk_debug_is_verbose ())
-			envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
-
-		/* do we have an available terminal to use */
-		term = g_getenv ("TERM");
-		if (term != NULL) {
-			envp[envpi++] = g_strdup_printf ("TERM=%s", term);
-			dialog = "dialog";
-		}
-
-		/* do we have access to the display */
-		display = g_getenv ("DISPLAY");
-		if (display != NULL) {
-			envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
-			if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
-			  dialog = "kde";
-			else
-			  dialog = "gnome";
-		}
-
-		/* indicate a prefered frontend */
-		if (dialog != NULL) {
-			envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
-			g_debug ("using frontend %s", dialog);
-		}
-	} else if (g_file_test (TESTDATADIR "/pk-client-helper-test.py", G_FILE_TEST_EXISTS)) {
-		argv = g_new0 (gchar *, 2);
-		argv[argvi++] = g_build_filename (TESTDATADIR, "pk-client-helper-test.py", NULL);
-	} else {
-		/* no supported frontends available */
-		goto out;
+	/* use the test socket */
+	if (g_getenv ("PK_SELF_TEST") != NULL) {
+		ret = pk_client_create_helper_argv_envp_test (state,
+							      &argv,
+							      &envp);
 	}
+
+	/* either the self test failed, or we're not in self test */
+	if (!ret) {
+		ret = pk_client_create_helper_argv_envp (state,
+							 &argv,
+							 &envp);
+	}
+
+	/* no supported frontends available */
+	if (!ret)
+		goto out;
 
 	/* create object */
 	state->client_helper = pk_client_helper_new ();
