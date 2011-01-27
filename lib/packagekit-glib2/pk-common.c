@@ -219,6 +219,10 @@ pk_get_distro_id (void)
 	   installed on a i386 machine.
 	*/
 
+	/* we don't want distro specific results in 'make check' */
+	if (g_getenv ("PK_SELF_TEST") != NULL)
+		return g_strdup ("selftest;11.91;i686");
+
 	/* we can't get arch from /etc */
 	arch = pk_get_distro_id_machine_type ();
 

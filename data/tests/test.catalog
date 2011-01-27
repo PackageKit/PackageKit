@@ -2,15 +2,15 @@
 
 # Just a package on all versions of fedora that can provide the dependency.
 # If there are multiple packages then the user will be asked to choose
-InstallProvides(fedora)=":lang=bo"
+InstallProvides(selftest)=":lang=bo"
 
 # Just for Fedora 12, install a development file
-InstallPackages(fedora;11.91)=ruby-json
+InstallPackages(selftest;11.91)=ruby-json
 
 # On any distro, install the package with this file
 InstallFiles=/usr/bin/kate
 
 # For each architecture on Fedora rawhide, install one of the two different files
-InstallFiles(fedora;11.91;i686)=/usr/bin/pand
-InstallFiles(fedora;11.91;x64)=/usr/bin/dund
+InstallFiles(selftest;11.91;i686)=/usr/bin/pand
+InstallFiles(selftest;11.91;x64)=/usr/bin/dund
 

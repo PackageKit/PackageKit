@@ -1656,6 +1656,10 @@ pk_control_set_network_state (PkControl *control, PkNetworkEnum network_state)
 static void
 pk_control_set_distro_id (PkControl *control, const gchar *distro_id)
 {
+	/* we don't want distro specific results in 'make check' */
+	if (g_getenv ("PK_SELF_TEST") != NULL)
+		distro_id = "selftest;11.91;i686";
+
 	/* is the same as before */
 	if (g_strcmp0 (control->priv->distro_id, distro_id) == 0)
 		return;
