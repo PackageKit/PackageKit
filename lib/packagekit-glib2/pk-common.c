@@ -332,6 +332,19 @@ pk_get_distro_id (void)
 		goto out;
 	}
 
+	/* check for Slackware */
+	ret = g_file_get_contents ("/etc/slackware-version", &contents, NULL, NULL);
+	if (ret) {
+		/* Slackware 13.0 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro_id = g_strdup_printf ("slackware;%s;%s", split[1], arch);
+		goto out;
+	}
+
 #ifdef __FreeBSD__
 	ret = TRUE;
 #endif
