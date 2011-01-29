@@ -131,16 +131,21 @@ class XMLRepo:
                     break
         return results
 
-    def _searchGroupPackage(self, name):
+    def _searchGroupPackage(self, searchlist):
+        '''Search in package category
+        '''
         doc = self._open()
-        results_group = []
+        results = []
         for package in doc.findall("Package"):
-            pkg = self._generatePackage(package)
-            if pkg.has_key("category"):
-                group = getGroup(pkg["category"])
-                if name.lower() == group:
-                    results_group.append(pkg)
-        return results_group
+            category = package.findall("category")
+            if not category:
+                continue
+            for s in searchlist:
+                if s.lower() in mapGroup([c.text for c in category]):
+                    results.append(self._generatePackage(package))
+                    break
+
+        return results
 
 
     def _searchDetailsPackage(self, name):
