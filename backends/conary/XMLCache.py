@@ -119,12 +119,16 @@ class XMLRepo:
                 r.append(pkg)
         return r
 
-    def _searchNamePackage(self, name):
+    def _searchNamePackage(self, searchlist):
+        '''Search in package name
+        '''
         doc = self._open()
         results = []
         for package in doc.findall("Package"):
-            if name.lower() in str(package.find("name").text).lower():
-                results.append(self._generatePackage(package))
+            for s in searchlist:
+                if s.lower() in str(package.find("name").text).lower():
+                    results.append(self._generatePackage(package))
+                    break
         return results
 
     def _searchGroupPackage(self, name):
