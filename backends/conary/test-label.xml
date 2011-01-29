@@ -1,0 +1,28 @@
+<Packages label="test-label">
+
+<Package>
+  <name>kernel</name>
+  <version>2.6.35.10-5-1</version>
+  <shortDesc lang="en">The Linux kernel</shortDesc>
+  <longDesc lang="en">
+    The kernel package contains the Linux kernel (vmlinuz), the core of any Linux operating system.  The kernel handles the basic functions of the operating system: memory allocation, process allocation, device input and output, etc.
+  </longDesc>
+</Package>
+
+<Package>
+  <name>splint</name>
+  <version>3.1.1-7-0.1</version>
+  <crypto lang="en">['None']</crypto>
+  <licenses lang="en">['rpath.com/licenses/copyright/GPL-2']</licenses>
+</Package>
+
+<Package>
+  <name>xchat</name>
+  <version>2.8.8-1-1</version>
+  <shortDesc lang="en">XChat IRC</shortDesc>
+  <longDesc lang="en">Chat with other people using Internet Relay Chat</longDesc>
+  <category lang="en">Application</category>
+  <category lang="en">Network</category>
+</Package>
+
+</Packages>
