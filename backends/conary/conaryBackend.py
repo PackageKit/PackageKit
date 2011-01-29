@@ -317,14 +317,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _resolve_list(self, filters):
 
         log.info("======= _resolve_list =====")
-        specList = []
-        app_found = []
         list_install = []
-        for pkg in self.packages:
-            name, version, flavor = pkg.get("trove")
-            #log.info(name)
-            app_found.append(pkg)
-            specList.append(pkg.get("trove"))
+        app_found = self.packages[:]
+        specList = [p.get("trove") for p in self.packages]
 
         pkgFilter = ConaryFilter(filters)
         # if filter install exist only do a conary q
