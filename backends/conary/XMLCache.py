@@ -148,31 +148,26 @@ class XMLRepo:
         return results
 
 
-    def _searchDetailsPackage(self, name):
-        return self._searchPackage(name)
-
-    def _searchPackage(self, name):
+    def _searchDetailsPackage(self, searchlist):
+        '''Search in package name, shortDesc, longDesc, and category
+        '''
         doc = self._open()
         results = []
         for package in doc.findall("Package"):
-            # categoria
-            pkg = self._generatePackage(package)
-            for i in pkg.keys():
-                if i  == "label":
-                    continue
-                if i =='category':
-                    for j in pkg[i]:
-                        if name.lower() in j.lower():
-                            results.append(pkg)
-                
-                if type(pkg[i]) == str:
-                    check = pkg[i].lower()
-                else:
-                    check = pkg[i]
-                if name.lower() in check:
-                    results.append(pkg)
-            
+            info = (
+                package.find("name").text.lower(),
+                getattr(package.find("shortDesc"), "text", "").lower(),
+                getattr(package.find("longDesc"), "text", "").lower(),
+                getattr(package.find("category"), "text", "").lower(),
+            )
+            for s in searchlist:
+                for i in info:
+                    if s.lower() in i.lower():
+                        results.append(self._generatePackage(package))
+                        break
+
         return results
+
     def _getAllPackages(self):
         doc = self._open()
         results = []
