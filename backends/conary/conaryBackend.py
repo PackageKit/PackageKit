@@ -196,10 +196,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return cli.query(name)
 
     def _search_package( self, name ):
-        for i,pkg in enumerate(self.packages):
+        for pkg in self.packages:
             if pkg["trove"][0] == name:
-                return i,pkg
-        return None,None
+                return pkg
+        return None
 
     def _edit_package(self, trove, pkgDict, status):
         for i,pkg in enumerate(self.packages):
@@ -315,47 +315,53 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return self._do_update(applyList, simulate)
 
     def _resolve_list(self, filters):
-
         log.info("======= _resolve_list =====")
-        list_install = []
-        app_found = self.packages[:]
-        specList = [p.get("trove") for p in self.packages]
+
+        # 1. Resolve through local db
+        # FIXME if filter install exists, only do a conary q
+
+        list_trove_all = [p.get("trove") for p in self.packages]
+        list_installed = []
+        # initialize with the full list, and remove installed troves later
+        list_not_installed = self.packages[:]
+
+        db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
+        for trove in list_trove_all:
+            if trove in db_trove_list:
+                # only use the first trove in the list
+                t = db_trove_list[trove][0]
+                pkg = self._search_package(t[0])
+                pkg["trove"] = t
+                list_installed.append(pkg)
+                list_not_installed.remove(pkg)
 
         pkgFilter = ConaryFilter(filters)
-        # if filter install exist only do a conary q
-        trovesList = self.client.db.findTroves( None ,specList, allowMissing = True)
-        log.info("Packages installed .... %s " % len(trovesList))
-        for trove in specList:
-            if trove in trovesList:
-                t = trovesList[trove]
-                name,version,flav = t[0]
-                #log.info(t[0][0])
-                pos, pkg = self._search_package(name)
-                pkg["trove"] = (name, version,flav)
-                list_install.append(pkg)
-                app_found.remove(pkg)
+        pkgFilter.add_installed(list_installed)
+        log.info("Packages installed .... %s " % len(db_trove_list))
+        log.info("Packages available .... %s " % len(list_not_installed))
 
-        pkgFilter.add_installed( list_install )
-        # if filter ~install exist only do a conary rq
-        log.info("Packages availables ........ %s " % len(app_found) )
+        # 2. Resolve through repository
+        # FIXME if filter ~install exists, only do a conary rq
 
-        specList = []
-        for pkg in app_found:
+        list_trove_not_installed = []
+        for pkg in list_not_installed:
             name,version,flavor = pkg.get("trove")
-            trove = name, version, self.conary.flavor
-            specList.append(trove)
-        trovelist = self.client.repos.findTroves(self.conary.default_label, specList, allowMissing=True)
+            trove = (name, version, self.conary.flavor)
+            list_trove_not_installed.append(trove)
 
         list_available = []
-        for trove in specList:
-            if trove in trovelist:
-                t = trovelist[trove]
-                name,version,flav = t[0]
-                pos , pkg = self._search_package(name )
-                pkg["trove"] = t[0]
+        repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
+                list_trove_not_installed, allowMissing=True)
+
+        for trove in list_trove_not_installed:
+            if trove in repo_trove_list:
+                # only use the first trove in the list
+                t = repo_trove_list[trove][0]
+                pkg = self._search_package(t[0])
+                pkg["trove"] = t
                 list_available.append(pkg)
-        log.info(">>>>>>>>>>>>>>>>>><<")
         pkgFilter.add_available( list_available )
+
         package_list = pkgFilter.post_process()
         self._show_package_list(package_list)
  
