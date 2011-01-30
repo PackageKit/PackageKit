@@ -742,13 +742,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             name,version,arch,data = pkpackage.get_package_from_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             if name and pkgDict:
-                shortDesc = ""
                 longDesc = ""
                 url = ""
                 categories  = None
                 license = ""
 
-                shortDesc = pkgDict.get("shortDesc", "")
                 longDesc = pkgDict.get("longDesc", "")
                 url = pkgDict.get("url", "")
                 categories = self.xmlcache.getGroup(pkgDict.get("category",""))
@@ -799,13 +797,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return ""
     def _get_license(self, license_list ):
         if license_list == "":
-           return ""
-        for i in license_list:
-            lic = i.split("/")
-            for j in PackageKitEnum.free_licenses:
-                if lic[1:][0].lower() == j.lower():
-                    return j
-        return ""
+            return ""
+
+        # license_list is a list of licenses in the format of
+        # 'rpath.com/licenses/copyright/GPL-2'.
+        return " ".join([i.split("/")[-1] for i in license_list])
+
     def _upgrade_from_branch( self, branch):
         branchList = branch.split("@")
         if "2-qa" in branchList[1]:
