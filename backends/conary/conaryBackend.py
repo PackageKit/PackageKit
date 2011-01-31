@@ -318,7 +318,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("======= _resolve_list =====")
 
         # 1. Resolve through local db
-        # FIXME if filter install exists, only do a conary q
 
         list_trove_all = [p.get("trove") for p in self.packages]
         list_installed = []
@@ -335,32 +334,37 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 list_installed.append(pkg)
                 list_not_installed.remove(pkg)
 
-        pkgFilter = ConaryFilter(filters)
-        pkgFilter.add_installed(list_installed)
-        log.info("Packages installed .... %s " % len(db_trove_list))
+        # Our list of troves doesn't contain information about whether trove is
+        # installed, so ConaryFilter can't do proper filtering. Don't pass
+        # @filters to it. Instead manually check the filters before calling
+        # add_installed() and add_available().
+        pkgFilter = ConaryFilter()
+        if FILTER_NOT_INSTALLED not in filters:
+            pkgFilter.add_installed(list_installed)
+        log.info("Packages installed .... %s " % len(list_installed))
         log.info("Packages available .... %s " % len(list_not_installed))
 
         # 2. Resolve through repository
-        # FIXME if filter ~install exists, only do a conary rq
 
-        list_trove_not_installed = []
-        for pkg in list_not_installed:
-            name,version,flavor = pkg.get("trove")
-            trove = (name, version, self.conary.flavor)
-            list_trove_not_installed.append(trove)
+        if FILTER_INSTALLED not in filters:
+            list_trove_not_installed = []
+            for pkg in list_not_installed:
+                name,version,flavor = pkg.get("trove")
+                trove = (name, version, self.conary.flavor)
+                list_trove_not_installed.append(trove)
 
-        list_available = []
-        repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
-                list_trove_not_installed, allowMissing=True)
+            list_available = []
+            repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
+                    list_trove_not_installed, allowMissing=True)
 
-        for trove in list_trove_not_installed:
-            if trove in repo_trove_list:
-                # only use the first trove in the list
-                t = repo_trove_list[trove][0]
-                pkg = self._search_package(t[0])
-                pkg["trove"] = t
-                list_available.append(pkg)
-        pkgFilter.add_available( list_available )
+            for trove in list_trove_not_installed:
+                if trove in repo_trove_list:
+                    # only use the first trove in the list
+                    t = repo_trove_list[trove][0]
+                    pkg = self._search_package(t[0])
+                    pkg["trove"] = t
+                    list_available.append(pkg)
+            pkgFilter.add_available( list_available )
 
         package_list = pkgFilter.post_process()
         self._show_package_list(package_list)
