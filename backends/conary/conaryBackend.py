@@ -201,16 +201,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 return pkg
         return None
 
-    def _edit_package(self, trove, pkgDict, status):
-        for i,pkg in enumerate(self.packages):
-            if pkg["trove"] == trove:
-                name,version, flavor = pkg.get("trove")
-                self.packages[i] = dict(
-                    trove = (name,version, flavor ),
-                    pkgDict = pkgDict
-                    )
-                return i, self.packages[i]
-   
     def _convert_package( self, trove , pkgDict ):
         return dict( 
                 trove = trove ,
@@ -226,7 +216,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
          filters(str) as the filter
         """
         fltlist = filters
-        if where != "name" and where != "details" and where != "group" and where!= "all":
+        if where not in ("name", "details", "group", "all"):
             log.info("where %s" % where)
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
 
@@ -236,8 +226,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("|||||||||||||||||||||||||||||1end searching on cache... ")
 
         if len(pkgList) > 0 :
-            #for i in troveTupleList:
-            #    log.info("FOUND!!!!!! %s " % i["name"] )
             log.info("FOUND (%s) elements " % len(pkgList) )
             for pkgDict in pkgList:
                 self._add_package( ( pkgDict["name"], None, None), pkgDict )
@@ -321,18 +309,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         list_trove_all = [p.get("trove") for p in self.packages]
         list_installed = []
-        # initialize with the full list, and remove installed troves later
-        list_not_installed = self.packages[:]
+        list_not_installed = []
 
         db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
         for trove in list_trove_all:
+            pkg = self._search_package(trove[0])
             if trove in db_trove_list:
-                # only use the first trove in the list
-                t = db_trove_list[trove][0]
-                pkg = self._search_package(t[0])
-                pkg["trove"] = t
-                list_installed.append(pkg)
-                list_not_installed.remove(pkg)
+                # A package may have different versions/flavors installed.
+                for t in db_trove_list[trove]:
+                    list_installed.append(dict(trove=t, metadata=pkg["metadata"]))
+            else:
+                list_not_installed.append(pkg)
 
         # Our list of troves doesn't contain information about whether trove is
         # installed, so ConaryFilter can't do proper filtering. Don't pass
