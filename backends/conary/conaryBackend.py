@@ -189,7 +189,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """
         log.info("=========== get package from package_id ======================")
         name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
-        trove = self.conary.request_query(name)
+        trove = self.conary.repo_query(name)
         if trove:
             return trove
         else:
@@ -384,24 +384,31 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info(pkg_dict)
         if pkg_dict is None:
             return None
-        log.info("doing a resolve")
-        filter = ConaryFilter(filters)
-        trove = None
-    
-        trove_installed = self.conary.query( pkg_dict.get("name") )
-        log.info("end of conary query")
-        if trove_installed:
-            pkg = self._convert_package( trove_installed[0], pkg_dict )
-            log.info( pkg)
-            filter.add_installed( [ pkg ] )
-        log.info("filter installed end.. doing a rq")    
-        trove_available = self.conary.request_query( pkg_dict.get("name") )
-        log.info("end of conary rquery")
-        if trove_available:
-            pkg = self._convert_package( trove_available[0], pkg_dict )
-            filter.add_available(  [ pkg ] )
 
-        log.info("filter available end")    
+        log.info("doing a resolve")
+        # Our list of troves doesn't contain information about whether trove is
+        # installed, so ConaryFilter can't do proper filtering. Don't pass
+        # @filters to it. Instead manually check the filters before calling
+        # add_installed() and add_available().
+        filter = ConaryFilter()
+
+        is_found_locally = False
+        if FILTER_NOT_INSTALLED not in filters:
+            trove_installed = self.conary.query(pkg_dict.get("name"))
+            log.info("end of conary query")
+            if trove_installed:
+                pkg = self._convert_package(trove_installed[0], pkg_dict)
+                log.info( pkg)
+                filter.add_installed([pkg])
+                is_found_locally = True
+
+        if not is_found_locally and FILTER_INSTALLED not in filters:
+            trove_available = self.conary.repo_query(pkg_dict.get("name"))
+            log.info("end of conary rquery")
+            if trove_available:
+                pkg = self._convert_package(trove_available[0], pkg_dict)
+                filter.add_available([pkg])
+
         package_list = filter.post_process()
         log.info("package_list %s" % package_list)
         self._show_package_list(package_list)

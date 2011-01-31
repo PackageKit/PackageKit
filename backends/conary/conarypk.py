@@ -48,10 +48,6 @@ class ConaryPk:
             Pk = PackageKitBaseBackend("")
             Pk.error(ERROR_NO_NETWORK,"Not exist network conection")
 
-    def _get_db(self):
-        """ get the database for do querys """
-        return self.db 
-
     def _get_repos(self):
         """ get repos for do request query """
         return self.repos
@@ -82,15 +78,13 @@ class ConaryPk:
         """ do a conary query """
         if name is None or name == "":
             return []
-        db = self._get_db()
         try:
-            troves = db.findTrove( None ,(name , None, None ))
-            #return db.getTroves(troves)
+            troves = self.db.findTrove( None ,(name , None, None ))
             return troves
         except TroveNotFound:
             return []
 
-    def request_query(self, name, installLabel = None):
+    def repo_query(self, name, installLabel = None):
         """ Do a conary request query """
         self._exist_network()
         label = self.label( installLabel )
@@ -110,7 +104,7 @@ class ConaryPk:
     def update(self, name, installLabel= None, remove  = False ):
         cli = self.cli
         #get a trove
-        troves = self.request_query(name, installLabel)
+        troves = self.repo_query(name, installLabel)
         for trove in troves:
             trovespec =  self.trove_to_spec( trove, remove )
         try:
@@ -137,9 +131,9 @@ if __name__ == "__main__":
     conary = ConaryPk()
     print conary.search_path("/usr/bin/vim")
     #print conary.query("gimpasdas")
-    #print conary.request_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
-    #print conary.request_query("gimp")
-    #print conary.request_query("gimpasdasd")
+    #print conary.repo_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
+    #print conary.repo_query("gimp")
+    #print conary.repo_query("gimpasdasd")
     #print conary.update("amsn")
     #print conary.remove("amsn")
 
