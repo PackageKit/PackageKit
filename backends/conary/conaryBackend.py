@@ -311,23 +311,25 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         list_installed = []
         list_not_installed = []
 
-        db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
-        for trove in list_trove_all:
-            pkg = self._search_package(trove[0])
-            if trove in db_trove_list:
-                # A package may have different versions/flavors installed.
-                for t in db_trove_list[trove]:
-                    list_installed.append(dict(trove=t, metadata=pkg["metadata"]))
-            else:
-                list_not_installed.append(pkg)
+        if FILTER_NOT_INSTALLED in filters:
+            list_not_installed = self.packages[:]
+        else:
+            db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
+            for trove in list_trove_all:
+                pkg = self._search_package(trove[0])
+                if trove in db_trove_list:
+                    # A package may have different versions/flavors installed.
+                    for t in db_trove_list[trove]:
+                        list_installed.append(dict(trove=t, metadata=pkg["metadata"]))
+                else:
+                    list_not_installed.append(pkg)
 
         # Our list of troves doesn't contain information about whether trove is
         # installed, so ConaryFilter can't do proper filtering. Don't pass
         # @filters to it. Instead manually check the filters before calling
         # add_installed() and add_available().
         pkgFilter = ConaryFilter()
-        if FILTER_NOT_INSTALLED not in filters:
-            pkgFilter.add_installed(list_installed)
+        pkgFilter.add_installed(list_installed)
         log.info("Packages installed .... %s " % len(list_installed))
         log.info("Packages available .... %s " % len(list_not_installed))
 
