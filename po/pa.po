@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:11+0000\n"
-"Last-Translator: hughsie <richard@hughsie.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2011-02-01 10:46+0000\n"
+"Last-Translator: aalam <apreet.alam@gmail.com>\n"
+"Language-Team: Panjabi (Punjabi) <None>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -287,7 +287,7 @@ msgstr "ਘਾਤਕ ਗਲਤੀ"
 #. can be updated
 #: ../client/pk-console.c:701
 msgid "There are no packages to update."
-msgstr ""
+msgstr "ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਹੈ।"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../client/pk-console.c:704
@@ -428,7 +428,7 @@ msgstr "ਐਨੀਮੇਟਡ ਵਿਡਜੈੱਟ ਵਰਤਣ ਦੀ ਬਜ�
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
+msgstr "ਮੇਟਾਡਾਟਾ ਦੀ ਵੱਧ ਤੋਂ ਵੱਧ ਉਮਰ ਹੈ। 'ਕਦੇ ਨਹੀਂ never' ਲਈ -1 ਵਰਤੋਂ।"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1333
@@ -549,12 +549,12 @@ msgstr "ਪੈਕੇਜ ਦੇਣ ਵਾਲੀ ਸਤਰ ਲੋੜੀਦੀ ਹ�
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:1714
 msgid "A distribution name is required"
-msgstr ""
+msgstr "ਡਿਸਟਰੀਬਿਊਸ਼ਨ ਨਾਂ ਚਾਹੀਦਾ ਹੈ"
 
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1720
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr ""
+msgstr "ਅੱਪਗਰੇਡ ਕਿਸਮ ਚਾਹੀਦੀ ਹੈ, ਜਿਵੇਂ 'ਘੱਟੋ-ਘੱਟ', 'ਡਿਫਾਲਟ', ਜਾਂ 'ਪੂਰਾ'"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
@@ -777,7 +777,7 @@ msgstr "ਫਾਇਲ ਲਈ ਖੋਜ ਫੇਲ੍ਹ ਹੈ"
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: ../contrib/command-not-found/pk-command-not-found.c:456
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "ਫਾਇਲਾਂ ਦੀ ਲਿਸਟ ਲੈਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: ../contrib/command-not-found/pk-command-not-found.c:602
@@ -799,7 +799,7 @@ msgstr "ਪੈਕੇਜਕਿੱਟ ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 #. * the style of bash itself -- apologies
 #: ../contrib/command-not-found/pk-command-not-found.c:739
 msgid "command not found"
-msgstr ""
+msgstr "ਕਮਾਂਡ ਨਹੀਂ ਲੱਭੀ"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: ../contrib/command-not-found/pk-command-not-found.c:757
@@ -1846,7 +1846,7 @@ msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਪਰਮ�
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:21
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਅੱਪਗਰੇਡ ਕਰਨ ਲਈ ਪਰਮਾਣਿਤ ਹੋਣ ਦੀ ਲੋੜ ਹੈ"
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1973,7 +1973,7 @@ msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:109
 msgid "Upgrade System"
-msgstr ""
+msgstr "ਸਿਸਟਮ ਅੱਪਗਰੇਡ ਕਰੋ"
 
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
