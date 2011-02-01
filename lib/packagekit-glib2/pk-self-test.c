@@ -1709,9 +1709,13 @@ pk_test_service_pack_func (void)
 {
 	PkServicePack *pack;
 	gchar **package_ids;
+	gboolean ret;
 
 	pack = pk_service_pack_new ();
 	g_assert (pack != NULL);
+
+	ret = pk_service_pack_set_temp_directory (pack, NULL);
+	g_assert (ret);
 
 	/* install package */
 	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
