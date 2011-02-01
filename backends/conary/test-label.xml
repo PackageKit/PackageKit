@@ -25,4 +25,13 @@
   <category lang="en">Network</category>
 </Package>
 
+<Package>
+  <name>gnome-power-manager</name>
+  <version>3.1.1-7-0.1</version>
+</Package>
+<Package>
+  <name>libgnome</name>
+  <version>2.32.0-0.3-1</version>
+</Package>
+
 </Packages>

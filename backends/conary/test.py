@@ -16,6 +16,9 @@ class TestXMLRepo(unittest.TestCase):
     def test_search_name_count2(self):
         self.assertEqual(1, len(self.xml_repo.search(['kernel', 'kernel'], 'name')))
 
+    def test_search_name_and(self):
+        self.assertEqual(1, len(self.xml_repo.search(['gnome', 'power'], 'name')))
+
     def test_search_name_name(self):
         self.assertEqual('kernel',
                 self.xml_repo.search(['kernel'], 'name')[0]['name'])
@@ -26,6 +29,9 @@ class TestXMLRepo(unittest.TestCase):
 
     def test_search_detail_count(self):
         self.assertEqual(1, len(self.xml_repo.search(['xchat'], 'details')))
+
+    def test_search_detail_and(self):
+        self.assertEqual(1, len(self.xml_repo.search(['gnome', 'power'], 'details')))
 
     def test_search_detail_version(self):
         self.assertEqual('2.8.8-1-1',

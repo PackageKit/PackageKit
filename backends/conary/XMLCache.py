@@ -40,6 +40,23 @@ def mapGroup(categorieList):
                     where[group] = 1
     return where
 #}}}
+
+def _in_list(lst, value):
+    '''Return True if value is a substring of any element in list @lst
+    '''
+    for i in lst:
+        if value in i:
+            return True
+    return False
+
+def _is_sub_list(lst, values):
+    '''Return True if all values appear as substrings in any element of @lst
+    '''
+    for s in values:
+        if not _in_list(lst, s):
+            return False
+    return True
+
 class XMLRepo:
 
     # Let's only get XML data from things that we support.
@@ -153,11 +170,11 @@ class XMLRepo:
         '''
         doc = self._open()
         results = []
+        searchlist = [s.lower() for s in searchlist]
         for package in doc.findall("Package"):
-            for s in searchlist:
-                if s.lower() in str(package.find("name").text).lower():
-                    results.append(self._generatePackage(package))
-                    break
+            pn = str(package.find("name").text).lower()
+            if _is_sub_list([pn], searchlist):
+                results.append(self._generatePackage(package))
         return results
 
     def _searchGroupPackage(self, searchlist):
@@ -176,12 +193,12 @@ class XMLRepo:
 
         return results
 
-
     def _searchDetailsPackage(self, searchlist):
         '''Search in package name, shortDesc, longDesc, and category
         '''
         doc = self._open()
         results = []
+        searchlist = [s.lower() for s in searchlist]
         for package in doc.findall("Package"):
             info = (
                 package.find("name").text.lower(),
@@ -189,11 +206,8 @@ class XMLRepo:
                 getattr(package.find("longDesc"), "text", "").lower(),
                 getattr(package.find("category"), "text", "").lower(),
             )
-            for s in searchlist:
-                for i in info:
-                    if s.lower() in i.lower():
-                        results.append(self._generatePackage(package))
-                        break
+            if _is_sub_list(info, searchlist):
+                results.append(self._generatePackage(package))
 
         return results
 
