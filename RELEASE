@@ -7,7 +7,7 @@ git shortlog PACKAGEKIT_0_6_11.. | grep -i -v trivial | grep -v Merge > NEWS.new
 --------------------------------------------------------------------------------
 Version 0.6.12
 ~~~~~~~~~~~~~~
-Released: 2010-xx-xx
+Released: 2011-xx-xx
 
 Notes:
 
@@ -59,7 +59,7 @@ tx push --source
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit 0.6.11 released!
+Subject: PackageKit 0.6.12 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
