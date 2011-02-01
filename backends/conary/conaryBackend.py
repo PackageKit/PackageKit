@@ -189,11 +189,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """
         log.info("=========== get package from package_id ======================")
         name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
-        trove = self.conary.repo_query(name)
-        if trove:
-            return trove
-        else:
-            return cli.query(name)
+        trove = self.conary.query(name) or self.conary.repo_query(name)
+        return trove
 
     def _search_package( self, name ):
         for pkg in self.packages:
@@ -387,7 +384,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("end of conary query")
             for trv in trove_installed:
                 pkg = self._convert_package(trv, pkg_dict)
-                log.info( pkg)
                 filter.add_installed([pkg])
                 is_found_locally = True
 
@@ -527,14 +523,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         package_id = package_ids[0]
         def _get_files(troveSource, n, v, f):
             files = []
-            troves = [(n, v, f)]
             trv = troveSource.getTrove(n, v, f)
-            troves.extend([ x for x in trv.iterTroveList(strongRefs=True)
-                                if troveSource.hasTrove(*x)])
-            for n, v, f in troves:
+            for (n, v, f) in [x for x in trv.iterTroveList(strongRefs=True)
+                                if troveSource.hasTrove(*x)]:
                 for (pathId, path, fileId, version, filename) in \
                     troveSource.iterFilesInTrove(n, v, f, sortByPath = True,
-                                                 withFiles = True):
+                            withFiles=True, capsules=False):
                     files.append(path)
             return files
         
