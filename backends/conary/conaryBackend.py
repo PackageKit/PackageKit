@@ -385,8 +385,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if FILTER_NOT_INSTALLED not in filters:
             trove_installed = self.conary.query(pkg_dict.get("name"))
             log.info("end of conary query")
-            if trove_installed:
-                pkg = self._convert_package(trove_installed[0], pkg_dict)
+            for trv in trove_installed:
+                pkg = self._convert_package(trv, pkg_dict)
                 log.info( pkg)
                 filter.add_installed([pkg])
                 is_found_locally = True
