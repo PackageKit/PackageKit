@@ -1,3 +1,77 @@
+Version 0.6.12
+~~~~~~~~~~~~~~
+Released: 2011-02-01
+
+Notes:
+ - There is a new 'Speed' API addition optionally available for backends.
+ - Multiple 'default' backends can be specified to allow fallbacks.
+
+Translations:
+ - Update Bulgarian translation (al_shopov)
+ - Update Czech translation (fri)
+ - Update Panjabi translation (aalam)
+ - Update Spanish translation (aloriel)
+ - Update Swedish translation (yeager)
+
+Libraries:
+ - glib: Allow the service pack self tests to run by setting the temp directory (Richard Hughes)
+ - glib: Avoid spamming lots of low level debugging to .xsession-errors. Fixes rh#668303 (Richard Hughes)
+ - glib: Check sscanf() returned the correct number of items before using the answer (Richard Hughes)
+ - glib: Do not return distro-specific id's whilst testing, to fix 'make check' on Debian (Richard Hughes)
+ - glib: Ensure we test for and always run the self-check-socket-program in 'make check' (Richard Hughes)
+ - glib: Only use g_time_val_from_iso8601() when we have a valid ISO8601 value (Richard Hughes)
+ - packagekit-qt: Do not cause a build error when building with -j4 (Richard Hughes)
+
+Backends:
+ - aptcc: Fix compile with GLib 2.24 (Matthias Klumpp)
+ - aptcc: Sanitize file descriptor handling (Matthias Klumpp)
+ - aptcc: Use a pty rather than a pipe for writing to apt (Colin Watson)
+ - conary: Add get_roles so pkcon correctly reports all supported commands (Jesse Zhang)
+ - conary: Fix get-details to really output the licenses (Jesse Zhang)
+ - conary: Fix get-files (Jesse Zhang)
+ - conary: Fix ~installed filter (Jesse Zhang)
+ - conary: Fix installed filter (Jesse Zhang)
+ - conary: Fix refresh-cache (Jesse Zhang)
+ - conary: Fix resolve to not do repo_query if trove is found locally (Jesse Zhang)
+ - conary: Fix resolve to show all versions of installed pkgs (Jesse Zhang)
+ - conary: Fix search-details (Jesse Zhang)
+ - conary: Fix search-group (Jesse Zhang)
+ - conary: Fix search-name (Jesse Zhang)
+ - conary: Fix search to show all versions of installed pkgs (Jesse Zhang)
+ - conary: Space means AND for search-name and search-details (Jesse Zhang)
+ - entropy: Fix compatibility with newer Entropy releases (Fabio Erculiani)
+ - entropy: Fix crash in dependencies removal calculation releases (Fabio Erculiani)
+ - yum: Correct three syntax errors that could cause a backtrace (Richard Hughes)
+ - yum: Do not attempt to call yum.repos twice when using RHN (Richard Hughes)
+ - yum: Do not block the update list on infrastructure packages it breaks auto-updating (Richard Hughes)
+ - yum: Ensure the category data is valid UTF8 (Richard Hughes)
+ - yum: Update the cached comps group list when enabling of disabling a repo. Fixes rh#629049 (Richard Hughes)
+ - zif: Do not crash when returning the package untrusted error (Richard Hughes)
+ - zif: Ensure we set the correct key for the metadata_expire value (Richard Hughes)
+ - zif: Return the correct error when a transaction needs further authorisation (Richard Hughes)
+ - zif: Support the new speed property (Richard Hughes)
+ - zypp: Consider autoremove in remove_packages (Zhang Qiang)
+ - zypp: Don't send package signal in DownloadProgressReportReceiver (Zhang Qiang)
+ - zypp: Erase system resolvables in zypp_build_pool (Zhang Qiang)
+ - zypp: Implement download packages (Zhang Qiang)
+ - zypp: Include system repo when install local rpm (Zhang Qiang)
+ - zypp: Refresh cache before searching (Zhang Qiang)
+ - zypp: Support download source RPM packages (Zhang Qiang)
+
+New Features:
+ - Add speed python backend method (Anders F Bjorklund)
+ - Allow the user to specify a comma delimited list of default backends (Richard Hughes)
+ - Provide a hook so spawned backends can report speed (Richard Hughes)
+
+Bugfixes:
+ - Do not enable command not found debugging by default. Fixes rh#666254 (Richard Hughes)
+ - Explictly include GIO in LDADD to fix a compile error on Debian (Matthias Klumpp, Richard Hughes)
+ - Fix calling pk_client_helper_start() with no environment set (Richard Hughes)
+ - Fix LP#591474 bug which caused a crash when the Section() of a package was NULL (Daniel Nicoletti)
+ - Only try to populate the command list in pkcon after the PkControl command has finished (Richard Hughes)
+ - pkcon: check PK error in pk_console_resolve_package (Zhang Qiang)
+ - Set client locale to LC_MESSAGES rather than LC_ALL (Colin Watson)
+
 Version 0.6.11
 ~~~~~~~~~~~~~~
 Released: 2010-12-13

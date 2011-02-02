@@ -2,12 +2,12 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_0_6_11.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_0_6_12.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.6.12
+Version 0.6.13
 ~~~~~~~~~~~~~~
-Released: 2010-xx-xx
+Released: 2011-xx-xx
 
 Notes:
 
@@ -32,8 +32,8 @@ tx pull --all
 
 4. Commit changes in PackageKit git:
 
-git commit -a -m "Release version 0.6.12"
-git tag -s -f -m "Release 0.6.12" PACKAGEKIT_0_6_12
+git commit -a -m "Release version 0.6.13"
+git tag -s -f -m "Release 0.6.13" PACKAGEKIT_0_6_13
 <gpg password>
 git push --tags
 git push
@@ -59,7 +59,7 @@ tx push --source
 10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-Subject: PackageKit 0.6.11 released!
+Subject: PackageKit 0.6.13 released!
 
 Tarballs available here: http://www.packagekit.org/releases/
 
