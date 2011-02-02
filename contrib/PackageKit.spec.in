@@ -63,6 +63,7 @@ cross-architecture API.
 Summary: PackageKit YUM backend
 Group: System Environment/Libraries
 Requires: yum >= 3.2.19
+Requires: pygobject2 # python(gio)
 Requires: %{name} = %{version}-%{release}
 Provides: PackageKit-backend
 
