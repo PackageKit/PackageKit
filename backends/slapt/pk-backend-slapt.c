@@ -484,6 +484,8 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 
 	slapt_pkg_list_t *installed;
 	slapt_pkg_list_t *available;
+	slapt_pkg_list_t *to_install;
+	slapt_pkg_list_t *to_remove;
 
 	slapt_pkg_list_t *requires;
 
@@ -492,6 +494,8 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 
 	installed = slapt_get_installed_pkgs();
 	available = slapt_get_available_pkgs();
+	to_install = slapt_init_pkg_list();
+	to_remove = slapt_init_pkg_list();
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -509,7 +513,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 		continue;
 	    }
 
-	    requires = slapt_is_required_by(_config, available, pkg);
+	    requires = slapt_is_required_by(_config, available, installed, to_install, to_remove, pkg);
 
 	    for (i = 0; i < requires->pkg_count; i++) {
 		pkg = requires->pkgs[i];
@@ -527,6 +531,8 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 
 	slapt_free_pkg_list(available);
 	slapt_free_pkg_list(installed);
+	slapt_free_pkg_list(to_install);
+	slapt_free_pkg_list(to_remove);
 
 	pk_backend_finished (backend);
 }
