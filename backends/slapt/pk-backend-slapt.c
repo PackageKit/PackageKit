@@ -866,9 +866,10 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	guint i;
+	gchar *search;
 
 	const gchar *package_id;
 	slapt_pkg_list_t *pkglist;
@@ -880,6 +881,8 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
+
+	search = g_strjoinv ("&", values);
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		pkglist = slapt_get_installed_pkgs();
@@ -904,17 +907,20 @@ backend_search_details (PkBackend *backend, PkBitfield filters, const gchar *sea
 
 	slapt_free_pkg_list(pkglist);
 
+	g_free (search);
+
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_search_group:
+ * backend_search_groups:
  */
 static void
-backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	guint i;
+	gchar *search;
 
 	const gchar *package_id;
 	slapt_pkg_list_t *pkglist;
@@ -929,6 +935,8 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
+
+	search = g_strjoinv ("&", values);
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		pkglist = slapt_get_installed_pkgs();
@@ -965,17 +973,20 @@ backend_search_group (PkBackend *backend, PkBitfield filters, const gchar *searc
 
 	slapt_free_pkg_list(pkglist);
 
+	g_free (search);
+
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_search_name:
+ * backend_search_names:
  */
 static void
-backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search)
+backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 {
 	unsigned int i;
+	gchar *search;
 
 	const gchar *package_id;
 	slapt_pkg_list_t *pkglist;
@@ -987,6 +998,8 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
+
+	search = g_strjoinv ("&", values);
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 		pkglist = slapt_get_installed_pkgs();
@@ -1017,6 +1030,8 @@ backend_search_name (PkBackend *backend, PkBitfield filters, const gchar *search
 
 out:
 	slapt_free_pkg_list(pkglist);
+
+	g_free (search);
 
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -1335,9 +1350,9 @@ PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
+	NULL,					/* search_files */
+	backend_search_groups,			/* search_groups */
+	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	NULL,					/* update_system */
 	NULL,					/* what_provides */
