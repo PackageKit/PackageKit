@@ -287,6 +287,23 @@ static const char *_get_pkg_category(slapt_pkg_info_t *pkg)
 	    return (const char *) p + 1;
 }
 
+/* return the PackageKit group matching the Slackware category */
+static PkGroupEnum _get_pkg_group(const char *category)
+{
+	PkGroupEnum group;
+	struct category_map *catgroup;
+
+	    group = PK_GROUP_ENUM_UNKNOWN;
+	    for (catgroup = CATGROUP; catgroup->category != NULL; catgroup++) {
+		if (strcmp(catgroup->category, category) == 0) {
+		    group = catgroup->group;
+		    break;
+		}
+	    }
+
+	return group;
+}
+
 /* return the first line of the pkg->description, without the prefix */
 static const gchar *_get_pkg_summary(slapt_pkg_info_t *pkg)
 {
@@ -421,7 +438,6 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	slapt_pkg_list_t *available;
 	slapt_pkg_info_t *pkg;
 	const char *category;
-	struct category_map *catgroup;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -444,13 +460,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	    }
 
 	    category = _get_pkg_category(pkg);
-	    group = PK_GROUP_ENUM_UNKNOWN;
-	    for (catgroup = CATGROUP; catgroup->category != NULL; catgroup++) {
-		if (strcmp(catgroup->category, category) == 0) {
-		    group = catgroup->group;
-		    break;
-		}
-	    }
+	    group = _get_pkg_group(category);
 
 	    package_id = _get_string_from_pkg(pkg);
 	    description = g_strstrip((gchar*) _get_pkg_description(pkg));
@@ -934,7 +944,6 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 	PkGroupEnum group;
 	PkGroupEnum search_group;
 	const char *category;
-	struct category_map *catgroup;
 
 	PkInfoEnum state;
 	const char *summary;
@@ -958,13 +967,7 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 		pkg = pkglist->pkgs[i];
 
 		category = _get_pkg_category(pkg);
-		    group = PK_GROUP_ENUM_UNKNOWN;
-		    for (catgroup = CATGROUP; catgroup->category != NULL; catgroup++) {
-			if (strcmp(catgroup->category, category) == 0) {
-			    group = catgroup->group;
-			    break;
-			}
-		    }
+		group = _get_pkg_group(category);
 
 		if (group == search_group) {
 
