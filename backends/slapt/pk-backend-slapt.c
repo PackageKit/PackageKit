@@ -37,7 +37,7 @@ struct category_map {
     PkGroupEnum group;
 };
 
-static struct category_map CATGROUP[] = { /* TODO: load into hashmap */
+static struct category_map CATGROUP[] = {
 /* Slackware */
 {          "a", PK_GROUP_ENUM_SYSTEM /* The base Slackware system. */ },
 {         "ap", PK_GROUP_ENUM_OTHER /* Linux applications. */ },
@@ -95,6 +95,7 @@ static struct category_map CATGROUP[] = { /* TODO: load into hashmap */
 /* Sentinel */
 {         NULL, PK_GROUP_ENUM_UNKNOWN }
 };
+static GHashTable *_cathash = NULL;
 
 static PkBackend *_backend = NULL;
 
@@ -126,9 +127,17 @@ double dltotal, double dlnow, double ultotal, double ulnow)
 static void
 backend_initialize (PkBackend *backend)
 {
+	struct category_map *catgroup;
+
 	_config = slapt_read_rc_config(_config_file);
 	if (_config == NULL)
 	    _config = slapt_init_config();
+
+	_cathash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+	for (catgroup = CATGROUP; catgroup->category != NULL; catgroup++) {
+	     g_hash_table_insert(_cathash,
+	         (gpointer) catgroup->category, (gpointer) catgroup->group);
+	}
 
 	_backend = backend;
 	if (_backend != NULL)
@@ -145,6 +154,7 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	slapt_free_rc_config(_config);
+	g_hash_table_destroy(_cathash);
 }
 
 /**
@@ -290,18 +300,13 @@ static const char *_get_pkg_category(slapt_pkg_info_t *pkg)
 /* return the PackageKit group matching the Slackware category */
 static PkGroupEnum _get_pkg_group(const char *category)
 {
-	PkGroupEnum group;
-	struct category_map *catgroup;
+	gpointer value;
 
-	    group = PK_GROUP_ENUM_UNKNOWN;
-	    for (catgroup = CATGROUP; catgroup->category != NULL; catgroup++) {
-		if (strcmp(catgroup->category, category) == 0) {
-		    group = catgroup->group;
-		    break;
-		}
-	    }
+	value = g_hash_table_lookup(_cathash, category);
+	if (value == NULL)
+	    value = PK_GROUP_ENUM_UNKNOWN;
 
-	return group;
+	return (PkGroupEnum) value;
 }
 
 /* return the first line of the pkg->description, without the prefix */
