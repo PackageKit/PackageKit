@@ -487,7 +487,6 @@ AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend])
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(entropy, AS_HELP_STRING([--enable-entropy],[use the entropy backend]),enable_entropy=$enableval,enable_entropy=no)
 AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
-AC_ARG_ENABLE(pacman, AS_HELP_STRING([--enable-pacman],[use the Pacman backend]),enable_pacman=$enableval,enable_pacman=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(portage, AS_HELP_STRING([--enable-portage],[use the portage backend]),enable_portage=$enableval,enable_portage=no)
@@ -509,7 +508,6 @@ AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_ENTROPY, [test x$enable_entropy = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes])
-AM_CONDITIONAL(BACKEND_TYPE_PACMAN, [test x$enable_pacman = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes])
 AM_CONDITIONAL(BACKEND_TYPE_PORTAGE, [test x$enable_portage = xyes])
@@ -610,8 +608,6 @@ if test x$with_default_backend = x; then
 		with_default_backend=slapt
 	elif test -f /usr/bin/smart ; then
 		with_default_backend=smart
-	elif test -f /usr/lib/libpacman-glib.so ; then
-		with_default_backend=pacman
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
 	elif test -f /usr/bin/razor ; then
@@ -710,12 +706,6 @@ if test x$enable_alpm = xyes; then
 			[AC_MSG_ERROR([No ALPM headers found])])
 fi
 
-if test x$enable_pacman = xyes; then
-	PKG_CHECK_MODULES(PACMAN, pacman-glib >= 3.3.0)
-	AC_SUBST(PACMAN_CFLAGS)
-	AC_SUBST(PACMAN_LIBS)
-fi
-
 if test x$enable_poldek = xyes; then
 	POLDEK_CFLAGS="-I/usr/include/poldek"
 	POLDEK_LIBS="-lpoclidek -lpoldek"
@@ -794,7 +784,6 @@ backends/conary/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
 backends/opkg/Makefile
-backends/pacman/Makefile
 backends/slapt/Makefile
 backends/smart/Makefile
 backends/test/Makefile
@@ -870,7 +859,6 @@ echo "
         Entropy backend:           ${enable_entropy}
         OPKG backend:              ${enable_opkg}
         Razor backend:             ${enable_razor}
-        Pacman backend:            ${enable_pacman}
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         Portage backend:           ${enable_portage}
