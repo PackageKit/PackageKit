@@ -5754,7 +5754,7 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
-#ifdef USE_SECURITY_POLKIT_NEW
+#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	GError *error = NULL;
 #endif
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
@@ -5807,7 +5807,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 #ifdef USE_SECURITY_POLKIT
-#ifdef USE_SECURITY_POLKIT_NEW
+#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
 	if (transaction->priv->authority == NULL) {
 		g_error ("failed to get pokit authority: %s", error->message);

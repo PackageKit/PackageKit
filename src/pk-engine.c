@@ -1396,7 +1396,7 @@ pk_engine_init (PkEngine *engine)
 	gchar *root;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
-#ifdef USE_SECURITY_POLKIT_NEW
+#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	GError *error = NULL;
 #endif
 
@@ -1489,7 +1489,7 @@ pk_engine_init (PkEngine *engine)
 
 #ifdef USE_SECURITY_POLKIT
 	/* protect the session SetProxy with a PolicyKit action */
-#ifdef USE_SECURITY_POLKIT_NEW
+#if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	engine->priv->authority = polkit_authority_get_sync (NULL, &error);
 	if (engine->priv->authority == NULL) {
 		g_error ("failed to get pokit authority: %s", error->message);

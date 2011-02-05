@@ -574,6 +574,14 @@ if test x$with_security_framework = xpolkit; then
 				  polkit-gobject-1 >= $POLKIT_GOBJECT_REQUIRED)
 	else
 		AC_DEFINE(USE_SECURITY_POLKIT_NEW, 1, [if we should use the new PolicyKit API])
+		save_CFLAGS="$CFLAGS"
+		save_LIBS="$LIBS"
+		CFLAGS="$CFLAGS $POLKIT_CFLAGS"
+		LIBS="$LIBS $POLKIT_LIBS"
+		# check for symbol, if using a pre-release polkit 0.97
+		AC_CHECK_FUNCS(polkit_authority_get_sync)
+		CFLAGS="$save_CFLAGS"
+		LIBS="$save_LIBS"
 	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
