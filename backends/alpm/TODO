@@ -1,4 +1,0 @@
-
-* Fix cache refreshing. Currently throws 'unexpected error'
-* Improve error handling by using macros. Currently 50% is very similiar error handling code.
-* Handle transaction progress and events in the callback functions.
