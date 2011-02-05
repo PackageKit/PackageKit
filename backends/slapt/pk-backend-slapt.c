@@ -223,22 +223,25 @@ backend_cancel (PkBackend *backend)
 {
 }
 
-static slapt_pkg_info_t* _get_pkg_from_id(PkPackageId *pi,
+static slapt_pkg_info_t* _get_pkg_from_id(gchar *pi,
                             slapt_pkg_list_t *avail_pkgs,
                             slapt_pkg_list_t *installed_pkgs)
 {
+	gchar **pis;
 	slapt_pkg_info_t *pkg;
 	gchar **fields;
 	const gchar *version;
 
-	fields = g_strsplit(pi->version, "-", 2);
-	version = g_strdup_printf("%s-%s-%s", fields[0], pi->arch, fields[1]);
-	pkg = slapt_get_exact_pkg(avail_pkgs, pi->name, version);
+	pis = pk_package_id_split(pi);
+	fields = g_strsplit(pis[PK_PACKAGE_ID_VERSION], "-", 2);
+	version = g_strdup_printf("%s-%s-%s", fields[0], pis[PK_PACKAGE_ID_ARCH], fields[1]);
+	pkg = slapt_get_exact_pkg(avail_pkgs, pis[PK_PACKAGE_ID_NAME], version);
 	if (pkg == NULL && installed_pkgs != NULL) {
-		pkg = slapt_get_exact_pkg(installed_pkgs, pi->name, version);
+		pkg = slapt_get_exact_pkg(installed_pkgs, pis[PK_PACKAGE_ID_NAME], version);
 	}
 	g_free((gpointer) version);
 	g_strfreev(fields);
+	g_strfreev(pis);
 
 	return pkg;
 }
@@ -247,20 +250,12 @@ static slapt_pkg_info_t* _get_pkg_from_string(const gchar *package_id,
                             slapt_pkg_list_t *avail_pkgs,
                             slapt_pkg_list_t *installed_pkgs)
 {
-	PkPackageId *pi;
-	slapt_pkg_info_t *pkg;
-
-	pi = pk_package_id_new_from_string (package_id);
-	if (pi == NULL)
-	    return NULL;
-	pkg = _get_pkg_from_id(pi, avail_pkgs, installed_pkgs);
-	pk_package_id_free (pi);
-	return pkg;
+	return _get_pkg_from_id((gchar *) package_id, avail_pkgs, installed_pkgs);
 }
 
-static PkPackageId* _get_id_from_pkg(slapt_pkg_info_t *pkg)
+static gchar* _get_id_from_pkg(slapt_pkg_info_t *pkg)
 {
-	PkPackageId *pi;
+	gchar *pi;
 	gchar **fields;
 	const gchar *version;
 	const char *data;
@@ -268,7 +263,7 @@ static PkPackageId* _get_id_from_pkg(slapt_pkg_info_t *pkg)
 	fields = g_strsplit(pkg->version, "-", 3);
 	version = g_strdup_printf("%s-%s", fields[0], fields[2]);
 	data = pkg->installed ? "installed" : "available"; /* TODO: source */
-	pi = pk_package_id_new_from_list(pkg->name, version, fields[1], data);
+	pi = pk_package_id_build(pkg->name, version, fields[1], data);
 	g_free((gpointer) version);
 	g_strfreev(fields);
 
@@ -277,15 +272,7 @@ static PkPackageId* _get_id_from_pkg(slapt_pkg_info_t *pkg)
 
 static const gchar* _get_string_from_pkg(slapt_pkg_info_t *pkg)
 {
-	PkPackageId *pi;
-	const gchar *package_id;
-
-	pi = _get_id_from_pkg(pkg);
-	if (pi == NULL)
-	    return NULL;
-	package_id = pk_package_id_to_string(pi);
-	pk_package_id_free(pi);
-	return package_id;
+	return (const gchar *) _get_id_from_pkg(pkg);
 }
 
 /* return the last item of the pkg->location, after the slash */
@@ -349,7 +336,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 	guint i;
 	guint len;
 	const gchar *package_id;
-	PkPackageId *pi;
+	gchar *pi;
 
 	slapt_pkg_info_t *pkg;
 	int ret;
@@ -375,15 +362,13 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, available, installed);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
@@ -426,7 +411,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 	guint i;
 	guint len;
 	const gchar *package_id;
-	PkPackageId *pi;
+	gchar *pi;
 	const gchar *license = "";
 	const gchar *homepage = "";
 	const gchar *description;
@@ -446,15 +431,13 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, available, installed);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
@@ -469,12 +452,14 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 		}
 	    }
 
+	    package_id = _get_string_from_pkg(pkg);
 	    description = g_strstrip((gchar*) _get_pkg_description(pkg));
 
 	    pk_backend_details (backend, package_id,
 		license, group, description, homepage, pkg->size_c * 1024);
 
 	    g_free((gpointer) description);
+	    g_free((gpointer) package_id);
 	}
 
 	slapt_free_pkg_list(available);
@@ -493,7 +478,7 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 	guint i;
 	guint len;
 	const gchar *package_id;
-	PkPackageId *pi;
+	gchar *pi;
 
 	slapt_pkg_info_t *pkg;
 
@@ -512,15 +497,13 @@ backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_id
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, available, installed);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
@@ -558,7 +541,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	guint len;
 	const gchar *package_id;
 	const gchar *old_package_id;
-	PkPackageId *pi;
+	gchar *pi;
 
 	slapt_pkg_list_t *installed;
 	slapt_pkg_list_t *available;
@@ -578,15 +561,13 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, available, installed);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
@@ -690,8 +671,7 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 {
 	guint i;
 	guint len;
-	const gchar *package_id;
-	PkPackageId *pi;
+	gchar *pi;
 	int ret;
 
 	slapt_pkg_list_t *installed;
@@ -711,15 +691,13 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, available, installed);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
@@ -828,8 +806,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 {
 	guint i;
 	guint len;
-	const gchar *package_id;
-	PkPackageId *pi;
+	gchar *pi;
 	int ret;
 
 	slapt_pkg_list_t *installed;
@@ -849,15 +826,13 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 
 	len = g_strv_length (package_ids);
 	for (i=0; i<len; i++) {
-	    package_id = package_ids[i];
-	    pi = pk_package_id_new_from_string (package_id);
+	    pi = package_ids[i];
 	    if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
 		return;
 	    }
 	    pkg = _get_pkg_from_id(pi, installed, NULL);
-	    pk_package_id_free (pi);
 	    if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "package not found");
 		continue;
