@@ -833,8 +833,12 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
-        scandata = self._entropy.FileUpdates.scan(dcache = True,
-            quiet = True)
+        if hasattr(self._entropy, "PackageFileUpdates"):
+            scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
+                quiet = True)
+        else:
+            scandata = self._entropy.FileUpdates.scan(dcache = True,
+                quiet = True)
         if scandata is None:
             return
         if len(scandata) > 0:
