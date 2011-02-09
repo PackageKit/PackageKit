@@ -701,6 +701,8 @@ class PackageKitEntropyClient(Client):
 
     _pk_progress = None
     _pk_message = None
+    def init_singleton(self):
+        Client.init_singleton(self, url_fetcher = PkUrlFetcher)
 
     def output(self, text, header = "", footer = "", back = False,
         importance = 0, level = "info", count = None, percent = False):
@@ -806,7 +808,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.doLock()
         signal.signal(signal.SIGQUIT, self.__sigquit)
         PkUrlFetcher._pk_progress = self.sub_percentage
-        self._entropy.urlFetcher = PkUrlFetcher
         self._repo_name_cache = {}
         PackageKitEntropyClient._pk_progress = self.percentage
         PackageKitEntropyClient._pk_message = self._generic_message
