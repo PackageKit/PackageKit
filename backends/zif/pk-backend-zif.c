@@ -1395,7 +1395,13 @@ pk_backend_enable_media_repo (gboolean enabled)
 	}
 
 	/* set the state */
-	ret = zif_store_remote_set_enabled (repo, enabled, &error);
+	zif_state_reset (state);
+	ret = zif_store_remote_set_enabled (repo,
+					    enabled,
+#if ZIF_CHECK_VERSION(0,1,6)
+					    state,
+#endif
+					    &error);
 	if (!ret) {
 		g_debug ("failed to set enable: %s", error->message);
 		g_error_free (error);
@@ -4450,6 +4456,7 @@ static gboolean
 pk_backend_repo_enable_thread (PkBackend *backend)
 {
 	ZifStoreRemote *repo = NULL;
+	ZifState *state_local;
 	gboolean ret;
 	GError *error = NULL;
 	gchar *warning = NULL;
@@ -4459,9 +4466,13 @@ pk_backend_repo_enable_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
+	/* set steps */
+	zif_state_set_number_steps (priv->state, 2);
+
 	/* find the right repo */
+	state_local = zif_state_get_child (priv->state);
 	repo = zif_repos_get_store (priv->repos,
-				    repo_id, priv->state,
+				    repo_id, state_local,
 				    &error);
 	if (repo == NULL) {
 		pk_backend_error_code (backend,
@@ -4472,12 +4483,40 @@ pk_backend_repo_enable_thread (PkBackend *backend)
 		goto out;
 	}
 
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
 	/* set the state */
-	ret = zif_store_remote_set_enabled (repo, enabled, &error);
+	state_local = zif_state_get_child (priv->state);
+	ret = zif_store_remote_set_enabled (repo,
+					    enabled,
+#if ZIF_CHECK_VERSION(0,1,6)
+					    state_local,
+#endif
+					    &error);
 	if (!ret) {
 		pk_backend_error_code (backend,
 				       PK_ERROR_ENUM_CANNOT_DISABLE_REPOSITORY,
 				       "failed to set enable: %s",
+				       error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* this section done */
+	ret = zif_state_done (priv->state, &error);
+	if (!ret) {
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "cancelled: %s",
 				       error->message);
 		g_error_free (error);
 		goto out;
