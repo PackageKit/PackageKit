@@ -264,17 +264,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _do_update(self, applyList, simulate=False):
-        updJob = None
-        jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
-        if jobPath:
-            updJob = self.client.newUpdateJob()
-            try:
-                updJob.thaw(jobPath)
-            except IOError, err:
-                updJob = None
-        else:
-            updJob,suggMap = self._get_update(applyList, cache=False)
+    def _do_update(self, updJob, applyList, simulate=False):
         self.allow_cancel(False)
         try:
             # TODO we should really handle the restart case here
@@ -297,7 +287,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             applyList = [(name, (version, flavor), (None, None), False)]
         else:
             applyList = [(name, (None, None), (version, flavor), True)]
-        return self._do_update(applyList, simulate)
+        updJob, suggMap = self._get_update(applyList)
+        return self._do_update(updJob, applyList, simulate)
 
     def _resolve_list(self, filters):
         log.info("======= _resolve_list =====")
@@ -556,9 +547,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
 
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
-        self._get_update(applyList)
+        updJob, suggMap = self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
-        jobs = self._do_update(applyList)
+        jobs = self._do_update(updJob, applyList)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
         log.info(jobs)
         self.client.setUpdateCallback(self.callback )
