@@ -254,7 +254,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if cache:
                     self.xmlcache.cacheUpdateJob(applyList, updJob)
             except NoNewTrovesError:
-                return updJob, None
+                return updJob, {}
             except DepResolutionFailure as error :
                 log.info(error.getErrorMessage())
                 deps =  error.cannotResolve
@@ -262,7 +262,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 log.info(dep_package)
                 self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
 
-        return updJob
+        return updJob, suggMap
 
     def _do_update(self, applyList, simulate=False):
         updJob = None
@@ -838,7 +838,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info("_get_update ....")
 
         self.status(STATUS_RUNNING)
-        updJob = self._get_update(applyList)
+        updJob, suggMap = self._get_update(applyList)
         log.info("_get_update ....end.")
 
         log.info("getting JobLists...........")

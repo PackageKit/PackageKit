@@ -93,6 +93,7 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_DETAILS,
 		PK_ROLE_ENUM_GET_FILES,
 		PK_ROLE_ENUM_GET_PACKAGES,
+		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
 		PK_ROLE_ENUM_REFRESH_CACHE,
 		PK_ROLE_ENUM_REMOVE_PACKAGES,
@@ -473,7 +474,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_repo_list,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,//	backend_get_update_detail,              /* get_update_detail */
-	NULL,//	backend_get_updates,			/* get_updates */
+	backend_get_updates,			/* get_updates */
 	NULL,					/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
