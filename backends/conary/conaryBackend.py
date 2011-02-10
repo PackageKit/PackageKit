@@ -598,9 +598,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         'Package already installed')
                 """
                 self.status(STATUS_INSTALL)
-                log.info(">>> Prepare Update")
-                self._get_package_update(name, version, flavor)
-                log.info(">>> end Prepare Update")
                 self._do_package_update(name, version, flavor, simulate)
 
         
@@ -625,7 +622,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 name = '-%s' % name
                 #self.client.repos.findTrove(self.conary.default_label)
                 self.status(STATUS_REMOVE)
-                self._get_package_update(name, version, flavor)
 
                 callback = self.client.getUpdateCallback()
                 if callback.error:
