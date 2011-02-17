@@ -1824,6 +1824,10 @@ main (int argc, char **argv)
 	g_type_init ();
 	g_test_init (&argc, &argv, NULL);
 
+#ifndef PK_BUILD_LOCAL
+	g_warning ("you need to compile with --enable-local for make check support");
+#endif
+
 	/* components */
 	g_test_add_func ("/packagekit/notify", pk_test_proc_func);
 	g_test_add_func ("/packagekit/proc", pk_test_proc_func);
