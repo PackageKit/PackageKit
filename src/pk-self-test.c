@@ -1675,42 +1675,6 @@ pk_test_transaction_list_func (void)
 
 	g_free (tid);
 
-	tid = pk_test_transaction_list_create_transaction (tlist);
-	transaction = pk_transaction_list_get_transaction (tlist, tid);
-	g_signal_connect (transaction, "finished",
-			  G_CALLBACK (pk_test_transaction_list_finished_cb), NULL);
-
-	pk_transaction_get_updates (transaction, "none", NULL);
-
-	/* wait for cached results*/
-	_g_test_loop_run_with_timeout (1000);
-
-	/* make sure transaction has correct flags */
-	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
-
-	/* get transactions (committed, not finished) in progress (none, as cached) */
-	array = pk_transaction_list_get_array (tlist);
-	size = g_strv_length (array);
-	g_assert_cmpint (size, ==, 0);
-	g_strfreev (array);
-
-	/* get size we have in queue */
-	size = pk_transaction_list_get_size (tlist);
-	g_assert_cmpint (size, ==, 1);
-
-	/* wait for Cleanup */
-	_g_test_loop_wait (10000);
-
-	/* get transactions (committed, not finished) in progress (none, as cached) */
-	array = pk_transaction_list_get_array (tlist);
-	size = g_strv_length (array);
-	g_assert_cmpint (size, ==, 0);
-	g_strfreev (array);
-
-	/* get size we have in queue */
-	size = pk_transaction_list_get_size (tlist);
-	g_assert_cmpint (size, ==, 0);
-
 	/* create three instances in list */
 	tid_item1 = pk_test_transaction_list_create_transaction (tlist);
 	tid_item2 = pk_test_transaction_list_create_transaction (tlist);
