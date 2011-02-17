@@ -792,7 +792,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	g_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc != SQLITE_OK) {
-		g_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
+		g_error ("Can't open transaction database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
 		return;
 	}

@@ -1214,7 +1214,7 @@ pk_transaction_extra_init (PkTransactionExtra *extra)
 	g_debug ("trying to open database '%s'", PK_DESKTOP_DEFAULT_DATABASE);
 	rc = sqlite3_open (PK_DESKTOP_DEFAULT_DATABASE, &extra->priv->db);
 	if (rc != 0) {
-		g_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
+		g_warning ("Can't open desktop database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
 		extra->priv->db = NULL;
 		return;
