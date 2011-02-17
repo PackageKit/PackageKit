@@ -720,7 +720,7 @@ pk_test_engine_func (void)
 	/* force test notify wait updates-changed */
 	g_test_timer_start ();
 	pk_notify_wait_updates_changed (notify, 500);
-	_g_test_loop_run_with_timeout (1000);
+	_g_test_loop_run_with_timeout (1500);
 	elapsed = g_test_timer_elapsed ();
 	g_assert_cmpfloat (elapsed, >, 0.4);
 	g_assert_cmpfloat (elapsed, <, 0.6);
