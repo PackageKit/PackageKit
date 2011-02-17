@@ -517,7 +517,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name, GError **err
 	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
-		g_set_error (error, 1, 0, "opening module %s failed : %s", backend_name, g_module_error ());
+		g_set_error (error, 1, 0, "opening module %s failed : %s",
+			     backend_name, g_module_error ());
 		goto out;
 	}
 

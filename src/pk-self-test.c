@@ -179,6 +179,7 @@ pk_test_backend_func (void)
 	gboolean ret;
 	const gchar *filename;
 	gboolean developer_mode;
+	GError *error = NULL;
 
 	/* get an backend */
 	backend = pk_backend_new ();
@@ -228,16 +229,21 @@ pk_test_backend_func (void)
 	g_assert (!ret);
 
 	/* load an invalid backend */
-	ret = pk_backend_set_name (backend, "invalid", NULL);
+	ret = pk_backend_set_name (backend, "invalid", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_clear_error (&error);
 
 	/* try to load a valid backend */
-	ret = pk_backend_set_name (backend, "dummy", NULL);
+	ret = pk_backend_set_name (backend, "dummy", &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* load an valid backend again */
-	ret = pk_backend_set_name (backend, "dummy", NULL);
+	ret = pk_backend_set_name (backend, "dummy", &error);
+	g_assert_error (error, 1, 0);
 	g_assert (!ret);
+	g_clear_error (&error);
 
 	/* lock an valid backend */
 	ret = pk_backend_lock (backend);
