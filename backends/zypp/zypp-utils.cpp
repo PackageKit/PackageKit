@@ -43,12 +43,15 @@
 #include <zypp/Pathname.h>
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
+#include <zypp/ui/Selectable.h>
 #include <zypp/sat/Pool.h>
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/librpmDb.h>
 #include <zypp/base/LogControl.h>
 #include <zypp/base/String.h>
+#include <zypp/parser/IniDict.h>
+#include <zypp/PathInfo.h>
 
 #include <zypp/base/Logger.h>
 
@@ -60,24 +63,9 @@
 
 gchar * _repoName;
 gboolean _updating_self = FALSE;
-/**
- * Collect items, select best edition.  This is used to find the best
- * available or installed.  The name of the class is a bit misleading though ...
- */
-class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
-{
-	public:
-		zypp::PoolItem best;
 
-	bool operator() (zypp::PoolItem provider)
-	{
-		if (!provider.status ().isLocked () && (!best || best->edition ().compare (provider->edition ()) < 0)) {
-			best = provider;
-		}
-
-		return true;
-	}
-};
+using zypp::filesystem::PathInfo;
+using zypp::InputStream;
 
 /**
  * Initialize Zypp (Factory method)
@@ -161,22 +149,22 @@ zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo)
 	std::string repo_debug("-debug");
 	std::string repo_development("-development");
 	std::string repo_source ("-source");
-	
+
 	std::string repo_name(repo.name());
 
-	if (repo_name.length() > repo_debuginfo.length() && 
+	if (repo_name.length() > repo_debuginfo.length() &&
 	    repo_name.compare(repo_name.length() - repo_debuginfo.length(), repo_debuginfo.length(), repo_debuginfo) == 0)
 		return TRUE;
 
-	if (repo_name.length() > repo_debug.length() && 
+	if (repo_name.length() > repo_debug.length() &&
 	    repo_name.compare(repo_name.length() - repo_debug.length(), repo_debug.length(), repo_debug) == 0)
 		return TRUE;
 
-	if (repo_name.length() > repo_development.length() && 
+	if (repo_name.length() > repo_development.length() &&
 	    repo_name.compare(repo_name.length() - repo_development.length(), repo_development.length(), repo_development) == 0)
 		return TRUE;
 
-	if (repo_name.length() > repo_source.length() && 
+	if (repo_name.length() > repo_source.length() &&
 	   repo_name.compare(repo_name.length() - repo_source.length(), repo_source.length(), repo_source) == 0)
 		return TRUE;
 
@@ -256,39 +244,6 @@ warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool)
 		}
 	}
 }
-
-
-#if 0 // apparently unused
-/**
- * Build and return a ResPool that contains only the local resolvables.
- */
-zypp::ResPool
-zypp_build_local_pool (PkBackend *backend)
-{
-	zypp::sat::Pool pool = zypp::sat::Pool::instance ();
-	zypp::ZYpp::Ptr zypp = get_zypp (backend);
-
-	try {
-		for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
-			if (! it->isSystemRepo ())
-				pool.reposErase(it->alias ());
-		}
-
-		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
-                {
-		        // Add local resolvables
-		        zypp::Target_Ptr target = zypp->target ();
-		        target->load ();
-                }
-
-	} catch (const zypp::Exception &ex) {
-		g_error ("%s", ex.asUserString ().c_str ());
-	}
-
-        return zypp->pool ();
-
-}
-#endif
 
 zypp::target::rpm::RpmHeader::constPtr
 zypp_get_rpmHeader (std::string name, zypp::Edition edition)
@@ -495,7 +450,7 @@ gboolean
 zypp_refresh_meta_and_cache (zypp::RepoManager &manager, zypp::RepoInfo &repo, bool force)
 {
 	try {
-		if (manager.checkIfToRefreshMetadata (repo, repo.url(), 
+		if (manager.checkIfToRefreshMetadata (repo, repo.url(),
 					zypp::RepoManager::RefreshIfNeededIgnoreDelay)
 					!= zypp::RepoManager::REFRESH_NEEDED)
 			return TRUE;
@@ -661,7 +616,7 @@ zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &item)
 			return TRUE;
 
 		// FIXME: add more enums - cf. libzif logic and pk-enum.h
-		// PK_FILTER_ENUM_SUPPORTED, 
+		// PK_FILTER_ENUM_SUPPORTED,
 		// PK_FILTER_ENUM_NOT_SUPPORTED,
 	}
 
@@ -702,7 +657,7 @@ zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp:
 
 		match = FALSE;
 		for (sat_it_t i = installed.begin (); !match && i != installed.end (); i++) {
-			match = it->sameNVRA (*i) && 
+			match = it->sameNVRA (*i) &&
 				!(!zypp::isKind<zypp::SrcPackage>(*it) ^
 				  !zypp::isKind<zypp::SrcPackage>(*i));
 		}
@@ -724,34 +679,6 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
 }
 
 /**
- * The following method was taken directly from zypper code
- *
- * Find best (according to edition) uninstalled item
- * with the same kind/name/arch as item.
- * Similar to zypp::solver::detail::Helper::findUpdateItem
- * but that allows changing the arch (#222140).
- */
-zypp::PoolItem
-zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item)
-{
-	LookForArchUpdate info;
-
-	invokeOnEach (pool.byIdentBegin (item),
-			pool.byIdentEnd (item),
-			// get uninstalled, equal kind and arch, better edition
-			zypp::functor::chain (
-				zypp::functor::chain (
-					zypp::functor::chain (
-						zypp::resfilter::ByUninstalled (),
-						zypp::resfilter::ByKind (item->kind ())),
-					zypp::resfilter::byArch<zypp::CompareByEQ<zypp::Arch> > (item->arch ())),
-				zypp::resfilter::byEdition<zypp::CompareByGT<zypp::Edition> > (item->edition ())),
-			zypp::functor::functorRef<bool,zypp::PoolItem> (info));
-
-	return info.best;
-}
-
-/**
  * Returns a set of all packages the could be updated
  * (you're able to exclude a single (normally the 'patch' repo)
  */
@@ -765,35 +692,16 @@ zypp_get_package_updates (std::string repo)
         zypp::ResPool::byKind_iterator it = pool.byKindBegin (kind);
         zypp::ResPool::byKind_iterator e = pool.byKindEnd (kind);
 
-        for (; it != e; ++it) {
-                if (it->status ().isUninstalled ())
-                        continue;
-                zypp::PoolItem candidate =  zypp_find_arch_update_item (pool, *it);
-                if (!candidate.resolvable ())
-                        continue;
-
-		gboolean system = false;
-		for (zypp::ResPool::byName_iterator it = pool.byNameBegin (candidate->name());
-				it != pool.byNameEnd (candidate->name()); it++) {
-			if (!it->satSolvable().isSystem())
-				continue;
-			if (zypp_ver_and_arch_equal (it->satSolvable(), candidate->edition ().c_str (),candidate->arch ().c_str ())) {
-				system = true;
-				break;
-			}
-		}
-		if (system == true) 
-			continue;
-
-		if (repo.empty ()) {
-	                pks->insert (candidate);
-		} else {
-			if (candidate->repoInfo ().alias ().compare (repo) != 0)
-				pks->insert (candidate);
-		}
-        }
-
-        return pks;
+	zypp::getZYpp()->resolver()->doUpdate();
+        for (; it != e; ++it)
+       	        if (it->status().isToBeInstalled())
+                {
+	                zypp::ui::Selectable::constPtr s =
+	                zypp::ui::Selectable::get((*it)->kind(), (*it)->name());
+                        if (s->hasInstalledObj())
+                                pks->insert(*it);
+	        }
+                return pks;
 }
 
 /**
@@ -850,38 +758,54 @@ zypp_get_updates (PkBackend *backend)
 			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
 		}
 
-		std::set<zypp::PoolItem> *packages;
-
-		packages = zypp_get_package_updates (patchRepo);
-		pi_it_t cb = candidates->begin (), ce = candidates->end (), ci;
-		for (ci = cb; ci != ce; ++ci) {
-			if (!zypp::isKind<zypp::Patch>(ci->resolvable()))
-				continue;
-
-			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(ci->resolvable());
-
-			// Remove contained packages from list of packages to add
-			zypp::sat::SolvableSet::const_iterator pki;
-			for (pki = patch->contents().begin(); pki != patch->contents().end(); pki++) {
-
-				pi_it_t pb = packages->begin (), pe = packages->end (), pi;
-				for (pi = pb; pi != pe; ++pi) {
-					if (pi->satSolvable() == zypp::sat::Solvable::noSolvable)
-						continue;
-					
-					if (pi->satSolvable().identical (*pki)) {
-						packages->erase (pi);
-						break;
-					}
+		bool hidePackages = false;
+		if (PathInfo("/etc/PackageKit/ZYpp.conf").isExist()) {
+			zypp::parser::IniDict vendorConf(InputStream("/etc/PackageKit/ZYpp.conf"));
+			if (vendorConf.hasSection("Updates")) {
+				for ( zypp::parser::IniDict::entry_const_iterator eit = vendorConf.entriesBegin("Updates");
+				      eit != vendorConf.entriesEnd("Updates");
+				      ++eit )
+				{
+					if ((*eit).first == "HidePackages" &&
+					    zypp::str::strToTrue((*eit).second))
+						hidePackages = true;
 				}
 			}
 		}
 
-		// merge into the list
-		candidates->insert (packages->begin (), packages->end ());
-		delete (packages);
-	}
+		if (!hidePackages)
+		{
+			std::set<zypp::PoolItem> *packages;
+			packages = zypp_get_package_updates (patchRepo);
+			pi_it_t cb = candidates->begin (), ce = candidates->end (), ci;
+			for (ci = cb; ci != ce; ++ci) {
+				if (!zypp::isKind<zypp::Patch>(ci->resolvable()))
+				continue;
 
+				zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(ci->resolvable());
+
+				// Remove contained packages from list of packages to add
+				zypp::sat::SolvableSet::const_iterator pki;
+				for (pki = patch->contents().begin(); pki != patch->contents().end(); pki++) {
+
+					pi_it_t pb = packages->begin (), pe = packages->end (), pi;
+					for (pi = pb; pi != pe; ++pi) {
+						if (pi->satSolvable() == zypp::sat::Solvable::noSolvable)
+							continue;
+
+						if (pi->satSolvable().identical (*pki)) {
+							packages->erase (pi);
+							break;
+						}
+					}
+				}
+			}
+
+			// merge into the list
+			candidates->insert (packages->begin (), packages->end ());
+			delete (packages);
+		}
+	}
 	return candidates;
 }
 
@@ -1200,7 +1124,7 @@ zypp_backend_finished_error (PkBackend  *backend, PkErrorEnum err_code,
 	va_end (args);
 
 	pk_backend_error_code (backend, err_code, "%s", buffer);
-	
+
 	g_free (buffer);
 
 	pk_backend_finished (backend);
@@ -1268,7 +1192,7 @@ zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
 {
 	const std::string &ver = pkg.edition ().asString();
 	if (g_strcmp0 (ver.c_str (), name))
-	    return FALSE;
+		return FALSE;
 
 	if (arch && !strcmp (arch, "source")) {
 		return zypp::isKind<zypp::SrcPackage>(pkg);

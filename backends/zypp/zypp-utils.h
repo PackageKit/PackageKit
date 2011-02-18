@@ -229,7 +229,6 @@ gboolean zypp_backend_pool_item_notify (PkBackend  *backend,
 gboolean zypp_ver_and_arch_equal (const zypp::sat::Solvable &pkg,
 				   const char *name, const char *arch);
 
-
 /**
  * helper to refresh a repo's metadata and cache, catching signature
  * exceptions in a safe way.
