@@ -44,7 +44,7 @@ struct PkNetworkStackConnmanPrivate
 G_DEFINE_TYPE (PkNetworkStackConnman, pk_network_stack_connman, PK_TYPE_NETWORK_STACK)
 #define PK_NETWORK_STACK_CONNMAN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK_STACK_CONNMAN, PkNetworkStackConnmanPrivate))
 
-#define CONNMAN_DBUS_NAME			"org.moblin.connman"
+#define CONNMAN_DBUS_NAME			"net.connman"
 #define CONNMAN_MANAGER_DBUS_INTERFACE		CONNMAN_DBUS_NAME ".Manager"
 #define CONNMAN_SERVICE_DBUS_INTERFACE		CONNMAN_DBUS_NAME ".Service"
 #define CONNMAN_MANAGER_DBUS_PATH		"/"
