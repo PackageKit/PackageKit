@@ -1551,6 +1551,7 @@ pk_test_transaction_list_func (void)
 	gchar *tid_item1;
 	gchar *tid_item2;
 	gchar *tid_item3;
+	PkBackend *backend;
 
 	/* remove the self check file */
 #if PK_BUILD_LOCAL
@@ -1614,7 +1615,6 @@ pk_test_transaction_list_func (void)
 	ret = pk_transaction_list_create (tlist, tid, ":org.freedesktop.PackageKit", NULL);
 	g_assert (ret);
 
-	PkBackend *backend;
 	backend = pk_backend_new ();
 	/* try to load a valid backend */
 	ret = pk_backend_set_name (backend, "dummy", NULL);
@@ -1806,7 +1806,7 @@ pk_test_transaction_list_func (void)
 	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_FINISHED);
 
 	/* wait for Cleanup */
-	_g_test_loop_wait (5000);
+	_g_test_loop_wait (10000);
 
 	/* get transactions in queue */
 	size = pk_transaction_list_get_size (tlist);

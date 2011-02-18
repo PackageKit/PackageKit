@@ -109,6 +109,8 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 
 /**
  * pk_transaction_list_get_transaction:
+ *
+ * Return value: Do not unref.
  **/
 PkTransaction *
 pk_transaction_list_get_transaction (PkTransactionList *tlist, const gchar *tid)
