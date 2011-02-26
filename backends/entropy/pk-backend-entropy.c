@@ -165,7 +165,7 @@ backend_get_roles (PkBackend *backend)
 static gchar *
 backend_get_mime_types (PkBackend *backend)
 {
-    return g_strdup ("application/x-bzip-compressed-tar;application/x-tbz;application/x-tbz2");
+    return g_strdup ("application/entropy-package;application/entropy-webinstall");
 }
 
 /**
