@@ -3454,6 +3454,9 @@ class PackageKitYumBase(yum.YumBase):
         self.backend = backend
         self.mediagrabber = self.MediaGrabber
 
+        # Enable new callback mode on yum versions that support it
+        self.use_txmbr_in_callback = True
+
         # setup Repo GPG support callbacks
         #
         # self.preconf may or may not exist at this point...
