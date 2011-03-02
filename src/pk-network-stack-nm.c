@@ -32,6 +32,10 @@
 #include "pk-conf.h"
 #include "pk-marshal.h"
 
+#ifndef NM_CHECK_VERSION
+#define NM_CHECK_VERSION(x,y,z) 0
+#endif
+
 struct PkNetworkStackNmPrivate
 {
 	EggDbusMonitor		*dbus_monitor;
@@ -236,8 +240,13 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 	case NM_DEVICE_TYPE_WIFI:
 		ret = PK_NETWORK_ENUM_WIFI;
 		break;
+#if NM_CHECK_VERSION(0,8,992)
+	case NM_DEVICE_TYPE_WIMAX:
+	case NM_DEVICE_TYPE_MODEM:
+#else
 	case NM_DEVICE_TYPE_GSM:
 	case NM_DEVICE_TYPE_CDMA:
+#endif
 	case NM_DEVICE_TYPE_BT:
 		ret = PK_NETWORK_ENUM_MOBILE;
 		break;
