@@ -149,7 +149,6 @@ GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
 NETWORK_MANAGER_REQUIRED=0.6.4
-NETWORK_MANAGER_PREFERED=0.8.992
 POLKIT_GOBJECT_REQUIRED=0.92
 QTCORE_REQUIRED=4.4.0
 QTDBUS_REQUIRED=4.4.0
@@ -244,12 +243,6 @@ if test x$enable_networkmanager != xno; then
 	if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
 		networking_apis="${networking_apis},NetworkManager"
 		AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
-
-		# new API?
-		PKG_CHECK_MODULES(NETWORK_MANAGER_NEW, NetworkManager >= $NETWORK_MANAGER_PREFERED, PK_BUILD_NETWORKMANAGER_NEW="yes", PK_BUILD_NETWORKMANAGER_NEW="no")
-		if test "x$PK_BUILD_NETWORKMANAGER_NEW" = "xyes"; then
-			AC_DEFINE(PK_BUILD_NETWORKMANAGER_NEW, 1, [define if NetworkManager has new API])
-		fi
 	else
 		if test x$enable_networkmanager = xyes; then
 			AC_MSG_ERROR([NetworkManager enabled but not found])

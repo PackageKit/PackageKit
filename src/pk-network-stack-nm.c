@@ -236,12 +236,8 @@ pk_network_stack_nm_get_state (PkNetworkStack *nstack)
 	case NM_DEVICE_TYPE_WIFI:
 		ret = PK_NETWORK_ENUM_WIFI;
 		break;
-#if PK_BUILD_NETWORKMANAGER_NEW
-	case NM_DEVICE_TYPE_MODEM:
-#else
 	case NM_DEVICE_TYPE_GSM:
 	case NM_DEVICE_TYPE_CDMA:
-#endif
 	case NM_DEVICE_TYPE_BT:
 		ret = PK_NETWORK_ENUM_MOBILE;
 		break;
