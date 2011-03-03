@@ -910,7 +910,8 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 	}
 
 	/* do we have to copy results? */
-	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
+	    state->directory != NULL) {
 		pk_client_copy_downloaded (state);
 		goto out;
 	}
@@ -2524,7 +2525,6 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
-	g_return_if_fail (directory != NULL);
 
 	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_download_packages_async);
 

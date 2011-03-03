@@ -26,3 +26,6 @@ Transaction::Details
 Python backends:
  * Pre-split filters in backend.py, not in each backend.
 
+Transaction::Download
+ * Add a boolean 'copy' parameter than controls whether we just download
+   the packages to the system cache or to a packagekitd created location.
