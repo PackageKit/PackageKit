@@ -2525,8 +2525,10 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 {
 	PolkitDetails *details;
 	const gchar *action_id;
+	const gchar *text;
 	gboolean ret = FALSE;
 	gchar *package_ids = NULL;
+	GString *string = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
 	g_return_val_if_fail (priv->sender != NULL, FALSE);
@@ -2560,8 +2562,6 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 
 	/* insert details about the authorization */
 	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_string (priv->role));
-	polkit_details_insert (details, "only-trusted", priv->cached_only_trusted ? "true" : "false");
 
 	/* do we have package details? */
 	if (priv->cached_package_id != NULL)
@@ -2574,6 +2574,50 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 		polkit_details_insert (details, "package_ids", package_ids);
 	if (priv->cmdline != NULL)
 		polkit_details_insert (details, "cmdline", priv->cmdline);
+
+	/* do not use the default icon and wording for some roles */
+	if (!priv->cached_only_trusted) {
+
+		/* don't use the friendly PackageKit icon as this is
+		 * might be a ricky authorisation */
+		polkit_details_insert (details, "polkit.icon_name", "emblem-important");
+
+		string = g_string_new ("");
+
+		/* TRANSLATORS: is not GPG signed */
+		g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
+		g_string_append (string, "\n");
+
+		/* UpdatePackages */
+		if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+
+			/* TRANSLATORS: is not GPG signed */
+			g_string_append (string, g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
+			g_string_append (string, "\n");
+
+			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
+			text = g_dngettext (GETTEXT_PACKAGE,
+					    N_("Do not update this package unless you are sure it is safe to do so."),
+					    N_("Do not update these packages unless you are sure it is safe to do so."),
+					    g_strv_length (priv->cached_package_ids));
+			g_string_append (string, text);
+		}
+
+		/* InstallPackages */
+		if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+
+			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
+			text = g_dngettext (GETTEXT_PACKAGE,
+					    N_("Do not install this package unless you are sure it is safe to do so."),
+					    N_("Do not install these packages unless you are sure it is safe to do so."),
+					    g_strv_length (priv->cached_package_ids));
+			g_string_append (string, text);
+		}
+		if (string->len > 0) {
+			polkit_details_insert (details, "polkit.gettext_domain", GETTEXT_PACKAGE);
+			polkit_details_insert (details, "polkit.message", string->str);
+		}
+	}
 
 	/* do authorization async */
 	polkit_authority_check_authorization (priv->authority,
@@ -2591,6 +2635,8 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, gboolean only_t
 	/* assume success, as this is async */
 	ret = TRUE;
 out:
+	if (string != NULL)
+		g_string_free (string, TRUE);
 	g_free (package_ids);
 	return ret;
 }

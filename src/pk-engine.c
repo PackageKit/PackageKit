@@ -681,7 +681,6 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	gchar *sender = NULL;
 #ifdef USE_SECURITY_POLKIT
 	PolkitSubject *subject;
-	PolkitDetails *details;
 	PkEngineDbusState *state;
 #endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -725,10 +724,6 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check subject */
 	subject = polkit_system_bus_name_new (sender);
 
-	/* insert details about the authorization */
-	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
-
 	/* cache state */
 	state = g_new0 (PkEngineDbusState, 1);
 	state->context = context;
@@ -740,14 +735,11 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
 					      "org.freedesktop.packagekit.system-network-proxy-configure",
-					      details,
+					      NULL,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
 					      (GAsyncReadyCallback) pk_engine_action_obtain_proxy_authorization_finished_cb,
 					      state);
-
-	/* check_authorization ref's this */
-	g_object_unref (details);
 #else
 	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
@@ -926,7 +918,6 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	gchar *sender = NULL;
 #ifdef USE_SECURITY_POLKIT
 	PolkitSubject *subject;
-	PolkitDetails *details;
 	PkEngineDbusState *state;
 #endif
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -981,10 +972,6 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	/* check subject */
 	subject = polkit_system_bus_name_new (sender);
 
-	/* insert details about the authorization */
-	details = polkit_details_new ();
-	polkit_details_insert (details, "role", pk_role_enum_to_string (PK_ROLE_ENUM_UNKNOWN));
-
 	/* cache state */
 	state = g_new0 (PkEngineDbusState, 1);
 	state->context = context;
@@ -995,14 +982,11 @@ pk_engine_set_root (PkEngine *engine, const gchar *root, DBusGMethodInvocation *
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
 					      "org.freedesktop.packagekit.system-change-install-root",
-					      details,
+					      NULL,
 					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
 					      NULL,
 					      (GAsyncReadyCallback) pk_engine_action_obtain_root_authorization_finished_cb,
 					      state);
-
-	/* check_authorization ref's this */
-	g_object_unref (details);
 #else
 	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 

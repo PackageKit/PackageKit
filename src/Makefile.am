@@ -173,33 +173,6 @@ org.freedesktop.PackageKit.Transaction.h: org.freedesktop.PackageKit.Transaction
 		--output=org.freedesktop.PackageKit.Transaction.h	\
 		$(srcdir)/org.freedesktop.PackageKit.Transaction.xml
 
-if SECURITY_TYPE_POLKIT
-# provide a PolicyKit extensions to make the authorization dialogs better
-polkitmodulesdir = $(libdir)/polkit-1/extensions
-polkitmodules_LTLIBRARIES = libpackagekit-action-lookup.la
-
-libpackagekit_action_lookup_la_SOURCES =			\
-	pk-polkit-action-lookup.c				\
-	$(NULL)
-
-libpackagekit_action_lookup_la_CFLAGS =				\
-	-DPOLKIT_BACKEND_I_KNOW_API_IS_SUBJECT_TO_CHANGE	\
-	$(POLKIT_BACKEND_1_CFLAGS)				\
-	$(WARNINGFLAGS_C)					\
-	$(NULL)
-
-libpackagekit_action_lookup_la_LDFLAGS =			\
-	-export_dynamic -avoid-version -module -no-undefined	\
-	-export-symbols-regex '^g_io_module_(load|unload)'	\
-	$(NULL)
-
-libpackagekit_action_lookup_la_LIBADD =				\
-	$(GLIB_LIBS)						\
-	$(PK_GLIB2_LIBS)					\
-	$(POLKIT_BACKEND_1_LIBS)				\
-	$(NULL)
-endif
-
 if EGG_BUILD_TESTS
 
 check_PROGRAMS =					\
