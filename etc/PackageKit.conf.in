@@ -113,7 +113,11 @@ UseSyslog=false
 # They are in the format username:password@server:port
 #
 # ProxyHTTP=username:password@server.lan:8080
+# ProxyHTTPS=username:password@server.lan:8080
 # ProxyFTP=server.lan:21
+# ProxySOCKS=server.lan:21
+# NoProxy=internal.webserver
+# PAC=/etc/proxy.pac
 
 # Scan installed desktop files when we update or install packages
 #

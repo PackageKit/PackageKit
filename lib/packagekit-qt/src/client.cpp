@@ -226,7 +226,20 @@ void Client::setHints(const QString& hints)
 bool Client::setProxy(const QString& http_proxy, const QString& ftp_proxy)
 {
 	Q_D(Client);
-	QDBusPendingReply<> r = d->daemon->SetProxy(http_proxy, ftp_proxy);
+	QDBusPendingReply<> r = d->daemon->SetProxy(http_proxy, NULL, ftp_proxy, NULL, NULL, NULL);
+	r.waitForFinished ();
+	if (r.isError ()) {
+		setLastError (daemonErrorFromDBusReply (r));
+		return false;
+	} else {
+		return true;
+	}
+}
+
+bool Client::setProxy(const QString& http_proxy, const QString& https_proxy, const QString& ftp_proxy, const QString& socks_proxy, const QString& no_proxy, const QString& pac)
+{
+	Q_D(Client);
+	QDBusPendingReply<> r = d->daemon->SetProxy(http_proxy, https_proxy, ftp_proxy, socks_proxy, no_proxy, pac);
 	r.waitForFinished ();
 	if (r.isError ()) {
 		setLastError (daemonErrorFromDBusReply (r));

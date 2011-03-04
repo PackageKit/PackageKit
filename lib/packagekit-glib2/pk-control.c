@@ -703,21 +703,33 @@ out:
 }
 
 /**
- * pk_control_set_proxy_async:
+ * pk_control_set_proxy2_async:
  * @control: a valid #PkControl instance
- * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
- * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080", or %NULL
+ * @proxy_https: a HTTPS proxy string such as "username:password@server.lan:8080", or %NULL
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080", or %NULL
+ * @proxy_socks: a SOCKS proxy string such as "server.lan:8080", or %NULL
+ * @no_proxy: a list of download IPs that shouldn't go through the proxy, or %NULL
+ * @pac: a PAC string, or %NULL
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
  * Set a proxy on the PK daemon
  *
- * Since: 0.5.2
+ * Since: 0.6.13
  **/
 void
-pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GCancellable *cancellable,
-			    GAsyncReadyCallback callback, gpointer user_data)
+pk_control_set_proxy2_async (PkControl *control,
+			     const gchar *proxy_http,
+			     const gchar *proxy_https,
+			     const gchar *proxy_ftp,
+			     const gchar *proxy_socks,
+			     const gchar *no_proxy,
+			     const gchar *pac,
+			     GCancellable *cancellable,
+			     GAsyncReadyCallback callback,
+			     gpointer user_data)
 {
 	GSimpleAsyncResult *res;
 	PkControlState *state;
@@ -749,7 +761,11 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	state->call = dbus_g_proxy_begin_call (control->priv->proxy, "SetProxy",
 					       (DBusGProxyCallNotify) pk_control_set_proxy_cb, state, NULL,
 					       G_TYPE_STRING, proxy_http,
+					       G_TYPE_STRING, proxy_https,
 					       G_TYPE_STRING, proxy_ftp,
+					       G_TYPE_STRING, proxy_socks,
+					       G_TYPE_STRING, no_proxy,
+					       G_TYPE_STRING, pac,
 					       G_TYPE_INVALID);
 	if (state->call == NULL)
 		g_error ("failed to setup call, maybe OOM or no connection");
@@ -758,6 +774,42 @@ pk_control_set_proxy_async (PkControl *control, const gchar *proxy_http, const g
 	g_ptr_array_add (control->priv->calls, state);
 out:
 	g_object_unref (res);
+}
+
+/**
+ * pk_control_set_proxy_async:
+ * @control: a valid #PkControl instance
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ * @cancellable: a #GCancellable or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Set a proxy on the PK daemon
+ *
+ * NOTE: This is just provided for backwards compatibility.
+ * Clients should really be using pk_control_set_proxy2_async().
+ *
+ * Since: 0.5.2
+ **/
+void
+pk_control_set_proxy_async (PkControl *control,
+			    const gchar *proxy_http,
+			    const gchar *proxy_ftp,
+			    GCancellable *cancellable,
+			    GAsyncReadyCallback callback,
+			    gpointer user_data)
+{
+	pk_control_set_proxy2_async (control,
+				     proxy_http,
+				     NULL,
+				     proxy_ftp,
+				     NULL,
+				     NULL,
+				     NULL,
+				     cancellable,
+				     callback,
+				     user_data);
 }
 
 /**

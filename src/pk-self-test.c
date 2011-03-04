@@ -1451,27 +1451,57 @@ pk_test_transaction_db_func (void)
 	g_assert_cmpint (value, <=, 4);
 
 	/* can we set the proxies */
-	ret = pk_transaction_db_set_proxy (db, 500, "session1", "127.0.0.1:80", "127.0.0.1:21");
+	ret = pk_transaction_db_set_proxy (db, 500, "session1",
+					   "127.0.0.1:80",
+					   NULL,
+					   "127.0.0.1:21",
+					   NULL,
+					   NULL,
+					   NULL);
 	g_assert (ret);
 
 	/* can we set the proxies (overwrite) */
-	ret = pk_transaction_db_set_proxy (db, 500, "session1", "127.0.0.1:8000", "127.0.0.1:21");
+	ret = pk_transaction_db_set_proxy (db, 500, "session1",
+					   "127.0.0.1:80",
+					   NULL,
+					   "127.0.0.1:21",
+					   NULL,
+					   NULL,
+					   NULL);
 	g_assert (ret);
 
 	/* can we get the proxies (non-existant user) */
-	ret = pk_transaction_db_get_proxy (db, 501, "session1", &proxy_http, &proxy_ftp);
+	ret = pk_transaction_db_get_proxy (db, 501, "session1",
+					   &proxy_http,
+					   NULL,
+					   &proxy_ftp,
+					   NULL,
+					   NULL,
+					   NULL);
 	g_assert (!ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
 	/* can we get the proxies (non-existant session) */
-	ret = pk_transaction_db_get_proxy (db, 500, "session2", &proxy_http, &proxy_ftp);
+	ret = pk_transaction_db_get_proxy (db, 500, "session2",
+					   &proxy_http,
+					   NULL,
+					   &proxy_ftp,
+					   NULL,
+					   NULL,
+					   NULL);
 	g_assert (!ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
 	/* can we get the proxies (match) */
-	ret = pk_transaction_db_get_proxy (db, 500, "session1", &proxy_http, &proxy_ftp);
+	ret = pk_transaction_db_get_proxy (db, 500, "session1",
+					   &proxy_http,
+					   NULL,
+					   &proxy_ftp,
+					   NULL,
+					   NULL,
+					   NULL);
 	g_assert (ret);
 	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:8000");
 	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");

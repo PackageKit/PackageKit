@@ -511,14 +511,26 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
  * pk_engine_set_proxy_internal:
  **/
 static gboolean
-pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender, const gchar *proxy_http, const gchar *proxy_ftp)
+pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
+			      const gchar *proxy_http,
+			      const gchar *proxy_https,
+			      const gchar *proxy_ftp,
+			      const gchar *proxy_socks,
+			      const gchar *no_proxy,
+			      const gchar *pac)
 {
 	gboolean ret;
 	guint uid;
 	gchar *session = NULL;
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	ret = pk_backend_set_proxy (engine->priv->backend,
+				    proxy_http,
+				    proxy_https,
+				    proxy_ftp,
+				    proxy_socks,
+				    no_proxy,
+				    pac);
 	if (!ret) {
 		g_warning ("setting the proxy failed");
 		goto out;
@@ -539,7 +551,14 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender, const gchar
 	}
 
 	/* save to database */
-	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db, uid, session, proxy_http, proxy_ftp);
+	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db,
+					   uid, session,
+					   proxy_http,
+					   proxy_https,
+					   proxy_ftp,
+					   proxy_socks,
+					   no_proxy,
+					   pac);
 	if (!ret) {
 		g_warning ("failed to save the proxy in the database");
 		goto out;
@@ -556,6 +575,10 @@ typedef struct {
 	gchar			*sender;
 	gchar			*value1;
 	gchar			*value2;
+	gchar			*value3;
+	gchar			*value4;
+	gchar			*value5;
+	gchar			*value6;
 } PkEngineDbusState;
 #endif
 
@@ -564,7 +587,9 @@ typedef struct {
  * pk_engine_action_obtain_authorization:
  **/
 static void
-pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *authority, GAsyncResult *res, PkEngineDbusState *state)
+pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *authority,
+							 GAsyncResult *res,
+							 PkEngineDbusState *state)
 {
 	PolkitAuthorizationResult *result;
 	GError *error_local = NULL;
@@ -578,7 +603,8 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 	/* failed */
 	if (result == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-				     "setting the proxy failed, could not check for auth: %s", error_local->message);
+				     "setting the proxy failed, could not check for auth: %s",
+				     error_local->message);
 		dbus_g_method_return_error (state->context, error);
 		g_error_free (error_local);
 		goto out;
@@ -600,7 +626,13 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 	}
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (state->engine, state->sender, state->value1, state->value2);
+	ret = pk_engine_set_proxy_internal (state->engine, state->sender,
+					    state->value1,
+					    state->value2,
+					    state->value3,
+					    state->value4,
+					    state->value5,
+					    state->value6);
 	if (!ret) {
 		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "setting the proxy failed");
@@ -610,7 +642,11 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 
 	/* only set after the auth success */
 	g_debug ("changing http proxy to %s for %s", state->value1, state->sender);
-	g_debug ("changing ftp proxy to %s for %s", state->value2, state->sender);
+	g_debug ("changing https proxy to %s for %s", state->value2, state->sender);
+	g_debug ("changing ftp proxy to %s for %s", state->value3, state->sender);
+	g_debug ("changing socks proxy to %s for %s", state->value4, state->sender);
+	g_debug ("changing no proxy to %s for %s", state->value5, state->sender);
+	g_debug ("changing PAC proxy to %s for %s", state->value6, state->sender);
 
 	/* all okay */
 	dbus_g_method_return (state->context);
@@ -631,13 +667,23 @@ out:
  * pk_engine_is_proxy_unchanged:
  **/
 static gboolean
-pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender, const gchar *proxy_http, const gchar *proxy_ftp)
+pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender,
+			      const gchar *proxy_http,
+			      const gchar *proxy_https,
+			      const gchar *proxy_ftp,
+			      const gchar *proxy_socks,
+			      const gchar *no_proxy,
+			      const gchar *pac)
 {
 	guint uid;
 	gboolean ret = FALSE;
 	gchar *session = NULL;
 	gchar *proxy_http_tmp = NULL;
+	gchar *proxy_https_tmp = NULL;
 	gchar *proxy_ftp_tmp = NULL;
+	gchar *proxy_socks_tmp = NULL;
+	gchar *no_proxy_tmp = NULL;
+	gchar *pac_tmp = NULL;
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
@@ -654,18 +700,34 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender, const gchar
 	}
 
 	/* find out if they are the same as what we tried to set before */
-	ret = pk_transaction_db_get_proxy (engine->priv->transaction_db, uid, session, &proxy_http_tmp, &proxy_ftp_tmp);
+	ret = pk_transaction_db_get_proxy (engine->priv->transaction_db,
+					   uid,
+					   session,
+					   &proxy_http_tmp,
+					   &proxy_https_tmp,
+					   &proxy_ftp_tmp,
+					   &proxy_socks_tmp,
+					   &no_proxy_tmp,
+					   &pac_tmp);
 	if (!ret)
 		goto out;
 
 	/* are different? */
 	if (g_strcmp0 (proxy_http_tmp, proxy_http) != 0 ||
-	    g_strcmp0 (proxy_ftp_tmp, proxy_ftp) != 0)
+	    g_strcmp0 (proxy_https_tmp, proxy_https) != 0 ||
+	    g_strcmp0 (proxy_ftp_tmp, proxy_ftp) != 0 ||
+	    g_strcmp0 (proxy_socks_tmp, proxy_socks) != 0 ||
+	    g_strcmp0 (no_proxy_tmp, no_proxy) != 0 ||
+	    g_strcmp0 (pac_tmp, pac) != 0)
 		ret = FALSE;
 out:
 	g_free (session);
 	g_free (proxy_http_tmp);
+	g_free (proxy_https_tmp);
 	g_free (proxy_ftp_tmp);
+	g_free (proxy_socks_tmp);
+	g_free (no_proxy_tmp);
+	g_free (pac_tmp);
 	return ret;
 }
 
@@ -673,7 +735,14 @@ out:
  * pk_engine_set_proxy:
  **/
 void
-pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp, DBusGMethodInvocation *context)
+pk_engine_set_proxy (PkEngine *engine,
+		     const gchar *proxy_http,
+		     const gchar *proxy_https,
+		     const gchar *proxy_ftp,
+		     const gchar *proxy_socks,
+		     const gchar *no_proxy,
+		     const gchar *pac,
+		     DBusGMethodInvocation *context)
 {
 	guint len;
 	GError *error = NULL;
@@ -696,7 +765,9 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check length of http */
 	len = egg_strlen (proxy_http, 1024);
 	if (len == 1024) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "http proxy was too long");
+		error = g_error_new_literal (PK_ENGINE_ERROR,
+					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "http proxy was too long");
 		dbus_g_method_return_error (context, error);
 		goto out;
 	}
@@ -704,7 +775,9 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	/* check length of ftp */
 	len = egg_strlen (proxy_ftp, 1024);
 	if (len == 1024) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "ftp proxy was too long");
+		error = g_error_new_literal (PK_ENGINE_ERROR,
+					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "ftp proxy was too long");
 		dbus_g_method_return_error (context, error);
 		goto out;
 	}
@@ -713,7 +786,13 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	sender = dbus_g_method_get_sender (context);
 
 	/* is exactly the same proxy? */
-	ret = pk_engine_is_proxy_unchanged (engine, sender, proxy_http, proxy_ftp);
+	ret = pk_engine_is_proxy_unchanged (engine, sender,
+					    proxy_http,
+					    proxy_https,
+					    proxy_ftp,
+					    proxy_socks,
+					    no_proxy,
+					    pac);
 	if (ret) {
 		g_debug ("not changing proxy as the same as before");
 		dbus_g_method_return (context);
@@ -730,7 +809,11 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	state->engine = g_object_ref (engine);
 	state->sender = g_strdup (sender);
 	state->value1 = g_strdup (proxy_http);
-	state->value2 = g_strdup (proxy_ftp);
+	state->value2 = g_strdup (proxy_https);
+	state->value3 = g_strdup (proxy_ftp);
+	state->value4 = g_strdup (proxy_socks);
+	state->value5 = g_strdup (no_proxy);
+	state->value6 = g_strdup (pac);
 
 	/* do authorization async */
 	polkit_authority_check_authorization (engine->priv->authority, subject,
@@ -744,9 +827,17 @@ pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *pro
 	g_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 
 	/* try to set the new proxy and save to database */
-	ret = pk_engine_set_proxy_internal (engine, sender, proxy_http, proxy_ftp);
+	ret = pk_engine_set_proxy_internal (engine, sender,
+					    proxy_http,
+					    proxy_https,
+					    proxy_ftp,
+					    proxy_socks,
+					    no_proxy,
+					    pac);
 	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
+		error = g_error_new_literal (PK_ENGINE_ERROR,
+					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+					     "setting the proxy failed");
 		dbus_g_method_return_error (context, error);
 		goto out;
 	}
@@ -812,7 +903,9 @@ out:
  * pk_engine_action_obtain_authorization:
  **/
 static void
-pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authority, GAsyncResult *res, PkEngineDbusState *state)
+pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authority,
+							GAsyncResult *res,
+							PkEngineDbusState *state)
 {
 	PolkitAuthorizationResult *result;
 	GError *error_local = NULL;
@@ -825,8 +918,10 @@ pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authori
 
 	/* failed */
 	if (result == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-				     "could not check for auth: %s", error_local->message);
+		error = g_error_new (PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
+				     "could not check for auth: %s",
+				     error_local->message);
 		dbus_g_method_return_error (state->context, error);
 		g_error_free (error_local);
 		goto out;
@@ -834,7 +929,8 @@ pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authori
 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
-		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+		error = g_error_new_literal (PK_ENGINE_ERROR,
+					     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
 					     "failed to obtain auth");
 		dbus_g_method_return_error (state->context, error);
 		goto out;
@@ -843,7 +939,8 @@ pk_engine_action_obtain_root_authorization_finished_cb (PolkitAuthority *authori
 	/* try to set the new root and save to database */
 	ret = pk_engine_set_root_internal (state->engine, state->value1, state->sender);
 	if (!ret) {
-		error = g_error_new_literal (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+		error = g_error_new_literal (PK_ENGINE_ERROR,
+					     PK_ENGINE_ERROR_CANNOT_SET_ROOT,
 					     "setting the root failed");
 		dbus_g_method_return_error (state->context, error);
 		goto out;
@@ -1379,7 +1476,11 @@ pk_engine_init (PkEngine *engine)
 	gchar *filename;
 	gchar *root;
 	gchar *proxy_http;
+	gchar *proxy_https;
 	gchar *proxy_ftp;
+	gchar *proxy_socks;
+	gchar *no_proxy;
+	gchar *pac;
 #if defined(USE_SECURITY_POLKIT_NEW) && defined(HAVE_POLKIT_AUTHORITY_GET_SYNC)
 	GError *error = NULL;
 #endif
@@ -1492,15 +1593,29 @@ pk_engine_init (PkEngine *engine)
 
 	/* set the default proxy */
 	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
+	proxy_https = pk_conf_get_string (engine->priv->conf, "ProxyHTTPS");
 	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
-	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	proxy_socks = pk_conf_get_string (engine->priv->conf, "ProxySOCKS");
+	no_proxy = pk_conf_get_string (engine->priv->conf, "NoProxy");
+	pac = pk_conf_get_string (engine->priv->conf, "PAC");
+	pk_backend_set_proxy (engine->priv->backend,
+			      proxy_http,
+			      proxy_https,
+			      proxy_ftp,
+			      proxy_socks,
+			      no_proxy,
+			      pac);
 
-	/* if either of these is set, we ignore the users proxy setting */
-	if (proxy_http != NULL || proxy_ftp != NULL)
+	/* if any of these is set, we ignore the users proxy setting */
+	if (proxy_http != NULL || proxy_https != NULL || proxy_ftp != NULL)
 		engine->priv->using_hardcoded_proxy = TRUE;
 
 	g_free (proxy_http);
+	g_free (proxy_https);
 	g_free (proxy_ftp);
+	g_free (proxy_socks);
+	g_free (no_proxy);
+	g_free (pac);
 
 	/* set the default root */
 	root = pk_conf_get_string (engine->priv->conf, "UseRoot");

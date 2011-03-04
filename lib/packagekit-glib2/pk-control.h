@@ -119,6 +119,16 @@ void		 pk_control_set_proxy_async		(PkControl		*control,
 							 GCancellable		*cancellable,
 							 GAsyncReadyCallback	 callback,
 							 gpointer		 user_data);
+void		 pk_control_set_proxy2_async		(PkControl		*control,
+							 const gchar		*proxy_http,
+							 const gchar		*proxy_https,
+							 const gchar		*proxy_ftp,
+							 const gchar		*proxy_socks,
+							 const gchar		*no_proxy,
+							 const gchar		*pac,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
 gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
 							 GAsyncResult		*res,
 							 GError			**error);

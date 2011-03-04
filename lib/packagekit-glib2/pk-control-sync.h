@@ -45,6 +45,15 @@ gboolean	 pk_control_set_proxy			(PkControl		*control,
 							 const gchar		*proxy_ftp,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gboolean	 pk_control_set_proxy2			(PkControl		*control,
+							 const gchar		*proxy_http,
+							 const gchar		*proxy_https,
+							 const gchar		*proxy_ftp,
+							 const gchar		*proxy_socks,
+							 const gchar		*no_proxy,
+							 const gchar		*pac,
+							 GCancellable		*cancellable,
+							 GError			**error);
 
 G_END_DECLS
 

@@ -81,7 +81,11 @@ gboolean	 pk_backend_set_name			(PkBackend	*backend,
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_set_proxy			(PkBackend	*backend,
 							 const gchar	*proxy_http,
-							 const gchar	*proxy_ftp);
+							 const gchar	*proxy_https,
+							 const gchar	*proxy_ftp,
+							 const gchar	*proxy_socks,
+							 const gchar	*no_proxy,
+							 const gchar	*pac);
 gboolean	 pk_backend_set_root			(PkBackend	*backend,
 							 const gchar	*root);
 gchar		*pk_backend_get_name			(PkBackend	*backend)
@@ -234,6 +238,11 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*remaining);
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_https		(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_socks		(PkBackend	*backend);
+gchar		*pk_backend_get_no_proxy		(PkBackend	*backend);
+gchar		*pk_backend_get_pac			(PkBackend	*backend);
 gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 const gchar	*pk_backend_get_root			(PkBackend	*backend);
 gchar		*pk_backend_get_locale			(PkBackend	*backend);

@@ -180,6 +180,7 @@ public:
 	 * Sets a proxy to be used for all the network operations
 	 */
 	bool setProxy(const QString& http_proxy, const QString& ftp_proxy);
+	bool setProxy(const QString& http_proxy, const QString& https_proxy, const QString& ftp_proxy, const QString& socks_proxy, const QString& no_proxy, const QString& pac);
 
 	/**
 	 * \brief Tells the daemon that the system state has changed, to make it reload its cache

@@ -700,7 +700,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 {
 	gchar **envp;
 	gchar *proxy_http;
+	gchar *proxy_https;
 	gchar *proxy_ftp;
+	gchar *proxy_socks;
+	gchar *no_proxy;
+	gchar *pac;
 	gchar *locale;
 	gchar *line;
 	gchar *uri;
@@ -742,11 +746,47 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 		g_free (uri);
 	}
 
+	/* https_proxy */
+	proxy_https = pk_backend_get_proxy_https (priv->backend);
+	if (!egg_strzero (proxy_https)) {
+		uri = pk_backend_spawn_convert_uri (proxy_https);
+		line = g_strdup_printf ("%s=%s", "https_proxy", uri);
+		g_ptr_array_add (array, line);
+		g_free (uri);
+	}
+
 	/* ftp_proxy */
 	proxy_ftp = pk_backend_get_proxy_ftp (priv->backend);
 	if (!egg_strzero (proxy_ftp)) {
 		uri = pk_backend_spawn_convert_uri (proxy_ftp);
 		line = g_strdup_printf ("%s=%s", "ftp_proxy", uri);
+		g_ptr_array_add (array, line);
+		g_free (uri);
+	}
+
+	/* socks_proxy */
+	proxy_socks = pk_backend_get_proxy_socks (priv->backend);
+	if (!egg_strzero (proxy_socks)) {
+		uri = pk_backend_spawn_convert_uri (proxy_socks);
+		line = g_strdup_printf ("%s=%s", "socks_proxy", uri);
+		g_ptr_array_add (array, line);
+		g_free (uri);
+	}
+
+	/* no_proxy */
+	no_proxy = pk_backend_get_no_proxy (priv->backend);
+	if (!egg_strzero (no_proxy)) {
+		uri = pk_backend_spawn_convert_uri (no_proxy);
+		line = g_strdup_printf ("%s=%s", "no_proxy", uri);
+		g_ptr_array_add (array, line);
+		g_free (uri);
+	}
+
+	/* pac */
+	pac = pk_backend_get_pac (priv->backend);
+	if (!egg_strzero (pac)) {
+		uri = pk_backend_spawn_convert_uri (pac);
+		line = g_strdup_printf ("%s=%s", "pac", uri);
 		g_ptr_array_add (array, line);
 		g_free (uri);
 	}
@@ -800,7 +840,11 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	g_ptr_array_unref (array);
 
 	g_free (proxy_http);
+	g_free (proxy_https);
 	g_free (proxy_ftp);
+	g_free (proxy_socks);
+	g_free (no_proxy);
+	g_free (pac);
 	g_free (locale);
 	g_free (eulas);
 	g_free (transaction_id);

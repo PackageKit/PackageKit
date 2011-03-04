@@ -259,7 +259,7 @@ pk_control_set_proxy_cb (PkControl *control, GAsyncResult *res, PkControlHelper 
 }
 
 /**
- * pk_control_set_proxy:
+ * pk_control_set_proxy2:
  * @control: a valid #PkControl instance
  * @proxy_http: the HTTP proxy server
  * @proxy_ftp: the FTP proxy server
@@ -272,10 +272,18 @@ pk_control_set_proxy_cb (PkControl *control, GAsyncResult *res, PkControlHelper 
  *
  * Return value: %TRUE if the proxy was set correctly
  *
- * Since: 0.6.3
+ * Since: 0.6.13
  **/
 gboolean
-pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp, GCancellable *cancellable, GError **error)
+pk_control_set_proxy2 (PkControl *control,
+		       const gchar *proxy_http,
+		       const gchar *proxy_https,
+		       const gchar *proxy_ftp,
+		       const gchar *proxy_socks,
+		       const gchar *no_proxy,
+		       const gchar *pac,
+		       GCancellable *cancellable,
+		       GError **error)
 {
 	gboolean ret;
 	PkControlHelper *helper;
@@ -289,8 +297,16 @@ pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *
 	helper->error = error;
 
 	/* run async method */
-	pk_control_set_proxy_async (control, proxy_http, proxy_ftp,
-				    cancellable, (GAsyncReadyCallback) pk_control_set_proxy_cb, helper);
+	pk_control_set_proxy2_async (control,
+				     proxy_http,
+				     proxy_https,
+				     proxy_ftp,
+				     proxy_socks,
+				     no_proxy,
+				     pac,
+				     cancellable,
+				     (GAsyncReadyCallback) pk_control_set_proxy_cb,
+				     helper);
 	g_main_loop_run (helper->loop);
 
 	ret = helper->ret;
@@ -302,3 +318,40 @@ pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *
 	return ret;
 }
 
+
+/**
+ * pk_control_set_proxy:
+ * @control: a valid #PkControl instance
+ * @proxy_http: the HTTP proxy server
+ * @proxy_ftp: the FTP proxy server
+ * @cancellable: a #GCancellable or %NULL
+ * @error: A #GError or %NULL
+ *
+ * Sets the network proxy to use in the daemon.
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: %TRUE if the proxy was set correctly
+ *
+ * NOTE: This is just provided for backwards compatibility.
+ * Clients should really be using pk_control_set_proxy2().
+ *
+ * Since: 0.6.3
+ **/
+gboolean
+pk_control_set_proxy (PkControl *control,
+		      const gchar *proxy_http,
+		      const gchar *proxy_ftp,
+		      GCancellable *cancellable,
+		      GError **error)
+{
+	return pk_control_set_proxy2 (control,
+				      proxy_http,
+				      NULL,
+				      proxy_ftp,
+				      NULL,
+				      NULL,
+				      NULL,
+				      cancellable,
+				      error);
+}

@@ -1749,7 +1749,11 @@ pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 	gboolean ret = FALSE;
 	gchar *session = NULL;
 	gchar *proxy_http = NULL;
+	gchar *proxy_https = NULL;
 	gchar *proxy_ftp = NULL;
+	gchar *proxy_socks = NULL;
+	gchar *no_proxy = NULL;
+	gchar *pac = NULL;
 	gchar *root = NULL;
 	PkTransactionPrivate *priv = transaction->priv;
 
@@ -1761,14 +1765,27 @@ pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 	}
 
 	/* get from database */
-	ret = pk_transaction_db_get_proxy (priv->transaction_db, priv->uid, session, &proxy_http, &proxy_ftp);
+	ret = pk_transaction_db_get_proxy (priv->transaction_db, priv->uid, session,
+					   &proxy_http,
+					   &proxy_https,
+					   &proxy_ftp,
+					   &proxy_socks,
+					   &no_proxy,
+					   &pac);
 	if (!ret) {
-		g_set_error_literal (error, 1, 0, "failed to get the proxy from the database");
+		g_set_error_literal (error, 1, 0,
+				     "failed to get the proxy from the database");
 		goto out;
 	}
 
 	/* try to set the new proxy */
-	ret = pk_backend_set_proxy (priv->backend, proxy_http, proxy_ftp);
+	ret = pk_backend_set_proxy (priv->backend,
+				    proxy_http,
+				    proxy_https,
+				    proxy_ftp,
+				    proxy_socks,
+				    no_proxy,
+				    pac);
 	if (!ret) {
 		g_set_error_literal (error, 1, 0, "failed to set the proxy");
 		goto out;
@@ -1791,7 +1808,11 @@ pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 		   proxy_http, proxy_ftp, root, priv->uid, session);
 out:
 	g_free (proxy_http);
+	g_free (proxy_https);
 	g_free (proxy_ftp);
+	g_free (proxy_socks);
+	g_free (no_proxy);
+	g_free (pac);
 	g_free (session);
 	return ret;
 }

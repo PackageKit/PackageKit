@@ -341,11 +341,50 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <arg type="s" name="proxy_https" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The HTTPS proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
       <arg type="s" name="proxy_ftp" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
               The FTP proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="proxy_socks" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The SOCKS proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="no_proxy" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The comma seporated list of sites to not use the proxy for, e.g.
+              <doc:tt>127.0.0.1,localmirror.org</doc:tt>.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="pac" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The PAC file for the proxy, e.g.
+              <doc:tt>/etc/network/school.pac</doc:tt>.
+              Note: Most backends will not be able to use a PAC file.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -103,8 +103,12 @@ struct PkBackendPrivate
 	gchar			*frontend_socket;
 	guint			 cache_age;
 	gchar			*name;
-	gchar			*proxy_ftp;
 	gchar			*proxy_http;
+	gchar			*proxy_https;
+	gchar			*proxy_ftp;
+	gchar			*proxy_socks;
+	gchar			*no_proxy;
+	gchar			*pac;
 	gchar			*root;
 	gpointer		 file_changed_data;
 	guint			 download_files;
@@ -609,13 +613,27 @@ out:
  * pk_backend_set_proxy:
  **/
 gboolean
-pk_backend_set_proxy (PkBackend	*backend, const gchar *proxy_http, const gchar *proxy_ftp)
+pk_backend_set_proxy (PkBackend	*backend,
+		      const gchar *proxy_http,
+		      const gchar *proxy_https,
+		      const gchar *proxy_ftp,
+		      const gchar *proxy_socks,
+		      const gchar *no_proxy,
+		      const gchar *pac)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_https);
 	g_free (backend->priv->proxy_ftp);
+	g_free (backend->priv->proxy_socks);
+	g_free (backend->priv->no_proxy);
+	g_free (backend->priv->pac);
 	backend->priv->proxy_http = g_strdup (proxy_http);
+	backend->priv->proxy_https = g_strdup (proxy_https);
 	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
+	backend->priv->proxy_socks = g_strdup (proxy_socks);
+	backend->priv->no_proxy = g_strdup (no_proxy);
+	backend->priv->pac = g_strdup (pac);
 	return TRUE;
 }
 
@@ -632,6 +650,18 @@ pk_backend_get_proxy_http (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_proxy_https:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_https (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_https);
+}
+
+/**
  * pk_backend_get_proxy_ftp:
  *
  * Return value: proxy string in the form username:password@server:port
@@ -641,6 +671,42 @@ pk_backend_get_proxy_ftp (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	return g_strdup (backend->priv->proxy_ftp);
+}
+
+/**
+ * pk_backend_get_proxy_socks:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_socks (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_socks);
+}
+
+/**
+ * pk_backend_get_no_proxy:
+ *
+ * Return value: comma seporated value of proxy exlude string
+ **/
+gchar *
+pk_backend_get_no_proxy (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->no_proxy);
+}
+
+/**
+ * pk_backend_get_pac:
+ *
+ * Return value: proxy PAC filename
+ **/
+gchar *
+pk_backend_get_pac (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->pac);
 }
 
 /**
@@ -2720,7 +2786,11 @@ pk_backend_finalize (GObject *object)
 
 	pk_backend_reset (backend);
 	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_https);
 	g_free (backend->priv->proxy_ftp);
+	g_free (backend->priv->proxy_socks);
+	g_free (backend->priv->no_proxy);
+	g_free (backend->priv->pac);
 	g_free (backend->priv->root);
 	g_free (backend->priv->name);
 	g_free (backend->priv->locale);
@@ -3427,8 +3497,6 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->frontend_socket = NULL;
 	backend->priv->cache_age = 0;
 	backend->priv->transaction_id = NULL;
-	backend->priv->proxy_http = NULL;
-	backend->priv->proxy_ftp = NULL;
 	backend->priv->root = NULL;
 	backend->priv->file_changed_func = NULL;
 	backend->priv->file_changed_data = NULL;

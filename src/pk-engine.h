@@ -95,7 +95,11 @@ gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
 							 GError		**error);
 void		 pk_engine_set_proxy			(PkEngine	*engine,
 							 const gchar	*proxy_http,
+							 const gchar	*proxy_https,
 							 const gchar	*proxy_ftp,
+							 const gchar	*proxy_socks,
+							 const gchar	*no_proxy,
+							 const gchar	*pac,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_set_root			(PkEngine	*engine,
 							 const gchar	*root,
