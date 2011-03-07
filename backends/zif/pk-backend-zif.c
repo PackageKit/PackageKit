@@ -792,7 +792,7 @@ pk_backend_search_repos (gchar **repos,
 	guint i;
 	ZifPackage *package;
 	ZifState *state_local;
-	ZifStoreRemote *store;
+	ZifStoreRemote *store = NULL;
 
 	/* set steps */
 	ret = zif_state_set_steps (state,
