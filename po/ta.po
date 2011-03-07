@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:11+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "வெளியேறிவிட்டு மற்றும் மே�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "முக்கியமான மேம்படுத்தல்களை நிறுவ கணினியை மீண்டும் துவக்கி மேம்படுத்துதலை முடிக்கவும்."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"முக்கியமான மேம்படுத்தல்களை நிறுவ கணினியை மீண்டும் துவக்கி மேம்படுத்துதலை "
+"முடிக்கவும்."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "முக்கியமான பாதுகாப்பு மேம்படுத்தல்களை நிறுவ வெளியேறிவிட்டு மற்றும் மேம்படுத்துதலை முடிக்க உள்நுழையவும்."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"முக்கியமான பாதுகாப்பு மேம்படுத்தல்களை நிறுவ வெளியேறிவிட்டு மற்றும் "
+"மேம்படுத்துதலை முடிக்க உள்நுழையவும்."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -418,12 +428,17 @@ msgstr "உறுதிபடுத்துவதை கேட்காமல�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "தனி பிணைய அலைவரிசை மற்றும் குறைந்த பவரைப் பயன்படுத்தி கட்டளையை இயக்கவும்"
+msgstr ""
+"தனி பிணைய அலைவரிசை மற்றும் குறைந்த பவரைப் பயன்படுத்தி கட்டளையை இயக்கவும்"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "உயிராக்க விட்ஜெட்டை பயன்படுத்துவதற்கு பதில் கணினி வாசிக்கும் வெளிப்பாடாக திரைக்கு அச்சிடு."
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"உயிராக்க விட்ஜெட்டை பயன்படுத்துவதற்கு பதில் கணினி வாசிக்கும் வெளிப்பாடாக "
+"திரைக்கு அச்சிடு."
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -576,7 +591,8 @@ msgstr "நீக்கப்பட்ட சார்புகளுடைய �
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,7 +637,9 @@ msgstr "தொகுப்பு மேலாளர் இந்த வகைய
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
 msgstr "சேவை பொதிகள் libarchive சேவையுடன் PackageKitஆக உருவாக்க முடியாது"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
@@ -633,7 +651,9 @@ msgstr "ஒரு கோப்பினை குறிப்பிட்டா�
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "ஒரே பெயருடைய தொகுப்பு ஏற்கனவே வெளியேற்றப்பட்டது, அதை மீண்டும் மேலெழுத விரும்புகிறீர்களா?"
+msgstr ""
+"ஒரே பெயருடைய தொகுப்பு ஏற்கனவே வெளியேற்றப்பட்டது, அதை மீண்டும் மேலெழுத "
+"விரும்புகிறீர்களா?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -757,7 +777,8 @@ msgstr "மென்பொருள் மூலங்கள் பற்றி�
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "கோப்பு பட்டியல்களை பதிவிறக்குகிறது (முடிக்க இதற்கு சில நேரம் எடுக்கலாம்)"
+msgstr ""
+"கோப்பு பட்டியல்களை பதிவிறக்குகிறது (முடிக்க இதற்கு சில நேரம் எடுக்கலாம்)"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -866,8 +887,10 @@ msgstr "தொகுப்பு %sஐ காண முடியவில்ல�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "எந்த தொகுப்புகளையும் நிறுவவில்லை, என்ன நிறுவ வேண்டும் என கணக்கிடுகிறது"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"எந்த தொகுப்புகளையும் நிறுவவில்லை, என்ன நிறுவ வேண்டும் என கணக்கிடுகிறது"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -924,7 +947,8 @@ msgstr "சரி."
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:618
 #, c-format
 msgid "Found %i enabled and %i disabled sources."
-msgstr "%i செயல்படுத்தப்பட்டது மற்றும் %i செயல்நீக்கப்பட்ட மூலங்கள் காணப்பட்டது."
+msgstr ""
+"%i செயல்படுத்தப்பட்டது மற்றும் %i செயல்நீக்கப்பட்ட மூலங்கள் காணப்பட்டது."
 
 #. TRANSLATORS: we're finding repositories that match out pattern
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:625
@@ -1100,7 +1124,8 @@ msgstr "கூடுதல் பிழைதிருத்த தகவலை�
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "உண்மையிலேயே வன்பொருளை தொடவில்லை, என்ன செய்ய முடியுமோ அது கணக்கிடப்பட்டது"
+msgstr ""
+"உண்மையிலேயே வன்பொருளை தொடவில்லை, என்ன செய்ய முடியுமோ அது கணக்கிடப்பட்டது"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,7 +1822,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "EULAவை ஏற்பதற்கு அங்கீகாரம் தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "உங்களால் துவங்கப்படாத பணியை ரத்துச் செய்ய அங்கீகாரம் தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,12 +1831,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "மென்பொருள் மூல அளவுருகளை மாற்றுவதற்கு அங்கீகாரம் தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "நம்ப்பபட்ட தொகுப்புகளை கையெழுத்திட ஒரு விசையை பயன்படுத்த அங்கீகாரம் தேவைப்படுகிறது"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"நம்ப்பபட்ட தொகுப்புகளை கையெழுத்திட ஒரு விசையை பயன்படுத்த அங்கீகாரம் "
+"தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1837,8 +1869,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "ஒரு பரிமாற்றத்தை திரும்ப பெறுவதற்கு அங்கீகாரம் தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "தொகுப்புகளை பதிவிறக்க பயன்படும் பிணைய பிராக்ஸியை அமைக்க அங்கீகாரம் தேவைப்படுகிறது"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"தொகுப்புகளை பதிவிறக்க பயன்படும் பிணைய பிராக்ஸியை அமைக்க அங்கீகாரம் "
+"தேவைப்படுகிறது"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1992,7 +2028,9 @@ msgstr "சரியான பயனர் இயங்கக்கூடிய�
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "கணினி அடைவில் org.freedesktop.PackageKit.conf கோப்பு நிறுவப்படவில்லை:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
@@ -2043,7 +2081,8 @@ msgstr "துவக்க முயற்சிப்பதில் பிழ�
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "பிழைத்திருத்த தொகுப்புகளை நிறுவ, கூடுதல் மூலங்களை செயல்படுத்த வேண்டும்"
+msgstr ""
+"பிழைத்திருத்த தொகுப்புகளை நிறுவ, கூடுதல் மூலங்களை செயல்படுத்த வேண்டும்"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2052,19 +2091,23 @@ msgstr "இந்த மென்பொருள் ஒரு நம்பப்
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
+msgstr ""
+"இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
+msgstr ""
+"இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை நிறுவ முடியாது."
+msgstr ""
+"இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை நிறுவ முடியாது."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்புகளை நிறுவ முடியாது."
+msgstr ""
+"இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்புகளை நிறுவ முடியாது."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

@@ -1,3 +1,33 @@
+Version 0.6.13
+~~~~~~~~~~~~~~
+Released: 2011-03-07
+
+Libraries:
+ - Allow pk_client_download_packages_async() to be called with no target directory (Richard Hughes)
+ - Port away from PolkitBackendActionLookup to support new versions of PolicyKit (Richard Hughes)
+
+Backends:
+ - conary: fix get-updates (Jesse Zhang)
+ - conary: make update-system faster (Jesse Zhang)
+ - conary: not need to call _get_package_update before _do_package_update (Jesse Zhang)
+ - entropy: add forward compatibility with newer Entropy (Fabio Erculiani)
+ - entropy: do not switch UrlFetcher using a Client property (Fabio Erculiani)
+ - entropy: update handled mime types (Fabio Erculiani)
+ - slapt: update to glib2 types (Anders F Bjorklund)
+ - slapt: update to new api (Anders F Bjorklund)
+ - slapt: update to new slapt (Anders F Bjorklund)
+ - slapt: use hash for catgroup (Anders F Bjorklund)
+ - yum: Enable use of new callback mode on yum versions that support it (Panu Matilainen)
+ - zif: fix compile with libzif upstream in zif_store_remote_set_enabled (Richard Hughes)
+ - zypp: remove check online in refresh cache (Zhang Qiang)
+ - zypp: uses the standard system update algorithm from ZYpp. Fixes bnc#637764 (Duncan Mac-Vicar P)
+
+Bugfixes:
+ - Add missing python(gio) requirement (Anders F Bjorklund)
+ - Check for polkit_authority_get_sync symbol (Anders F Bjorklund)
+ - Change the connman DBus name (Zhang Qiang)
+ - Update for NetworkManager 0.9 snapshots (Dan Williams)
+
 Version 0.6.12
 ~~~~~~~~~~~~~~
 Released: 2011-02-01

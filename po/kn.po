@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -315,19 +315,29 @@ msgstr "ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸ�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು "
+"ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ಗಣಕವನ್ನು ಮರಳಿ ಆರಂಭಿಸಿ."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ನಿರ್ಗಮಿಸಿ ನಂತರ ಮರಳಿ ಪ್ರವೇಶಿಸಿ."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"ಪ್ರಮುಖವಾದ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗಿರುವುದರಿಂದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು "
+"ಪೂರ್ಣಗೊಳಿಸಲು ದಯವಿಟ್ಟು ನಿರ್ಗಮಿಸಿ ನಂತರ ಮರಳಿ ಪ್ರವೇಶಿಸಿ."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -386,7 +396,9 @@ msgstr "ಉಪಆಜ್ಞೆಗಳು:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "ಈ ಕಾರ್ಯವನ್ನು ಕೊನೆಯ ಬಾರಿಗೆ ಪೂರ್ಣಗೊಳಿಸದ ನಂತರ ಸಮಯವನ್ನು ಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ"
+msgstr ""
+"ಈ ಕಾರ್ಯವನ್ನು ಕೊನೆಯ ಬಾರಿಗೆ ಪೂರ್ಣಗೊಳಿಸದ ನಂತರ ಸಮಯವನ್ನು ಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ "
+"ವಿಫಲಗೊಂಡಿದೆ"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -417,12 +429,18 @@ msgstr "ಖಚಿತಪಡಿಸಲು ಕೇಳದೆ ಪ್ಯಾಕೇಜು�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "ಆಜ್ಞೆಯನ್ನು ಒಂದು ಜಡವಾದಂತಹ ಜಾಲಬಂಧ ಬ್ಯಾಂಡ್‌ವಿಡ್ತನ್ನು ಬಳಸಿಕೊಂಡು ಹಾಗು ಕಡಿಮೆ ವಿದ್ಯುಚ್ಛಕ್ತಿಯನ್ನು ಉಪಯೋಗಿಸಿಕೊಂಡು ಚಲಾಯಿಸು"
+msgstr ""
+"ಆಜ್ಞೆಯನ್ನು ಒಂದು ಜಡವಾದಂತಹ ಜಾಲಬಂಧ ಬ್ಯಾಂಡ್‌ವಿಡ್ತನ್ನು ಬಳಸಿಕೊಂಡು ಹಾಗು ಕಡಿಮೆ "
+"ವಿದ್ಯುಚ್ಛಕ್ತಿಯನ್ನು ಉಪಯೋಗಿಸಿಕೊಂಡು ಚಲಾಯಿಸು"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "ಸಜೀವನಗೊಳಿಸಲಾದ(ಎನಿಮೇಟೆಡ್) ವಿಡ್ಗೆಟ್‌ಗಳ ಬದಲಿಗೆ ಗಣಕವು ಓದಬಹುದಾಂತಹ ಒಂದು ತೆರೆಗೆ ಮುದ್ರಿಸು"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"ಸಜೀವನಗೊಳಿಸಲಾದ(ಎನಿಮೇಟೆಡ್) ವಿಡ್ಗೆಟ್‌ಗಳ ಬದಲಿಗೆ ಗಣಕವು ಓದಬಹುದಾಂತಹ ಒಂದು ತೆರೆಗೆ "
+"ಮುದ್ರಿಸು"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -575,7 +593,8 @@ msgstr "ಹೊರತು ಪಡಿಸಲು ಅವಲಂಬನೆಗಳ ಕಡತ
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -620,19 +639,26 @@ msgstr "ಪ್ಯಾಕೇಜ್ ವ್ಯವಸ್ಥಾಪಕ ಈ ಬಗೆಯ
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ ಪ್ಯಾಕ್‌ಗಳನ್ನು ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"PackageKit ಅನ್ನು libarchive ಬೆಂಬಲದೊಂದಿಗೆ ನಿರ್ಮಿಸದೆ ಇರುವ ಕಾರಣ ಸರ್ವಿಸ್ "
+"ಪ್ಯಾಕ್‌ಗಳನ್ನು ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "ಒಂದು ಕಡತವನ್ನು ಸೂಚಿಸುವಂತಿದ್ದರೆ, ಸರ್ವಿಸ್‌ ಪ್ಯಾಕ್ ಹೆಸರು ಇದರೊಂದಿಗೆ ಪೂರ್ಣಗೊಳ್ಳಬೇಕು"
+msgstr ""
+"ಒಂದು ಕಡತವನ್ನು ಸೂಚಿಸುವಂತಿದ್ದರೆ, ಸರ್ವಿಸ್‌ ಪ್ಯಾಕ್ ಹೆಸರು ಇದರೊಂದಿಗೆ "
+"ಪೂರ್ಣಗೊಳ್ಳಬೇಕು"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "ಇದೆ ಹೆಸರಿನ ಒಂದು ಪ್ಯಾಕ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ, ನೀವದನ್ನು ತಿದ್ದಿ ಬರೆಯಲು ಬಯಸುತ್ತೀರೆ?"
+msgstr ""
+"ಇದೆ ಹೆಸರಿನ ಒಂದು ಪ್ಯಾಕ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ, ನೀವದನ್ನು ತಿದ್ದಿ ಬರೆಯಲು ಬಯಸುತ್ತೀರೆ?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -860,13 +886,17 @@ msgstr "ಅನುಸ್ಥಾಪನೆಯನ್ನು ಆರಂಭಿಸಲಾ�
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಹುಡುಕಲು ವಿಫಲಗೊಂಡಿದೆ, ಅಥವ ಈಗಾಗಲೆ ಅನುಸ್ಥಾಪಿಸಲಾಗಿದೆ: %s"
+msgstr ""
+"ಪ್ಯಾಕೇಜ್ %s ಅನ್ನು ಹುಡುಕಲು ವಿಫಲಗೊಂಡಿದೆ, ಅಥವ ಈಗಾಗಲೆ ಅನುಸ್ಥಾಪಿಸಲಾಗಿದೆ: %s"
 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ನಿಜವಾಗಿಯೂ ಅನುಸ್ಥಾಪಿಸಬೇಡ, ಏನನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ ಎನ್ನುವುದನ್ನು ತೋರಿಸು"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"ಪ್ಯಾಕೇಜುಗಳನ್ನು ನಿಜವಾಗಿಯೂ ಅನುಸ್ಥಾಪಿಸಬೇಡ, ಏನನ್ನು ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ "
+"ಎನ್ನುವುದನ್ನು ತೋರಿಸು"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1796,7 +1826,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "ಒಂದು EULA ಅನ್ನು ಅಂಗೀಕರಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "ನಿಮ್ಮಿಂದ ಆರಂಭಿಸದೆ ಇರುವ ಕೆಲಸವನ್ನು ರದ್ದುಗೊಳಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1804,12 +1835,17 @@ msgid "Authentication is required to change software source parameters"
 msgstr "ತಂತ್ರಾಂಶದ ಆಕರ ನಿಯತಾಂಕಗಳನ್ನು ಬದಲಾಯಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಸಹಿ ಮಾಡಲು ಬಳಸಲಾದ ಒಂದು ಕೀಲಿಯನ್ನು ಪರಿಗಣಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"ಪ್ಯಾಕೇಜುಗಳನ್ನು ಸಹಿ ಮಾಡಲು ಬಳಸಲಾದ ಒಂದು ಕೀಲಿಯನ್ನು ಪರಿಗಣಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1825,7 +1861,8 @@ msgstr "ವ್ಯವಸ್ಥೆಯ ಸಂಪನ್ಮೂಲಗಳನ್ನು �
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "ಸಾಧನವನ್ನು ಒಂದು ಹೊಸ ಚಾಲಕದೊಂದಿಗೆ ಮರಳಿ ಲೋಡ್ ಮಾಡಲು ದೃಢೀಕರಣದ ಅಗತ್ಯವಿರುತ್ತದೆ"
+msgstr ""
+"ಸಾಧನವನ್ನು ಒಂದು ಹೊಸ ಚಾಲಕದೊಂದಿಗೆ ಮರಳಿ ಲೋಡ್ ಮಾಡಲು ದೃಢೀಕರಣದ ಅಗತ್ಯವಿರುತ್ತದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1836,8 +1873,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "ವ್ಯವಹಾರವನ್ನು ಹಿಂದಕ್ಕೆ ಮರಳಿಸಲು (ರೋಲ್‌ಬ್ಯಾಕ್) ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "ಪ್ಯಾಕೇಜುಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಜಾಲಬಂಧ ಪ್ರಾಕ್ಸಿಯನ್ನು ಸಿದ್ಧಗೊಳಿಸಲು ಧೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"ಪ್ಯಾಕೇಜುಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಜಾಲಬಂಧ ಪ್ರಾಕ್ಸಿಯನ್ನು ಸಿದ್ಧಗೊಳಿಸಲು ಧೃಢೀಕರಣದ "
+"ಅಗತ್ಯವಿದೆ"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1987,12 +2028,18 @@ msgstr "ಇದಕ್ಕೆ ಎರಡು ಕಾರಣಗಳಿರುತ್ತದ�
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "ಕಾರ್ಯಗತಗೊಳಿಸಬಹುದಾದುದನ್ನು ಸೂಕ್ತವಾದ ಬಳಕೆದಾರರು ಚಲಾಯಿಸುತ್ತಿಲ್ಲ (ಸಾಮಾನ್ಯವಾಗಿ ರೂಟ್)"
+msgstr ""
+"ಕಾರ್ಯಗತಗೊಳಿಸಬಹುದಾದುದನ್ನು ಸೂಕ್ತವಾದ ಬಳಕೆದಾರರು ಚಲಾಯಿಸುತ್ತಿಲ್ಲ (ಸಾಮಾನ್ಯವಾಗಿ "
+"ರೂಟ್)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "org.freedesktop.PackageKit.conf ಕಡತವನ್ನು ವ್ಯವಸ್ಥೆಯ ಕೋಶದಲ್ಲಿ ಅನುಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"org.freedesktop.PackageKit.conf ಕಡತವನ್ನು ವ್ಯವಸ್ಥೆಯ ಕೋಶದಲ್ಲಿ "
+"ಅನುಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2042,7 +2089,9 @@ msgstr "ಆರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ ದೋ�
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "ದೋಷನಿವಾರಣಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು, ಹೆಚ್ಚುವರಿ ಆಕರಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಬೇಕಾಗುತ್ತದೆ"
+msgstr ""
+"ದೋಷನಿವಾರಣಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು, ಹೆಚ್ಚುವರಿ ಆಕರಗಳನ್ನು "
+"ಶಕ್ತಗೊಳಿಸಬೇಕಾಗುತ್ತದೆ"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2051,19 +2100,27 @@ msgstr "ತಂತ್ರಾಂಶವು ನಂಬಲು ಯೋಗ್ಯವಾದ 
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಈ ಪ್ಯಾಕೇಜನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "ಸುರಕ್ಷಿತವಾಗಿದೆ ಎಂದು ನಿಮಗೆ ಖಚಿತವಾಗಿರದ ಹೊರತು ಈ ಪ್ಯಾಕೇಜನ್ನು ನೀವು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಸುರಕ್ಷಿತವಾಗಿದೆ ಎಂದು ನಿಮಗೆ ಖಚಿತವಾಗಿರದ ಹೊರತು ಈ ಪ್ಯಾಕೇಜನ್ನು ನೀವು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
+msgstr ""
+"ಈ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸುವುದು ಸುರಕ್ಷಿತ ಎಂದು ನಿಮಗೆ ಖಚಿತವಿರದ ಹೊರತು "
+"ಅನುಸ್ಥಾಪಿಸಬೇಡಿ."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

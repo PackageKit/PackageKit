@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:44+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "Sortiu i torneu a entrar per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "S'han instal·lat actualitzacions de seguretat importants. Reinicieu l'ordinador per completar l'actualització."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"S'han instal·lat actualitzacions de seguretat importants. Reinicieu "
+"l'ordinador per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "S'han instal·lat actualitzacions de seguretat importants. Sortiu i torneu a entrar per completar l'actualització."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"S'han instal·lat actualitzacions de seguretat importants. Sortiu i torneu a "
+"entrar per completar l'actualització."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -387,7 +397,9 @@ msgstr "Subordres:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "No s'ha pogut obtenir l'hora des que aquesta acció es va completar per darrera vegada"
+msgstr ""
+"No s'ha pogut obtenir l'hora des que aquesta acció es va completar per "
+"darrera vegada"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -422,7 +434,9 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -490,7 +504,9 @@ msgstr "Es requereix un nom de paquet per eliminar"
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Us cal especificar el directori destí i els noms dels paquets per a la baixada"
+msgstr ""
+"Us cal especificar el directori destí i els noms dels paquets per a la "
+"baixada"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -576,7 +592,8 @@ msgstr "Configureu els noms dels fitxers de dependències que s'han d'excloure"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,8 +638,12 @@ msgstr "El gestor de paquets no pot dur a terme aquest tipus d'operació."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "No es poden crear sevice packs perquè el PackageKit s'ha muntat sense la libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"No es poden crear sevice packs perquè el PackageKit s'ha muntat sense la "
+"libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -866,7 +887,8 @@ msgstr "No s'ha trobat el paquet %s, o ja està instal·lat: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "No instal·lis cap paquet, només simula'n la insta·lació"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1797,7 +1819,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Cal autenticació per a acceptar l'EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Cal autenticació per a cancel·lar una tasca que no vau començar"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,12 +1828,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Cal autenticació per canviar els paràmetres de la font del programari"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Cal autenticació per a considerar de confiança una clau usada per a signar paquets"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Cal autenticació per a considerar de confiança una clau usada per a signar "
+"paquets"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1826,7 +1855,8 @@ msgstr "Cal autenticació per a actualitzar les fonts del sistema"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Cal autenticació per a recarregar el dispositiu amb un nou controlador"
+msgstr ""
+"Cal autenticació per a recarregar el dispositiu amb un nou controlador"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1837,8 +1867,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Cal autenticació per a desfer una transacció"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Cal autenticació per a establir el servidor intermediari per a baixar paquets"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Cal autenticació per a establir el servidor intermediari per a baixar "
+"paquets"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1978,7 +2012,8 @@ msgstr ""
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Ha fallat l'inici degut a les polítiques de seguretat d'aquest sistema."
+msgstr ""
+"Ha fallat l'inici degut a les polítiques de seguretat d'aquest sistema."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1992,8 +2027,12 @@ msgstr "No s'està executant amb l'usuari correcte (normalment l'usuari root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "El fitxer org.freedesktop.PackageKit.conf no està instal·lat al directori del sistema:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"El fitxer org.freedesktop.PackageKit.conf no està instal·lat al directori "
+"del sistema:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200

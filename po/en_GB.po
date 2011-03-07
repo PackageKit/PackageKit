@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,25 @@ msgstr "Please logout and login to complete the update."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
 msgstr ""
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -422,7 +428,9 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -576,7 +584,8 @@ msgstr "Set the file name of dependencies to be excluded"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,7 +630,9 @@ msgstr ""
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
 msgstr ""
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
@@ -633,7 +644,8 @@ msgstr ""
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "A pack with the same name already exists, do you want to overwrite it?"
+msgstr ""
+"A pack with the same name already exists, do you want to overwrite it?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -866,7 +878,8 @@ msgstr ""
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr ""
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1797,7 +1810,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,11 +1819,15 @@ msgid "Authentication is required to change software source parameters"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
@@ -1837,7 +1855,9 @@ msgid "Authentication is required to rollback a transaction"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
@@ -1992,8 +2012,12 @@ msgstr "The correct user is not launching the executable (usually root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200

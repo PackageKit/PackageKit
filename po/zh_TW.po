@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:11+0000\n"
-"Last-Translator: hughsie <richard@hughsie.com>\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
+"Last-Translator: zerng07 <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) <None>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -143,7 +143,7 @@ msgstr "關於更新的詳細資料："
 #: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
 msgid_plural "Packages"
-msgstr[0] ""
+msgstr[0] "套件"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
@@ -315,19 +315,25 @@ msgstr "請登出並再次登入來完成更新。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
 msgstr "因為重大安全性更新已安裝，請重新啟動電腦來完成更新動作。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
 msgstr "因為重大安全性更新已安裝，請登出並再次登入來完成更新動作。"
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr "預期的套件名稱，已實際取得檔案。嘗試使用 'pkcon install-local %s' 來替代。"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -421,7 +427,9 @@ msgstr "使用閒置的網路頻寬與較少的能源來執行指令"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr "將機器可讀的輸出列印到畫面，而不是使用動畫化的小工具"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -575,7 +583,8 @@ msgstr "設定要排除的相依檔名"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr "輸出檔或目錄 (若省略的話會使用目前的目錄)"
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -620,7 +629,9 @@ msgstr "套件管理員無法執行這種類型的操作。"
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
 msgstr "服務包無法建立，因為建構 PackageKit 時沒有啟用 libarchive 支援。"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
@@ -865,7 +876,8 @@ msgstr "找不到套件 %s，或是已經安裝了：%s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "不要真的安裝任何套件，只要模擬要安裝什麼就好"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1796,7 +1808,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "要接受終端使用者授權條款協議需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "若要取消一項並非由您啟動的工作，您必須先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1804,11 +1817,15 @@ msgid "Authentication is required to change software source parameters"
 msgstr "要更改軟體來源參數需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr "要變更用來解壓縮套件的位置需先通過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
 msgstr "要將一個用來簽署套件的金鑰列為已信任的金鑰需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
@@ -1836,7 +1853,9 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "要回復處理事項需要先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
 msgstr "要設定用來下載套件的網路代理伺服器 需先經過身份認證"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
@@ -1991,7 +2010,9 @@ msgstr "正確的使用者 (一般為 root) 沒有啟動可執行檔"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "org.freedesktop.PackageKit.conf 檔案尚未安裝在系統目錄中："
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt

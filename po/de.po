@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:11+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -235,7 +235,8 @@ msgstr "Ein Neustart (zur Verbesserung der Sicherheit) wird erfordert von:"
 #. security update
 #: ../client/pk-console.c:468
 msgid "Session restart (security) required:"
-msgstr "Ein Neustart der Sitzung (zur Verbesserung der Sicherheit) ist erforderlich:"
+msgstr ""
+"Ein Neustart der Sitzung (zur Verbesserung der Sicherheit) ist erforderlich:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: ../client/pk-console.c:471
@@ -307,7 +308,8 @@ msgstr ""
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:823
 msgid "Please restart the computer to complete the update."
-msgstr "Bitte starten Sie den Computer neu, um die Aktualisierung abzuschliessen."
+msgstr ""
+"Bitte starten Sie den Computer neu, um die Aktualisierung abzuschliessen."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
@@ -316,19 +318,29 @@ msgstr "Bitte erneut anmelden, um die Aktualisierung abzuschliessen."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Bitte starten Sie den Computer neu, um die Aktualisierung abzuschliessen, denn es sind wichtige Sicherheitsaktualisierungen installiert worden."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Bitte starten Sie den Computer neu, um die Aktualisierung abzuschliessen, "
+"denn es sind wichtige Sicherheitsaktualisierungen installiert worden."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Bitte erneut anmelden, um die Aktualisierung abzuschliessen, denn es sind wichtige Sicherheitsaktualisierungen installiert worden."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Bitte erneut anmelden, um die Aktualisierung abzuschliessen, denn es sind "
+"wichtige Sicherheitsaktualisierungen installiert worden."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -387,7 +399,8 @@ msgstr "Unterbefehle:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Es war nicht möglich, die Zeit seit der letzten Fertigstellung festzustellen"
+msgstr ""
+"Es war nicht möglich, die Zeit seit der letzten Fertigstellung festzustellen"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -418,12 +431,18 @@ msgstr "Die Pakete ohne erneute Nachfrage installieren"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Befehl ausführen unter Verwendung ungenutzer Netzwerkbandbreite und wenig Energie"
+msgstr ""
+"Befehl ausführen unter Verwendung ungenutzer Netzwerkbandbreite und wenig "
+"Energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Auf dem Bildschirm computerlesbare Ausgabe ausgeben, anstatt animierte Widgets zu verwenden"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Auf dem Bildschirm computerlesbare Ausgabe ausgeben, anstatt animierte "
+"Widgets zu verwenden"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -490,7 +509,9 @@ msgstr "Zum Entfernen ist ein Paketname erforderlich"
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Ein Zielverzeichnis und die Namen der Pakete zum Herunterladen sind erforderlich"
+msgstr ""
+"Ein Zielverzeichnis und die Namen der Pakete zum Herunterladen sind "
+"erforderlich"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -572,11 +593,13 @@ msgstr "Ausführung des Befehls fehlgeschlagen"
 #. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
-msgstr "Den Dateinamen der Abhängigkeiten festlegen, die ausgeschlossen werden"
+msgstr ""
+"Den Dateinamen der Abhängigkeiten festlegen, die ausgeschlossen werden"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,19 +644,26 @@ msgstr "Die Paketverwaltung kann diesen Aufgabentyp nicht ausführen."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Service-Packs können nicht erstellt werden, weil PackageKit ohne Unterstützung für »libarchive« erstellt wurde."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Service-Packs können nicht erstellt werden, weil PackageKit ohne "
+"Unterstützung für »libarchive« erstellt wurde."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Wenn Sie eine Datei angeben, dann muss der Name des Service-Packs enden mit"
+msgstr ""
+"Wenn Sie eine Datei angeben, dann muss der Name des Service-Packs enden mit"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Ein Service-Pack mit dem selben Namen existiert bereits, soll es überschrieben werden?"
+msgstr ""
+"Ein Service-Pack mit dem selben Namen existiert bereits, soll es "
+"überschrieben werden?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -833,7 +863,9 @@ msgstr "Das folgende Paket stellt diese Datei bereit:"
 #: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Soll das Paket »%s« installiert werden, welches den Befehl »%s« bereitstellt?"
+msgstr ""
+"Soll das Paket »%s« installiert werden, welches den Befehl »%s« "
+"bereitstellt?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:853
@@ -861,13 +893,18 @@ msgstr "Installation wird begonnen"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "Das Paket »%s« konnte nicht gefunden werden, oder es ist bereits installiert: %s"
+msgstr ""
+"Das Paket »%s« konnte nicht gefunden werden, oder es ist bereits "
+"installiert: %s"
 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "Keine Pakete tatsächlich installieren, sondern nur die Installation simulieren"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"Keine Pakete tatsächlich installieren, sondern nur die Installation "
+"simulieren"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1137,9 @@ msgstr "Erweiterte Fehlerdiagnose-Informationen anzeigen"
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "Keine Hardware tatsächlich anrühren, sondern nur simulieren, was gemacht wird"
+msgstr ""
+"Keine Hardware tatsächlich anrühren, sondern nur simulieren, was gemacht "
+"wird"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,28 +1836,41 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Legitimation ist zum Annehmen der EULA erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Legitimation ist zum Abbrechen einer Aufgabe erforderlich, die nicht von Ihnen initiiert wurde"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Legitimation ist zum Abbrechen einer Aufgabe erforderlich, die nicht von "
+"Ihnen initiiert wurde"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Legitimation ist zur Änderung der Einstellungen zu den Softwarequellen erforderlich"
+msgstr ""
+"Legitimation ist zur Änderung der Einstellungen zu den Softwarequellen "
+"erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Legitimation ist zum Vertrauen eines Paketsignaturschlüssels erforderlich"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Legitimation ist zum Vertrauen eines Paketsignaturschlüssels erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
-msgstr "Legitimation ist zum Installieren eines signierten Paketes erforderlich"
+msgstr ""
+"Legitimation ist zum Installieren eines signierten Paketes erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
-msgstr "Legitimation ist zum Installieren eines nicht vertrauenswürdigen Paketes erforderlich"
+msgstr ""
+"Legitimation ist zum Installieren eines nicht vertrauenswürdigen Paketes "
+"erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
@@ -1826,7 +1878,8 @@ msgstr "Legitimation ist zum Aktualisieren der Systemressourcen erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Legitimation ist erforderlich, um das Gerät mit einem neuen Treiber zu laden"
+msgstr ""
+"Legitimation ist erforderlich, um das Gerät mit einem neuen Treiber zu laden"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1837,8 +1890,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Legitimation ist zum Revidieren einer Transaktion erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Legitimation ist zum Festlegen eines Netzwerk-Proxys zum Herunterladen von Paketen erforderlich"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Legitimation ist zum Festlegen eines Netzwerk-Proxys zum Herunterladen von "
+"Paketen erforderlich"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1988,12 +2045,17 @@ msgstr "Dies kann aus zwei Gründen passieren:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
+msgstr ""
+"Der korrekte Benutzer führt nicht das Programm aus (normalerweise root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner im Systemverzeichnis installiert:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Die org.freedesktop.PackageKit.conf-Datei ist nicht auf Ihrem Rechner im "
+"Systemverzeichnis installiert:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2105,9 @@ msgstr "Fehler beim Startversuch:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Zur Installation von Fehlerdiagnose-Paketen müssen zusätzliche Quellen aktiviert werden"
+msgstr ""
+"Zur Installation von Fehlerdiagnose-Paketen müssen zusätzliche Quellen "
+"aktiviert werden"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2052,7 +2116,9 @@ msgstr "Die Software stammt nicht aus einer vertrauenswürdigen Quelle."
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Aktualisieren Sie dieses Paket nur, wenn Sie überzeugt sind, dass dies sicher ist."
+msgstr ""
+"Aktualisieren Sie dieses Paket nur, wenn Sie überzeugt sind, dass dies "
+"sicher ist."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."

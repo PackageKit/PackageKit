@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: Basque <None>\n"
 "MIME-Version: 1.0\n"
@@ -316,20 +316,32 @@ msgstr "Amaitu saioa eta hasi saioa eguneraketa osatzeko."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa "
+"garrantzitsuak instalatu baitira."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-"
+"eguneraketa garrantzitsuak instalatu baitira."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-local %s' erabiltzen."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-"
+"local %s' erabiltzen."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -387,7 +399,8 @@ msgstr "Azpikomandoak:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
+msgstr ""
+"Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -418,12 +431,17 @@ msgstr "Instalatu paketeak baieztapena eskatu gabe"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
+msgstr ""
+"Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili ordez"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili "
+"ordez"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -554,7 +572,9 @@ msgstr "Banaketa-izen bat behar da"
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1720
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr "Bertsio-berritze mota bat behar da, adib. 'minimal', 'default' edo 'complete'"
+msgstr ""
+"Bertsio-berritze mota bat behar da, adib. 'minimal', 'default' edo "
+"'complete'"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
@@ -576,8 +596,11 @@ msgstr "Ezarri baztertuko diren mendekotasunen fitxategi-izena"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Irteera-fitxategia edo -direktorioa (uneko direktorioa erabiliko da ez bada ezer jartzen)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Irteera-fitxategia edo -direktorioa (uneko direktorioa erabiliko da ez bada "
+"ezer jartzen)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -621,19 +644,26 @@ msgstr "Pakete-kudeatzaileak ezin du mota honetako eragiketarik egin."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Zerbitzu-paketeak ezin dira sortu, PackageKit ez baita eraiki libarchive-ren euskarriarekin."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Zerbitzu-paketeak ezin dira sortu, PackageKit ez baita eraiki libarchive-ren"
+" euskarriarekin."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Fitxategi bat adierazten bada, zerbitzu-paketearen izenaren amaiera honek izan behar du:"
+msgstr ""
+"Fitxategi bat adierazten bada, zerbitzu-paketearen izenaren amaiera honek "
+"izan behar du:"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Jadanik existitzen da izen bera duen pakete bat, gainidatzi nahi al duzu?"
+msgstr ""
+"Jadanik existitzen da izen bera duen pakete bat, gainidatzi nahi al duzu?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -757,7 +787,9 @@ msgstr "Software-jatorriei buruzko xehetasunak deskargatzen."
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan dezake)."
+msgstr ""
+"Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan "
+"dezake)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -866,7 +898,8 @@ msgstr "Ez da %s paketea aurkitu, edo jadanik instalatuta dago: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Ez instalatu paketerik, instalatuko dela simulatu soilik"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1797,20 +1830,31 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Autentifikazioa behar da EULA bat onartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan behera uzteko"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan "
+"behera uzteko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "Autentifikazioa behar da software-jatorrien parametroak aldatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Autentifikazioa behar da paketeak destrinkotzeko erabiltzen den kokapena aldatzeko"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Autentifikazioa behar da paketeak destrinkotzeko erabiltzen den kokapena "
+"aldatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Autentifikazioa behar da paketeak sinatzeko erabilitako gakoa fidagarrizat hartzeko"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Autentifikazioa behar da paketeak sinatzeko erabilitako gakoa fidagarrizat "
+"hartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1826,7 +1870,8 @@ msgstr "Autentifikazioa behar da sistemaren jatorriak freskatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Autentifikazioa behar da gailua kontrolagailu berri batekin birkargatzeko"
+msgstr ""
+"Autentifikazioa behar da gailua kontrolagailu berri batekin birkargatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1837,8 +1882,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Autentifikazioa behar da transakzio bat atzera botatzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Autentifikazioa behar da paketeak deskargatzeko erabiliko den sareko proxy-a ezartzeko"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Autentifikazioa behar da paketeak deskargatzeko erabiliko den sareko proxy-a"
+" ezartzeko"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1992,8 +2041,12 @@ msgstr "Exekutagarria ez du erabiltzaile egokiak (normalean root) abiarazi"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "org.freedesktop.PackageKit.conf fitxategia ez dago instalatuta sistemaren direktorioan:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"org.freedesktop.PackageKit.conf fitxategia ez dago instalatuta sistemaren "
+"direktorioan:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200

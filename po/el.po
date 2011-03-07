@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:44+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -307,28 +307,41 @@ msgstr ""
 #. TRANSLATORS: a package needs to restart their system
 #: ../client/pk-console.c:823
 msgid "Please restart the computer to complete the update."
-msgstr "Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
+msgstr ""
+"Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
 
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
-msgstr "Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
+msgstr ""
+"Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
+"ενημέρωση."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Παρακαλώ, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, "
+"γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Παρακαλώ, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
+"ενημέρωση, γιατί εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -387,7 +400,8 @@ msgstr "Υποεντολές:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Δε βρέθηκε ο χρόνος που είχε ολοκληρωθεί για τελευταία φορά η ενέργεια"
+msgstr ""
+"Δε βρέθηκε ο χρόνος που είχε ολοκληρωθεί για τελευταία φορά η ενέργεια"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -422,7 +436,9 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -479,7 +495,9 @@ msgstr "Πρέπει να οριστεί όνομα αρχείου προς εγ
 #. TRANSLATORS: geeky error, 99.9999% of users won't see this
 #: ../client/pk-console.c:1503
 msgid "A type, key_id and package_id are required"
-msgstr "Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου (package_id)"
+msgstr ""
+"Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου "
+"(package_id)"
 
 #. TRANSLATORS: the user did not specify what they wanted to remove
 #: ../client/pk-console.c:1514
@@ -490,7 +508,9 @@ msgstr "Πρέπει να οριστεί όνομα πακέτου προς αφ
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα ληφθούν"
+msgstr ""
+"Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα "
+"ληφθούν"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -576,7 +596,8 @@ msgstr "Ορισμός ονομάτων αρχείων των εξαρτήσεω
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -616,19 +637,27 @@ msgstr ""
 #. download
 #: ../client/pk-generate-pack.c:351 ../client/pk-generate-pack.c:357
 msgid "The package manager cannot perform this type of operation."
-msgstr "Η εφαρμογή διαχείρισης πακέτων δεν μπορεί να εκτελέσει αυτόν τον τύπο ενέργειας."
+msgstr ""
+"Η εφαρμογή διαχείρισης πακέτων δεν μπορεί να εκτελέσει αυτόν τον τύπο "
+"ενέργειας."
 
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Δεν μπορούν να δημιουργηθούν πακέτα ενημερώσεων, γιατί δεν εγκαταστάθηκε η υποστήριξη libarchive για το PackageKit."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Δεν μπορούν να δημιουργηθούν πακέτα ενημερώσεων, γιατί δεν εγκαταστάθηκε η "
+"υποστήριξη libarchive για το PackageKit."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Όταν ορίζεται όνομα αρχείου για το πακέτο ενημερώσεων, πρέπει να τελειώνει σε"
+msgstr ""
+"Όταν ορίζεται όνομα αρχείου για το πακέτο ενημερώσεων, πρέπει να τελειώνει "
+"σε"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
@@ -866,7 +895,8 @@ msgstr "Το πακέτο %s δε βρέθηκε ή είναι ήδη εγκατ
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Να μη γίνει πραγματική εγκατάσταση πακέτων, μόνο προσομοίωση"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1797,20 +1827,30 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Απαιτείται πιστοποίηση για την αποδοχή της άδειας χρήσης (EULA)"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει εσείς"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει "
+"εσείς"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Απαιτείται πιστοποίηση για την αλλαγή των παραμέτρων των πηγών λογισμικού"
+msgstr ""
+"Απαιτείται πιστοποίηση για την αλλαγή των παραμέτρων των πηγών λογισμικού"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Απαιτείται πιστοποίηση για να οριστούν ως έμπιστα τα κλειδιά για την υπογραφή πακέτων"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Απαιτείται πιστοποίηση για να οριστούν ως έμπιστα τα κλειδιά για την "
+"υπογραφή πακέτων"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1834,11 +1874,16 @@ msgstr "Απαιτείται πιστοποίηση για την αφαίρεσ
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:18
 msgid "Authentication is required to rollback a transaction"
-msgstr "Απαιτείται πιστοποίηση για την επαναφορά στην κατάσταση πριν από την εργασία"
+msgstr ""
+"Απαιτείται πιστοποίηση για την επαναφορά στην κατάσταση πριν από την εργασία"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Απαιτείται πιστοποίηση για τον ορισμό διαμεσολαβητή δικτύου για τη λήψη πακέτων"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Απαιτείται πιστοποίηση για τον ορισμό διαμεσολαβητή δικτύου για τη λήψη "
+"πακέτων"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1978,7 +2023,8 @@ msgstr ""
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Δεν ήταν δυνατή η εκκίνηση εξαιτίας των πολιτικών ασφαλείας του συστήματος."
+msgstr ""
+"Δεν ήταν δυνατή η εκκίνηση εξαιτίας των πολιτικών ασφαλείας του συστήματος."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1988,12 +2034,18 @@ msgstr "Αυτό μπορεί να οφείλεται σε δύο λόγους:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Η εκκίνηση του εκτελέσιμου αρχείου δε γίνεται από το σωστό χρήστη (συνήθως το root)"
+msgstr ""
+"Η εκκίνηση του εκτελέσιμου αρχείου δε γίνεται από το σωστό χρήστη (συνήθως "
+"το root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Το αρχείο org.freedesktop.PackageKit.conf δεν είναι εγκατεστημένο στον κατάλογο συστήματος:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Το αρχείο org.freedesktop.PackageKit.conf δεν είναι εγκατεστημένο στον "
+"κατάλογο συστήματος:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2095,9 @@ msgstr "Σφάλμα κατα την προσπάθεια έναρξης:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Πρέπει να ενεργοποιηθούν επιπλέον πηγές για την εγκατάσταση πακέτων αποσφαλμάτωσης"
+msgstr ""
+"Πρέπει να ενεργοποιηθούν επιπλέον πηγές για την εγκατάσταση πακέτων "
+"αποσφαλμάτωσης"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190

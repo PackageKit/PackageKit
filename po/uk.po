@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
-"Last-Translator: hughsie <richard@hughsie.com>\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
+"Last-Translator: yurchor <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-l10n-uk@lists.kde.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: uk\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
@@ -143,10 +143,9 @@ msgstr "Подробиці щодо оновлення:"
 #: ../src/pk-polkit-action-lookup.c:357
 msgid "Package"
 msgid_plural "Packages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Пакунки"
+msgstr[1] "Пакунки"
+msgstr[2] "Пакунок"
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
@@ -314,24 +313,37 @@ msgstr "Щоб завершити оновлення, перезавантажт
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
-msgstr "Щоб завершити оновлення, вийдіть з облікового запису і увійдіть знову."
+msgstr ""
+"Щоб завершити оновлення, вийдіть з облікового запису і увійдіть знову."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "перезавантажте систему, щоб завершити встановлення важливих оновлень безпеки."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"перезавантажте систему, щоб завершити встановлення важливих оновлень "
+"безпеки."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Щоб завершити встановлення важливих оновлень безпеки вийдіть з облікового запису і увійдіть до нього знову."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Щоб завершити встановлення важливих оновлень безпеки вийдіть з облікового "
+"запису і увійдіть до нього знову."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Мало бути передано назву пакунка, передано файл. Спробуйте скористатися командою «pkcon install-local %s»."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Мало бути передано назву пакунка, передано файл. Спробуйте скористатися "
+"командою «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -404,7 +416,8 @@ msgstr "Встановити фільтр, наприклад, встановл�
 #. TRANSLATORS: command line argument, use a non-standard install prefix
 #: ../client/pk-console.c:1281
 msgid "Set the install root, e.g. '/' or '/mnt/ltsp'"
-msgstr "Встановити кореневий каталог встановлення, наприклад, '/' або '/mnt/ltsp'"
+msgstr ""
+"Встановити кореневий каталог встановлення, наприклад, '/' або '/mnt/ltsp'"
 
 #. TRANSLATORS: command line argument, work asynchronously
 #: ../client/pk-console.c:1284
@@ -420,17 +433,25 @@ msgstr "Встановити пакунки без запиту щодо під�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Виконати команду з мінімальним використанням мережевого каналу і меншою витратою ресурсів системи"
+msgstr ""
+"Виконати команду з мінімальним використанням мережевого каналу і меншою "
+"витратою ресурсів системи"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Вивести дані про поступ у простому текстовому форматі, без використання анімованих віджетів"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Вивести дані про поступ у простому текстовому форматі, без використання "
+"анімованих віджетів"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Максимальна тривалість зберігання кешу метаданих. Значення -1 відповідає зняттю обмежень на тривалість."
+msgstr ""
+"Максимальна тривалість зберігання кешу метаданих. Значення -1 відповідає "
+"зняттю обмежень на тривалість."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1333
@@ -492,7 +513,8 @@ msgstr "Слід вказати назву пакунка, який потріб
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
+msgstr ""
+"Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -556,7 +578,8 @@ msgstr "Слід вказати назву дистрибутива"
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1720
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr "Слід вказати тип оновлення, наприклад, «minimal», «default» або «complete»"
+msgstr ""
+"Слід вказати тип оновлення, наприклад, «minimal», «default» або «complete»"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
@@ -578,8 +601,11 @@ msgstr "Вкажіть назви файлів залежностей, які с
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Файл або каталог виведення даних (якщо пропустити, буде використано поточний каталог)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Файл або каталог виведення даних (якщо пропустити, буде використано поточний"
+" каталог)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -623,14 +649,19 @@ msgstr "Керування пакунками не може виконувати
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Створення пакунків з обслуговування неможливе, оскільки PackageKit було зібрано без підтримки libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Створення пакунків з обслуговування неможливе, оскільки PackageKit було "
+"зібрано без підтримки libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Якщо вказано файл, назва пакунка з обслуговування має завершуватися на"
+msgstr ""
+"Якщо вказано файл, назва пакунка з обслуговування має завершуватися на"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
@@ -759,7 +790,8 @@ msgstr "Звантаження даних щодо джерел програмн
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
+msgstr ""
+"Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -868,7 +900,8 @@ msgstr "Не вдалося знайти пакунок %s або пакунок
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Не встановлювати пакунків, лише імітувати їх встановлення"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1645,7 +1678,8 @@ msgstr "Показувати параметри діагностики"
 #. packages
 #: ../lib/packagekit-glib2/pk-task-text.c:67
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "Бажаєте дозволити встановлення непідписаного програмного забезпечення?"
+msgstr ""
+"Бажаєте дозволити встановлення непідписаного програмного забезпечення?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: ../lib/packagekit-glib2/pk-task-text.c:72
@@ -1702,7 +1736,8 @@ msgstr "Підпис не було підтверджено."
 #. read before installing
 #: ../lib/packagekit-glib2/pk-task-text.c:203
 msgid "End user licence agreement required"
-msgstr "Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
+msgstr ""
+"Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: ../lib/packagekit-glib2/pk-task-text.c:212
@@ -1799,20 +1834,31 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Для підтвердження EULA слід виконати розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Для скасування дії, започаткованої не вами, слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Для зміни параметрів джерел програмного забезпечення слід пройти розпізнавання"
+msgstr ""
+"Для зміни параметрів джерел програмного забезпечення слід пройти "
+"розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Для визначення адреси каталогу, куди буде видобуто вміст пакунків, слід пройти розпізнавання"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Для визначення адреси каталогу, куди буде видобуто вміст пакунків, слід "
+"пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Для визнання ключа, використаного для підписування пакунків, як надійного слід пройти розпізнавання"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Для визнання ключа, використаного для підписування пакунків, як надійного "
+"слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1828,7 +1874,8 @@ msgstr "Для оновлення списку джерел системи сл�
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Для перезавантаження пристрою з новим драйвером слід пройти розпізнавання"
+msgstr ""
+"Для перезавантаження пристрою з новим драйвером слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1839,8 +1886,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Для скасування дії слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Для визначення проксі-сервера, який буде використано для звантаження пакунків, слід пройти розпізнавання"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Для визначення проксі-сервера, який буде використано для звантаження "
+"пакунків, слід пройти розпізнавання"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1980,7 +2031,8 @@ msgstr "Оновлення системи"
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Спроба запуску зазнала невдачі через обмеження безпеки на цьому комп’ютері."
+msgstr ""
+"Спроба запуску зазнала невдачі через обмеження безпеки на цьому комп’ютері."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1990,12 +2042,16 @@ msgstr "Таке може трапитися з двох причин:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Виконуваний файл було запущено не тим користувачем (його мав запустити root)"
+msgstr ""
+"Виконуваний файл було запущено не тим користувачем (його мав запустити root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "У системному каталозі файл org.freedesktop.PackageKit.conf не встановлено:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"У системному каталозі файл org.freedesktop.PackageKit.conf не встановлено:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2045,7 +2101,9 @@ msgstr "Помилка під час спроби запуску:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Для встановлення пакунків для усування вад слід увімкнути додаткові джерела програмного забезпечення"
+msgstr ""
+"Для встановлення пакунків для усування вад слід увімкнути додаткові джерела "
+"програмного забезпечення"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2054,19 +2112,24 @@ msgstr "Програмне забезпечення надійшло з нена
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
+msgstr ""
+"Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Не оновлюйте ці пакунки, якщо не певні, що таке оновлення є безпечним."
+msgstr ""
+"Не оновлюйте ці пакунки, якщо не певні, що таке оновлення є безпечним."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є безпечним."
+msgstr ""
+"Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є "
+"безпечним."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
+msgstr ""
+"Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

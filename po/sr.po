@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: sr\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
@@ -146,7 +146,6 @@ msgid_plural "Packages"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
@@ -318,20 +317,32 @@ msgstr "Неопходно је одјављивање и поновна при�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Неопходно је поновно покретање система ради завршетка ажурирања јер су инсталирана важна безбедносна ажурирања."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Неопходно је поновно покретање система ради завршетка ажурирања јер су "
+"инсталирана важна безбедносна ажурирања."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Неопходно је одјављивање и поновна пријава ради завршетка ажурирања јер су инсталирана важна безбедносна ажурирања."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Неопходно је одјављивање и поновна пријава ради завршетка ажурирања јер су "
+"инсталирана важна безбедносна ажурирања."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Очекивано је име пакета, уствари је добијена датотека. Покушајте да употребите „pkcon install-local %s“ наместо."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Очекивано је име пакета, уствари је добијена датотека. Покушајте да "
+"употребите „pkcon install-local %s“ наместо."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -420,12 +431,17 @@ msgstr "Инсталирај пакете без питања за потврд�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Изврши наредбу користећи неискоришћени мрежни опсег и такође трошећи мање енергије"
+msgstr ""
+"Изврши наредбу користећи неискоришћени мрежни опсег и такође трошећи мање "
+"енергије"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Штампај излаз читљив машини на екрану, уместо употребе анимираних виџета"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Штампај излаз читљив машини на екрану, уместо употребе анимираних виџета"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -578,8 +594,11 @@ msgstr "Поставите име датотеке за међузависнос
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Излазна датотека или директоријум (користи се текући директоријум ако је изостављено)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Излазна датотека или директоријум (користи се текући директоријум ако је "
+"изостављено)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -623,8 +642,12 @@ msgstr "Управник пакета не може извршити ову вр
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Сервисни пакети не могу да буду направљени јер ПакетКит није био изграђен са подршком за libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Сервисни пакети не могу да буду направљени јер ПакетКит није био изграђен са"
+" подршком за libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -868,8 +891,10 @@ msgstr "Неуспело проналажење пакета %s, или је в�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "Немој у ствари да инсталираш пакете, само симулирај шта би било инсталирано"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"Немој у ствари да инсталираш пакете, само симулирај шта би било инсталирано"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1799,20 +1824,30 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Неопходна је аутентификација за прихватање лиценце"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Неопходна је аутентификација за отказивање посла којег нисте ви покренули"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Неопходна је аутентификација за отказивање посла којег нисте ви покренули"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "Неопходна је аутентификација за измену параметара извора софтвера"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Неопходна је аутентификација за измену локације употребљене за распакивање пакета"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Неопходна је аутентификација за измену локације употребљене за распакивање "
+"пакета"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Неопходна је аутентификација да би се кључ коришћен за потписивање пакета сматрао поверљивим"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Неопходна је аутентификација да би се кључ коришћен за потписивање пакета "
+"сматрао поверљивим"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1820,7 +1855,8 @@ msgstr "Неопходна је аутентификација за инстал
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
-msgstr "Неопходна је аутентификација за инсталацију пакета из неповерљивог извора"
+msgstr ""
+"Неопходна је аутентификација за инсталацију пакета из неповерљивог извора"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
@@ -1828,7 +1864,9 @@ msgstr "Неопходна је аутентификација за освежа
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Неопходна је аутентификација за поновно учитавање уређаја са новим управљачким програмом"
+msgstr ""
+"Неопходна је аутентификација за поновно учитавање уређаја са новим "
+"управљачким програмом"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1839,8 +1877,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Неопходна је аутентификација за поништавање све-или-ништа промена"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Неопходна је аутентификација како би се наместио мрежни посредник коришћен за преузимање пакета"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Неопходна је аутентификација како би се наместио мрежни посредник коришћен "
+"за преузимање пакета"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1994,8 +2036,12 @@ msgstr "Програм не покреће одговарајући корисн
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Датотека „org.freedesktop.PackageKit.conf“ није инсталирана у системски директоријум:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Датотека „org.freedesktop.PackageKit.conf“ није инсталирана у системски "
+"директоријум:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2045,7 +2091,8 @@ msgstr "Грешка при покретању:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "За инсталацију пакета за отклон грешака морају бити укључени додатни извори"
+msgstr ""
+"За инсталацију пакета за отклон грешака морају бити укључени додатни извори"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2054,19 +2101,23 @@ msgstr "Овај софтвер није од поверљивог извора.
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Немојте ажурирати овај пакет осим ако нисте сигурни да је то безбедно."
+msgstr ""
+"Немојте ажурирати овај пакет осим ако нисте сигурни да је то безбедно."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Немојте ажурирати ове пакете осим ако нисте сигурни да је то безбедно."
+msgstr ""
+"Немојте ажурирати ове пакете осим ако нисте сигурни да је то безбедно."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Немојте инсталирати овај пакет осим ако нисте сигурни да је то безбедно."
+msgstr ""
+"Немојте инсталирати овај пакет осим ако нисте сигурни да је то безбедно."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Немојте инсталирати ове пакете осим ако нисте сигурни да је то безбедно."
+msgstr ""
+"Немојте инсталирати ове пакете осим ако нисте сигурни да је то безбедно."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

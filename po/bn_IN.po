@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "আপডেট সম্পন্ন করার জন্য অন�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। আপডেট সম্পূর্ণ করার জন্য অনুগ্রহ করে কম্পিউটার পুনরায় আরম্ভ করুন।"
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। আপডেট সম্পূর্ণ করার "
+"জন্য অনুগ্রহ করে কম্পিউটার পুনরায় আরম্ভ করুন।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। ।আপডেট সম্পন্ন করার জন্য অনুগ্রহ করে লগ-আউট করে পুনরায় লগ-ইন করুন।"
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। ।আপডেট সম্পন্ন করার "
+"জন্য অনুগ্রহ করে লগ-আউট করে পুনরায় লগ-ইন করুন।"
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -387,7 +397,8 @@ msgstr "সাব-কমান্ড:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "চিহ্নিত কর্ম সর্বশেষ সমাপ্তির সময়ের পরে অতিবাহিত সময় প্রাপ্ত করা যায়নি"
+msgstr ""
+"চিহ্নিত কর্ম সর্বশেষ সমাপ্তির সময়ের পরে অতিবাহিত সময় প্রাপ্ত করা যায়নি"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -418,12 +429,17 @@ msgstr "Install the packages without asking for confirmation"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Run the command using idle network bandwidth and also using less power"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -490,7 +506,8 @@ msgstr "অপসারণের জন্য প্যাকেজের না
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "উদ্দিষ্ট ডিরেক্টরি ও ডাউনলোড করার উদ্দেশ্যে প্যাকেজের নাম উল্লেখ করা আবশ্যক"
+msgstr ""
+"উদ্দিষ্ট ডিরেক্টরি ও ডাউনলোড করার উদ্দেশ্যে প্যাকেজের নাম উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -544,7 +561,8 @@ msgstr "প্যাকেজের নাম উল্লেখ করা আ�
 #. decoder-mp3), the user didn't specify it
 #: ../client/pk-console.c:1670
 msgid "A package provide string is required"
-msgstr "প্যাকেজ দ্বারা উপলব্ধ (provides) সামগ্রী সংক্রান্ত তথ্য উল্লেখ করা আবশ্যক"
+msgstr ""
+"প্যাকেজ দ্বারা উপলব্ধ (provides) সামগ্রী সংক্রান্ত তথ্য উল্লেখ করা আবশ্যক"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: ../client/pk-console.c:1714
@@ -572,11 +590,13 @@ msgstr "কমান্ড বিফল"
 #. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
-msgstr "উপেক্ষা করার উদ্দেশ্যে নির্ভরতার তালিকা উল্লেখকারী ফাইলের পাথ নির্ধারণ করুন"
+msgstr ""
+"উপেক্ষা করার উদ্দেশ্যে নির্ভরতার তালিকা উল্লেখকারী ফাইলের পাথ নির্ধারণ করুন"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,19 +641,27 @@ msgstr "প্যাকেজ পরিচালন ব্যবস্থা দ
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "libarchive সমর্থন সহ PackageKit নির্মিত না হওয়ার ফলে সার্ভিস প্যাক তৈরি করা সম্ভব নয়।"
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"libarchive সমর্থন সহ PackageKit নির্মিত না হওয়ার ফলে সার্ভিস প্যাক তৈরি করা "
+"সম্ভব নয়।"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "ফাইল নির্ধারণ করা হলে, সার্ভিস প্যাকের নামের শেষ চিহ্নিত মান উপস্থিত থাকা আবশ্যক"
+msgstr ""
+"ফাইল নির্ধারণ করা হলে, সার্ভিস প্যাকের নামের শেষ চিহ্নিত মান উপস্থিত থাকা "
+"আবশ্যক"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "এই নামের একটি প্যাক বর্তমানে উপস্থিত রয়েছে, আপনি কি এটি নতুন করে লিখতে ইচ্ছুক?"
+msgstr ""
+"এই নামের একটি প্যাক বর্তমানে উপস্থিত রয়েছে, আপনি কি এটি নতুন করে লিখতে "
+"ইচ্ছুক?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -757,7 +785,9 @@ msgstr "সফ্টওয়্যারের উৎসস্থল সম্প�
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "ফাইলের তালিকা ডাউনলোড করা হচ্ছে (এই কাজে কিছু সময় ব্যয় হওয়ার সম্ভাবনা রয়েছে)।"
+msgstr ""
+"ফাইলের তালিকা ডাউনলোড করা হচ্ছে (এই কাজে কিছু সময় ব্যয় হওয়ার সম্ভাবনা "
+"রয়েছে)।"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -833,7 +863,9 @@ msgstr "এই প্যাকেজ উপলব্ধকারী ফাইল
 #: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%s' প্যাকেজটি ইনস্টল করা হবে কি? এটি সাহায্যে '%s' কমান্ডটি ব্যবহারের উদ্দেশ্যে উপলব্ধ করা হবে।"
+msgstr ""
+"'%s' প্যাকেজটি ইনস্টল করা হবে কি? এটি সাহায্যে '%s' কমান্ডটি ব্যবহারের "
+"উদ্দেশ্যে উপলব্ধ করা হবে।"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:853
@@ -866,8 +898,11 @@ msgstr "%s প্যাকেজটি পাওয়া যায়নি, অথ�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "কোনো প্যাকেজ ইনস্টল করা হবে না, শুধুমাত্র নির্ধারিত ইনস্টলেশনের অনুকরণ করা হবে"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"কোনো প্যাকেজ ইনস্টল করা হবে না, শুধুমাত্র নির্ধারিত ইনস্টলেশনের অনুকরণ করা "
+"হবে"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1135,9 @@ msgstr "ডিবাগ সংক্রান্ত অতিরিক্ত ত
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "হার্ডওয়্যারে কোনো পরিবর্তন করা হবে না, নির্ধারিত কর্মের শুধুমাত্র অনুকরণ করা হবে"
+msgstr ""
+"হার্ডওয়্যারে কোনো পরিবর্তন করা হবে না, নির্ধারিত কর্মের শুধুমাত্র অনুকরণ করা"
+" হবে"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,7 +1834,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "EULA-র শর্তাবলী গ্রহণ করার জন্য অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "আপনার দ্বারা আরম্ভ না করা কোনো কর্ম বন্ধ করার জন্য অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,12 +1843,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "সফ্টওয়্যারের উৎস সংক্রান্ত পরামিতি পরিবর্তনের জন্য অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "প্যাকেজ স্বাক্ষর করার জন্য ব্যবহৃত কোনো কি-কে বিশ্বস্ত ধার্য করার জন্য অনুমোদন প্রয়োজন"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"প্যাকেজ স্বাক্ষর করার জন্য ব্যবহৃত কোনো কি-কে বিশ্বস্ত ধার্য করার জন্য "
+"অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1837,8 +1881,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "ট্রানস্যাকশন রোল-ব্যাক করার জন্য অনুমোদন প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "প্যাকেজ ডাউনলোড করার জন্য ব্যবহৃত নেটওয়ার্ক প্রক্সি নির্ধারণের জন্য অনুমোদন প্রয়োজন"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"প্যাকেজ ডাউনলোড করার জন্য ব্যবহৃত নেটওয়ার্ক প্রক্সি নির্ধারণের জন্য অনুমোদন "
+"প্রয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1978,7 +2026,9 @@ msgstr ""
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "এই মেশিনের জন্য নির্ধারিত নিরাপত্তা সংক্রান্ত নিয়মনীতির কারণে প্রারম্ভ করতে ব্যর্থ।"
+msgstr ""
+"এই মেশিনের জন্য নির্ধারিত নিরাপত্তা সংক্রান্ত নিয়মনীতির কারণে প্রারম্ভ করতে "
+"ব্যর্থ।"
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1992,8 +2042,12 @@ msgstr "সঠিক ব্যবহারকারী (সাধারণত ro
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "সিস্টেম ডিরেক্টরির মধ্যে org.freedesktop.PackageKit.conf ফাইলটি ইনস্টল করা হয়নি:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"সিস্টেম ডিরেক্টরির মধ্যে org.freedesktop.PackageKit.conf ফাইলটি ইনস্টল করা "
+"হয়নি:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2097,9 @@ msgstr "আরম্ভ করতে সমস্যা:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "ডিবাগের জন্য ব্যবহারযোগ্য প্যাকেজ ইনস্টল করার জন্য অতিরিক্ত উৎসস্থল সক্রিয় করা আবশ্যক"
+msgstr ""
+"ডিবাগের জন্য ব্যবহারযোগ্য প্যাকেজ ইনস্টল করার জন্য অতিরিক্ত উৎসস্থল সক্রিয় "
+"করা আবশ্যক"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2052,19 +2108,27 @@ msgstr "বিশ্বস্ত উৎসস্থল থেকে সফ্ট
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"
+msgstr ""
+"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট"
+" না করা উচিত।"
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজগুলি আপডেট না করা উচিত।"
+msgstr ""
+"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজগুলি "
+"আপডেট না করা উচিত।"
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি ইনস্টল না করা উচিত।"
+msgstr ""
+"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি "
+"ইনস্টল না করা উচিত।"
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"
+msgstr ""
+"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট"
+" না করা উচিত।"
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -315,19 +315,25 @@ msgstr "请注销并登录以完成更新。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
 msgstr "由于安装了重要安全更新，请重新启动计算机以完成更新。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
 msgstr "由于安装了重要安全更新，请注销并登录以完成更新。"
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr "预期的软件包名，实际上文件有了。试一下改用“pkcon install-local %s”安装。"
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -421,7 +427,9 @@ msgstr "用空闲网络带宽和更少能源运行命令"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr "只在屏幕上显示机器可读的输出，而不是用动画小工具"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -575,7 +583,8 @@ msgstr "设置要排除的依赖文件名"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr "输出文件或目录（若省略则使用当前目录）"
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -620,7 +629,9 @@ msgstr "软件包管理器未能执行此类操作。"
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
 msgstr "由于 PackageKit 编译时未支持 libarchive，服务包不能被创建。"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
@@ -865,7 +876,8 @@ msgstr "查找 %s 软件包失败，或者已安装：%s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "实际上不安装任何软件包，只是模拟将会安装什么"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1796,7 +1808,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "接受最终用户许可协议（EULA）需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "取消一项不是由您启动的任务需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1804,11 +1817,15 @@ msgid "Authentication is required to change software source parameters"
 msgstr "更改软件源参数需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr "更改解压软件包所用位置需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
 msgstr "认为软件包签名所用密钥是受信任的需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
@@ -1836,7 +1853,9 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "回滚事务需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
 msgstr "设置下载软件包所用网络代理需要认证"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
@@ -1991,7 +2010,9 @@ msgstr "错误的用户正在启动该可执行文件（通常应该是根用户
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "org.freedesktop.PackageKit.conf 文件未安装在系统目录中："
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,20 +316,32 @@ msgstr "Log uit en weer in om de vernieuwing af te maken."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Herstart de computer om de vernieuwing af te maken omdat belangrijke beveiliging vernieuwingen geïnstalleerd zijn."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Herstart de computer om de vernieuwing af te maken omdat belangrijke "
+"beveiliging vernieuwingen geïnstalleerd zijn."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Log uit en weer in om de vernieuwing af te maken omdat belangrijke beveiliging vernieuwingen geïnstalleerd zijn."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Log uit en weer in om de vernieuwing af te maken omdat belangrijke "
+"beveiliging vernieuwingen geïnstalleerd zijn."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Verwachtte pakket naam, maar kreeg een bestand. Probeer in plaats daarvan 'pkcon install-local %s' te gebruiken."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Verwachtte pakket naam, maar kreeg een bestand. Probeer in plaats daarvan "
+"'pkcon install-local %s' te gebruiken."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -387,7 +399,8 @@ msgstr "Sub-opdrachten:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Verkrijgen van de tijd sinds deze actie voor het laatst afgemaakt is faalde"
+msgstr ""
+"Verkrijgen van de tijd sinds deze actie voor het laatst afgemaakt is faalde"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -418,12 +431,18 @@ msgstr "Installeer het pakket zonder goedkeuring te vragen"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Voer het commando uit met gebruik van onbenutte netwerk bandbreedte en ook om minder vermogen te gebruiken"
+msgstr ""
+"Voer het commando uit met gebruik van onbenutte netwerk bandbreedte en ook "
+"om minder vermogen te gebruiken"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Print op het scherm een machine-leesbare output, in plaats van geanimeerde widgets te gebruiken"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Print op het scherm een machine-leesbare output, in plaats van geanimeerde "
+"widgets te gebruiken"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -572,12 +591,16 @@ msgstr "Opdracht mislukt"
 #. exist on the target
 #: ../client/pk-generate-pack.c:253
 msgid "Set the file name of dependencies to be excluded"
-msgstr "Stel de bestandsnamen van afhankelijkheden in die moeten worden uitgesloten"
+msgstr ""
+"Stel de bestandsnamen van afhankelijkheden in die moeten worden uitgesloten"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Het doel bestand of map (de huidige map wordt gebruikt als dit niet wordt opgegeven)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Het doel bestand of map (de huidige map wordt gebruikt als dit niet wordt "
+"opgegeven)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -621,14 +644,19 @@ msgstr "De pakket beheerder kan dit type operatie niet uitvoeren."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Service packs kon niet worden gecreëerd omdat PackageKit niet met libarchive ondersteuning is gebouwd."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Service packs kon niet worden gecreëerd omdat PackageKit niet met libarchive"
+" ondersteuning is gebouwd."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Bij het specificeren van een bestand moet de service pack naam eindigen op"
+msgstr ""
+"Bij het specificeren van een bestand moet de service pack naam eindigen op"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
@@ -866,8 +894,11 @@ msgstr "Pakket %s vinden misluktu, of is reeds geïnstalleerd: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "Er worden geen pakketten geïnstalleerd, alleen een simulatie van wat geïnstalleerd moet worden"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"Er worden geen pakketten geïnstalleerd, alleen een simulatie van wat "
+"geïnstalleerd moet worden"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1131,9 @@ msgstr "Extra debug informatie tonen"
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "De hardware wordt niet aangeraakt, alleen een simulatie van wat er zal gebeuren"
+msgstr ""
+"De hardware wordt niet aangeraakt, alleen een simulatie van wat er zal "
+"gebeuren"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,20 +1830,33 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Authenticatie wordt vereist om een EULA te accepteren"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Authenticatie wordt vereist om een taak af te breken die niet door jou is gestart"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Authenticatie wordt vereist om een taak af te breken die niet door jou is "
+"gestart"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Authenticatie wordt vereist om parameters van de software bronnen te wijzigen"
+msgstr ""
+"Authenticatie wordt vereist om parameters van de software bronnen te "
+"wijzigen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Authenticatie wordt vereist om de om de locatie waar pakketten gedecomprimeerd worden te veranderen"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Authenticatie wordt vereist om de om de locatie waar pakketten "
+"gedecomprimeerd worden te veranderen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Authenticatie wordt vereist om een sleutel te overwegen die gebruikt wordt om een pakket als vertrouwd te ondertekenen "
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Authenticatie wordt vereist om een sleutel te overwegen die gebruikt wordt "
+"om een pakket als vertrouwd te ondertekenen "
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1818,7 +1864,8 @@ msgstr "Authenticatie wordt vereist om een ondertekend pakket te installeren"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:14
 msgid "Authentication is required to install an untrusted package"
-msgstr "Authenticatie wordt vereist om een niet-vertrouwd pakket te installeren"
+msgstr ""
+"Authenticatie wordt vereist om een niet-vertrouwd pakket te installeren"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:15
 msgid "Authentication is required to refresh the system sources"
@@ -1826,7 +1873,9 @@ msgstr "Authenticatie wordt vereist om de systeem bronnen te verversen"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Authenticatie wordt vereist om het apparaat te herladen met een nieuwe driver"
+msgstr ""
+"Authenticatie wordt vereist om het apparaat te herladen met een nieuwe "
+"driver"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1837,8 +1886,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Authenticatie wordt vereist om een transactie terug te draaien"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Authenticatie wordt vereist voor het instellen van de netwerk proxy die gebruikt wordt om pakketten te installeren"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Authenticatie wordt vereist voor het instellen van de netwerk proxy die "
+"gebruikt wordt om pakketten te installeren"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1953,7 +2006,8 @@ msgstr "Stel netwerk proxy in"
 #. 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:95
 msgid "Trust a key used for signing packages"
-msgstr "Vertrouw een sleutel die gebruikt wordt voor het ondertekenen van pakketten"
+msgstr ""
+"Vertrouw een sleutel die gebruikt wordt voor het ondertekenen van pakketten"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1988,12 +2042,17 @@ msgstr "Dit kan twee redenen hebben:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Het programma wordt niet door de juiste gebruiker gestart (gewoonlijk root)"
+msgstr ""
+"Het programma wordt niet door de juiste gebruiker gestart (gewoonlijk root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Het org.freedesktop.PackageKit.conf bestand is niet geïnstalleerd in de systeem map:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Het org.freedesktop.PackageKit.conf bestand is niet geïnstalleerd in de "
+"systeem map:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2102,8 @@ msgstr "Fout bij proberen te starten:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Om debug pakketten te installeren, moeten extra bronnen aangezet worden"
+msgstr ""
+"Om debug pakketten te installeren, moeten extra bronnen aangezet worden"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2052,19 +2112,27 @@ msgstr "De software is niet van een vertrouwde bron."
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Vernieuw dit pakket niet behalve als je zeker weet dat het veilig is om te doen."
+msgstr ""
+"Vernieuw dit pakket niet behalve als je zeker weet dat het veilig is om te "
+"doen."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Vernieuw deze pakketten niet behalve als je zeker weet dat het veilig is om te doen."
+msgstr ""
+"Vernieuw deze pakketten niet behalve als je zeker weet dat het veilig is om "
+"te doen."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Installeer dit pakket niet behalve als je zeker weet dat het veilig is om te doen."
+msgstr ""
+"Installeer dit pakket niet behalve als je zeker weet dat het veilig is om te"
+" doen."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Installeer deze pakketten niet behalve als je zeker weet dat het veilig is om te doen."
+msgstr ""
+"Installeer deze pakketten niet behalve als je zeker weet dat het veilig is "
+"om te doen."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

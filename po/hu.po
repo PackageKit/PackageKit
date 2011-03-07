@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: hu\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction, e.g. update-system
@@ -144,6 +144,7 @@ msgstr "A frissítés részletei:"
 msgid "Package"
 msgid_plural "Packages"
 msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: details about the update, any packages that this update
 #. updates
@@ -315,19 +316,29 @@ msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos "
+"biztonsági frissítések kerültek telepítésre."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági "
+"frissítések kerültek telepítésre."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -417,12 +428,17 @@ msgstr "Telepíti a csomagokat megerősítés kérése nélkül"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb energiát is használ"
+msgstr ""
+"Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb "
+"energiát is használ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Gép által ovasható kimenetre írás, mint hogy az animált widgetek használata"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Gép által ovasható kimenetre írás, mint hogy az animált widgetek használata"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -575,7 +591,8 @@ msgstr "Kihagyandó függőségek fájlnevének kihagyása"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -620,14 +637,19 @@ msgstr "A csomagkezelő nem képes ezen művelettípus végrehajtására."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Szervízcsomagok nem készíthetőek, mivel a PackageKit libarchive támogatás nélkül került megépítésre."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Szervízcsomagok nem készíthetőek, mivel a PackageKit libarchive támogatás "
+"nélkül került megépítésre."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
 #: ../client/pk-generate-pack.c:375
 msgid "If specifying a file, the service pack name must end with"
-msgstr "Fájl megadásakor a szervizcsomag nevének a következőre kell végződnie:"
+msgstr ""
+"Fájl megadásakor a szervizcsomag nevének a következőre kell végződnie:"
 
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
@@ -832,7 +854,8 @@ msgstr "A fájlt biztosító csomag:"
 #: ../contrib/command-not-found/pk-command-not-found.c:826
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
+msgstr ""
+"Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: ../contrib/command-not-found/pk-command-not-found.c:853
@@ -865,7 +888,8 @@ msgstr "Nem található %s nevű csomag, vagy már telepítve van: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Ne telepítsen semmilyen csomagot, csak szimulálja a telepítést"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1796,7 +1820,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Hitelesítés szükséges az EULA elfogadásához"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Hitelesítés szükséges a nem Ön által indított feladat megszakításához"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1804,12 +1829,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Hitelesítés szükséges a szoftverforrás paramétereinek módosításához"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Hitelesítés szükséges a csomagok aláírásához használt kulcs megbízhatóvá nyilvánításához"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Hitelesítés szükséges a csomagok aláírásához használt kulcs megbízhatóvá "
+"nyilvánításához"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1836,8 +1867,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Hitelesítés szükséges a tranzakció visszagörgetéséhez"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Hitelesítés szükséges a csomagok letöltéséhez használt hálózati proxy beállításához"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Hitelesítés szükséges a csomagok letöltéséhez használt hálózati proxy "
+"beállításához"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1987,12 +2022,18 @@ msgstr "Ennek két oka lehet:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Nem a megfelelő felhasználó indítja a programot (rendszerint a rendszergazda)"
+msgstr ""
+"Nem a megfelelő felhasználó indítja a programot (rendszerint a "
+"rendszergazda)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Az org.freedesktop.PackageKit.conf fájlt nincs a következő rendszermappába telepítve:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Az org.freedesktop.PackageKit.conf fájlt nincs a következő rendszermappába "
+"telepítve:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2042,7 +2083,8 @@ msgstr "Hiba az indításkor:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Hibakeresési csomagok telepítéséhez, további külön források engedélyezésére"
+msgstr ""
+"Hibakeresési csomagok telepítéséhez, további külön források engedélyezésére"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2051,19 +2093,23 @@ msgstr "A szoftver nem hiteles forrásból származik."
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+msgstr ""
+"Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+msgstr ""
+"Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+msgstr ""
+"Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+msgstr ""
+"Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "উন্নয়ন সম্পূৰ্ণ কৰিবলৈ প্ৰ
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "সুৰক্ষা বিষয়ক গুৰুত্বপূৰ্ণ উন্নয়ন সংস্থাপন কৰা হৈছে । উন্নয়ন সম্পূৰ্ণ কৰাৰ বাবে অনুগ্ৰহ কৰি কম্পিউটাৰ পুনৰাৰম্ভ কৰক ।"
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"সুৰক্ষা বিষয়ক গুৰুত্বপূৰ্ণ উন্নয়ন সংস্থাপন কৰা হৈছে । উন্নয়ন সম্পূৰ্ণ কৰাৰ "
+"বাবে অনুগ্ৰহ কৰি কম্পিউটাৰ পুনৰাৰম্ভ কৰক ।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "সুৰক্ষা বিষয়ক গুৰুত্বপূৰ্ণ উন্নয়ন সংস্থাপন কৰা হৈছে । উন্নয়ন সম্পন্ন কৰাৰ বাবে অনুগ্ৰহ কৰি প্ৰস্থান কৰি পুনঃ প্ৰৱেশ কৰক ।"
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"সুৰক্ষা বিষয়ক গুৰুত্বপূৰ্ণ উন্নয়ন সংস্থাপন কৰা হৈছে । উন্নয়ন সম্পন্ন কৰাৰ "
+"বাবে অনুগ্ৰহ কৰি প্ৰস্থান কৰি পুনঃ প্ৰৱেশ কৰক ।"
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -422,8 +432,11 @@ msgstr "নিষ্কৰ্ম নে'টৱৰ্ক বেণ্ডৱিথ
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "এনিমেটেড ৱিজেটৰ সলনি, পৰ্দ্দাত এটা যন্ত্ৰই পঢ়িব পৰা নিৰ্গম হিচাপে লিখক"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"এনিমেটেড ৱিজেটৰ সলনি, পৰ্দ্দাত এটা যন্ত্ৰই পঢ়িব পৰা নিৰ্গম হিচাপে লিখক"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -490,7 +503,8 @@ msgstr "আঁতৰাবলৈ এটা সৰঞ্জামৰ নামৰ
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "গন্তব্য পঞ্জিকা আৰু ডাউনলোড কৰাৰ উদ্দেশ্যে সৰঞ্জামৰ নাম উল্লেখ কৰা আৱশ্যক"
+msgstr ""
+"গন্তব্য পঞ্জিকা আৰু ডাউনলোড কৰাৰ উদ্দেশ্যে সৰঞ্জামৰ নাম উল্লেখ কৰা আৱশ্যক"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -576,7 +590,8 @@ msgstr "আওকাণ কৰিব লগা নিৰ্ভৰতাৰ ন�
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,8 +636,12 @@ msgstr "সৰঞ্জামৰ পৰিচালকে এনে ধৰণৰ
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "libarchive সমৰ্থন সহ PackageKit নিৰ্মিত নোহোৱাৰ ফলত সেৱা গোট সৃষ্টি কৰা সম্ভৱ নহয়  ।"
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"libarchive সমৰ্থন সহ PackageKit নিৰ্মিত নোহোৱাৰ ফলত সেৱা গোট সৃষ্টি কৰা "
+"সম্ভৱ নহয়  ।"
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -757,7 +776,9 @@ msgstr "চালনাজ্ঞানৰ উৎসস্থল সম্পৰ�
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "নথিপত্ৰৰ তালিকা ডাউনলোড কৰা হৈছে (এই কামত কিছু সময় ব্যয় হোৱাৰ সম্ভাৱনা আছে) ।"
+msgstr ""
+"নথিপত্ৰৰ তালিকা ডাউনলোড কৰা হৈছে (এই কামত কিছু সময় ব্যয় হোৱাৰ সম্ভাৱনা আছে) "
+"।"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -866,8 +887,10 @@ msgstr "%s সৰঞ্জামটি পোৱা নাযায়, বা আ�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "কোনো সৰঞ্জাম সংস্থাপন কৰা ন'হ'ব, অকল নিৰ্ধাৰিত সংস্থাপনৰ অনুকৰণ কৰা হ'ব"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"কোনো সৰঞ্জাম সংস্থাপন কৰা ন'হ'ব, অকল নিৰ্ধাৰিত সংস্থাপনৰ অনুকৰণ কৰা হ'ব"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1123,9 @@ msgstr "অতিৰিক্ত ডিবাগ তথ্য প্ৰদৰ্
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "যান্ত্ৰিক সামগ্ৰীত কোনো পৰিবৰ্তন কৰা ন'হ'ব, নিৰ্ধাৰিত কামৰ অকল অনুকৰণ কৰা হ'ব"
+msgstr ""
+"যান্ত্ৰিক সামগ্ৰীত কোনো পৰিবৰ্তন কৰা ন'হ'ব, নিৰ্ধাৰিত কামৰ অকল অনুকৰণ কৰা "
+"হ'ব"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,7 +1822,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "এটা EULA গ্ৰহণ কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "আপুনি নিজেই আৰম্ভ নকৰা কাৰ্য্য এটা বাতিল কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,12 +1831,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "চালনাজ্ঞানৰ উৎসৰ স্থিতিমাপ সলনি কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "বিশ্বাসী হিচাপে সৰঞ্জাম চহি কৰিবলৈ ব্যৱহাৰ কৰা চাবিক মানি ল'বলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"বিশ্বাসী হিচাপে সৰঞ্জাম চহি কৰিবলৈ ব্যৱহাৰ কৰা চাবিক মানি ল'বলৈ প্ৰমাণীকৰণৰ "
+"প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1837,8 +1869,11 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "এটা লেন দেন নোহোৱা কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "সৰঞ্জাম ডাউন্‌লোড কৰা নে'টৱৰ্ক নিযুক্তক প্ৰতিষ্ঠা কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"সৰঞ্জাম ডাউন্‌লোড কৰা নে'টৱৰ্ক নিযুক্তক প্ৰতিষ্ঠা কৰিবলৈ প্ৰমাণীকৰণৰ প্ৰয়োজন"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1992,8 +2027,12 @@ msgstr "চলাব পৰা অনুপ্ৰয়োগ শুদ্ধ ব�
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "org.freedesktop.PackageKit.conf নথিপত্ৰ ব্যৱস্থাপ্ৰণালীৰ পঞ্জিকাত সংস্থাপিত নহয়:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"org.freedesktop.PackageKit.conf নথিপত্ৰ ব্যৱস্থাপ্ৰণালীৰ পঞ্জিকাত সংস্থাপিত "
+"নহয়:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2082,9 @@ msgstr "আৰম্ভ কৰিবলৈ চেষ্টা কৰোঁতে
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "ডিবাগৰ বাবে ব্যৱহাৰযোগ্য সৰঞ্জাম সংস্থাপন কৰাৰ বাবে অতিৰিক্ত উৎসস্থল সক্ৰিয় কৰা আৱশ্যক"
+msgstr ""
+"ডিবাগৰ বাবে ব্যৱহাৰযোগ্য সৰঞ্জাম সংস্থাপন কৰাৰ বাবে অতিৰিক্ত উৎসস্থল সক্ৰিয় "
+"কৰা আৱশ্যক"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2052,19 +2093,27 @@ msgstr "বিশ্বস্ত উৎসস্থলৰ পৰা চালন
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম উন্নয়ন নকৰা উচিত ।"
+msgstr ""
+"সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম উন্নয়ন নকৰা"
+" উচিত ।"
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জামসমূহ উন্নয়ন নকৰা উচিত ।"
+msgstr ""
+"সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জামসমূহ উন্নয়ন "
+"নকৰা উচিত ।"
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম সংস্থাপন নকৰা উচিত ।"
+msgstr ""
+"সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম সংস্থাপন "
+"নকৰা উচিত ।"
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম উন্নয়ন নকৰা উচিত ।"
+msgstr ""
+"সৰঞ্জামৰ সুৰক্ষা সম্পৰ্কে সম্পূৰ্ণৰূপে নিশ্চিত ন'হ'লে এই সৰঞ্জাম উন্নয়ন নকৰা"
+" উচিত ।"
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

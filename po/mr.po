@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:44+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "कृपया वापरकर्ता बदला व अद्�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "महत्वाच्ये सुरक्षा सुधारणा प्रतिष्ठापीत झाल्यामुळे कृपया सुधारणा पूर्ण करण्यासाठी संगणक पुनःचालू करा."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"महत्वाच्ये सुरक्षा सुधारणा प्रतिष्ठापीत झाल्यामुळे कृपया सुधारणा पूर्ण "
+"करण्यासाठी संगणक पुनःचालू करा."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "महत्वाचे सुरक्षा सुधारणा प्रतिष्ठापीत झाल्यामुळे कृपया सुधारणा पूर्ण करण्यासाठी लॉगआऊट होऊन पुनः प्रवेश करा."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"महत्वाचे सुरक्षा सुधारणा प्रतिष्ठापीत झाल्यामुळे कृपया सुधारणा पूर्ण "
+"करण्यासाठी लॉगआऊट होऊन पुनः प्रवेश करा."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -422,8 +432,12 @@ msgstr "योग्य नेटवर्क बँडविड्थ व क�
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "चलचित्र विजेट्स्चा वापर करण्याऐवजी, पडद्यावर मशीनवरील वाचनजोगी आऊटपुटची छपाई करा"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"चलचित्र विजेट्स्चा वापर करण्याऐवजी, पडद्यावर मशीनवरील वाचनजोगी आऊटपुटची छपाई"
+" करा"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -576,7 +590,8 @@ msgstr "वगळण्याजोगी अवलंबनचे फाइल 
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,8 +636,12 @@ msgstr "संकुल व्यवस्थापक या प्रकार
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "PackageKit ला libarchive समर्थन सह बिल्ट न केल्यामुळे Service पैक बनवणे शक्य नाही."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"PackageKit ला libarchive समर्थन सह बिल्ट न केल्यामुळे Service पैक बनवणे शक्य"
+" नाही."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -633,7 +652,8 @@ msgstr "फाइल निश्चित केल्यास, सेवा �
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "समान नावाचे पॅक आधिपासूनच अस्तित्वात आहे, तुम्हाला खोडून पुन्हा लिहायचे?"
+msgstr ""
+"समान नावाचे पॅक आधिपासूनच अस्तित्वात आहे, तुम्हाला खोडून पुन्हा लिहायचे?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -866,8 +886,11 @@ msgstr "संकुल %s शोधण्यास अपयशी, किं�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "संकुल वास्तविकरित्या प्रतिष्ठापीत करू नका, व फक्त प्रतिष्ठापनजोगी घटक सिम्यूलेट करा"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"संकुल वास्तविकरित्या प्रतिष्ठापीत करू नका, व फक्त प्रतिष्ठापनजोगी घटक "
+"सिम्यूलेट करा"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1123,8 @@ msgstr "अगाऊ डिबगींग माहिती दाखवा"
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "हार्डवेयरला प्रत्यक्षरित्या हात न लावता, फक्त कार्यपद्धती सिम्यूलेट करा"
+msgstr ""
+"हार्डवेयरला प्रत्यक्षरित्या हात न लावता, फक्त कार्यपद्धती सिम्यूलेट करा"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,20 +1821,28 @@ msgid "Authentication is required to accept a EULA"
 msgstr "EULA स्वीकारण्याकरीता ओळख पटवणे आवश्यक आहे"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "तुमच्या द्वारे सुरु न केलेले कार्य रद्द करण्याकरीता ओळख पटवणे आवश्यक आहे"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"तुमच्या द्वारे सुरु न केलेले कार्य रद्द करण्याकरीता ओळख पटवणे आवश्यक आहे"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "सॉफ्टवेअर स्रोत बाब बदलवण्याकरीता ओळख पटवणे आवश्यक आहे"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "संकुल स्वाक्षरी करीता वापरण्याजोगी कि वर विश्वसा ठेवण्याकरीता ओळख पटवणे आवश्यक आहेन"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"संकुल स्वाक्षरी करीता वापरण्याजोगी कि वर विश्वसा ठेवण्याकरीता ओळख पटवणे "
+"आवश्यक आहेन"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1837,8 +1869,11 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "कार्य माठीमागे नेण्याकरीता ओळख पटवणे आवश्यक आहे"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "संकुल डाऊनलोड करीता जाळं प्रॉक्सी निश्चित करण्यासाठी ओळख पटवणे आवश्यक आहे"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"संकुल डाऊनलोड करीता जाळं प्रॉक्सी निश्चित करण्यासाठी ओळख पटवणे आवश्यक आहे"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1992,8 +2027,12 @@ msgstr "योग्य वापरकर्ता एक्जीक्यू�
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "org.freedesktop.PackageKit.conf फाइल प्रणाली डिरेक्ट्री अंतर्गत प्रतिष्ठापीत नाही:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"org.freedesktop.PackageKit.conf फाइल प्रणाली डिरेक्ट्री अंतर्गत प्रतिष्ठापीत"
+" नाही:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2082,9 @@ msgstr "सुरू करतेवेळी त्रुटी आढळली
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "डिबगींग संकुल प्रतिष्ठापीत करण्याकरीता, अगाऊ स्रोत कार्यान्वीत करणे आवश्यक आहे"
+msgstr ""
+"डिबगींग संकुल प्रतिष्ठापीत करण्याकरीता, अगाऊ स्रोत कार्यान्वीत करणे आवश्यक "
+"आहे"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190

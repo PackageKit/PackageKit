@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: al_shopov <ash@kambanaria.org>\n"
 "Language-Team: Bulgarian <dict@fsa-bg.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,20 +316,32 @@ msgstr "Излезте и влезте отново в системата, за 
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Рестартирайте компютъра, за да завършите обновяването — инсталирани са обновления по сигурността."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Рестартирайте компютъра, за да завършите обновяването — инсталирани са "
+"обновления по сигурността."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Излезте и влезте отново в системата, за да завършите обновяването — инсталирани са обновления по сигурността."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Излезте и влезте отново в системата, за да завършите обновяването — "
+"инсталирани са обновления по сигурността."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Очаквано бе име на пакет, а бе получено име на файл. Пробвайте с „pkcon install-local %s“."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Очаквано бе име на пакет, а бе получено име на файл. Пробвайте с „pkcon "
+"install-local %s“."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -418,11 +430,15 @@ msgstr "Инсталиране на пакетите без изчакване �
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Изпълняване на мрежовата команда при ненатоварен компютър като се ползва и по-малко ток"
+msgstr ""
+"Изпълняване на мрежовата команда при ненатоварен компютър като се ползва и "
+"по-малко ток"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr "Отпечатване на машинно четим изход без анимирани графични обекти"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -490,7 +506,8 @@ msgstr "Трябва да укажете име на пакет за деинс�
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Трябва да укажете целевата папка и имената на пакетите, които да се изтеглят"
+msgstr ""
+"Трябва да укажете целевата папка и имената на пакетите, които да се изтеглят"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -554,7 +571,9 @@ msgstr "Трябва да укажете име на дистрибуция"
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1720
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr "Трябва да укажете вида на надграждането — „minimal“ (минимално), „default“ (стандартно) или „complete“ (пълно)"
+msgstr ""
+"Трябва да укажете вида на надграждането — „minimal“ (минимално), „default“ "
+"(стандартно) или „complete“ (пълно)"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
@@ -576,8 +595,10 @@ msgstr "Задайте името на файла със зависимости�
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Изходния файл или папка (ползва се текущата, ако изрично не е указана друга)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Изходния файл или папка (ползва се текущата, ако изрично не е указана друга)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -621,8 +642,12 @@ msgstr "Управлението на пакети не може да извър
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Понеже PackageKit е компилиран без поддръжка на libarchive, не могат да се създават сервизни пакети."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Понеже PackageKit е компилиран без поддръжка на libarchive, не могат да се "
+"създават сервизни пакети."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -633,7 +658,8 @@ msgstr "Ако указвате файл, името на сервизния п�
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "Вече съществува сервизен пакет с такова име. Искате ли да го презапишете?"
+msgstr ""
+"Вече съществува сервизен пакет с такова име. Искате ли да го презапишете?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -866,7 +892,8 @@ msgstr "Пакетът „%s“ не може да бъде открит или 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Да не се инсталират пакети, действието да се симулира"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1797,20 +1824,28 @@ msgid "Authentication is required to accept a EULA"
 msgstr "За приемането на EULA се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Изисква се идентификация за отмяната на задача, която е стартирана от друг"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Изисква се идентификация за отмяната на задача, която е стартирана от друг"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "За промяната на хранилищата се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "За смяната на мястото за разархивиране на пакети се изисква идентификация"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"За смяната на мястото за разархивиране на пакети се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "За приемането на ключ за подписване на пакети се изисква идентификация"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"За приемането на ключ за подписване на пакети се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1826,7 +1861,8 @@ msgstr "За обновяването на системните хранилищ
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "За презареждане на устройството с нов драйвер се изисква идентификация"
+msgstr ""
+"За презареждане на устройството с нов драйвер се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1837,8 +1873,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "За връщането на транзакция се изисква идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "За задаването на сървър-посредник при изтеглянето на пакети се изисква идентификация"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"За задаването на сървър-посредник при изтеглянето на пакети се изисква "
+"идентификация"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1988,12 +2028,17 @@ msgstr "Това може да се случи поради две причин�
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Неправилен потребител стартира програмата (обикновено трябва да е администратор)"
+msgstr ""
+"Неправилен потребител стартира програмата (обикновено трябва да е "
+"администратор)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Файлът „org.freedesktop.PackageKit.conf“ не е инсталиран в системната папка:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Файлът „org.freedesktop.PackageKit.conf“ не е инсталиран в системната папка:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2088,9 @@ msgstr "Грешка при опита за стартиране:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "За да инсталирате пакети за изчистване на грешки, трябва да включите още хранилища на софтуер"
+msgstr ""
+"За да инсталирате пакети за изчистване на грешки, трябва да включите още "
+"хранилища на софтуер"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2056,15 +2103,18 @@ msgstr "Не обновявайте пакета, освен ако не сте 
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Не обновявайте пакетите, освен ако не сте сигурни, че това е безопасно."
+msgstr ""
+"Не обновявайте пакетите, освен ако не сте сигурни, че това е безопасно."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Не инсталирайте пакета, освен ако не сте сигурни, че това е безопасно."
+msgstr ""
+"Не инсталирайте пакета, освен ако не сте сигурни, че това е безопасно."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Не инсталирайте пакетите, освен ако не сте сигурни, че това е безопасно."
+msgstr ""
+"Не инсталирайте пакетите, освен ако не сте сигурни, че това е безопасно."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

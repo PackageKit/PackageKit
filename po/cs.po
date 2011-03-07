@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: fri <pavelfric@seznam.cz>\n"
 "Language-Team: Czech <None>\n"
 "MIME-Version: 1.0\n"
@@ -313,24 +313,38 @@ msgstr "Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokonče
 #. TRANSLATORS: a package needs to restart the session
 #: ../client/pk-console.c:826
 msgid "Please logout and login to complete the update."
-msgstr "Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být dokončena."
+msgstr ""
+"Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být "
+"dokončena."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Spusťte, prosím, počítač znovu, aby aktualizace mohla být dokončena, protože"
+" byly nainstalovány důležité bezpečnostní aktualizace."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Odhlašte se, prosím, a znovu se přihlašte, aby aktualizace mohla být "
+"dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Očekáván název balíčku, doopravdy však byl obdržen soubor. Místo toho vyzkoušejte užití 'pkcon install-local %s'."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Očekáván název balíčku, doopravdy však byl obdržen soubor. Místo toho "
+"vyzkoušejte užití 'pkcon install-local %s'."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -388,7 +402,9 @@ msgstr "Dílčí příkazy:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Nepodařilo se zjistit čas od té doby, co tato činnost byla naposledy dokončena"
+msgstr ""
+"Nepodařilo se zjistit čas od té doby, co tato činnost byla naposledy "
+"dokončena"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -419,12 +435,18 @@ msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Spustit příkaz za použití nepoužívané šířky pásma sítě a také za využití menšího množství energie"
+msgstr ""
+"Spustit příkaz za použití nepoužívané šířky pásma sítě a také za využití "
+"menšího množství energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Vyvolat na obrazovku strojově čitelný výstup, namísto použití kreslených prvků"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Vyvolat na obrazovku strojově čitelný výstup, namísto použití kreslených "
+"prvků"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -491,7 +513,8 @@ msgstr "Je požadován název balíčku, který se má odstranit"
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
+msgstr ""
+"Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -577,8 +600,10 @@ msgstr "Nastavit název souboru se závislostmi, které mají být vynechány"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Výstupní soubor nebo adresář (je-li vynecháno, používá se současný adresář)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Výstupní soubor nebo adresář (je-li vynecháno, používá se současný adresář)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -622,8 +647,12 @@ msgstr "Správce balíčků neumí provádět tento typ úlohy."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Obslužné balíky nelze vytvářet, jelikož PackageKitnebyl sestaven s podporou pro libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Obslužné balíky nelze vytvářet, jelikož PackageKitnebyl sestaven s podporou "
+"pro libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -867,7 +896,8 @@ msgstr "Nepodařilo se najít balíček %s, nebo je již nainstalován: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Ve skutečnosti neinstalovat žádné balíčky, pouze instalaci napodobit"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1101,7 +1131,9 @@ msgstr "Ukázat další informace o chybách"
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "Nedotýkat se ve skutečnosti žádného technického vybavení, nýbrž jen napodobit, co se dělá"
+msgstr ""
+"Nedotýkat se ve skutečnosti žádného technického vybavení, nýbrž jen "
+"napodobit, co se dělá"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1798,7 +1830,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Pro přijetí licenční smlouvy (EULA) je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1806,12 +1839,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Pro změnu parametrů zdrojů programů je vyžádováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Pro změnu místa používaného pro rozbalování balíčků je vyžadováno oprávnění"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Pro změnu místa používaného pro rozbalování balíčků je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Pro zvážení klíče použitého k podepsání balíčků je vyžadováno oprávnění"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Pro zvážení klíče použitého k podepsání balíčků je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1827,7 +1866,8 @@ msgstr "Pro obnovení systémových zdrojů je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Pro opětovné nahrání zařízení s novým ovladačem je vyžadováno oprávnění"
+msgstr ""
+"Pro opětovné nahrání zařízení s novým ovladačem je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1838,8 +1878,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Pro vrácení transakce je vyžadováno oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Pro nastavení síťové proxy používané ke stahování balíčků je vyžadováno oprávnění"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Pro nastavení síťové proxy používané ke stahování balíčků je vyžadováno "
+"oprávnění"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1993,8 +2037,12 @@ msgstr "Program není spuštěn pod správným uživatelem (obvykle superuživat
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém adresáři:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Soubor org.freedesktop.PackageKit.conf není nainstalován v systémovém "
+"adresáři:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2044,7 +2092,9 @@ msgstr "Chyba při pokusu o spuštění:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "Aby mohly být nainstalovány balíčky pro informace o chybách, je třeba povolit další zdroje"
+msgstr ""
+"Aby mohly být nainstalovány balíčky pro informace o chybách, je třeba "
+"povolit další zdroje"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2057,7 +2107,8 @@ msgstr "Aktualizujte tento balíček, jen když jste přesvědčen, že je bezpe
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Aktualizujte tyto balíčky, jen když jste přesvědčen, že jsou bezpečné."
+msgstr ""
+"Aktualizujte tyto balíčky, jen když jste přesvědčen, že jsou bezpečné."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."

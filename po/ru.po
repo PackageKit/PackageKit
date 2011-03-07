@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: Russian <None>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -318,19 +318,29 @@ msgstr "Пожалуйста, перезайдите в систему, чтоб
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Пожалуйста, перезагрузите компьютер, чтобы завершить установку обновления безопасности."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Пожалуйста, перезагрузите компьютер, чтобы завершить установку обновления "
+"безопасности."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Пожалуйста, перезайдите в систему, чтобы завершить установку обновления безопасности."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Пожалуйста, перезайдите в систему, чтобы завершить установку обновления "
+"безопасности."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -420,11 +430,14 @@ msgstr "Установить пакеты, не спрашивая подтве�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Выполнить команду, используя свободную часть канала, и при меньшей энергии"
+msgstr ""
+"Выполнить команду, используя свободную часть канала, и при меньшей энергии"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
 msgstr "Вывести на экран в простом формате без анимации элементов"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
@@ -578,7 +591,8 @@ msgstr "Укажите имена файлов зависимостей, кот�
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -623,8 +637,12 @@ msgstr "Менеджер пакетов не может выполнить по�
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Сервисное обновление не создано, потому что PackageKit собран без поддержки libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Сервисное обновление не создано, потому что PackageKit собран без поддержки "
+"libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -868,7 +886,8 @@ msgstr "Пакет %s не найден, или уже установлен: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Не устанавливать пакеты, а только симулировать их установку."
 
 #. command line argument, do we skip packages that depend on the ones
@@ -938,7 +957,8 @@ msgstr "Поиск отладочных источников"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:658
 #, c-format
 msgid "Found %i disabled debuginfo repos."
-msgstr "Найдено %i отключенных репозиториев с описанием отладочной информации."
+msgstr ""
+"Найдено %i отключенных репозиториев с описанием отладочной информации."
 
 #. TRANSLATORS: we're now enabling all the debug sources we found
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:665
@@ -1799,7 +1819,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Для принятия EULA необходимо авторизоваться"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Требуются права на отмену задачи, запущенной не Вами"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1807,12 +1828,17 @@ msgid "Authentication is required to change software source parameters"
 msgstr "Для настройки источников программ необходимо авторизоваться"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Чтобы пометить ключ для подписи пакетов как доверенный, нужно авторизоваться"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Чтобы пометить ключ для подписи пакетов как доверенный, нужно авторизоваться"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1839,7 +1865,9 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Для отмены действия необходимо разрешение"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
 msgstr "Настройка прокси-сервера для загрузки пакетов требует авторизации"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
@@ -1990,17 +2018,22 @@ msgstr "Это может случиться по двум причинам:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Нужный пользователь не запускает исполняемый файл (обычно привилегированный)"
+msgstr ""
+"Нужный пользователь не запускает исполняемый файл (обычно привилегированный)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Файл org.freedesktop.PackageKit.conf отсутствует в системном каталоге:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Файл org.freedesktop.PackageKit.conf отсутствует в системном каталоге:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Использовать внутренний интерфейс пакетной системы, к примеру, заглушку"
+msgstr ""
+"Использовать внутренний интерфейс пакетной системы, к примеру, заглушку"
 
 #. TRANSLATORS: if we should run in the background
 #: ../src/pk-main.c:203
@@ -2062,11 +2095,13 @@ msgstr "Не обновляйте эти пакеты, если не увере�
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Не устанавливайте этот пакет, если не уверены в том, что он безопаснен."
+msgstr ""
+"Не устанавливайте этот пакет, если не уверены в том, что он безопаснен."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Не устанавливайте эти пакеты, если не уверены в том, что они безопасны."
+msgstr ""
+"Не устанавливайте эти пакеты, если не уверены в том, что они безопасны."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

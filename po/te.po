@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:12+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -316,19 +316,29 @@ msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "ముఖ్యమైన నవీకరణలు సంస్థాపించబడినవి కావున దయచేసి నవీకరణ పూర్తిచేయుటకు కంప్యూటర్ పునఃప్రారంభించుము."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"ముఖ్యమైన నవీకరణలు సంస్థాపించబడినవి కావున దయచేసి నవీకరణ పూర్తిచేయుటకు "
+"కంప్యూటర్ పునఃప్రారంభించుము."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "ముఖ్యమైన రక్షణ నవీకరణలు సంస్థాపించబడినవి కావున నవీకరణ పూర్తగుటకు దయచేసి లాగవుటై మరియు లాగిన్ అవ్వండి."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"ముఖ్యమైన రక్షణ నవీకరణలు సంస్థాపించబడినవి కావున నవీకరణ పూర్తగుటకు దయచేసి "
+"లాగవుటై మరియు లాగిన్ అవ్వండి."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
@@ -418,12 +428,18 @@ msgstr "నిర్ధారణ కొరకు అడుగకుండా ప
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "స్థిరమైన నెట్వర్కు బ్యాండ్‌విడ్తును మరియు తక్కువ శక్తిని వుపయోగించి ఆదేశమును నడుపుము"
+msgstr ""
+"స్థిరమైన నెట్వర్కు బ్యాండ్‌విడ్తును మరియు తక్కువ శక్తిని వుపయోగించి ఆదేశమును"
+" నడుపుము"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "ఏనిమేట్ చేయబడిన విడ్జట్‌లను వుపయోగించుట కన్నా, మిషన్ చదువగల అవుట్పుట్‌ను తెరకు ముద్రించుము"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"ఏనిమేట్ చేయబడిన విడ్జట్‌లను వుపయోగించుట కన్నా, మిషన్ చదువగల అవుట్పుట్‌ను "
+"తెరకు ముద్రించుము"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -576,7 +592,8 @@ msgstr "వదిలివేయవలసిన ఆధారముల(డిప�
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
 msgstr ""
 
 #. TRANSLATORS: put a list of packages in the pack
@@ -621,8 +638,12 @@ msgstr "సంకలనము నిర్వాహిక ఈ రకమైన �
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "ప్యాకేజ్‌కిట్ అనునది లిబ్ఆర్చివ్ మద్దతుతో నిర్మితం కాలేదు కనుక సర్వీస్ ప్యాక్‌లు సృష్టించబడలేవు."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"ప్యాకేజ్‌కిట్ అనునది లిబ్ఆర్చివ్ మద్దతుతో నిర్మితం కాలేదు కనుక సర్వీస్ "
+"ప్యాక్‌లు సృష్టించబడలేవు."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -633,7 +654,9 @@ msgstr "దస్త్రమును తెలుపుతుంటే, సే
 #. TRANSLATORS: This is when file already exists
 #: ../client/pk-generate-pack.c:391
 msgid "A pack with the same name already exists, do you want to overwrite it?"
-msgstr "ఒక పాక్ అదేనామముతో యిప్పటికే వుంది, మీరు దానిని తిరిగివ్రాద్దామని(వోవర్‌రైట్) అనుకొనుచున్నారా?"
+msgstr ""
+"ఒక పాక్ అదేనామముతో యిప్పటికే వుంది, మీరు దానిని "
+"తిరిగివ్రాద్దామని(వోవర్‌రైట్) అనుకొనుచున్నారా?"
 
 #. TRANSLATORS: This is when the pack was not overwritten
 #: ../client/pk-generate-pack.c:394
@@ -757,7 +780,9 @@ msgstr "సాఫ్టువేరు మూలాల గురించి డ
 #. TRANSLATORS: downloading file lists so we can search
 #: ../contrib/command-not-found/pk-command-not-found.c:370
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "దస్త్రములజాబితాను డౌనులోడుచేస్తున్నది (పూర్తిచేయుటకు యిది కొంత సమయం తీసుకొనవచ్చు)"
+msgstr ""
+"దస్త్రములజాబితాను డౌనులోడుచేస్తున్నది (పూర్తిచేయుటకు యిది కొంత సమయం "
+"తీసుకొనవచ్చు)"
 
 #. TRANSLATORS: waiting for native lock
 #: ../contrib/command-not-found/pk-command-not-found.c:374
@@ -866,8 +891,11 @@ msgstr "సంకలనము %s కనుగొనుటకు విఫలమ�
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "యధార్ధంగా యెటువంటి ప్యాకేజీలను సంస్థాపించదు, సంస్థాపించినట్లు భ్రమింపచేస్తుంది"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"యధార్ధంగా యెటువంటి ప్యాకేజీలను సంస్థాపించదు, సంస్థాపించినట్లు "
+"భ్రమింపచేస్తుంది"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1100,7 +1128,8 @@ msgstr "అదనపు డీబగ్గింగ్ సమాచారము�
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "యధార్ధంగా హార్డువేరును తాకదు, ఏమి జరగాలో అది జరిగినట్లు భ్రమింపచేస్తుంది"
+msgstr ""
+"యధార్ధంగా హార్డువేరును తాకదు, ఏమి జరగాలో అది జరిగినట్లు భ్రమింపచేస్తుంది"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1797,7 +1826,8 @@ msgid "Authentication is required to accept a EULA"
 msgstr "EULA ఆమోదించుటకు దృవీకరణము అవసరమైంది"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "మీ ద్వారా ప్రారంభించని కార్యము రద్దుచేయుటకు దృవీకరణము అవసరము"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
@@ -1805,12 +1835,18 @@ msgid "Authentication is required to change software source parameters"
 msgstr "సాఫ్టువేరు మూలపు పారామితులను మార్చుటకు దృవీకరణము అవసరము"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
 msgstr ""
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "సంకలనాలను నమ్మదగినవిగా సంతకంచేయుటకు వుపయోగించు కీను ఆమోదించుటకు దృవీకరణము అవసరము"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"సంకలనాలను నమ్మదగినవిగా సంతకంచేయుటకు వుపయోగించు కీను ఆమోదించుటకు దృవీకరణము "
+"అవసరము"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1837,8 +1873,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "వ్యవహారమును తిరిగివుంచుటకు దృవీకరణము అవసరము"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "డౌనులోడవుతున్న సంకలనాల కొరకు వుపయోగించు నెట్వర్కు ప్రోక్సీను అమర్చుటకు దృవీకరణ అవసరము"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"డౌనులోడవుతున్న సంకలనాల కొరకు వుపయోగించు నెట్వర్కు ప్రోక్సీను అమర్చుటకు "
+"దృవీకరణ అవసరము"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1992,8 +2032,12 @@ msgstr "సరైన వినియోగదారి చేత నిర్వ
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "org.freedesktop.PackageKit.conf దస్త్రము సిస్టమ్ డైరెక్టరీనందు సంస్థాపించబడలేదు:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"org.freedesktop.PackageKit.conf దస్త్రము సిస్టమ్ డైరెక్టరీనందు "
+"సంస్థాపించబడలేదు:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2043,7 +2087,8 @@ msgstr "ప్రారంభించుటలో దోషము:"
 
 #: ../src/pk-polkit-action-lookup.c:150
 msgid "To install debugging packages, extra sources need to be enabled"
-msgstr "డీబగ్గింగ్ సంకలనములను సంస్థాపించుటకు, అదనపు మూలములు చేతనము చేయవలసివుంది"
+msgstr ""
+"డీబగ్గింగ్ సంకలనములను సంస్థాపించుటకు, అదనపు మూలములు చేతనము చేయవలసివుంది"
 
 #. TRANSLATORS: is not GPG signed
 #: ../src/pk-polkit-action-lookup.c:171 ../src/pk-polkit-action-lookup.c:190
@@ -2064,7 +2109,8 @@ msgstr "మీకు ఈ సంకలనమును సంస్థాపిం
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "మీకు ఈ సంకలనములను సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
+msgstr ""
+"మీకు ఈ సంకలనములను సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

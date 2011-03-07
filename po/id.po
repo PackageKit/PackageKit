@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -315,20 +315,32 @@ msgstr "Silakan logout dan login untuk menyelesaikan pembaruan."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan "
+"penting untuk keamanan telah diinstal."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan "
+"penting untuk keamanan telah diinstal."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon install-lokal %s' sebagai gantinya."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon "
+"install-lokal %s' sebagai gantinya."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -417,12 +429,18 @@ msgstr "Instal paket tanpa meminta konfirmasi"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga menggunakan daya yang lebih kecil"
+msgstr ""
+"Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga "
+"menggunakan daya yang lebih kecil"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget animasi"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget "
+"animasi"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -489,7 +507,8 @@ msgstr "Diperlukan nama sebuah paket yang akan dihapus"
 #. where
 #: ../client/pk-console.c:1523
 msgid "A destination directory and the package names to download are required"
-msgstr "Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
+msgstr ""
+"Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
 
 #. TRANSLATORS: the directory does not exist, so we can't continue
 #: ../client/pk-console.c:1530
@@ -575,8 +594,10 @@ msgstr "Tata nama berkas dari kebergantungan yang tak akan disertakan"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Berkas atau direktori keluaran (direktori kini dipakai bila tak diberikan)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Berkas atau direktori keluaran (direktori kini dipakai bila tak diberikan)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -620,8 +641,12 @@ msgstr "Manajer paket tak dapat melakukan operasi jenis ini."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Pak layanan tak dapat dibuat karena PackageKit tak dibangun dengan dukungan libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Pak layanan tak dapat dibuat karena PackageKit tak dibangun dengan dukungan "
+"libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -865,8 +890,11 @@ msgstr "Gagal menemukan paket %s, atau sudah terpasang: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
-msgstr "Jangan benar-benar memasang sebarang paket, hanya simulasikan apa yang akan dipasang"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
+msgstr ""
+"Jangan benar-benar memasang sebarang paket, hanya simulasikan apa yang akan "
+"dipasang"
 
 #. command line argument, do we skip packages that depend on the ones
 #. specified
@@ -1099,7 +1127,9 @@ msgstr "Tampilkan informasi pengawakutuan tambahan"
 #. it
 #: ../contrib/device-rebind/pk-device-rebind.c:297
 msgid "Don't actually touch the hardware, only simulate what would be done"
-msgstr "Jangan benar-benar menyentuh perangkat keras, hanya simulasikan apa yang akan dilakukan"
+msgstr ""
+"Jangan benar-benar menyentuh perangkat keras, hanya simulasikan apa yang "
+"akan dilakukan"
 
 #. TRANSLATORS: command line option: a list of files to install
 #: ../contrib/device-rebind/pk-device-rebind.c:300
@@ -1796,20 +1826,31 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Perlu otentikasi untuk menyetujui suatu EULA"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Perlu otentikasi untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Perlu otentikasi untuk membatalkan suatu tugas yang tak dimulai oleh Anda "
+"sendiri"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
 msgstr "Perlu otentikasi untuk mengubah parameter sumber perangkat lunak"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Perlu otentikasi untuk mengubah lokasi yang dipakai untuk mendekompresi paket"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Perlu otentikasi untuk mengubah lokasi yang dipakai untuk mendekompresi "
+"paket"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Perlu otentikasi untuk menganggap suatu kunci yang dipakai untuk menandatangani paket sebagai terpercaya"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Perlu otentikasi untuk menganggap suatu kunci yang dipakai untuk "
+"menandatangani paket sebagai terpercaya"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1836,8 +1877,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Perlu otentikasi untuk mengembalikan suatu transaksi"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Perlu otentikasi untuk menata proksi jaringan yang dipakai untuk mengunduh paket"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Perlu otentikasi untuk menata proksi jaringan yang dipakai untuk mengunduh "
+"paket"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1991,8 +2036,11 @@ msgstr "Yang meluncurkan executable bukan pengguna yang benar (biasanya root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Berkas org.freedesktop.PackageKit.conf tak terpasang di direktori sistem:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Berkas org.freedesktop.PackageKit.conf tak terpasang di direktori sistem:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2055,7 +2103,9 @@ msgstr "Jangan mutakhirkan paket ini kecuali Anda yakin aman untuk dilakukan."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk melakukannya."
+msgstr ""
+"Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk "
+"melakukannya."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
@@ -2063,7 +2113,8 @@ msgstr "Jangan pasang paket ini kecuali Anda yakin aman untuk dilakukan."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Jangan pasang paket-paket ini kecuali Anda yakin aman untuk melakukannya."
+msgstr ""
+"Jangan pasang paket-paket ini kecuali Anda yakin aman untuk melakukannya."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

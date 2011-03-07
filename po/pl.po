@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2010-12-13 13:11+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: Polish <None>\n"
 "MIME-Version: 1.0\n"
@@ -317,20 +317,32 @@ msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Proszę uruchomić ponownie komputer, aby zakończyć aktualizację, ponieważ "
+"zainstalowano aktualizacje bezpieczeństwa."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ "
+"zainstalowano aktualizacje bezpieczeństwa."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Oczekiwano nazwy pakietu, otrzymano plik. Proszę zamiast tego spróbować wykonać polecenie \"pkcon install-local %s\"."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Oczekiwano nazwy pakietu, otrzymano plik. Proszę zamiast tego spróbować "
+"wykonać polecenie \"pkcon install-local %s\"."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -388,7 +400,8 @@ msgstr "Podpolecenia:"
 #. last executed
 #: ../client/pk-console.c:1234
 msgid "Failed to get the time since this action was last completed"
-msgstr "Uzyskanie czasu od ostatniego zakończenia tego działania nie powiodło się"
+msgstr ""
+"Uzyskanie czasu od ostatniego zakończenia tego działania nie powiodło się"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: ../client/pk-console.c:1275 ../client/pk-monitor.c:371
@@ -419,17 +432,25 @@ msgstr "Instaluje pakiety bez prośby o potwierdzenie"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Wykonuje polecenie używając bezczynnego połączenia sieciowego, a także zużywając mniej energii"
+msgstr ""
+"Wykonuje polecenie używając bezczynnego połączenia sieciowego, a także "
+"zużywając mniej energii"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Wyświetla wyjście czytelne dla komputera, zamiast używania animowanych widżetów"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Wyświetla wyjście czytelne dla komputera, zamiast używania animowanych "
+"widżetów"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej. Wartość -1 oznacza \"never\" (nigdy)."
+msgstr ""
+"Maksymalny czas przechowywania metadanych w pamięci podręcznej. Wartość -1 "
+"oznacza \"never\" (nigdy)."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: ../client/pk-console.c:1333
@@ -555,7 +576,9 @@ msgstr "Wymagana jest nazwa dystrybucji"
 #. TRANSLATORS: The user did not provide an upgrade type
 #: ../client/pk-console.c:1720
 msgid "An upgrade type is required, e.g. 'minimal', 'default' or 'complete'"
-msgstr "Wymagany jest typ aktualizacji, np. \"minimal\" (minimalna), \"default\" (domyślna) lub \"complete\" (pełna)"
+msgstr ""
+"Wymagany jest typ aktualizacji, np. \"minimal\" (minimalna), \"default\" "
+"(domyślna) lub \"complete\" (pełna)"
 
 #. TRANSLATORS: The user tried to use an unsupported option on the command
 #. line
@@ -577,8 +600,11 @@ msgstr "Proszę ustawić nazwy plików zależności do wykluczenia"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Plik lub katalog wyjściowy (użyty zostanie bieżący katalog, jeśli zostanie pominięte)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Plik lub katalog wyjściowy (użyty zostanie bieżący katalog, jeśli zostanie "
+"pominięte)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -622,8 +648,12 @@ msgstr "Menedżer pakietów nie może wykonać tego typu działania."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Nie można utworzyć pakietów serwisowych, ponieważ usługę PackageKit zbudowano bez obsługi biblioteki libarchive."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Nie można utworzyć pakietów serwisowych, ponieważ usługę PackageKit "
+"zbudowano bez obsługi biblioteki libarchive."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -862,12 +892,14 @@ msgstr "Rozpoczynanie instalacji"
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:407
 #, c-format
 msgid "Failed to find the package %s, or already installed: %s"
-msgstr "Odnalezienie pakietu %s nie powiodło się lub jest już zainstalowany: %s"
+msgstr ""
+"Odnalezienie pakietu %s nie powiodło się lub jest już zainstalowany: %s"
 
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Nie instaluje żadnych pakietów, tylko symuluje instalację"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1798,20 +1830,32 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Wymagane jest uwierzytelnienie, aby zaakceptować licencję"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Wymagane jest uwierzytelnienie, aby anulować zadanie nie rozpoczęte przez bieżącego użytkownika"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby anulować zadanie nie rozpoczęte przez "
+"bieżącego użytkownika"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Wymagane jest uwierzytelnienie, aby zmienić parametry źródeł oprogramowania"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby zmienić parametry źródeł oprogramowania"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Wymagane jest uwierzytelnienie, aby ustawić położenie używane do dekompresowania pakietów"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby ustawić położenie używane do "
+"dekompresowania pakietów"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Wymagane jest uwierzytelnienie, aby oznaczyć klucz używany do podpisywania pakietów jako zaufany"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby oznaczyć klucz używany do podpisywania "
+"pakietów jako zaufany"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1827,7 +1871,9 @@ msgstr "Wymagane jest uwierzytelnienie, aby odświeżyć źródła systemu"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Wymagane jest uwierzytelnienie, aby ponownie wczytać urządzenie za pomocą nowego sterownika"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby ponownie wczytać urządzenie za pomocą "
+"nowego sterownika"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1838,8 +1884,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Wymagane jest uwierzytelnienie, aby przywrócić transakcję"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Wymagane jest uwierzytelnienie, aby ustawić pośrednika sieciowego używanego do pobierania pakietów"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Wymagane jest uwierzytelnienie, aby ustawić pośrednika sieciowego używanego "
+"do pobierania pakietów"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1979,7 +2029,9 @@ msgstr "Aktualizacja systemu"
 #. TRANSLATORS: failed due to DBus security
 #: ../src/pk-main.c:87
 msgid "Startup failed due to security policies on this machine."
-msgstr "Uruchomienie nie powiodło się z powodu polityk bezpieczeństwa tego komputera."
+msgstr ""
+"Uruchomienie nie powiodło się z powodu polityk bezpieczeństwa tego "
+"komputera."
 
 #. TRANSLATORS: only two ways this can fail...
 #: ../src/pk-main.c:89
@@ -1989,12 +2041,17 @@ msgstr "Mogło się to wydarzyć z dwóch powodów:"
 #. TRANSLATORS: only allowed to be owned by root
 #: ../src/pk-main.c:91
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "Prawidłowy użytkownik nie uruchamiania pliku wykonywalnego (zwykle root)"
+msgstr ""
+"Prawidłowy użytkownik nie uruchamiania pliku wykonywalnego (zwykle root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
-msgstr "Plik org.freedesktop.PackageKit.conf nie jest zainstalowany w katalogu systemowym:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
+msgstr ""
+"Plik org.freedesktop.PackageKit.conf nie jest zainstalowany w katalogu "
+"systemowym:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
 #: ../src/pk-main.c:200
@@ -2053,19 +2110,27 @@ msgstr "Oprogramowanie nie jest z zaufanego źródła."
 
 #: ../src/pk-polkit-action-lookup.c:176
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Nie należy aktualizować tego pakietu, jeśli nie ma się pewności, że to bezpieczne."
+msgstr ""
+"Nie należy aktualizować tego pakietu, jeśli nie ma się pewności, że to "
+"bezpieczne."
 
 #: ../src/pk-polkit-action-lookup.c:177
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Nie należy aktualizować tych pakietów, jeśli nie ma się pewności, że to bezpieczne."
+msgstr ""
+"Nie należy aktualizować tych pakietów, jeśli nie ma się pewności, że to "
+"bezpieczne."
 
 #: ../src/pk-polkit-action-lookup.c:195
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Nie należy instalować tego pakietu, jeśli nie ma się pewności, że to bezpieczne."
+msgstr ""
+"Nie należy instalować tego pakietu, jeśli nie ma się pewności, że to "
+"bezpieczne."
 
 #: ../src/pk-polkit-action-lookup.c:196
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Nie należy instalować tych pakietów, jeśli nie ma się pewności, że to bezpieczne."
+msgstr ""
+"Nie należy instalować tych pakietów, jeśli nie ma się pewności, że to "
+"bezpieczne."
 
 #. TRANSLATORS: too many packages to list each one
 #: ../src/pk-polkit-action-lookup.c:273

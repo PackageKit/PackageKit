@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-13 12:23+0000\n"
-"PO-Revision-Date: 2011-02-01 10:45+0000\n"
+"PO-Revision-Date: 2011-03-04 18:34+0000\n"
 "Last-Translator: hughsie <richard@hughsie.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -317,20 +317,32 @@ msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: ../client/pk-console.c:829
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo, kadangi buvo įdiegta svarbių saugumo atnaujinimų."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Atnaujinimui užbaigti, paleiskite sistemą iš naujo, kadangi buvo įdiegta "
+"svarbių saugumo atnaujinimų."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: ../client/pk-console.c:832
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite, kadangi buvo įdiegta svarbių saugumo atnaujinimų."
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr ""
+"Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite, kadangi buvo įdiegta"
+" svarbių saugumo atnaujinimų."
 
 #. TRANSLATORS: The user used 'pkcon install dave.rpm' rather than 'pkcon
 #. install-local dave.rpm'
 #: ../client/pk-console.c:858
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Tikėtasi paketo pavadinimo, bet gautas failas. Mėginkite „pkcon install-local %s“."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr ""
+"Tikėtasi paketo pavadinimo, bet gautas failas. Mėginkite „pkcon install-"
+"local %s“."
 
 #. TRANSLATORS: There was an error getting the list of files for the package.
 #. The detailed error follows
@@ -419,12 +431,17 @@ msgstr "Įdiegti paketus neklausiant patvirtinimo"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: ../client/pk-console.c:1290
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Paleisti komandą naudojant laisvą tinklo ryšį ir naudojant mažiau energijos"
+msgstr ""
+"Paleisti komandą naudojant laisvą tinklo ryšį ir naudojant mažiau energijos"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1293
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Parodyti ekrane kompiuterio skaitomą išvestį, užuot rodžius animuotus valdymo elementus"
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr ""
+"Parodyti ekrane kompiuterio skaitomą išvestį, užuot rodžius animuotus "
+"valdymo elementus"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: ../client/pk-console.c:1296
@@ -577,8 +594,11 @@ msgstr "Nustatyti praleistinų priklausomybių failo vardą"
 
 #. TRANSLATORS: the output location
 #: ../client/pk-generate-pack.c:256
-msgid "The output file or directory (the current directory is used if omitted)"
-msgstr "Išvesties failas arba katalogas (jei praleista, naudojamas dabartinis katalogas)"
+msgid ""
+"The output file or directory (the current directory is used if omitted)"
+msgstr ""
+"Išvesties failas arba katalogas (jei praleista, naudojamas dabartinis "
+"katalogas)"
 
 #. TRANSLATORS: put a list of packages in the pack
 #: ../client/pk-generate-pack.c:259
@@ -622,8 +642,12 @@ msgstr "Paketų tvarkyklė negali atlikti šio tipo veiksmų."
 #. TRANSLATORS: This is when the distro didn't include libarchive support into
 #. PK
 #: ../client/pk-generate-pack.c:364
-msgid "Service packs cannot be created as PackageKit was not built with libarchive support."
-msgstr "Atnaujinimų rinkinių negalima sukurti, kadangi PackageKit buvo sukompiliuota be libarchive palaikymo."
+msgid ""
+"Service packs cannot be created as PackageKit was not built with libarchive "
+"support."
+msgstr ""
+"Atnaujinimų rinkinių negalima sukurti, kadangi PackageKit buvo sukompiliuota"
+" be libarchive palaikymo."
 
 #. TRANSLATORS: the user specified an absolute path, but didn't get the
 #. extension correct
@@ -867,7 +891,8 @@ msgstr "Nepavyko rasti paketo %s arba jis jau įdiegtas: %s"
 #. command line argument, simulate what would be done, but don't actually do
 #. it
 #: ../contrib/debuginfo-install/pk-debuginfo-install.c:516
-msgid "Don't actually install any packages, only simulate what would be installed"
+msgid ""
+"Don't actually install any packages, only simulate what would be installed"
 msgstr "Nediegti jokių paketų, tik imituoti, kas būtų įdiegta"
 
 #. command line argument, do we skip packages that depend on the ones
@@ -1798,20 +1823,32 @@ msgid "Authentication is required to accept a EULA"
 msgstr "Reikia patvirtinti tapatybę, norint sutikti su licencija"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Reikia patvirtinti tapatybę, norint atšaukti veiksmą, kurį pradėjote ne jūs"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint atšaukti veiksmą, kurį pradėjote ne jūs"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:10
 msgid "Authentication is required to change software source parameters"
-msgstr "Reikia patvirtinti tapatybę, norint pakeisti programinės įrangos šaltinių parametrus"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint pakeisti programinės įrangos šaltinių "
+"parametrus"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to change the location used to decompress packages"
-msgstr "Reikia patvirtinti tapatybę, norint pakeisti vietą, kurioje išpakuojami paketai"
+msgid ""
+"Authentication is required to change the location used to decompress "
+"packages"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint pakeisti vietą, kurioje išpakuojami "
+"paketai"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Authentication is required to consider a key used for signing packages as trusted"
-msgstr "Reikia patvirtinti tapatybę, norint patvirtinti paketų pasirašymo raktą kaip patikimą"
+msgid ""
+"Authentication is required to consider a key used for signing packages as "
+"trusted"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint patvirtinti paketų pasirašymo raktą kaip"
+" patikimą"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:13
 msgid "Authentication is required to install a signed package"
@@ -1827,7 +1864,9 @@ msgstr "Reikia patvirtinti tapatybę, norint atnaujinti sistemos šaltinius"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:16
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Reikia patvirtinti tapatybę, norint iš naujo įkelti įrenginį su nauja tvarkykle"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint iš naujo įkelti įrenginį su nauja "
+"tvarkykle"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:17
 msgid "Authentication is required to remove packages"
@@ -1838,8 +1877,12 @@ msgid "Authentication is required to rollback a transaction"
 msgstr "Reikia patvirtinti tapatybę, norint grąžinti būseną prieš operaciją"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Authentication is required to set the network proxy used for downloading packages"
-msgstr "Reikia patvirtinti tapatybę, norint nustatyti tinklo proxy, naudotiną paketų parsiuntimui"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"packages"
+msgstr ""
+"Reikia patvirtinti tapatybę, norint nustatyti tinklo proxy, naudotiną paketų"
+" parsiuntimui"
 
 #: ../policy/org.freedesktop.packagekit.policy.in.h:20
 msgid "Authentication is required to update packages"
@@ -1993,7 +2036,9 @@ msgstr "Programą paleidžia ne tinkamas naudotojas (paprastai – root)"
 
 #. TRANSLATORS: or we are installed in a prefix
 #: ../src/pk-main.c:93
-msgid "The org.freedesktop.PackageKit.conf file is not installed in the system directory:"
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system "
+"directory:"
 msgstr "Failas org.freedesktop.PackageKit.conf neįdiegtas sistemos kataloge:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. yum, apt
