@@ -72,6 +72,7 @@ except ImportError:
 from entropy.fetchers import UrlFetcher
 
 import entropy.tools
+import entropy.dep
 
 PK_DEBUG = False
 
@@ -627,7 +628,7 @@ class PackageKitEntropyMixin(object):
             package.prepare(match, "fetch", metaopts)
             myrepo = package.pkgmeta['repository']
             obj = down_data.setdefault(myrepo, set())
-            obj.add(entropy.tools.dep_getkey(package.pkgmeta['atom']))
+            obj.add(entropy.dep.dep_getkey(package.pkgmeta['atom']))
 
             x_rc = package.run()
             if x_rc != 0:
