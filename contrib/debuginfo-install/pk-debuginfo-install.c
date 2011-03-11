@@ -374,7 +374,7 @@ pk_debuginfo_install_add_deps (PkDebuginfoInstallPrivate *priv, GPtrArray *packa
 
 	/* get depends for them all, not adding dup's */
 	package_ids = pk_ptr_array_to_strv (packages_search);
-	results = pk_client_get_depends (priv->client, PK_FILTER_ENUM_NONE, package_ids, TRUE, NULL, NULL, NULL, &error_local);
+	results = pk_client_get_depends (priv->client, pk_bitfield_value (PK_FILTER_ENUM_NONE), package_ids, TRUE, NULL, NULL, NULL, &error_local);
 	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to get_depends: %s", error_local->message);
 		g_error_free (error_local);
@@ -448,7 +448,7 @@ pk_debuginfo_install_get_repo_list (PkDebuginfoInstallPrivate *priv, GError **er
 	gchar *repo_id;
 
 	/* get all repo details */
-	results = pk_client_get_repo_list (priv->client, PK_FILTER_ENUM_NONE, NULL, NULL, NULL, &error_local);
+	results = pk_client_get_repo_list (priv->client, pk_bitfield_value (PK_FILTER_ENUM_NONE), NULL, NULL, NULL, &error_local);
 	if (results == NULL) {
 		*error = g_error_new (1, 0, "failed to get repo list: %s", error_local->message);
 		g_error_free (error_local);
