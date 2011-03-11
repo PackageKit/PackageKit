@@ -171,6 +171,23 @@ zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo)
 	return FALSE;
 }
 
+gboolean
+zypp_is_valid_repo (PkBackend *backend, zypp::RepoInfo repo)
+{
+
+	if (repo.alias().empty()){
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "Repository has no or invalid repo name defined.\n", repo.alias ().c_str ());
+		return FALSE;
+	}
+
+	if (!repo.url().isValid()){
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: Repository has no or invalid url defined.\n", repo.alias ().c_str ());
+		return FALSE;
+	}
+	
+	return TRUE;
+}
+
 zypp::ResPool
 zypp_build_pool (PkBackend *backend, gboolean include_local)
 {
@@ -1072,6 +1089,8 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
 		zypp::RepoInfo repo (*it);
 
+		if (!zypp_is_valid_repo (backend, repo))
+			return FALSE;
 		if (pk_backend_get_is_error_set (backend))
 			break;
 

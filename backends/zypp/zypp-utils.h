@@ -87,6 +87,7 @@ gboolean zypp_is_changeable_media (PkBackend *backend, const zypp::Url &url);
 
 gboolean zypp_is_development_repo (PkBackend *backend, zypp::RepoInfo repo);
 
+gboolean zypp_is_valid_repo (PkBackend *backend, zypp::RepoInfo repo);
 /**
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.

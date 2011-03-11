@@ -1620,6 +1620,10 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 
 	try {
 		repo = manager.getRepositoryInfo (rid);
+		if (!zypp_is_valid_repo (backend, repo)){
+			pk_backend_finished (backend);
+			return;
+		}
 		repo.setEnabled (enabled);
 		manager.modifyRepository (rid, repo);
 		if (!enabled) {
@@ -1857,6 +1861,13 @@ backend_repo_set_data_thread (PkBackend *backend)
 
 	try {
 		pk_backend_set_status(backend, PK_STATUS_ENUM_SETUP);
+		if (g_ascii_strcasecmp (parameter, "add") != 0) {
+			repo = manager.getRepositoryInfo (repo_id);
+			if (!zypp_is_valid_repo (backend, repo)){
+				pk_backend_finished (backend);
+				return FALSE;
+			}
+		}
 		// add a new repo
 		if (g_ascii_strcasecmp (parameter, "add") == 0) {
 			repo.setAlias (repo_id);
@@ -1868,11 +1879,9 @@ backend_repo_set_data_thread (PkBackend *backend)
 
 		// remove a repo
 		} else if (g_ascii_strcasecmp (parameter, "remove") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 			manager.removeRepository (repo);
 		// set autorefresh of a repo true/false
 		} else if (g_ascii_strcasecmp (parameter, "refresh") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 
 			if (g_ascii_strcasecmp (value, "true") == 0) {
 				repo.setAutorefresh (TRUE);
@@ -1885,7 +1894,6 @@ backend_repo_set_data_thread (PkBackend *backend)
 
 			manager.modifyRepository (repo_id, repo);
 		} else if (g_ascii_strcasecmp (parameter, "keep") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 
 			if (g_ascii_strcasecmp (value, "true") == 0) {
 				repo.setKeepPackages (TRUE);
@@ -1898,15 +1906,12 @@ backend_repo_set_data_thread (PkBackend *backend)
 
 			manager.modifyRepository (repo_id, repo);
 		} else if (g_ascii_strcasecmp (parameter, "url") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 			repo.setBaseUrl (zypp::Url(value));
 			manager.modifyRepository (repo_id, repo);
 		} else if (g_ascii_strcasecmp (parameter, "name") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 			repo.setName(value);
 			manager.modifyRepository (repo_id, repo);
 		} else if (g_ascii_strcasecmp (parameter, "prio") == 0) {
-			repo = manager.getRepositoryInfo (repo_id);
 			gint prio = 0;
 			gint length = strlen (value);
 
