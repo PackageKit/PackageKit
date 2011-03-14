@@ -528,7 +528,7 @@ void Transaction::searchGroups(Enum::Groups groups, Enum::Filters filters)
         groupsSL << Util::enumToString<Enum>(group, "Group", "Group");
     }
 
-    searchGroups(groups, filters);
+    searchGroups(groupsSL, filters);
 }
 
 void Transaction::searchGroups(Enum::Group group, Enum::Filters filters)
