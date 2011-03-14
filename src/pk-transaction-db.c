@@ -643,8 +643,6 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (uid != G_MAXUINT, FALSE);
-	g_return_val_if_fail (proxy_http != NULL, FALSE);
-	g_return_val_if_fail (proxy_ftp != NULL, FALSE);
 
 	/* get existing data */
 	item = g_new0 (PkTransactionDbProxyItem, 1);
@@ -735,10 +733,10 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
 		rc = sqlite3_prepare_v2 (tdb->priv->db,
 					 "UPDATE proxy SET "
 					 "proxy_http = ?, "
-					 "proxy_https = ? , "
-					 "proxy_ftp = ? "
-					 "proxy_socks = ? "
-					 "no_proxy = ? "
+					 "proxy_https = ?, "
+					 "proxy_ftp = ?, "
+					 "proxy_socks = ?, "
+					 "no_proxy = ?, "
 					 "pac = ? "
 					 "WHERE uid = ? AND session = ?",
 					 -1, &statement, NULL);
@@ -930,7 +928,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	}
 
 	/* session proxy saving (since 0.5.1) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM proxy LIMIT 1", NULL, NULL, &error_msg);
+	rc = sqlite3_exec (tdb->priv->db, "SELECT proxy_https FROM proxy LIMIT 1", NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_debug ("altering table to repair: %s", error_msg);
 		sqlite3_free (error_msg);

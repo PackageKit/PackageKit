@@ -1503,7 +1503,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL);
 	g_assert (ret);
-	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:8000");
+	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:80");
 	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");
 
 	/* can we set the root */
