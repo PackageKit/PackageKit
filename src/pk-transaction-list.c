@@ -561,6 +561,45 @@ pk_transaction_list_get_active_transaction (PkTransactionList *tlist)
 }
 
 /**
+ * pk_transaction_list_cancel_background:
+ **/
+void
+pk_transaction_list_cancel_background (PkTransactionList *tlist)
+{
+	guint i;
+	GPtrArray *array;
+	PkTransactionItem *item;
+	PkTransactionState state;
+
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
+
+	/* clear any pending transactions */
+	array = tlist->priv->array;
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		state = pk_transaction_get_state (item->transaction);
+		if (state >= PK_TRANSACTION_STATE_RUNNING)
+			continue;
+		g_debug ("cancelling pending transaction %s",
+			 item->tid);
+		pk_transaction_priv_cancel_bg (item->transaction);
+	}
+
+	/* cancel any running transactions */
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
+		state = pk_transaction_get_state (item->transaction);
+		if (state != PK_TRANSACTION_STATE_RUNNING)
+			continue;
+		if (!item->background)
+			continue;
+		g_debug ("cancelling running background transaction %s",
+			 item->tid);
+		pk_transaction_priv_cancel_bg (item->transaction);
+	}
+}
+
+/**
  * pk_transaction_list_commit:
  **/
 gboolean

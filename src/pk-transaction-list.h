@@ -75,6 +75,7 @@ gchar		*pk_transaction_list_get_state		(PkTransactionList	*tlist)
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransaction	*pk_transaction_list_get_transaction	(PkTransactionList	*tlist,
 							 const gchar		*tid);
+void		 pk_transaction_list_cancel_background	(PkTransactionList	*tlist);
 
 G_END_DECLS
 

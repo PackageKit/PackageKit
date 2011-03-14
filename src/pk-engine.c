@@ -492,6 +492,9 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* attempt to kill background tasks */
+	pk_transaction_list_cancel_background (engine->priv->transaction_list);
+
 	/* can we exit straight away */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size == 0) {

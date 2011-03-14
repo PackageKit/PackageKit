@@ -2822,7 +2822,17 @@ pk_transaction_priv_cancel_bg (PkTransaction *transaction)
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
 		g_warning ("Cancel not yet supported by backend");
-		return;
+		goto out;
+	}
+
+	/* if it's never been run, just remove this transaction from the list */
+	if (transaction->priv->state <= PK_TRANSACTION_STATE_READY) {
+		pk_transaction_progress_changed_emit (transaction, 100, 100, 0, 0);
+		pk_transaction_allow_cancel_emit (transaction, FALSE);
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
+		pk_transaction_release_tid (transaction);
+		goto out;
 	}
 
 	/* set the state, as cancelling might take a few seconds */
@@ -2836,6 +2846,8 @@ pk_transaction_priv_cancel_bg (PkTransaction *transaction)
 
 	/* actually run the method */
 	pk_backend_cancel (transaction->priv->backend);
+out:
+	return;
 }
 
 /**
