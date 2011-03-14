@@ -2062,6 +2062,8 @@ pk_backend_error_code (PkBackend *backend, PkErrorEnum error_code, const gchar *
 	need_untrusted = pk_backend_error_code_is_need_untrusted (error_code);
 	if (need_untrusted)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_NEED_UNTRUSTED);
+	else if (error_code == PK_ERROR_ENUM_CANCELLED_PRIORITY)
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_CANCELLED_PRIORITY);
 	else
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 

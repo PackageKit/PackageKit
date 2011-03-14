@@ -2812,6 +2812,33 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 }
 
 /**
+ * pk_transaction_priv_cancel_bg:
+ **/
+void
+pk_transaction_priv_cancel_bg (PkTransaction *transaction)
+{
+	g_debug ("CancelBg method called on %s", transaction->priv->tid);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend, PK_ROLE_ENUM_CANCEL)) {
+		g_warning ("Cancel not yet supported by backend");
+		return;
+	}
+
+	/* set the state, as cancelling might take a few seconds */
+	pk_backend_set_status (transaction->priv->backend, PK_STATUS_ENUM_CANCEL);
+
+	/* we don't want to cancel twice */
+	pk_backend_set_allow_cancel (transaction->priv->backend, FALSE);
+
+	/* we need ::finished to not return success or failed */
+	pk_backend_set_exit_code (transaction->priv->backend, PK_EXIT_ENUM_CANCELLED_PRIORITY);
+
+	/* actually run the method */
+	pk_backend_cancel (transaction->priv->backend);
+}
+
+/**
  * pk_transaction_cancel:
  **/
 void

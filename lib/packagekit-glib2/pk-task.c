@@ -900,6 +900,12 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, PkTaskState *state)
 		goto out;
 	}
 
+	/* just re-run the transaction */
+	if (state->exit_enum == PK_EXIT_ENUM_CANCELLED_PRIORITY) {
+		pk_task_do_async_action (state);
+		goto out;
+	}
+
 	/* we can't handle this, just finish the async method */
 	state->ret = TRUE;
 

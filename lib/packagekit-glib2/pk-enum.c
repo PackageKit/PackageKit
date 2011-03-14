@@ -44,6 +44,7 @@ static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{PK_EXIT_ENUM_NEED_UNTRUSTED,		"need-untrusted"},
+	{PK_EXIT_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
 	{0, NULL}
 };
 
@@ -194,6 +195,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED, "provide-type-not-supported"},
 	{PK_ERROR_ENUM_INSTALL_ROOT_INVALID,	"install-root-invalid"},
 	{PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,	"cannot-fetch-sources"},
+	{PK_ERROR_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
 	{0, NULL}
 };
 

@@ -539,26 +539,25 @@ out:
 }
 
 /**
- * pk_transaction_list_number_running:
+ * pk_transaction_list_get_active_transaction:
  **/
-static guint
-pk_transaction_list_number_running (PkTransactionList *tlist)
+static PkTransactionItem *
+pk_transaction_list_get_active_transaction (PkTransactionList *tlist)
 {
 	guint i;
-	guint count = 0;
-	guint length;
+	GPtrArray *array;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find all the transactions in progress */
-	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+	/* find the runner with the transaction ID */
+	array = tlist->priv->array;
+	for (i=0; i<array->len; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (array, i);
 		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_RUNNING)
-			count++;
+			return item;
 	}
-	return count;
+	return NULL;
 }
 
 /**
@@ -569,6 +568,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 {
 	gboolean ret;
 	PkTransactionItem *item;
+	PkTransactionItem *item_active;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
@@ -604,11 +604,27 @@ pk_transaction_list_commit (PkTransactionList *tlist, const gchar *tid)
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
 	/* do the transaction now if we have no other in progress */
-	if (pk_transaction_list_number_running (tlist) == 0) {
+	item_active = pk_transaction_list_get_active_transaction (tlist);
+	if (item_active == NULL) {
 		g_debug ("running %s as no others in progress", item->tid);
 		pk_transaction_list_run_item (tlist, item);
+		goto out;
 	}
 
+	/* is the current running transaction backtround, and this new
+	 * transaction foreground? */
+	ret = pk_conf_get_bool (tlist->priv->conf,
+				"TransactionCreateCommitTimeout");
+	if (!ret)
+		goto out;
+	if (!item->background && item_active->background) {
+		g_debug ("cancelling running background transaction %s "
+			 "and instead running %s",
+			 item_active->tid, item->tid);
+		pk_transaction_priv_cancel_bg (item_active->transaction);
+		goto out;
+	}
+out:
 	return TRUE;
 }
 
