@@ -1874,8 +1874,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* set proxy */
 	ret = pk_transaction_set_session_state (transaction, &error);
 	if (!ret) {
-		g_debug ("failed to set the session state (non-fatal): %s", error->message);
-		g_error_free (error);
+		g_debug ("failed to set the session state (non-fatal): %s",
+			 error->message);
+		g_clear_error (&error);
 	}
 
 	/* we are no longer waiting, we are setting up */
