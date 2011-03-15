@@ -63,7 +63,8 @@ cross-architecture API.
 Summary: PackageKit YUM backend
 Group: System Environment/Libraries
 Requires: yum >= 3.2.19
-Requires: pygobject2 # python(gio)
+# python(gio)
+Requires: pygobject2
 Requires: %{name} = %{version}-%{release}
 Provides: PackageKit-backend
 
@@ -344,7 +345,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_libdir}/pm-utils/sleep.d/95packagekit
-%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.so
 
 %files docs
 %defattr(-,root,root,-)
