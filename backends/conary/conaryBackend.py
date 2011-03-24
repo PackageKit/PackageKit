@@ -283,11 +283,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return self._get_update(applyList)
 
     def _do_package_update(self, name, version, flavor, simulate):
-        if name.startswith('-'):
-            applyList = [(name, (version, flavor), (None, None), False)]
-        else:
-            applyList = [(name, (None, None), (version, flavor), True)]
-        updJob, suggMap = self._get_update(applyList)
+        updJob, suggMap = self._get_package_update(name, version, flavor)
         return self._do_update(updJob, simulate)
 
     def _resolve_list(self, filters):
