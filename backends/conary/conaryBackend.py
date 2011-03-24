@@ -238,6 +238,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         from conary.conaryclient.update import NoNewTrovesError,DepResolutionFailure
         self.allow_cancel(False)
         updJob = self.client.newUpdateJob()
+        suggMap = {}
         jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
         if cache and jobPath:
             try:
