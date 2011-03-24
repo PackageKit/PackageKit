@@ -264,7 +264,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _do_update(self, updJob, applyList, simulate=False):
+    def _do_update(self, updJob, simulate=False):
         self.allow_cancel(False)
         try:
             # TODO we should really handle the restart case here
@@ -288,7 +288,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             applyList = [(name, (None, None), (version, flavor), True)]
         updJob, suggMap = self._get_update(applyList)
-        return self._do_update(updJob, applyList, simulate)
+        return self._do_update(updJob, simulate)
 
     def _resolve_list(self, filters):
         log.info("======= _resolve_list =====")
@@ -549,7 +549,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         log.info(">>>>>>>>>> get update >>>>>>>>>>>>")
         updJob, suggMap = self._get_update(applyList)
         log.info(">>>>>>>>>> DO Update >>>>>>>>>>>>")
-        jobs = self._do_update(updJob, applyList)
+        jobs = self._do_update(updJob)
         log.info(">>>>>>>>>>END DO Update >>>>>>>>>>>>")
         log.info(jobs)
         self.client.setUpdateCallback(self.callback )
