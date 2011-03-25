@@ -173,8 +173,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """
         log.info("=========== get package from package_id ======================")
         name, verString, archString, data = split_package_id(package_id)
-        trove = self.conary.query(name) or self.conary.repo_query(name)
-        return trove
+        troves = self.conary.query(name) or self.conary.repo_query(name)
+        return troves
 
     def _search_package( self, name ):
         for pkg in self.packages:
@@ -626,6 +626,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
+        # XXX the usage of self.get_package_from_id is wrong here. The return
+        # value is a list.
         n, v, f = self.get_package_from_id(package_id)
         trvList = self.client.repos.findTrove(self.cfg.installLabelPath,
                                      (n, v, f),
