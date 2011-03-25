@@ -24,26 +24,26 @@
 import sys
 import os
 import re
-from conary import errors
-from conary.deps import deps
+
 from conary import dbstore, queryrep, versions, updatecmd
-from conary.local import database
+from conary import errors, conarycfg, conaryclient
 from conary import trove
 from conary.conaryclient import cmdline
+from conary.deps import deps
 from conary.lib import util
+from conary.local import database
 
 from packagekit.backend import get_package_id, split_package_id, \
     PackageKitBaseBackend
+from packagekit.enums import *
+
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
-from conaryFilter import *
+from conaryFilter import ConaryFilter
 from XMLCache import XMLCache
-from conaryInit import *
+from pkConaryLog import log
+from conarypk import ConaryPk, get_arch
 
-from conary import conarycfg, conaryclient
-from conarypk import ConaryPk
-from pkConaryLog import *
-#}}}
 sys.excepthook = util.genExcepthook()
 #{{{ FUNCTIONS
 def ExceptionHandler(func):
@@ -66,17 +66,6 @@ def ExceptionHandler(func):
         except Exception, e:
             self.error(ERROR_UNKNOWN, display(e), exit=True)
     return wrapper
-
-def _get_arch( flavor ):
-    if flavor is not None :
-        isdep = deps.InstructionSetDependency
-        arches = [ x.name for x in flavor.iterDepsByClass(isdep) ]
-        if not arches:
-            arches = [ 'noarch' ]
-        return ','.join(arches)
-    else:
-        return None
-
 
 def _format_str(str):
     """
@@ -137,9 +126,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
     #}}}
-    def _get_arch(self, flavor):
-        return _get_arch(flavor)
-
     @ExceptionHandler
     def check_installed(self, troveTuple):
         log.info("============check installed =========")
@@ -161,7 +147,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
         return get_package_id(name, str(version.trailingRevision()),
-                self._get_arch(flavor), data)
+                get_arch(flavor), data)
 
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
@@ -169,7 +155,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         version = versionObj.trailingRevision()
         pkg = self.xmlcache.resolve(name)
         #pkg["shortDesc"] = "."
-        arch = self._get_arch(flavor)
+        arch = get_arch(flavor)
         #data = versionObj.asString() + "#"
         data = ""
         if pkg:

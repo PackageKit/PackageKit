@@ -8,6 +8,7 @@ from conary import conarycfg
 from conary.versions import Label
 from conary.errors import TroveNotFound
 from conary.conaryclient.update import NoNewTrovesError
+from conary.deps import deps
 
 from pkConaryLog import log
 
@@ -16,7 +17,15 @@ import os
 from packagekit.backend import PackageKitBaseBackend
 from packagekit.enums import ERROR_NO_NETWORK
 
+def get_arch(flavor):
+    '''Turn a Flavor into a string describing the arch
 
+    Return value can be x86, x86_64 or None.
+    '''
+    ret = deps.getMajorArch(flavor)
+    if ret is None:
+        ret = ''
+    return ret
 
 class ConaryPk:
     def __init__(self):
@@ -67,7 +76,6 @@ class ConaryPk:
     def search_path(self,path_file ):
         labels = self.get_labels_from_config()
         where = self._get_repos()
-        from conary.deps.deps import compatibleFlavors
         for label in self.default_label:
             trove = where.getTroveLeavesByPath([path_file], label)
             if trove.get(path_file):

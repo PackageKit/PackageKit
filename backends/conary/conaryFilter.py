@@ -24,8 +24,7 @@ from packagekit.filter import *
 
 import re
 from pkConaryLog import log
-from conarypk import ConaryPk
-from conaryBackend import _get_arch
+from conarypk import ConaryPk, get_arch
 
 class ConaryFilter(PackagekitFilter):
 
@@ -55,7 +54,7 @@ class ConaryFilter(PackagekitFilter):
         '''
         name,version,flavor = pkg.get("trove")
         ver = version.trailingRevision()
-        fl = _get_arch(flavor)
+        fl = get_arch(flavor)
         return "%s-%s.%s" % (name,ver,fl)
 
     def _pkg_is_installed(self, pkg):
