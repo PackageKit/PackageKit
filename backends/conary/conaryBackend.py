@@ -32,10 +32,8 @@ from conary import trove
 from conary.conaryclient import cmdline
 from conary.lib import util
 
-from packagekit.backend import *
-from packagekit.package import *
-from packagekit.enums import PackageKitEnum
-from packagekit.progress import PackagekitProgress
+from packagekit.backend import get_package_id, split_package_id, \
+    PackageKitBaseBackend
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import *
@@ -46,7 +44,6 @@ from conary import conarycfg, conaryclient
 from conarypk import ConaryPk
 from pkConaryLog import *
 #}}}
-pkpackage = PackagekitPackage()
 sys.excepthook = util.genExcepthook()
 #{{{ FUNCTIONS
 def ExceptionHandler(func):
@@ -163,7 +160,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 data = metadata['shortDesc'].decode("UTF")
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
-        return pkpackage.get_package_id(name, version.trailingRevision(), self._get_arch(flavor), data)
+        return get_package_id(name, str(version.trailingRevision()),
+                self._get_arch(flavor), data)
 
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
@@ -180,7 +178,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
 
-        return pkpackage.get_package_id(name, version, arch, data)
+        return get_package_id(name, version, arch, data)
 
     @ExceptionHandler
     def get_package_from_id(self, package_id):
@@ -188,7 +186,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         "dpaster;0.1-3-1;x86;Summary"
         """
         log.info("=========== get package from package_id ======================")
-        name, verString, archString, data =  pkpackage.get_package_from_id(package_id)
+        name, verString, archString, data = split_package_id(package_id)
         trove = self.conary.query(name) or self.conary.repo_query(name)
         return trove
 
@@ -611,7 +609,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         errors = ""
         #for package_id in package_ids.split('%'):
         for package_id in package_ids:
-            name, version, arch,data = pkpackage.get_package_from_id(package_id)
+            name, version, arch,data = split_package_id(package_id)
             troveTuple = self.conary.query(name)
             for name,version,flavor in troveTuple:
                 name = '-%s' % name
@@ -696,7 +694,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         for package_id in package_ids:
             log.info(package_id)
-            name, version,arch,summary  = pkpackage.get_package_from_id(package_id)
+            name, version,arch,summary  = get_package_from_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             update = ""
             obsolete = ""
@@ -721,7 +719,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         log.info("========== get_details =============")
         for package_id in package_ids:
-            name,version,arch,data = pkpackage.get_package_from_id(package_id)
+            name,version,arch,data = get_package_from_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             if name and pkgDict:
                 longDesc = ""
@@ -915,8 +913,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	Simulate an update of one or more packages.
         '''
 	return self.remove_packages(False, False, package_ids, simulate=True)
-
-from pkConaryLog import pdb
 
 def main():
     backend = PackageKitConaryBackend('')
