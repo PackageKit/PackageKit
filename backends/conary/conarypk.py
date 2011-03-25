@@ -73,7 +73,7 @@ class ConaryPk:
             if trove.get(path_file):
                 for ( name,version,flavor) in trove[path_file]:
                     return name
-                
+
     def query(self, name):
         """ do a conary query """
         if name is None or name == "":
@@ -98,7 +98,7 @@ class ConaryPk:
 
     def get_metadata( self, name , installLabel = None):
         pass
-        
+
     def remove(self, name):
         return self.update(name, remove = True )
     def update(self, name, installLabel= None, remove  = False ):
@@ -118,7 +118,7 @@ class ConaryPk:
             return "Update Success of %s" %  trovespec
         except NoNewTrovesError:
             return "no new Troves Found by %s " % trovespec
-    
+
     def trove_to_spec(self, trove, remove = False ):
         # add a -app=blah.rpath.org@rpl:devel for remove packages
         if remove:

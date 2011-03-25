@@ -91,7 +91,7 @@ class XMLRepo:
 
     def resolve_list(self, searchList):
         return self._getPackages(searchList)
-        
+
     def search(self, search, where ):
         if where == "name":
             return self._searchNamePackage(search)
@@ -132,12 +132,12 @@ class XMLRepo:
             except SyntaxError as e:
                 self.pk.error(ERROR_REPO_CONFIGURATION_ERROR, "Failed to parse %s: %s. A cache refresh should fix this." %
                         (self.xml_file, str(e)))
-       
 
-    def _generatePackage(self, package_node ): 
+
+    def _generatePackage(self, package_node ):
         """ convert from package_node to dictionary """
         cat = [ cat for cat in package_node.findall("category") ]
-        pkg = dict( 
+        pkg = dict(
             name= package_node.find("name").text,
             label = self.label,
             version = package_node.find("version").text,
@@ -146,7 +146,7 @@ class XMLRepo:
             url = getattr( package_node.find("url"),"text","") ,
             category = [ i.text for i in cat ],
             licenses = eval( getattr( package_node.find("licenses"),"text", "str('')") )
-        ) 
+        )
         return pkg
 
     def _getPackage(self, name):
@@ -251,7 +251,7 @@ class XMLCache:
         log.info("CheckjobPath %s" % jobPath)
         if os.path.exists(jobPath):
             return jobPath
-    
+
     def cacheUpdateJob(self, applyList, updJob):
         jobPath = self._getJobCachePath(applyList)
         log.info("jobPath %s" % jobPath)
@@ -271,10 +271,10 @@ class XMLCache:
             pkg = {}
             pkg["name"] = troveTuple[0]
             pkg["version"] = troveTuple[1].trailingRevision()
-            pkg["label"] = troveTuple[1].trailingLabel() 
+            pkg["label"] = troveTuple[1].trailingLabel()
             mList.append(pkg)
         return mList
-            
+
     def searchByGroups(self, groups):
         pass
 
@@ -291,7 +291,7 @@ class XMLCache:
             return None
 
     def search(self, search, where = "name" ):
-        """ 
+        """
             @where (string) values = name | details | group |
         """
         repositories_result = []
@@ -325,7 +325,7 @@ class XMLCache:
 
     def getGroup(self,categorieList):
         return getGroup(categorieList)
-                
+
     def _getCategorieBase(self, mapDict, categorieList ):
         if not categorieList:
             return None
@@ -360,7 +360,7 @@ class XMLCache:
                         categories.append(cat)
         categories.sort()
         return set( categories )
-        
+
 
 if __name__ == '__main__':
   #  print ">>> name"

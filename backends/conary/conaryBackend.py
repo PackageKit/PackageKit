@@ -106,7 +106,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     restartpkgs = ("PackageKit","gnome-packagekit")
 
     packages = []
-    #{{{   Packages structure 
+    #{{{   Packages structure
     """
     packages = {
         pkg_name: {
@@ -114,7 +114,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             'metadata': pkgDict,
         }
     }
-    
+
     """
     #}}}
     #{{{ Init
@@ -142,7 +142,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     #}}}
     def _get_arch(self, flavor):
         return _get_arch(flavor)
- 
+
     @ExceptionHandler
     def check_installed(self, troveTuple):
         log.info("============check installed =========")
@@ -164,7 +164,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
         return pkpackage.get_package_id(name, version.trailingRevision(), self._get_arch(flavor), data)
-            
+
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
 
@@ -179,7 +179,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 data = pkg['shortDesc'].decode("UTF")
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
-                
+
         return pkpackage.get_package_id(name, version, arch, data)
 
     @ExceptionHandler
@@ -199,14 +199,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return None
 
     def _convert_package( self, trove , pkgDict ):
-        return dict( 
+        return dict(
                 trove = trove ,
                 metadata = pkgDict
             )
 
     def _add_package(self, trove, pkgDict):
         self.packages.append( self._convert_package(trove, pkgDict) )
-        
+
     def _do_search(self, filters, searchlist, where = "name"):
         """
          searchlist(str)ist as the package for search like
@@ -343,10 +343,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         package_list = pkgFilter.post_process()
         self._show_package_list(package_list)
- 
+
     @ExceptionHandler
     def resolve(self, filters, package ):
-        """ 
+        """
             @filters  (list)  list of filters
             @package (list ) list with packages name for resolve
         """
@@ -389,17 +389,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	log.info("end resolve ...................")
 
     def _show_package_list(self, lst):
-        """ 
+        """
             HOW its showed on packageKit
             @lst(list(tuple) = [ ( troveTuple, status ) ]
         """
         for (pos, ( pkg, status) ) in enumerate(lst):
             # take the basic info
            # name ,version,flavor = pkg.get("trove")
-            # get the string id from packagekit 
-            #log.info(pkg) 
+            # get the string id from packagekit
+            #log.info(pkg)
             package_id = self.get_package_id_new(pkg)
-            
+
             # split the list for get Determine info
             summary = package_id.split(";")
             name = summary[0]
@@ -435,7 +435,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
 
         self.percentage(20)
-      
+
 
         self.percentage(30)
         name = self.conary.search_path( search )
@@ -445,7 +445,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("resolving")
             if ":" in name:
                 name = name.split(":")[0]
-            self.resolve( filters, [name]) 
+            self.resolve( filters, [name])
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
@@ -470,15 +470,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
         log.info("options: %s searchlist:%s "%(options, search))
         self._do_search(options, search, 'details' )
-       
-    
+
+
     @ExceptionHandler
     def get_packages(self, filter ):
         self.allow_cancel(False)
         self.status(STATUS_QUERY)
         log.info("options: %s searchlist:%s "%(filter,"all"))
         self._do_search(filter, "", 'all' )
- 
+
 
     def get_requires(self, filters, package_ids, recursive_text):
         pass
@@ -520,7 +520,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                             withFiles=True, capsules=False):
                     files.append(path)
             return files
-        
+
         for package in package_id.split("&"):
             log.info(package)
             name, version, flavor, installed = self._findPackage(package)
@@ -595,7 +595,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.status(STATUS_INSTALL)
                 self._do_package_update(name, version, flavor, simulate)
 
-        
+
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
         '''
@@ -606,7 +606,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(0)
         self.status(STATUS_RUNNING)
         log.info("========== Remove Packages ============ ")
-        log.info( allowDeps ) 
+        log.info( allowDeps )
         self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
         errors = ""
         #for package_id in package_ids.split('%'):
@@ -621,7 +621,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 callback = self.client.getUpdateCallback()
                 if callback.error:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
-                        
+
                 self._do_package_update(name, version, flavor, simulate)
         self.client.setUpdateCallback(self.callback)
 
@@ -836,7 +836,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 flavor = job[0][1][1]
 
             info = self._get_info(name)
-            trove_info = ( ( name,version,flavor ), info) 
+            trove_info = ( ( name,version,flavor ), info)
             r.append(trove_info)
 
         pkg_list = self.xmlcache.resolve_list([ name for (  ( name,version,flavor), info )  in r ])
@@ -844,7 +844,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         new_res = []
         for pkg in pkg_list:
             for ( trove, info ) in r:
-                #log.info( ( pkg, trove) ) 
+                #log.info( ( pkg, trove) )
                 name,version,flav = trove
                 if name == pkg["name"]:
                     npkg = self._convert_package( trove, pkg)

@@ -47,7 +47,7 @@ def generate_xml( troves, label):
         node_name = cElementTree.Element("name")
         node_name.text = name
         node_version = cElementTree.Element("version")
-        node_version.text = version 
+        node_version.text = version
 
         for i in [ node_name, node_version ]:
             package.append(i)

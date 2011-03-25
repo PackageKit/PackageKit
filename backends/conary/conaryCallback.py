@@ -149,16 +149,16 @@ class BasePKConaryCallback(callbacks.UpdateCallback):
 
     def done(self):
         log.info("Done.")
- 
+
     def warning(self, msg, *args, **kwargs):
         e = msg %args
         log.warning(e)
 
     def tagHandlerOutput(self, tag, msg, stderr = False):
-        log.info("Tag Handler Output: [%s] %s" % (tag, msg)) 
+        log.info("Tag Handler Output: [%s] %s" % (tag, msg))
 
     def troveScriptOutput(self, typ, msg):
-        log.info("Trove Script Output [%s] %s" % (typ, msg)) 
+        log.info("Trove Script Output [%s] %s" % (typ, msg))
 
 
 class UpdateSystemCallback(BasePKConaryCallback):
@@ -176,7 +176,7 @@ class GetUpdateCallback(BasePKConaryCallback):
 class UpdateCallback(BasePKConaryCallback):
     def __init__(self, backend, cfg=None):
         BasePKConaryCallback.__init__(self, backend, cfg)
-        self.progress.set_steps([ 
+        self.progress.set_steps([
             1, # requestingChangeSet 1
             50, # resolveDeps2
             51, # SetChangesetHunk3

@@ -3,7 +3,7 @@ from packagekit.enums import GROUP_ACCESSIBILITY, GROUP_ACCESSORIES, GROUP_EDUCA
 """
 Classify the Categories and help me to make a backend
 
-#    from XMLCache import XMLCache 
+#    from XMLCache import XMLCache
 #    print "categoryMap = {",
 #    for i in XMLCache()._getAllCategories():
 #        print "'%s':" % i
@@ -11,7 +11,7 @@ Classify the Categories and help me to make a backend
 
 """
 
-categoryMap = { 
+categoryMap = {
 'VectorGraphics': GROUP_GRAPHICS,
 'Network': GROUP_INTERNET,
 'Spreadsheet': GROUP_OFFICE,
@@ -150,12 +150,12 @@ categoryMap = {
 'Robotics':GROUP_EDUCATION,#	Robotics software	Education;Science
 'Sports':GROUP_GRAPHICS,#	Sports software	Education
 'ParallelComputing':GROUP_EDUCATION,#	Parallel computing software	Education;Science;ComputerScience
-#'Amusement'	A simple amusement	 
+#'Amusement'	A simple amusement
 'Archiving': GROUP_ACCESSORIES,#	A tool to archive/backup data	Utility
 'Compression': GROUP_ACCESSORIES,#	A tool to manage compressed data/archives	Utility;Archiving
-#'Electronics'	Electronics software, e.g. a circuit designer	 
+#'Electronics'	Electronics software, e.g. a circuit designer
 'Emulator':GROUP_GAMES,#	Emulator of another platform, such as a DOS emulator	System or Game
-'Engineering':GROUP_EDUCATION,#	Engineering software, e.g. CAD programs	 
+'Engineering':GROUP_EDUCATION,#	Engineering software, e.g. CAD programs
 'FileTools':GROUP_ACCESSORIES, #	A file tool utility	Utility or System
 'FileManager':GROUP_ACCESSORIES,#	A file manager	System;FileTools
 'TerminalEmulator':GROUP_ACCESSORIES,#	A terminal emulator application	System
@@ -166,14 +166,14 @@ categoryMap = {
 'Calculator':GROUP_ACCESSORIES,#	A calculator	Utility
 'Clock':GROUP_ACCESSORIES,#	A clock application/applet	Utility
 'TextEditor':GROUP_ACCESSORIES,#	A text editor	Utility
-'Documentation':GROUP_EDUCATION,#	Help or documentation	 
-'Core':GROUP_SYSTEM,#	Important application, core to the desktop such as a file manager or a help browser	 
+'Documentation':GROUP_EDUCATION,#	Help or documentation
+'Core':GROUP_SYSTEM,#	Important application, core to the desktop such as a file manager or a help browser
 #KDE	Application based on KDE libraries	QT
 #GNOME	Application based on GNOME libraries	GTK
-#GTK	Application based on GTK+ libraries	 
-#Qt	Application based on Qt libraries	 
-#Motif	Application based on Motif libraries	 
-#Java	Application based on Java GUI libraries, such as AWT or Swing	 
+#GTK	Application based on GTK+ libraries
+#Qt	Application based on Qt libraries
+#Motif	Application based on Motif libraries
+#Java	Application based on Java GUI libraries, such as AWT or Swing
 'ConsoleOnly':GROUP_ACCESSORIES,
 }
 
