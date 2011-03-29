@@ -224,7 +224,6 @@ class XMLCache:
 
     repos = []
     dbPath = '/var/cache/conary/'
-    jobPath = dbPath + 'jobs'
     xml_path =  dbPath + "xmlrepo/"
 
     def __init__(self):
@@ -234,36 +233,11 @@ class XMLCache:
 
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
-        if not os.path.isdir(self.jobPath):
-            os.mkdir(self.jobPath)
         if not os.path.isdir( self.xml_path ):
             os.makedirs(self.xml_path )
 
         for label in self.labels:
             self.repos.append(XMLRepo(label, self.xml_path, self.pk))
-
-    def _getJobCachePath(self, applyList):
-        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
-        return self.jobPath + '/' + sha1helper.sha1ToString(sha1helper.sha1String(applyStr))
-
-    def checkCachedUpdateJob(self, applyList):
-        jobPath = self._getJobCachePath(applyList)
-        log.info("CheckjobPath %s" % jobPath)
-        if os.path.exists(jobPath):
-            return jobPath
-
-    def cacheUpdateJob(self, applyList, updJob):
-        jobPath = self._getJobCachePath(applyList)
-        log.info("jobPath %s" % jobPath)
-        if os.path.exists(jobPath):
-            log.info("deleting the JobPath %s "% jobPath)
-            util.rmtree(jobPath)
-            log.info("end deleting the JobPath %s "% jobPath)
-        log.info("making the logPath ")
-        os.mkdir(jobPath)
-        log.info("freeze JobPath")
-        updJob.freeze(jobPath)
-        log.info("end freeze JobPath")
 
     def convertTroveToDict(self, troveTupleList):
         mList = []
@@ -361,6 +335,38 @@ class XMLCache:
         categories.sort()
         return set( categories )
 
+class UpdateJobCache:
+    '''A cache to store (freeze) conary UpdateJobs.
+
+    The key is an applyList which can be used to build UpdateJobs.
+    '''
+
+    def __init__(self, jobPath='/var/cache/conary/jobs/', createJobPath=True):
+        if createJobPath and not os.path.isdir(jobPath):
+            os.mkdir(jobPath)
+        self._jobPath = jobPath
+
+    def _getJobCachePath(self, applyList):
+        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (
+            x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
+        return '%s/%s' % (self._jobPath,
+                sha1helper.sha1ToString(sha1helper.sha1String(applyStr)))
+
+    def getCachedUpdateJob(self, applyList):
+        '''Retrieve a previously cached job
+        '''
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            return jobPath
+
+    def cacheUpdateJob(self, applyList, updJob):
+        '''Cache a conary UpdateJob
+        '''
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            util.rmtree(jobPath)
+        os.mkdir(jobPath)
+        updJob.freeze(jobPath)
 
 if __name__ == '__main__':
   #  print ">>> name"

@@ -40,7 +40,7 @@ from packagekit.enums import *
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import ConaryFilter
-from XMLCache import XMLCache
+from XMLCache import XMLCache, UpdateJobCache
 from pkConaryLog import log
 from conarypk import ConaryPk, get_arch
 
@@ -115,6 +115,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
         self.xmlcache = XMLCache()
+        self.job_cache = UpdateJobCache()
 
     def _freezeData(self, version, flavor):
         frzVersion = version.freeze()
@@ -224,7 +225,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         updJob = self.client.newUpdateJob()
         suggMap = {}
-        jobPath = self.xmlcache.checkCachedUpdateJob(applyList)
+        jobPath = self.job_cache.getCachedUpdateJob(applyList)
         if cache and jobPath:
             try:
                 log.info("Using previously cached update job at %s" % (jobPath,))
@@ -238,7 +239,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 suggMap = self.client.prepareUpdateJob(updJob, applyList)
                 log.info("Successfully created a new update job")
                 if cache:
-                    self.xmlcache.cacheUpdateJob(applyList, updJob)
+                    self.job_cache.cacheUpdateJob(applyList, updJob)
             except conaryclient.NoNewTrovesError:
                 return updJob, {}
             except conaryclient.DepResolutionFailure as error :
