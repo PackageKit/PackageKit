@@ -252,7 +252,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _do_update(self, updJob, simulate=False):
+    def _apply_update_job(self, updJob, simulate=False):
         self.allow_cancel(False)
         try:
             # TODO we should really handle the restart case here
@@ -272,7 +272,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _do_package_update(self, name, version, flavor, simulate):
         updJob, suggMap = self._get_package_update(name, version, flavor)
-        return self._do_update(updJob, simulate)
+        return self._apply_update_job(updJob, simulate)
 
     def _resolve_list(self, filters):
         log.info("======= _resolve_list =====")
@@ -528,14 +528,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
-        self.client.setUpdateCallback( UpdateSystemCallback(self, self.cfg) )
-        updateItems = self.client.fullUpdateItemList()
-        [ log.info(i) for i,ver,flav in updateItems]
-        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
+        cb = UpdateSystemCallback(self, self.cfg)
+        updJob = self._get_updateall_job(cb)
 
-        updJob, suggMap = self._build_update_job(applyList)
-        jobs = self._do_update(updJob)
-        log.info(jobs)
+        self._apply_update_job(updJob)
         self._reset_conary_callback()
 
 #    @ExceptionHandler
@@ -753,14 +749,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return INFO_NORMAL
 
-
-    def _get_status(self, notice):
-        if name in self.rebootpkgs:
-            return INFO_SECURITY
-        elif name in self.restartpkgs:
-            return INFO_INSTALLED
-        else:
-            return INFO_NORMAL
     def _get_fits(self, branch, pkg_name):
         if "conary.rpath.com" in branch:
             return "http://issues.rpath.com;rPath Issues Tracker"
@@ -794,57 +782,55 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return UPDATE_STATE_UNSTABLE
         else:
             return UPDATE_STATE_STABLE
+
+    def _get_updateall_job(self, callback):
+        self.client.setUpdateCallback(callback)
+
+        updateItems = self.client.fullUpdateItemList()
+        applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
+
+        self.status(STATUS_RUNNING)
+        updJob, suggMap = self._build_update_job(applyList)
+        return updJob
+
+    def _parse_update_jobs(self, updJob):
+        jobs_list = updJob.getJobs()
+        r = []
+        for job in jobs_list:
+            job = job[0][:3]
+            (name, (oldVer, oldFla), (newVer, newFla)) = job
+
+            info = self._get_info(name)
+            if not newVer:
+                trove_info = ((name, oldVer, oldFla), info)
+            else:
+                trove_info = ((name, newVer, newFla), info)
+            r.append(trove_info)
+        return r
+
+    def _display_update_jobs(self, pkg_list):
+        data = self.xmlcache.resolve_list([name for ((name, version, flavor), info) in pkg_list])
+        new_res = []
+        for pkg in data:
+            for (trove, info) in pkg_list:
+                name, version, flav = trove
+                if name == pkg["name"]:
+                    npkg = self._convert_package(trove, pkg)
+                    new_res.append((npkg, info))
+
+        self._show_package_list(new_res)
+
     @ExceptionHandler
     def get_updates(self, filters):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_INFO)
 
-        getUpdateC= GetUpdateCallback(self,self.cfg)
-        self.client.setUpdateCallback(getUpdateC)
+        cb = GetUpdateCallback(self, self.cfg)
+        updJob = self._get_updateall_job(cb)
+        r = self._parse_update_jobs(updJob)
+        self._display_update_jobs(r)
 
-        log.info("============== get_updates ========================")
-        log.info("get fullUpdateItemList")
-        updateItems =self.client.fullUpdateItemList()
-#        updateItems = cli.cli.getUpdateItemList()
-        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-
-        self.status(STATUS_RUNNING)
-        updJob, suggMap = self._build_update_job(applyList)
-
-        log.info("getting JobLists...........")
-        r = []
-        for num, job in enumerate(updJob.getJobs()):
-            name = job[0][0]
-
-            # On an erase display the old version/flavor information.
-            version = job[0][2][0]
-            if version is None:
-                version = job[0][1][0]
-
-            flavor = job[0][2][1]
-            if flavor is None:
-                flavor = job[0][1][1]
-
-            info = self._get_info(name)
-            trove_info = ( ( name,version,flavor ), info)
-            r.append(trove_info)
-
-        pkg_list = self.xmlcache.resolve_list([ name for (  ( name,version,flavor), info )  in r ])
-        log.info("generate the pkgs ")
-        new_res = []
-        for pkg in pkg_list:
-            for ( trove, info ) in r:
-                #log.info( ( pkg, trove) )
-                name,version,flav = trove
-                if name == pkg["name"]:
-                    npkg = self._convert_package( trove, pkg)
-                    new_res.append( ( npkg, info ) )
-
-        log.info(new_res)
-
-        self._show_package_list(new_res)
-        log.info("============== end get_updates ========================")
         self._reset_conary_callback()
 
     def _findPackage(self, package_id):

@@ -277,8 +277,7 @@ class XMLCache:
         r = []
         for repo in self.repos:
             res = repo.resolve_list( search_list )
-            for i in res:
-                r.append( i)
+            r.extend(res)
         return self.list_set( r )
 
     def list_set(self, repositories_result ):
