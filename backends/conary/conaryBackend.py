@@ -270,10 +270,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             applyList = [(name, (None, None), (version, flavor), True)]
         return self._build_update_job(applyList)
 
-    def _do_package_update(self, name, version, flavor, simulate):
-        updJob, suggMap = self._get_package_update(name, version, flavor)
-        return self._apply_update_job(updJob, simulate)
-
     def _resolve_list(self, filters):
         log.info("======= _resolve_list =====")
 
@@ -578,8 +574,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         'Package already installed')
                 """
                 self.status(STATUS_INSTALL)
-                self._do_package_update(name, version, flavor, simulate)
-
+                updJob, suggMap = self._get_package_update(name, version, flavor)
+                self._apply_update_job(updJob, simulate)
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
@@ -607,7 +603,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if callback.error:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
 
-                self._do_package_update(name, version, flavor, simulate)
+                updJob, suggMap = self._get_package_update(name, version, flavor)
+                self._apply_update_job(updJob, simulate)
+
         self._reset_conary_callback()
 
     def _get_metadata(self, package_id, field):
