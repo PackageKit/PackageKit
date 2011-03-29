@@ -87,23 +87,10 @@ def _format_list(lst):
         return ""
 #}}}
 class PackageKitConaryBackend(PackageKitBaseBackend):
-    # Packages there require a reboot
+    # Packages that require a reboot
     rebootpkgs = ("kernel", "glibc", "hal", "dbus")
     restartpkgs = ("PackageKit","gnome-packagekit")
 
-    packages = []
-    #{{{   Packages structure
-    """
-    packages = {
-        pkg_name: {
-            'trove': ( name,version,flavor)
-            'metadata': pkgDict,
-        }
-    }
-
-    """
-    #}}}
-    #{{{ Init
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
@@ -139,7 +126,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return installed
 
     def get_package_id_new(self,pkg):
-
         name,version,flavor = pkg.get("trove")
         metadata = pkg.get("metadata")
         data = ""
@@ -178,8 +164,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         troves = self.conary.query(name) or self.conary.repo_query(name)
         return troves
 
-    def _search_package( self, name ):
-        for pkg in self.packages:
+    def _search_package(self, pkg_list, name):
+        for pkg in pkg_list:
             if pkg["trove"][0] == name:
                 return pkg
         return None
@@ -189,9 +175,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 trove = trove ,
                 metadata = pkgDict
             )
-
-    def _add_package(self, trove, pkgDict):
-        self.packages.append( self._convert_package(trove, pkgDict) )
 
     def _do_search(self, filters, searchlist, where = "name"):
         """
@@ -204,21 +187,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
 
         log.debug((searchlist, where))
-        log.info("||||||||||||||||||||||||||||searching  on cache... ")
         pkgList = self.xmlcache.search(searchlist, where )
-        log.info("|||||||||||||||||||||||||||||1end searching on cache... ")
 
         if len(pkgList) > 0 :
-            log.info("FOUND (%s) elements " % len(pkgList) )
-            for pkgDict in pkgList:
-                self._add_package( ( pkgDict["name"], None, None), pkgDict )
+            to_resolve = [self._convert_package((p["name"], None, None), p)
+                    for p in pkgList]
 
-            self._resolve_list( fltlist  )
+            self._resolve_list(to_resolve, fltlist)
         else:
             log.info("NOT FOUND %s " % searchlist )
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
-            #self.error(ERROR_INTERNAL_ERROR, "packagenotfound")
-
 
     def _build_update_job(self, applyList, cache=True):
         '''Build an UpdateJob from applyList
@@ -272,21 +250,19 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 applyList.append((name, (None, None), (version, flavor), True))
         return self._build_update_job(applyList)
 
-    def _resolve_list(self, filters):
-        log.info("======= _resolve_list =====")
-
+    def _resolve_list(self, pkg_list, filters):
         # 1. Resolve through local db
 
-        list_trove_all = [p.get("trove") for p in self.packages]
+        list_trove_all = [p.get("trove") for p in pkg_list]
         list_installed = []
         list_not_installed = []
 
         if FILTER_NOT_INSTALLED in filters:
-            list_not_installed = self.packages[:]
+            list_not_installed = pkg_list[:]
         else:
             db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
             for trove in list_trove_all:
-                pkg = self._search_package(trove[0])
+                pkg = self._search_package(pkg_list, trove[0])
                 if trove in db_trove_list:
                     # A package may have different versions/flavors installed.
                     for t in db_trove_list[trove]:
@@ -320,7 +296,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if trove in repo_trove_list:
                     # only use the first trove in the list
                     t = repo_trove_list[trove][0]
-                    pkg = self._search_package(t[0])
+                    pkg = self._search_package(pkg_list, t[0])
                     pkg["trove"] = t
                     list_available.append(pkg)
             pkgFilter.add_available( list_available )
@@ -337,10 +313,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        log.info("filters: %s package:%s " % (filters, package))
 
         pkg_dict = self.xmlcache.resolve( package[0] )
-        log.info(pkg_dict)
         if pkg_dict is None:
             return None
 
@@ -373,15 +347,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	log.info("end resolve ...................")
 
     def _show_package_list(self, lst):
+        """@lst(list(tuple) = [ ( troveTuple, status ) ]
         """
-            HOW its showed on packageKit
-            @lst(list(tuple) = [ ( troveTuple, status ) ]
-        """
-        for (pos, ( pkg, status) ) in enumerate(lst):
-            # take the basic info
-           # name ,version,flavor = pkg.get("trove")
-            # get the string id from packagekit
-            #log.info(pkg)
+        for pkg, status in lst:
             package_id = self.get_package_id_new(pkg)
 
             # split the list for get Determine info
@@ -391,9 +359,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             summary[3] = pkg.get("metadata").get("label")
             pkg_id = ";".join(summary)
-            log.info("====== show the package (%s) %s- %s" %( pos, name, status) )
             self.package(package_id, status, meta )
-        self.packages = []
 
     @ExceptionHandler
     def search_group(self, options, searchlist):
