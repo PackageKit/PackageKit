@@ -1,0 +1,4 @@
+* the XML cache doesn't include all packages (e.g. ubuntu-font-family/automake)
+  - there is probably bugs in the tool ('ticache') that generates the cache.
+* should support system model
+  - the conary-api related code should all be put in conarypk.py
