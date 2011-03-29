@@ -113,9 +113,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.client = conary.cli
         self.conary = conary
         self.callback = UpdateCallback(self, self.cfg)
-        self.client.setUpdateCallback(self.callback)
         self.xmlcache = XMLCache()
         self.job_cache = UpdateJobCache()
+
+        self._reset_conary_callback()
 
     def _freezeData(self, version, flavor):
         frzVersion = version.freeze()
@@ -517,6 +518,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.files(package_id, ';'.join(files))
 
+    def _reset_conary_callback(self):
+        self.client.setUpdateCallback(self.callback )
+
     @ExceptionHandler
     def update_system(self, only_trusted):
 
@@ -532,7 +536,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob, suggMap = self._build_update_job(applyList)
         jobs = self._do_update(updJob)
         log.info(jobs)
-        self.client.setUpdateCallback(self.callback )
+        self._reset_conary_callback()
 
 #    @ExceptionHandler
     def refresh_cache(self, force):
@@ -608,7 +612,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
 
                 self._do_package_update(name, version, flavor, simulate)
-        self.client.setUpdateCallback(self.callback)
+        self._reset_conary_callback()
 
     def _get_metadata(self, package_id, field):
         '''
@@ -841,7 +845,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self._show_package_list(new_res)
         log.info("============== end get_updates ========================")
-        self.client.setUpdateCallback(self.callback)
+        self._reset_conary_callback()
 
     def _findPackage(self, package_id):
         '''
