@@ -252,11 +252,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _apply_update_job(self, updJob, simulate=False):
+    def _apply_update_job(self, updJob):
         self.allow_cancel(False)
         try:
             # TODO we should really handle the restart case here
-            restartDir = self.client.applyUpdateJob(updJob, test=simulate)
+            restartDir = self.client.applyUpdateJob(updJob)
         except errors.InternalConaryError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
         except trove.TroveIntegrityError:
@@ -573,7 +573,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self.status(STATUS_INSTALL)
         updJob, suggMap = self._get_package_update(pkglist)
-        self._apply_update_job(updJob, simulate)
+        if not simulate:
+            self._apply_update_job(updJob)
+        else:
+            r = self._parse_update_jobs(updJob)
+            self._display_update_jobs(r)
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
@@ -599,7 +603,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self.status(STATUS_REMOVE)
         updJob, suggMap = self._get_package_update(pkglist)
-        self._apply_update_job(updJob, simulate)
+        if not simulate:
+            self._apply_update_job(updJob)
+        else:
+            r = self._parse_update_jobs(updJob)
+            self._display_update_jobs(r)
 
         self._reset_conary_callback()
 
@@ -701,7 +709,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         log.info("========== get_details =============")
         for package_id in package_ids:
-            name,version,arch,data = get_package_from_id(package_id)
+            name,version,arch,data = split_package_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             if name and pkgDict:
                 longDesc = ""
