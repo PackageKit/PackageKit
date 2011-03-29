@@ -263,11 +263,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
         return updJob
 
-    def _get_package_update(self, name, version, flavor):
-        if name.startswith('-'):
-            applyList = [(name, (version, flavor), (None, None), False)]
-        else:
-            applyList = [(name, (None, None), (version, flavor), True)]
+    def _get_package_update(self, pkg_list):
+        applyList = []
+        for name, version, flavor in pkg_list:
+            if name.startswith('-'):
+                applyList.append((name, (version, flavor), (None, None), False))
+            else:
+                applyList.append((name, (None, None), (version, flavor), True))
         return self._build_update_job(applyList)
 
     def _resolve_list(self, filters):
@@ -474,8 +476,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package already installed')
 
             else:
-                updJob, suggMap = self._get_package_update(name, version,
-                                                           flavor)
+                updJob, suggMap = self._get_package_update([
+                    (name, version, flavor)])
                 for what, need in suggMap:
                     package_id = self.get_package_id(need[0], need[1], need[2])
                     depInstalled = self.check_installed(need[0])
@@ -559,23 +561,19 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         # FIXME: use only_trusted
 
+        self.allow_cancel(True)
+        self.percentage(0)
+        self.status(STATUS_RUNNING)
+
+        pkglist = []
         for package_id in package_ids:
             name, version, flavor, installed = self._findPackage(package_id)
-            log.info((name, version, flavor, installed ))
-
-            self.allow_cancel(True)
-            self.percentage(0)
-            self.status(STATUS_RUNNING)
-
             if name:
-                """
-                if installed == INFO_INSTALLED:
-                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
-                        'Package already installed')
-                """
-                self.status(STATUS_INSTALL)
-                updJob, suggMap = self._get_package_update(name, version, flavor)
-                self._apply_update_job(updJob, simulate)
+                pkglist.append((name, version, flavor))
+
+        self.status(STATUS_INSTALL)
+        updJob, suggMap = self._get_package_update(pkglist)
+        self._apply_update_job(updJob, simulate)
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
@@ -586,25 +584,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
-        log.info("========== Remove Packages ============ ")
-        log.info( allowDeps )
         self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
-        errors = ""
-        #for package_id in package_ids.split('%'):
+
+        pkglist = []
         for package_id in package_ids:
             name, version, arch,data = split_package_id(package_id)
             troveTuple = self.conary.query(name)
             for name,version,flavor in troveTuple:
                 name = '-%s' % name
-                #self.client.repos.findTrove(self.conary.default_label)
-                self.status(STATUS_REMOVE)
-
                 callback = self.client.getUpdateCallback()
                 if callback.error:
                     self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
+                pkglist.append((name, version, flavor))
 
-                updJob, suggMap = self._get_package_update(name, version, flavor)
-                self._apply_update_job(updJob, simulate)
+        self.status(STATUS_REMOVE)
+        updJob, suggMap = self._get_package_update(pkglist)
+        self._apply_update_job(updJob, simulate)
 
         self._reset_conary_callback()
 
