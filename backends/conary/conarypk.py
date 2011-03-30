@@ -10,6 +10,9 @@ from conary.errors import TroveNotFound
 from conary.conaryclient.update import NoNewTrovesError
 from conary.deps import deps
 
+from conary.lib import sha1helper
+from conary.lib import util
+
 from pkConaryLog import log
 
 import os
@@ -26,6 +29,39 @@ def get_arch(flavor):
     if ret is None:
         ret = ''
     return ret
+
+class UpdateJobCache:
+    '''A cache to store (freeze) conary UpdateJobs.
+
+    The key is an applyList which can be used to build UpdateJobs.
+    '''
+
+    def __init__(self, jobPath='/var/cache/conary/jobs/', createJobPath=True):
+        if createJobPath and not os.path.isdir(jobPath):
+            os.mkdir(jobPath)
+        self._jobPath = jobPath
+
+    def _getJobCachePath(self, applyList):
+        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (
+            x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
+        return '%s/%s' % (self._jobPath,
+                sha1helper.sha1ToString(sha1helper.sha1String(applyStr)))
+
+    def getCachedUpdateJob(self, applyList):
+        '''Retrieve a previously cached job
+        '''
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            return jobPath
+
+    def cacheUpdateJob(self, applyList, updJob):
+        '''Cache a conary UpdateJob
+        '''
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            util.rmtree(jobPath)
+        os.mkdir(jobPath)
+        updJob.freeze(jobPath)
 
 class ConaryPk:
     def __init__(self):
@@ -52,6 +88,9 @@ class ConaryPk:
         self.db = cli.db
         # for request query on repository (repos)
         self.repos = cli.repos
+
+        self.job_cache = UpdateJobCache()
+
     def _exist_network(self):
         if not os.environ.get("NETWORK"):
             Pk = PackageKitBaseBackend("")
@@ -134,6 +173,29 @@ class ConaryPk:
         else:
             tmp = ""
         return tmp + cmdline.toTroveSpec( trove[0], str(trove[1]), None)
+
+    def build_update_job(self, applyList, cache=True):
+        '''Build an UpdateJob from applyList
+        '''
+        updJob = self.cli.newUpdateJob()
+        suggMap = {}
+        jobPath = self.job_cache.getCachedUpdateJob(applyList)
+        if cache and jobPath:
+            try:
+                updJob.thaw(jobPath)
+            except IOError, err:
+                updJob = None
+        else:
+            try:
+                suggMap = self.cli.prepareUpdateJob(updJob, applyList)
+                if cache:
+                    self.job_cache.cacheUpdateJob(applyList, updJob)
+            except conaryclient.NoNewTrovesError:
+                suggMap = {}
+            except conaryclient.DepResolutionFailure as error :
+                raise
+
+        return updJob, suggMap
 
 if __name__ == "__main__":
     conary = ConaryPk()

@@ -3,13 +3,8 @@ import cElementTree
 from xml.parsers.expat import ExpatError
 import urllib as url
 
-
-from conary.lib import sha1helper
-from conary.lib import util
-
 from packagekit.backend import *
 from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR, ERROR_NO_NETWORK
-
 
 from pkConaryLog import log
 from conarypk import ConaryPk
@@ -333,39 +328,6 @@ class XMLCache:
                         categories.append(cat)
         categories.sort()
         return set( categories )
-
-class UpdateJobCache:
-    '''A cache to store (freeze) conary UpdateJobs.
-
-    The key is an applyList which can be used to build UpdateJobs.
-    '''
-
-    def __init__(self, jobPath='/var/cache/conary/jobs/', createJobPath=True):
-        if createJobPath and not os.path.isdir(jobPath):
-            os.mkdir(jobPath)
-        self._jobPath = jobPath
-
-    def _getJobCachePath(self, applyList):
-        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (
-            x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
-        return '%s/%s' % (self._jobPath,
-                sha1helper.sha1ToString(sha1helper.sha1String(applyStr)))
-
-    def getCachedUpdateJob(self, applyList):
-        '''Retrieve a previously cached job
-        '''
-        jobPath = self._getJobCachePath(applyList)
-        if os.path.exists(jobPath):
-            return jobPath
-
-    def cacheUpdateJob(self, applyList, updJob):
-        '''Cache a conary UpdateJob
-        '''
-        jobPath = self._getJobCachePath(applyList)
-        if os.path.exists(jobPath):
-            util.rmtree(jobPath)
-        os.mkdir(jobPath)
-        updJob.freeze(jobPath)
 
 if __name__ == '__main__':
   #  print ">>> name"
