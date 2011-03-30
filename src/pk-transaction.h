@@ -120,6 +120,7 @@ void		 pk_transaction_accept_eula			(PkTransaction	*transaction,
 void		 pk_transaction_cancel				(PkTransaction	*transaction,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_download_packages		(PkTransaction  *transaction,
+								 gboolean	 copy_files,
 								 gchar		**package_ids,
 								 DBusGMethodInvocation *context);
 void		 pk_transaction_get_categories			(PkTransaction	*transaction,

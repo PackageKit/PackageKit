@@ -1622,6 +1622,7 @@ pk_client_set_hints_cb (DBusGProxy *proxy, DBusGProxyCall *call, PkClientState *
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		state->call = dbus_g_proxy_begin_call (state->proxy, "DownloadPackages",
 						       (DBusGProxyCallNotify) pk_client_method_cb, state, NULL,
+						       G_TYPE_BOOLEAN, (state->directory == NULL),
 						       G_TYPE_STRV, state->package_ids,
 						       G_TYPE_INVALID);
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
