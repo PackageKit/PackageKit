@@ -63,6 +63,11 @@ class UpdateJobCache:
         os.mkdir(jobPath)
         updJob.freeze(jobPath)
 
+    def clearCache(self):
+        '''Clear all cached jobs
+        '''
+        util.rmtree('%s/*' % self._jobPath)
+
 class ConaryPk:
     def __init__(self):
         # get configs from /etc/conary
@@ -95,6 +100,9 @@ class ConaryPk:
         if not os.environ.get("NETWORK"):
             Pk = PackageKitBaseBackend("")
             Pk.error(ERROR_NO_NETWORK,"Not exist network conection")
+
+    def clear_job_cache(self):
+        self.job_cache.clearCache()
 
     def _get_repos(self):
         """ get repos for do request query """

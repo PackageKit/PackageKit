@@ -199,10 +199,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         try:
             # TODO we should really handle the restart case here
             restartDir = self.client.applyUpdateJob(updJob)
-        except errors.InternalConaryError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
+        except errors.InternalConaryError as e:
+            if str(e) == "Stale update job":
+                self.conary.clear_job_cache()
+                # The UpdateJob can be invalid. It's probably because after the
+                # update job is fozen, the state of the database has changed.
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                        "Previously cached file is broken. Try again")
         except trove.TroveIntegrityError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
         return updJob
 
     def _get_package_update(self, pkg_list):
