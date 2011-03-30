@@ -3,6 +3,9 @@
 ###  greets mkj
 ### zodman@foresightlinux.org under the WTFPL http://sam.zoy.org/wtfpl/
 
+import itertools
+import os
+
 from conary.conaryclient import ConaryClient, cmdline
 from conary import conarycfg
 from conary.versions import Label
@@ -14,8 +17,6 @@ from conary.lib import sha1helper
 from conary.lib import util
 
 from pkConaryLog import log
-
-import os
 
 from packagekit.backend import PackageKitBaseBackend
 from packagekit.enums import ERROR_NO_NETWORK
@@ -29,6 +30,32 @@ def get_arch(flavor):
     if ret is None:
         ret = ''
     return ret
+
+def parse_jobs(updJob, excludes=[], show_components=True):
+    '''Split the install/erase/update jobs from an UpdateJob
+
+    @updJob: an UpdateJob
+    @excludes: packages to be ignored
+    @show_components: if set to False, discard jobs on component troves.
+
+    Return a (list, list, list) tuple.
+    '''
+    def _filter_pkg(j):
+        return (show_components or ':' not in j[0]) and j[0] not in excludes
+
+    jobs_list = updJob.getJobs()
+    jobs = filter(_filter_pkg, itertools.chain(*jobs_list))
+    install_jobs, erase_jobs, update_jobs = [], [], []
+    for job in jobs:
+        job = job[:3]
+        (name, (oldVer, oldFla), (newVer, newFla)) = job
+        if not oldVer:
+            install_jobs.append(job)
+        elif not newVer:
+            erase_jobs.append(job)
+        else:
+            update_jobs.append(job)
+    return (install_jobs, erase_jobs, update_jobs)
 
 class UpdateJobCache:
     '''A cache to store (freeze) conary UpdateJobs.

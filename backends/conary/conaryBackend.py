@@ -42,7 +42,7 @@ from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import ConaryFilter
 from XMLCache import XMLCache
 from pkConaryLog import log
-from conarypk import ConaryPk, get_arch
+import conarypk
 
 sys.excepthook = util.genExcepthook()
 #{{{ FUNCTIONS
@@ -95,7 +95,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, args)
 
         # conary configurations
-        conary = ConaryPk()
+        conary = conarypk.ConaryPk()
         self.cfg = conary.cfg
         self.client = conary.cli
         self.conary = conary
@@ -124,6 +124,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_AVAILABLE
         return installed
 
+    def _get_package_name_from_ids(self, package_ids):
+        return [split_package_id(x)[0] for x in package_ids]
+
     def get_package_id_new(self,pkg):
         name,version,flavor = pkg.get("trove")
         metadata = pkg.get("metadata")
@@ -134,12 +137,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
         return get_package_id(name, str(version.trailingRevision()),
-                get_arch(flavor), data)
+                conarypk.get_arch(flavor), data)
 
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
         version = versionObj.trailingRevision()
-        arch = get_arch(flavor)
+        arch = conarypk.get_arch(flavor)
         data = ""
         pkg = self.xmlcache.resolve(name)
         if pkg:
@@ -479,6 +482,27 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.xmlcache.refresh()
 
+    def _display_update_jobs(self, install_jobs, erase_jobs, update_jobs):
+        '''Emit package status for a list of installing/erasing/updating jobs
+        '''
+        for (name, (oldVer, oldFla), (newVer, newFla)) in install_jobs:
+            v = str(newVer.trailingRevision())
+            f = conarypk.get_arch(newFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_INSTALLING, '')
+
+        for (name, (oldVer, oldFla), (newVer, newFla)) in erase_jobs:
+            v = str(oldVer.trailingRevision())
+            f = conarypk.get_arch(oldFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_REMOVING, '')
+
+        for (name, (oldVer, oldFla), (newVer, newFla)) in update_jobs:
+            v = str(oldVer.trailingRevision())
+            f = conarypk.get_arch(oldFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_UPDATING, '')
+
     def install_packages(self, only_trusted, package_ids, simulate=False):
         """
             alias of update_packages
@@ -511,8 +535,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if not simulate:
             self._apply_update_job(updJob)
         else:
-            r = self._parse_update_jobs(updJob)
-            self._display_update_jobs(r)
+            pkgs = self._get_package_name_from_ids(package_ids)
+            jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
+                    show_components=False)
+            self._display_update_jobs(*jobs)
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
@@ -541,8 +567,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if not simulate:
             self._apply_update_job(updJob)
         else:
-            r = self._parse_update_jobs(updJob)
-            self._display_update_jobs(r)
+            pkgs = self._get_package_name_from_ids(package_ids)
+            jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
+                    show_components=False)
+            self._display_update_jobs(*jobs)
 
         self._reset_conary_callback()
 
@@ -720,7 +748,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob, suggMap = self.conary.build_update_job(applyList)
         return updJob
 
-    def _parse_update_jobs(self, updJob):
+    def _parse_updates(self, updJob):
         jobs_list = updJob.getJobs()
         r = []
         for job in jobs_list:
@@ -735,7 +763,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             r.append(trove_info)
         return r
 
-    def _display_update_jobs(self, pkg_list):
+    def _display_updates(self, pkg_list):
         data = self.xmlcache.resolve_list([name for ((name, version, flavor), info) in pkg_list])
         new_res = []
         for pkg in data:
@@ -755,8 +783,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         cb = GetUpdateCallback(self, self.cfg)
         updJob = self._get_updateall_job(cb)
-        r = self._parse_update_jobs(updJob)
-        self._display_update_jobs(r)
+        r = self._parse_updates(updJob)
+        self._display_updates(r)
 
         self._reset_conary_callback()
 
