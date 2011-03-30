@@ -7,7 +7,7 @@ import itertools
 import os
 
 from conary.conaryclient import ConaryClient, cmdline
-from conary import conarycfg
+from conary import conarycfg, conaryclient
 from conary.versions import Label
 from conary.errors import TroveNotFound
 from conary.conaryclient.update import NoNewTrovesError
@@ -227,8 +227,6 @@ class ConaryPk:
                     self.job_cache.cacheUpdateJob(applyList, updJob)
             except conaryclient.NoNewTrovesError:
                 suggMap = {}
-            except conaryclient.DepResolutionFailure as error :
-                raise
 
         return updJob, suggMap
 

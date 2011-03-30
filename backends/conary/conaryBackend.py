@@ -213,6 +213,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
         return updJob
 
+    def _build_update_job(self, applyList):
+        '''Wrapper around build_update_job() so we are add exception handling
+        '''
+        try:
+            ret = self.conary.build_update_job(applyList)
+        except conaryclient.DepResolutionFailure as e:
+            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
+            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
+        return ret
+
     def _get_package_update(self, pkg_list):
         applyList = []
         for name, version, flavor in pkg_list:
@@ -220,7 +230,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 applyList.append((name, (version, flavor), (None, None), False))
             else:
                 applyList.append((name, (None, None), (version, flavor), True))
-        return self.conary.build_update_job(applyList)
+        return self._build_update_job(applyList)
 
     def _resolve_list(self, pkg_list, filters):
         # 1. Resolve through local db
@@ -745,7 +755,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
 
         self.status(STATUS_RUNNING)
-        updJob, suggMap = self.conary.build_update_job(applyList)
+        updJob, suggMap = self._build_update_job(applyList)
         return updJob
 
     def _parse_updates(self, updJob):
