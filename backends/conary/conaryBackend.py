@@ -514,22 +514,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.package(pkg_id, INFO_UPDATING, '')
 
     def install_packages(self, only_trusted, package_ids, simulate=False):
-        """
-            alias of update_packages
-        """
-
-        # FIXME: use only_trusted
-
-        self.update_packages(only_trusted, package_ids, simulate)
-
-    @ExceptionHandler
-    def update_packages(self, only_trusted, package_ids, simulate=False):
-        '''
-        Implement the {backend}-{install, update}-packages functionality
-        '''
-
-        # FIXME: use only_trusted
-
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
@@ -845,12 +829,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	Simulate an install of one or more packages.
         '''
 	return self.install_packages(False, package_ids, simulate=True)
-
-    def simulate_update_packages(self, package_ids):
-	'''
-	Simulate an update of one or more packages.
-        '''
-	return self.update_packages(False, package_ids, simulate=True)
 
     def simulate_remove_packages(self, package_ids):
 	'''
