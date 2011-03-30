@@ -333,14 +333,14 @@ void Transaction::acceptEula(const Client::EulaInfo &info)
     RUN_TRANSACTION(AcceptEula(info.id))
 }
 
-void Transaction::downloadPackages(const QList<QSharedPointer<Package> > &packages)
+void Transaction::downloadPackages(const QList<QSharedPointer<Package> > &packages, bool storeInCache)
 {
-    RUN_TRANSACTION(DownloadPackages(Util::packageListToPids(packages)))
+    RUN_TRANSACTION(DownloadPackages(storeInCache, Util::packageListToPids(packages)))
 }
 
-void Transaction::downloadPackages(const QSharedPointer<Package> &package)
+void Transaction::downloadPackages(const QSharedPointer<Package> &package, bool storeInCache)
 {
-    downloadPackages(QList<QSharedPointer<Package> >() << package);
+    downloadPackages(QList<QSharedPointer<Package> >() << package, storeInCache);
 }
 
 void Transaction::getCategories()
