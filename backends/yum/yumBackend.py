@@ -1113,17 +1113,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             remote = pkg_download.returnSimple('relativepath')
-            local = os.path.basename(remote)
-            if not os.path.exists(directory):
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
-                return
-            local = os.path.join(directory, local)
-            if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists as %s" % local, exit=False)
-                return
+            if directory:
+                local = os.path.basename(remote)
+                if not os.path.exists(directory):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
+                    return
+                local = os.path.join(directory, local)
+                if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists as %s" % local, exit=False)
+                    return
             # Disable cache otherwise things won't download
             repo.cache = 0
-            pkg_download.localpath = local #Hack:To set the localpath we want
+
+            #  set the localpath we want
+            if directory:
+                pkg_download.localpath = local
             try:
                 path = repo.getPackage(pkg_download)
 
