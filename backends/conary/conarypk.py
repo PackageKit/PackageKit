@@ -209,7 +209,7 @@ class ConaryPk:
             tmp = ""
         return tmp + cmdline.toTroveSpec( trove[0], str(trove[1]), None)
 
-    def build_update_job(self, applyList, cache=True):
+    def _build_update_job(self, applyList, cache=True):
         '''Build an UpdateJob from applyList
         '''
         updJob = self.cli.newUpdateJob()
@@ -229,6 +229,31 @@ class ConaryPk:
                 suggMap = {}
 
         return updJob, suggMap
+
+    def get_package_update(self, pkg_list):
+        '''Build an UpdateJob according to trove specs in pkg_list
+
+        Returns a (UpdateJob, suggMap) tuple.
+        '''
+        applyList = []
+        for name, version, flavor in pkg_list:
+            if name.startswith('-'):
+                applyList.append((name, (version, flavor), (None, None), False))
+            else:
+                applyList.append((name, (None, None), (version, flavor), True))
+        return self._build_update_job(applyList)
+
+    def get_updateall_job(self, callback):
+        '''Build an UpdateJob for updateall
+
+        Returns a (UpdateJob, suggMap) tuple.
+        '''
+        self.cli.setUpdateCallback(callback)
+
+        updateItems = self.cli.fullUpdateItemList()
+        applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
+
+        return self._build_update_job(applyList)
 
 if __name__ == "__main__":
     conary = ConaryPk()

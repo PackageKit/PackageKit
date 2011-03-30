@@ -213,24 +213,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
         return updJob
 
-    def _build_update_job(self, applyList):
-        '''Wrapper around build_update_job() so we are add exception handling
+    def _get_package_update(self, pkg_list):
+        '''Wrapper around get_package_update() so we are add exception handling
         '''
         try:
-            ret = self.conary.build_update_job(applyList)
+            ret = self.conary.get_package_update(pkg_list)
         except conaryclient.DepResolutionFailure as e:
             deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
             self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
         return ret
-
-    def _get_package_update(self, pkg_list):
-        applyList = []
-        for name, version, flavor in pkg_list:
-            if name.startswith('-'):
-                applyList.append((name, (version, flavor), (None, None), False))
-            else:
-                applyList.append((name, (None, None), (version, flavor), True))
-        return self._build_update_job(applyList)
 
     def _resolve_list(self, pkg_list, filters):
         # 1. Resolve through local db
@@ -475,7 +466,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
-        updJob = self._get_updateall_job(cb)
+        updJob, suggMap = self.conary.get_updateall_job(cb)
 
         self._apply_update_job(updJob)
         self._reset_conary_callback()
@@ -673,16 +664,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return UPDATE_STATE_STABLE
 
-    def _get_updateall_job(self, callback):
-        self.client.setUpdateCallback(callback)
-
-        updateItems = self.client.fullUpdateItemList()
-        applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
-
-        self.status(STATUS_RUNNING)
-        updJob, suggMap = self._build_update_job(applyList)
-        return updJob
-
     def _parse_updates(self, updJob):
         jobs_list = updJob.getJobs()
         r = []
@@ -717,7 +698,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         cb = GetUpdateCallback(self, self.cfg)
-        updJob = self._get_updateall_job(cb)
+        updJob, suggMap = self.conary.get_updateall_job(cb)
         r = self._parse_updates(updJob)
         self._display_updates(r)
 
