@@ -568,65 +568,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self._reset_conary_callback()
 
-    def _get_metadata(self, package_id, field):
-        '''
-        Retrieve metadata from the repository and return result
-        field should be one of:
-                bibliography
-                url
-                notes
-                crypto
-                licenses
-                shortDesc
-                longDesc
-                categories
-        '''
-
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_QUERY)
-        # XXX the usage of self.get_package_from_id is wrong here. The return
-        # value is a list.
-        n, v, f = self.get_package_from_id(package_id)
-        trvList = self.client.repos.findTrove(self.cfg.installLabelPath,
-                                     (n, v, f),
-                                     defaultFlavor = self.cfg.flavor)
-
-        troves = self.client.repos.getTroves(trvList, withFiles=False)
-        result = ''
-        for trove in troves:
-            result = trove.getMetadata()[field]
-        return result
-
-    def _get_update_extras(self, package_id):
-        notice = self._get_metadata(package_id, 'notice') or " "
-        urls = {'jira':[], 'cve' : [], 'vendor': []}
-        if notice:
-            # Update Details
-            desc = notice['description']
-            # Update References (Jira, CVE ...)
-            refs = notice['references']
-            if refs:
-                for ref in refs:
-                    typ = ref['type']
-                    href = ref['href']
-                    title = ref['title']
-                    if typ in ('jira', 'cve') and href != None:
-                        if title == None:
-                            title = ""
-                        urls[typ].append("%s;%s" % (href, title))
-                    else:
-                        urls['vendor'].append("%s;%s" % (ref['href'], ref['title']))
-
-            # Reboot flag
-            if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-                reboot = 'system'
-            else:
-                reboot = 'none'
-            return _format_str(desc), urls, reboot
-        else:
-            return "", urls, "none"
-
     def _check_for_reboot(self, name):
         if name in self.rebootpkgs:
             self.require_restart(RESTART_SYSTEM, "")
