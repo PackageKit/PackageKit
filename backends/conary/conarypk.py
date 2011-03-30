@@ -3,14 +3,16 @@
 ###  greets mkj
 ### zodman@foresightlinux.org under the WTFPL http://sam.zoy.org/wtfpl/
 
+import copy
 import itertools
 import os
 
-from conary.conaryclient import ConaryClient, cmdline
 from conary import conarycfg, conaryclient
-from conary.versions import Label
-from conary.errors import TroveNotFound
+from conary import errors
+from conary.conaryclient import ConaryClient, cmdline
+from conary.conaryclient import cml, systemmodel, modelupdate
 from conary.conaryclient.update import NoNewTrovesError
+from conary.versions import Label
 from conary.deps import deps
 
 from conary.lib import sha1helper
@@ -56,6 +58,63 @@ def parse_jobs(updJob, excludes=[], show_components=True):
         else:
             update_jobs.append(job)
     return (install_jobs, erase_jobs, update_jobs)
+
+def _model_build_update_job(cfg, model, modelFile, callback):
+    '''Build an UpdateJob based on the system model
+    '''
+    # Copied from conary/cmds/updatecmd.py:_updateTroves(), with slight
+    # modification
+
+    client = conaryclient.ConaryClient(cfg, modelFile=modelFile)
+    client.setUpdateCallback(callback)
+
+    updJob = client.newUpdateJob()
+    try:
+        tc = modelupdate.CMLTroveCache(client.getDatabase(),
+                                               client.getRepos(),
+                                               callback = callback)
+        tcPath = cfg.root + cfg.dbPath + '/modelcache'
+        if os.path.exists(tcPath):
+            callback.loadingModelCache()
+            tc.load(tcPath)
+        ts = client.cmlGraph(model)
+        try:
+            suggMap = client._updateFromTroveSetGraph(updJob, ts, tc,
+                                        callback = callback)
+        except errors.TroveSpecsNotFound:
+            callback.done()
+            client.close()
+            return updJob, {}
+
+        finalModel = copy.deepcopy(model)
+        if model.suggestSimplifications(tc, ts.g):
+            ts2 = client.cmlGraph(model)
+            updJob2 = client.newUpdateJob()
+            try:
+                suggMap2 = client._updateFromTroveSetGraph(updJob2, ts2, tc)
+            except errors.TroveNotFound:
+                pass
+            else:
+                if (suggMap == suggMap2 and
+                    updJob.getJobs() == updJob2.getJobs()):
+                    ts = ts2
+                    finalModel = model
+                    updJob = updJob2
+                    suggMap = suggMap2
+
+        model = finalModel
+        modelFile.model = finalModel
+
+        if tc.cacheModified():
+            callback.savingModelCache()
+            tc.save(tcPath)
+            callback.done()
+    except:
+        callback.done()
+        client.close()
+        raise
+
+    return updJob, suggMap
 
 class UpdateJobCache:
     '''A cache to store (freeze) conary UpdateJobs.
@@ -131,6 +190,11 @@ class ConaryPk:
     def clear_job_cache(self):
         self.job_cache.clearCache()
 
+    def _using_system_model(self):
+        # Directly check the default location. Ignore conary configuration.
+        # Change me if this proves to be problematic.
+        return os.path.isfile('/etc/conary/system-model')
+
     def _get_repos(self):
         """ get repos for do request query """
         return self.repos
@@ -163,7 +227,7 @@ class ConaryPk:
         try:
             troves = self.db.findTrove( None ,(name , None, None ))
             return troves
-        except TroveNotFound:
+        except errors.TroveNotFound:
             return []
 
     def repo_query(self, name, installLabel = None):
@@ -175,7 +239,7 @@ class ConaryPk:
             troves = repos.findTrove( label ,( name, None ,self.flavor ) )
             #return repos.getTroves(troves)
             return troves
-        except TroveNotFound:
+        except errors.TroveNotFound:
             return []
 
     def get_metadata( self, name , installLabel = None):
@@ -243,17 +307,35 @@ class ConaryPk:
                 applyList.append((name, (None, None), (version, flavor), True))
         return self._build_update_job(applyList)
 
-    def get_updateall_job(self, callback):
-        '''Build an UpdateJob for updateall
+    def _model_get_updateall_job(self, callback):
+        model = cml.CML(self.cfg)
+        modelFile = systemmodel.SystemModelFile(model)
 
-        Returns a (UpdateJob, suggMap) tuple.
-        '''
+        model.refreshVersionSnapshots()
+        ret = _model_build_update_job(self.cfg, model, modelFile, callback)
+
+        return ret
+
+    def _classic_get_updateall_job(self, callback):
         self.cli.setUpdateCallback(callback)
 
         updateItems = self.cli.fullUpdateItemList()
         applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
 
-        return self._build_update_job(applyList)
+        ret = self._build_update_job(applyList)
+
+        return ret
+
+    def get_updateall_job(self, callback):
+        '''Build an UpdateJob for updateall
+
+        Returns a (UpdateJob, suggMap) tuple.
+        '''
+        if self._using_system_model():
+            ret = self._model_get_updateall_job(callback)
+        else:
+            ret = self._classic_get_updateall_job(callback)
+        return ret
 
 if __name__ == "__main__":
     conary = ConaryPk()
