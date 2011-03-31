@@ -212,7 +212,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         "Previously cached file is broken. Try again")
         except trove.TroveIntegrityError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
-        return updJob
 
     def _get_package_update(self, pkg_list):
         '''Wrapper around get_package_update() so we are add exception handling
