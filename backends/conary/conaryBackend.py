@@ -601,7 +601,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return RESTART_NONE
 
-    def _get_info(self, name):
+    def _get_update_priority(self, name):
         if name in self.rebootpkgs:
             return INFO_SECURITY
         elif name in self.restartpkgs:
@@ -643,32 +643,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return UPDATE_STATE_STABLE
 
-    def _parse_updates(self, updJob):
-        jobs_list = updJob.getJobs()
-        r = []
-        for job in jobs_list:
-            job = job[0][:3]
-            (name, (oldVer, oldFla), (newVer, newFla)) = job
+    def _display_updates(self, jobs):
+        '''Emit Package signals for a list of update jobs
 
-            info = self._get_info(name)
-            if not newVer:
-                trove_info = ((name, oldVer, oldFla), info)
-            else:
-                trove_info = ((name, newVer, newFla), info)
-            r.append(trove_info)
-        return r
-
-    def _display_updates(self, pkg_list):
-        data = self.xmlcache.resolve_list([name for ((name, version, flavor), info) in pkg_list])
-        new_res = []
-        for pkg in data:
-            for (trove, info) in pkg_list:
-                name, version, flav = trove
-                if name == pkg["name"]:
-                    npkg = self._convert_package(trove, pkg)
-                    new_res.append((npkg, info))
-
-        self._show_package_list(new_res)
+        jobs should only contain installs and updates. Shouldn't get any erase
+        jobs.
+        '''
+        for (name, (oldVer, oldFla), (newVer, newFla)) in jobs:
+            v = str(newVer.trailingRevision())
+            f = conarypk.get_arch(newFla)
+            pkg_id = get_package_id(name, v, f, '')
+            info = self._get_update_priority(name)
+            self.package(pkg_id, info, '')
 
     @ExceptionHandler
     def get_updates(self, filters):
@@ -678,8 +664,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         cb = GetUpdateCallback(self, self.cfg)
         updJob, suggMap = self.conary.get_updateall_job(cb)
-        r = self._parse_updates(updJob)
-        self._display_updates(r)
+        installs, erases, updates = conarypk.parse_jobs(updJob,
+                show_components=False)
+        self._display_updates(installs + updates)
 
         self._reset_conary_callback()
 
