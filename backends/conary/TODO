@@ -3,3 +3,5 @@
 * should support system model
   - the conary-api related code should all be put in conarypk.py
   - Note: some allow_cancel/status() calls may be lost when moving the code.
+* fix use of post_process and implement _pkg_compare in conaryFilter.py
+  - http://lists.freedesktop.org/archives/packagekit/2011-March/006245.html
