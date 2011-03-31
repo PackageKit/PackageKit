@@ -1,8 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
- * Copyright (C) 2008, 2009 Valeriy Lyasotskiy <onestep@ukr.net>
- * Copyright (C) 2010 Jonathan Conder <j@skurvy.no-ip.org>
+ * Copyright (C) 2008-2010 Valeriy Lyasotskiy <onestep@ukr.net>
+ * Copyright (C) 2010-2011 Jonathan Conder <jonno.conder@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -21,23 +21,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <alpm.h>
 #include <pk-backend.h>
 
-void	 backend_get_packages	(PkBackend	*backend,
-				 PkBitfield	 filters);
-void	 backend_search_details	(PkBackend	*backend,
-				 PkBitfield	 filters,
-				 gchar		**values);
-void	 backend_search_files	(PkBackend	*backend,
-				 PkBitfield	 filters,
-				 gchar		**values);
-void	 backend_search_groups	(PkBackend	*backend,
-				 PkBitfield	 filters,
-				 gchar		**values);
-void	 backend_search_names	(PkBackend	*backend,
-				 PkBitfield	 filters,
-				 gchar		**values);
-void	 backend_what_provides	(PkBackend	*backend,
-				 PkBitfield	 filters,
-				 PkProvidesEnum	 provides,
-				 gchar		**values);
+gchar	*alpm_pkg_build_id	(pmpkg_t *pkg);
+
+void	 pk_backend_pkg		(PkBackend *self, pmpkg_t *pkg,
+				 PkInfoEnum info);
+
+pmpkg_t	*pk_backend_find_pkg	(PkBackend *self, const gchar *package_id,
+				 GError **error);

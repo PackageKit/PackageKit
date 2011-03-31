@@ -1,8 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
- * Copyright (C) 2008, 2009 Valeriy Lyasotskiy <onestep@ukr.net>
- * Copyright (C) 2010 Jonathan Conder <j@skurvy.no-ip.org>
+ * Copyright (C) 2008-2010 Valeriy Lyasotskiy <onestep@ukr.net>
+ * Copyright (C) 2010-2011 Jonathan Conder <jonno.conder@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -21,25 +21,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <alpm.h>
+#include <gio/gio.h>
 #include <pk-backend.h>
 
-void	 backend_download_packages		(PkBackend	*backend,
-						 gchar		**package_ids,
-						 const gchar	*directory);
-void	 backend_install_files			(PkBackend	*backend,
-						 gboolean	 only_trusted,
-						 gchar		**full_paths);
-void	 backend_simulate_install_files		(PkBackend	*backend,
-						 gchar		**full_paths);
+extern PkBackend *backend;
+extern GCancellable *cancellable;
 
-void	 backend_install_packages		(PkBackend	*backend,
-						 gboolean	 only_trusted,
-						 gchar		**package_ids);
-void	 backend_simulate_install_packages	(PkBackend	*backend,
-						 gchar		**package_ids);
+extern pmdb_t *localdb;
 
-void	 backend_update_packages		(PkBackend	*backend,
-						 gboolean	 only_trusted,
-						 gchar		**package_ids);
-void	 backend_simulate_update_packages	(PkBackend	*backend,
-						 gchar		**package_ids);
+extern gchar *xfercmd;
+extern alpm_list_t *holdpkgs;
+extern alpm_list_t *syncfirsts;
+
+gint		 pk_backend_fetchcb	(const gchar *url, const gchar *path,
+					 gint force);
+
+void		 pk_backend_run		(PkBackend *self, PkStatusEnum status,
+					 PkBackendThreadFunc func);
+
+void		 pk_backend_cancel	(PkBackend *self);
+
+gboolean	 pk_backend_cancelled	(PkBackend *self);
+
+gboolean	 pk_backend_finish	(PkBackend *self, GError *error);

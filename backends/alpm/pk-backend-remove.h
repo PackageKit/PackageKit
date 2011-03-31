@@ -1,8 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
- * Copyright (C) 2008, 2009 Valeriy Lyasotskiy <onestep@ukr.net>
- * Copyright (C) 2010 Jonathan Conder <j@skurvy.no-ip.org>
+ * Copyright (C) 2008-2010 Valeriy Lyasotskiy <onestep@ukr.net>
+ * Copyright (C) 2010-2011 Jonathan Conder <jonno.conder@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,10 +20,3 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-#include <pk-backend.h>
-
-void	 backend_error		(PkBackend	*backend,
-				 GError		*error);
-void	 backend_message	(PkBackend	*backend,
-				 const gchar	*message);
