@@ -26,10 +26,38 @@
 #include <string.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-sync.h"
 #include "pk-backend-transaction.h"
+
+static gint
+alpm_add_dbtarget (const gchar *repo, const gchar *name)
+{
+	const alpm_list_t *i;
+	pmpkg_t *pkg;
+
+	g_return_val_if_fail (repo != NULL, -1);
+	g_return_val_if_fail (name != NULL, -1);
+
+	for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+		if (g_strcmp0 (alpm_db_get_name (i->data), repo) == 0) {
+			break;
+		}
+	}
+
+	if (i == NULL) {
+		pm_errno = PM_ERR_DB_NOT_FOUND;
+		return -1;
+	}
+
+	pkg = alpm_db_get_pkg (i->data, name);
+	if (pkg == NULL) {
+		pm_errno = PM_ERR_PKG_NOT_FOUND;
+		return -1;
+	}
+
+	return alpm_add_pkg (pkg);
+}
 
 static gboolean
 pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
@@ -47,7 +75,7 @@ pk_backend_transaction_sync_targets (PkBackend *self, GError **error)
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 
-		if (alpm_sync_dbtarget (repo, name) < 0) {
+		if (alpm_add_dbtarget (repo, name) < 0) {
 			g_set_error (error, ALPM_ERROR, pm_errno, "%s/%s: %s",
 				     repo, name, alpm_strerrorlast ());
 			g_strfreev (package);

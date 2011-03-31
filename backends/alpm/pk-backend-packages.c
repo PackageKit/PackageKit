@@ -22,7 +22,6 @@
  */
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-groups.h"
 #include "pk-backend-packages.h"
@@ -45,9 +44,8 @@ alpm_pkg_build_id (pmpkg_t *pkg)
 	}
 
 	db = alpm_pkg_get_db (pkg);
-	if (db == NULL) {
-		repo = "local";
-	} else if (db == localdb) {
+	/* TODO: check */
+	if (db == NULL || db == localdb) {
 		repo = "installed";
 	} else {
 		repo = alpm_db_get_name (db);

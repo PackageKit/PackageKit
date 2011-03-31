@@ -28,7 +28,6 @@
 #include <sys/stat.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-packages.h"
 #include "pk-backend-transaction.h"
@@ -251,7 +250,7 @@ pk_backend_update_databases (PkBackend *self, gint force, GError **error) {
 		return FALSE;
 	}
 
-	alpm_logaction ((gchar *) "synchronizing package lists\n");
+	alpm_logaction ("synchronizing package lists\n");
 
 	dlcb = alpm_option_get_dlcb ();
 	totaldlcb = alpm_option_get_totaldlcb ();
@@ -326,26 +325,6 @@ alpm_pkg_is_syncfirst (pmpkg_t *pkg)
 	return FALSE;
 }
 
-static gboolean
-alpm_pkg_is_update (pmpkg_t *pkg, pmpkg_t *update)
-{
-	gint result;
-
-	g_return_val_if_fail (pkg != NULL, FALSE);
-	g_return_val_if_fail (update != NULL, FALSE);
-
-	result = alpm_pkg_vercmp (alpm_pkg_get_version (pkg),
-				  alpm_pkg_get_version (update));
-
-	if (result < 0) {
-		return TRUE;
-	} else if (result > 0) {
-		return alpm_pkg_has_force (update) != 0;
-	} else {
-		return FALSE;
-	}
-}
-
 static pmpkg_t *
 alpm_pkg_find_update (pmpkg_t *pkg, const alpm_list_t *dbs)
 {
@@ -360,7 +339,8 @@ alpm_pkg_find_update (pmpkg_t *pkg, const alpm_list_t *dbs)
 		pmpkg_t *update = alpm_db_get_pkg (dbs->data, name);
 
 		if (update != NULL) {
-			if (alpm_pkg_is_update (pkg, update)) {
+			if (alpm_pkg_vercmp (alpm_pkg_get_version (update),
+					     alpm_pkg_get_version (pkg)) > 0) {
 				return update;
 			} else {
 				return NULL;

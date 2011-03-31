@@ -25,55 +25,9 @@
 #include <pk-backend.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-depends.h"
 #include "pk-backend-error.h"
 #include "pk-backend-packages.h"
-
-static pmpkg_t *
-alpm_list_find_provider (const alpm_list_t *pkgs, pmdepend_t *depend)
-{
-	g_return_val_if_fail (depend != NULL, NULL);
-
-	/* find a package that provides depend */
-	for (; pkgs != NULL; pkgs = pkgs->next) {
-		if (alpm_depcmp (pkgs->data, depend) != 0) {
-			return pkgs->data;
-		}
-	}
-
-	return NULL;
-}
-
-static pmpkg_t *
-alpm_dbs_find_provider (const alpm_list_t *dbs, pmdepend_t *depend)
-{
-	const alpm_list_t *i;
-
-	g_return_val_if_fail (depend != NULL, NULL);
-
-	/* find the default package that provides depend */
-	for (i = dbs; i != NULL; i = i->next) {
-		const gchar *name = alpm_dep_get_name (depend);
-		pmpkg_t *provider = alpm_db_get_pkg (i->data, name);
-
-		if (provider != NULL && alpm_depcmp (provider, depend) != 0) {
-			return provider;
-		}
-	}
-
-	/* find any package that provides depend */
-	for (i = dbs; i != NULL; i = i->next) {
-		const alpm_list_t *pkgcache = alpm_db_get_pkgcache (i->data);
-		pmpkg_t *provider = alpm_list_find_provider (pkgcache, depend);
-
-		if (provider != NULL) {
-			return provider;
-		}
-	}
-
-	return NULL;
-}
 
 static pmpkg_t *
 alpm_list_find_pkg (const alpm_list_t *pkgs, const gchar *name)
@@ -91,13 +45,13 @@ alpm_list_find_pkg (const alpm_list_t *pkgs, const gchar *name)
 
 static alpm_list_t *
 pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
-			  pmdepend_t *depend, GError **error)
+			  const gchar *depend, GError **error)
 {
 	PkBitfield filters;
 	gboolean recursive, skip_local, skip_remote;
 
 	pmpkg_t *provider;
-	const alpm_list_t *pkgcache, *syncdbs;
+	alpm_list_t *pkgcache, *syncdbs;
 
 	g_return_val_if_fail (self != NULL, pkgs);
 	g_return_val_if_fail (depend != NULL, pkgs);
@@ -109,13 +63,13 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 					  PK_FILTER_ENUM_NOT_INSTALLED);
 	skip_remote = pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED);
 
-	if (alpm_list_find_provider (pkgs, depend) != NULL) {
+	if (alpm_find_satisfier (pkgs, depend) != NULL) {
 		return pkgs;
 	}
 
 	/* look for local dependencies */
 	pkgcache = alpm_db_get_pkgcache (localdb);
-	provider = alpm_list_find_provider (pkgcache, depend);
+	provider = alpm_find_satisfier (pkgcache, depend);
 
 	if (provider != NULL) {
 		if (!skip_local) {
@@ -131,7 +85,7 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 
 	/* look for remote dependencies */
 	syncdbs = alpm_option_get_syncdbs ();
-	provider = alpm_dbs_find_provider (syncdbs, depend);
+	provider = alpm_find_dbs_satisfier (syncdbs, depend);
 
 	if (provider != NULL) {
 		if (!skip_remote) {
@@ -142,11 +96,9 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 			pkgs = alpm_list_add (pkgs, provider);
 		}
 	} else {
-		gchar *string = alpm_dep_compute_string (depend);
 		int code = PM_ERR_UNSATISFIED_DEPS;
-		g_set_error (error, ALPM_ERROR, code, "%s: %s", string,
+		g_set_error (error, ALPM_ERROR, code, "%s: %s", depend,
 			     alpm_strerror (code));
-		free (string);
 	}
 
 	return pkgs;
@@ -222,12 +174,16 @@ pk_backend_get_depends_thread (PkBackend *self)
 
 		depends = alpm_pkg_get_depends (i->data);
 		for (; depends != NULL; depends = depends->next) {
+			gchar *depend;
+
 			if (pk_backend_cancelled (self) || error != NULL) {
 				break;
 			}
 
-			pkgs = pk_backend_find_provider (self, pkgs,
-							 depends->data, &error);
+			depend = alpm_dep_compute_string (depends->data);
+			pkgs = pk_backend_find_provider (self, pkgs, depend,
+							 &error);
+			g_free (depend);
 		}
 	}
 

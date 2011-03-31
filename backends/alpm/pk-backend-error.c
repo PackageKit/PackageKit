@@ -74,6 +74,10 @@ pk_backend_error (PkBackend *self, GError *error)
 				code = PK_ERROR_ENUM_INTERNAL_ERROR;
 				break;
 
+			case PM_ERR_DISK_SPACE:
+				code = PK_ERROR_ENUM_NO_SPACE_ON_DEVICE;
+				break;
+
 			case PM_ERR_HANDLE_NOT_NULL:
 			case PM_ERR_DB_NOT_NULL:
 			case PM_ERR_TRANS_NOT_NULL:
@@ -95,12 +99,13 @@ pk_backend_error (PkBackend *self, GError *error)
 				code = PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG;
 				break;
 
-			case PM_ERR_DB_WRITE:
-				code = PK_ERROR_ENUM_REPO_NOT_AVAILABLE;
-				break;
-
+			case PM_ERR_DB_VERSION:
 			case PM_ERR_DB_REMOVE:
 				code = PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR;
+				break;
+
+			case PM_ERR_DB_WRITE:
+				code = PK_ERROR_ENUM_REPO_NOT_AVAILABLE;
 				break;
 
 			case PM_ERR_SERVER_BAD_URL:

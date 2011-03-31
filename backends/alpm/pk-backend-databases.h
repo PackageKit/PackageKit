@@ -24,8 +24,6 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-extern pmdb_t *localdb;
-
 gboolean	 pk_backend_initialize_databases	(PkBackend *self,
 							 GError **error);
 

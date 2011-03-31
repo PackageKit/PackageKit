@@ -26,7 +26,6 @@
 #include <string.h>
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-groups.h"
 #include "pk-backend-packages.h"
 #include "pk-backend-search.h"

@@ -28,11 +28,10 @@
 
 #include "pk-backend-alpm.h"
 #include "pk-backend-config.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 
 typedef struct {
-	gboolean ilovecandy, showsize, totaldl, usedelta, usesyslog;
+	gboolean checkspace, ilovecandy, showsize, totaldl, usedelta, usesyslog;
 
 	gchar *arch, *cleanmethod, *dbpath, *logfile, *root, *xfercmd;
 
@@ -98,6 +97,14 @@ pk_backend_config_free (PkBackendConfig *config)
 }
 
 static void
+pk_backend_config_set_checkspace (PkBackendConfig *config)
+{
+	g_return_if_fail (config != NULL);
+
+	config->checkspace = TRUE;
+}
+
+static void
 pk_backend_config_set_ilovecandy (PkBackendConfig *config)
 {
 	g_return_if_fail (config != NULL);
@@ -144,6 +151,7 @@ typedef struct {
 
 /* keep this in alphabetical order */
 static const PkBackendConfigBoolean pk_backend_config_boolean_options[] = {
+	{ "CheckSpace", pk_backend_config_set_checkspace },
 	{ "ILoveCandy", pk_backend_config_set_ilovecandy },
 	{ "ShowSize", pk_backend_config_set_showsize },
 	{ "TotalDownload", pk_backend_config_set_totaldl },
@@ -659,17 +667,12 @@ pk_backend_config_configure_repos (PkBackendConfig *config, GError **error)
 
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	if (alpm_db_unregister_all () < 0) {
-		g_set_error_literal (error, ALPM_ERROR, pm_errno,
-				     alpm_strerrorlast ());
-		return FALSE;
-	}
-
-	localdb = alpm_db_register_local ();
-	if (localdb == NULL) {
-		g_set_error (error, ALPM_ERROR, pm_errno, "[%s]: %s", "local",
-			     alpm_strerrorlast ());
-		return FALSE;
+	for (i = alpm_option_get_syncdbs (); i != NULL; i = i->next) {
+		if (alpm_db_unregister (i->data) < 0) {
+			g_set_error_literal (error, ALPM_ERROR, pm_errno,
+					     alpm_strerrorlast ());
+			return FALSE;
+		}
 	}
 
 	for (i = config->repos; i != NULL; i = i->next) {
@@ -705,6 +708,7 @@ pk_backend_config_configure_alpm (PkBackendConfig *config, GError **error)
 		return FALSE;
 	}
 
+	alpm_option_set_checkspace (config->checkspace);
 	alpm_option_set_usedelta (config->usedelta);
 	alpm_option_set_usesyslog (config->usesyslog);
 	alpm_option_set_arch (config->arch);

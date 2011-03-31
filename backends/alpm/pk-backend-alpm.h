@@ -28,6 +28,8 @@
 extern PkBackend *backend;
 extern GCancellable *cancellable;
 
+extern pmdb_t *localdb;
+
 extern gchar *xfercmd;
 extern alpm_list_t *holdpkgs;
 extern alpm_list_t *syncfirsts;

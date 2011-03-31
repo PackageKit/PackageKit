@@ -26,7 +26,6 @@
 #include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 
-pmdb_t *localdb = NULL;
 static GHashTable *disabled = NULL;
 
 static GHashTable *

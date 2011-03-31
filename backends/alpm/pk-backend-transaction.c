@@ -22,7 +22,6 @@
  */
 
 #include "pk-backend-alpm.h"
-#include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-packages.h"
 #include "pk-backend-transaction.h"
@@ -201,10 +200,23 @@ pk_backend_transaction_dlcb (const gchar *basename, off_t complete, off_t total)
 
 static void
 pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
-				    gint percent, gint targets, gint current)
+				    gint percent, gsize targets, gsize current)
 {
 	static gint recent = 101;
-	gint overall = percent + (current - 1) * 100;
+	gsize overall = percent + (current - 1) * 100;
+
+	/* TODO: revert when fixed upstream */
+	if (type == PM_TRANS_PROGRESS_CONFLICTS_START ||
+	    type == PM_TRANS_PROGRESS_DISKSPACE_START ||
+	    type == PM_TRANS_PROGRESS_INTEGRITY_START) {
+		if (current < targets) {
+			overall = percent + current++ * 100;
+		}
+	}
+	
+	if (current < 1 || targets < current) {
+		g_warning ("TODO: CURRENT/TARGETS FAILED for %d", type);
+	}
 
 	g_return_if_fail (target != NULL);
 	g_return_if_fail (0 <= percent && percent <= 100);
@@ -217,6 +229,8 @@ pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
 		case PM_TRANS_PROGRESS_UPGRADE_START:
 		case PM_TRANS_PROGRESS_REMOVE_START:
 		case PM_TRANS_PROGRESS_CONFLICTS_START:
+		case PM_TRANS_PROGRESS_DISKSPACE_START:
+		case PM_TRANS_PROGRESS_INTEGRITY_START:
 			if (percent == recent) {
 				break;
 			}
@@ -225,7 +239,7 @@ pk_backend_transaction_progress_cb (pmtransprog_t type, const gchar *target,
 			pk_backend_set_percentage (backend, overall / targets);
 			recent = percent;
 
-			g_debug ("%d%% of %s complete (%u of %u)", percent,
+			g_debug ("%d%% of %s complete (%zu of %zu)", percent,
 				 target, current, targets);
 			break;
 
@@ -263,6 +277,24 @@ pk_backend_install_ignorepkg (PkBackend *self, pmpkg_t *pkg, gint *result)
 }
 
 static void
+pk_backend_select_provider (PkBackend *self, pmdepend_t *dep,
+			    const alpm_list_t *providers)
+{
+	gchar *output;
+
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (dep != NULL);
+	g_return_if_fail (providers != NULL);
+
+	output = g_strdup_printf ("provider package was selected "
+				  "(%s provides %s)\n",
+				  alpm_pkg_get_name (providers->data),
+				  alpm_dep_get_name (dep));
+	pk_backend_output (self, output);
+	g_free (output);
+}
+
+static void
 pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
 				gpointer data2, gpointer data3, gint *result)
 {
@@ -274,11 +306,6 @@ pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
 			pk_backend_install_ignorepkg (backend, data1, result);
 			break;
 
-		case PM_TRANS_CONV_REMOVE_PKGS:
-			g_debug ("unsafe question %d", question);
-			*result = 0;
-			break;
-
 		case PM_TRANS_CONV_REPLACE_PKG:
 		case PM_TRANS_CONV_CONFLICT_PKG:
 		case PM_TRANS_CONV_CORRUPTED_PKG:
@@ -286,6 +313,16 @@ pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
 			/* these actions are mostly harmless */
 			g_debug ("safe question %d", question);
 			*result = 1;
+			break;
+
+		case PM_TRANS_CONV_REMOVE_PKGS:
+			g_debug ("unsafe question %d", question);
+			*result = 0;
+			break;
+
+		case PM_TRANS_CONV_SELECT_PROVIDER:
+			pk_backend_select_provider (backend, data1, data2);
+			*result = 0;
 			break;
 
 		default:
@@ -332,7 +369,7 @@ pk_backend_transaction_add_done (PkBackend *self, pmpkg_t *pkg)
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ((gchar *) "installed %s (%s)\n", name, version);
+	alpm_logaction ("installed %s (%s)\n", name, version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_pkg_get_optdepends (pkg);
@@ -374,7 +411,7 @@ pk_backend_transaction_remove_done (PkBackend *self, pmpkg_t *pkg)
 	name = alpm_pkg_get_name (pkg);
 	version = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ((gchar *) "removed %s (%s)\n", name, version);
+	alpm_logaction ("removed %s (%s)\n", name, version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 }
 
@@ -419,7 +456,7 @@ pk_backend_transaction_upgrade_done (PkBackend *self, pmpkg_t *pkg,
 	pre = alpm_pkg_get_version (old);
 	post = alpm_pkg_get_version (pkg);
 
-	alpm_logaction ((gchar *) "upgraded %s (%s -> %s)\n", name, pre, post);
+	alpm_logaction ("upgraded %s (%s -> %s)\n", name, pre, post);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
 
 	optdepends = alpm_list_diff (alpm_pkg_get_optdepends (pkg),
@@ -461,6 +498,7 @@ pk_backend_transaction_event_cb (pmtransevt_t event, gpointer data,
 		case PM_TRANS_EVT_INTERCONFLICTS_START:
 		case PM_TRANS_EVT_INTEGRITY_START:
 		case PM_TRANS_EVT_DELTA_INTEGRITY_START:
+		case PM_TRANS_EVT_DISKSPACE_START:
 			pk_backend_transaction_test_commit (backend);
 			break;
 

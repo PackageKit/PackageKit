@@ -34,6 +34,8 @@ PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;
 static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
+pmdb_t *localdb = NULL;
+
 gchar *xfercmd = NULL;
 alpm_list_t *holdpkgs = NULL;
 alpm_list_t *syncfirsts = NULL;
@@ -159,7 +161,7 @@ out:
 }
 
 static void
-pk_backend_logcb (pmloglevel_t level, gchar *format, va_list args)
+pk_backend_logcb (pmloglevel_t level, const gchar *format, va_list args)
 {
 	gchar *output;
 
@@ -217,6 +219,11 @@ pk_backend_initialize_alpm (PkBackend *self, GError **error)
 	}
 
 	backend = self;
+	localdb = alpm_option_get_localdb ();
+	if (localdb == NULL) {
+		g_set_error (error, ALPM_ERROR, pm_errno, "[%s]: %s", "local",
+			     alpm_strerrorlast ());
+	}
 
 	/* set some sane defaults */
 	alpm_option_set_logcb (pk_backend_logcb);

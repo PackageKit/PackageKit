@@ -29,6 +29,25 @@
 #include "pk-backend-install.h"
 #include "pk-backend-transaction.h"
 
+static gint
+alpm_add_file (const gchar *filename)
+{
+	pmpkg_t *pkg;
+
+	g_return_val_if_fail (filename != NULL, -1);
+
+	if (alpm_pkg_load (filename, 1, &pkg) < 0) {
+		return -1;
+	}
+
+	if (alpm_add_pkg (pkg) < 0) {
+		alpm_pkg_free (pkg);
+		return -1;
+	}
+
+	return 0;
+}
+
 static gboolean
 pk_backend_transaction_add_targets (PkBackend *self, GError **error)
 {
@@ -41,7 +60,7 @@ pk_backend_transaction_add_targets (PkBackend *self, GError **error)
 	g_return_val_if_fail (paths != NULL, FALSE);
 
 	for (; *paths != NULL; ++paths) {
-		if (alpm_add_target (*paths) < 0) {
+		if (alpm_add_file (*paths) < 0) {
 			g_set_error (error, ALPM_ERROR, pm_errno, "%s: %s",
 				     *paths, alpm_strerrorlast ());
 			return FALSE;
