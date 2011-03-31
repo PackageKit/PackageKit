@@ -100,11 +100,12 @@ pk_backend_download_packages_thread (PkBackend *self)
 
 	directory = pk_backend_get_string (self, "directory");
 
-	g_return_val_if_fail (directory != NULL, FALSE);
-
-	/* download files to a PackageKit directory */
-	cachedirs = alpm_list_strdup (alpm_option_get_cachedirs ());
-	alpm_option_set_cachedirs (alpm_list_add (NULL, strdup (directory)));
+	if (directory != NULL) {
+		/* download files to a PackageKit directory */
+		cachedirs = alpm_list_strdup (alpm_option_get_cachedirs ());
+		directory = strdup (directory);
+		alpm_option_set_cachedirs (alpm_list_add (NULL, directory));
+	}
 
 	flags |= PM_TRANS_FLAG_NODEPS;
 	flags |= PM_TRANS_FLAG_NOCONFLICTS;
@@ -116,7 +117,9 @@ pk_backend_download_packages_thread (PkBackend *self)
 		pk_backend_transaction_commit (self, &error);
 	}
 
-	alpm_option_set_cachedirs (cachedirs);
+	if (directory != NULL) {
+		alpm_option_set_cachedirs (cachedirs);
+	}
 
 	return pk_backend_transaction_finish (self, error);
 }
