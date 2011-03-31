@@ -116,6 +116,55 @@ def _model_build_update_job(cfg, model, modelFile, callback):
 
     return updJob, suggMap
 
+def _model_apply_update_job(updJob, cfg, modelFile, callback):
+    if not updJob.getJobs():
+        return
+    client = conaryclient.ConaryClient(cfg, modelFile=modelFile)
+    client.setUpdateCallback(callback)
+
+    client.checkWriteableRoot()
+    client.applyUpdateJob(updJob, noRestart=True)
+    modelFile.closeSnapshot()
+
+def _model_do_conary_update(cfg, op, args, callback, dry_run=False):
+    '''Perform a conary update action
+
+    op can be 'install'/'erase'.
+    args is a list of packages.
+
+    If dry_run is True, return (UpdateJob, suggMap) which contains information
+    about the install.
+    '''
+    # Copy of conary/cmds/conarycmd.py:_UpdateCommand and
+    # conary/cmds/updatecmd.py:doModelUpdate
+
+    model = cml.CML(cfg)
+    modelFile = systemmodel.SystemModelFile(model)
+
+    model.appendOpByName(op, args)
+
+    ret = _model_build_update_job(cfg, model, modelFile, callback)
+    if not dry_run:
+        _model_apply_update_job(ret[0], cfg, modelFile, callback)
+    return ret
+
+def _model_do_conary_updateall(cfg, callback, dry_run=False):
+    '''Perform a conary updatell
+
+    If dry_run is True, return (UpdateJob, suggMap) which contains information
+    about the install.
+
+    '''
+    model = cml.CML(cfg)
+    modelFile = systemmodel.SystemModelFile(model)
+
+    model.refreshVersionSnapshots()
+    ret = _model_build_update_job(cfg, model, modelFile, callback)
+
+    if not dry_run:
+        _model_apply_update_job(ret[0], cfg, modelFile, callback)
+    return updJob
+
 class UpdateJobCache:
     '''A cache to store (freeze) conary UpdateJobs.
 
@@ -273,7 +322,7 @@ class ConaryPk:
             tmp = ""
         return tmp + cmdline.toTroveSpec( trove[0], str(trove[1]), None)
 
-    def _build_update_job(self, applyList, cache=True):
+    def _classic_build_update_job(self, applyList, cache=True):
         '''Build an UpdateJob from applyList
         '''
         updJob = self.cli.newUpdateJob()
@@ -294,47 +343,66 @@ class ConaryPk:
 
         return updJob, suggMap
 
-    def get_package_update(self, pkg_list):
-        '''Build an UpdateJob according to trove specs in pkg_list
-
-        Returns a (UpdateJob, suggMap) tuple.
-        '''
-        applyList = []
-        for name, version, flavor in pkg_list:
-            if name.startswith('-'):
-                applyList.append((name, (version, flavor), (None, None), False))
-            else:
-                applyList.append((name, (None, None), (version, flavor), True))
-        return self._build_update_job(applyList)
-
-    def _model_get_updateall_job(self, callback):
-        model = cml.CML(self.cfg)
-        modelFile = systemmodel.SystemModelFile(model)
-
-        model.refreshVersionSnapshots()
-        ret = _model_build_update_job(self.cfg, model, modelFile, callback)
-
+    def _classic_get_package_update(self, pkg_list, callback, dry_run=False):
+        self.cli.setUpdateCallback(callback)
+        applyList = cmdline.parseChangeList(pkg_list, keepExisting=False,
+                                            updateByDefault=True,
+                                            allowChangeSets=False)
+        ret = self._classic_build_update_job(applyList)
+        if not dry_run:
+            self.cli.applyUpdateJob(ret[0])
         return ret
 
-    def _classic_get_updateall_job(self, callback):
+    def _classic_get_updateall_job(self, callback, dry_run):
         self.cli.setUpdateCallback(callback)
 
         updateItems = self.cli.fullUpdateItemList()
         applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
 
-        ret = self._build_update_job(applyList)
-
+        ret = self._classic_build_update_job(applyList)
+        if not dry_run:
+            self.cli.applyUpdateJob(ret[0])
         return ret
 
-    def get_updateall_job(self, callback):
+    def install(self, pkglist, callback, dry_run=False):
+        '''Equivalent to 'conary install'
+
+        pkglist is a list of package specs.
+
+        Returns a (UpdateJob, suggMap) tuple.
+        '''
+        if self._using_system_model():
+            ret = _model_do_conary_update(self.cfg, 'install', pkglist,
+                    callback, dry_run)
+        else:
+            ret = self._classic_get_package_update(pkglist, callback, dry_run)
+        return ret
+
+    def erase(self, pkglist, callback, dry_run=False):
+        '''Equivalent to 'conary erase'
+
+        pkglist is a list of package specs.
+
+        Returns a (UpdateJob, suggMap) tuple.
+        '''
+        if self._using_system_model():
+            ret = _model_do_conary_update(self.cfg, 'erase', pkglist,
+                    callback, dry_run)
+        else:
+            # Append '-' for erasing
+            pkglist = ['-%s' % x for x in pkglist]
+            ret = self._classic_get_package_update(pkglist, callback, dry_run)
+        return ret
+
+    def updateall(self, callback, dry_run=False):
         '''Build an UpdateJob for updateall
 
         Returns a (UpdateJob, suggMap) tuple.
         '''
         if self._using_system_model():
-            ret = self._model_get_updateall_job(callback)
+            ret = _model_do_conary_updateall(self.cfg, callback, dry_run)
         else:
-            ret = self._classic_get_updateall_job(callback)
+            ret = self._classic_get_updateall_job(callback, dry_run)
         return ret
 
 if __name__ == "__main__":

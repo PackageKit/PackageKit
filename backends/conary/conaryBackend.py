@@ -86,7 +86,20 @@ def _format_list(lst):
         return ";".join(lst)
     else:
         return ""
-#}}}
+
+def _get_trovespec_from_ids(package_ids):
+    ret = []
+    for p in package_ids:
+        name, version, arch, data = split_package_id(p)
+        trovespec = name
+        # Omitting version and label. Depend on conary to find the proper package.
+        # This may be problematic.
+        # Also omitting flavor for now.
+        #if arch:
+        #    trovespec = '%s[is: %s]' % (trovespec, arch)
+        ret.append(trovespec)
+    return ret
+
 class PackageKitConaryBackend(PackageKitBaseBackend):
     # Packages that require a reboot
     rebootpkgs = ("kernel", "glibc", "hal", "dbus")
@@ -100,10 +113,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.cfg = conary.cfg
         self.client = conary.cli
         self.conary = conary
-        self.callback = UpdateCallback(self, self.cfg)
         self.xmlcache = XMLCache()
-
-        self._reset_conary_callback()
 
     def _freezeData(self, version, flavor):
         frzVersion = version.freeze()
@@ -198,11 +208,20 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("NOT FOUND %s " % searchlist )
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
-    def _apply_update_job(self, updJob):
-        self.allow_cancel(False)
+    def _do_conary_update(self, op, *args):
+        '''Wrapper around ConaryPk.install/erase() so we are add exception
+        handling
+        '''
         try:
-            # TODO we should really handle the restart case here
-            restartDir = self.client.applyUpdateJob(updJob)
+            if op == 'install':
+                ret = self.conary.install(*args)
+            elif op == 'erase':
+                ret = self.conary.erase(*args)
+            else:
+                self.error(ERROR_INTERNAL_ERROR, 'Unkown command: %s' % op)
+        except conaryclient.DepResolutionFailure as e:
+            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
+            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
         except errors.InternalConaryError as e:
             if str(e) == "Stale update job":
                 self.conary.clear_job_cache()
@@ -212,15 +231,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                         "Previously cached file is broken. Try again")
         except trove.TroveIntegrityError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
-
-    def _get_package_update(self, pkg_list):
-        '''Wrapper around get_package_update() so we are add exception handling
-        '''
-        try:
-            ret = self.conary.get_package_update(pkg_list)
-        except conaryclient.DepResolutionFailure as e:
-            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
-            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
         return ret
 
     def _resolve_list(self, pkg_list, filters):
@@ -434,14 +444,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.files(package_id, ';'.join(files))
 
-    def _reset_conary_callback(self):
-        self.client.setUpdateCallback(self.callback )
-
-    def _get_updateall_job(self, callback):
-        '''Wrapper around get_updateall_job() so we are add exception handling
+    def _do_conary_updateall(self, callback, dry_run):
+        '''Wrapper around ConaryPk.updateall() so we are add exception handling
         '''
         try:
-            ret = self.conary.get_updateall_job(callback)
+            ret = self.conary.updateall(callback, dry_run)
         except xmlrpclib.ProtocolError as e:
             self.error(ERROR_NO_NETWORK, '%s. Try again.' % str(e))
         return ret
@@ -454,10 +461,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
-        updJob, suggMap = self._get_updateall_job(cb)
-
-        self._apply_update_job(updJob)
-        self._reset_conary_callback()
+        self._do_conary_updateall(cb, dry_run=False)
 
 #    @ExceptionHandler
     def refresh_cache(self, force):
@@ -493,21 +497,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.package(pkg_id, INFO_UPDATING, '')
 
     def install_packages(self, only_trusted, package_ids, simulate=False):
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        pkglist = []
-        for package_id in package_ids:
-            name, version, flavor, installed = self._findPackage(package_id)
-            if name:
-                pkglist.append((name, version, flavor))
-
-        self.status(STATUS_INSTALL)
-        updJob, suggMap = self._get_package_update(pkglist)
-        if not simulate:
-            self._apply_update_job(updJob)
-        else:
+        pkglist = _get_trovespec_from_ids(package_ids)
+        cb = UpdateCallback(self, self.cfg)
+        updJob, suggMap = self._do_conary_update('install', pkglist, cb, simulate)
+        if simulate:
             pkgs = self._get_package_name_from_ids(package_ids)
             jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
                     show_components=False)
@@ -519,33 +516,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-remove-packages functionality
         '''
         # TODO: use autoremove
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
-        self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
 
-        pkglist = []
-        for package_id in package_ids:
-            name, version, arch,data = split_package_id(package_id)
-            troveTuple = self.conary.query(name)
-            for name,version,flavor in troveTuple:
-                name = '-%s' % name
-                callback = self.client.getUpdateCallback()
-                if callback.error:
-                    self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
-                pkglist.append((name, version, flavor))
-
-        self.status(STATUS_REMOVE)
-        updJob, suggMap = self._get_package_update(pkglist)
-        if not simulate:
-            self._apply_update_job(updJob)
-        else:
+        pkglist = _get_trovespec_from_ids(package_ids)
+        cb = RemoveCallback(self, self.cfg)
+        updJob, suggMap = self._do_conary_update('remove', pkglist, cb, simulate)
+        if simulate:
             pkgs = self._get_package_name_from_ids(package_ids)
             jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
                     show_components=False)
             self._display_update_jobs(*jobs)
-
-        self._reset_conary_callback()
 
     def _check_for_reboot(self, name):
         if name in self.rebootpkgs:
@@ -672,12 +654,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         cb = GetUpdateCallback(self, self.cfg)
-        updJob, suggMap = self._get_updateall_job(cb)
+        updJob, suggMap = self._do_conary_updateall(cb, dry_run=True)
         installs, erases, updates = conarypk.parse_jobs(updJob,
                 show_components=False)
         self._display_updates(installs + updates)
-
-        self._reset_conary_callback()
 
     def _findPackage(self, package_id):
         '''

@@ -3,7 +3,13 @@
 * should support system model
   - the conary-api related code should all be put in conarypk.py
   - Note: some allow_cancel/status() calls may be lost when moving the code.
-  - implement install/remove-packages
   - implement search
 * fix use of post_process and implement _pkg_compare in conaryFilter.py
   - http://lists.freedesktop.org/archives/packagekit/2011-March/006245.html
+* update conaryCallback.py to base on new callbacks
+  (conary/cmds/updatecmd.py:UpdateCallback) so it can handle system-model.
+* a bug (seems in conary?):
+  - sudo conary install gitweb --> "install gitweb" in /etc/conary/system-model
+    (right)
+  - sudo conary erase gitweb --> "install gitweb" becomes "erase gitweb"
+    (wrong; the line should be just deleted)
