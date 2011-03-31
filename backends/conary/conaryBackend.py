@@ -24,6 +24,7 @@
 import sys
 import os
 import re
+import xmlrpclib
 
 from conary import dbstore, queryrep, versions, updatecmd
 from conary import errors, conarycfg, conaryclient
@@ -437,6 +438,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _reset_conary_callback(self):
         self.client.setUpdateCallback(self.callback )
 
+    def _get_updateall_job(self, callback):
+        '''Wrapper around get_updateall_job() so we are add exception handling
+        '''
+        try:
+            ret = self.conary.get_updateall_job(callback)
+        except xmlrpclib.ProtocolError as e:
+            self.error(ERROR_NO_NETWORK, '%s. Try again.' % str(e))
+        return ret
+
     @ExceptionHandler
     def update_system(self, only_trusted):
 
@@ -445,7 +455,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
-        updJob, suggMap = self.conary.get_updateall_job(cb)
+        updJob, suggMap = self._get_updateall_job(cb)
 
         self._apply_update_job(updJob)
         self._reset_conary_callback()
@@ -663,7 +673,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         cb = GetUpdateCallback(self, self.cfg)
-        updJob, suggMap = self.conary.get_updateall_job(cb)
+        updJob, suggMap = self._get_updateall_job(cb)
         installs, erases, updates = conarypk.parse_jobs(updJob,
                 show_components=False)
         self._display_updates(installs + updates)
