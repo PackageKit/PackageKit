@@ -24,6 +24,7 @@
 import sys
 import os
 import re
+import xmlrpclib
 
 from conary import dbstore, queryrep, versions, updatecmd
 from conary import errors, conarycfg, conaryclient
@@ -40,9 +41,9 @@ from packagekit.enums import *
 from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import ConaryFilter
-from XMLCache import XMLCache, UpdateJobCache
+from XMLCache import XMLCache
 from pkConaryLog import log
-from conarypk import ConaryPk, get_arch
+import conarypk
 
 sys.excepthook = util.genExcepthook()
 #{{{ FUNCTIONS
@@ -85,7 +86,20 @@ def _format_list(lst):
         return ";".join(lst)
     else:
         return ""
-#}}}
+
+def _get_trovespec_from_ids(package_ids):
+    ret = []
+    for p in package_ids:
+        name, version, arch, data = split_package_id(p)
+        trovespec = name
+        # Omitting version and label. Depend on conary to find the proper package.
+        # This may be problematic.
+        # Also omitting flavor for now.
+        #if arch:
+        #    trovespec = '%s[is: %s]' % (trovespec, arch)
+        ret.append(trovespec)
+    return ret
+
 class PackageKitConaryBackend(PackageKitBaseBackend):
     # Packages that require a reboot
     rebootpkgs = ("kernel", "glibc", "hal", "dbus")
@@ -95,15 +109,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, args)
 
         # conary configurations
-        conary = ConaryPk()
+        conary = conarypk.ConaryPk()
         self.cfg = conary.cfg
         self.client = conary.cli
         self.conary = conary
-        self.callback = UpdateCallback(self, self.cfg)
         self.xmlcache = XMLCache()
-        self.job_cache = UpdateJobCache()
-
-        self._reset_conary_callback()
 
     def _freezeData(self, version, flavor):
         frzVersion = version.freeze()
@@ -125,6 +135,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_AVAILABLE
         return installed
 
+    def _get_package_name_from_ids(self, package_ids):
+        return [split_package_id(x)[0] for x in package_ids]
+
     def get_package_id_new(self,pkg):
         name,version,flavor = pkg.get("trove")
         metadata = pkg.get("metadata")
@@ -135,17 +148,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 if data == "." or data == "":
                     data = name.replace("-",' ').capitalize()
         return get_package_id(name, str(version.trailingRevision()),
-                get_arch(flavor), data)
+                conarypk.get_arch(flavor), data)
 
     @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
-
         version = versionObj.trailingRevision()
-        pkg = self.xmlcache.resolve(name)
-        #pkg["shortDesc"] = "."
-        arch = get_arch(flavor)
-        #data = versionObj.asString() + "#"
+        arch = conarypk.get_arch(flavor)
         data = ""
+        pkg = self.xmlcache.resolve(name)
         if pkg:
             if "shortDesc" in pkg:
                 data = pkg['shortDesc'].decode("UTF")
@@ -198,57 +208,30 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             log.info("NOT FOUND %s " % searchlist )
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
-    def _build_update_job(self, applyList, cache=True):
-        '''Build an UpdateJob from applyList
+    def _do_conary_update(self, op, *args):
+        '''Wrapper around ConaryPk.install/erase() so we are add exception
+        handling
         '''
-        self.allow_cancel(False)
-        updJob = self.client.newUpdateJob()
-        suggMap = {}
-        jobPath = self.job_cache.getCachedUpdateJob(applyList)
-        if cache and jobPath:
-            try:
-                log.info("Using previously cached update job at %s" % (jobPath,))
-                updJob.thaw(jobPath)
-            except IOError, err:
-                log.error("Failed to read update job at %s (error=%s)" % (jobPath, str(err)))
-                updJob = None
-        else:
-            log.info("Creating a new update job")
-            try:
-                suggMap = self.client.prepareUpdateJob(updJob, applyList)
-                log.info("Successfully created a new update job")
-                if cache:
-                    self.job_cache.cacheUpdateJob(applyList, updJob)
-            except conaryclient.NoNewTrovesError:
-                return updJob, {}
-            except conaryclient.DepResolutionFailure as error :
-                log.info(error.getErrorMessage())
-                deps =  error.cannotResolve
-                dep_package = [ str(i[0][0]).split(":")[0] for i in deps ]
-                log.info(dep_package)
-                self.error(ERROR_DEP_RESOLUTION_FAILED,  "This package depends of:  %s" % ", ".join(set(dep_package)))
-
-        return updJob, suggMap
-
-    def _apply_update_job(self, updJob):
-        self.allow_cancel(False)
         try:
-            # TODO we should really handle the restart case here
-            restartDir = self.client.applyUpdateJob(updJob)
-        except errors.InternalConaryError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"get-updates first and then update sytem")
-        except trove.TroveIntegrityError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"run get-updates again")
-        return updJob
-
-    def _get_package_update(self, pkg_list):
-        applyList = []
-        for name, version, flavor in pkg_list:
-            if name.startswith('-'):
-                applyList.append((name, (version, flavor), (None, None), False))
+            if op == 'install':
+                ret = self.conary.install(*args)
+            elif op == 'erase':
+                ret = self.conary.erase(*args)
             else:
-                applyList.append((name, (None, None), (version, flavor), True))
-        return self._build_update_job(applyList)
+                self.error(ERROR_INTERNAL_ERROR, 'Unkown command: %s' % op)
+        except conaryclient.DepResolutionFailure as e:
+            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
+            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
+        except errors.InternalConaryError as e:
+            if str(e) == "Stale update job":
+                self.conary.clear_job_cache()
+                # The UpdateJob can be invalid. It's probably because after the
+                # update job is fozen, the state of the database has changed.
+                self.error(ERROR_INVALID_PACKAGE_FILE,
+                        "Previously cached file is broken. Try again")
+        except trove.TroveIntegrityError:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
+        return ret
 
     def _resolve_list(self, pkg_list, filters):
         # 1. Resolve through local db
@@ -434,27 +417,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         pass
 
     @ExceptionHandler
-    def get_depends(self, filters, package_ids, recursive_text):
-        name, version, flavor, installed = self._findPackage(package_ids[0])
-
-        if name:
-            if installed == INFO_INSTALLED:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package already installed')
-
-            else:
-                updJob, suggMap = self._get_package_update([
-                    (name, version, flavor)])
-                for what, need in suggMap:
-                    package_id = self.get_package_id(need[0], need[1], need[2])
-                    depInstalled = self.check_installed(need[0])
-                    if depInstalled == INFO_INSTALLED:
-                        self.package(package_id, INFO_INSTALLED, '')
-                    else:
-                        self.package(package_id, INFO_AVAILABLE, '')
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, 'Package was not found')
-
-    @ExceptionHandler
     def get_files(self, package_ids):
         self.allow_cancel(True)
         self.percentage(None)
@@ -482,8 +444,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.files(package_id, ';'.join(files))
 
-    def _reset_conary_callback(self):
-        self.client.setUpdateCallback(self.callback )
+    def _do_conary_updateall(self, callback, dry_run):
+        '''Wrapper around ConaryPk.updateall() so we are add exception handling
+        '''
+        try:
+            ret = self.conary.updateall(callback, dry_run)
+        except xmlrpclib.ProtocolError as e:
+            self.error(ERROR_NO_NETWORK, '%s. Try again.' % str(e))
+        return ret
 
     @ExceptionHandler
     def update_system(self, only_trusted):
@@ -493,10 +461,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
-        updJob = self._get_updateall_job(cb)
-
-        self._apply_update_job(updJob)
-        self._reset_conary_callback()
+        self._do_conary_updateall(cb, dry_run=False)
 
 #    @ExceptionHandler
     def refresh_cache(self, force):
@@ -510,40 +475,40 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.xmlcache.refresh()
 
+    def _display_update_jobs(self, install_jobs, erase_jobs, update_jobs):
+        '''Emit package status for a list of installing/erasing/updating jobs
+        '''
+        for (name, (oldVer, oldFla), (newVer, newFla)) in install_jobs:
+            v = str(newVer.trailingRevision())
+            f = conarypk.get_arch(newFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_INSTALLING, '')
+
+        for (name, (oldVer, oldFla), (newVer, newFla)) in erase_jobs:
+            v = str(oldVer.trailingRevision())
+            f = conarypk.get_arch(oldFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_REMOVING, '')
+
+        for (name, (oldVer, oldFla), (newVer, newFla)) in update_jobs:
+            v = str(oldVer.trailingRevision())
+            f = conarypk.get_arch(oldFla)
+            pkg_id = get_package_id(name, v, f, '')
+            self.package(pkg_id, INFO_UPDATING, '')
+
     def install_packages(self, only_trusted, package_ids, simulate=False):
-        """
-            alias of update_packages
-        """
-
-        # FIXME: use only_trusted
-
-        self.update_packages(only_trusted, package_ids, simulate)
-
-    @ExceptionHandler
-    def update_packages(self, only_trusted, package_ids, simulate=False):
-        '''
-        Implement the {backend}-{install, update}-packages functionality
-        '''
-
-        # FIXME: use only_trusted
-
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
-        pkglist = []
-        for package_id in package_ids:
-            name, version, flavor, installed = self._findPackage(package_id)
-            if name:
-                pkglist.append((name, version, flavor))
-
-        self.status(STATUS_INSTALL)
-        updJob, suggMap = self._get_package_update(pkglist)
-        if not simulate:
-            self._apply_update_job(updJob)
-        else:
-            r = self._parse_update_jobs(updJob)
-            self._display_update_jobs(r)
+        pkglist = _get_trovespec_from_ids(package_ids)
+        cb = UpdateCallback(self, self.cfg)
+        updJob, suggMap = self._do_conary_update('install', pkglist, cb, simulate)
+        if simulate:
+            pkgs = self._get_package_name_from_ids(package_ids)
+            jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
+                    show_components=False)
+            self._display_update_jobs(*jobs)
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
@@ -551,90 +516,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-remove-packages functionality
         '''
         # TODO: use autoremove
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
-        self.client.setUpdateCallback(RemoveCallback(self, self.cfg))
 
-        pkglist = []
-        for package_id in package_ids:
-            name, version, arch,data = split_package_id(package_id)
-            troveTuple = self.conary.query(name)
-            for name,version,flavor in troveTuple:
-                name = '-%s' % name
-                callback = self.client.getUpdateCallback()
-                if callback.error:
-                    self.error(ERROR_DEP_RESOLUTION_FAILED,', '.join(callback.error))
-                pkglist.append((name, version, flavor))
-
-        self.status(STATUS_REMOVE)
-        updJob, suggMap = self._get_package_update(pkglist)
-        if not simulate:
-            self._apply_update_job(updJob)
-        else:
-            r = self._parse_update_jobs(updJob)
-            self._display_update_jobs(r)
-
-        self._reset_conary_callback()
-
-    def _get_metadata(self, package_id, field):
-        '''
-        Retrieve metadata from the repository and return result
-        field should be one of:
-                bibliography
-                url
-                notes
-                crypto
-                licenses
-                shortDesc
-                longDesc
-                categories
-        '''
-
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_QUERY)
-        # XXX the usage of self.get_package_from_id is wrong here. The return
-        # value is a list.
-        n, v, f = self.get_package_from_id(package_id)
-        trvList = self.client.repos.findTrove(self.cfg.installLabelPath,
-                                     (n, v, f),
-                                     defaultFlavor = self.cfg.flavor)
-
-        troves = self.client.repos.getTroves(trvList, withFiles=False)
-        result = ''
-        for trove in troves:
-            result = trove.getMetadata()[field]
-        return result
-
-    def _get_update_extras(self, package_id):
-        notice = self._get_metadata(package_id, 'notice') or " "
-        urls = {'jira':[], 'cve' : [], 'vendor': []}
-        if notice:
-            # Update Details
-            desc = notice['description']
-            # Update References (Jira, CVE ...)
-            refs = notice['references']
-            if refs:
-                for ref in refs:
-                    typ = ref['type']
-                    href = ref['href']
-                    title = ref['title']
-                    if typ in ('jira', 'cve') and href != None:
-                        if title == None:
-                            title = ""
-                        urls[typ].append("%s;%s" % (href, title))
-                    else:
-                        urls['vendor'].append("%s;%s" % (ref['href'], ref['title']))
-
-            # Reboot flag
-            if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-                reboot = 'system'
-            else:
-                reboot = 'none'
-            return _format_str(desc), urls, reboot
-        else:
-            return "", urls, "none"
+        pkglist = _get_trovespec_from_ids(package_ids)
+        cb = RemoveCallback(self, self.cfg)
+        updJob, suggMap = self._do_conary_update('remove', pkglist, cb, simulate)
+        if simulate:
+            pkgs = self._get_package_name_from_ids(package_ids)
+            jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
+                    show_components=False)
+            self._display_update_jobs(*jobs)
 
     def _check_for_reboot(self, name):
         if name in self.rebootpkgs:
@@ -691,15 +584,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 log.info("Details: %s, %s, %s, %s, %s, %d" % (package_id, license, categories, longDesc, url, size))
                 self.details(package_id, license, categories, longDesc, url, size)
 
-    def _show_package(self, name, version, flavor, status):
-        '''  Show info about package'''
-        log.info(name)
-        package_id = self.get_package_id(name, version, flavor)
-        summary = package_id.split(";")
-        meta = summary[3]
-
-        self.package(package_id, status, meta)
-
     def _get_restart(self, name):
         if name in self.rebootpkgs:
             return RESTART_SYSTEM
@@ -708,7 +592,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return RESTART_NONE
 
-    def _get_info(self, name):
+    def _get_update_priority(self, name):
         if name in self.rebootpkgs:
             return INFO_SECURITY
         elif name in self.restartpkgs:
@@ -750,42 +634,18 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return UPDATE_STATE_STABLE
 
-    def _get_updateall_job(self, callback):
-        self.client.setUpdateCallback(callback)
+    def _display_updates(self, jobs):
+        '''Emit Package signals for a list of update jobs
 
-        updateItems = self.client.fullUpdateItemList()
-        applyList = [(x[0], (None, None), x[1:], True) for x in updateItems]
-
-        self.status(STATUS_RUNNING)
-        updJob, suggMap = self._build_update_job(applyList)
-        return updJob
-
-    def _parse_update_jobs(self, updJob):
-        jobs_list = updJob.getJobs()
-        r = []
-        for job in jobs_list:
-            job = job[0][:3]
-            (name, (oldVer, oldFla), (newVer, newFla)) = job
-
-            info = self._get_info(name)
-            if not newVer:
-                trove_info = ((name, oldVer, oldFla), info)
-            else:
-                trove_info = ((name, newVer, newFla), info)
-            r.append(trove_info)
-        return r
-
-    def _display_update_jobs(self, pkg_list):
-        data = self.xmlcache.resolve_list([name for ((name, version, flavor), info) in pkg_list])
-        new_res = []
-        for pkg in data:
-            for (trove, info) in pkg_list:
-                name, version, flav = trove
-                if name == pkg["name"]:
-                    npkg = self._convert_package(trove, pkg)
-                    new_res.append((npkg, info))
-
-        self._show_package_list(new_res)
+        jobs should only contain installs and updates. Shouldn't get any erase
+        jobs.
+        '''
+        for (name, (oldVer, oldFla), (newVer, newFla)) in jobs:
+            v = str(newVer.trailingRevision())
+            f = conarypk.get_arch(newFla)
+            pkg_id = get_package_id(name, v, f, '')
+            info = self._get_update_priority(name)
+            self.package(pkg_id, info, '')
 
     @ExceptionHandler
     def get_updates(self, filters):
@@ -794,11 +654,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
 
         cb = GetUpdateCallback(self, self.cfg)
-        updJob = self._get_updateall_job(cb)
-        r = self._parse_update_jobs(updJob)
-        self._display_update_jobs(r)
-
-        self._reset_conary_callback()
+        updJob, suggMap = self._do_conary_updateall(cb, dry_run=True)
+        installs, erases, updates = conarypk.parse_jobs(updJob,
+                show_components=False)
+        self._display_updates(installs + updates)
 
     def _findPackage(self, package_id):
         '''
@@ -847,12 +706,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 	Simulate an install of one or more packages.
         '''
 	return self.install_packages(False, package_ids, simulate=True)
-
-    def simulate_update_packages(self, package_ids):
-	'''
-	Simulate an update of one or more packages.
-        '''
-	return self.update_packages(False, package_ids, simulate=True)
 
     def simulate_remove_packages(self, package_ids):
 	'''

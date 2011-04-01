@@ -84,7 +84,7 @@ backend_get_filters (PkBackend *backend)
 /**
  * backend_get_roles:
  */
-PkBitfield
+static PkBitfield
 backend_get_roles (PkBackend *backend)
 {
 	PkBitfield roles;
@@ -102,11 +102,9 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_SEARCH_FILE,
 		PK_ROLE_ENUM_SEARCH_GROUP,
 		PK_ROLE_ENUM_SEARCH_NAME,
-		PK_ROLE_ENUM_UPDATE_PACKAGES,
 		PK_ROLE_ENUM_UPDATE_SYSTEM,
 		PK_ROLE_ENUM_GET_REPO_LIST,
 		PK_ROLE_ENUM_SIMULATE_INSTALL_PACKAGES,
-		PK_ROLE_ENUM_SIMULATE_UPDATE_PACKAGES,
 		PK_ROLE_ENUM_SIMULATE_REMOVE_PACKAGES,
 		-1);
 
@@ -292,27 +290,6 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * pk_backend_update_packages:
- */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
-{
-	gchar *package_ids_temp;
-
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug("Updates Packages");
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
-	g_free (package_ids_temp);
-}
-
-/**
  * pk_backend_update_system:
  */
 static void
@@ -323,20 +300,6 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 
 /**
  * pk_backend_resolve:
- */
-
-/* zodman note
-
-# python conaryBackend.py  resolve installed pastebinit
-allow-cancel	true
-no-percentage-updates
-status	info
-allow-cancel	true
-no-percentage-updates
-status	query
-package	available	pastebinit;0.7-1-1;x86;/foresight.rpath.org@fl:2-qa/1222042924.172:0.7-1-1,1#x86
-finished
-
  */
 static void
 backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
@@ -432,27 +395,6 @@ backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids)
 	g_free (package_ids_temp);
 }
 
-/**
- * backend_simulate_update_packages:
- */
-static void
-backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
-{
-	gchar *package_ids_temp;
-
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug("Updates Packages");
-	pk_backend_spawn_helper (spawn, "conaryBackend.py", "simulate-update-packages", package_ids_temp, NULL);
-	g_free (package_ids_temp);
-}
-
 /* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"Conary with XMLCache",				/* description */
@@ -488,13 +430,13 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,					/* search_file */
 	backend_search_group,					/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_packages,		/* update_packages */
+	NULL,					/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* what_provides */
 	NULL,					/* simulate_install_files */
 	backend_simulate_install_packages,	/* simulate_install_packages */
 	backend_simulate_remove_packages,	/* simulate_remove_packages */
-	backend_simulate_update_packages,	/* simulate_update_packages */
+	NULL,					/* simulate_update_packages */
 	NULL,					/* upgrade_system */
 	NULL,					/* transaction_start */
 	NULL					/* transaction_stop */
