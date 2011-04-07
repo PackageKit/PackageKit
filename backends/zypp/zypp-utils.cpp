@@ -944,10 +944,13 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		}
 
                 // Perform the installation
+		gboolean only_trusted = pk_backend_get_bool (backend, "only_trusted");
                 zypp::ZYppCommitPolicy policy;
                 policy.restrictToMedia (0); // 0 == install all packages regardless to media
 		policy.downloadMode (zypp::DownloadInHeaps);
 		policy.syncPoolAfterCommit (true);
+		if (only_trusted == FALSE)
+			policy.rpmNoSignature(true);
 
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 
