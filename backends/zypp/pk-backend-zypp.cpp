@@ -1322,6 +1322,8 @@ backend_resolve_thread (PkBackend *backend)
 		return FALSE;
 	}
 
+	zypp->getTarget()->load();
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	for (uint i = 0; package_ids[i]; i++) {

@@ -913,6 +913,10 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			g_debug ("simulating");
 
 			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+				if (type == REMOVE && !(*it)->isSystem ()) {
+					it->statusReset ();
+					continue;
+				}
 				if (!zypp_backend_pool_item_notify (backend, *it, TRUE))
 					ret = FALSE;
 				it->statusReset ();
