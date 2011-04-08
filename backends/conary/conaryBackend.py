@@ -123,15 +123,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
 
-    @ExceptionHandler
-    def check_installed(self, troveTuple):
-        result = self.conary.query(troveTuple[0])
-        if result:
-            installed = INFO_INSTALLED
-        else:
-            installed = INFO_AVAILABLE
-        return installed
-
     def _get_package_name_from_ids(self, package_ids):
         return [split_package_id(x)[0] for x in package_ids]
 
@@ -146,15 +137,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     data = name.replace("-",' ').capitalize()
         return get_package_id(name, str(version.trailingRevision()),
                 conarypk.get_arch(flavor), data)
-
-    @ExceptionHandler
-    def get_package_from_id(self, package_id):
-        """ package_id(string) =
-        "dpaster;0.1-3-1;x86;Summary"
-        """
-        name, verString, archString, data = split_package_id(package_id)
-        troves = self.conary.query(name) or self.conary.repo_query(name)
-        return troves
 
     def _search_package(self, pkg_list, name):
         for pkg in pkg_list:
@@ -480,7 +462,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
         for package_id in package_ids:
-            name, version,arch,summary  = get_package_from_id(package_id)
+            name, version, arch, summary = split_package_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             update = ""
             obsolete = ""
@@ -588,13 +570,20 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;summary)
         '''
-        troveTuples = self.get_package_from_id(package_id)
-        for troveTuple in troveTuples:
-            installed = self.check_installed(troveTuple)
-            name, version, flavor = troveTuple
-            return name, version, flavor, installed
-        else:
+        name, verString, archString, data = split_package_id(package_id)
+        troveTuples = self.conary.query(name)
+        info = INFO_INSTALLED
+
+        if not troveTuples:
+            troveTuples = self.conary.repo_query(name)
+            info = INFO_AVAILABLE
+
+        if not troveTuples:
             self.error(ERROR_INTERNAL_ERROR, "package_id Not Correct ")
+        else:
+            troveTuple = troveTuples[0]
+            name, version, flavor = troveTuple
+            return name, version, flavor, info
 
     def get_repo_list(self, filters):
         labels = self.conary.get_labels_from_config()
