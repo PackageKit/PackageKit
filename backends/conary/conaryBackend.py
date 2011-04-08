@@ -25,13 +25,9 @@ import os
 import re
 import xmlrpclib
 
-from conary import dbstore, queryrep, versions, updatecmd
-from conary import errors, conarycfg, conaryclient
-from conary import trove
-from conary.conaryclient import cmdline
+from conary import conaryclient, errors, trove, versions
 from conary.deps import deps
 from conary.lib import util
-from conary.local import database
 
 from packagekit.backend import get_package_id, split_package_id, \
     PackageKitBaseBackend
@@ -355,26 +351,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        package_id = package_ids[0]
-        def _get_files(troveSource, n, v, f):
-            files = []
-            trv = troveSource.getTrove(n, v, f)
-            for (n, v, f) in [x for x in trv.iterTroveList(strongRefs=True)
-                                if troveSource.hasTrove(*x)]:
-                for (pathId, path, fileId, version, filename) in \
-                    troveSource.iterFilesInTrove(n, v, f, sortByPath = True,
-                            withFiles=True, capsules=False):
-                    files.append(path)
-            return files
 
-        for package in package_id.split("&"):
-            name, version, flavor, installed = self._findPackage(package)
-
-            if installed == INFO_INSTALLED:
-                files = _get_files(self.client.db, name, version, flavor)
-            else:
-                files = _get_files(self.client.repos, name, version, flavor)
-
+        for package_id in package_ids:
+            name, version, arch, data = split_package_id(package_id)
+            files = self.conary.list_files('%s=%s[is: %s]' %
+                    (name, version, arch))
             self.files(package_id, ';'.join(files))
 
     def _do_conary_updateall(self, callback, dry_run):
@@ -565,25 +546,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         installs, erases, updates = conarypk.parse_jobs(updJob,
                 show_components=False)
         self._display_updates(installs + updates)
-
-    def _findPackage(self, package_id):
-        '''
-        find a package based on a package id (name;version;arch;summary)
-        '''
-        name, verString, archString, data = split_package_id(package_id)
-        troveTuples = self.conary.query(name)
-        info = INFO_INSTALLED
-
-        if not troveTuples:
-            troveTuples = self.conary.repo_query(name)
-            info = INFO_AVAILABLE
-
-        if not troveTuples:
-            self.error(ERROR_INTERNAL_ERROR, "package_id Not Correct ")
-        else:
-            troveTuple = troveTuples[0]
-            name, version, flavor = troveTuple
-            return name, version, flavor, info
 
     def get_repo_list(self, filters):
         labels = self.conary.get_labels_from_config()
