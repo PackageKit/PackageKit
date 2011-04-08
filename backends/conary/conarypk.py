@@ -9,6 +9,7 @@ import os
 
 from conary import conarycfg, conaryclient
 from conary import errors
+from conary.cmds import query, queryrep
 from conary.conaryclient import ConaryClient, cmdline
 from conary.conaryclient import cml, systemmodel, modelupdate
 from conary.conaryclient.update import NoNewTrovesError
@@ -19,9 +20,6 @@ from conary.lib import sha1helper
 from conary.lib import util
 
 from pkConaryLog import log
-
-from packagekit.backend import PackageKitBaseBackend
-from packagekit.enums import ERROR_NO_NETWORK
 
 def get_arch(flavor):
     '''Turn a Flavor into a string describing the arch
@@ -231,11 +229,6 @@ class ConaryPk:
 
         self.job_cache = UpdateJobCache()
 
-    def _exist_network(self):
-        if not os.environ.get("NETWORK"):
-            Pk = PackageKitBaseBackend("")
-            Pk.error(ERROR_NO_NETWORK,"Not exist network conection")
-
     def clear_job_cache(self):
         self.job_cache.clearCache()
 
@@ -260,6 +253,46 @@ class ConaryPk:
             labels.append(i.asString())
         return labels
 
+    def _findPackage(self, trovespec):
+        '''Turn a trovespec into a tuple of (name, Version, Flavor, status)
+
+        If the package is not installed, do a repoquery.
+        '''
+        troveTuples = self.query(trovespec)
+        installed = True
+
+        if not troveTuples:
+            troveTuples = self.repo_query(trovespec)
+            installed = False
+
+        if not troveTuples:
+            ret = None
+        else:
+            name, version, flavor = troveTuples[0]
+            ret = name, version, flavor, installed
+        return ret
+
+    def list_files(self, trovespec):
+        '''List files of a package
+        '''
+        def _get_files(troveSource, n, v, f):
+            files = []
+            trv = troveSource.getTrove(n, v, f)
+            for (n, v, f) in [x for x in trv.iterTroveList(strongRefs=True)
+                                if troveSource.hasTrove(*x)]:
+                for (pathId, path, fileId, version, filename) in \
+                    troveSource.iterFilesInTrove(n, v, f, sortByPath = True,
+                            withFiles=True, capsules=False):
+                    files.append(path)
+            return files
+
+        name, version, flavor, installed = self._findPackage(trovespec)
+        if installed:
+            files = _get_files(self.db, name, version, flavor)
+        else:
+            files = _get_files(self.repos, name, version, flavor)
+        return files
+
     def search_path(self,path_file ):
         labels = self.get_labels_from_config()
         where = self._get_repos()
@@ -269,58 +302,36 @@ class ConaryPk:
                 for ( name,version,flavor) in trove[path_file]:
                     return name
 
-    def query(self, name):
-        """ do a conary query """
-        if name is None or name == "":
+    def query(self, trove):
+        '''Finds the given trove
+
+        This is a wrapper around getTrovesToDisplay.
+
+        trove is a string "n[=v][[f]]".
+        Returns a list of (name, Version, Flavor) tuples.
+        '''
+        if trove is None or trove == "":
             return []
         try:
-            troves = self.db.findTrove( None ,(name , None, None ))
-            return troves
+            ret = query.getTrovesToDisplay(self.db, [trove], [], [], False)[0]
         except errors.TroveNotFound:
-            return []
+            ret = []
+        return ret
 
-    def repo_query(self, name, installLabel = None):
-        """ Do a conary request query """
-        self._exist_network()
-        label = self.label( installLabel )
+    def repo_query(self, trove):
+        '''
+        trove is a string "n[=v][[f]]".
+        Returns a list of (name, Version, Flavor) tuples.
+        '''
         repos = self._get_repos()
         try:
-            troves = repos.findTrove( label ,( name, None ,self.flavor ) )
-            #return repos.getTroves(troves)
-            return troves
+            ret = queryrep.getTrovesToDisplay(repos, [trove], [], [],
+                    queryrep.VERSION_FILTER_LATEST,
+                    queryrep.FLAVOR_FILTER_BEST, self.default_label,
+                    self.flavors, None)
         except errors.TroveNotFound:
-            return []
-
-    def get_metadata( self, name , installLabel = None):
-        pass
-
-    def remove(self, name):
-        return self.update(name, remove = True )
-    def update(self, name, installLabel= None, remove  = False ):
-        cli = self.cli
-        #get a trove
-        troves = self.repo_query(name, installLabel)
-        for trove in troves:
-            trovespec =  self.trove_to_spec( trove, remove )
-        try:
-            # create a Job
-            job = cli.newUpdateJob()
-            # Add Update task to Job
-            cli.prepareUpdateJob(job, cmdline.parseChangeList(trovespec))
-            # Apply the Job
-            cli.applyUpdateJob(job)
-            # im rulz
-            return "Update Success of %s" %  trovespec
-        except NoNewTrovesError:
-            return "no new Troves Found by %s " % trovespec
-
-    def trove_to_spec(self, trove, remove = False ):
-        # add a -app=blah.rpath.org@rpl:devel for remove packages
-        if remove:
-            tmp = '-'
-        else:
-            tmp = ""
-        return tmp + cmdline.toTroveSpec( trove[0], str(trove[1]), None)
+            ret = []
+        return ret
 
     def _classic_build_update_job(self, applyList, cache=True):
         '''Build an UpdateJob from applyList
@@ -408,10 +419,3 @@ class ConaryPk:
 if __name__ == "__main__":
     conary = ConaryPk()
     print conary.search_path("/usr/bin/vim")
-    #print conary.query("gimpasdas")
-    #print conary.repo_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
-    #print conary.repo_query("gimp")
-    #print conary.repo_query("gimpasdasd")
-    #print conary.update("amsn")
-    #print conary.remove("amsn")
-
