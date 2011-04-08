@@ -20,9 +20,6 @@ from conary.lib import util
 
 from pkConaryLog import log
 
-from packagekit.backend import PackageKitBaseBackend
-from packagekit.enums import ERROR_NO_NETWORK
-
 def get_arch(flavor):
     '''Turn a Flavor into a string describing the arch
 
@@ -231,11 +228,6 @@ class ConaryPk:
 
         self.job_cache = UpdateJobCache()
 
-    def _exist_network(self):
-        if not os.environ.get("NETWORK"):
-            Pk = PackageKitBaseBackend("")
-            Pk.error(ERROR_NO_NETWORK,"Not exist network conection")
-
     def clear_job_cache(self):
         self.job_cache.clearCache()
 
@@ -281,7 +273,6 @@ class ConaryPk:
 
     def repo_query(self, name, installLabel = None):
         """ Do a conary request query """
-        self._exist_network()
         label = self.label( installLabel )
         repos = self._get_repos()
         try:
@@ -290,37 +281,6 @@ class ConaryPk:
             return troves
         except errors.TroveNotFound:
             return []
-
-    def get_metadata( self, name , installLabel = None):
-        pass
-
-    def remove(self, name):
-        return self.update(name, remove = True )
-    def update(self, name, installLabel= None, remove  = False ):
-        cli = self.cli
-        #get a trove
-        troves = self.repo_query(name, installLabel)
-        for trove in troves:
-            trovespec =  self.trove_to_spec( trove, remove )
-        try:
-            # create a Job
-            job = cli.newUpdateJob()
-            # Add Update task to Job
-            cli.prepareUpdateJob(job, cmdline.parseChangeList(trovespec))
-            # Apply the Job
-            cli.applyUpdateJob(job)
-            # im rulz
-            return "Update Success of %s" %  trovespec
-        except NoNewTrovesError:
-            return "no new Troves Found by %s " % trovespec
-
-    def trove_to_spec(self, trove, remove = False ):
-        # add a -app=blah.rpath.org@rpl:devel for remove packages
-        if remove:
-            tmp = '-'
-        else:
-            tmp = ""
-        return tmp + cmdline.toTroveSpec( trove[0], str(trove[1]), None)
 
     def _classic_build_update_job(self, applyList, cache=True):
         '''Build an UpdateJob from applyList
@@ -412,6 +372,3 @@ if __name__ == "__main__":
     #print conary.repo_query("dpaster",'zodyrepo.rpath.org@rpl:devel')
     #print conary.repo_query("gimp")
     #print conary.repo_query("gimpasdasd")
-    #print conary.update("amsn")
-    #print conary.remove("amsn")
-

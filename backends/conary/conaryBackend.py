@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#{{{ Licensed under the GNU General Public License Version 2
+# Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 # Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 # Copyright (C) 2009-2010 Andres Vargas <zodman@foresightlinux.org>
 #                         Scott Parkerson <scott.parkerson@gmail.com>
-# }}}
-#{{{ LIBS
+
 import sys
 import os
 import re
@@ -46,11 +45,10 @@ from pkConaryLog import log
 import conarypk
 
 sys.excepthook = util.genExcepthook()
-#{{{ FUNCTIONS
+
 def ExceptionHandler(func):
     return func
     def display(error):
-        log.info(error)
         return str(error).replace('\n', ' ').replace("\t",'')
     def wrapper(self, *args, **kwargs):
         try:
@@ -124,10 +122,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         version = versions.ThawVersion(frzVersion)
         flavor = deps.ThawFlavor(frzFlavor)
         return version, flavor
-    #}}}
+
     @ExceptionHandler
     def check_installed(self, troveTuple):
-        log.info("============check installed =========")
         result = self.conary.query(troveTuple[0])
         if result:
             installed = INFO_INSTALLED
@@ -151,25 +148,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 conarypk.get_arch(flavor), data)
 
     @ExceptionHandler
-    def get_package_id(self, name, versionObj, flavor):
-        version = versionObj.trailingRevision()
-        arch = conarypk.get_arch(flavor)
-        data = ""
-        pkg = self.xmlcache.resolve(name)
-        if pkg:
-            if "shortDesc" in pkg:
-                data = pkg['shortDesc'].decode("UTF")
-                if data == "." or data == "":
-                    data = name.replace("-",' ').capitalize()
-
-        return get_package_id(name, version, arch, data)
-
-    @ExceptionHandler
     def get_package_from_id(self, package_id):
         """ package_id(string) =
         "dpaster;0.1-3-1;x86;Summary"
         """
-        log.info("=========== get package from package_id ======================")
         name, verString, archString, data = split_package_id(package_id)
         troves = self.conary.query(name) or self.conary.repo_query(name)
         return troves
@@ -193,10 +175,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """
         fltlist = filters
         if where not in ("name", "details", "group", "all"):
-            log.info("where %s" % where)
             self.error(ERROR_UNKNOWN, "DORK---- search where not found")
 
-        log.debug((searchlist, where))
         pkgList = self.xmlcache.search(searchlist, where )
 
         if len(pkgList) > 0 :
@@ -205,7 +185,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self._resolve_list(to_resolve, fltlist)
         else:
-            log.info("NOT FOUND %s " % searchlist )
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
     def _do_conary_update(self, op, *args):
@@ -259,8 +238,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         # add_installed() and add_available().
         pkgFilter = ConaryFilter()
         pkgFilter.add_installed(list_installed)
-        log.info("Packages installed .... %s " % len(list_installed))
-        log.info("Packages available .... %s " % len(list_not_installed))
 
         # 2. Resolve through repository
 
@@ -301,7 +278,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if pkg_dict is None:
             return None
 
-        log.info("doing a resolve")
         # Our list of troves doesn't contain information about whether trove is
         # installed, so ConaryFilter can't do proper filtering. Don't pass
         # @filters to it. Instead manually check the filters before calling
@@ -311,7 +287,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         is_found_locally = False
         if FILTER_NOT_INSTALLED not in filters:
             trove_installed = self.conary.query(pkg_dict.get("name"))
-            log.info("end of conary query")
             for trv in trove_installed:
                 pkg = self._convert_package(trv, pkg_dict)
                 filter.add_installed([pkg])
@@ -319,15 +294,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         if not is_found_locally and FILTER_INSTALLED not in filters:
             trove_available = self.conary.repo_query(pkg_dict.get("name"))
-            log.info("end of conary rquery")
             if trove_available:
                 pkg = self._convert_package(trove_available[0], pkg_dict)
                 filter.add_available([pkg])
 
         package_list = filter.post_process()
-        log.info("package_list %s" % package_list)
         self._show_package_list(package_list)
-	log.info("end resolve ...................")
 
     def _show_package_list(self, lst):
         """@lst(list(tuple) = [ ( troveTuple, status ) ]
@@ -346,75 +318,41 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def search_group(self, options, searchlist):
-        '''
-        Implement the {backend}-search-group functionality
-        '''
-        log.info("============= search_group ========")
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(options, searchlist))
         self._do_search(options, searchlist, 'group')
 
     @ExceptionHandler
     def search_file(self, filters, search ):
-
-        log.info("============= search_file ========")
         self.allow_cancel(True)
-        self.percentage(0)
+        self.percentage(None)
         self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(filters, search))
-        self.percentage(10)
-
-
-        self.percentage(20)
-
-
-        self.percentage(30)
         name = self.conary.search_path( search )
-        self.percentage(50)
-        log.info(name)
         if name:
-            log.info("resolving")
             if ":" in name:
                 name = name.split(":")[0]
             self.resolve( filters, [name])
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
-        '''
-        Implement the {backend}-search-name functionality
-        '''
-        log.info("============= search_name ========")
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(options, searchlist))
         self._do_search(options, searchlist, 'name')
 
     @ExceptionHandler
     def search_details(self, options, search):
-        '''
-        Implement the {backend}-search-details functionality
-        '''
-        log.info("============= search_details ========")
         self.allow_cancel(True)
         #self.percentage(None)
         self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(options, search))
         self._do_search(options, search, 'details' )
-
 
     @ExceptionHandler
     def get_packages(self, filter ):
         self.allow_cancel(False)
         self.status(STATUS_QUERY)
-        log.info("options: %s searchlist:%s "%(filter,"all"))
         self._do_search(filter, "", 'all' )
-
-
-    def get_requires(self, filters, package_ids, recursive_text):
-        pass
 
     @ExceptionHandler
     def get_files(self, package_ids):
@@ -434,7 +372,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return files
 
         for package in package_id.split("&"):
-            log.info(package)
             name, version, flavor, installed = self._findPackage(package)
 
             if installed == INFO_INSTALLED:
@@ -455,21 +392,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def update_system(self, only_trusted):
-
         # FIXME: use only_trusted
-
         self.allow_cancel(True)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
         self._do_conary_updateall(cb, dry_run=False)
 
-#    @ExceptionHandler
     def refresh_cache(self, force):
         # TODO: use force ?
-
-        #log.debug("refresh-cache command ")
-    #    self.percentage()
-
         self.percentage(None)
         self.status(STATUS_REFRESH_CACHE)
         self.percentage(None)
@@ -512,9 +442,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
-        '''
-        Implement the {backend}-remove-packages functionality
-        '''
         # TODO: use autoremove
         self.allow_cancel(False)
         self.percentage(0)
@@ -535,14 +462,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def get_update_detail(self, package_ids):
-        '''
-        Implement the {backend}-get-update_detail functionality
-        '''
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         for package_id in package_ids:
-            log.info(package_id)
             name, version,arch,summary  = get_package_from_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             update = ""
@@ -566,7 +489,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
 
-        log.info("========== get_details =============")
         for package_id in package_ids:
             name,version,arch,data = split_package_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
@@ -581,7 +503,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 categories = self.xmlcache.getGroup(pkgDict.get("category",""))
                 license = self._get_license(pkgDict.get("licenses",""))
                 size = pkgDict.get("size", 0)
-                log.info("Details: %s, %s, %s, %s, %s, %d" % (package_id, license, categories, longDesc, url, size))
                 self.details(package_id, license, categories, longDesc, url, size)
 
     def _get_restart(self, name):
@@ -614,16 +535,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         # license_list is a list of licenses in the format of
         # 'rpath.com/licenses/copyright/GPL-2'.
         return " ".join([i.split("/")[-1] for i in license_list])
-
-    def _upgrade_from_branch( self, branch):
-        branchList = branch.split("@")
-        if "2-qa" in branchList[1]:
-            return DISTRO_UPGRADE_TESTING
-        elif "2-devel" in branchList[1]:
-            return DISTRO_UPGRADE_UNSTABLE
-        else:
-            return DISTRO_UPGRADE_STABLE
-
 
     def _get_branch(self, branch ):
         branchList = branch.split("@")
@@ -663,31 +574,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;summary)
         '''
-        log.info("========== _findPackage ==========")
-        log.info(package_id)
         troveTuples = self.get_package_from_id(package_id)
-        log.info(troveTuples)
         for troveTuple in troveTuples:
-            log.info("======== trove ")
-            log.info(troveTuple)
             installed = self.check_installed(troveTuple)
-            log.info(installed)
             name, version, flavor = troveTuple
             return name, version, flavor, installed
         else:
             self.error(ERROR_INTERNAL_ERROR, "package_id Not Correct ")
 
-    def repo_set_data(self, repoid, parameter, value):
-        '''
-        Implement the {backend}-repo-set-data functionality
-        '''
-        pass
-
     def get_repo_list(self, filters):
-        '''
-        Implement the {backend}-get-repo-list functionality
-        '''
-        log.info("======= get repo list ===========0")
         labels = self.conary.get_labels_from_config()
         self.status(STATUS_QUERY)
         for repo in labels:
@@ -695,28 +590,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             repo_branch  = repo.split("@")[1]
             self.repo_detail(repo,repo,True)
 
-    def repo_enable(self, repoid, enable):
-        '''
-        Implement the {backend}-repo-enable functionality
-        '''
-        pass
-
     def simulate_install_packages(self, package_ids):
-	'''
-	Simulate an install of one or more packages.
-        '''
-	return self.install_packages(False, package_ids, simulate=True)
+        return self.install_packages(False, package_ids, simulate=True)
 
     def simulate_remove_packages(self, package_ids):
-	'''
-	Simulate an update of one or more packages.
-        '''
-	return self.remove_packages(False, False, package_ids, simulate=True)
+        return self.remove_packages(False, False, package_ids, simulate=True)
 
 def main():
     backend = PackageKitConaryBackend('')
-    log.info("======== argv =========== ")
-    log.info(sys.argv)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":
