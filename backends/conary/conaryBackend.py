@@ -188,7 +188,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
     def _do_conary_update(self, op, *args):
-        '''Wrapper around ConaryPk.install/erase() so we are add exception
+        '''Wrapper around ConaryPk.install/erase() so we can add exception
         handling
         '''
         try:
@@ -213,56 +213,70 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return ret
 
     def _resolve_list(self, pkg_list, filters):
-        # 1. Resolve through local db
-
-        list_trove_all = [p.get("trove") for p in pkg_list]
-        list_installed = []
-        list_not_installed = []
-
-        if FILTER_NOT_INSTALLED in filters:
-            list_not_installed = pkg_list[:]
-        else:
-            db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
-            for trove in list_trove_all:
-                pkg = self._search_package(pkg_list, trove[0])
-                if trove in db_trove_list:
-                    # A package may have different versions/flavors installed.
-                    for t in db_trove_list[trove]:
-                        list_installed.append(dict(trove=t, metadata=pkg["metadata"]))
-                else:
-                    list_not_installed.append(pkg)
-
-        # Our list of troves doesn't contain information about whether trove is
-        # installed, so ConaryFilter can't do proper filtering. Don't pass
-        # @filters to it. Instead manually check the filters before calling
-        # add_installed() and add_available().
         pkgFilter = ConaryFilter()
-        pkgFilter.add_installed(list_installed)
 
-        # 2. Resolve through repository
+        installed = []
+        if FILTER_NOT_INSTALLED not in filters:
+            installed = self._resolve_local(pkgFilter, pkg_list)
 
         if FILTER_INSTALLED not in filters:
-            list_trove_not_installed = []
-            for pkg in list_not_installed:
-                name,version,flavor = pkg.get("trove")
-                trove = (name, version, self.conary.flavor)
-                list_trove_not_installed.append(trove)
-
-            list_available = []
-            repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
-                    list_trove_not_installed, allowMissing=True)
-
-            for trove in list_trove_not_installed:
-                if trove in repo_trove_list:
-                    # only use the first trove in the list
-                    t = repo_trove_list[trove][0]
-                    pkg = self._search_package(pkg_list, t[0])
-                    pkg["trove"] = t
-                    list_available.append(pkg)
-            pkgFilter.add_available( list_available )
+            pkg_list = [x for x in pkg_list if x not in installed]
+            self._resolve_repo(pkgFilter, pkg_list)
 
         package_list = pkgFilter.post_process()
         self._show_package_list(package_list)
+
+    def _resolve_local(self, pkgFilter, pkg_list):
+        '''Find out installed packages from pkg_list
+
+        If a package from pkg_list can be found locally, add it (after some
+        convertion) to pkgFilter.
+
+        Returns the list of installed packages.
+        '''
+        ret = []
+
+        list_trove_all = [p.get("trove") for p in pkg_list]
+        db_trove_list = self.client.db.findTroves(None, list_trove_all, allowMissing=True)
+
+        list_installed = []
+        for trove in list_trove_all:
+            if trove in db_trove_list:
+                pkg = self._search_package(pkg_list, trove[0])
+                # A package may have different versions/flavors installed.
+                for t in db_trove_list[trove]:
+                    list_installed.append(self._convert_package(t, pkg["metadata"]))
+                ret.append(pkg)
+        pkgFilter.add_installed(list_installed)
+
+        return ret
+
+    def _resolve_repo(self, pkgFilter, pkg_list):
+        '''Find out packages from pkg_list that are available in the repository
+
+        If a package from pkg_list can be found in the repo, add it (after some
+        convertion) to pkgFilter.
+
+        No return value.
+        '''
+        list_trove_all = []
+        for pkg in pkg_list:
+            name,version,flavor = pkg.get("trove")
+            trove = (name, version, self.conary.flavor)
+            list_trove_all.append(trove)
+
+        repo_trove_list = self.client.repos.findTroves(self.conary.default_label,
+                list_trove_all, allowMissing=True)
+
+        list_available = []
+        for trove in list_trove_all:
+            if trove in repo_trove_list:
+                # only use the first trove in the list
+                t = repo_trove_list[trove][0]
+                pkg = self._search_package(pkg_list, t[0])
+                pkg["trove"] = t
+                list_available.append(pkg)
+        pkgFilter.add_available(list_available)
 
     @ExceptionHandler
     def resolve(self, filters, package ):
@@ -382,7 +396,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.files(package_id, ';'.join(files))
 
     def _do_conary_updateall(self, callback, dry_run):
-        '''Wrapper around ConaryPk.updateall() so we are add exception handling
+        '''Wrapper around ConaryPk.updateall() so we can add exception handling
         '''
         try:
             ret = self.conary.updateall(callback, dry_run)
