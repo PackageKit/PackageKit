@@ -382,26 +382,33 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.xmlcache.refresh()
 
+    def _show_packages(self, pkgs):
+        '''Emit Package signals for a list of packages
+
+        pkgs should be a list of (name, Version, Flavor, status) tuples.
+        '''
+        for (name, version, flavor, status) in pkgs:
+            v = str(version.trailingRevision())
+            f = conarypk.get_arch(flavor)
+            data = ''
+            pkg_id = get_package_id(name, v, f, data)
+            summary = ''
+            self.package(pkg_id, status, summary)
+
     def _display_update_jobs(self, install_jobs, erase_jobs, update_jobs):
         '''Emit package status for a list of installing/erasing/updating jobs
         '''
+        ret = []
         for (name, (oldVer, oldFla), (newVer, newFla)) in install_jobs:
-            v = str(newVer.trailingRevision())
-            f = conarypk.get_arch(newFla)
-            pkg_id = get_package_id(name, v, f, '')
-            self.package(pkg_id, INFO_INSTALLING, '')
+            ret.append((name, newVer, newFla, INFO_INSTALLING))
 
         for (name, (oldVer, oldFla), (newVer, newFla)) in erase_jobs:
-            v = str(oldVer.trailingRevision())
-            f = conarypk.get_arch(oldFla)
-            pkg_id = get_package_id(name, v, f, '')
-            self.package(pkg_id, INFO_REMOVING, '')
+            ret.append((name, oldVer, oldFla, INFO_REMOVING))
 
         for (name, (oldVer, oldFla), (newVer, newFla)) in update_jobs:
-            v = str(oldVer.trailingRevision())
-            f = conarypk.get_arch(oldFla)
-            pkg_id = get_package_id(name, v, f, '')
-            self.package(pkg_id, INFO_UPDATING, '')
+            ret.append((name, oldVer, oldFla, INFO_UPDATING))
+
+        self._show_packages(ret)
 
     def install_packages(self, only_trusted, package_ids, simulate=False):
         self.allow_cancel(False)
@@ -528,12 +535,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         jobs should only contain installs and updates. Shouldn't get any erase
         jobs.
         '''
+        ret = []
         for (name, (oldVer, oldFla), (newVer, newFla)) in jobs:
-            v = str(newVer.trailingRevision())
-            f = conarypk.get_arch(newFla)
-            pkg_id = get_package_id(name, v, f, '')
             info = self._get_update_priority(name)
-            self.package(pkg_id, info, '')
+            ret.append((name, newVer, newFla, info))
+
+        self._show_packages(ret)
 
     @ExceptionHandler
     def get_updates(self, filters):

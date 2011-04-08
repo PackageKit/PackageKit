@@ -1,12 +1,15 @@
 * the XML cache doesn't include all packages (e.g. ubuntu-font-family/automake)
   - there is probably bugs in the tool ('ticache') that generates the cache.
 * should support system model
-  - the conary-api related code should all be put in conarypk.py
-  - Note: some allow_cancel/status() calls may be lost when moving the code.
+  - don't use conary API directly in conaryBackend.py
   - move self.xmlcache into conarypk, so it won't come in the way of system
     model support.
-  - implement search
+  - implement search (pending upcoming features of conary)
 * fix use of post_process and implement _pkg_compare in conaryFilter.py
   - http://lists.freedesktop.org/archives/packagekit/2011-March/006245.html
-* update conaryCallback.py to base on new callbacks
-  (conary/cmds/updatecmd.py:UpdateCallback) so it can handle system-model.
+* simplify _resolve_list(). It calls conary API directly and has much
+  duplication with resolve().
+  - _show_package_list() has duplication with the newly added _show_packages()
+  - the data structure dict(trove, metadata) (as used in _show_package_list())
+    is too complicated than necessary.
+* decide what to do with package components
