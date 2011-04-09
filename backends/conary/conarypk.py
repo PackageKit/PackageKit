@@ -12,7 +12,6 @@ from conary import errors
 from conary.cmds import query, queryrep
 from conary.conaryclient import ConaryClient, cmdline
 from conary.conaryclient import cml, systemmodel, modelupdate
-from conary.conaryclient.update import NoNewTrovesError
 from conary.versions import Label
 from conary.deps import deps
 
@@ -161,7 +160,7 @@ def _model_do_conary_updateall(cfg, callback, dry_run=False):
 
     if not dry_run:
         _model_apply_update_job(ret[0], cfg, modelFile, callback)
-    return updJob
+    return ret
 
 class UpdateJobCache:
     '''A cache to store (freeze) conary UpdateJobs.
@@ -342,7 +341,7 @@ class ConaryPk:
         if cache and jobPath:
             try:
                 updJob.thaw(jobPath)
-            except IOError, err:
+            except IOError:
                 updJob = None
         else:
             try:

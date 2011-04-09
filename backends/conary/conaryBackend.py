@@ -62,25 +62,6 @@ def ExceptionHandler(func):
             self.error(ERROR_UNKNOWN, display(e), exit=True)
     return wrapper
 
-def _format_str(str):
-    """
-    Convert a multi line string to a list separated by ';'
-    """
-    if str:
-        lines = str.split('\n')
-        return ";".join(lines)
-    else:
-        return ""
-
-def _format_list(lst):
-    """
-    Convert a multi line string to a list separated by ';'
-    """
-    if lst:
-        return ";".join(lst)
-    else:
-        return ""
-
 def _get_trovespec_from_ids(package_ids):
     ret = []
     for p in package_ids:
@@ -109,30 +90,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.conary = conary
         self.xmlcache = XMLCache()
 
-    def _freezeData(self, version, flavor):
-        frzVersion = version.freeze()
-        frzFlavor = flavor.freeze()
-        return ','.join([frzVersion, frzFlavor])
-
-    def _thawData(self, frzVersion, frzFlavor ):
-        version = versions.ThawVersion(frzVersion)
-        flavor = deps.ThawFlavor(frzFlavor)
-        return version, flavor
-
     def _get_package_name_from_ids(self, package_ids):
         return [split_package_id(x)[0] for x in package_ids]
 
-    def get_package_id_new(self,pkg):
-        name,version,flavor = pkg.get("trove")
-        metadata = pkg.get("metadata")
+    def _format_package_summary(self, name, metadata):
         data = ""
-        if metadata:
-            if "shortDesc" in metadata:
-                data = metadata['shortDesc'].decode("UTF")
-                if data == "." or data == "":
-                    data = name.replace("-",' ').capitalize()
-        return get_package_id(name, str(version.trailingRevision()),
-                conarypk.get_arch(flavor), data)
+        if "shortDesc" in metadata:
+            data = metadata['shortDesc'].decode("UTF")
+        if data == "." or data == "":
+            data = name.replace("-",' ').capitalize()
+        return data
 
     def _search_package(self, pkg_list, name):
         for pkg in pkg_list:
@@ -286,8 +253,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         if not is_found_locally and FILTER_INSTALLED not in filters:
             trove_available = self.conary.repo_query(pkg_dict.get("name"))
-            if trove_available:
-                pkg = self._convert_package(trove_available[0], pkg_dict)
+            for trv in trove_available:
+                pkg = self._convert_package(trv, pkg_dict)
                 filter.add_available([pkg])
 
         package_list = filter.post_process()
@@ -297,16 +264,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         """@lst(list(tuple) = [ ( troveTuple, status ) ]
         """
         for pkg, status in lst:
-            package_id = self.get_package_id_new(pkg)
+            name, v, f = pkg["trove"]
+            version = str(v.trailingRevision())
+            label = str(v.trailingLabel())
+            arch = conarypk.get_arch(f)
 
-            # split the list for get Determine info
-            summary = package_id.split(";")
-            name = summary[0]
-            meta = summary[3]
-
-            summary[3] = pkg.get("metadata").get("label")
-            pkg_id = ";".join(summary)
-            self.package(package_id, status, meta )
+            pkg_id = get_package_id(name, version, arch, label)
+            summary = self._format_package_summary(name, pkg["metadata"])
+            self.package(pkg_id, status, summary)
 
     @ExceptionHandler
     def search_group(self, options, searchlist):
@@ -370,7 +335,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def update_system(self, only_trusted):
         # FIXME: use only_trusted
-        self.allow_cancel(True)
+        self.allow_cancel(False)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
         self._do_conary_updateall(cb, dry_run=False)
@@ -387,11 +352,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         pkgs should be a list of (name, Version, Flavor, status) tuples.
         '''
-        for (name, version, flavor, status) in pkgs:
-            v = str(version.trailingRevision())
-            f = conarypk.get_arch(flavor)
-            data = ''
-            pkg_id = get_package_id(name, v, f, data)
+        for (name, v, f, status) in pkgs:
+            version = str(v.trailingRevision())
+            arch = conarypk.get_arch(f)
+            label = str(v.trailingLabel())
+            pkg_id = get_package_id(name, version, arch, label)
             summary = ''
             self.package(pkg_id, status, summary)
 
@@ -450,7 +415,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
         for package_id in package_ids:
-            name, version, arch, summary = split_package_id(package_id)
+            name, version, arch, label = split_package_id(package_id)
             pkgDict = self.xmlcache.resolve(name)
             update = ""
             obsolete = ""
@@ -458,9 +423,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if pkgDict:
                 vendor_url = pkgDict.get("url","")
                 desc = pkgDict.get("longDesc","")
-                reboot = self._get_restart(pkgDict.get("name"))
-                state = self._get_branch( pkgDict.get("label"))
-                bz_url = self._get_fits(pkgDict.get("label"), pkgDict.get("name"))
+                reboot = self._get_restart(name)
+                state = self._get_branch(label)
+                bz_url = self._get_fits(label)
                 self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
                         reboot, desc, changelog="", state= state, issued="", updated = "")
 
@@ -505,7 +470,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return INFO_NORMAL
 
-    def _get_fits(self, branch, pkg_name):
+    def _get_fits(self, branch):
         if "conary.rpath.com" in branch:
             return "http://issues.rpath.com;rPath Issues Tracker"
         elif "foresight.rpath.org" in branch:
