@@ -551,7 +551,8 @@ pk_transaction_files_cb (PkBackend *backend, PkFiles *item, PkTransaction *trans
 		      NULL);
 
 	/* ensure the files have the correct prefix */
-	if (transaction->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
+	if (transaction->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
+	    transaction->priv->cached_directory != NULL) {
 		for (i=0; files[i] != NULL; i++) {
 			if (!g_str_has_prefix (files[i], transaction->priv->cached_directory)) {
 				pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_BACKEND_ERROR,
@@ -2960,7 +2961,10 @@ out:
  * pk_transaction_download_packages:
  **/
 void
-pk_transaction_download_packages (PkTransaction *transaction, gchar **package_ids, DBusGMethodInvocation *context)
+pk_transaction_download_packages (PkTransaction *transaction,
+				  gboolean store_in_cache,
+				  gchar **package_ids,
+				  DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -3015,15 +3019,17 @@ pk_transaction_download_packages (PkTransaction *transaction, gchar **package_id
 	}
 
 	/* create cache directory */
-	directory = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit",
-				     "downloads", transaction->priv->tid, NULL);
-	/* rwxrwxr-x */
-	retval = g_mkdir (directory, 0775);
-	if (retval != 0) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
-				     "cannot create %s", directory);
-		pk_transaction_dbus_return_error (context, error);
-		goto out;
+	if (!store_in_cache) {
+		directory = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit",
+					     "downloads", transaction->priv->tid, NULL);
+		/* rwxrwxr-x */
+		retval = g_mkdir (directory, 0775);
+		if (retval != 0) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_DENIED,
+					     "cannot create %s", directory);
+			pk_transaction_dbus_return_error (context, error);
+			goto out;
+		}
 	}
 
 	/* save so we can run later */

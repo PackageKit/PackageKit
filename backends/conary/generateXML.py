@@ -47,7 +47,7 @@ def generate_xml( troves, label):
         node_name = cElementTree.Element("name")
         node_name.text = name
         node_version = cElementTree.Element("version")
-        node_version.text = version 
+        node_version.text = version
 
         for i in [ node_name, node_version ]:
             package.append(i)
@@ -58,7 +58,7 @@ def generate_xml( troves, label):
                     for cat in value:
                         cat_node = cElementTree.Element("category", lang = "en")
                         cat_node.text = cat
-                        package.append(node)
+                        package.append(cat_node)
                 else:
                     node = cElementTree.Element(key, lang = "en")
                     node.text = value

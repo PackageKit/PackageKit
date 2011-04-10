@@ -129,11 +129,18 @@ class YumFilter(PackagekitFilter):
 
         return self.package_list
 
-    def _pkg_get_unique(self, pkg):
+    def _pkg_compare(self, pkg1, pkg2):
         '''
-        Return a unique string for the package
+        Returns a version comparison of the packages
         '''
-        return "%s-%s:%s-%s.%s" % (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch)
+        if pkg1.name != pkg2.name:
+            return -2
+        if pkg1.arch != pkg2.arch:
+            return -2
+        evr1 = (pkg1.epoch, pkg1.version, pkg1.release.split('.')[0])
+        evr2 = (pkg2.epoch, pkg2.version, pkg2.release.split('.')[0])
+        rc = rpmUtils.miscutils.compareEVR(evr1, evr2)
+        return rc
 
     def _pkg_get_name(self, pkg):
         '''

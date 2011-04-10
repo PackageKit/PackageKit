@@ -235,14 +235,15 @@ public:
     void acceptEula(const Client::EulaInfo &info);
 
     /**
-     * Download the given \p packages to a temp dir
+     * Download the given \p packages to a temp dir, if \p storeInCache is true
+     * the download will be stored in the package manager cache
      */
-    void downloadPackages(const QList<QSharedPointer<Package> > &packages);
+    void downloadPackages(const QList<QSharedPointer<Package> > &packages, bool storeInCache = false);
 
     /**
      * This is a convenience function
      */
-    void downloadPackages(const QSharedPointer<Package> &package);
+    void downloadPackages(const QSharedPointer<Package> &package, bool storeInCache = false);
 
     /**
      * Returns the collection categories

@@ -259,6 +259,22 @@
           </doc:para>
         </doc:description>
       </doc:doc>
+      <arg type="b" name="store_in_cache" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the downloaded files should be stored in the system
+              package cache rather than copied into a newly created
+              directory.
+            </doc:para>
+            <doc:para>
+              See <doc:ulink url="http://packagekit.org/gtk-doc/introduction-ideas-transactions.html">
+              the developer docs</doc:ulink> for more details on how
+              this is supposed to work.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
       <arg type="as" name="package_ids" direction="in">
         <doc:doc>
           <doc:summary>

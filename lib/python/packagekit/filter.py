@@ -33,33 +33,21 @@ class PackagekitFilter(object, PackagekitPackage):
     def add_installed(self, pkgs):
         ''' add a list of packages that are already installed '''
         for pkg in pkgs:
-            if self.pre_process(pkg):
-                self.package_list.append((pkg, INFO_INSTALLED))
-            name = self._pkg_get_unique(pkg)
-            self.installed_unique[name] = pkg
+            self.package_list.append((pkg, INFO_INSTALLED))
 
     def add_available(self, pkgs):
         ''' add a list of packages that are available '''
         for pkg in pkgs:
-            name = self._pkg_get_unique(pkg)
-            if not self.installed_unique.has_key(name):
-                if self.pre_process(pkg):
-                    self.package_list.append((pkg, INFO_AVAILABLE))
+            self.package_list.append((pkg, INFO_AVAILABLE))
 
     def add_custom(self, pkg, info):
         ''' add a custom packages indervidually '''
-        name = self._pkg_get_unique(pkg)
-        if not self.installed_unique.has_key(name):
-            if self.pre_process(pkg):
-                self.package_list.append((pkg, info))
+        self.package_list.append((pkg, info))
 
-    def pre_process(self, pkg):
+    def _filter_base(self, pkg):
         ''' do extra filtering (gui, devel etc) '''
         for flt in self.fltlist:
-            if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
-                if not self._do_installed_filtering(flt, pkg):
-                    return False
-            elif flt in (FILTER_GUI, FILTER_NOT_GUI):
+            if flt in (FILTER_GUI, FILTER_NOT_GUI):
                 if not self._do_gui_filtering(flt, pkg):
                     return False
             elif flt in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
@@ -73,6 +61,60 @@ class PackagekitFilter(object, PackagekitPackage):
                     return False
         return True
 
+    def _filter_installed(self, pkg):
+        ''' do extra filtering (gui, devel etc) '''
+        for flt in self.fltlist:
+            if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
+                if not self._do_installed_filtering(flt, pkg):
+                    return False
+        return True
+
+    def get_package_list(self):
+        '''
+        do filtering we couldn't do when generating the list
+        '''
+
+        # filter common things here like architecture
+        # NOTE: we can't do installed and ~installed here as we need
+        # this data for the newest and downgrade checks below
+        package_list = self.package_list
+        self.package_list = []
+        for pkg, state in package_list:
+            if self._filter_base(pkg):
+                self.package_list.append((pkg, state))
+
+        # check there are not available versions in the package list
+        # that are older than the installed version
+        package_list = self.package_list
+        self.package_list = []
+        for pkg, state in package_list:
+
+            add = True;
+            if state is INFO_AVAILABLE:
+                for pkg_tmp, state_tmp in self.package_list:
+                    if state_tmp is not INFO_INSTALLED:
+                        continue
+                    rc = self._pkg_compare(pkg, pkg_tmp)
+
+                    # don't add if the same as the installed package
+                    # or a downgrade to the existing installed package
+                    if rc == 0 or rc == -1:
+                        add = False
+                        break
+
+            if add:
+                self.package_list.append((pkg, state))
+
+        # filter installed state last
+        package_list = self.package_list
+        self.package_list = []
+        for pkg, state in package_list:
+            if self._filter_installed(pkg):
+                self.package_list.append((pkg, state))
+
+        # do the backend specific filtering
+        return self.post_process()
+
     def post_process(self):
         '''
         do filtering we couldn't do when generating the list
@@ -80,12 +122,17 @@ class PackagekitFilter(object, PackagekitPackage):
         '''
         return self.package_list
 
-    def _pkg_get_unique(self, pkg):
+    def _pkg_compare(self, pkg1, pkg2):
         '''
-        Return a unique string for the package
+        Returns a version comparison of the packages, where:
+        -2 : pkg1 not comparable with pkg2
+        -1 : pkg2 is newer than pkg1
+         0 : pkg1 == pkg2
+         1 : pkg1 is newer than pkg2
+         2 : not implemented
         Needed to be implemented in a sub class
         '''
-        return None
+        return 2
 
     def _pkg_get_name(self, pkg):
         '''

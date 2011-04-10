@@ -436,7 +436,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgfilter.add_available(available)
 
                 # we couldn't do this when generating the list
-                package_list = pkgfilter.post_process()
+                package_list = pkgfilter.get_package_list()
                 self._show_package_list(package_list)
 
     def _show_package_list(self, lst):
@@ -568,7 +568,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # add list to filter
         pkgfilter.add_installed(installed)
         pkgfilter.add_available(available)
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
         self.percentage(100)
 
@@ -623,7 +623,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         # add list to filter
         pkgfilter.add_installed(installed)
         pkgfilter.add_available(available)
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
         self.percentage(100)
 
@@ -661,7 +661,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             # add list to filter
             pkgfilter.add_installed(installed)
             pkgfilter.add_available(available)
-            package_list = pkgfilter.post_process()
+            package_list = pkgfilter.get_package_list()
             self._show_package_list(package_list)
             self.percentage(100)
 
@@ -785,7 +785,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     return
 
         # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
 
         self.percentage(90)
         self._show_package_list(package_list)
@@ -835,7 +835,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
 
     def search_file(self, filters, values):
@@ -883,7 +883,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                     pkgfilter.add_available(pkgs)
 
         # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
 
     def _get_provides_query(self, provides_type, value):
@@ -963,7 +963,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             pkgfilter.add_available(pkgs)
 
                     # we couldn't do this when generating the list
-                    package_list = pkgfilter.post_process()
+                    package_list = pkgfilter.get_package_list()
                     self._show_package_list(package_list)
 
     def get_categories(self):
@@ -1113,17 +1113,21 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             except Exception, e:
                 self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
             remote = pkg_download.returnSimple('relativepath')
-            local = os.path.basename(remote)
-            if not os.path.exists(directory):
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
-                return
-            local = os.path.join(directory, local)
-            if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists as %s" % local, exit=False)
-                return
+            if directory:
+                local = os.path.basename(remote)
+                if not os.path.exists(directory):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "No destination directory exists", exit=False)
+                    return
+                local = os.path.join(directory, local)
+                if (os.path.exists(local) and os.path.getsize(local) == int(pkg_download.returnSimple('packagesize'))):
+                    self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Package already exists as %s" % local, exit=False)
+                    return
             # Disable cache otherwise things won't download
             repo.cache = 0
-            pkg_download.localpath = local #Hack:To set the localpath we want
+
+            #  set the localpath we want
+            if directory:
+                pkg_download.localpath = local
             try:
                 path = repo.getPackage(pkg_download)
 
@@ -1633,7 +1637,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
         if FILTER_NOT_INSTALLED in filters and recursive:
             pkgs = self._get_depends_not_installed (filters, package_ids, recursive)
             pkgfilter.add_available(pkgs)
-            package_list = pkgfilter.post_process()
+            package_list = pkgfilter.get_package_list()
             self._show_package_list(package_list)
             self.percentage(100)
             return
@@ -1687,7 +1691,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkgfilter.add_available([pkg])
 
         # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
         self.percentage(100)
 
@@ -1917,7 +1921,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                             pkgfilter.add_available([pkg])
 
         # we couldn't do this when generating the list
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
 
     def install_packages(self, only_trusted, inst_files):
@@ -2804,7 +2808,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                                 break
                 pkgfilter.add_custom(pkg, status)
 
-        package_list = pkgfilter.post_process()
+        package_list = pkgfilter.get_package_list()
         self._show_package_list(package_list)
 
     def repo_enable(self, repoid, enable):

@@ -292,14 +292,14 @@ Transaction* Client::acceptEula(EulaInfo info)
 	RUN_TRANSACTION(acceptEula(info))
 }
 
-Transaction* Client::downloadPackages(const QList<QSharedPointer<Package> >& packages)
+Transaction* Client::downloadPackages(const QList<QSharedPointer<Package> > &packages, bool storeInCache)
 {
-	RUN_TRANSACTION(downloadPackages(packages))
+    RUN_TRANSACTION(downloadPackages(packages, storeInCache))
 }
 
-Transaction* Client::downloadPackages(QSharedPointer<Package> package)
+Transaction* Client::downloadPackages(QSharedPointer<Package> package, bool storeInCache)
 {
-	return downloadPackages(QList<QSharedPointer<Package> >() << package);
+    return downloadPackages(QList<QSharedPointer<Package> >() << package, storeInCache);
 }
 
 Transaction* Client::getDepends(const QList<QSharedPointer<Package> >& packages, Enum::Filters filters, bool recursive)

@@ -913,6 +913,10 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			g_debug ("simulating");
 
 			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+				if (type == REMOVE && !(*it)->isSystem ()) {
+					it->statusReset ();
+					continue;
+				}
 				if (!zypp_backend_pool_item_notify (backend, *it, TRUE))
 					ret = FALSE;
 				it->statusReset ();
@@ -944,10 +948,13 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		}
 
                 // Perform the installation
+		gboolean only_trusted = pk_backend_get_bool (backend, "only_trusted");
                 zypp::ZYppCommitPolicy policy;
                 policy.restrictToMedia (0); // 0 == install all packages regardless to media
 		policy.downloadMode (zypp::DownloadInHeaps);
 		policy.syncPoolAfterCommit (true);
+		if (only_trusted == FALSE)
+			policy.rpmNoSignature(true);
 
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 
