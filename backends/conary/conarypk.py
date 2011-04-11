@@ -170,7 +170,7 @@ class UpdateJobCache:
 
     def __init__(self, jobPath='/var/cache/conary/jobs/', createJobPath=True):
         if createJobPath and not os.path.isdir(jobPath):
-            os.mkdir(jobPath)
+            os.makedirs(jobPath)
         self._jobPath = jobPath
 
     def _getJobCachePath(self, applyList):
