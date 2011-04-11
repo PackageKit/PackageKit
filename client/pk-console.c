@@ -1203,9 +1203,10 @@ pk_console_get_summary (void)
 		g_string_append_printf (string, "  %s\n", "rollback");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST))
 		g_string_append_printf (string, "  %s\n", "repo-list");
-	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE))
+	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
 		g_string_append_printf (string, "  %s\n", "repo-enable [repo_id]");
 		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
+	}
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA))
 		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
 	if (pk_bitfield_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES))
