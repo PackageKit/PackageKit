@@ -65,6 +65,7 @@ from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.cache import EntropyCacher
 from entropy.exceptions import SystemDatabaseError
+from entropy.db.exceptions import Error as EntropyRepositoryError
 try:
     from entropy.exceptions import DependenciesNotRemovable
 except ImportError:
@@ -861,12 +862,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
-        if hasattr(self._entropy, "PackageFileUpdates"):
-            scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
-                quiet = True)
-        else:
-            scandata = self._entropy.FileUpdates.scan(dcache = True,
-                quiet = True)
+        scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
+            quiet = True)
         if scandata is None:
             return
         if len(scandata) > 0:
@@ -987,6 +984,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    def _etp_get_package_categories(self):
+        categories = set()
+        for repository_id in self._entropy.repositories():
+            repo_db = self._entropy.open_repository(repository_id)
+            try:
+                categories.update(repo_db.listAllCategories())
+            except EntropyRepositoryError:
+                # on broken repos this might cause issues
+                continue
+        return sorted(categories)
+
     def get_categories(self):
 
         self._log_message(__name__, "get_categories: called")
@@ -994,7 +1002,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
 
-        categories = self._entropy.get_package_categories()
+        categories = self._etp_get_package_categories()
         if not categories:
             self.error(ERROR_GROUP_LIST_INVALID, "no package categories")
             return
@@ -1161,7 +1169,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         empty = False
         deep = False
-        reverse_deps = self._entropy.get_reverse_dependencies(matches,
+        reverse_deps = self._entropy.get_reverse_queue(matches,
             deep = deep, recursive = recursive)
 
         self._log_message(__name__, "get_requires: reverse_deps => %s" % (
@@ -1325,7 +1333,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         pkg_ids = []
         for etp_file in inst_files:
             repo_id = os.path.basename(etp_file)
-            status, atomsfound = self._entropy.add_package_to_repos(etp_file)
+            status, atomsfound = self._entropy.add_package_to_repositories(
+                etp_file)
             if status != 0:
                 self.error(ERROR_INVALID_PACKAGE_FILE,
                     "Error while trying to add %s repository" % (repo_id,))
