@@ -67,10 +67,9 @@ def generate_xml( troves, label):
         document.append(package)
     return document
 
-def init(label, fileoutput, conarypk=None):
+def init(label, fileoutput):
 
-    if not conarypk:
-        conarypk = ConaryPk()
+    conarypk = ConaryPk()
 
     cli = conarypk.cli
     cfg = conarypk.cfg

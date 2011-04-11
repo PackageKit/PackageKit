@@ -245,7 +245,7 @@ class ConaryPk:
         if installLabel:
             return Label(installLabel)
         return self.default_label
-    def get_labels_from_config(self):
+    def get_labels(self):
         labels = []
         for i in self.default_label:
             #if "foresight.rpath.org" or "conary.rpath.com" in i.asString():
@@ -293,7 +293,7 @@ class ConaryPk:
         return files
 
     def search_path(self,path_file ):
-        labels = self.get_labels_from_config()
+        labels = self.get_labels()
         where = self._get_repos()
         for label in self.default_label:
             trove = where.getTroveLeavesByPath([path_file], label)

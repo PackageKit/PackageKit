@@ -88,7 +88,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.cfg = conary.cfg
         self.client = conary.cli
         self.conary = conary
-        self.xmlcache = XMLCache()
+        self.xmlcache = XMLCache(self.conary.get_labels())
 
     def _get_package_name_from_ids(self, package_ids):
         return [split_package_id(x)[0] for x in package_ids]
@@ -520,7 +520,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self._display_updates(installs + updates)
 
     def get_repo_list(self, filters):
-        labels = self.conary.get_labels_from_config()
+        labels = self.conary.get_labels()
         self.status(STATUS_QUERY)
         for repo in labels:
             repo_name = repo.split("@")[0]
