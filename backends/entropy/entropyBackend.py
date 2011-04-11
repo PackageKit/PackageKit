@@ -70,6 +70,10 @@ try:
 except ImportError:
     DependenciesNotRemovable = Exception
 from entropy.fetchers import UrlFetcher
+try:
+    from entropy.services.client import WebService
+except ImportError:
+    WebService = None
 
 import entropy.tools
 import entropy.dep
@@ -357,19 +361,41 @@ class PackageKitEntropyMixin(object):
             self._repo_name_cache[repo_db] = repo_name
         return repo_name
 
+    def _etp_get_webservice(self, repository_id):
+        """
+        Get Entropy Web Services service object (ClientWebService).
+
+        @param entropy_client: Entropy Client interface
+        @type entropy_client: entropy.client.interfaces.Client
+        @param repository_id: repository identifier
+        @type repository_id: string
+        @return: the ClientWebService instance
+        @rtype: entropy.client.services.interfaces.ClientWebService
+        @raise WebService.UnsupportedService: if service is unsupported by
+            repository
+        """
+        factory = self._entropy.WebServices()
+        return factory.new(repository_id)
+
     def _etp_spawn_ugc(self, pkg_data):
         """
         Inform repository maintainers that user fetched packages, if user
         enabled this feature.
         """
-        if self._entropy.UGC is None:
+        if WebService is None:
+            # old entropy library, ignore all
             return
-        for repo_id in pkg_data:
-            repo_pkg_keys = sorted(pkg_data[repo_id])
+
+        for repository_id, repo_pkg_keys in pkg_data.items():
             try:
-                self._entropy.UGC.add_download_stats(repo_id, repo_pkg_keys)
-            except:
-                pass
+                webserv = self._etp_get_webservice(repository_id)
+            except WebService.UnsupportedService:
+                continue
+            pkg_keys = sorted(repo_pkg_keys)
+            try:
+                webserv.add_downloads(pkg_keys)
+            except WebService.WebServiceException:
+                continue
 
     def _etp_get_category_description(self, category):
         """
@@ -1367,6 +1393,24 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_fetch(pkgs, directory)
 
+    def _etp_update_repository_stats(self, repository_ids):
+        """
+        Update repository download statistics.
+        """
+        if WebService is None:
+            # old entropy library, ignore all
+            return
+
+        for repository_id in repository_ids:
+            try:
+                webserv = self._etp_get_webservice(repository_id)
+            except WebService.UnsupportedService:
+                continue
+            try:
+                webserv.add_downloads(repository_id, [repository_id])
+            except WebService.WebServiceException:
+                continue
+
     def refresh_cache(self, force):
 
         self.status(STATUS_REFRESH_CACHE)
@@ -1388,10 +1432,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         ex_rc = repo_intf.sync()
         if not ex_rc:
-            for repo_id in repo_identifiers:
-                # inform UGC that we are syncing this repo
-                if self._entropy.UGC is not None:
-                    self._entropy.UGC.add_download_stats(repo_id, [repo_id])
+            self._etp_update_repository_stats(repo_identifiers)
         else:
             self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
                 "Cannot update repositories!")
