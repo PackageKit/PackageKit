@@ -142,7 +142,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             elif op == 'erase':
                 ret = self.conary.erase(*args)
             else:
-                self.error(ERROR_INTERNAL_ERROR, 'Unkown command: %s' % op)
+                self.error(ERROR_INTERNAL_ERROR,
+                        'Unknown operation for conary: %s' % op)
         except conaryclient.DepResolutionFailure as e:
             deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
             self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
@@ -398,7 +399,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         pkglist = _get_trovespec_from_ids(package_ids)
         cb = RemoveCallback(self, self.cfg)
-        updJob, suggMap = self._do_conary_update('remove', pkglist, cb, simulate)
+        updJob, suggMap = self._do_conary_update('erase', pkglist, cb, simulate)
         if simulate:
             pkgs = self._get_package_name_from_ids(package_ids)
             jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
