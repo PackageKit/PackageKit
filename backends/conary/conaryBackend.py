@@ -152,8 +152,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.conary.clear_job_cache()
                 # The UpdateJob can be invalid. It's probably because after the
                 # update job is fozen, the state of the database has changed.
-                self.error(ERROR_INVALID_PACKAGE_FILE,
-                        "Previously cached file is broken. Try again")
+                self.error(ERROR_NO_CACHE,
+                        "The previously cached update job is broken. Please try again.")
         except trove.TroveIntegrityError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
         return ret
@@ -331,6 +331,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             ret = self.conary.updateall(callback, dry_run)
         except xmlrpclib.ProtocolError as e:
             self.error(ERROR_NO_NETWORK, '%s. Try again.' % str(e))
+        except errors.InternalConaryError as e:
+            if str(e) == "Stale update job":
+                self.conary.clear_job_cache()
+                # The UpdateJob can be invalid. It's probably because after the
+                # update job is fozen, the state of the database has changed.
+                self.error(ERROR_NO_CACHE,
+                        "The previously cached update job is broken. Please try again.")
         return ret
 
     @ExceptionHandler
