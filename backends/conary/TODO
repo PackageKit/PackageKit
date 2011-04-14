@@ -15,6 +15,5 @@
 * decide what to do with package components
 * don't show dead packages:
   - version == '0'
-* policy error
-  - Failed to check for authentication: GDBus.Error:org.freedesktop.PolicyKit1.Error.Failed: Action org.freedesktop.packagekit.package-install is not registered
-  - Failed to check for authentication: GDBus.Error:org.freedesktop.PolicyKit1.Error.Failed: Action org.freedesktop.packagekit.system-sources-refresh is not registered
+* conarypk.py: move _classic_build_update_job()/_classic_get_package_update()/_classic_get_updateall_job()
+  out of the ConaryPk and change them into functions, as the _model* functions.
