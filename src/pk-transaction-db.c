@@ -671,7 +671,7 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 	if (proxy_http != NULL)
 		*proxy_http = g_strdup (item->proxy_http);
 	if (proxy_https != NULL)
-		*proxy_http = g_strdup (item->proxy_https);
+		*proxy_https = g_strdup (item->proxy_https);
 	if (proxy_ftp != NULL)
 		*proxy_ftp = g_strdup (item->proxy_ftp);
 	if (proxy_socks != NULL)
