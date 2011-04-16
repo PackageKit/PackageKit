@@ -2160,9 +2160,15 @@ pk_backend_download_packages (PkBackend *backend, gchar **package_ids, const gch
 void
 pk_backend_transaction_start (PkBackend *backend)
 {
+	gchar *locale;
 	gchar *proxy_http;
 	gchar *proxy_ftp;
 	gchar *uri;
+
+	locale = pk_backend_get_locale(backend);
+	if (!egg_strzero (locale)) {
+		setlocale(LC_ALL, locale);
+	}
 
 	/* http_proxy */
 	proxy_http = pk_backend_get_proxy_http (backend);
