@@ -42,24 +42,26 @@ import conarypk
 
 sys.excepthook = util.genExcepthook()
 
-def ExceptionHandler(func):
-    return func
-    def display(error):
-        return str(error).replace('\n', ' ').replace("\t",'')
+def ConaryExceptionHandler(func):
+    '''Centralized handler for conary Exceptions
+
+    Currently only considers conary install/erase/updateall.
+    '''
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        #except Exception:
-        #    raise
-        except conaryclient.NoNewTrovesError:
-            return
-        except conaryclient.DepResolutionFailure, e:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, display(e), exit=True)
-        except conaryclient.UpdateError, e:
-            # FIXME: Need a enum for UpdateError
-            self.error(ERROR_UNKNOWN, display(e), exit=True)
-        except Exception, e:
-            self.error(ERROR_UNKNOWN, display(e), exit=True)
+        except conaryclient.DepResolutionFailure as e:
+            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
+            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
+        except errors.InternalConaryError as e:
+            if str(e) == "Stale update job":
+                self.conary.clear_job_cache()
+                # The UpdateJob can be invalid. It's probably because after the
+                # update job is fozen, the state of the database has changed.
+                self.error(ERROR_NO_CACHE,
+                        "The previously cached update job is broken. Please try again.")
+        except trove.TroveIntegrityError:
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
     return wrapper
 
 def _get_trovespec_from_ids(package_ids):
@@ -132,32 +134,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             self.message(MESSAGE_COULD_NOT_FIND_PACKAGE,"search not found")
 
-    def _do_conary_update(self, op, *args):
-        '''Wrapper around ConaryPk.install/erase() so we can add exception
-        handling
-        '''
-        try:
-            if op == 'install':
-                ret = self.conary.install(*args)
-            elif op == 'erase':
-                ret = self.conary.erase(*args)
-            else:
-                self.error(ERROR_INTERNAL_ERROR,
-                        'Unknown operation for conary: %s' % op)
-        except conaryclient.DepResolutionFailure as e:
-            deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
-            self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
-        except errors.InternalConaryError as e:
-            if str(e) == "Stale update job":
-                self.conary.clear_job_cache()
-                # The UpdateJob can be invalid. It's probably because after the
-                # update job is fozen, the state of the database has changed.
-                self.error(ERROR_NO_CACHE,
-                        "The previously cached update job is broken. Please try again.")
-        except trove.TroveIntegrityError:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
-        return ret
-
     def _resolve_list(self, pkg_list, filters):
         pkgFilter = ConaryFilter()
 
@@ -224,7 +200,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 list_available.append(pkg)
         pkgFilter.add_available(list_available)
 
-    @ExceptionHandler
     def resolve(self, filters, package ):
         """
             @filters  (list)  list of filters
@@ -274,14 +249,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             summary = self._format_package_summary(name, pkg["metadata"])
             self.package(pkg_id, status, summary)
 
-    @ExceptionHandler
     def search_group(self, options, searchlist):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
         self._do_search(options, searchlist, 'group')
 
-    @ExceptionHandler
     def search_file(self, filters, search ):
         self.allow_cancel(True)
         self.percentage(None)
@@ -292,27 +265,23 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 name = name.split(":")[0]
             self.resolve( filters, [name])
 
-    @ExceptionHandler
     def search_name(self, options, searchlist):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
         self._do_search(options, searchlist, 'name')
 
-    @ExceptionHandler
     def search_details(self, options, search):
         self.allow_cancel(True)
         #self.percentage(None)
         self.status(STATUS_QUERY)
         self._do_search(options, search, 'details' )
 
-    @ExceptionHandler
     def get_packages(self, filter ):
         self.allow_cancel(False)
         self.status(STATUS_QUERY)
         self._do_search(filter, "", 'all' )
 
-    @ExceptionHandler
     def get_files(self, package_ids):
         self.allow_cancel(True)
         self.percentage(None)
@@ -324,29 +293,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     (name, version, arch))
             self.files(package_id, ';'.join(files))
 
-    def _do_conary_updateall(self, callback, dry_run):
-        '''Wrapper around ConaryPk.updateall() so we can add exception handling
-        '''
-        try:
-            ret = self.conary.updateall(callback, dry_run)
-        except xmlrpclib.ProtocolError as e:
-            self.error(ERROR_NO_NETWORK, '%s. Try again.' % str(e))
-        except errors.InternalConaryError as e:
-            if str(e) == "Stale update job":
-                self.conary.clear_job_cache()
-                # The UpdateJob can be invalid. It's probably because after the
-                # update job is fozen, the state of the database has changed.
-                self.error(ERROR_NO_CACHE,
-                        "The previously cached update job is broken. Please try again.")
-        return ret
-
-    @ExceptionHandler
+    @ConaryExceptionHandler
     def update_system(self, only_trusted):
         # FIXME: use only_trusted
         self.allow_cancel(False)
         self.status(STATUS_UPDATE)
         cb = UpdateSystemCallback(self, self.cfg)
-        self._do_conary_updateall(cb, dry_run=False)
+        self.conary.updateall(cb, dry_run=False)
 
     def refresh_cache(self, force):
         # TODO: use force ?
@@ -383,6 +336,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self._show_packages(ret)
 
+    @ConaryExceptionHandler
     def install_packages(self, only_trusted, package_ids, simulate=False):
         self.allow_cancel(False)
         self.percentage(0)
@@ -390,14 +344,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         pkglist = _get_trovespec_from_ids(package_ids)
         cb = UpdateCallback(self, self.cfg)
-        updJob, suggMap = self._do_conary_update('install', pkglist, cb, simulate)
+        updJob, suggMap = self.conary.install(pkglist, cb, simulate)
         if simulate:
             pkgs = self._get_package_name_from_ids(package_ids)
             jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
                     show_components=False)
             self._display_update_jobs(*jobs)
 
-    @ExceptionHandler
+    @ConaryExceptionHandler
     def remove_packages(self, allowDeps, autoremove, package_ids, simulate=False):
         # TODO: use autoremove
         self.allow_cancel(False)
@@ -406,7 +360,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         pkglist = _get_trovespec_from_ids(package_ids)
         cb = RemoveCallback(self, self.cfg)
-        updJob, suggMap = self._do_conary_update('erase', pkglist, cb, simulate)
+        updJob, suggMap = self.conary.erase(pkglist, cb, simulate)
         if simulate:
             pkgs = self._get_package_name_from_ids(package_ids)
             jobs = conarypk.parse_jobs(updJob, excludes=pkgs,
@@ -417,7 +371,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if name in self.rebootpkgs:
             self.require_restart(RESTART_SYSTEM, "")
 
-    @ExceptionHandler
     def get_update_detail(self, package_ids):
         self.allow_cancel(True)
         self.percentage(None)
@@ -437,7 +390,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.update_detail(package_id, update, obsolete, vendor_url, bz_url, cve_url,
                         reboot, desc, changelog="", state= state, issued="", updated = "")
 
-   # @ExceptionHandler
     def get_details(self, package_ids):
         '''
         Print a detailed description for a given package
@@ -515,14 +467,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self._show_packages(ret)
 
-    @ExceptionHandler
+    @ConaryExceptionHandler
     def get_updates(self, filters):
         self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_INFO)
 
         cb = GetUpdateCallback(self, self.cfg)
-        updJob, suggMap = self._do_conary_updateall(cb, dry_run=True)
+        updJob, suggMap = self.conary.updateall(cb, dry_run=True)
         installs, erases, updates = conarypk.parse_jobs(updJob,
                 show_components=False)
         self._display_updates(installs + updates)
