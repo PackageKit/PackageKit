@@ -587,8 +587,20 @@ pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col
 		if (g_strcmp0 (col_name[i], "proxy_http") == 0) {
 			item->proxy_http = g_strdup (argv[i]);
 			item->set = TRUE;
+		} else if (g_strcmp0 (col_name[i], "proxy_https") == 0) {
+			item->proxy_https = g_strdup (argv[i]);
+			item->set = TRUE;
 		} else if (g_strcmp0 (col_name[i], "proxy_ftp") == 0) {
 			item->proxy_ftp = g_strdup (argv[i]);
+			item->set = TRUE;
+		} else if (g_strcmp0 (col_name[i], "proxy_socks") == 0) {
+			item->proxy_socks = g_strdup (argv[i]);
+			item->set = TRUE;
+		} else if (g_strcmp0 (col_name[i], "no_proxy") == 0) {
+			item->no_proxy = g_strdup (argv[i]);
+			item->set = TRUE;
+		} else if (g_strcmp0 (col_name[i], "pac") == 0) {
+			item->pac = g_strdup (argv[i]);
 			item->set = TRUE;
 		} else {
 			g_warning ("%s = %s\n", col_name[i], argv[i]);
@@ -646,7 +658,7 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* get existing data */
 	item = g_new0 (PkTransactionDbProxyItem, 1);
-	statement = g_strdup_printf ("SELECT proxy_http, proxy_ftp FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
+	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
 				     uid, session);
 	rc = sqlite3_exec (tdb->priv->db, statement,
 			   pk_transaction_sqlite_proxy_cb,
