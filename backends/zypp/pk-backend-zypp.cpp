@@ -2220,6 +2220,7 @@ pk_backend_transaction_start (PkBackend *backend)
 		g_free (uri);
 	}
 
+	g_free (locale);
 	g_free (proxy_http);
 	g_free (proxy_https);
 	g_free (proxy_ftp);
