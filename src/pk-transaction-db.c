@@ -940,7 +940,15 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	}
 
 	/* session proxy saving (since 0.5.1) */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT proxy_https FROM proxy LIMIT 1", NULL, NULL, &error_msg);
+	rc = sqlite3_exec (tdb->priv->db, "SELECT * FROM proxy LIMIT 1", NULL, NULL, &error_msg);
+	if (rc != SQLITE_OK) {
+		g_debug ("adding table proxy: %s", error_msg);
+		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_https TEXT, proxy_ftp TEXT, proxy_socks TEXT, no_proxy TEXT, pac TEXT, uid INTEGER, session TEXT);";
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
+	}
+
+	/* session no_proxy proxy */
+	rc = sqlite3_exec (tdb->priv->db, "SELECT no_proxy FROM proxy LIMIT 1", NULL, NULL, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_debug ("altering table to repair: %s", error_msg);
 		sqlite3_free (error_msg);
@@ -951,14 +959,6 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		statement = "ALTER TABLE proxy ADD COLUMN no_proxy TEXT;";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 		statement = "ALTER TABLE proxy ADD COLUMN pac TEXT;";
-		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-	}
-
-	/* session no_proxy proxy */
-	rc = sqlite3_exec (tdb->priv->db, "SELECT no_proxy FROM proxy LIMIT 1", NULL, NULL, &error_msg);
-	if (rc != SQLITE_OK) {
-		g_debug ("adding table proxy: %s", error_msg);
-		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_ftp TEXT, uid INTEGER, session TEXT);";
 		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 	}
 
