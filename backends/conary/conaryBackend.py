@@ -22,8 +22,9 @@
 
 import sys
 
-from conary import conaryclient, errors, trove
-from conary.lib import util
+from conary.conaryclient import DepResolutionFailure
+from conary.errors import InternalConaryError
+from conary.trove import TroveIntegrityError
 
 from packagekit.backend import get_package_id, split_package_id, \
     PackageKitBaseBackend
@@ -39,10 +40,10 @@ from conaryCallback import UpdateCallback, GetUpdateCallback
 from conaryCallback import RemoveCallback, UpdateSystemCallback
 from conaryFilter import ConaryFilter
 from XMLCache import XMLCache
-from pkConaryLog import log
 import conarypk
 
-sys.excepthook = util.genExcepthook()
+# To use the logger, uncomment this line:
+# from pkConaryLog import log
 
 def ConaryExceptionHandler(func):
     '''Centralized handler for conary Exceptions
@@ -52,17 +53,17 @@ def ConaryExceptionHandler(func):
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except conaryclient.DepResolutionFailure as e:
+        except DepResolutionFailure as e:
             deps = [str(i[0][0]).split(":")[0] for i in e.cannotResolve]
             self.error(ERROR_DEP_RESOLUTION_FAILED, ", ".join(set(deps)))
-        except errors.InternalConaryError as e:
+        except InternalConaryError as e:
             if str(e) == "Stale update job":
                 self.conary.clear_job_cache()
                 # The UpdateJob can be invalid. It's probably because after the
                 # update job is fozen, the state of the database has changed.
                 self.error(ERROR_NO_CACHE,
                         "The previously cached update job is broken. Please try again.")
-        except trove.TroveIntegrityError:
+        except TroveIntegrityError:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "Network error. Try again")
     return wrapper
 
@@ -122,10 +123,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_package_name_from_ids(self, package_ids):
         return [split_package_id(x)[0] for x in package_ids]
 
-    def _format_package_summary(self, name, metadata):
-        data = ""
-        if "shortDesc" in metadata:
-            data = metadata['shortDesc'].decode("UTF")
+    def _format_package_summary(self, name, short_desc):
+        data = short_desc
         if data == "." or data == "":
             data = name.replace("-",' ').capitalize()
         return data
@@ -273,7 +272,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arch = conarypk.get_arch(f)
 
             pkg_id = get_package_id(name, version, arch, label)
-            summary = self._format_package_summary(name, pkg["metadata"])
+
+            summary = self._format_package_summary(name,
+                    pkg["metadata"].get("shortDesc", "").decode("UTF"))
             self.package(pkg_id, status, summary)
 
     def search_group(self, options, searchlist):
@@ -345,7 +346,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arch = conarypk.get_arch(f)
             label = str(v.trailingLabel())
             pkg_id = get_package_id(name, version, arch, label)
-            summary = ''
+            summary = self._format_package_summary(name, "")
             self.package(pkg_id, status, summary)
 
     def _display_update_jobs(self, install_jobs, erase_jobs, update_jobs):

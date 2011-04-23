@@ -18,7 +18,8 @@ from conary.deps import deps
 from conary.lib import sha1helper
 from conary.lib import util
 
-from pkConaryLog import log
+# To use the logger, uncomment this line:
+# from pkConaryLog import log
 
 def get_arch(flavor):
     '''Turn a Flavor into a string describing the arch
