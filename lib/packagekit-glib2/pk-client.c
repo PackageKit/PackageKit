@@ -1843,13 +1843,14 @@ out:
 static gboolean
 pk_client_create_helper_argv_envp (PkClientState *state,
 				   gchar ***argv,
-				   gchar ***envp)
+				   gchar ***envp_out)
 {
 	const gchar *dialog = NULL;
 	const gchar *display;
 	const gchar *term;
 	gboolean ret;
 	guint envpi = 0;
+	gchar **envp;
 
 	/* check we have the right file */
 	ret = g_file_test ("/usr/bin/debconf-communicate",
@@ -1861,23 +1862,24 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 	*argv = g_new0 (gchar *, 2);
 	*argv[0] = g_strdup ("/usr/bin/debconf-communicate");
 
-	*envp = g_new0 (gchar *, 8);
-	*envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
-	*envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
+	*envp_out = g_new0 (gchar *, 8);
+	envp = *envp_out;
+	envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
+	envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
 	if (pk_debug_is_verbose ())
-		*envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
+		envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
 
 	/* do we have an available terminal to use */
 	term = g_getenv ("TERM");
 	if (term != NULL) {
-		*envp[envpi++] = g_strdup_printf ("TERM=%s", term);
+		envp[envpi++] = g_strdup_printf ("TERM=%s", term);
 		dialog = "dialog";
 	}
 
 	/* do we have access to the display */
 	display = g_getenv ("DISPLAY");
 	if (display != NULL) {
-		*envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
+		envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
 		if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
 		  dialog = "kde";
 		else
@@ -1886,7 +1888,7 @@ pk_client_create_helper_argv_envp (PkClientState *state,
 
 	/* indicate a prefered frontend */
 	if (dialog != NULL) {
-		*envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
+		envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
 		g_debug ("using frontend %s", dialog);
 	}
 out:
