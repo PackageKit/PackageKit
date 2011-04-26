@@ -615,7 +615,7 @@ pk_catalog_init (PkCatalog *catalog)
 	control = pk_control_new ();
 	ret = pk_control_get_properties (control, NULL, &error);
 	if (!ret) {
-		g_error ("Failed to contact PackageKit: %s", error->message);
+		g_warning ("Failed to contact PackageKit: %s", error->message);
 		g_error_free (error);
 		return;
 	}
