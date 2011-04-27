@@ -803,7 +803,8 @@ zypp_get_updates (PkBackend *backend)
 
 				// Remove contained packages from list of packages to add
 				zypp::sat::SolvableSet::const_iterator pki;
-				for (pki = patch->contents().begin(); pki != patch->contents().end(); pki++) {
+				zypp::Patch::Contents content(patch->contents());
+				for (pki = content.begin(); pki != content.end(); ++pki) {
 
 					pi_it_t pb = packages->begin (), pe = packages->end (), pi;
 					for (pi = pb; pi != pe; ++pi) {
