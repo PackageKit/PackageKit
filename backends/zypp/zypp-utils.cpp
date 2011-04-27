@@ -264,7 +264,7 @@ warn_outdated_repos(PkBackend *backend, const ResPool & pool)
 }
 
 target::rpm::RpmHeader::constPtr
-zypp_get_rpmHeader (const string &nname, Edition edition)
+zypp_get_rpmHeader (const string &name, Edition edition)
 {
 	target::rpm::librpmDb::db_const_iterator it;
 	target::rpm::RpmHeader::constPtr result = new target::rpm::RpmHeader ();
