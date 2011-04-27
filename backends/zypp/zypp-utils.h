@@ -191,11 +191,6 @@ gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &it
 void     zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
 
 /**
-  * convert a std::set<zypp::sat::Solvable to gchar ** array
-  */
-gchar ** zypp_convert_set_char (std::set<zypp::sat::Solvable> *set);
-
-/**
   * build string of package_id's seperated by blanks out of the capabilities of a solvable
   */
 gchar * zypp_build_package_id_capabilities (zypp::Capabilities caps);

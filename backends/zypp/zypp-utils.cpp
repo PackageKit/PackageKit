@@ -1013,22 +1013,6 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
         return ret;
 }
 
-gchar **
-zypp_convert_set_char (set<sat::Solvable> &solvables)
-{
-        gchar **array = new gchar* [solvables.size ()];
-        guint i = 0;
-
-        for (set<sat::Solvable>::iterator it = solvables.begin (); it != solvables.end (); it++){
-                gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-                array[i] = g_strdup(package_id);
-                i++;
-                g_free (package_id);
-        }
-
-        return array;
-}
-
 gchar *
 zypp_build_package_id_capabilities (Capabilities caps)
 {
