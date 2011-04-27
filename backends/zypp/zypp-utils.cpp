@@ -184,7 +184,7 @@ zypp_is_valid_repo (PkBackend *backend, zypp::RepoInfo repo)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR, "%s: Repository has no or invalid url defined.\n", repo.alias ().c_str ());
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
@@ -347,27 +347,26 @@ get_enum_group (std::string group)
         return PK_GROUP_ENUM_UNKNOWN;
 }
 
-std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
-			   const zypp::ResKind kind, gboolean include_local)
+void
+zypp_get_packages_by_name (PkBackend *backend,
+			   const gchar *package_name,
+			   const zypp::ResKind kind,
+			   std::vector<zypp::sat::Solvable> &result,
+			   gboolean include_local)
 {
-	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
-
 	zypp::ResPool pool = zypp_build_pool (backend, include_local);
 
         for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
                         it != pool.byIdentEnd (kind, package_name); it++) {
-                v->push_back (it->satSolvable ());
+                result.push_back (it->satSolvable ());
         }
-
-	return v;
 }
 
-std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file)
+void
+zypp_get_packages_by_file (PkBackend *backend,
+			   const gchar *search_file,
+			   std::vector<zypp::sat::Solvable> &ret)
 {
-        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
-
         zypp::ResPool pool = zypp_build_pool (backend, TRUE);
 
         std::string file (search_file);
@@ -378,20 +377,18 @@ zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file)
 	for (it.findByFile (search_file); *it; ++it) {
 		for (zypp::ResPool::byName_iterator it2 = pool.byNameBegin (it->tag_name ()); it2 != pool.byNameEnd (it->tag_name ()); it2++) {
 			if ((*it2)->isSystem ())
-				v->push_back ((*it2)->satSolvable ());
+				ret.push_back ((*it2)->satSolvable ());
 		}
 	}
 
-	if (v->empty ()) {
+	if (ret.empty ()) {
 		zypp::Capability cap (search_file);
 		zypp::sat::WhatProvides prov (cap);
 
 		for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
-			v->push_back (*it);
+			ret.push_back (*it);
 		}
 	}
-
-	return v;
 }
 
 zypp::sat::Solvable
@@ -403,18 +400,21 @@ zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
 	}
 
 	gchar **id_parts = pk_package_id_split(package_id);
-	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package);
-	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch);
+	std::vector<zypp::sat::Solvable> v;
+	std::vector<zypp::sat::Solvable> v2;
 
-	v->insert (v->end (), v2->begin (), v2->end ());
+	zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::package, v);
+	zypp_get_packages_by_name (backend, id_parts[PK_PACKAGE_ID_NAME], zypp::ResKind::patch, v2);
 
-	if (v == NULL)
+	v.insert (v.end (), v2.begin (), v2.end ());
+
+	if (v.empty())
 		return zypp::sat::Solvable::noSolvable;
 
 	zypp::sat::Solvable package;
 
-	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
-			it != v->end (); it++) {
+	for (std::vector<zypp::sat::Solvable>::iterator it = v.begin ();
+			it != v.end (); it++) {
 		if (zypp_ver_and_arch_equal (*it, id_parts[PK_PACKAGE_ID_VERSION],
 					     id_parts[PK_PACKAGE_ID_ARCH])) {
 			package = *it;
@@ -422,8 +422,6 @@ zypp_get_package_by_id (PkBackend *backend, const gchar *package_id)
 		}
 	}
 
-	delete (v);
-	delete (v2);
 	g_strfreev (id_parts);
 	return package;
 }
@@ -699,10 +697,9 @@ zypp_backend_package (PkBackend *backend, PkInfoEnum info,
  * Returns a set of all packages the could be updated
  * (you're able to exclude a single (normally the 'patch' repo)
  */
-static std::set<zypp::PoolItem> *
-zypp_get_package_updates (std::string repo)
+static void
+zypp_get_package_updates (std::string repo, std::set<zypp::PoolItem> &pks)
 {
-        std::set<zypp::PoolItem> *pks = new std::set<zypp::PoolItem> ();
         zypp::ResPool pool = zypp::ResPool::instance ();
 
         zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
@@ -716,18 +713,16 @@ zypp_get_package_updates (std::string repo)
 	                zypp::ui::Selectable::constPtr s =
 	                zypp::ui::Selectable::get((*it)->kind(), (*it)->name());
                         if (s->hasInstalledObj())
-                                pks->insert(*it);
+                                pks.insert(*it);
 	        }
-                return pks;
 }
 
 /**
  * Returns a set of all patches the could be installed
  */
-static std::set<zypp::PoolItem> *
-zypp_get_patches (PkBackend *backend)
+static void
+zypp_get_patches (PkBackend *backend, std::set<zypp::PoolItem> &patches)
 {
-        std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
 	_updating_self = FALSE;
 
         zypp::ZYpp::Ptr zypp;
@@ -742,37 +737,33 @@ zypp_get_patches (PkBackend *backend)
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
 			if (_updating_self) {
 				if (patch->restartSuggested ())
-					patches->insert ((*it)->candidateObj ());
+					patches.insert ((*it)->candidateObj ());
 			}
 			else
-				patches->insert ((*it)->candidateObj ());
+				patches.insert ((*it)->candidateObj ());
 
 			// check if the patch updates libzypp or packageKit and show only these
 			if (!_updating_self && patch->restartSuggested ()) {
 				_updating_self = TRUE;
-				patches->clear ();
-				patches->insert ((*it)->candidateObj ());
+				patches.clear ();
+				patches.insert ((*it)->candidateObj ());
 			}
 		}
 
         }
-
-        return patches;
-
 }
 
-std::set<zypp::PoolItem> *
-zypp_get_updates (PkBackend *backend)
+void
+zypp_get_updates (PkBackend *backend, std::set<zypp::PoolItem> &candidates)
 {
 	typedef std::set<zypp::PoolItem>::iterator pi_it_t;
-
-	std::set<zypp::PoolItem> *candidates = zypp_get_patches (backend);
+	zypp_get_patches (backend, candidates);
 
 	if (!_updating_self) {
 		// exclude the patch-repository
 		std::string patchRepo;
-		if (!candidates->empty ()) {
-			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
+		if (!candidates.empty ()) {
+			patchRepo = candidates.begin ()->resolvable ()->repoInfo ().alias ();
 		}
 
 		bool hidePackages = false;
@@ -792,9 +783,10 @@ zypp_get_updates (PkBackend *backend)
 
 		if (!hidePackages)
 		{
-			std::set<zypp::PoolItem> *packages;
-			packages = zypp_get_package_updates (patchRepo);
-			pi_it_t cb = candidates->begin (), ce = candidates->end (), ci;
+			std::set<zypp::PoolItem> packages;
+			zypp_get_package_updates(patchRepo, packages);
+
+			pi_it_t cb = candidates.begin (), ce = candidates.end (), ci;
 			for (ci = cb; ci != ce; ++ci) {
 				if (!zypp::isKind<zypp::Patch>(ci->resolvable()))
 				continue;
@@ -806,13 +798,13 @@ zypp_get_updates (PkBackend *backend)
 				zypp::Patch::Contents content(patch->contents());
 				for (pki = content.begin(); pki != content.end(); ++pki) {
 
-					pi_it_t pb = packages->begin (), pe = packages->end (), pi;
+					pi_it_t pb = packages.begin (), pe = packages.end (), pi;
 					for (pi = pb; pi != pe; ++pi) {
 						if (pi->satSolvable() == zypp::sat::Solvable::noSolvable)
 							continue;
 
 						if (pi->satSolvable().identical (*pki)) {
-							packages->erase (pi);
+							packages.erase (pi);
 							break;
 						}
 					}
@@ -820,11 +812,9 @@ zypp_get_updates (PkBackend *backend)
 			}
 
 			// merge into the list
-			candidates->insert (packages->begin (), packages->end ());
-			delete (packages);
+			candidates.insert (packages.begin (), packages.end ());
 		}
 	}
-	return candidates;
 }
 
 void

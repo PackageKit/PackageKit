@@ -117,13 +117,14 @@ PkGroupEnum get_enum_group (std::string group);
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
-							      const zypp::ResKind kind, gboolean include_local = TRUE);
+void zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
+				const zypp::ResKind kind, std::vector<zypp::sat::Solvable> &result,
+				gboolean include_local = TRUE);
 
 /**
  * Returns a list of packages that owns the specified file.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file);
+void zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file, std::vector<zypp::sat::Solvable> &result);
 
 /**
  * Returns the Resolvable for the specified package_id.
@@ -167,7 +168,7 @@ zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::Poo
   * we can find. Also manages _updating_self to prioritise critical infrastructure
   * updates.
   */
-std::set<zypp::PoolItem> * zypp_get_updates (PkBackend *backend);
+void zypp_get_updates (PkBackend *backend, std::set<zypp::PoolItem> &);
 
 /**
   * Sets the restart flag of a patch
