@@ -102,7 +102,7 @@ void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
 /**
   * Return the rpmHeader of a package
   */
-zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (std::string name, zypp::Edition edition);
+zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (const std::string &name, zypp::Edition edition);
 
 /**
   * Return the group of the given PoolItem.
@@ -112,7 +112,7 @@ std::string zypp_get_group (zypp::sat::Solvable item);
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum get_enum_group (std::string group);
+PkGroupEnum get_enum_group (const std::string &group);
 
 /**
  * Returns a list of packages that match the specified package_name.

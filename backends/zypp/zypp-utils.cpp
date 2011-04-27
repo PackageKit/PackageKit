@@ -264,7 +264,7 @@ warn_outdated_repos(PkBackend *backend, const ResPool & pool)
 }
 
 target::rpm::RpmHeader::constPtr
-zypp_get_rpmHeader (string name, Edition edition)
+zypp_get_rpmHeader (const string &nname, Edition edition)
 {
 	target::rpm::librpmDb::db_const_iterator it;
 	target::rpm::RpmHeader::constPtr result = new target::rpm::RpmHeader ();
@@ -294,10 +294,8 @@ zypp_get_group (sat::Solvable item)
 }
 
 PkGroupEnum
-get_enum_group (string group_)
+get_enum_group (const string &group_)
 {
-
-        // TODO Look for a faster and nice way to do this conversion
 	string group(str::toLower(group_));
 
         if (group.find ("amusements") != string::npos) {
