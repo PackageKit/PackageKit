@@ -102,7 +102,7 @@ void warn_outdated_repos(PkBackend *backend, const zypp::ResPool & pool);
 /**
   * Return the rpmHeader of a package
   */
-zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (std::string name, zypp::Edition edition);
+zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (const std::string &name, zypp::Edition edition);
 
 /**
   * Return the group of the given PoolItem.
@@ -112,18 +112,19 @@ std::string zypp_get_group (zypp::sat::Solvable item);
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum get_enum_group (std::string group);
+PkGroupEnum get_enum_group (const std::string &group);
 
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
-							      const zypp::ResKind kind, gboolean include_local = TRUE);
+void zypp_get_packages_by_name (PkBackend *backend, const gchar *package_name,
+				const zypp::ResKind kind, std::vector<zypp::sat::Solvable> &result,
+				gboolean include_local = TRUE);
 
 /**
  * Returns a list of packages that owns the specified file.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file);
+void zypp_get_packages_by_file (PkBackend *backend, const gchar *search_file, std::vector<zypp::sat::Solvable> &result);
 
 /**
  * Returns the Resolvable for the specified package_id.
@@ -167,7 +168,7 @@ zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::Poo
   * we can find. Also manages _updating_self to prioritise critical infrastructure
   * updates.
   */
-std::set<zypp::PoolItem> * zypp_get_updates (PkBackend *backend);
+void zypp_get_updates (PkBackend *backend, std::set<zypp::PoolItem> &);
 
 /**
   * Sets the restart flag of a patch
@@ -188,11 +189,6 @@ gboolean zypp_filter_solvable (PkBitfield filters, const zypp::sat::Solvable &it
  * apply filters to a list.
  */
 void     zypp_emit_filtered_packages_in_list (PkBackend *backend, const std::vector<zypp::sat::Solvable> &list);
-
-/**
-  * convert a std::set<zypp::sat::Solvable to gchar ** array
-  */
-gchar ** zypp_convert_set_char (std::set<zypp::sat::Solvable> *set);
 
 /**
   * build string of package_id's seperated by blanks out of the capabilities of a solvable

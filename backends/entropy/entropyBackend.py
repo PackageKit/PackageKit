@@ -65,11 +65,16 @@ from entropy.core.settings.base import SystemSettings
 from entropy.misc import LogFile
 from entropy.cache import EntropyCacher
 from entropy.exceptions import SystemDatabaseError
+from entropy.db.exceptions import Error as EntropyRepositoryError
 try:
     from entropy.exceptions import DependenciesNotRemovable
 except ImportError:
     DependenciesNotRemovable = Exception
 from entropy.fetchers import UrlFetcher
+try:
+    from entropy.services.client import WebService
+except ImportError:
+    WebService = None
 
 import entropy.tools
 import entropy.dep
@@ -357,19 +362,41 @@ class PackageKitEntropyMixin(object):
             self._repo_name_cache[repo_db] = repo_name
         return repo_name
 
+    def _etp_get_webservice(self, repository_id):
+        """
+        Get Entropy Web Services service object (ClientWebService).
+
+        @param entropy_client: Entropy Client interface
+        @type entropy_client: entropy.client.interfaces.Client
+        @param repository_id: repository identifier
+        @type repository_id: string
+        @return: the ClientWebService instance
+        @rtype: entropy.client.services.interfaces.ClientWebService
+        @raise WebService.UnsupportedService: if service is unsupported by
+            repository
+        """
+        factory = self._entropy.WebServices()
+        return factory.new(repository_id)
+
     def _etp_spawn_ugc(self, pkg_data):
         """
         Inform repository maintainers that user fetched packages, if user
         enabled this feature.
         """
-        if self._entropy.UGC is None:
+        if WebService is None:
+            # old entropy library, ignore all
             return
-        for repo_id in pkg_data:
-            repo_pkg_keys = sorted(pkg_data[repo_id])
+
+        for repository_id, repo_pkg_keys in pkg_data.items():
             try:
-                self._entropy.UGC.add_download_stats(repo_id, repo_pkg_keys)
-            except:
-                pass
+                webserv = self._etp_get_webservice(repository_id)
+            except WebService.UnsupportedService:
+                continue
+            pkg_keys = sorted(repo_pkg_keys)
+            try:
+                webserv.add_downloads(pkg_keys)
+            except WebService.WebServiceException:
+                continue
 
     def _etp_get_category_description(self, category):
         """
@@ -835,12 +862,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self._log_message(__name__, "_generic_message:", decolorize(message))
 
     def _config_files_message(self):
-        if hasattr(self._entropy, "PackageFileUpdates"):
-            scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
-                quiet = True)
-        else:
-            scandata = self._entropy.FileUpdates.scan(dcache = True,
-                quiet = True)
+        scandata = self._entropy.PackageFileUpdates().scan(dcache = True,
+            quiet = True)
         if scandata is None:
             return
         if len(scandata) > 0:
@@ -961,6 +984,17 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self.percentage(100)
 
+    def _etp_get_package_categories(self):
+        categories = set()
+        for repository_id in self._entropy.repositories():
+            repo_db = self._entropy.open_repository(repository_id)
+            try:
+                categories.update(repo_db.listAllCategories())
+            except EntropyRepositoryError:
+                # on broken repos this might cause issues
+                continue
+        return sorted(categories)
+
     def get_categories(self):
 
         self._log_message(__name__, "get_categories: called")
@@ -968,7 +1002,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
 
-        categories = self._entropy.get_package_categories()
+        categories = self._etp_get_package_categories()
         if not categories:
             self.error(ERROR_GROUP_LIST_INVALID, "no package categories")
             return
@@ -1135,7 +1169,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         empty = False
         deep = False
-        reverse_deps = self._entropy.get_reverse_dependencies(matches,
+        reverse_deps = self._entropy.get_reverse_queue(matches,
             deep = deep, recursive = recursive)
 
         self._log_message(__name__, "get_requires: reverse_deps => %s" % (
@@ -1299,7 +1333,8 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         pkg_ids = []
         for etp_file in inst_files:
             repo_id = os.path.basename(etp_file)
-            status, atomsfound = self._entropy.add_package_to_repos(etp_file)
+            status, atomsfound = self._entropy.add_package_to_repositories(
+                etp_file)
             if status != 0:
                 self.error(ERROR_INVALID_PACKAGE_FILE,
                     "Error while trying to add %s repository" % (repo_id,))
@@ -1367,6 +1402,24 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         self._execute_etp_pkgs_fetch(pkgs, directory)
 
+    def _etp_update_repository_stats(self, repository_ids):
+        """
+        Update repository download statistics.
+        """
+        if WebService is None:
+            # old entropy library, ignore all
+            return
+
+        for repository_id in repository_ids:
+            try:
+                webserv = self._etp_get_webservice(repository_id)
+            except WebService.UnsupportedService:
+                continue
+            try:
+                webserv.add_downloads(repository_id, [repository_id])
+            except WebService.WebServiceException:
+                continue
+
     def refresh_cache(self, force):
 
         self.status(STATUS_REFRESH_CACHE)
@@ -1388,10 +1441,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
 
         ex_rc = repo_intf.sync()
         if not ex_rc:
-            for repo_id in repo_identifiers:
-                # inform UGC that we are syncing this repo
-                if self._entropy.UGC is not None:
-                    self._entropy.UGC.add_download_stats(repo_id, [repo_id])
+            self._etp_update_repository_stats(repo_identifiers)
         else:
             self.message(MESSAGE_REPO_METADATA_DOWNLOAD_FAILED,
                 "Cannot update repositories!")

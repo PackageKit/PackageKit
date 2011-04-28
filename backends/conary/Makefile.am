@@ -7,11 +7,11 @@ dist_helper_DATA = 			\
 	conaryFilter.py			\
 	conaryCallback.py		\
 	conaryInit.py			\
-	XMLCache.py			    \
-	generateXML.py			    \
+	XMLCache.py			\
+	generateXML.py			\
 	pkConaryLog.py			\
-	conarypk.py			    \
-    conaryProgress.py       \
+	conarypk.py			\
+	conaryProgress.py		\
 	conaryEnums.py
 
 plugindir = $(PK_PLUGIN_DIR)
@@ -26,4 +26,3 @@ install-data-hook:
 
 clean-local :
 	rm -f *~
-

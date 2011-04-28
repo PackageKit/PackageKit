@@ -3,16 +3,10 @@ import cElementTree
 from xml.parsers.expat import ExpatError
 import urllib as url
 
-
-from conary.lib import sha1helper
-from conary.lib import util
-
 from packagekit.backend import *
 from packagekit.enums import ERROR_NO_CACHE,ERROR_REPO_CONFIGURATION_ERROR, ERROR_NO_NETWORK
 
-
 from pkConaryLog import log
-from conarypk import ConaryPk
 from conaryEnums import groupMap
 import generateXML
 
@@ -116,7 +110,7 @@ class XMLRepo:
             except:
                 self.pk.error(ERROR_NO_NETWORK,"Failed to fetch %s." % wwwfile)
         else:
-            generateXML.init(self.label, self.xml_file, self.conarypk)
+            generateXML.init(self.label, self.xml_file)
 
     def refresh_cache(self, force=False):
         if force or not os.path.exists(self.xml_file):
@@ -226,9 +220,7 @@ class XMLCache:
     dbPath = '/var/cache/conary/'
     xml_path =  dbPath + "xmlrepo/"
 
-    def __init__(self):
-        self.conarypk = ConaryPk()
-        self.labels = ( x for x in self.conarypk.get_labels_from_config() )
+    def __init__(self, labels):
         self.pk = PackageKitBaseBackend("")
 
         if not os.path.isdir(self.dbPath):
@@ -236,7 +228,7 @@ class XMLCache:
         if not os.path.isdir( self.xml_path ):
             os.makedirs(self.xml_path )
 
-        for label in self.labels:
+        for label in labels:
             self.repos.append(XMLRepo(label, self.xml_path, self.pk))
 
     def convertTroveToDict(self, troveTupleList):
@@ -333,39 +325,6 @@ class XMLCache:
                         categories.append(cat)
         categories.sort()
         return set( categories )
-
-class UpdateJobCache:
-    '''A cache to store (freeze) conary UpdateJobs.
-
-    The key is an applyList which can be used to build UpdateJobs.
-    '''
-
-    def __init__(self, jobPath='/var/cache/conary/jobs/', createJobPath=True):
-        if createJobPath and not os.path.isdir(jobPath):
-            os.mkdir(jobPath)
-        self._jobPath = jobPath
-
-    def _getJobCachePath(self, applyList):
-        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (
-            x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
-        return '%s/%s' % (self._jobPath,
-                sha1helper.sha1ToString(sha1helper.sha1String(applyStr)))
-
-    def getCachedUpdateJob(self, applyList):
-        '''Retrieve a previously cached job
-        '''
-        jobPath = self._getJobCachePath(applyList)
-        if os.path.exists(jobPath):
-            return jobPath
-
-    def cacheUpdateJob(self, applyList, updJob):
-        '''Cache a conary UpdateJob
-        '''
-        jobPath = self._getJobCachePath(applyList)
-        if os.path.exists(jobPath):
-            util.rmtree(jobPath)
-        os.mkdir(jobPath)
-        updJob.freeze(jobPath)
 
 if __name__ == '__main__':
   #  print ">>> name"

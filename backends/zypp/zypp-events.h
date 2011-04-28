@@ -30,7 +30,7 @@
 #include <pk-backend.h>
 #include <zypp/ZYppCallbacks.h>
 #include <zypp/Digest.h>
-#include <zypp/KeyRing.h> 
+#include <zypp/KeyRing.h>
 
 #include "zypp-utils.h"
 
@@ -161,6 +161,12 @@ struct ZyppBackendReceiver
 		//pd->percentage = _sub_percentage;
 		//g_idle_add (emit_sub_percentage, pd);
 		pk_backend_set_sub_percentage (_backend, _sub_percentage);
+	}
+
+	inline void
+	update_speed (guint speed)
+	{
+		pk_backend_set_speed (_backend, speed);
 	}
 
 	void
@@ -310,8 +316,10 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	virtual bool progress (int value, const zypp::Url &file, double dbps_avg, double dbps_current)
 	{
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
-		if (_package_id != NULL)
+		if (_package_id != NULL) {
 			update_sub_percentage (value);
+			update_speed (static_cast<guint>(dbps_current));
+		}
 		return true;
 	}
 
