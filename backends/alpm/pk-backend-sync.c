@@ -102,9 +102,9 @@ pk_backend_download_packages_thread (PkBackend *self)
 
 	if (directory != NULL) {
 		/* download files to a PackageKit directory */
+		gchar *cachedir = strdup (directory);
 		cachedirs = alpm_list_strdup (alpm_option_get_cachedirs ());
-		directory = strdup (directory);
-		alpm_option_set_cachedirs (alpm_list_add (NULL, directory));
+		alpm_option_set_cachedirs (alpm_list_add (NULL, cachedir));
 	}
 
 	flags |= PM_TRANS_FLAG_NODEPS;
