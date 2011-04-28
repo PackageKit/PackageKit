@@ -414,6 +414,7 @@ class ConaryPk:
             ret = _model_do_conary_updateall(self.cfg, callback, dry_run)
         else:
             ret = self._classic_get_updateall_job(callback, dry_run)
+            self.clear_job_cache()
         return ret
 
 if __name__ == "__main__":
