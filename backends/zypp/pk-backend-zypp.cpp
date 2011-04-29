@@ -1258,6 +1258,8 @@ backend_remove_packages_thread (PkBackend *backend)
 				it->status ().setToBeUninstalled (ResStatus::USER);
 				items->push_back (*it);
 				break;
+			} else {
+				it->status ().resetTransact (ResStatus::USER);
 			}
 		}
 		g_strfreev (id_parts);
