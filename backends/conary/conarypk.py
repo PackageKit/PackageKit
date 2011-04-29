@@ -373,6 +373,7 @@ class ConaryPk:
         ret = self._classic_build_update_job(applyList)
         if not dry_run:
             self.cli.applyUpdateJob(ret[0])
+            self.clear_job_cache()
         return ret
 
     def install(self, pkglist, callback, dry_run=False):
@@ -414,7 +415,6 @@ class ConaryPk:
             ret = _model_do_conary_updateall(self.cfg, callback, dry_run)
         else:
             ret = self._classic_get_updateall_job(callback, dry_run)
-            self.clear_job_cache()
         return ret
 
 if __name__ == "__main__":
