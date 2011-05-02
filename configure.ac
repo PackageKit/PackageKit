@@ -686,6 +686,12 @@ if test x$enable_aptcc = xyes; then
 	dnl Use C++
 	AC_LANG([C++])
 
+	# check we have apt and gstreamer headers
+	save_CPPFLAGS="$CPPFLAGS"
+	save_LDFLAGS="$LDFLAGS"
+	save_CFLAGS="$CFLAGS"
+	save_LIBS="$LIBS"
+
 	AC_CHECK_LIB(apt-pkg, main, , [AC_MSG_ERROR([Can't find the APT libraries -- please install libapt-pkg-dev])])
 	AC_CHECK_HEADER(apt-pkg/init.h, , [AC_MSG_ERROR([Can't find the APT header files -- please install libapt-pkg-dev])])
 
@@ -711,6 +717,11 @@ if test x$enable_aptcc = xyes; then
 			  AC_MSG_RESULT([yes])
 			  AC_DEFINE([HAVE_DDTP], [], [Set to true if apt is DDTP-enabled]),
 			  AC_MSG_RESULT([no]))
+
+	CPPFLAGS="$save_CPPFLAGS"
+	LDFLAGS="$save_LDFLAGS"
+	CFLAGS="$save_CFLAGS"
+	LIBS="$save_LIBS"
 fi
 
 if test x$enable_box = xyes; then
