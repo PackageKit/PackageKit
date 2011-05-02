@@ -24,6 +24,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+#include <QtCore/QSet>
 
 namespace PackageKit {
 
