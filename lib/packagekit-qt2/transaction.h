@@ -367,6 +367,17 @@ public:
     } DistroUpgrade;
 
     /**
+     * Create a transaction object with a new transaction id
+     *
+     * The transaction object \b cannot be reused
+     * (i.e. simulateInstallPackages then installPackages)
+     *
+     * \warning after creating the transaction object be sure
+     * to verify if it doesn't have any \sa error()
+     */
+    Transaction(QObject *parent = 0);
+
+    /**
      * Create a transaction object with transaction id \p tid
      * \note The if \p tid is a NULL string then it will automatically
      * asks PackageKit for a tid
@@ -377,7 +388,7 @@ public:
      * \warning after creating the transaction object be sure
      * to verify if it doesn't have any \sa error()
      */
-    Transaction(QObject *parent = 0, const QString &tid = QString());
+    Transaction(const QString &tid, QObject *parent = 0);
 
     /**
      * Destructor
@@ -503,7 +514,7 @@ public:
     QDateTime timespec() const;
 
     /**
-     * Returns weither the trasaction succeded or not
+     * Returns weither the transaction succeded or not
      * \return true if the transaction succeeded, false else
      * \note This function only returns a real value for old transactions returned by getOldTransactions
      */
@@ -953,6 +964,7 @@ protected:
     TransactionPrivate * const d_ptr;
 
 private:
+    void init(const QString &tid = QString());
     Transaction(const QString &tid,
                 const QString &timespec,
                 bool succeeded,

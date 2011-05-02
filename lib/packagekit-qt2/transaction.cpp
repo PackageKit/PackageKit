@@ -41,9 +41,21 @@
 
 using namespace PackageKit;
 
-Transaction::Transaction(QObject *parent, const QString &tid) :
+Transaction::Transaction(QObject *parent) :
     QObject(parent),
     d_ptr(new TransactionPrivate(this))
+{
+    init();
+}
+
+Transaction::Transaction(const QString &tid, QObject *parent) :
+    QObject(parent),
+    d_ptr(new TransactionPrivate(this))
+{
+    init(tid);
+}
+
+void Transaction::init(const QString &tid)
 {
     Q_D(Transaction);
 

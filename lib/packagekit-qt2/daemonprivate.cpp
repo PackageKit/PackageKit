@@ -42,7 +42,7 @@ QList<Transaction*> DaemonPrivate::transactions(const QStringList& tids, QObject
 {
     QList<Transaction*> transactionList;
     foreach (const QString &tid, tids) {
-        Transaction *transaction = new Transaction(parent, tid);
+        Transaction *transaction = new Transaction(tid, parent);
         transactionList << transaction;
     }
     return transactionList;
