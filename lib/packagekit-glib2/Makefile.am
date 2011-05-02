@@ -243,7 +243,12 @@ introspection_sources = $(libpackagekit_glib2_la_SOURCES)
 PackageKitGlib-1.0.gir: libpackagekit-glib2.la
 PackageKitGlib_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 PackageKitGlib_1_0_gir_CFLAGS = $(INCLUDES) -DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
-PackageKitGlib_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk --symbol-prefix=pk_ --warn-all --add-include-path=$(srcdir)
+PackageKitGlib_1_0_gir_SCANNERFLAGS = --identifier-prefix=Pk \
+					--symbol-prefix=pk_ \
+					--warn-all \
+					--add-include-path=$(srcdir) \
+					--c-include="packagekit-glib2/packagekit.h"
+PackageKitGlib_1_0_gir_EXPORT_PACKAGES = packagekit-glib2
 PackageKitGlib_1_0_gir_LIBS = libpackagekit-glib2.la
 PackageKitGlib_1_0_gir_FILES = $(introspection_sources)
 INTROSPECTION_GIRS += PackageKitGlib-1.0.gir
