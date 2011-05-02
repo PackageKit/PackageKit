@@ -43,6 +43,15 @@ AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
+# libtool versioning - this applies to libpackagekit-qt2
+#
+LT_QT_CURRENT=2
+LT_QT_REVISION=0
+LT_QT_AGE=0
+AC_SUBST(LT_QT_CURRENT)
+AC_SUBST(LT_QT_REVISION)
+AC_SUBST(LT_QT_AGE)
+
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
@@ -832,6 +841,9 @@ lib/packagekit-qt/modules/Makefile
 lib/packagekit-qt/src/Makefile
 lib/packagekit-qt/test/Makefile
 lib/packagekit-qt/packagekit-qt.pc
+lib/packagekit-qt2/Makefile
+lib/packagekit-qt2/modules/Makefile
+lib/packagekit-qt2/packagekit-qt2.pc
 lib/python/Makefile
 lib/python/packagekit/Makefile
 policy/Makefile
