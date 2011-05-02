@@ -33,6 +33,10 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib2/pk-debug.h>
 
+#if GLIB_CHECK_VERSION(2,28,7)
+ #include <glib-unix.h>
+#endif
+
 #include "egg-dbus-monitor.h"
 
 #include "pk-conf.h"
@@ -155,6 +159,21 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 	g_main_loop_quit (mainloop);
 }
 
+#if GLIB_CHECK_VERSION(2,28,7)
+
+/**
+ * pk_main_sigint_cb:
+ **/
+static gboolean
+pk_main_sigint_cb (gpointer user_data)
+{
+	g_debug ("Handling SIGINT");
+	g_main_loop_quit (loop);
+	return FALSE;
+}
+
+#else
+
 /**
  * pk_main_sigint_handler:
  **/
@@ -169,6 +188,8 @@ pk_main_sigint_handler (int sig)
 	/* exit loop */
 	g_main_loop_quit (loop);
 }
+
+#endif
 
 /**
  * main:
@@ -250,8 +271,16 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
+#if GLIB_CHECK_VERSION(2,28,7)
 	/* do stuff on ctrl-c */
+	g_unix_signal_add_watch_full (SIGINT,
+				      G_PRIORITY_DEFAULT,
+				      pk_main_sigint_cb,
+				      loop,
+				      NULL);
+#else
 	signal (SIGINT, pk_main_sigint_handler);
+#endif
 
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon && daemon (0, 0)) {

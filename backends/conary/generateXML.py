@@ -58,7 +58,7 @@ def generate_xml( troves, label):
                     for cat in value:
                         cat_node = cElementTree.Element("category", lang = "en")
                         cat_node.text = cat
-                        package.append(node)
+                        package.append(cat_node)
                 else:
                     node = cElementTree.Element(key, lang = "en")
                     node.text = value
@@ -67,10 +67,9 @@ def generate_xml( troves, label):
         document.append(package)
     return document
 
-def init(label, fileoutput, conarypk=None):
+def init(label, fileoutput):
 
-    if not conarypk:
-        conarypk = ConaryPk()
+    conarypk = ConaryPk()
 
     cli = conarypk.cli
     cfg = conarypk.cfg

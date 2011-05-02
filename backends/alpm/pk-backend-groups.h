@@ -1,8 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
- * Copyright (C) 2008, 2009 Valeriy Lyasotskiy <onestep@ukr.net>
- * Copyright (C) 2010 Jonathan Conder <j@skurvy.no-ip.org>
+ * Copyright (C) 2008-2010 Valeriy Lyasotskiy <onestep@ukr.net>
+ * Copyright (C) 2010-2011 Jonathan Conder <jonno.conder@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -21,15 +21,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gio/gio.h>
-#include <pacman.h>
+#include <alpm.h>
 #include <pk-backend.h>
 
-extern PacmanManager	*pacman;
-extern GCancellable	*cancellable;
+gboolean	 pk_backend_initialize_groups	(PkBackend *self,
+						 GError **error);
 
-void		 backend_run		(PkBackend		*backend,
-					 PkStatusEnum		 status,
-					 PkBackendThreadFunc	 func);
-gboolean	 backend_cancelled	(PkBackend		*backend);
-void		 backend_finished	(PkBackend		*backend);
+void		 pk_backend_destroy_groups	(PkBackend *self);
+
+const gchar	*alpm_pkg_get_group		(pmpkg_t *pkg);

@@ -219,7 +219,7 @@ pk_main_create_window (PkPlugin *plugin)
 		}
 
 		/* get parent */
-		parent = gdk_window_foreign_new_for_display (gdk_display, xwindow);
+		parent = gdk_x11_window_foreign_new_for_display (gdk_display, xwindow);
 		if (parent == NULL) {
 			pk_debug ("invalid window given for setup (id %lu)\n", xwindow);
 			return;

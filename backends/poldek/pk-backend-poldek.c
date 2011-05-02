@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008-2010 Marcin Banasiak <megabajt@pld-linux.org>
+ * Copyright (C) 2008-2011 Marcin Banasiak <megabajt@pld-linux.org>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -1685,16 +1685,12 @@ search_package_thread (PkBackend *backend)
 		g_free (search);
 	/* Resolve */
 	} else if (mode == SEARCH_ENUM_RESOLVE) {
-		gchar **package_ids;
-		gchar *packages_str;
+		search = g_strjoinv(" ", values);
 
-		package_ids = pk_backend_get_strv (backend, "package_ids");
-		packages_str = g_strjoinv(" ", package_ids);
-
-		search_cmd_installed = g_strdup_printf ("ls -q %s", packages_str);
+		search_cmd_installed = g_strdup_printf ("ls -q %s", search);
 		search_cmd_available = g_strdup (search_cmd_installed);
 
-		g_free (packages_str);
+		g_free (search);
 	}
 
 	if ((search_cmd_installed != NULL && search_cmd_available != NULL) || mode == SEARCH_ENUM_DETAILS) {
@@ -2219,10 +2215,28 @@ poldek_reload (PkBackend *backend, gboolean load_packages) {
 }
 
 /**
- * backend_initalize:
+ * pk_backend_get_description:
  */
-static void
-backend_initalize (PkBackend *backend)
+gchar *
+pk_backend_get_description (PkBackend *backend)
+{
+	return g_strdup ("Poldek");
+}
+
+/**
+ * pk_backend_get_author:
+ */
+gchar *
+pk_backend_get_author (PkBackend *backend)
+{
+	return g_strdup ("Marcin Banasiak <megabajt@pld-linux.org>");
+}
+
+/**
+ * pk_backend_initialize:
+ */
+void
+pk_backend_initialize (PkBackend *backend)
 {
 	g_debug ("backend initalize start");
 
@@ -2236,10 +2250,10 @@ backend_initalize (PkBackend *backend)
 	g_debug ("backend initalize end");
 }
 /**
- * backend_destroy:
+ * pk_backend_destroy:
  */
-static void
-backend_destroy (PkBackend *backend)
+void
+pk_backend_destroy (PkBackend *backend)
 {
 	do_poldek_destroy (backend);
 
@@ -2253,7 +2267,68 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
- * backend_download_packages:
+ * pk_backend_get_groups:
+ */
+PkBitfield
+pk_backend_get_groups (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_GROUP_ENUM_ACCESSORIES,
+		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DOCUMENTATION,
+		PK_GROUP_ENUM_EDUCATION,
+		PK_GROUP_ENUM_FONTS,
+		PK_GROUP_ENUM_GAMES,
+		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_LOCALIZATION,
+		PK_GROUP_ENUM_MULTIMEDIA,
+		PK_GROUP_ENUM_NETWORK,
+		PK_GROUP_ENUM_OFFICE,
+		PK_GROUP_ENUM_OTHER,
+		PK_GROUP_ENUM_PROGRAMMING,
+		PK_GROUP_ENUM_PUBLISHING,
+		PK_GROUP_ENUM_SERVERS,
+		PK_GROUP_ENUM_SYSTEM,
+		-1);
+}
+
+/**
+ * pk_backend_get_filters:
+ */
+PkBitfield
+pk_backend_get_filters (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (
+		PK_FILTER_ENUM_NEWEST,
+		PK_FILTER_ENUM_GUI,
+		PK_FILTER_ENUM_INSTALLED,
+		PK_FILTER_ENUM_DEVELOPMENT,
+		-1);
+}
+
+/**
+ * pk_backend_get_mime_types:
+ */
+gchar *
+pk_backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup ("application/x-rpm");
+}
+
+/**
+ * pk_backend_cancel:
+ */
+void
+pk_backend_cancel (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+
+	sigint_emit ();
+}
+
+/**
+ * pk_backend_download_packages:
  */
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
@@ -2322,9 +2397,9 @@ backend_download_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_download_packages (PkBackend *backend, gchar **package_ids,
-			   const gchar *directory)
+void
+pk_backend_download_packages (PkBackend *backend, gchar **package_ids,
+			      const gchar *directory)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2335,68 +2410,7 @@ backend_download_packages (PkBackend *backend, gchar **package_ids,
 }
 
 /**
- * backend_get_groups:
- **/
-static PkBitfield
-backend_get_groups (PkBackend *backend)
-{
-	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_ACCESSORIES,
-		PK_GROUP_ENUM_ADMIN_TOOLS,
-		PK_GROUP_ENUM_COMMUNICATION,
-		PK_GROUP_ENUM_DOCUMENTATION,
-		PK_GROUP_ENUM_EDUCATION,
-		PK_GROUP_ENUM_FONTS,
-		PK_GROUP_ENUM_GAMES,
-		PK_GROUP_ENUM_GRAPHICS,
-		PK_GROUP_ENUM_LOCALIZATION,
-		PK_GROUP_ENUM_MULTIMEDIA,
-		PK_GROUP_ENUM_NETWORK,
-		PK_GROUP_ENUM_OFFICE,
-		PK_GROUP_ENUM_OTHER,
-		PK_GROUP_ENUM_PROGRAMMING,
-		PK_GROUP_ENUM_PUBLISHING,
-		PK_GROUP_ENUM_SERVERS,
-		PK_GROUP_ENUM_SYSTEM,
-		-1);
-}
-
-/**
- * backend_get_filters:
- */
-static PkBitfield
-backend_get_filters (PkBackend *backend)
-{
-	return pk_bitfield_from_enums (
-		PK_FILTER_ENUM_NEWEST,
-		PK_FILTER_ENUM_GUI,
-		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_DEVELOPMENT,
-		-1);
-}
-
-/**
- * backend_get_mime_types:
- */
-static gchar *
-backend_get_mime_types (PkBackend *backend)
-{
-	return g_strdup ("application/x-rpm");
-}
-
-/**
- * backend_get_cancel:
- **/
-static void
-backend_get_cancel (PkBackend *backend)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
-
-	sigint_emit ();
-}
-
-/**
- * backend_get_depends:
+ * pk_backend_get_depends:
  */
 static gboolean
 backend_get_depends_thread (PkBackend *backend)
@@ -2436,8 +2450,8 @@ backend_get_depends_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2447,7 +2461,7 @@ backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_ids
 }
 
 /**
- * backend_get_details:
+ * pk_backend_get_details:
  */
 static gboolean
 backend_get_details_thread (PkBackend *backend)
@@ -2495,8 +2509,8 @@ backend_get_details_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_details (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2506,7 +2520,7 @@ backend_get_details (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_files:
+ * pk_backend_get_files:
  */
 static gboolean
 backend_get_files_thread (PkBackend *backend)
@@ -2572,8 +2586,8 @@ backend_get_files_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_files (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_files (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2583,8 +2597,8 @@ backend_get_files (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_packages:
- **/
+ * pk_backend_get_packages:
+ */
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
@@ -2640,8 +2654,8 @@ backend_get_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_packages (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_packages (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2651,7 +2665,7 @@ backend_get_packages (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_get_requires:
+ * pk_backend_get_requires:
  */
 static gboolean
 backend_get_requires_thread (PkBackend *backend)
@@ -2689,8 +2703,8 @@ backend_get_requires_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_requires (PkBackend	*backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
+void
+pk_backend_get_requires (PkBackend *backend, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2700,7 +2714,7 @@ backend_get_requires (PkBackend	*backend, PkBitfield filters, gchar **package_id
 }
 
 /**
- * backend_get_update_detail:
+ * pk_backend_get_update_detail:
  */
 static gchar*
 get_obsoletedby_pkg (struct pkg *pkg)
@@ -2838,8 +2852,8 @@ backend_get_update_detail_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_update_detail (PkBackend *backend, gchar **package_ids)
+void
+pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
@@ -2849,7 +2863,7 @@ backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_get_updates:
+ * pk_backend_get_updates:
  */
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
@@ -2893,8 +2907,8 @@ backend_get_updates_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_get_updates (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -2904,7 +2918,7 @@ backend_get_updates (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_install_packages:
+ * pk_backend_install_packages:
  */
 static gboolean
 backend_install_packages_thread (PkBackend *backend)
@@ -2953,8 +2967,8 @@ backend_install_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
@@ -2971,7 +2985,7 @@ backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **pac
 
 /**
  * FIXME: force currently omited
- * backend_refresh_cache:
+ * pk_backend_refresh_cache:
  */
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
@@ -3027,8 +3041,8 @@ backend_refresh_cache_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
+void
+pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
@@ -3045,7 +3059,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_packages:
+ * pk_backend_remove_packages:
  */
 static gboolean
 backend_remove_packages_thread (PkBackend *backend)
@@ -3083,8 +3097,8 @@ backend_remove_packages_thread (PkBackend *backend)
 	return TRUE;
 }
 
-static void
-backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+void
+pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
@@ -3092,23 +3106,24 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 }
 
 /**
- * backend_resolve:
+ * pk_backend_resolve:
  */
-static void
-backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
+void
+pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **packages)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_RESOLVE);
+	pk_backend_set_strv (backend, "search", packages);
 	pk_backend_thread_create (backend, search_package_thread);
 }
 
 /**
- * backend_search_details:
+ * pk_backend_search_details:
  */
-static void
-backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3118,10 +3133,10 @@ backend_search_details (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_files:
+ * pk_backend_search_files:
  */
-static void
-backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3131,10 +3146,10 @@ backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_groups:
+ * pk_backend_search_groups:
  */
-static void
-backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3144,10 +3159,10 @@ backend_search_groups (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_search_names:
+ * pk_backend_search_names:
  */
-static void
-backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
+void
+pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **search)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
@@ -3157,10 +3172,10 @@ backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 }
 
 /**
- * backend_update_packages:
+ * pk_backend_update_packages:
  */
-static void
-backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
+void
+pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
@@ -3177,10 +3192,10 @@ backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **pack
 }
 
 /**
- * backend_update_system:
+ * pk_backend_update_system:
  **/
-static void
-backend_update_system (PkBackend *backend, gboolean only_trusted)
+void
+pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update system when offline!");
@@ -3198,10 +3213,10 @@ backend_update_system (PkBackend *backend, gboolean only_trusted)
 }
 
 /**
- * backend_get_repo_list:
+ * pk_backend_get_repo_list:
  */
-static void
-backend_get_repo_list (PkBackend *backend, PkBitfield filters)
+void
+pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
 	tn_array *sources = NULL;
 
@@ -3231,10 +3246,10 @@ backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 }
 
 /**
- * backend_what_provides:
- **/
-static void
-backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+ * pk_backend_what_provides:
+ */
+void
+pk_backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
 {
 	GPtrArray *array = NULL;
 	gchar **search = NULL;
@@ -3359,10 +3374,10 @@ static gboolean do_simulate_packages (PkBackend *backend)
 }
 
 /**
- * backend_simulate_install_packages:
- **/
-static void
-backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
+ * pk_backend_simulate_install_packages:
+ */
+void
+pk_backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
@@ -3372,10 +3387,10 @@ backend_simulate_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
- * backend_simulate_remove_packages:
- **/
-static void
-backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
+ * pk_backend_simulate_remove_packages:
+ */
+void
+pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
@@ -3385,10 +3400,10 @@ backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gbool
 }
 
 /**
- * backend_simulate_update_packages:
- **/
-static void
-backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
+ * pk_backend_simulate_update_packages:
+ */
+void
+pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
@@ -3396,51 +3411,4 @@ backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_string (backend, "command", "cd /all-avail; upgrade --test");
 	pk_backend_thread_create (backend, do_simulate_packages);
 }
-
-/* FIXME: port this away from PK_BACKEND_OPTIONS */
-PK_BACKEND_OPTIONS (
-	"poldek",					/* description */
-	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
-	backend_initalize,				/* initalize */
-	backend_destroy,				/* destroy */
-	backend_get_groups,				/* get_groups */
-	backend_get_filters,				/* get_filters */
-	NULL,						/* get_roles */
-	backend_get_mime_types,				/* get_mime_types */
-	backend_get_cancel,				/* cancel */
-	backend_download_packages,			/* download_packages */
-	NULL,						/* get_categories */
-	backend_get_depends,				/* get_depends */
-	backend_get_details,				/* get_details */
-	NULL,						/* get_distro_upgrades */
-	backend_get_files,				/* get_files */
-	backend_get_packages,				/* get_packages */
-	backend_get_repo_list,				/* get_repo_list */
-	backend_get_requires,				/* get_requires */
-	backend_get_update_detail,			/* get_update_detail */
-	backend_get_updates,				/* get_updates */
-	NULL,						/* install_files */
-	backend_install_packages,			/* install_packages */
-	NULL,						/* install_signature */
-	backend_refresh_cache,				/* refresh_cache */
-	backend_remove_packages,			/* remove_packages */
-	NULL,						/* repo_enable */
-	NULL,						/* repo_set_data */
-	backend_resolve,				/* resolve */
-	NULL,						/* rollback */
-	backend_search_details,				/* search_details */
-	backend_search_files,				/* search_file */
-	backend_search_groups,				/* search_group */
-	backend_search_names,				/* search_name */
-	backend_update_packages,			/* update_packages */
-	backend_update_system,				/* update_system */
-	backend_what_provides,				/* what_provides */
-	NULL,						/* simulate_install_files */
-	backend_simulate_install_packages,		/* simulate_install_packages */
-	backend_simulate_remove_packages,		/* simulate_remove_packages */
-	backend_simulate_update_packages,		/* simulate_update_packages */
-	NULL,						/* upgrade_system */
-	NULL,						/* transaction_start */
-	NULL						/* transaction_stop */
-);
 
