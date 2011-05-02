@@ -31,9 +31,11 @@ lib_LTLIBRARIES =						\
 libpackagekit_qt2_includedir = $(includedir)/PackageKit/packagekit-qt2
 
 libpackagekit_qt2_include_HEADERS =				\
+	Signature						\
 	signature.h						\
 	Package							\
 	Transaction						\
+	Daemon							\
 	daemon.h						\
 	transaction.h						\
 	package.h						\
@@ -62,8 +64,6 @@ libpackagekit_qt2_la_SOURCES =					\
 	bitfield.h						\
 	bitfield.cpp						\
 	common.h						\
-	Package							\
-	Transaction						\
 	dbus_proxies.stamp					\
 	$(MOCFILES)						\
 	$(NULL)
