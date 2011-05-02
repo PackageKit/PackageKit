@@ -84,7 +84,13 @@ void TransactionPrivate::errorCode(const QString &error, const QString &details)
 void TransactionPrivate::eulaRequired(const QString &eulaId, const QString &pid, const QString &vendor, const QString &licenseAgreement)
 {
     Q_Q(Transaction);
-    q->eulaRequired(eulaId, Package(pid), vendor, licenseAgreement);
+    Eula eula;
+    eula.id = eulaId;
+    eula.package = Package(pid);
+    eula.vendor = vendor;
+    eula.licenseAgreement = licenseAgreement;
+
+    q->eulaRequired(eula);
 }
 
 void TransactionPrivate::mediaChangeRequired(const QString &mediaType, const QString &mediaId, const QString &mediaText)

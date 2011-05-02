@@ -33,6 +33,8 @@ libpackagekit_qt2_includedir = $(includedir)/PackageKit/packagekit-qt2
 libpackagekit_qt2_include_HEADERS =				\
 	Signature						\
 	signature.h						\
+	Eula							\
+	eula.h							\
 	Package							\
 	Transaction						\
 	Daemon							\
@@ -45,6 +47,8 @@ libpackagekit_qt2_include_HEADERS =				\
 libpackagekit_qt2_la_SOURCES =					\
 	signature.h						\
 	signature.cpp						\
+	eula.h							\
+	eula.cpp						\
 	transactionproxy.h					\
 	transactionproxy.cpp					\
 	transactionprivate.h					\

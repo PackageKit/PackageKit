@@ -27,6 +27,7 @@
 #include "signature.h"
 #include "bitfield.h"
 #include "package.h"
+#include "eula.h"
 
 namespace PackageKit {
 
@@ -890,7 +891,7 @@ Q_SIGNALS:
      * \note You will need to relaunch the transaction after accepting the EULA
      * \sa acceptEula()
      */
-    void eulaRequired(const QString &eulaId, const Package &package, const QString &vendor, const QString &licenseAgreement);
+    void eulaRequired(const Eula &eula);
 
     /**
      * Emitted when a different media is required in order to fetch packages
