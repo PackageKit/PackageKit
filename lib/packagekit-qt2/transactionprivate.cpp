@@ -22,9 +22,10 @@
 #include <QtCore/QStringList>
 
 #include "transactionprivate.h"
-#include "transaction.h"
+
 #include "package.h"
 #include "signature.h"
+#include "eula.h"
 #include "util.h"
 
 using namespace PackageKit;
@@ -137,7 +138,7 @@ void TransactionPrivate::message(const QString &type, const QString &message)
 void TransactionPrivate::package(const QString &info, const QString &pid, const QString &summary)
 {
     Q_Q(Transaction);
-    q->package(Package(pid, static_cast<Package::Info>(Util::enumFromString<Transaction>(info, "Info", "Info")), summary));
+    q->package(Package(pid, static_cast<Package::Info>(Util::enumFromString<Package>(info, "Info", "Info")), summary));
 }
 
 void TransactionPrivate::repoSignatureRequired(const QString &pid,

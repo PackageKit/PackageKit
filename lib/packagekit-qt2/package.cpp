@@ -83,6 +83,7 @@ Package::Package(const QString &packageId, Info info, const QString &summary)
     d_ptr->info = info;
     d_ptr->summary = summary;
     d_ptr->details = 0;
+    d_ptr->updateDetails = 0;
 
     // Break down the packageId
     QStringList tokens = packageId.split(";");
@@ -98,6 +99,18 @@ Package::Package()
     : d_ptr(new PackagePrivate)
 {
     d_ptr->details = 0;
+    d_ptr->updateDetails = 0;
+    d_ptr->info = UnknownInfo;
+}
+
+Package::Package(const Package &other)
+    : d_ptr(new PackagePrivate)
+{
+    d_ptr->details = 0;
+    d_ptr->updateDetails = 0;
+    d_ptr->info = UnknownInfo;
+
+    *this = other;
 }
 
 Package::~Package()
@@ -106,7 +119,9 @@ Package::~Package()
     if (d->details) {
         delete d->details;
     }
-    delete d;
+    if (d->updateDetails) {
+        delete d->updateDetails;
+    }
 }
 
 QString Package::id() const
@@ -157,42 +172,41 @@ bool Package::hasDetails() const
     return d->details;
 }
 
-QString Package::iconPath ()
+QString Package::iconPath() const
 {
-    Q_D(Package);
-    if (d->iconPath.isNull ()) {
-        d->iconPath = QString("");
-        QSqlDatabase db = QSqlDatabase::database();
-        if (!db.isOpen()) {
-            qDebug() << "Desktop files database is not open";
-            return d->iconPath;
-        }
+    Q_D(const Package);
 
-        QSqlQuery q(db);
-        q.prepare("SELECT filename FROM cache WHERE package = :name");
-        q.bindValue(":name", d->name);
-        if(q.exec()) {
-            if (q.next()) {
-                QFile desktopFile (q.value(0).toString());
-                if (desktopFile.open (QIODevice::ReadOnly | QIODevice::Text)) {
-                    while (!desktopFile.atEnd ()) {
-                        QByteArray line = desktopFile.readLine ().trimmed ();
-                        if (line.startsWith ("Icon=")) {
-                            d->iconPath = line.mid (5);
-                            break;
-                        }
-                    }
-                    desktopFile.close ();
-                } else {
-                    qDebug() << "Cannot open desktop file " << q.value(0).toString ();
-                }
-            }
-        } else {
-            qDebug() << "Error while running query " << q.executedQuery();
-        }
+    QString path;
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.isOpen()) {
+        qDebug() << "Desktop files database is not open";
+        return path;
     }
 
-    return d->iconPath;
+    QSqlQuery q(db);
+    q.prepare("SELECT filename FROM cache WHERE package = :name");
+    q.bindValue(":name", d->name);
+    if (q.exec()) {
+        if (q.next()) {
+            QFile desktopFile (q.value(0).toString());
+            if (desktopFile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+                while (!desktopFile.atEnd ()) {
+                    QByteArray line = desktopFile.readLine().trimmed();
+                    if (line.startsWith("Icon=")) {
+                        path = line.mid(5);
+                        break;
+                    }
+                }
+                desktopFile.close();
+            } else {
+                qDebug() << "Cannot open desktop file " << q.value(0).toString();
+            }
+        }
+    } else {
+        qDebug() << "Error while running query " << q.executedQuery();
+    }
+
+    return path;
 }
 
 QString Package::license() const
@@ -498,7 +512,7 @@ bool Package::operator==(const Package &package) const
 Package& Package::operator=(const Package &package)
 {
     Q_D(Package);
-    // TODO
+
     if (this != &package) // protect against invalid self-assignment
     {
         d->id = package.id();
@@ -538,8 +552,6 @@ Package& Package::operator=(const Package &package)
             d->updateDetails->issued = package.issued();
             d->updateDetails->updated = package.updated();
         }
-
-        return *this;
     }
     return *this;
 }

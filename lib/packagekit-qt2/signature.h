@@ -38,8 +38,6 @@ public:
     typedef enum {
         UnknownType,
         TypeGpg,
-        /* this always has to be at the end of the list */
-        LastType
     } Type;
 
     /**

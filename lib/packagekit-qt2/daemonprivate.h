@@ -31,7 +31,6 @@ class DaemonProxy;
 
 namespace PackageKit {
 
-class Transaction;
 class DaemonPrivate
 {
     Q_DECLARE_PUBLIC(Daemon)

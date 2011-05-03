@@ -74,9 +74,7 @@ public:
         InfoReinstalling,
         InfoDowngrading,
         InfoPreparing,
-        InfoDecompressing,
-        /* this always has to be at the end of the list */
-        LastInfo
+        InfoDecompressing
     } Info;
 
     /**
@@ -118,8 +116,6 @@ public:
         GroupCollections,
         GroupVendor,
         GroupNewest,
-        /* this always has to be at the end of the list */
-        LastGroup
     } Group;
     typedef QSet<Group> Groups;
 
@@ -131,8 +127,6 @@ public:
         UpdateStateStable,
         UpdateStateUnstable,
         UpdateStateTesting,
-        /* this always has to be at the end of the list */
-        LastUpdateState
     } UpdateState;
 
     /**
@@ -146,12 +140,20 @@ public:
         RestartSystem,
         RestartSecuritySession,
         RestartSecuritySystem,
-        /* this always has to be at the end of the list */
-        LastRestart
     } Restart;
 
-    Package(const QString& packageId, Info info = UnknownInfo, const QString &summary = QString());
+    Package(const QString &packageId, Info info = UnknownInfo, const QString &summary = QString());
+
+    /**
+     * Constructs a copy of other.
+     */
+    Package(const Package &other);
+
+    /**
+     * Constructs a copy of other.
+     */
     Package();
+
     /**
      * Destructor
      */
@@ -402,7 +404,7 @@ public:
      * Returns the path to the package icon, if known
      * \return A QString holding the path to the package icon if known, an empty QString else
      */
-    QString iconPath();
+    QString iconPath() const;
 
     /**
      * Compares two packages by it's ids

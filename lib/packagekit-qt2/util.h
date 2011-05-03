@@ -63,13 +63,9 @@ public:
             }
         };
 
-        if(!prefix.isNull())
+        if (!prefix.isNull()) {
             realName = prefix + realName;
-
-        // Action quirk
-        if(enumName == QLatin1String("Action") && realName == QLatin1String("ActionUpdatePackage"))
-            realName = "ActionUpdatePackages";
-
+        }
 
         int id = T::staticMetaObject.indexOfEnumerator(enumName);
         QMetaEnum e = T::staticMetaObject.enumerator(id);
@@ -78,7 +74,7 @@ public:
         if (enumValue == -1) {
             enumValue = e.keyToValue(QString("Unknown").append(enumName).toAscii().data());
             if (!QString(enumName).isEmpty()) {
-                qDebug() << "enumFromString (" << enumName << ") : converted" << str << "to" << QString("Unknown").append(enumName) << ", enum value" << enumValue;
+                qDebug() << "enumFromString (" << enumName << ") : converted" << str << "to" << QString("Unknown").append(enumName) << ", enum id" << id;
             }
         }
         return enumValue;
@@ -114,15 +110,9 @@ public:
             if(pkName.indexOf("Not-") == 0) {
                 pkName = pkName.replace(0, 4, "~");
             }
-            if (pkName == QLatin1String("No-Filter")) {
-                pkName = "none";
-            }
-            if (pkName == QLatin1String("Development")) {
-                pkName = "devel";
-            }
-            if (pkName == QLatin1String("~Development")) {
-                pkName = "~devel";
-            }
+//             if (pkName == QLatin1String("No-Filter")) {
+//                 pkName = "none";
+//             }
         }
 
         return pkName.toLower();

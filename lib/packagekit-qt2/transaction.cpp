@@ -23,10 +23,11 @@
 #include "transactionprivate.h"
 #include "transactionproxy.h"
 
-#include "daemonprivate.h"
+#include "daemon.h"
 #include "common.h"
-#include "package.h"
 #include "util.h"
+#include "signature.h"
+#include "package.h"
 
 #define CHECK_TRANSACTION                           \
         if (r.isError()) {                          \
@@ -166,7 +167,7 @@ Transaction::Transaction(const QString &tid,
 Transaction::~Transaction()
 {
     Q_D(Transaction);
-    qDebug() << "Destroying transaction with tid" << d->tid;
+//     qDebug() << "Destroying transaction with tid" << d->tid;
     delete d;
 }
 
@@ -464,9 +465,11 @@ void Transaction::installPackages(const Package &package, bool onlyTrusted)
     installPackages(QList<Package>() << package, onlyTrusted);
 }
 
-void Transaction::installSignature(Signature::Type type, const QString &keyId, const Package &package)
+void Transaction::installSignature(const Signature &sig)
 {
-    RUN_TRANSACTION(InstallSignature(Util::enumToString<Signature>(type, "Type", "Signature"), keyId, package.id()))
+    RUN_TRANSACTION(InstallSignature(Util::enumToString<Signature>(sig.type, "Type", "Signature"),
+                                     sig.keyId,
+                                     sig.package.id()))
 }
 
 void Transaction::refreshCache(bool force)

@@ -19,20 +19,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TRANSACTION_PRIVATE_H
-#define TRANSACTION_PRIVATE_H
+#ifndef PACKAGEKIT_TRANSACTION_PRIVATE_H
+#define PACKAGEKIT_TRANSACTION_PRIVATE_H
 
 #include <QtCore/QString>
 #include <QtCore/QHash>
 
-#include "daemon.h"
+#include "transaction.h"
 
 class TransactionProxy;
 
 namespace PackageKit {
 
-class Package;
-class Transaction;
 class TransactionPrivate
 {
     Q_DECLARE_PUBLIC(Transaction)

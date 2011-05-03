@@ -24,15 +24,13 @@
 
 #include <QtCore/QObject>
 
-#include "signature.h"
 #include "bitfield.h"
 #include "package.h"
-#include "eula.h"
 
 namespace PackageKit {
 
-class DaemonPrivate;
-
+class Signature;
+class Eula;
 /**
 * \class Transaction transaction.h Transaction
 * \author Adrien Bustany \e <madcat@mymadcat.com>
@@ -53,9 +51,8 @@ class TransactionPrivate;
 class Transaction : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Package::Group)
-    Q_ENUMS(InternalError)
-    Q_ENUMS(Roles)
+    Q_ENUMS(InternalsError)
+    Q_ENUMS(Role)
     Q_ENUMS(Error)
     Q_ENUMS(Exit)
     Q_ENUMS(Filter)
@@ -65,10 +62,9 @@ class Transaction : public QObject
     Q_ENUMS(Provides)
     Q_ENUMS(DistroUpgrade)
 public:
-        /**
+    /**
      * Describes an error at the daemon level (for example, PackageKit crashes or is unreachable)
      *
-     * \sa Client::error
      * \sa Transaction::error
      */
     typedef enum {
@@ -83,9 +79,7 @@ public:
         InternalErrorInvalidInput,
         InternalErrorInvalidFile,
         InternalErrorFunctionNotSupported,
-        InternalErrorDaemonUnreachable,
-        /* this always has to be at the end of the list */
-        LastInternalError
+        InternalErrorDaemonUnreachable
     } InternalError;
 
     typedef enum {
@@ -124,15 +118,13 @@ public:
         RoleSimulateInstallPackages,
         RoleSimulateRemovePackages,
         RoleSimulateUpdatePackages,
-        RoleUpgradeSystem, // Since 0.6.11
-        /* this always has to be at the end of the list */
-        LastRole
+        RoleUpgradeSystem // Since 0.6.11
     } Role;
     typedef Bitfield Roles;
 
     /**
-    * Lists the different types of error
-    */
+     * Lists the different types of error
+     */
     typedef enum {
         UnknownError,
         ErrorOom,
@@ -198,9 +190,7 @@ public:
         ErrorPackageDatabaseChanged,
         ErrorProvideTypeNotSupported,
         ErrorInstallRootInvalid,
-        ErrorCannotFetchSources,
-        /* this always has to be at the end of the list */
-        LastError
+        ErrorCannotFetchSources
     } Error;
 
     /**
@@ -216,9 +206,7 @@ public:
         ExitEulaRequired,
         ExitKilled, /* when we forced the cancel, but had to sigkill */
         ExitMediaChangeRequired,
-        ExitNeedUntrusted,
-        /* this always has to be at the end of the list */
-        LastExit
+        ExitNeedUntrusted
     } Exit;
 
     /**
@@ -276,9 +264,7 @@ public:
         MessageAutoremoveIgnored,
         MessageRepoMetadataDownloadFailed,
         MessageRepoForDevelopersOnly,
-        MessageOtherUpdatesHeldBack,
-        /* this always has to be at the end of the list */
-        LastMessage
+        MessageOtherUpdatesHeldBack
     } Message;
 
     /**
@@ -321,9 +307,7 @@ public:
         StatusScanProcessList,
         StatusCheckExecutableFiles,
         StatusCheckLibraries,
-        StatusCopyFiles,
-        /* this always has to be at the end of the list */
-        LastStatus
+        StatusCopyFiles
     } Status;
 
     /**
@@ -333,9 +317,7 @@ public:
         UnknownMediaType,
         MediaTypeCd,
         MediaTypeDvd,
-        MediaTypeDisc,
-        /* this always has to be at the end of the list */
-        LastMediaType
+        MediaTypeDisc
     } MediaType;
 
     /**
@@ -350,9 +332,7 @@ public:
         ProvidesMimetype,
         ProvidesFont,
         ProvidesHardwareDriver,
-        ProvidesPostscriptDriver,
-        /* this always has to be at the end of the list */
-        LastProvides
+        ProvidesPostscriptDriver
     } Provides;
 
     /**
@@ -361,9 +341,7 @@ public:
     typedef enum {
         UnknownDistroUpgrade,
         DistroUpgradeStable,
-        DistroUpgradeUnstable,
-        /* this always has to be at the end of the list */
-        LastDistroUpgrade
+        DistroUpgradeUnstable
     } DistroUpgrade;
 
     /**
@@ -551,7 +529,7 @@ public:
     /**
      * \brief Accepts an EULA
      *
-     * The EULA is identified by the EulaInfo structure \p info
+     * The EULA is identified by the \sa Eula structure \p info
      *
      * \note You need to restart the transaction which triggered the EULA manually
      *
@@ -692,7 +670,7 @@ public:
      *
      * \p type, \p keyId and \p package generally come from the Transaction::repoSignatureRequired
      */
-    void installSignature(Signature::Type type, const QString &keyId, const Package &package);
+    void installSignature(const Signature &signature);
 
     /**
      * Refreshes the package manager's cache
@@ -902,7 +880,7 @@ Q_SIGNALS:
      * \note You will need to relaunch the transaction after accepting the EULA
      * \sa acceptEula()
      */
-    void eulaRequired(const Eula &eula);
+    void eulaRequired(const PackageKit::Eula &eula);
 
     /**
      * Emitted when a different media is required in order to fetch packages

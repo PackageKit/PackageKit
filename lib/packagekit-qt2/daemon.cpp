@@ -23,12 +23,9 @@
 
 #include "daemon.h"
 #include "daemonprivate.h"
+#include "daemonproxy.h"
 
 #include "common.h"
-#include "daemonproxy.h"
-#include "transaction.h"
-#include "transactionprivate.h"
-#include "package.h"
 #include "util.h"
 
 #define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"

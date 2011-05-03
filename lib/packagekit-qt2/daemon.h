@@ -59,9 +59,7 @@ public:
         NetworkOnline,
         NetworkWired,
         NetworkWifi,
-        NetworkMobile,
-        /* this always has to be at the end of the list */
-        LastNetwork
+        NetworkMobile
     } Network;
 
     /**
@@ -71,9 +69,7 @@ public:
         UnknownAuthorize,
         AuthorizeYes,
         AuthorizeNo,
-        AuthorizeInteractive,
-        /* this always has to be at the end of the list */
-        LastAuthorize
+        AuthorizeInteractive
     } Authorize;
 
     /**

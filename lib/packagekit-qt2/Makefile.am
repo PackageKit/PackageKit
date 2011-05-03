@@ -49,14 +49,14 @@ libpackagekit_qt2_la_SOURCES =					\
 	signature.cpp						\
 	eula.h							\
 	eula.cpp						\
+	package.h						\
+	package.cpp						\
 	transactionproxy.h					\
 	transactionproxy.cpp					\
 	transactionprivate.h					\
 	transactionprivate.cpp					\
 	transaction.h						\
 	transaction.cpp						\
-	package.h						\
-	package.cpp						\
 	daemonprivate.h						\
 	daemonprivate.cpp					\
 	daemonproxy.h						\
