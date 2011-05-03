@@ -122,6 +122,7 @@ Package::~Package()
     if (d->updateDetails) {
         delete d->updateDetails;
     }
+    delete d;
 }
 
 QString Package::id() const

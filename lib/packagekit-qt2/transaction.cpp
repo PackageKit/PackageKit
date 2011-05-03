@@ -352,7 +352,7 @@ void Transaction::downloadPackages(const QList<Package> &packages, bool storeInC
     RUN_TRANSACTION(DownloadPackages(storeInCache, Util::packageListToPids(packages)))
 }
 
-void Transaction::downloadPackages(const Package &package, bool storeInCache)
+void Transaction::downloadPackage(const Package &package, bool storeInCache)
 {
     downloadPackages(QList<Package>() << package, storeInCache);
 }
@@ -425,14 +425,14 @@ void Transaction::getRequires(const Package &package, Transaction::Filters filte
     getRequires(QList<Package>() << package, filters, recursive);
 }
 
-void Transaction::getUpdateDetail(const QList<Package> &packages)
+void Transaction::getUpdatesDetails(const QList<Package> &packages)
 {
     RUN_TRANSACTION(GetUpdateDetail(Util::packageListToPids(packages)))
 }
 
 void Transaction::getUpdateDetail(const Package &package)
 {
-    getUpdateDetail(QList<Package>() << package);
+    getUpdatesDetails(QList<Package>() << package);
 }
 
 void Transaction::getUpdates(Transaction::Filters filters)
@@ -450,7 +450,7 @@ void Transaction::installFiles(const QStringList &files, bool onlyTrusted)
     RUN_TRANSACTION(InstallFiles(onlyTrusted, files))
 }
 
-void Transaction::installFiles(const QString &file, bool onlyTrusted)
+void Transaction::installFile(const QString &file, bool onlyTrusted)
 {
     installFiles(QStringList() << file, onlyTrusted);
 }
@@ -460,7 +460,7 @@ void Transaction::installPackages(const QList<Package> &packages, bool onlyTrust
     RUN_TRANSACTION(InstallPackages(onlyTrusted, Util::packageListToPids(packages)))
 }
 
-void Transaction::installPackages(const Package &package, bool onlyTrusted)
+void Transaction::installPackage(const Package &package, bool onlyTrusted)
 {
     installPackages(QList<Package>() << package, onlyTrusted);
 }
@@ -482,7 +482,7 @@ void Transaction::removePackages(const QList<Package> &packages, bool allowDeps,
     RUN_TRANSACTION(RemovePackages(Util::packageListToPids(packages), allowDeps, autoremove))
 }
 
-void Transaction::removePackages(const Package &package, bool allowDeps, bool autoremove)
+void Transaction::removePackage(const Package &package, bool allowDeps, bool autoremove)
 {
     removePackages(QList<Package>() << package, allowDeps, autoremove);
 }
@@ -532,7 +532,7 @@ void Transaction::searchGroups(const QStringList &groups, Transaction::Filters f
     RUN_TRANSACTION(SearchGroups(TransactionPrivate::filtersToString(filters), groups))
 }
 
-void Transaction::searchGroups(const QString &group, Transaction::Filters filters)
+void Transaction::searchGroup(const QString &group, Transaction::Filters filters)
 {
     searchGroups(QStringList() << group, filters);
 }
@@ -547,7 +547,7 @@ void Transaction::searchGroups(Package::Groups groups, Transaction::Filters filt
     searchGroups(groupsSL, filters);
 }
 
-void Transaction::searchGroups(Package::Group group, Transaction::Filters filters)
+void Transaction::searchGroup(Package::Group group, Transaction::Filters filters)
 {
     searchGroups(Package::Groups() << group, filters);
 }
@@ -567,7 +567,7 @@ void Transaction::simulateInstallFiles(const QStringList &files)
     RUN_TRANSACTION(SimulateInstallFiles(files))
 }
 
-void Transaction::simulateInstallFiles(const QString &file)
+void Transaction::simulateInstallFile(const QString &file)
 {
     simulateInstallFiles(QStringList() << file);
 }
@@ -577,7 +577,7 @@ void Transaction::simulateInstallPackages(const QList<Package> &packages)
     RUN_TRANSACTION(SimulateInstallPackages(Util::packageListToPids(packages)))
 }
 
-void Transaction::simulateInstallPackages(const Package &package)
+void Transaction::simulateInstallPackage(const Package &package)
 {
     simulateInstallPackages(QList<Package>() << package);
 }
@@ -587,7 +587,7 @@ void Transaction::simulateRemovePackages(const QList<Package> &packages, bool au
     RUN_TRANSACTION(SimulateRemovePackages(Util::packageListToPids(packages), autoremove))
 }
 
-void Transaction::simulateRemovePackages(const Package &package, bool autoremove)
+void Transaction::simulateRemovePackage(const Package &package, bool autoremove)
 {
     simulateRemovePackages(QList<Package>() << package, autoremove);
 }
@@ -597,7 +597,7 @@ void Transaction::simulateUpdatePackages(const QList<Package> &packages)
     RUN_TRANSACTION(SimulateUpdatePackages(Util::packageListToPids(packages)))
 }
 
-void Transaction::simulateUpdatePackages(const Package &package)
+void Transaction::simulateUpdatePackage(const Package &package)
 {
     simulateUpdatePackages(QList<Package>() << package);
 }
@@ -607,7 +607,7 @@ void Transaction::updatePackages(const QList<Package> &packages, bool onlyTruste
     RUN_TRANSACTION(UpdatePackages(onlyTrusted, Util::packageListToPids(packages)))
 }
 
-void Transaction::updatePackages(const Package &package, bool onlyTrusted)
+void Transaction::updatePackage(const Package &package, bool onlyTrusted)
 {
     updatePackages(QList<Package>() << package, onlyTrusted);
 }

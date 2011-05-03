@@ -30,7 +30,7 @@
 namespace PackageKit {
 
 /**
- * \class Daemon client.h Daemon
+ * \class Daemon daemon.h Daemon
  * \author Adrien Bustany \e <madcat@mymadcat.com>
  * \author Daniel Nicoletti \e <dantti85-pk@yahoo.com.br>
  *
@@ -38,10 +38,11 @@ namespace PackageKit {
  *
  * This class holds all the functions enabling the user to interact with the PackageKit daemon.
  *
+ * Most methods are static so that you can just call Daemon::backendName() to get the name of the backend.
+ * 
  * This class is a singleton, its constructor is private. Call Daemon::global() to get
- * an instance of the Daemon object, you only need Daemon::global() when connection to the signals
- * of this class as most methods are static so that you can just call Daemon::backendName() for
- * example.
+ * an instance of the Daemon object, you only need Daemon::global() when connecting to the signals
+ * of this class.
  */
 class DaemonPrivate;
 class Daemon : public QObject
@@ -64,6 +65,7 @@ public:
 
     /**
      * Describes the authorization result
+     * \sa canAuthorize()
      */
     typedef enum {
         UnknownAuthorize,
@@ -77,6 +79,7 @@ public:
      *
      * The Daemon class is a singleton, you can call this method several times,
      * a single Daemon object will exist.
+     * Use this only when connecting to this class signals
      */
     static Daemon* global();
 
@@ -106,12 +109,12 @@ public:
     static QString backendAuthor();
 
     /**
-     * Returns the filters supported by the current backend
+     * Returns the package filters supported by the current backend
      */
     static Transaction::Filters filters();
 
     /**
-     * Returns the groups supported by the current backend
+     * Returns the package groups supported by the current backend
      */
     static Package::Groups groups();
 
@@ -152,12 +155,13 @@ public:
 
     /**
      * \brief creates a new transaction path
+     * 
      * This function register a new DBus path on PackageKit
-     * allowing a \c Transaction object to be created,
-     * unless you want to know the transaction id
-     * before creating the \c Transaction this function
-     * is not useful since passing a NULL string (QString())
-     * when contructing the \c Transaction object will
+     * allowing a \c Transaction object to be created.
+     * 
+     * \note Unless you want to know the transaction id
+     * before creating the \c Transaction object this function
+     * is not useful as simply creating a \c Transaction object will
      * automatically create this path.
      */
     static QString getTid();
@@ -169,7 +173,7 @@ public:
 
     /**
      * Convenience function
-     * Returns the list of current transactions objects
+     * Returns the list of current transactions as \c Transaction objects
      *
      * You must delete these yourself or pass a
      * \p parent for these comming transactions
@@ -194,15 +198,27 @@ public:
      *
      * \sa Transaction::setHints
      */
-    static void setHints(const QString &hints);
     static void setHints(const QStringList &hints);
 
+    /**
+     * Convenience function to set global hints
+     * \sa setHints(const QStringList &hints)
+     */
+    static void setHints(const QString &hints);
+
+    /**
+     * This method returns the current hints
+     */
     static QStringList hints();
 
     /**
      * Sets a proxy to be used for all the network operations
      */
     static Transaction::InternalError setProxy(const QString &http_proxy, const QString &ftp_proxy);
+
+    /**
+     * Sets a proxy to be used for all the network operations
+     */
     static Transaction::InternalError setProxy(const QString &http_proxy, const QString &https_proxy, const QString &ftp_proxy, const QString &socks_proxy, const QString &no_proxy, const QString &pac);
 
     /**

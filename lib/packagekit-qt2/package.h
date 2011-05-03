@@ -142,6 +142,9 @@ public:
         RestartSecuritySystem,
     } Restart;
 
+    /**
+     * Constructs package
+     */
     Package(const QString &packageId, Info info = UnknownInfo, const QString &summary = QString());
 
     /**
@@ -150,7 +153,7 @@ public:
     Package(const Package &other);
 
     /**
-     * Constructs a copy of other.
+     * Constructs an invalid package.
      */
     Package();
 
@@ -198,68 +201,67 @@ public:
 
     /**
      * Checks weither the package has details or not
-     * \sa Transaction::getDetails
-     * \sa Package::details
+     * \sa Transaction::getDetails()
     */
     bool hasDetails() const;
 
     /**
      * Returns the package's license
-     * \note this will only return a valid value if \sa hasDetails() is true
+     * \note this will only return a valid value if hasDetails() returns true
      */
     QString license() const;
 
     /**
      * Define the package's license
-     * \note this will make \sa hasDetails() return true
+     * \note this will make hasDetails() return true
      */
     void setLicense(const QString &license);
 
     /**
      * Returns the package's group (for example Multimedia, Editors...)
-     * \note this will only return a valid value if \sa hasDetails() is true
+     * \note this will only return a valid value if hasDetails() returns true
      */
     Group group() const;
 
     /**
      * Define the package's group
-     * \note this will make \sa hasDetails() return true
+     * \note this will make hasDetails() return true
      */
     void setGroup(Group group);
 
     /**
      * Returns the package's long description
-     * \note this will only return a valid value if \sa hasDetails() is true
+     * \note this will only return a valid value if hasDetails() returns true
      */
     QString description() const;
 
     /**
      * Define the package's long description
-     * \note this will make \sa hasDetails() return true
+     * \note this will make hasDetails() return true
      */
     void setDescription(const QString &description);
 
     /**
      * Returns the software's homepage url
-     * \note this will only return a valid value if \sa hasDetails() is true
+     * \note this will only return a valid value if hasDetails() returns true
      */
     QString url() const;
 
     /**
      * Define the package's url
-     * \note this will make \sa hasDetails() return true
+     * \note this will make hasDetails() return true
      */
     void setUrl(const QString &url);
 
     /**
      * Returns the package's size
-     * \note this will only return a valid value if \sa hasDetails() is true
+     * \note this will only return a valid value if hasDetails() returns true
      */
     qulonglong size() const;
 
     /**
      * Define the package's size
-     * \note this will make \sa hasDetails() return true
+     * \note this will make hasDetails() return true
      */
     void setSize(qulonglong size);
 
@@ -270,133 +272,133 @@ public:
 
     /**
      * Returns the package list of packages that will be updated by updating this package
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QList<Package> updates() const;
 
     /**
      * Define the list of packages that will be updated by updating this package
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setUpdates(const QList<Package> &updates);
 
     /**
      * Returns the package list of packages that will be obsoleted by this update
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QList<Package> obsoletes() const;
 
     /**
      * Define the list of packages that will be obsoleted by updating this package
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setObsoletes(const QList<Package> &obsoletes);
 
     /**
      * Returns the verdor URL of this update
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QString vendorUrl() const;
 
     /**
      * Define the vendor URL
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setVendorUrl(const QString &vendorUrl);
 
     /**
      * Returns the bugzilla URL of this update
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QString bugzillaUrl() const;
 
     /**
      * Define the bugzilla URL
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setBugzillaUrl(const QString &bugzillaUrl);
 
     /**
      * Returns the CVE (Common Vulnerabilities and Exposures) URL of this update
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QString cveUrl() const;
 
     /**
      * Define the CVE (Common Vulnerabilities and Exposures) URL
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setCveUrl(const QString &cveUrl);
 
     /**
      * Returns the what kind of restart will be required after this update
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     Package::Restart restart() const;
 
     /**
      * Define the restart type
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setRestart(Package::Restart restart);
 
     /**
      * Returns the update description's
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QString updateText() const;
 
     /**
      * Define the update description's
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setUpdateText(const QString &updateText);
 
     /**
      * Returns the update changelog's
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QString changelog() const;
 
     /**
      * Define the update changelog's
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setChangelog(const QString &changelog);
 
     /**
      * Returns the category of the update, eg. stable or testing
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     UpdateState state() const;
 
     /**
      * Define the update changelog's
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setState(UpdateState state);
 
     /**
      * Returns the date and time when this update was first issued
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QDateTime issued() const;
 
     /**
      * Define the date and time when this update was first issued
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setIssued(const QDateTime &issued);
 
     /**
      * Returns the date and time when this updated was updated
-     * \note this will only return a valid value if \sa hasUpdateDetails() is true
+     * \note this will only return a valid value if hasUpdateDetails() returns true
      */
     QDateTime updated() const;
 
     /**
      * Define the date and time when this updated was updated
-     * \note this will make \sa hasUpdateDetails() return true
+     * \note this will make hasUpdateDetails() return true
      */
     void setUpdated(const QDateTime &updated);
 

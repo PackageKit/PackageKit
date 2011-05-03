@@ -82,6 +82,9 @@ public:
         InternalErrorDaemonUnreachable
     } InternalError;
 
+    /**
+     * Describes the role of the transaction
+     */
     typedef enum {
         UnknownRole,
         RoleCancel,
@@ -123,7 +126,7 @@ public:
     typedef Bitfield Roles;
 
     /**
-     * Lists the different types of error
+     * Describes the different types of error
      */
     typedef enum {
         UnknownError,
@@ -210,7 +213,7 @@ public:
     } Exit;
 
     /**
-     * Describes the different filters
+     * Describes the different package filters
      */
     typedef enum {
         UnknownFilter        = 0x0000001,
@@ -351,7 +354,7 @@ public:
      * (i.e. simulateInstallPackages then installPackages)
      *
      * \warning after creating the transaction object be sure
-     * to verify if it doesn't have any \sa error()
+     * to verify if it doesn't have any error()
      */
     Transaction(QObject *parent = 0);
 
@@ -364,7 +367,7 @@ public:
      * (i.e. simulateInstallPackages then installPackages)
      *
      * \warning after creating the transaction object be sure
-     * to verify if it doesn't have any \sa error()
+     * to verify if it doesn't have any error()
      */
     Transaction(const QString &tid, QObject *parent = 0);
 
@@ -391,7 +394,7 @@ public:
     Transaction::InternalError error() const;
 
     /**
-     * Indicates weither you can cancel the transaction or not
+     * Indicates whether you can cancel the transaction or not
      * i.e. the backend forbids cancelling the transaction while
      * it's installing packages
      *
@@ -415,8 +418,6 @@ public:
      * display a more complete summary of the transaction.
      *
      * \return the last package processed by the transaction
-     * \sa transactionListChanged
-     * \sa getTransactionList
      */
     Package lastPackage() const;
 
@@ -475,8 +476,13 @@ public:
      *
      * \sa Daemon::setHints
      */
-    void setHints(const QString &hints);
     void setHints(const QStringList &hints);
+
+    /**
+     * Convenience function to set this transaction \p hints
+     * \sa getDetails(const QStringList &hints)
+     */
+    void setHints(const QString &hints);
 
     /**
      * Returns the current state of the transaction
@@ -531,9 +537,8 @@ public:
      *
      * The EULA is identified by the \sa Eula structure \p info
      *
-     * \note You need to restart the transaction which triggered the EULA manually
-     *
-     * \sa eulaRequired
+     * \note You need to manually restart the transaction which triggered the EULA.
+     * \sa eulaRequired()
      */
     void acceptEula(const QString &eulaId);
 
@@ -544,9 +549,10 @@ public:
     void downloadPackages(const QList<Package> &packages, bool storeInCache = false);
 
     /**
-     * This is a convenience function
+     * This is a convenience function to download this \p package
+     * \sa downloadPackages(const QList<Package> &packages, bool storeInCache = false)
      */
-    void downloadPackages(const Package &package, bool storeInCache = false);
+    void downloadPackage(const Package &package, bool storeInCache = false);
 
     /**
      * Returns the collection categories
@@ -565,6 +571,11 @@ public:
      * \note This method emits \sa package()
      */
     void getDepends(const QList<Package> &packages, Filters filters, bool recursive = false);
+
+    /**
+     * Convenience function to get the dependencies of this \p package
+     * \sa getDetails(const QList<Package> &packages, Filters filters, bool recursive = false)
+     */
     void getDepends(const Package &package, Filters filters , bool recursive = false);
 
     /**
@@ -575,6 +586,11 @@ public:
      * with details set
      */
     void getDetails(const QList<Package> &packages);
+
+    /**
+     * Convenience function to get the details about this \p package
+     * \sa getDetails(const QList<Package> &packages)
+     */
     void getDetails(const Package &package);
 
     /**
@@ -583,6 +599,11 @@ public:
      * \note This method emits \sa files()
      */
     void getFiles(const QList<Package> &packages);
+
+    /**
+     * Convenience function to get the files contained in this \p package
+     * \sa getRequires(const QList<Package> &packages)
+     */
     void getFiles(const Package &packages);
 
     /**
@@ -617,6 +638,11 @@ public:
      * \note This method emits \sa package()
      */
     void getRequires(const QList<Package> &packages, Filters filters, bool recursive = false);
+
+    /**
+     * Convenience function to get packages requiring this package
+     * \sa getRequires(const QList<Package> &packages, Filters filters, bool recursive = false)
+     */
     void getRequires(const Package &package, Filters filters, bool recursive = false);
 
     /**
@@ -624,7 +650,12 @@ public:
      *
      * \note This method emits \sa updateDetail()
      */
-    void getUpdateDetail(const QList<Package> &packages);
+    void getUpdatesDetails(const QList<Package> &packages);
+
+    /**
+     * Convenience function to get update details
+     * \sa getUpdateDetail(const QList<Package> &packages)
+     */
     void getUpdateDetail(const Package &package);
 
     /**
@@ -652,7 +683,12 @@ public:
      * and \sa changed()
      */
     void installFiles(const QStringList &files, bool onlyTrusted = true);
-    void installFiles(const QString &file, bool onlyTrusted = true);
+
+    /**
+     * Convenience function to install a file
+     * \sa installFiles(const QStringList &files, bool onlyTrusted = true)
+     */
+    void installFile(const QString &file, bool onlyTrusted = true);
 
     /**
      * Install the given \p packages
@@ -663,7 +699,12 @@ public:
      * and \sa changed()
      */
     void installPackages(const QList<Package> &packages, bool onlyTrusted = true);
-    void installPackages(const Package &package, bool onlyTrusted = true);
+
+    /**
+     * Convenience function to install a package
+     * \sa installPackages(const QList<Package> &packages, bool onlyTrusted = true)
+     */
+    void installPackage(const Package &package, bool onlyTrusted = true);
 
     /**
      * \brief Installs a signature
@@ -690,7 +731,12 @@ public:
      * and \sa changed()
      */
     void removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false);
-    void removePackages(const Package &package, bool allowDeps = false, bool autoRemove = false);
+
+    /**
+     * Convenience function to remove a package
+     * \sa removePackages(const QList<Package>  &packages, bool allowDeps = false, bool autoRemove = false)
+     */
+    void removePackage(const Package &package, bool allowDeps = false, bool autoRemove = false);
 
     /**
      * Activates or disables a repository
@@ -710,6 +756,11 @@ public:
      * \note This method emits \sa package()
      */
     void resolve(const QStringList &packageNames, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to remove a package name
+     * \sa resolve(const QStringList &packageNames, Filters filters = FilterNone)
+     */
     void resolve(const QString &packageName, Filters filters = FilterNone);
 
     /**
@@ -720,6 +771,11 @@ public:
      * \note This method emits \sa package()
      */
     void searchFiles(const QStringList &search, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search for a file
+     * \sa searchFiles(const QStringList &search, Filters filters = FilterNone)
+     */
     void searchFiles(const QString &search, Filters filters = FilterNone);
 
     /**
@@ -730,6 +786,11 @@ public:
      * \note This method emits \sa package()
      */
     void searchDetails(const QStringList &search, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search by details
+     * \sa searchDetails(const QStringList &search, Filters filters = FilterNone)
+     */
     void searchDetails(const QString &search, Filters filters = FilterNone);
 
     /**
@@ -742,7 +803,12 @@ public:
      * \note This method emits \sa package()
      */
     void searchGroups(const QStringList &groups, Filters filters = FilterNone);
-    void searchGroups(const QString &group, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search by group string
+     * \sa searchGroups(const QStringList &groups, Filters filters = FilterNone)
+     */
+    void searchGroup(const QString &group, Filters filters = FilterNone);
 
     /**
      * \brief Lists all the packages in the given \p group
@@ -752,7 +818,12 @@ public:
      * \note This method emits \sa package()
      */
     void searchGroups(Package::Groups group, Filters filters = FilterNone);
-    void searchGroups(Package::Group group, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search by group
+     * \sa searchGroups(Package::Groups group, Filters filters = FilterNone)
+     */
+    void searchGroup(Package::Group group, Filters filters = FilterNone);
 
     /**
      * \brief Search in the packages names
@@ -762,6 +833,11 @@ public:
      * \note This method emits \sa package()
      */
     void searchNames(const QStringList &search, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search by names
+     * \sa searchNames(const QStringList &search, Filters filters = FilterNone)
+     */
     void searchNames(const QString &search, Filters filters = FilterNone);
 
     /**
@@ -773,7 +849,12 @@ public:
      *        REINSTALLING or OBSOLETING status.
      */
     void simulateInstallFiles(const QStringList &files);
-    void simulateInstallFiles(const QString &file);
+
+    /**
+     * Convenience function to simulate the install of a file
+     * \sa simulateInstallFiles(const QStringList &files)
+     */
+    void simulateInstallFile(const QString &file);
 
     /**
      * \brief Simulates an installation of \p packages.
@@ -784,7 +865,12 @@ public:
      *        REINSTALLING or OBSOLETING status.
      */
     void simulateInstallPackages(const QList<Package> &packages);
-    void simulateInstallPackages(const Package &package);
+
+    /**
+     * Convenience function to simulate the install of a package
+     * \sa simulateInstallPackages(const QList<Package> &packages)
+     */
+    void simulateInstallPackage(const Package &package);
 
     /**
      * \brief Simulates a removal of \p packages.
@@ -795,7 +881,12 @@ public:
      *        REINSTALLING or OBSOLETING status.
      */
     void simulateRemovePackages(const QList<Package> &packages, bool autoRemove = false);
-    void simulateRemovePackages(const Package &package, bool autoRemove = false);
+
+    /**
+     * Convenience function to simulate the removal of a package
+     * \sa simulateRemovePackages(const QList<Package> &packages, bool autoRemove = false)
+     */
+    void simulateRemovePackage(const Package &package, bool autoRemove = false);
 
     /**
      * \brief Simulates an update of \p packages.
@@ -806,7 +897,12 @@ public:
      *        REINSTALLING or OBSOLETING status.
      */
     void simulateUpdatePackages(const QList<Package> &packages);
-    void simulateUpdatePackages(const Package &package);
+
+    /**
+     * Convenience function to simulate the update of a package
+     * \sa simulateUpdatePackages(const QList<Package> &packages)
+     */
+    void simulateUpdatePackage(const Package &package);
 
     /**
      * Update the given \p packages
@@ -816,7 +912,12 @@ public:
      * and \sa changed()
      */
     void updatePackages(const QList<Package> &packages, bool onlyTrusted = true);
-    void updatePackages(const Package &package, bool onlyTrusted = true);
+
+    /**
+     * Convenience function to update a package
+     * \sa updatePackages(const QList<Package> &packages, bool onlyTrusted = true)
+     */
+    void updatePackage(const Package &package, bool onlyTrusted = true);
 
     /**
      * Updates the whole system
@@ -834,6 +935,11 @@ public:
      * \note This method emits \sa package()
      */
     void whatProvides(Provides type, const QStringList &search, Filters filters = FilterNone);
+
+    /**
+     * Convenience function to search for what provides
+     * \sa whatProvides(Provides type, const QStringList &search, Filters filters = FilterNone)
+     */
     void whatProvides(Provides type, const QString &search, Filters filters = FilterNone);
 
 public Q_SLOTS:
@@ -856,6 +962,8 @@ Q_SIGNALS:
      * \li \p name is the category's name. This name is localized.
      * \li \p summary is the category's summary. It is localized.
      * \li \p icon is the icon identifier eg. server-cfg. If unknown, it is set to icon-missing.
+     *
+     * \sa getCategories()
      */
     void category(const QString &parentId, const QString &categoryId, const QString &name, const QString &summary, const QString &icon);
 
@@ -892,7 +1000,7 @@ Q_SIGNALS:
 
     /**
      * Sends the \p filenames contained in package \p package
-     * \sa Daemon::getFiles
+     * \sa getFiles()
      */
     void files(const PackageKit::Package &package, const QStringList &filenames);
 
@@ -923,6 +1031,7 @@ Q_SIGNALS:
 
     /**
      * Emitted when the user has to validate a repository's signature
+     * \sa installSignature()
      */
     void repoSignatureRequired(const PackageKit::Signature &info);
 
@@ -934,7 +1043,7 @@ Q_SIGNALS:
 
     /**
      * Sends an old transaction
-     * \sa Daemon::getOldTransactions
+     * \sa getOldTransactions()
      */
     void transaction(PackageKit::Transaction *transaction);
 
