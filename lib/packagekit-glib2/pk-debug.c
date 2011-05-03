@@ -185,7 +185,7 @@ pk_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer
 }
 
 /**
- * pk_debug_get_option_group:
+ * pk_debug_get_option_group: (skip)
  *
  * Returns a #GOptionGroup for the commandline arguments recognized
  * by debugging. You should add this group to your #GOptionContext

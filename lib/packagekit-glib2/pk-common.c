@@ -81,7 +81,7 @@ pk_iso8601_from_date (const GDate *date)
 }
 
 /**
- * pk_iso8601_to_date:
+ * pk_iso8601_to_date: (skip)
  * @iso_date: The ISO8601 date to convert
  *
  * Return value: If valid then a new %GDate, else NULL
