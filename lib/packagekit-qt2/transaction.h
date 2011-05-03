@@ -193,7 +193,8 @@ public:
         ErrorPackageDatabaseChanged,
         ErrorProvideTypeNotSupported,
         ErrorInstallRootInvalid,
-        ErrorCannotFetchSources
+        ErrorCannotFetchSources,
+        ErrorCancelledPriority
     } Error;
 
     /**
@@ -209,7 +210,8 @@ public:
         ExitEulaRequired,
         ExitKilled, /* when we forced the cancel, but had to sigkill */
         ExitMediaChangeRequired,
-        ExitNeedUntrusted
+        ExitNeedUntrusted,
+        ExitCancelledPriority
     } Exit;
 
     /**
@@ -346,6 +348,17 @@ public:
         DistroUpgradeStable,
         DistroUpgradeUnstable
     } DistroUpgrade;
+
+    /**
+     * Describes the type of distribution upgrade to perform
+     * \sa upgradeSystem()
+     */
+    typedef enum {
+        UnknownUpgradeKind,
+        UpgradeKindMinimal,
+        upgradeKindDefault,
+        upgradeKindComplete
+    } UpgradeKind;
 
     /**
      * Create a transaction object with a new transaction id
@@ -924,10 +937,31 @@ public:
      *
      * \p onlyTrusted indicates if this transaction is only allowed to install trusted packages
      *
-     * \note This method emits \sa package()
-     * and \sa changed()
+     * \note This method typically emits
+     * \li package()
+     * \li changed()
      */
     void updateSystem(bool onlyTrusted = true);
+
+    /**
+     * Updates the whole system
+     *
+     * This method perfoms a distribution upgrade to the
+     * specified version.
+     *
+     * The \p type of upgrade, e.g. minimal, default or complete.
+     * Minimal upgrades will download the smallest amount of data
+     * before launching a installer.
+     * The default is to download enough data to launch a full
+     * graphical installer, but a complete upgrade will be
+     * required if there is no internet access during install time.
+     *
+     * \note This method typically emits
+     * \li changed()
+     * \li error()
+     * \li package()
+     */
+    void upgradeSystem(const QString &distroId, UpgradeKind kind);
 
     /**
      * Searchs for a package providing a file/a mimetype

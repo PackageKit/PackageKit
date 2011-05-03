@@ -617,6 +617,11 @@ void Transaction::updateSystem(bool onlyTrusted)
     RUN_TRANSACTION(UpdateSystem(onlyTrusted))
 }
 
+void Transaction::upgradeSystem(const QString &distroId, UpgradeKind kind)
+{
+    RUN_TRANSACTION(UpgradeSystem(distroId, Util::enumToString<Transaction>(kind, "UpgradeKind", "UpgradeKind")))
+}
+
 void Transaction::whatProvides(Transaction::Provides type, const QStringList &search, Transaction::Filters filters)
 {
     RUN_TRANSACTION(WhatProvides(TransactionPrivate::filtersToString(filters), Util::enumToString<Transaction>(type, "Provides", "Provides"), search))

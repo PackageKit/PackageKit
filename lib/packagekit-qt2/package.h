@@ -115,7 +115,7 @@ public:
         GroupElectronics,
         GroupCollections,
         GroupVendor,
-        GroupNewest,
+        GroupNewest
     } Group;
     typedef QSet<Group> Groups;
 
@@ -138,8 +138,8 @@ public:
         RestartApplication,
         RestartSession,
         RestartSystem,
-        RestartSecuritySession,
-        RestartSecuritySystem,
+        RestartSecuritySession, /* a library that is being used by this package has been updated for security */
+        RestartSecuritySystem
     } Restart;
 
     /**

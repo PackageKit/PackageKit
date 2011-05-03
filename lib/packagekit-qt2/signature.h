@@ -37,7 +37,7 @@ public:
      */
     typedef enum {
         UnknownType,
-        TypeGpg,
+        TypeGpg
     } Type;
 
     /**
