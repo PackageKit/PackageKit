@@ -1921,6 +1921,8 @@ pk_control_transaction_list_changed_idle_cb (PkIdleSignalStore *store)
 
 /**
  * pk_control_transaction_list_changed_cb:
+ *
+ * @transaction_ids: (array zero-terminated=1)
  */
 static void
 pk_control_transaction_list_changed_cb (DBusGProxy *proxy, gchar **transaction_ids, PkControl *control)

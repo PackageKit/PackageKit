@@ -56,7 +56,7 @@ pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelp
  * pk_client_resolve:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @packages: an array of package names to resolve, e.g. "gnome-system-tools"
+ * @packages: (array zero-terminated=1): an array of package names to resolve, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -107,7 +107,7 @@ pk_client_resolve (PkClient *client, PkBitfield filters, gchar **packages, GCanc
  * pk_client_search_names:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @values: free text to search for, for instance, "power"
+ * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -157,7 +157,7 @@ pk_client_search_names (PkClient *client, PkBitfield filters, gchar **values, GC
  * pk_client_search_details:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @values: free text to search for, for instance, "power"
+ * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -208,7 +208,7 @@ pk_client_search_details (PkClient *client, PkBitfield filters, gchar **values, 
  * pk_client_search_groups:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @values: a group enum to search for, for instance, "system-tools"
+ * @values: (array zero-terminated=1): a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -257,7 +257,7 @@ pk_client_search_groups (PkClient *client, PkBitfield filters, gchar **values, G
  * pk_client_search_files:
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @values: file to search for, for instance, "/sbin/service"
+ * @values: (array zero-terminated=1): file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -751,7 +751,7 @@ pk_client_get_requires (PkClient *client, PkBitfield filters, gchar **package_id
  * @client: a valid #PkClient instance
  * @filters: a %PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
- * @values: a search term such as "sound/mp3"
+ * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
