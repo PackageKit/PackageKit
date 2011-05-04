@@ -1,7 +1,10 @@
+ar
 as
+bg_BG
 bg
 bn_IN
 ca
+ca@valencia
 cs
 da
 de
@@ -9,8 +12,10 @@ el
 en_GB
 es
 eu
+fa_IR
 fi
 fr
+ga
 gl
 gu
 he
@@ -20,6 +25,7 @@ id
 it_IT
 it
 ja
+kk
 kn
 ko
 lt
@@ -36,6 +42,7 @@ pt
 ro
 ru
 sk
+sl
 sr@latin
 sr
 sv
@@ -44,5 +51,6 @@ te
 th
 tr
 uk
+wa
 zh_CN
 zh_TW
