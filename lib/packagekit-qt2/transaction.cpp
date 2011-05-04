@@ -374,15 +374,7 @@ void Transaction::getDepends(const Package &package, Transaction::Filters filter
 
 void Transaction::getDetails(const QList<Package> &packages)
 {
-    Q_D(Transaction);
-    foreach (const Package &package, packages) {
-        d->packageMap.insert(package.id(), package);
-    }
-
-    QDBusPendingReply<> r = d->p->GetDetails(Util::packageListToPids(packages));
-    r.waitForFinished();
-
-    CHECK_TRANSACTION
+    RUN_TRANSACTION(GetDetails(Util::packageListToPids(packages)))
 }
 
 void Transaction::getDetails(const Package &package)

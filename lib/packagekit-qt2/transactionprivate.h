@@ -56,9 +56,6 @@ protected:
     // used for both old and destroyed transactions
     bool destroyed;
 
-    // Used for getDetails
-    QHash<QString, Package> packageMap;
-
     Transaction::InternalError error;
 
 protected Q_SLOTS:
