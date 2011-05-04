@@ -1,3 +1,102 @@
+Version 0.6.14
+~~~~~~~~~~~~~~
+Released: 2011-05-04
+
+Notes:
+ - Lots of nice bugfixes in this release, along with slight changes to
+   the SetProxy() and DownloadPackages() D-Bus API.
+   If you're using either packagekit-glib or packagekit-qt then there's
+   no change required as the libraries have symbol fallbacks.
+ - The packageKit-qt2 library has been committed by Daniel Nicoletti,
+   which is eventually aiming to replace packagekit-qt.
+
+Libraries:
+ - glib: Add GIR annotations to make PK GIR usable (Matthias Klumpp)
+ - glib: Add header name to GIR and set export package (Matthias Klumpp)
+ - qt2: A crash was apparently a caching error on apper build dir (Daniel Nicoletti)
+ - qt2: Add Eula class to avoid API breaks in case pk changes (Daniel Nicoletti)
+ - qt2: Add Signature header and install Daemon header (Daniel Nicoletti)
+ - qt2: Change the Transaction constructor to be more convinient (Daniel Nicoletti)
+ - qt2: Fix Package class to not delete d, which fixes crashes weirdly (Daniel Nicoletti)
+ - qt2: Include QSet in package.h so that Groups get defined (Daniel Nicoletti)
+ - qt2: Updating enums and adding UpgradeSystem() method (Daniel Nicoletti)
+ - qt: Add storeInCache parameter to downloadPackages to cover new API (Daniel Nicoletti)
+ - qt: Fix typo in SearchGroups (Dimitar Popov)
+
+Backends:
+ - alpm: download packages to the system cache if no directory is specified (Jonathan Conder)
+ - alpm: Port features from the pacman backend (Jonathan Conder)
+ - alpm: update for libalpm 6 (Jonathan Conder)
+ - aptcc: Fix configure.ac to avoid pk-qt linking against apt-pkg (Daniel Nicoletti)
+ - conary: add a method to reset callback (Jesse Zhang)
+ - conary: add exception handling around get_updateall_job (Jesse Zhang)
+ - conary: bring back exception handling around build_update_job (Jesse Zhang)
+ - conary: clear job cache at the right place (Jesse Zhang)
+ - conary: clear the job cache when updating through non-sysmodel pathway. (Og B. Maciel)
+ - conary: don't support UpdatePackages (Jesse Zhang)
+ - conary: fix call of deleted method in conaryCallback (Jesse Zhang)
+ - conary: fix exception processing of applyUpdateJob (Jesse Zhang)
+ - conary: fix generating XMLCache for custom labels (Jesse Zhang)
+ - conary: fix get-updates (Jesse Zhang)
+ - conary: handle stale jobs for updateall (Og B. Maciel)
+ - conary: implement get-updates for system model (Jesse Zhang)
+ - conary: implement install/remove for system model (Jesse Zhang)
+ - conary: make pylint happier (Jesse Zhang)
+ - conary: move build_update_job to where it belongs (Jesse Zhang)
+ - conary: move job caching methods to UpdateJobCache (Jesse Zhang)
+ - conary: move more code to conarypk (Jesse Zhang)
+ - conary: port away from PK_BACKEND_OPTIONS (Jesse Zhang)
+ - conary: process packages update/erase in a single job (Jesse Zhang)
+ - conary: really implement simulate* and don't rely on conary --test (Jesse Zhang)
+ - conary: reduce code duplication between get_updates and update_system (Jesse Zhang)
+ - conary: remove abundant imports (Jesse Zhang)
+ - conary: remove broken GetDepends implementation (Jesse Zhang)
+ - conary: remove class scope variable (Jesse Zhang)
+ - conary: rename variables to better reflect the return type (Jesse Zhang)
+ - conary: show update jobs correctly (Jesse Zhang)
+ - entropy: drop entropy.tools deprecated functions usage (Fabio Erculiani)
+ - entropy: make use of the new Entropy Web Services interfaces (Fabio Erculiani)
+ - entropy: restore compatibility with newer releases (Fabio Erculiani)
+ - poldek: port away from PK_BACKEND_OPTIONS (Marcin Banasiak)
+ - yum: fix DownloadPackages to save to the system cache if there is no directory passed to it (Richard Hughes)
+ - yum: implement _pkg_compare() and use get_package_list() (Richard Hughes)
+ - zypp: check repo file before using it (Zhang Qiang)
+ - zypp:consider only_trusted option while installing packages (Zhang Qiang)
+ - zypp:fix memory leak in pk_backend_transaction_start (Zhang Qiang)
+ - zypp: Patch::Content is returned by value. Fixes crash on get-updates (bnc#685831) (Duncan Mac-Vicar P)
+ - zypp:reload RpmDB before removing packages (Zhang Qiang)
+ - zypp: Report download speed (bnc#663069) (Duncan Mac-Vicar P)
+ - zypp: reset packages status in repo while removing packages (Zhang Qiang)
+ - zypp:Set locale info at the begin of transaction (Zhang Qiang)
+ - zypp: support proxy_https,proxy_socks,no_proxy (Zhang Qiang)
+ - zypp: use namespace once to remove the namespace noise. (Duncan Mac-Vicar P)
+ - zypp: Use output parameters (references) for containers (Duncan Mac-Vicar P)
+
+New Features:
+ - Add a 'store_in_cache' attribute to the DownloadPackages method (Richard Hughes)
+ - Automatically cancel running background transactions if a foreground transaction is committed (Richard Hughes)
+ - Cancel any background transactions when we get SuggestDaemonQuit (Richard Hughes)
+ - Introduce other attributes in the SetProxy() method (Richard Hughes)
+
+Bugfixes:
+ - docs: Set zypp backend can downloadPackages (Zhang Qiang)
+ - browser-plugin: Remove deprecated symbols (Matthias Klumpp)
+ - Fix precedence when assigning strings to a *GStrv (Jonny Lamb)
+ - Create transaction db properly if it's not exist (Zhang Qiang)
+ - docs: Fix path of packagekitd (Jesse Zhang)
+ - docs: Update Feature Matrix for conary (Jesse Zhang)
+ - docs: Updating the kpackagekit info and adding myself to authors (Daniel Nicoletti)
+ - Do not abort in pk_catalog_init() if PackageKit is not available. Fixes rh#688280 (Richard Hughes)
+ - Do not allow backends to output duplicate older packages when searching with newest (Richard Hughes)
+ - Fix a crash where the error code was pointing to freed memory. Fixes rh#684464 (Richard Hughes)
+ - Fix a typo in pk_transaction_db_get_proxy (Zhang Qiang)
+ - Get more proxy info after the new proxy parameters was introduced (Zhang Qiang)
+ - Honour ACLOCAL_FLAGS in Makefile.am. Fixes fd#35237 (Richard Hughes)
+ - pkcon: add missing {} around if (Jesse Zhang)
+ - pk-debuginfo-install: fix typo of using PK_FILTER (Zhang Qiang)
+ - Remove pacman backend (Jonathan Conder)
+ - Use the new threadsafe signal handling support in GLib (Richard Hughes)
+
 Version 0.6.13
 ~~~~~~~~~~~~~~
 Released: 2011-03-07
