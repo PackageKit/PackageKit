@@ -106,6 +106,7 @@ Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
 Requires: yum >= 3.0
 Requires: PackageKit
+Requires: dbus-python
 Obsoletes: yum-packagekit < %{version}-%{release}
 
 %description yum-plugin
@@ -387,7 +388,6 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %defattr(-,root,root,-)
 %{_libdir}/*packagekit-glib2.so.*
 %{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
-%{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 
 %files qt
 %defattr(-,root,root,-)
@@ -438,6 +438,7 @@ update-mime-database %{_datadir}/mime &> /dev/null || :
 %dir %{_includedir}/PackageKit
 %dir %{_includedir}/PackageKit/packagekit-glib2
 %{_includedir}/PackageKit/packagekit-glib*/*.h
+%{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 
 %files qt-devel
 %defattr(-,root,root,-)
