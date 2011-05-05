@@ -2781,7 +2781,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
 
         md = self.updateMetadata
         for pkg in unique(pkgs):
-            if pkgfilter.pre_process(pkg):
+            if pkgfilter._filter_base(pkg):
                 # we pre-get the ChangeLog data so that the changes file is
                 # downloaded at GetUpdates time, not when we open the GUI
                 # get each element of the ChangeLog
