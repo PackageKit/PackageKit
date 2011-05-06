@@ -32,6 +32,9 @@ static off_t dtotal = 0;
 static pmpkg_t *dpkg = NULL;
 static GString *dfiles = NULL;
 
+static pmpkg_t *tpkg = NULL;
+static GString *toutput = NULL;
+
 static gchar *
 pk_backend_resolve_path (PkBackend *self, const gchar *basename)
 {
@@ -332,6 +335,53 @@ pk_backend_transaction_conv_cb (pmtransconv_t question, gpointer data1,
 }
 
 static void
+pk_backend_output_end (PkBackend *self)
+{
+	g_return_if_fail (self != NULL);
+
+	tpkg = NULL;
+
+	if (toutput != NULL) {
+		pk_backend_output (self, toutput->str);
+		g_string_free (toutput, TRUE);
+		toutput = NULL;
+	}
+}
+
+static void
+pk_backend_output_start (PkBackend *self, pmpkg_t *pkg)
+{
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (pkg != NULL);
+
+	if (tpkg != NULL) {
+		pk_backend_output_end (self);
+	}
+
+	tpkg = pkg;
+}
+
+void
+pk_backend_output (PkBackend *self, const gchar *output)
+{
+	g_return_if_fail (self != NULL);
+	g_return_if_fail (output != NULL);
+
+	if (tpkg != NULL) {
+		if (toutput == NULL) {
+			toutput = g_string_new ("<b>");
+			g_string_append (toutput, alpm_pkg_get_name (tpkg));
+			g_string_append (toutput, "</b>\n");
+		}
+
+		g_string_append (toutput, output);
+	} else {
+		PkMessageEnum type = PK_MESSAGE_ENUM_UNKNOWN;
+		pk_backend_message (self, type, "%s", output);
+	}
+}
+
+static void
 pk_backend_transaction_dep_resolve (PkBackend *self)
 {
 	g_return_if_fail (self != NULL);
@@ -355,6 +405,7 @@ pk_backend_transaction_add_start (PkBackend *self, pmpkg_t *pkg)
 
 	pk_backend_set_status (self, PK_STATUS_ENUM_INSTALL);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_INSTALLING);
+	pk_backend_output_start (self, pkg);
 }
 
 static void
@@ -374,20 +425,16 @@ pk_backend_transaction_add_done (PkBackend *self, pmpkg_t *pkg)
 
 	optdepends = alpm_pkg_get_optdepends (pkg);
 	if (optdepends != NULL) {
-		GString *depends = g_string_new ("");
-
-		g_string_append_printf (depends,
-					"Optional dependencies for %s:\n",
-					name);
+		pk_backend_output (self, "Optional dependencies:\n");
 
 		for (i = optdepends; i != NULL; i = i->next) {
-			g_string_append_printf (depends, "%s\n",
-						(const gchar *) i->data);
+			const gchar *depend = i->data;
+			gchar *output = g_strdup_printf ("%s\n", depend);
+			pk_backend_output (self, output);
+			g_free (output);
 		}
-
-		pk_backend_output (self, depends->str);
-		g_string_free (depends, TRUE);
 	}
+	pk_backend_output_end (self);
 }
 
 static void
@@ -398,6 +445,7 @@ pk_backend_transaction_remove_start (PkBackend *self, pmpkg_t *pkg)
 
 	pk_backend_set_status (self, PK_STATUS_ENUM_REMOVE);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_REMOVING);
+	pk_backend_output_start (self, pkg);
 }
 
 static void
@@ -413,6 +461,7 @@ pk_backend_transaction_remove_done (PkBackend *self, pmpkg_t *pkg)
 
 	alpm_logaction ("removed %s (%s)\n", name, version);
 	pk_backend_pkg (self, pkg, PK_INFO_ENUM_FINISHED);
+	pk_backend_output_end (self);
 }
 
 static void
@@ -438,6 +487,7 @@ pk_backend_transaction_upgrade_start (PkBackend *self, pmpkg_t *pkg,
 
 	pk_backend_set_status (self, state);
 	pk_backend_pkg (self, pkg, info);
+	pk_backend_output_start (self, pkg);
 }
 
 static void
@@ -463,22 +513,18 @@ pk_backend_transaction_upgrade_done (PkBackend *self, pmpkg_t *pkg,
 				     alpm_pkg_get_optdepends (old),
 				     (alpm_list_fn_cmp) g_strcmp0);
 	if (optdepends != NULL) {
-		GString *depends = g_string_new ("");
-
-		g_string_append_printf (depends,
-					"New optional dependencies for %s\n",
-					name);
+		pk_backend_output (self, "New optional dependencies:\n");
 
 		for (i = optdepends; i != NULL; i = i->next) {
-			g_string_append_printf (depends, "%s\n",
-						(const gchar *) i->data);
+			const gchar *depend = i->data;
+			gchar *output = g_strdup_printf ("%s\n", depend);
+			pk_backend_output (self, output);
+			g_free (output);
 		}
 
-		pk_backend_output (self, depends->str);
-
-		g_string_free (depends, TRUE);
 		alpm_list_free (optdepends);
 	}
+	pk_backend_output_end (self);
 }
 
 static void
@@ -895,6 +941,13 @@ pk_backend_transaction_end (PkBackend *self, GError **error)
 
 	alpm_option_set_dlcb (NULL);
 	alpm_option_set_totaldlcb (NULL);
+
+	if (dpkg != NULL) {
+		pk_backend_transaction_download_end (self);
+	}
+	if (tpkg != NULL) {
+		pk_backend_output_end (self);
+	}
 
 	if (alpm_trans_release () < 0) {
 		g_set_error_literal (error, ALPM_ERROR, pm_errno,

@@ -29,6 +29,7 @@
 #include "pk-backend-databases.h"
 #include "pk-backend-error.h"
 #include "pk-backend-groups.h"
+#include "pk-backend-transaction.h"
 
 PkBackend *backend = NULL;
 GCancellable *cancellable = NULL;

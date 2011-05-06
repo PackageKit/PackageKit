@@ -41,3 +41,6 @@ gboolean	 pk_backend_transaction_end		(PkBackend *self,
 
 gboolean	 pk_backend_transaction_finish		(PkBackend *self,
 							 GError *error);
+
+void		 pk_backend_output			(PkBackend *self,
+							 const gchar *output);

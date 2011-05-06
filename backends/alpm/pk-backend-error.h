@@ -32,6 +32,4 @@ enum {
 
 void	 pk_backend_error	(PkBackend *self, GError *error);
 
-void	 pk_backend_output	(PkBackend *self, const gchar *output);
-
 GQuark	 alpm_error_quark	(void);

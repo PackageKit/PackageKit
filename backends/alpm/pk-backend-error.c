@@ -25,20 +25,6 @@
 
 #include "pk-backend-error.h"
 
-static void
-pk_backend_output_locked (PkBackend *self)
-{
-	gchar *output;
-
-	g_return_if_fail (self != NULL);
-
-	output = g_strdup_printf ("If you are certain no other package manager "
-				  "is running, you can remove %s\n",
-				  alpm_option_get_lockfile ());
-	pk_backend_output (self, output);
-	g_free (output);
-}
-
 void
 pk_backend_error (PkBackend *self, GError *error)
 {
@@ -86,7 +72,6 @@ pk_backend_error (PkBackend *self, GError *error)
 
 			case PM_ERR_HANDLE_LOCK:
 				code = PK_ERROR_ENUM_CANNOT_GET_LOCK;
-				pk_backend_output_locked (self);
 				break;
 
 			case PM_ERR_DB_OPEN:
@@ -185,15 +170,6 @@ pk_backend_error (PkBackend *self, GError *error)
 	}
 
 	pk_backend_error_code (self, code, "%s", error->message);
-}
-
-void
-pk_backend_output (PkBackend *self, const gchar *output)
-{
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (output != NULL);
-
-	pk_backend_message (self, PK_MESSAGE_ENUM_UNKNOWN, "%s", output);
 }
 
 GQuark
