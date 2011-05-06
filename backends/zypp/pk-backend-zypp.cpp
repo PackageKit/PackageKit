@@ -84,6 +84,22 @@ static map<PkBackend *, EventDirector *> _eventDirectors;
 
 map<PkBackend *, vector<string> *> _signatures;
 
+// helper function to restore the pool status
+// after doing operations on it
+class PoolStatusSaver : private base::NonCopyable
+{
+public:
+    PoolStatusSaver()
+    {
+	    ResPool::instance().proxy().saveState();
+    }
+
+    ~PoolStatusSaver()
+    {
+	    ResPool::instance().proxy().restoreState();
+    }
+};
+
 /**
  * pk_backend_get_description:
  */
@@ -168,6 +184,7 @@ backend_get_requires_thread (PkBackend *backend)
 	//TODO repair percentages
 	//pk_backend_set_percentage (backend, 0);
 
+	PoolStatusSaver saver;
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		PoolItem package;
@@ -231,12 +248,8 @@ backend_get_requires_thread (PkBackend *backend)
 
 			if (!error && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
 				error = !zypp_backend_pool_item_notify (backend, *it);
-
-			it->statusReset ();
 		}
 
-		// undo the status-change of the package and disable forceResolve
-		package.statusReset ();
 		solver.setForceResolve (false);
 	}
 
@@ -775,6 +788,7 @@ backend_install_files_thread (PkBackend *backend)
 {
 	MIL << endl;
 	gchar **full_paths;
+	RepoManager manager;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -825,63 +839,36 @@ backend_install_files_thread (PkBackend *backend)
 		tmpRepo.setAutorefresh (true);
 		tmpRepo.setAlias ("PK_TMP_DIR");
 		tmpRepo.setName ("PK_TMP_DIR");
-		zypp_build_pool (backend, true);
 
 		// add Repo to pool
-
-		RepoManager manager;
 		manager.addRepository (tmpRepo);
 
-		if (!zypp_refresh_meta_and_cache (manager, tmpRepo))
-			return FALSE;
+		if (!zypp_refresh_meta_and_cache (manager, tmpRepo)) {
+			return zypp_backend_finished_error (
+			  backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't refresh repositories");
+		}
+		zypp_build_pool (backend, true);
 
-	} catch (const url::UrlException &ex) {
-		return zypp_backend_finished_error (
-			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	} catch (const Exception &ex) {
 		return zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	}
 
 	bool error = false;
-	for (guint i = 0; full_paths[i]; i++) {
 
-		Pathname rpmPath (full_paths[i]);
-		target::rpm::RpmHeader::constPtr rpmHeader = target::rpm::RpmHeader::readPackage (rpmPath, target::rpm::RpmHeader::NOSIGNATURE);
+	Repository repo = ResPool::instance().reposFind("PK_TMP_DIR");
 
-		// look for the packages and set them to toBeInstalled
-		vector<sat::Solvable> solvables;
-		zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), ResKind::package, solvables, TRUE);
-		PoolItem *item = NULL;
+	for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
+		MIL << "Setting " << *it << " for installation" << endl;
+		PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
+	}
 
-		gboolean found = FALSE;
-
-		for (vector<sat::Solvable>::iterator it = solvables.begin (); it != solvables.end (); it ++) {
-		       if (it->repository ().alias () == "PK_TMP_DIR") {
-			       item = new PoolItem(*it);
-			       found = TRUE;
-			       break;
-		       }
-		}
-
-		if (!found) {
-			error = true;
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
-		} else if (!error) {
-			ResStatus status = item->status ().setToBeInstalled (ResStatus::USER);
-		}
-		if (!error && !zypp_perform_execution (backend, INSTALL, FALSE)) {
-			error = true;
-			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
-		}
-
-		item->statusReset ();
-		delete (item);
+	if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 	}
 
 	// remove tmp-dir and the tmp-repo
 	try {
-		RepoManager manager;
 		manager.removeRepository (tmpRepo);
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
@@ -1070,6 +1057,8 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 static gboolean
 backend_install_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gchar **package_ids;
 
 	// refresh the repos before installing packages
@@ -1230,6 +1219,8 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
 static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gboolean autoremove;
 	gchar **package_ids;
 	vector<PoolItem> *items = new vector<PoolItem> ();
@@ -1783,6 +1774,8 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filter)
 static gboolean
 backend_update_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gboolean retval;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
