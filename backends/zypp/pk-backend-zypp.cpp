@@ -29,6 +29,7 @@
 #include <glib/gi18n.h>
 #include <sys/vfs.h>
 
+#include <zypp/base/Logger.h>
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
 #include <zypp/ResPoolProxy.h>
@@ -145,6 +146,7 @@ pk_backend_destroy (PkBackend *backend)
 static gboolean
 backend_get_requires_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
@@ -307,6 +309,7 @@ zypp_is_no_solvable (const sat::Solvable &solv)
 static gboolean
 backend_get_depends_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
@@ -481,6 +484,7 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -587,6 +591,7 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_distro_upgrades_thread(PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -642,6 +647,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gboolean force = pk_backend_get_bool(backend, "force");
 	zypp_refresh_cache (backend, force);
 	pk_backend_finished (backend);
@@ -654,6 +660,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
+	MIL << endl;
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
@@ -686,6 +693,7 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
+	MIL << endl;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
 
@@ -765,6 +773,7 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 static gboolean
 backend_install_files_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **full_paths;
 	ZYpp::Ptr zypp;
 
@@ -903,6 +912,7 @@ pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -1001,6 +1011,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_update_system_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1313,6 +1324,7 @@ pk_backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gbool
 static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
@@ -1396,6 +1408,7 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **values;
 	const gchar *search;
 	guint mode;
@@ -1490,6 +1503,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 static gboolean
 backend_search_group_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **values;
 	const gchar *group;
 	ZYpp::Ptr zypp;
@@ -1560,6 +1574,7 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1606,6 +1621,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 void
 pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1647,6 +1663,7 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -1731,6 +1748,7 @@ pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1835,6 +1853,7 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_repo_set_data_thread (PkBackend *backend)
 {
+	MIL << endl;
 	const gchar *repo_id;
 	const gchar *parameter;
 	const gchar *value;
@@ -1977,6 +1996,7 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
 static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -2060,6 +2080,7 @@ pk_backend_get_mime_types (PkBackend *backend)
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	gulong size = 0;
 
