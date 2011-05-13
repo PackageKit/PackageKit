@@ -4,8 +4,8 @@ PK_BACKEND_REPO_FILE = $(confdir)/repos.list
 
 PK_BACKEND_DEFAULT_PATH = "/bin:/usr/bin:/sbin:/usr/sbin"
 PK_BACKEND_DEFAULT_ROOT = "/"
-PK_BACKEND_DEFAULT_DBPATH = $(localstatedir)/lib/pacman
-PK_BACKEND_DEFAULT_CACHEDIR = $(localstatedir)/cache/pacman/pkg
+PK_BACKEND_DEFAULT_DBPATH = $(localstatedir)/lib/pacman/
+PK_BACKEND_DEFAULT_CACHEDIR = $(localstatedir)/cache/pacman/pkg/
 PK_BACKEND_DEFAULT_LOGFILE = $(localstatedir)/log/pacman.log
 
 ALPM_CACHE_PATH = $(localstatedir)/lib/pacman/sync
