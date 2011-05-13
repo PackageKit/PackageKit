@@ -29,6 +29,7 @@
 #include <glib/gi18n.h>
 #include <sys/vfs.h>
 
+#include <zypp/base/Logger.h>
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
 #include <zypp/ResPoolProxy.h>
@@ -82,6 +83,22 @@ using namespace zypp;
 static map<PkBackend *, EventDirector *> _eventDirectors;
 
 map<PkBackend *, vector<string> *> _signatures;
+
+// helper function to restore the pool status
+// after doing operations on it
+class PoolStatusSaver : private base::NonCopyable
+{
+public:
+    PoolStatusSaver()
+    {
+	    ResPool::instance().proxy().saveState();
+    }
+
+    ~PoolStatusSaver()
+    {
+	    ResPool::instance().proxy().restoreState();
+    }
+};
 
 /**
  * pk_backend_get_description:
@@ -145,6 +162,7 @@ pk_backend_destroy (PkBackend *backend)
 static gboolean
 backend_get_requires_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
@@ -166,6 +184,7 @@ backend_get_requires_thread (PkBackend *backend)
 	//TODO repair percentages
 	//pk_backend_set_percentage (backend, 0);
 
+	PoolStatusSaver saver;
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (backend, package_ids[i]);
 		PoolItem package;
@@ -229,12 +248,8 @@ backend_get_requires_thread (PkBackend *backend)
 
 			if (!error && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
 				error = !zypp_backend_pool_item_notify (backend, *it);
-
-			it->statusReset ();
 		}
 
-		// undo the status-change of the package and disable forceResolve
-		package.statusReset ();
 		solver.setForceResolve (false);
 	}
 
@@ -307,6 +322,7 @@ zypp_is_no_solvable (const sat::Solvable &solv)
 static gboolean
 backend_get_depends_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 
@@ -481,6 +497,7 @@ pk_backend_get_depends (PkBackend *backend, PkBitfield filters, gchar **package_
 static gboolean
 backend_get_details_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -587,6 +604,7 @@ pk_backend_get_details (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_distro_upgrades_thread(PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -642,6 +660,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gboolean force = pk_backend_get_bool(backend, "force");
 	zypp_refresh_cache (backend, force);
 	pk_backend_finished (backend);
@@ -654,6 +673,7 @@ backend_refresh_cache_thread (PkBackend *backend)
 void
 pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 {
+	MIL << endl;
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
@@ -686,6 +706,7 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
+	MIL << endl;
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
 
@@ -765,7 +786,9 @@ pk_backend_get_updates (PkBackend *backend, PkBitfield filters)
 static gboolean
 backend_install_files_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **full_paths;
+	RepoManager manager;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -816,63 +839,36 @@ backend_install_files_thread (PkBackend *backend)
 		tmpRepo.setAutorefresh (true);
 		tmpRepo.setAlias ("PK_TMP_DIR");
 		tmpRepo.setName ("PK_TMP_DIR");
-		zypp_build_pool (backend, true);
 
 		// add Repo to pool
-
-		RepoManager manager;
 		manager.addRepository (tmpRepo);
 
-		if (!zypp_refresh_meta_and_cache (manager, tmpRepo))
-			return FALSE;
+		if (!zypp_refresh_meta_and_cache (manager, tmpRepo)) {
+			return zypp_backend_finished_error (
+			  backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't refresh repositories");
+		}
+		zypp_build_pool (backend, true);
 
-	} catch (const url::UrlException &ex) {
-		return zypp_backend_finished_error (
-			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	} catch (const Exception &ex) {
 		return zypp_backend_finished_error (
 			backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
 	}
 
 	bool error = false;
-	for (guint i = 0; full_paths[i]; i++) {
 
-		Pathname rpmPath (full_paths[i]);
-		target::rpm::RpmHeader::constPtr rpmHeader = target::rpm::RpmHeader::readPackage (rpmPath, target::rpm::RpmHeader::NOSIGNATURE);
+	Repository repo = ResPool::instance().reposFind("PK_TMP_DIR");
 
-		// look for the packages and set them to toBeInstalled
-		vector<sat::Solvable> solvables;
-		zypp_get_packages_by_name (backend, rpmHeader->tag_name ().c_str (), ResKind::package, solvables, TRUE);
-		PoolItem *item = NULL;
+	for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
+		MIL << "Setting " << *it << " for installation" << endl;
+		PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
+	}
 
-		gboolean found = FALSE;
-
-		for (vector<sat::Solvable>::iterator it = solvables.begin (); it != solvables.end (); it ++) {
-		       if (it->repository ().alias () == "PK_TMP_DIR") {
-			       item = new PoolItem(*it);
-			       found = TRUE;
-			       break;
-		       }
-		}
-
-		if (!found) {
-			error = true;
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
-		} else if (!error) {
-			ResStatus status = item->status ().setToBeInstalled (ResStatus::USER);
-		}
-		if (!error && !zypp_perform_execution (backend, INSTALL, FALSE)) {
-			error = true;
-			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
-		}
-
-		item->statusReset ();
-		delete (item);
+	if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 	}
 
 	// remove tmp-dir and the tmp-repo
 	try {
-		RepoManager manager;
 		manager.removeRepository (tmpRepo);
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
@@ -903,6 +899,7 @@ pk_backend_simulate_install_files (PkBackend *backend, gchar **full_paths)
 static gboolean
 backend_get_update_detail_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -1001,6 +998,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_update_system_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1059,6 +1057,8 @@ pk_backend_update_system (PkBackend *backend, gboolean only_trusted)
 static gboolean
 backend_install_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gchar **package_ids;
 
 	// refresh the repos before installing packages
@@ -1219,6 +1219,8 @@ pk_backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gcha
 static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gboolean autoremove;
 	gchar **package_ids;
 	vector<PoolItem> *items = new vector<PoolItem> ();
@@ -1313,6 +1315,7 @@ pk_backend_simulate_remove_packages (PkBackend *backend, gchar **packages, gbool
 static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids = pk_backend_get_strv (backend, "package_ids");
 	PkBitfield _filters = (PkBitfield) pk_backend_get_uint (backend, "filters");
 	ZYpp::Ptr zypp;
@@ -1396,6 +1399,7 @@ pk_backend_resolve (PkBackend *backend, PkBitfield filters, gchar **package_ids)
 static gboolean
 backend_find_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **values;
 	const gchar *search;
 	guint mode;
@@ -1490,6 +1494,7 @@ pk_backend_search_details (PkBackend *backend, PkBitfield filters, gchar **value
 static gboolean
 backend_search_group_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **values;
 	const gchar *group;
 	ZYpp::Ptr zypp;
@@ -1560,6 +1565,7 @@ pk_backend_search_files (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1606,6 +1612,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBitfield filters)
 void
 pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1647,6 +1654,7 @@ pk_backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static gboolean
 backend_get_files_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
 
@@ -1731,6 +1739,7 @@ pk_backend_get_files(PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -1765,6 +1774,8 @@ pk_backend_get_packages (PkBackend *backend, PkBitfield filter)
 static gboolean
 backend_update_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
+	PoolStatusSaver saver;
 	gboolean retval;
 	gchar **package_ids;
 	ZYpp::Ptr zypp;
@@ -1835,6 +1846,7 @@ pk_backend_simulate_update_packages (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_repo_set_data_thread (PkBackend *backend)
 {
+	MIL << endl;
 	const gchar *repo_id;
 	const gchar *parameter;
 	const gchar *value;
@@ -1977,6 +1989,7 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
 static gboolean
 backend_what_provides_thread (PkBackend *backend)
 {
+	MIL << endl;
 	ZYpp::Ptr zypp;
 
 	zypp = get_zypp (backend);
@@ -2060,6 +2073,7 @@ pk_backend_get_mime_types (PkBackend *backend)
 static gboolean
 backend_download_packages_thread (PkBackend *backend)
 {
+	MIL << endl;
 	gchar **package_ids;
 	gulong size = 0;
 
