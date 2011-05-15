@@ -83,7 +83,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 	if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
 	{
 		// TODO add a PK message
-		cout << /*_*/("Ign ") << Itm.Description << endl;
+// 		cout << /*_*/("Ign ") << Itm.Description << endl;
 	} else {
 		// an error was found (maybe 404, 403...)
 		// the item that got the error and the error text
@@ -144,7 +144,13 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 		if (I->CurrentItem == 0)
 		{
 			continue;
-		}
+		} else if (packages.size() == 0) {
+            pk_backend_repo_detail(m_backend,
+                                   "",
+                                   I->CurrentItem->Description.c_str(),
+                                   false);
+            continue;
+        }
 		emit_package(I->CurrentItem->ShortDesc, false);
 		localCurrentPackages.erase(I->CurrentItem->ShortDesc);
 

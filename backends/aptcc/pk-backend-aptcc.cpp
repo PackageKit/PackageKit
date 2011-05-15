@@ -1079,52 +1079,30 @@ backend_search_package_thread (PkBackend *backend)
 				continue;
 			}
 
-			pkgCache::VerIterator ver = m_apt->find_ver(pkg);
-			if (m_matcher->matches(pkg.Name())) {
-				// Don't insert virtual packages instead add what it provides
-				if (ver.end() == false) {
-					output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
-				} else {
-					// iterate over the provides list
-					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
-						ver = m_apt->find_ver(Prv.OwnerPkg());
+            pkgCache::VerIterator ver = m_apt->find_ver(pkg);
+            if (ver.end() == false) {
+                if (m_matcher->matches(pkg.Name()) ||
+                    m_matcher->matches(get_long_description(ver, m_apt->packageRecords))) {
+                    // The package matched
+                    output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
+                }
+            } else if (m_matcher->matches(pkg.Name())) {
+                // The package is virtual and MATCHED the name
+                // Don't insert virtual packages instead add what it provides
 
-						// check to see if the provided package isn't virtual too
-						if (ver.end() == false)
-						{
-							// we add the package now because we will need to
-							// remove duplicates later anyway
-							output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
-						}
-					}
-				}
-			} else {
-				// Don't insert virtual packages instead add what it provides
-				if (ver.end() == false) {
-					if (m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
-					 || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
-					{
-						output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(pkg, ver));
-					}
-				} else {
-					// iterate over the provides list
-					for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
-						ver = m_apt->find_ver(Prv.OwnerPkg());
+                // iterate over the provides list
+                for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; Prv++) {
+                        ver = m_apt->find_ver(Prv.OwnerPkg());
 
-						// check to see if the provided package isn't virtual too
-						if (ver.end() == false)
-						{
-							// we add the package now because we will need to
-							// remove duplicates later anyway
-							if (m_matcher->matches(get_short_description(ver, m_apt->packageRecords))
-							 || m_matcher->matches(get_long_description(ver, m_apt->packageRecords)))
-							{
-								output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
-							}
-						}
-					}
-				}
-			}
+                    // check to see if the provided package isn't virtual too
+                    if (ver.end() == false)
+                    {
+                        // we add the package now because we will need to
+                        // remove duplicates later anyway
+                        output.push_back(pair<pkgCache::PkgIterator, pkgCache::VerIterator>(Prv.OwnerPkg(), ver));
+                    }
+                }
+            }
 		}
 	} else {
 		for (pkgCache::PkgIterator pkg = m_apt->packageCache->PkgBegin(); !pkg.end(); ++pkg) {
