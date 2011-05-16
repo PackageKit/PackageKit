@@ -47,7 +47,13 @@ void AcqPackageKitStatus::Start()
 /* */
 void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
-   Update = true;
+    if (packages.size() == 0) {
+        pk_backend_repo_detail(m_backend,
+                               "",
+                               Itm.Description.c_str(),
+                               false);
+    }
+    Update = true;
 };
 									/*}}}*/
 // AcqPackageKitStatus::Fetch - An item has started to download		/*{{{*/
@@ -82,8 +88,12 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 
 	if (Itm.Owner->Status == pkgAcquire::Item::StatDone)
 	{
-		// TODO add a PK message
-// 		cout << /*_*/("Ign ") << Itm.Description << endl;
+        if (packages.size() == 0) {
+            pk_backend_repo_detail(m_backend,
+                                   "",
+                                   Itm.Description.c_str(),
+                                   false);
+        }
 	} else {
 		// an error was found (maybe 404, 403...)
 		// the item that got the error and the error text
@@ -140,15 +150,10 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 	for (pkgAcquire::Worker *I = Owner->WorkersBegin(); I != 0;
 		I = Owner->WorkerStep(I))
 	{
-		// There is no item running
-		if (I->CurrentItem == 0)
-		{
-			continue;
-		} else if (packages.size() == 0) {
-            pk_backend_repo_detail(m_backend,
-                                   "",
-                                   I->CurrentItem->Description.c_str(),
-                                   false);
+        // Check if there is no item running or if we don't have
+        // any packages set we are probably refreshing the cache
+        if (I->CurrentItem == 0 || packages.size() == 0)
+        {
             continue;
         }
 		emit_package(I->CurrentItem->ShortDesc, false);
