@@ -120,6 +120,9 @@ sub dispatch_command {
     update_system($urpm, $args);
     urpm::media::configure($urpm);
   }
+  elsif($command eq "what-provides") {
+    what_provides($urpm, $args);
+  }
   elsif($command eq "exit") {
     exit 0;
   }
@@ -721,6 +724,41 @@ sub update_system {
   _finished();
 }
 
+sub what_provides {
+
+  my ($urpm, $args) = @_;
+  
+  my @filterstab = split(/;/, @{$args}[0]);
+  my @packageidstab = split(/&/, @{$args}[2]);
+  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
+  
+  my @pkgnames;
+  my @prov;
+  foreach (@packageidstab) {
+    my @pkgid = split(/;/, $_);
+    push(@pkgnames, $pkgid[0]);
+    my @res = $urpm->packages_providing($pkgid[0]);
+    foreach(@res) {
+	push (@prov, $_);
+    }
+  }
+
+  @prov 
+      or (_finished() and return);
+  
+  foreach(@prov) {
+    my $pkg = $_;
+    if($pkg->version."-".$pkg->release eq find_installed_version($pkg)) {
+      grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
+      pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
+    }
+    else {
+      grep(/^${\FILTER_INSTALLED}$/, @filterstab) and next;
+      pk_print_package(INFO_AVAILABLE, get_package_id($pkg), $pkg->summary);
+    }
+  }
+  _finished();
+}
 sub _finished {
   pk_print_status(PK_STATUS_ENUM_FINISHED);
 }

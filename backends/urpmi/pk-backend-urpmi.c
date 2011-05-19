@@ -112,7 +112,7 @@ backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_FILES,
 		PK_ROLE_ENUM_GET_REQUIRES,
 		PK_ROLE_ENUM_GET_PACKAGES,
-		// PK_ROLE_ENUM_WHAT_PROVIDES,
+		PK_ROLE_ENUM_WHAT_PROVIDES,
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 		PK_ROLE_ENUM_INSTALL_PACKAGES,
@@ -427,6 +427,24 @@ backend_get_distro_upgrades (PkBackend *backend)
 	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "get-distro-upgrades", NULL);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum provides, gchar **values)
+{
+	gchar *search_tmp;
+	gchar *filters_text;
+	const gchar *provides_text;
+
+	provides_text = pk_provides_enum_to_string (provides);
+	filters_text = pk_filter_bitfield_to_string (filters);
+	search_tmp = g_strjoinv ("&", values);
+	pk_backend_spawn_helper (spawn, "urpmi-dispatched-backend.pl", "what-provides", filters_text, provides_text, search_tmp, NULL);
+	g_free (filters_text);
+	g_free (search_tmp);
+}
+
 /* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -464,7 +482,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_names,			/* search_names */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL,					/* what_provides */
+	backend_what_provides,			/* what_provides */
 	NULL,					/* simulate_install_files */
 	NULL,					/* simulate_install_packages */
 	NULL,					/* simulate_remove_packages */
