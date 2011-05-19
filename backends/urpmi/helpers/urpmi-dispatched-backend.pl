@@ -730,7 +730,6 @@ sub what_provides {
   
   my @filterstab = split(/;/, @{$args}[0]);
   my @packageidstab = split(/&/, @{$args}[2]);
-  my $recursive_option = @{$args}[2] eq "yes" ? 1 : 0;
   
   my @pkgnames;
   my @prov;
