@@ -121,8 +121,8 @@ use constant MDV_GROUPS => {
 sub get_mdv_groups {
   my ($pk_group) = @_;
   my @groups = ();
-  foreach(keys (MDV_GROUPS)) {
-    if(MDV_GROUPS)->{$_} eq $pk_group) {
+  foreach(keys %{(MDV_GROUPS)}) {
+    if((MDV_GROUPS)->{$_} eq $pk_group) {
       push @groups, $_;
     }
   }
