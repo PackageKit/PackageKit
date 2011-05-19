@@ -99,6 +99,16 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	/* this feels bad... */
+	pk_backend_spawn_kill (spawn);
+}
+
+/**
  * pk_backend_search_name:
  */
 static void
@@ -369,7 +379,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* get_roles */
 	NULL,					/* get_mime_types */
-	NULL,					/* cancel */
+	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
 	backend_get_depends,			/* get_depends */
