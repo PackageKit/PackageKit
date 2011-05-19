@@ -99,6 +99,18 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_mime_types:
+ */
+static gchar *
+backend_get_mime_types (PkBackend *backend)
+{
+	return g_strdup (
+		"application/x-rpm;"
+		"application/x-urpmi"
+		);
+}
+
+/**
  * pk_backend_cancel:
  */
 static void
@@ -378,7 +390,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* get_roles */
-	NULL,					/* get_mime_types */
+	backend_get_mime_types,			/* get_mime_types */
 	backend_cancel,				/* cancel */
 	NULL,					/* download_packages */
 	NULL,					/* get_categories */
