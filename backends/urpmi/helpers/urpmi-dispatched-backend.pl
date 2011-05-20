@@ -312,7 +312,7 @@ sub get_requires {
   
   foreach(@requires) {
     if(filter($_, \@filterstab, { FILTER_GUI => 1, FILTER_DEVELOPMENT => 1 })) {
-      if(package_version_is_installed($_)) {
+      if(package_fullname_is_installed($_)) {
         grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) or pk_print_package(INFO_INSTALLED, get_package_id($_), $_->summary);
       }
       else {
@@ -567,7 +567,7 @@ sub resolve {
     # We exit the script if found package does not match with specified filters
     filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1}) or next;
 
-    if($pkg->evr eq find_installed_version($pkg)) {
+    if(package_fullname_is_installed($pkg)) {
       grep(/^${\FILTER_NOT_INSTALLED}$/, @filters) and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
@@ -630,8 +630,8 @@ sub search_file {
   foreach(keys %requested) {
     my $p = @{$urpm->{depslist}}[$_];
     if(filter($p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1})) {
-      my $version = find_installed_version($p);
-      if($version eq $p->evr) {
+      my $version = find_installed_fullname($p);
+      if(package_fullname_is_installed($p)) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
       else {
@@ -764,7 +764,7 @@ sub what_provides {
   
   foreach(@prov) {
     my $pkg = $_;
-    if($pkg->evr eq find_installed_version($pkg)) {
+    if(package_fullname_is_installed($pkg)) {
       grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
@@ -854,7 +854,7 @@ sub _print_package_update_details {
   
   my @to_upgrade_pkids;
   foreach(@to_install) {
-    my $pkid = get_installed_version_pkid($_);
+    my $pkid = get_installed_fullname_pkid($_);
     push @to_upgrade_pkids, $pkid if $pkid;
   }
   

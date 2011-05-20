@@ -22,16 +22,16 @@ our @EXPORT = qw(
   get_update_medias 
   rpm_description 
   urpm_name 
-  find_installed_version 
+  find_installed_fullname 
   get_package_id 
   ensure_utf8 
   pkg2medium 
   fullname_to_package_id
   get_package_by_package_id
-  package_version_is_installed
+  package_fullname_is_installed
   get_package_upgrade
-  get_installed_version
-  get_installed_version_pkid
+  get_installed_fullname
+  get_installed_fullname_pkid
 );
 
 sub get_update_medias {
@@ -73,10 +73,10 @@ sub ensure_utf8 {
     $_[0];
 }
 
-sub find_installed_version {
+sub find_installed_fullname {
   my ($p) = @_;
   my @version;
-  URPM::DB::open()->traverse_tag('name', [ $p->name ], sub { push @version, $_[0]->evr });
+  URPM::DB::open()->traverse_tag('nvra', [ $p->fullname ], sub { push @version, scalar($_[0]->fullname) });
   @version ? join(',', sort @version) : "";
 }
 
@@ -117,9 +117,9 @@ sub get_package_by_package_id {
   return;
 }
 
-sub package_version_is_installed {
+sub package_fullname_is_installed {
   my ($pkg) = @_;
-  return $pkg->evr eq find_installed_version($pkg);
+  return $pkg->fullname eq find_installed_fullname($pkg);
 }
 
 sub get_package_upgrade {
@@ -135,19 +135,19 @@ sub get_package_upgrade {
   }
 }
 
-sub get_installed_version {
+sub get_installed_fullname {
   my ($urpm, $pkg) = @_;
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
   foreach $_ (@depslist) {
-    if($_->name =~ /^$pkgname$/ && package_version_is_installed($_)) {
+    if($_->name =~ /^$pkgname$/ && package_fullname_is_installed($_)) {
       return $_;
     }
   }
   return;
 }
 
-sub get_installed_version_pkid {
+sub get_installed_fullname_pkid {
   my ($pkg) = @_;
   my $pkgname = $pkg->name;
   my $db = open_rpm_db();
