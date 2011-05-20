@@ -448,7 +448,7 @@ backend_what_provides (PkBackend *backend, PkBitfield filters, PkProvidesEnum pr
 /* FIXME: port this away from PK_BACKEND_OPTIONS */
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
-	"Aurelien Lefebvre <alkh@mandriva.org>",	/* author */
+	"Aurelien Lefebvre <alkh@mandriva.org>, Per Oyvind Karlsen <peroyvind@mandriva.org>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
