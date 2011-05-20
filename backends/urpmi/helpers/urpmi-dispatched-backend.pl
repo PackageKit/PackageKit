@@ -729,12 +729,27 @@ sub what_provides {
   my ($urpm, $args) = @_;
   
   my @filterstab = split(/;/, @{$args}[0]);
+  my $providestype = @{$args}[1];
   my @packageidstab = split(/&/, @{$args}[2]);
   
   my @pkgnames;
   my @prov;
   foreach (@packageidstab) {
     my @pkgid = split(/;/, $_);
+    # skip if old standard
+    if (not grep(/^gstreamer0.10\(/, $pkgid[0])) {
+	# new standard
+	my $namespace = undef;
+	if ($providestype eq "codec") {
+	    $namespace = "gstreamer0.10";
+	} elsif ($providestype ne "any") {
+	    $namespace = $providestype;
+	}
+	if ($namespace) {
+	    $pkgid[0] = sprintf("%s(%s)", $namespace, $pkgid[0]);
+	}
+    }
+
     push(@pkgnames, $pkgid[0]);
     my @res = $urpm->packages_providing($pkgid[0]);
     foreach(@res) {
