@@ -731,9 +731,11 @@ sub what_provides {
   my @filterstab = split(/;/, @{$args}[0]);
   my $providestype = @{$args}[1];
   my @packageidstab = split(/&/, @{$args}[2]);
-  
   my @pkgnames;
   my @prov;
+
+  pk_print_status(PK_STATUS_ENUM_REQUEST);
+
   foreach (@packageidstab) {
     my @pkgid = split(/;/, $_);
     # skip if old standard
