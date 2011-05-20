@@ -76,7 +76,7 @@ sub ensure_utf8 {
 sub find_installed_version {
   my ($p) = @_;
   my @version;
-  URPM::DB::open()->traverse_tag('name', [ $p->name ], sub { push @version, $_[0]->version . '-' . $_[0]->release });
+  URPM::DB::open()->traverse_tag('name', [ $p->name ], sub { push @version, $_[0]->evr });
   @version ? join(',', sort @version) : "";
 }
 
@@ -119,7 +119,7 @@ sub get_package_by_package_id {
 
 sub package_version_is_installed {
   my ($pkg) = @_;
-  return $pkg->version."-".$pkg->release eq find_installed_version($pkg);
+  return $pkg->evr eq find_installed_version($pkg);
 }
 
 sub get_package_upgrade {

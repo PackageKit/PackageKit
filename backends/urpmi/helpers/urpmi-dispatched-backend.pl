@@ -567,7 +567,7 @@ sub resolve {
     # We exit the script if found package does not match with specified filters
     filter($pkg, \@filters, {FILTER_DEVELOPMENT => 1, FILTER_GUI => 1}) or next;
 
-    if($pkg->version."-".$pkg->release eq find_installed_version($pkg)) {
+    if($pkg->evr eq find_installed_version($pkg)) {
       grep(/^${\FILTER_NOT_INSTALLED}$/, @filters) and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
@@ -631,7 +631,7 @@ sub search_file {
     my $p = @{$urpm->{depslist}}[$_];
     if(filter($p, \@filters, { FILTER_INSTALLED => 1, FILTER_DEVELOPMENT=> 1, FILTER_GUI => 1})) {
       my $version = find_installed_version($p);
-      if($version eq $p->version."-".$p->release) {
+      if($version eq $p->evr) {
         pk_print_package(INFO_INSTALLED, get_package_id($p), ensure_utf8($p->summary));
       }
       else {
@@ -764,7 +764,7 @@ sub what_provides {
   
   foreach(@prov) {
     my $pkg = $_;
-    if($pkg->version."-".$pkg->release eq find_installed_version($pkg)) {
+    if($pkg->evr eq find_installed_version($pkg)) {
       grep(/^${\FILTER_NOT_INSTALLED}$/, @filterstab) and next;
       pk_print_package(INFO_INSTALLED, get_package_id($pkg), $pkg->summary);
     }
