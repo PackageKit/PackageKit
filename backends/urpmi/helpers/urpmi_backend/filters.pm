@@ -47,6 +47,11 @@ sub filter {
         return 0 if not filter_supported($urpm, $pkg, $filter);
       }
     }
+    elsif($filter eq FILTER_FREE || $filter eq FILTER_NOT_FREE) {
+      if($e_filters{FILTER_FREE}) {
+        return 0 if not filter_free($urpm, $pkg, $filter);
+      }
+    }
   }
   return 1;
 }
@@ -111,4 +116,24 @@ sub filter_supported {
   }
   return 0;
 }
+
+sub filter_free {
+  my ($urpm, $pkg, $filter) = @_;
+  my $media = pkg2medium($pkg, $urpm);
+  return 0 unless defined($media);
+
+  my $medianame = $media->{name};
+  # FIXME: matching against media name is certainly not optimal,
+  #        better heuristics needed...
+  my $free = !($medianame =~ /non-free/i);
+
+  if($filter eq FILTER_FREE && $free) {
+    return 1;
+  }
+  if($filter eq FILTER_NOT_FREE && !$free) {
+    return 1;
+  }
+  return 0;
+}
+
 1;
