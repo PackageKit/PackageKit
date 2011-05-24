@@ -95,6 +95,7 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_GUI,
 		PK_FILTER_ENUM_INSTALLED,
 		PK_FILTER_ENUM_DEVELOPMENT,
+		PK_FILTER_ENUM_SUPPORTED,
 		-1);
 }
 
