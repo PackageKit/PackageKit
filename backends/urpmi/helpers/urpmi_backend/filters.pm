@@ -55,7 +55,7 @@ sub filter_installed {
   my ($urpm, $pkg, $filter) = @_;
   my $installed;
 
-  $installed = 1 if(is_package_installed($urpm, $pkg));
+  $installed = 1 if(is_package_installed($pkg));
   if($filter eq FILTER_INSTALLED && $installed) {
     return 1;
   }

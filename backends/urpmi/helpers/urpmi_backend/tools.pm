@@ -81,9 +81,8 @@ sub find_installed_fullname {
 }
 
 sub is_package_installed {
-    my ($urpm, $pkg) = @_;
-    my $db = urpm::db_open_or_die_($urpm);
-    return URPM::is_package_installed($db, $pkg);
+    my ($pkg) = @_;
+    return URPM::DB::open()->is_package_installed($pkg);
 }
 
 sub get_package_id {
@@ -141,7 +140,7 @@ sub get_installed_fullname {
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
   foreach $_ (@depslist) {
-    if($_->name =~ /^$pkgname$/ && is_package_installed($urpm, $_)) {
+    if($_->name =~ /^$pkgname$/ && is_package_installed($_)) {
       return $_;
     }
   }
