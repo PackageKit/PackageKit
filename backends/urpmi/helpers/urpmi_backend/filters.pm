@@ -94,11 +94,10 @@ sub filter_gui {
 
 sub filter_supported {
   my ($urpm, $pkg, $filter) = @_;
-  my $pkgname = $pkg->name;
-  my $media = URPM::pkg2media($urpm->{media}, $pkg);
+  my $medianame = URPM::pkg2media($urpm->{media}, $pkg)->{name};
   # FIXME: matching against media name is certainly not optimal,
   #        better heuristics needed...
-  my $supported = ($media->{name} =~ /^main/i);
+  my $supported = ($medianame =~ /^main/i);
 
   if($filter eq FILTER_SUPPORTED && $supported) {
     return 1;
