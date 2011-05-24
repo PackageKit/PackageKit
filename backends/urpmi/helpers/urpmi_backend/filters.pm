@@ -49,7 +49,7 @@ sub filter {
 sub filter_installed {
   my ($pkg, $filter) = @_;
   my $installed;
-  $installed = 1 if(find_installed_version($pkg));
+  $installed = 1 if(find_installed_fullname($pkg));
   if($filter eq FILTER_INSTALLED && $installed) {
     return 1;
   }
