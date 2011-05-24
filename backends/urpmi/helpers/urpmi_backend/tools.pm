@@ -15,6 +15,7 @@ use strict;
 
 use URPM;
 use urpmi_backend::open_db;
+use urpm::msg;
 
 use Exporter;
 our @ISA = qw(Exporter);
