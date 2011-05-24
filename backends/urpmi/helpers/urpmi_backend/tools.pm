@@ -75,9 +75,9 @@ sub ensure_utf8 {
 
 sub find_installed_fullname {
   my ($p) = @_;
-  my @version;
-  URPM::DB::open()->traverse_tag('nvra', [ $p->fullname ], sub { push @version, scalar($_[0]->fullname) });
-  @version ? join(',', sort @version) : "";
+  my @fullname;
+  URPM::DB::open()->traverse_tag('name', [ $p->name ], sub { push @fullname, scalar($_[0]->fullname) });
+  @fullname ? join(',', sort @fullname) : "";
 }
 
 sub is_package_installed {
