@@ -23,12 +23,12 @@ our @EXPORT = qw(
   rpm_description 
   urpm_name 
   find_installed_fullname 
+  is_package_installed
   get_package_id 
   ensure_utf8 
   pkg2medium 
   fullname_to_package_id
   get_package_by_package_id
-  package_fullname_is_installed
   get_package_upgrade
   get_installed_fullname
   get_installed_fullname_pkid
@@ -80,6 +80,12 @@ sub find_installed_fullname {
   @version ? join(',', sort @version) : "";
 }
 
+sub is_package_installed {
+    my ($urpm, $pkg) = @_;
+    my $db = urpm::db_open_or_die_($urpm);
+    return URPM::is_package_installed($db, $pkg);
+}
+
 sub get_package_id {
   my ($pkg) = @_;
   return $pkg->name.";".$pkg->version."-".$pkg->release.";".$pkg->arch.";mandriva";
@@ -117,11 +123,6 @@ sub get_package_by_package_id {
   return;
 }
 
-sub package_fullname_is_installed {
-  my ($pkg) = @_;
-  return $pkg->fullname eq find_installed_fullname($pkg);
-}
-
 sub get_package_upgrade {
   my ($urpm, $pkg) = @_;
   my $db = open_rpm_db();
@@ -140,7 +141,7 @@ sub get_installed_fullname {
   my @depslist = @{$urpm->{depslist}};
   my $pkgname = $pkg->name;
   foreach $_ (@depslist) {
-    if($_->name =~ /^$pkgname$/ && package_fullname_is_installed($_)) {
+    if($_->name =~ /^$pkgname$/ && is_package_installed($urpm, $_)) {
       return $_;
     }
   }
