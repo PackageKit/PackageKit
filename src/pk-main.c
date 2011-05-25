@@ -33,7 +33,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <packagekit-glib2/pk-debug.h>
 
-#if GLIB_CHECK_VERSION(2,28,7)
+#if GLIB_CHECK_VERSION(2,29,4)
  #include <glib-unix.h>
 #endif
 
@@ -159,7 +159,7 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 	g_main_loop_quit (mainloop);
 }
 
-#if GLIB_CHECK_VERSION(2,28,7)
+#if GLIB_CHECK_VERSION(2,29,4)
 
 /**
  * pk_main_sigint_cb:
@@ -271,7 +271,7 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-#if GLIB_CHECK_VERSION(2,28,7)
+#if GLIB_CHECK_VERSION(2,29,4)
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_watch_full (SIGINT,
 				      G_PRIORITY_DEFAULT,
