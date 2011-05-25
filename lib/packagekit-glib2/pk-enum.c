@@ -332,6 +332,8 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
 	{PK_INFO_ENUM_PREPARING,		"preparing"},
 	{PK_INFO_ENUM_DECOMPRESSING,		"decompressing"},
+	{PK_INFO_ENUM_UNTRUSTED,			"untrusted"},
+	{PK_INFO_ENUM_TRUSTED,				"trusted"},
 	{0, NULL}
 };
 

@@ -74,7 +74,9 @@ public:
         InfoReinstalling,
         InfoDowngrading,
         InfoPreparing,
-        InfoDecompressing
+        InfoDecompressing,
+        InfoUntrusted,
+        InfoTrusted
     } Info;
 
     /**

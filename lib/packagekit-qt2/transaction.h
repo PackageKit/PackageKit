@@ -857,9 +857,11 @@ public:
      * \brief Simulates an installation of \p files.
      *
      * You should call this method before installing \p files
-     * \note: This method might emit \sa package()
-     *   with INSTALLING, REMOVING, UPDATING,
-     *        REINSTALLING or OBSOLETING status.
+     * \note: This method typically emits package() and errorCode()
+     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
+     * REINSTALLING, OBSOLETING or UNTRUSTED status.
+     * The later is used to present the user untrusted packages
+     * that are about to be installed.
      */
     void simulateInstallFiles(const QStringList &files);
 
@@ -873,9 +875,11 @@ public:
      * \brief Simulates an installation of \p packages.
      *
      * You should call this method before installing \p packages
-     * \note: This method might emit \sa package()
-     *   with INSTALLING, REMOVING, UPDATING,
-     *        REINSTALLING or OBSOLETING status.
+     * \note: This method typically emits package() and errorCode()
+     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
+     * REINSTALLING, OBSOLETING or UNTRUSTED status.
+     * The later is used to present the user untrusted packages
+     * that are about to be installed.
      */
     void simulateInstallPackages(const QList<Package> &packages);
 
@@ -889,9 +893,11 @@ public:
      * \brief Simulates a removal of \p packages.
      *
      * You should call this method before removing \p packages
-     * \note: This method might emit \sa package()
-     *   with INSTALLING, REMOVING, UPDATING,
-     *        REINSTALLING or OBSOLETING status.
+     * \note: This method typically emits package() and errorCode()
+     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
+     * REINSTALLING, OBSOLETING or UNTRUSTED status.
+     * The later is used to present the user untrusted packages
+     * that are about to be installed.
      */
     void simulateRemovePackages(const QList<Package> &packages, bool autoRemove = false);
 
@@ -905,9 +911,11 @@ public:
      * \brief Simulates an update of \p packages.
      *
      * You should call this method before updating \p packages
-     * \note: This method might emit \sa package()
-     *   with INSTALLING, REMOVING, UPDATING,
-     *        REINSTALLING or OBSOLETING status.
+     * \note: This method typically emits package() and errorCode()
+     * with INSTALLING, REMOVING, UPDATING, DOWNGRADING,
+     * REINSTALLING, OBSOLETING or UNTRUSTED status.
+     * The later is used to present the user untrusted packages
+     * that are about to be installed.
      */
     void simulateUpdatePackages(const QList<Package> &packages);
 
