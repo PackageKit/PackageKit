@@ -817,10 +817,16 @@
             power.
           </doc:para>
           <doc:para>
+            When fetching each software source, ensure to emit RepoDetail for the
+            current source to give the user interface some extra details. Be sure to
+            have the "enabled" field set to true, otherwise you wouldn't be fetching
+            that source.
+          </doc:para>
+          <doc:para>
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>RepoDetail</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.refresh-cache</doc:permission>
