@@ -1318,7 +1318,7 @@
           <doc:para>
             This method simulates a package file instalation emitting packages required to be
             installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The later is used to present the user untrusted packages that are about to be installed.
+            The latter is used to present the user untrusted packages that are about to be installed.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1346,7 +1346,7 @@
           <doc:para>
             This method simulates a package instalation emitting packages required to be
             installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The later is used to present the user untrusted packages that are about to be installed.
+            The latter is used to present the user untrusted packages that are about to be installed.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1374,7 +1374,7 @@
           <doc:para>
             This method simulates a package removal emitting packages required to be
             installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The later is used to present the user untrusted packages that are about to be installed.
+            The latter is used to present the user untrusted packages that are about to be installed.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1418,7 +1418,7 @@
           <doc:para>
             This method simulates a package update emitting packages required to be
             installed, removed, updated, reinstalled, downgraded, obsoleted or untrusted.
-            The later is used to present the user untrusted packages that are about to be installed.
+            The latter is used to present the user untrusted packages that are about to be installed.
           </doc:para>
           <doc:para>
             This method typically emits
