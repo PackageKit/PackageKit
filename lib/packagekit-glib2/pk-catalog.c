@@ -549,7 +549,7 @@ out:
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: (transfer full): the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
+ * Return value: (transfer container): the #GPtrArray of #PkPackage's, or %NULL. Free with g_ptr_array_unref()
  *
  * Since: 0.5.3
  **/

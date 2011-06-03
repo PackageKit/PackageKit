@@ -130,7 +130,7 @@ pk_package_sack_get_ids (PkPackageSack *sack)
  *
  * Gets the package array from the sack
  *
- * Return value: (transfer full): a #GPtrArray, free with g_ptr_array_unref()
+ * Return value: (transfer container): a #GPtrArray, free with g_ptr_array_unref()
  *
  * Since: 0.6.1
  **/
