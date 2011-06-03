@@ -908,6 +908,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
             provides.append(self._get_provides_query(PROVIDES_FONT, value)[0])
             provides.append(self._get_provides_query(PROVIDES_MIMETYPE, value)[0])
             provides.append(self._get_provides_query(PROVIDES_POSTSCRIPT_DRIVER, value)[0])
+            provides.append(value)
             return provides
 
         # not supported
