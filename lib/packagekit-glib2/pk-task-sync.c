@@ -256,7 +256,7 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
 /**
  * pk_task_install_files_sync:
  * @task: a valid #PkTask instance
- * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

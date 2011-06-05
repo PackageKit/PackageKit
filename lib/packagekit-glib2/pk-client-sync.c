@@ -1196,7 +1196,7 @@ pk_client_update_packages (PkClient *client, gboolean only_trusted, gchar **pack
  * pk_client_install_files:
  * @client: a valid #PkClient instance
  * @only_trusted: only trusted packages should be installed
- * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1489,7 +1489,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 /**
  * pk_client_simulate_install_files:
  * @client: a valid #PkClient instance
- * @files: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
